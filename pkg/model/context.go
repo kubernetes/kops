@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
+	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -221,7 +222,7 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleBastion))] = "1"
 	}
 
-	labels["kops.k8s.io/instancegroup" /*nodeidentityaws.CloudTagInstanceGroupName*/] = ig.Name
+	labels[nodeidentityaws.CloudTagInstanceGroupName] = ig.Name
 
 	return labels, nil
 }
@@ -306,7 +307,7 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 // HA - see https://github.com/kubernetes/kops/issues/4252
 func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
 	return m.UseLoadBalancerForAPI() &&
-		m.Cluster.Spec.API.LoadBalancer.UseForInternalApi == true
+		m.Cluster.Spec.API.LoadBalancer.UseForInternalApi
 }
 
 // UsePrivateDNS checks if we are using private DNS

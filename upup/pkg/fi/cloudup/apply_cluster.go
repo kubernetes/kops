@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -273,9 +273,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
-	if strings.HasPrefix(versionWithoutV, "v") {
-		versionWithoutV = versionWithoutV[1:]
-	}
+	versionWithoutV = strings.TrimPrefix(versionWithoutV, "v")
 	if cluster.Spec.KubernetesVersion != versionWithoutV {
 		klog.Warningf("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
@@ -385,6 +383,10 @@ func (c *ApplyClusterCmd) Run() error {
 		{
 			if !AlphaAllowDO.Enabled() {
 				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
+			}
+
+			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
+				return fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
@@ -1155,8 +1157,8 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 
 		urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
 		if urlString == "" {
-			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.4.2/cni-ipvlan-vpc-k8s-v0.4.2.tar.gz"
-			hash, err = hashing.FromString("bfdc65028a3bf8ffe14388fca28ede3600e7e2dee4e781908b6a23f9e79f86ad")
+			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.5.1/cni-ipvlan-vpc-k8s-v0.5.1.tar.gz"
+			hash, err = hashing.FromString("6e8308bc3205a9f88998df5ba5f0d3845a84ec8ff207a698277dd51eb7e3fb52")
 			if err != nil {
 				// Should be impossible
 				return fmt.Errorf("invalid hard-coded hash for lyft url")
@@ -1271,9 +1273,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	}
 
 	config := &nodeup.Config{}
-	for _, tag := range nodeUpTags.List() {
-		config.Tags = append(config.Tags, tag)
-	}
+	config.Tags = append(config.Tags, nodeUpTags.List()...)
 
 	for _, a := range c.Assets {
 		config.Assets = append(config.Assets, a.CompactString())
@@ -1298,6 +1298,30 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 			}
 
 			baseURL.Path = path.Join(baseURL.Path, "/bin/linux/amd64/", component+".tar")
+
+			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+			if err != nil {
+				return nil, err
+			}
+
+			image := &nodeup.Image{
+				Sources: []string{u.String()},
+				Hash:    hash.Hex(),
+			}
+			images = append(images, image)
+		}
+	}
+
+	// `docker load` our images when using a KOPS_BASE_URL, so we
+	// don't need to push/pull from a registry
+	if os.Getenv("KOPS_BASE_URL") != "" {
+		for _, name := range []string{"kops-controller", "dns-controller"} {
+			baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+			if err != nil {
+				return nil, err
+			}
+
+			baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
 
 			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
 			if err != nil {

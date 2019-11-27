@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -140,9 +140,8 @@ func (v *KubernetesVersionSpec) FindRecommendedUpgrade(version semver.Version) (
 	if recommendedVersion.GT(version) {
 		klog.V(2).Infof("RecommendedVersion=%q, Have=%q.  Recommending upgrade", recommendedVersion, version)
 		return recommendedVersion, nil
-	} else {
-		klog.V(4).Infof("RecommendedVersion=%q, Have=%q.  No upgrade needed.", recommendedVersion, version)
 	}
+	klog.V(4).Infof("RecommendedVersion=%q, Have=%q.  No upgrade needed.", recommendedVersion, version)
 	return nil, nil
 }
 
@@ -160,9 +159,8 @@ func (v *KopsVersionSpec) FindRecommendedUpgrade(version semver.Version) (*semve
 	if recommendedVersion.GT(version) {
 		klog.V(2).Infof("RecommendedVersion=%q, Have=%q.  Recommending upgrade", recommendedVersion, version)
 		return &recommendedVersion, nil
-	} else {
-		klog.V(4).Infof("RecommendedVersion=%q, Have=%q.  No upgrade needed.", recommendedVersion, version)
 	}
+	klog.V(4).Infof("RecommendedVersion=%q, Have=%q.  No upgrade needed.", recommendedVersion, version)
 	return nil, nil
 }
 
@@ -180,9 +178,8 @@ func (v *KubernetesVersionSpec) IsUpgradeRequired(version semver.Version) (bool,
 	if requiredVersion.GT(version) {
 		klog.V(2).Infof("RequiredVersion=%q, Have=%q.  Requiring upgrade", requiredVersion, version)
 		return true, nil
-	} else {
-		klog.V(4).Infof("RequiredVersion=%q, Have=%q.  No upgrade needed.", requiredVersion, version)
 	}
+	klog.V(4).Infof("RequiredVersion=%q, Have=%q.  No upgrade needed.", requiredVersion, version)
 	return false, nil
 }
 
@@ -200,9 +197,8 @@ func (v *KopsVersionSpec) IsUpgradeRequired(version semver.Version) (bool, error
 	if requiredVersion.GT(version) {
 		klog.V(2).Infof("RequiredVersion=%q, Have=%q.  Requiring upgrade", requiredVersion, version)
 		return true, nil
-	} else {
-		klog.V(4).Infof("RequiredVersion=%q, Have=%q.  No upgrade needed.", requiredVersion, version)
 	}
+	klog.V(4).Infof("RequiredVersion=%q, Have=%q.  No upgrade needed.", requiredVersion, version)
 	return false, nil
 }
 

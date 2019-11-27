@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"k8s.io/kops/pkg/validation"
 
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
@@ -387,8 +389,15 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return nil
 	}
 
+	var clusterValidator validation.ClusterValidator
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		klog.V(2).Infof("Rolling update with drain and validate enabled.")
+		if !options.CloudOnly {
+			clusterValidator, err = validation.NewClusterValidator(cluster, list, k8sClient)
+			if err != nil {
+				return fmt.Errorf("cannot create cluster validator: %v", err)
+			}
+		}
 	}
 	d := &instancegroups.RollingUpdateCluster{
 		MasterInterval:    options.MasterInterval,
@@ -398,7 +407,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		Force:             options.Force,
 		Cloud:             cloud,
 		K8sClient:         k8sClient,
-		ClientGetter:      clientGetter,
+		ClusterValidator:  clusterValidator,
 		FailOnDrainError:  options.FailOnDrainError,
 		FailOnValidate:    options.FailOnValidate,
 		CloudOnly:         options.CloudOnly,

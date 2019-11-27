@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ limitations under the License.
 package maps
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
 )
@@ -29,7 +28,7 @@ func Keys(m interface{}) []string {
 	v := reflect.ValueOf(m)
 	if v.Kind() == reflect.Map {
 		for _, x := range v.MapKeys() {
-			list = append(list, fmt.Sprintf("%s", x))
+			list = append(list, x.String())
 		}
 	}
 

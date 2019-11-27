@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,6 +48,17 @@ type ValidationError struct {
 	Message string `json:"message,omitempty"`
 }
 
+type ClusterValidator interface {
+	// Validate validates a k8s cluster
+	Validate() (*ValidationCluster, error)
+}
+
+type clusterValidatorImpl struct {
+	cluster           *kops.Cluster
+	instanceGroupList *kops.InstanceGroupList
+	k8sClient         kubernetes.Interface
+}
+
 func (v *ValidationCluster) addError(failure *ValidationError) {
 	v.Failures = append(v.Failures, failure)
 }
@@ -89,8 +100,20 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	return false, nil
 }
 
-// ValidateCluster validates a k8s cluster with a provided instance group list
-func ValidateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (*ValidationCluster, error) {
+func NewClusterValidator(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+	return &clusterValidatorImpl{
+		cluster:           cluster,
+		instanceGroupList: instanceGroupList,
+		k8sClient:         k8sClient,
+	}, nil
+}
+
+func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
+	return validateCluster(v.cluster, v.instanceGroupList, v.k8sClient)
+}
+
+// validateCluster validates a k8s cluster with a provided instance group list
+func validateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (*ValidationCluster, error) {
 	clusterName := cluster.Name
 
 	v := &ValidationCluster{}

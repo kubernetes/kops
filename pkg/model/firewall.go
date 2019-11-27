@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -255,13 +255,6 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	if b.Cluster.Spec.Networking.Romana != nil {
 		// Romana needs to access etcd
 		klog.Warningf("Opening etcd port on masters for access from the nodes, for romana.  This is unsafe in untrusted environments.")
-		tcpBlocked[4001] = false
-		protocols = append(protocols, ProtocolIPIP)
-	}
-
-	if b.Cluster.Spec.Networking.Cilium != nil {
-		// Cilium needs to access etcd
-		klog.Warningf("Opening etcd port on masters for access from the nodes, for Cilium.  This is unsafe in untrusted environments.")
 		tcpBlocked[4001] = false
 		protocols = append(protocols, ProtocolIPIP)
 	}

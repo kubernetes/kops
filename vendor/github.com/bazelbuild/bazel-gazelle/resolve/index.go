@@ -67,7 +67,7 @@ type RuleIndex struct {
 	rules     []*ruleRecord
 	labelMap  map[label.Label]*ruleRecord
 	importMap map[ImportSpec][]*ruleRecord
-	mrslv     func(r *rule.Rule, f *rule.File) Resolver
+	mrslv     func(r *rule.Rule, pkgRel string) Resolver
 }
 
 // ruleRecord contains information about a rule relevant to import indexing.
@@ -97,7 +97,7 @@ type ruleRecord struct {
 //
 // kindToResolver is a map from rule kinds (for example, "go_library") to
 // Resolvers that support those kinds.
-func NewRuleIndex(mrslv func(r *rule.Rule, f *rule.File) Resolver) *RuleIndex {
+func NewRuleIndex(mrslv func(r *rule.Rule, pkgRel string) Resolver) *RuleIndex {
 	return &RuleIndex{
 		labelMap: make(map[label.Label]*ruleRecord),
 		mrslv:    mrslv,
@@ -111,7 +111,7 @@ func NewRuleIndex(mrslv func(r *rule.Rule, f *rule.File) Resolver) *RuleIndex {
 // AddRule may only be called before Finish.
 func (ix *RuleIndex) AddRule(c *config.Config, r *rule.Rule, f *rule.File) {
 	var imps []ImportSpec
-	if rslv := ix.mrslv(r, f); rslv != nil {
+	if rslv := ix.mrslv(r, f.Pkg); rslv != nil {
 		imps = rslv.Imports(c, r, f)
 	}
 	// If imps == nil, the rule is not importable. If imps is the empty slice,
@@ -151,7 +151,7 @@ func (ix *RuleIndex) collectEmbeds(r *ruleRecord) {
 	if r.didCollectEmbeds {
 		return
 	}
-	resolver := ix.mrslv(r.rule, r.file)
+	resolver := ix.mrslv(r.rule, r.file.Pkg)
 	r.didCollectEmbeds = true
 	embedLabels := resolver.Embeds(r.rule, r.label)
 	r.embeds = embedLabels
@@ -161,7 +161,7 @@ func (ix *RuleIndex) collectEmbeds(r *ruleRecord) {
 			continue
 		}
 		ix.collectEmbeds(er)
-		if resolver == ix.mrslv(er.rule, er.file) {
+		if resolver == ix.mrslv(er.rule, er.file.Pkg) {
 			er.embedded = true
 			r.embeds = append(r.embeds, er.embeds...)
 		}
@@ -218,7 +218,7 @@ func (ix *RuleIndex) FindRulesByImport(imp ImportSpec, lang string) []FindResult
 	matches := ix.importMap[imp]
 	results := make([]FindResult, 0, len(matches))
 	for _, m := range matches {
-		if ix.mrslv(m.rule, nil).Name() != lang {
+		if ix.mrslv(m.rule, "").Name() != lang {
 			continue
 		}
 		results = append(results, FindResult{

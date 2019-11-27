@@ -2,8 +2,8 @@ package(default_visibility = ["//visibility:public"])
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
-    "container_image",
     "container_bundle",
+    "container_image",
 )
 
 container_image(
@@ -56,6 +56,7 @@ container_image(
         "/usr/bin/channels": "/channels",
         "/usr/bin/protokube": "/protokube",
     },
+    tags = ["local"],  # TODO(fejta): make xz toolchain hermetic
 )
 
 container_bundle(
@@ -63,7 +64,20 @@ container_bundle(
     images = {
         "protokube:{STABLE_PROTOKUBE_TAG}": "protokube-image",
     },
-    stamp = True,
+)
+
+load("//tools:gzip.bzl", "gzip")
+
+gzip(
+    name = "protokube.tar.gz",
+    src = "protokube.tar",
+)
+
+load("//tools:hashes.bzl", "hashes")
+
+hashes(
+    name = "protokube.tar.gz.hashes",
+    src = "protokube.tar.gz",
 )
 
 container_image(
@@ -73,5 +87,15 @@ container_image(
     directory = "/usr/bin/",
     files = [
         "//kube-discovery/cmd/kube-discovery",
+    ],
+)
+
+container_image(
+    name = "kops-controller",
+    base = "@distroless_base//image",
+    cmd = ["/usr/bin/kops-controller"],
+    directory = "/usr/bin/",
+    files = [
+        "//cmd/kops-controller",
     ],
 )

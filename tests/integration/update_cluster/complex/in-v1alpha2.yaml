@@ -29,7 +29,8 @@ spec:
     name: events
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
-  kubernetesVersion: v1.4.12
+    auditWebhookBatchThrottleQps: 3.14
+  kubernetesVersion: v1.14.0
   masterInternalName: api.internal.complex.example.com
   masterPublicName: api.complex.example.com
   networkCIDR: 172.20.0.0/16

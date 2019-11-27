@@ -17,7 +17,6 @@ limitations under the License.
 package assets
 
 import (
-	"errors"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -144,10 +143,9 @@ func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *
 	builder.AssetsLocation.ContainerRegistry = &mirrorUrl
 
 	remapped := image
-	err := errors.New("")
 	iterations := make([]map[int]int, 2)
 	for i := range iterations {
-		remapped, err = builder.RemapImage(remapped)
+		remapped, err := builder.RemapImage(remapped)
 		if err != nil {
 			t.Errorf("Error remapping image (iteration %d): %s", i, err)
 		}

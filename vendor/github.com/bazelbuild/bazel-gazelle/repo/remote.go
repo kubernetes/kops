@@ -17,10 +17,15 @@ package repo
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -29,37 +34,6 @@ import (
 	"golang.org/x/tools/go/vcs"
 )
 
-// UpdateRepo returns an object describing a repository at the most recent
-// commit or version tag.
-//
-// This function uses RemoteCache to retrieve information about the repository.
-// Depending on how the RemoteCache was initialized and used earlier, some
-// information may already be locally available. Frequently though, information
-// will be fetched over the network, so this function may be slow.
-func UpdateRepo(rc *RemoteCache, importPath string) (Repo, error) {
-	root, name, err := rc.Root(importPath)
-	if err != nil {
-		return Repo{}, err
-	}
-	remote, vcs, err := rc.Remote(root)
-	if err != nil {
-		return Repo{}, err
-	}
-	commit, tag, err := rc.Head(remote, vcs)
-	if err != nil {
-		return Repo{}, err
-	}
-	repo := Repo{
-		Name:     name,
-		GoPrefix: root,
-		Commit:   commit,
-		Tag:      tag,
-		Remote:   remote,
-		VCS:      vcs,
-	}
-	return repo, nil
-}
-
 // RemoteCache stores information about external repositories. The cache may
 // be initialized with information about known repositories, i.e., those listed
 // in the WORKSPACE file and mentioned on the command line. Other information
@@ -67,6 +41,9 @@ func UpdateRepo(rc *RemoteCache, importPath string) (Repo, error) {
 //
 // Public methods of RemoteCache may be slow in cases where a network fetch
 // is needed. Public methods may be called concurrently.
+//
+// TODO(jayconrod): this is very Go-centric. It should be moved to language/go.
+// Unfortunately, doing so would break the resolve.Resolver interface.
 type RemoteCache struct {
 	// RepoRootForImportPath is vcs.RepoRootForImportPath by default. It may
 	// be overridden so that tests may avoid accessing the network.
@@ -76,7 +53,21 @@ type RemoteCache struct {
 	// repository. This is used by Head. It may be stubbed out for tests.
 	HeadCmd func(remote, vcs string) (string, error)
 
-	root, remote, head remoteCacheMap
+	// ModInfo returns the module path and version that provides the package
+	// with the given import path. This is used by Mod. It may be stubbed
+	// out for tests.
+	ModInfo func(importPath string) (modPath string, err error)
+
+	// ModVersionInfo returns the module path, true version, and sum for
+	// the module that provides the package with the given import path.
+	// This is used by ModVersion. It may be stubbed out for tests.
+	ModVersionInfo func(modPath, query string) (version, sum string, err error)
+
+	root, remote, head, mod, modVersion remoteCacheMap
+
+	tmpOnce sync.Once
+	tmpDir  string
+	tmpErr  error
 }
 
 // remoteCacheMap is a thread-safe, idempotent cache. It is used to store
@@ -110,18 +101,49 @@ type headValue struct {
 	commit, tag string
 }
 
+type modValue struct {
+	path, name string
+	known      bool
+}
+
+type modVersionValue struct {
+	path, name, version, sum string
+}
+
+// Repo describes details of a Go repository known in advance. It is used to
+// initialize RemoteCache so that some repositories don't need to be looked up.
+//
+// DEPRECATED: Go-specific details should be removed from RemoteCache, and
+// lookup logic should be moved to language/go. This means RemoteCache will
+// need to be initialized in a different way.
+type Repo struct {
+	Name, GoPrefix, Remote, VCS string
+}
+
 // NewRemoteCache creates a new RemoteCache with a set of known repositories.
 // The Root and Remote methods will return information about repositories listed
 // here without accessing the network. However, the Head method will still
 // access the network for these repositories to retrieve information about new
 // versions.
-func NewRemoteCache(knownRepos []Repo) *RemoteCache {
-	r := &RemoteCache{
+//
+// A cleanup function is also returned. The caller must call this when
+// RemoteCache is no longer needed. RemoteCache may write files to a temporary
+// directory. This will delete them.
+func NewRemoteCache(knownRepos []Repo) (r *RemoteCache, cleanup func() error) {
+	r = &RemoteCache{
 		RepoRootForImportPath: vcs.RepoRootForImportPath,
 		HeadCmd:               defaultHeadCmd,
 		root:                  remoteCacheMap{cache: make(map[string]*remoteCacheEntry)},
 		remote:                remoteCacheMap{cache: make(map[string]*remoteCacheEntry)},
 		head:                  remoteCacheMap{cache: make(map[string]*remoteCacheEntry)},
+		mod:                   remoteCacheMap{cache: make(map[string]*remoteCacheEntry)},
+		modVersion:            remoteCacheMap{cache: make(map[string]*remoteCacheEntry)},
+	}
+	r.ModInfo = func(importPath string) (string, error) {
+		return defaultModInfo(r, importPath)
+	}
+	r.ModVersionInfo = func(modPath, query string) (string, string, error) {
+		return defaultModVersionInfo(r, modPath, query)
 	}
 	for _, repo := range knownRepos {
 		r.root.cache[repo.GoPrefix] = &remoteCacheEntry{
@@ -138,8 +160,43 @@ func NewRemoteCache(knownRepos []Repo) *RemoteCache {
 				},
 			}
 		}
+		r.mod.cache[repo.GoPrefix] = &remoteCacheEntry{
+			value: modValue{
+				path:  repo.GoPrefix,
+				name:  repo.Name,
+				known: true,
+			},
+		}
 	}
-	return r
+
+	// Augment knownRepos with additional prefixes for
+	// minimal module compatibility. For example, if repo "com_example_foo_v2"
+	// has prefix "example.com/foo/v2", map "example.com/foo" to the same
+	// entry.
+	// TODO(jayconrod): there should probably be some control over whether
+	// callers can use these mappings: packages within modules should not be
+	// allowed to use them. However, we'll return the same result nearly all
+	// the time, and simpler is better.
+	for _, repo := range knownRepos {
+		path := pathWithoutSemver(repo.GoPrefix)
+		if path == "" || r.root.cache[path] != nil {
+			continue
+		}
+		r.root.cache[path] = r.root.cache[repo.GoPrefix]
+		if e := r.remote.cache[repo.GoPrefix]; e != nil {
+			r.remote.cache[path] = e
+		}
+		r.mod.cache[path] = r.mod.cache[repo.GoPrefix]
+	}
+
+	return r, r.cleanup
+}
+
+func (r *RemoteCache) cleanup() error {
+	if r.tmpDir == "" {
+		return nil
+	}
+	return os.RemoveAll(r.tmpDir)
 }
 
 var gopkginPattern = regexp.MustCompile("^(gopkg.in/(?:[^/]+/)?[^/]+\\.v\\d+)(?:/|$)")
@@ -280,7 +337,11 @@ func defaultHeadCmd(remote, vcs string) (string, error) {
 		cmd := exec.Command("git", "ls-remote", remote, "HEAD")
 		out, err := cmd.Output()
 		if err != nil {
-			return "", err
+			var stdErr []byte
+			if e, ok := err.(*exec.ExitError); ok {
+				stdErr = e.Stderr
+			}
+			return "", fmt.Errorf("git ls-remote for %s : %v : %s", remote, err, stdErr)
 		}
 		ix := bytes.IndexByte(out, '\t')
 		if ix < 0 {
@@ -291,6 +352,146 @@ func defaultHeadCmd(remote, vcs string) (string, error) {
 	default:
 		return "", fmt.Errorf("unknown version control system: %s", vcs)
 	}
+}
+
+// Mod returns the module path for the module that contains the package
+// named by importPath. The name of the go_repository rule for the module
+// is also returned. For example, calling Mod on "github.com/foo/bar/v2/baz"
+// would give the module path "github.com/foo/bar/v2" and the name
+// "com_github_foo_bar_v2".
+//
+// If a known repository *could* provide importPath (because its "importpath"
+// is a prefix of importPath), Mod will assume that it does. This may give
+// inaccurate results if importPath is in an undeclared nested module. Run
+// "gazelle update-repos -from_file=go.mod" first for best results.
+//
+// If no known repository could provide importPath, Mod will run "go list" to
+// find the module. The special patterns that Root uses are ignored. Results are
+// cached. Use GOPROXY for faster results.
+func (r *RemoteCache) Mod(importPath string) (modPath, name string, err error) {
+	// Check if any of the known repositories is a prefix.
+	prefix := importPath
+	for {
+		v, ok, err := r.mod.get(prefix)
+		if ok {
+			if err != nil {
+				return "", "", err
+			}
+			value := v.(modValue)
+			if value.known {
+				return value.path, value.name, nil
+			} else {
+				break
+			}
+		}
+
+		prefix = path.Dir(prefix)
+		if prefix == "." || prefix == "/" {
+			break
+		}
+	}
+
+	// Ask "go list".
+	v, err := r.mod.ensure(importPath, func() (interface{}, error) {
+		modPath, err := r.ModInfo(importPath)
+		if err != nil {
+			return nil, err
+		}
+		return modValue{
+			path: modPath,
+			name: label.ImportPathToBazelRepoName(modPath),
+		}, nil
+	})
+	if err != nil {
+		return "", "", err
+	}
+	value := v.(modValue)
+	return value.path, value.name, nil
+}
+
+func defaultModInfo(rc *RemoteCache, importPath string) (modPath string, err error) {
+	rc.initTmp()
+	if rc.tmpErr != nil {
+		return "", rc.tmpErr
+	}
+
+	goTool := findGoTool()
+	cmd := exec.Command(goTool, "list", "-find", "-f", "{{.Module.Path}}", "--", importPath)
+	cmd.Dir = rc.tmpDir
+	cmd.Env = append(os.Environ(), "GO111MODULE=on")
+	out, err := cmd.Output()
+	if err != nil {
+		var stdErr []byte
+		if e, ok := err.(*exec.ExitError); ok {
+			stdErr = e.Stderr
+		}
+		return "", fmt.Errorf("finding module path for import %s: %v: %s", importPath, err, stdErr)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
+
+// ModVersion looks up information about a module at a given version.
+// The path must be the module path, not a package within the module.
+// The version may be a canonical semantic version, a query like "latest",
+// or a branch, tag, or revision name. ModVersion returns the name of
+// the repository rule providing the module (if any), the true version,
+// and the sum.
+func (r *RemoteCache) ModVersion(modPath, query string) (name, version, sum string, err error) {
+	// Ask "go list".
+	arg := modPath + "@" + query
+	v, err := r.modVersion.ensure(arg, func() (interface{}, error) {
+		version, sum, err := r.ModVersionInfo(modPath, query)
+		if err != nil {
+			return nil, err
+		}
+		return modVersionValue{
+			path:    modPath,
+			version: version,
+			sum:     sum,
+		}, nil
+	})
+	if err != nil {
+		return "", "", "", err
+	}
+	value := v.(modVersionValue)
+
+	// Try to find the repository name for the module, if there's already
+	// a repository rule that provides it.
+	v, ok, err := r.mod.get(modPath)
+	if ok && err == nil {
+		name = v.(modValue).name
+	} else {
+		name = label.ImportPathToBazelRepoName(modPath)
+	}
+
+	return name, value.version, value.sum, nil
+}
+
+func defaultModVersionInfo(rc *RemoteCache, modPath, query string) (version, sum string, err error) {
+	rc.initTmp()
+	if rc.tmpErr != nil {
+		return "", "", rc.tmpErr
+	}
+
+	goTool := findGoTool()
+	cmd := exec.Command(goTool, "mod", "download", "-json", "--", modPath+"@"+query)
+	cmd.Dir = rc.tmpDir
+	cmd.Env = append(os.Environ(), "GO111MODULE=on")
+	out, err := cmd.Output()
+	if err != nil {
+		var stdErr []byte
+		if e, ok := err.(*exec.ExitError); ok {
+			stdErr = e.Stderr
+		}
+		return "", "", fmt.Errorf("finding module version and sum for %s@%s: %v: %s", modPath, query, err, stdErr)
+	}
+
+	var result struct{ Version, Sum string }
+	if err := json.Unmarshal(out, &result); err != nil {
+		fmt.Println(out)
+		return "", "", fmt.Errorf("finding module version and sum for %s@%s: invalid output from 'go mod download': %v", modPath, query, err)
+	}
+	return result.Version, result.Sum, nil
 }
 
 // get retrieves a value associated with the given key from the cache. ok will
@@ -329,4 +530,54 @@ func (m *remoteCacheMap) ensure(key string, load func() (interface{}, error)) (i
 		}
 	}
 	return e.value, e.err
+}
+
+func (rc *RemoteCache) initTmp() {
+	rc.tmpOnce.Do(func() {
+		rc.tmpDir, rc.tmpErr = ioutil.TempDir("", "gazelle-remotecache-")
+		if rc.tmpErr != nil {
+			return
+		}
+		rc.tmpErr = ioutil.WriteFile(filepath.Join(rc.tmpDir, "go.mod"), []byte(`module gazelle_remote_cache__\n`), 0666)
+	})
+}
+
+var semverRex = regexp.MustCompile(`^.*?(/v\d+)(?:/.*)?$`)
+
+// pathWithoutSemver removes a semantic version suffix from path.
+// For example, if path is "example.com/foo/v2/bar", pathWithoutSemver
+// will return "example.com/foo/bar". If there is no semantic version suffix,
+// "" will be returned.
+// TODO(jayconrod): copied from language/go. This whole type should be
+// migrated there.
+func pathWithoutSemver(path string) string {
+	m := semverRex.FindStringSubmatchIndex(path)
+	if m == nil {
+		return ""
+	}
+	v := path[m[2]+2 : m[3]]
+	if v == "0" || v == "1" {
+		return ""
+	}
+	return path[:m[2]] + path[m[3]:]
+}
+
+// findGoTool attempts to locate the go executable. If GOROOT is set, we'll
+// prefer the one in there; otherwise, we'll rely on PATH. If the wrapper
+// script generated by the gazelle rule is invoked by Bazel, it will set
+// GOROOT to the configured SDK. We don't want to rely on the host SDK in
+// that situation.
+//
+// TODO(jayconrod): copied from language/go (though it was originally in this
+// package). Go-specific details should be removed from RemoteCache, and
+// this copy should be deleted.
+func findGoTool() string {
+	path := "go" // rely on PATH by default
+	if goroot, ok := os.LookupEnv("GOROOT"); ok {
+		path = filepath.Join(goroot, "bin", "go")
+	}
+	if runtime.GOOS == "windows" {
+		path += ".exe"
+	}
+	return path
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -230,7 +230,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 
 		isMain := false
 		for _, a := range rt.Associations {
-			if aws.BoolValue(a.Main) == true {
+			if aws.BoolValue(a.Main) {
 				isMain = true
 			}
 		}
@@ -258,9 +258,7 @@ func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*aut
 		LaunchConfigurationNames: []*string{&name},
 	}
 	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
-		for _, t := range p.LaunchConfigurations {
-			results = append(results, t)
-		}
+		results = append(results, p.LaunchConfigurations...)
 		return true
 	})
 	if err != nil {
@@ -665,9 +663,7 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 	}
 
 	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
-		for _, volume := range p.Volumes {
-			volumes = append(volumes, volume)
-		}
+		volumes = append(volumes, p.Volumes...)
 		return true
 	})
 	if err != nil {
@@ -1096,9 +1092,7 @@ func DescribeInternetGateways(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
 	}
 
 	var gateways []*ec2.InternetGateway
-	for _, o := range response.InternetGateways {
-		gateways = append(gateways, o)
-	}
+	gateways = append(gateways, response.InternetGateways...)
 
 	return gateways, nil
 }
@@ -1118,9 +1112,7 @@ func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway,
 
 	var gateways []*ec2.InternetGateway
 
-	for _, igw := range response.InternetGateways {
-		gateways = append(gateways, igw)
-	}
+	gateways = append(gateways, response.InternetGateways...)
 
 	return gateways, nil
 }
@@ -1339,7 +1331,13 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 			natGatewayId := aws.StringValue(ngw.NatGatewayId)
 
 			forceShared := !ownedNatGatewayIds.Has(natGatewayId)
-			resourceTrackers = append(resourceTrackers, buildNatGatewayResource(ngw, forceShared, clusterName))
+			ngwResource := buildNatGatewayResource(ngw, forceShared, clusterName)
+			resourceTrackers = append(resourceTrackers, ngwResource)
+
+			// Don't try to remove ElasticIPs if NatGateway is shared
+			if ngwResource.Shared {
+				continue
+			}
 
 			// If we're deleting the NatGateway, we should delete the ElasticIP also
 			for _, address := range ngw.NatGatewayAddresses {

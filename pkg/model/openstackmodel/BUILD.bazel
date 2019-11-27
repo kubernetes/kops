@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -16,11 +16,26 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/dns:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//upup/pkg/fi/cloudup/openstacktasks:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["servergroup_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/nodeup:go_default_library",
+        "//pkg/model:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/openstacktasks:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )

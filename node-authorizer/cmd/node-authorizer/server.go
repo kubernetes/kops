@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ func actionServerCommand(ctx *cli.Context) error {
 
 // waitForCertificates is responsible for waiting for the certificates to appear
 func waitForCertificates(files []string, timeout time.Duration) error {
-	doneCh := make(chan struct{}, 0)
+	doneCh := make(chan struct{})
 
 	go func() {
 		expires := time.Now().Add(timeout)
@@ -170,7 +170,7 @@ func waitForCertificates(files []string, timeout time.Duration) error {
 				if utils.FileExists(x) {
 					break
 				}
-				fmt.Printf("waiting for file: %s to appear, timeouts in %s\n", x, expires.Sub(time.Now()))
+				fmt.Printf("waiting for file: %s to appear, timeouts in %s\n", x, time.Until(expires))
 				time.Sleep(5 * time.Second)
 			}
 		}

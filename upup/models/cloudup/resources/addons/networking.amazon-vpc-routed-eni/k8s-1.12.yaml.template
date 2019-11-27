@@ -1,5 +1,4 @@
-# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.5.0/config/v1.5/aws-k8s-cni.yaml
----
+# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/v1.5.5/config/v1.5/aws-k8s-cni.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -79,7 +78,7 @@ spec:
       tolerations:
       - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.0" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5" }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 61678

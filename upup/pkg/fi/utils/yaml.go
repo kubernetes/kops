@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ func YamlUnmarshal(yamlBytes []byte, dest interface{}) error {
 	return yaml.Unmarshal(yamlBytes, dest)
 }
 
-// YamlMarshal trys to marshal the input struct into yaml content
+// YamlMarshal tries to marshal the input struct into yaml content
 func YamlMarshal(o interface{}) ([]byte, error) {
 	return yaml.Marshal(o)
 }

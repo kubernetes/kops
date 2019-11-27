@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,20 +37,19 @@ type ManagedZonesListCall struct {
 func (call *ManagedZonesListCall) Do(opts ...googleapi.CallOption) (interfaces.ManagedZonesListResponse, error) {
 	if call.Response != nil {
 		return *call.Response, *call.Error
-	} else {
-		proj, projectFound := call.Service.Impl[call.Project]
-		if !projectFound {
-			return nil, fmt.Errorf("Project %s not found.", call.Project)
-		}
-		if call.DnsName_ != "" {
-			return &ManagedZonesListResponse{[]interfaces.ManagedZone{proj[call.DnsName_]}}, nil
-		}
-		list := []interfaces.ManagedZone{}
-		for _, zone := range proj {
-			list = append(list, zone)
-		}
-		return &ManagedZonesListResponse{list}, nil
 	}
+	proj, projectFound := call.Service.Impl[call.Project]
+	if !projectFound {
+		return nil, fmt.Errorf("Project %s not found.", call.Project)
+	}
+	if call.DnsName_ != "" {
+		return &ManagedZonesListResponse{[]interfaces.ManagedZone{proj[call.DnsName_]}}, nil
+	}
+	list := []interfaces.ManagedZone{}
+	for _, zone := range proj {
+		list = append(list, zone)
+	}
+	return &ManagedZonesListResponse{list}, nil
 }
 
 func (call *ManagedZonesListCall) DnsName(dnsName string) interfaces.ManagedZonesListCall {

@@ -28,6 +28,12 @@ import (
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
+func init() {
+	gossip.Register("mesh", func(listen, channelName, gossipName string, gossipSecret []byte, gossipSeeds gossip.SeedProvider) (gossip.GossipState, error) {
+		return NewMeshGossiper(listen, channelName, gossipName, gossipSecret, gossipSeeds)
+	})
+}
+
 type MeshGossiper struct {
 	seeds gossip.SeedProvider
 
@@ -35,8 +41,6 @@ type MeshGossiper struct {
 	peer   *peer
 
 	version uint64
-
-	lastSnapshot *gossip.GossipStateSnapshot
 }
 
 func NewMeshGossiper(listen string, channelName string, nodeName string, password []byte, seeds gossip.SeedProvider) (*MeshGossiper, error) {

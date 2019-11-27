@@ -51,7 +51,7 @@ func MergeRules(src, dst *Rule, mergeable map[string]bool, filename string) {
 		if _, ok := src.attrs[key]; ok || !mergeable[key] || ShouldKeep(dstAttr) {
 			continue
 		}
-		dstValue := dstAttr.Y
+		dstValue := dstAttr.RHS
 		if mergedValue, err := mergeExprs(nil, dstValue); err != nil {
 			start, end := dstValue.Span()
 			log.Printf("%s:%d.%d-%d.%d: could not merge expression", filename, start.Line, start.LineRune, end.Line, end.LineRune)
@@ -64,11 +64,11 @@ func MergeRules(src, dst *Rule, mergeable map[string]bool, filename string) {
 
 	// Merge attributes from src into dst.
 	for key, srcAttr := range src.attrs {
-		srcValue := srcAttr.Y
+		srcValue := srcAttr.RHS
 		if dstAttr, ok := dst.attrs[key]; !ok {
 			dst.SetAttr(key, srcValue)
 		} else if mergeable[key] && !ShouldKeep(dstAttr) {
-			dstValue := dstAttr.Y
+			dstValue := dstAttr.RHS
 			if mergedValue, err := mergeExprs(srcValue, dstValue); err != nil {
 				start, end := dstValue.Span()
 				log.Printf("%s:%d.%d-%d.%d: could not merge expression", filename, start.Line, start.LineRune, end.Line, end.LineRune)
@@ -275,11 +275,11 @@ func SquashRules(src, dst *Rule, filename string) error {
 	}
 
 	for key, srcAttr := range src.attrs {
-		srcValue := srcAttr.Y
+		srcValue := srcAttr.RHS
 		if dstAttr, ok := dst.attrs[key]; !ok {
 			dst.SetAttr(key, srcValue)
 		} else if !ShouldKeep(dstAttr) {
-			dstValue := dstAttr.Y
+			dstValue := dstAttr.RHS
 			if squashedValue, err := squashExprs(srcValue, dstValue); err != nil {
 				start, end := dstValue.Span()
 				return fmt.Errorf("%s:%d.%d-%d.%d: could not squash expression", filename, start.Line, start.LineRune, end.Line, end.LineRune)

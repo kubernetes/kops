@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,9 +73,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 	actual := &Instance{}
 	actual.Name = &r.Name
-	for _, tag := range r.Tags.Items {
-		actual.Tags = append(actual.Tags, tag)
-	}
+	actual.Tags = append(actual.Tags, r.Tags.Items...)
 	actual.Zone = fi.String(lastComponent(r.Zone))
 	actual.MachineType = fi.String(lastComponent(r.MachineType))
 	actual.CanIPForward = &r.CanIpForward

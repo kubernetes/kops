@@ -36,4 +36,7 @@ for package in packages:
 
 print("packages %s" % paths)
 
-subprocess.call(['goimports', '-w'] + paths, cwd=path.join(gopath, 'src'))
+env = os.environ
+env["GO111MODULE"] = "on"
+
+subprocess.call(['go', 'run', 'golang.org/x/tools/cmd/goimports', '-w'] + paths, cwd=path.join(gopath, 'src'), env=env)

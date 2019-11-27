@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -505,9 +505,8 @@ func DeleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, k
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
-		} else {
-			return fmt.Errorf("error reading Keyset %q: %v", name, err)
 		}
+		return fmt.Errorf("error reading Keyset %q: %v", name, err)
 	}
 
 	if keyset.Spec.Type != keysetType {

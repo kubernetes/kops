@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 		}
 	}
 
-	if vpcs == nil || len(vpcs) == 0 {
+	if len(vpcs) == 0 {
 		return nil, nil
 	}
 

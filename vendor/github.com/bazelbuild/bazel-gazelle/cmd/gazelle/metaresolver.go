@@ -43,21 +43,18 @@ func (mr *metaResolver) AddBuiltin(kindName string, resolver resolve.Resolver) {
 }
 
 // MappedKind records the fact that the given mapping was applied while
-// processing the given file.
-func (mr *metaResolver) MappedKind(f *rule.File, kind config.MappedKind) {
-	mr.mappedKinds[f.Pkg] = append(mr.mappedKinds[f.Pkg], kind)
+// processing the given package.
+func (mr *metaResolver) MappedKind(pkgRel string, kind config.MappedKind) {
+	mr.mappedKinds[pkgRel] = append(mr.mappedKinds[pkgRel], kind)
 }
 
-// Resolver returns a resolver for the given rule and file, and a bool
-// indicating whether one was found.  If f is nil, mapped kinds are disregarded.
-func (mr metaResolver) Resolver(r *rule.Rule, f *rule.File) resolve.Resolver {
-	// If f is provided, check the replacements used while processing that package.
-	// If the rule is a kind that was mapped, return the resolver for the kind it was mapped from.
-	if f != nil {
-		for _, mappedKind := range mr.mappedKinds[f.Pkg] {
-			if mappedKind.KindName == r.Kind() {
-				return mr.builtins[mappedKind.FromKind]
-			}
+// Resolver returns a resolver for the given rule and package, and a bool
+// indicating whether one was found. Empty string may be passed for pkgRel,
+// which results in consulting the builtin kinds only.
+func (mr metaResolver) Resolver(r *rule.Rule, pkgRel string) resolve.Resolver {
+	for _, mappedKind := range mr.mappedKinds[pkgRel] {
+		if mappedKind.KindName == r.Kind() {
+			return mr.builtins[mappedKind.FromKind]
 		}
 	}
 	return mr.builtins[r.Kind()]

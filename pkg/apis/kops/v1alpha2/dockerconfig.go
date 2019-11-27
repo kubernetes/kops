@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -58,6 +58,8 @@ type DockerConfig struct {
 	MTU *int32 `json:"mtu,omitempty" flag:"mtu"`
 	// RegistryMirrors is a referred list of docker registry mirror
 	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
+	// SkipInstall when set to true will prevent kops from installing and modifying Docker in any way
+	SkipInstall bool `json:"skipInstall,omitempty"`
 	// Storage is the docker storage driver to use
 	Storage *string `json:"storage,omitempty" flag:"storage-driver"`
 	// StorageOpts is a series of options passed to the storage driver

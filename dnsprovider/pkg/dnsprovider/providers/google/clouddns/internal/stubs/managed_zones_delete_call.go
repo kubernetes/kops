@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,18 +36,16 @@ type ManagedZonesDeleteCall struct {
 func (call ManagedZonesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	if call.Error != nil { // Return the override value
 		return *call.Error
-	} else { // Just try to delete it from the in-memory array.
-		project, ok := call.Service.Impl[call.Project]
-		if ok {
-			zone, ok := project[call.ZoneName]
-			if ok {
-				delete(project, zone.Name())
-				return nil
-			} else {
-				return fmt.Errorf("Failed to find zone %s in project %s to delete it", call.ZoneName, call.Project)
-			}
-		} else {
-			return fmt.Errorf("Failed to find project %s to delete zone %s from it", call.Project, call.ZoneName)
-		}
 	}
+	// Just try to delete it from the in-memory array.
+	project, ok := call.Service.Impl[call.Project]
+	if ok {
+		zone, ok := project[call.ZoneName]
+		if ok {
+			delete(project, zone.Name())
+			return nil
+		}
+		return fmt.Errorf("Failed to find zone %s in project %s to delete it", call.ZoneName, call.Project)
+	}
+	return fmt.Errorf("Failed to find project %s to delete zone %s from it", call.Project, call.ZoneName)
 }

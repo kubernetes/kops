@@ -10,7 +10,6 @@
 
 The easiest way to get a production grade Kubernetes cluster up and running.
 
-
 ## What is kops?
 
 We like to think of it as `kubectl` for clusters.
@@ -32,24 +31,24 @@ in alpha, and other platforms planned.
 
 ## Launching a Kubernetes cluster hosted on AWS, GCE, DigitalOcean or OpenStack
 
-To replicate the above demo, check out our [tutorial](/docs/aws.md) for
+To replicate the above demo, check out our [tutorial](/docs/getting_started/aws.md) for
 launching a Kubernetes cluster hosted on AWS.
 
-To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial/gce.md).
+To install a Kubernetes cluster on GCE please follow this [guide](/docs/getting_started/gce.md).
 
-To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/tutorial/digitalocean.md).
+To install a Kubernetes cluster on DigitalOcean, follow this [guide](/docs/getting_started/digitalocean.md).
 
-To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/tutorial/openstack.md).
+To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/getting_started/openstack.md).
 
 **For anything beyond experimental clusters it is highly encouraged to [version control the cluster manifest files](/docs/manifests_and_customizing_via_api.md) and [run kops in a CI environment](/docs/continuous_integration.md).**
 
 ## Features
 
-* Automates the provisioning of Kubernetes clusters in [AWS](/docs/aws.md) and [GCE](/docs/tutorial/gce.md)
+* Automates the provisioning of Kubernetes clusters in [AWS](/docs/getting_started/aws.md), [OpenStack](/docs/getting_started/openstack.md) and [GCE](/docs/getting_started/gce.md)
 * Deploys Highly Available (HA) Kubernetes Masters
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
 * Ability to generate [Terraform](/docs/terraform.md)
-* Supports custom Kubernetes [add-ons](/docs/addons.md)
+* Supports custom Kubernetes [add-ons](/docs/operations/addons.md)
 * Command line [autocompletion](/docs/cli/kops_completion.md)
 * YAML Manifest Based API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * [Templating](/docs/cluster_template.md) and dry-run modes for creating
@@ -61,7 +60,7 @@ To install a Kubernetes cluster on OpenStack, follow this [guide](/docs/tutorial
 
 ## Documentation
 
-Documentation is in the `/docs` directory, [and the index is here.](docs/README.md)
+Documentation is in the `/docs` directory, and can be seen at [kops.sigs.k8s.io](https://kops.sigs.k8s.io/).
 
 
 ## Kubernetes Release Compatibility
@@ -90,14 +89,13 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version  | k8s 1.9.x | k8s 1.10.x | k8s 1.11.x | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x |
-|---------------|-----------|------------|------------|------------|------------|------------|
-| 1.14.x - Beta | ✔         | ✔          | ✔          | ✔          | ✔          | ✔          |
-| 1.13.x        | ✔         | ✔          | ✔          | ✔          | ✔          | ❌         |
-| 1.12.x        | ✔         | ✔          | ✔          | ✔          | ❌         | ❌         |
-| 1.11.x        | ✔         | ✔          | ✔          | ❌         | ❌         | ❌         |
-| ~~1.10.x~~    | ✔         | ✔          | ❌         | ❌         | ❌         | ❌         |
-| ~~1.9.x~~     | ✔         | ❌         | ❌         | ❌         | ❌         | ❌         |
+| kops version  | k8s 1.11.x | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x | k8s 1.15.x |
+|---------------|------------|------------|------------|------------|------------|
+| 1.15.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.14.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
+| 1.13.x        | ✔          | ✔          | ✔          | ⚫         | ⚫         |
+| ~~1.12.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
+| ~~1.11.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops. Releases who are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.
@@ -230,7 +228,7 @@ If you think you have found a bug please follow the instructions below.
 - Set `-v 10` command line option and save the log output. Please paste this into your issue.
 - Note the version of kops you are running (from `kops version`), and the command line options you are using.
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new).
-- Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
+- Remember users might be searching for your issue in the future, so please give it a meaningful title to help others.
 - Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media).
 
 
@@ -239,7 +237,7 @@ If you think you have found a bug please follow the instructions below.
 We also use the issue tracker to track features. If you have an idea for a feature, or think you can help kops become even more awesome follow the steps below.
 
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new).
-- Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
+- Remember users might be searching for your issue in the future, so please give it a meaningful title to help others.
 - Clearly define the use case, using concrete examples. EG: I type `this` and kops does `that`.
 - Some of our larger features will require some design. If you would like to include a technical design for your feature please include it in the issue.
 - After the new feature is well understood, and the design agreed upon we can start coding the feature. We would love for you to code it. So please open up a **WIP** *(work in progress)* pull request, and happy coding.

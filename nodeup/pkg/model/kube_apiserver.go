@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -347,6 +347,11 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		}
 	}
 
+	//remove elements from the spec that are not enabled yet
+	if b.Cluster.Spec.KubeAPIServer.AuditDynamicConfiguration != nil && !b.IsKubernetesGTE("1.13") {
+		b.Cluster.Spec.KubeAPIServer.AuditDynamicConfiguration = nil
+	}
+
 	// build the kube-apiserver flags for the service
 	flags, err := flagbuilder.BuildFlagsList(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {
@@ -503,7 +508,7 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
 
 	if b.Cluster.Spec.API != nil {
-		if b.Cluster.Spec.API.LoadBalancer == nil || b.Cluster.Spec.API.LoadBalancer.UseForInternalApi != true {
+		if b.Cluster.Spec.API.LoadBalancer == nil || !b.Cluster.Spec.API.LoadBalancer.UseForInternalApi {
 			annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
 		}
 

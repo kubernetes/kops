@@ -23,6 +23,10 @@ if [[ "${DEST:0:5}" == "gs://" ]]; then
   exit 0
 fi
 
-echo "Unsupported destination - supports s3:// and gs:// urls: ${DEST}"
-exit 1
+if [[ "${DEST:0:6}" == "oss://" ]]; then
+	aliyun oss cp --acl public-read -r -f --include "*" ${SRC}/ ${DEST}
+  exit 0
+fi
 
+echo "Unsupported destination - supports s3://, gs:// and oss:// urls: ${DEST}"
+exit 1

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ type ManagedZonesGetCall struct {
 func (call ManagedZonesGetCall) Do(opts ...googleapi.CallOption) (interfaces.ManagedZone, error) {
 	if call.Response != nil {
 		return call.Response, *call.Error
-	} else {
-		return call.Service.Impl[call.Project][call.ZoneName], nil
 	}
+	return call.Service.Impl[call.Project][call.ZoneName], nil
 }

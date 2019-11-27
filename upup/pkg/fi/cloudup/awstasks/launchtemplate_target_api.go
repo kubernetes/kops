@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	}
 	lc := input.LaunchTemplateData
 
-	// @step: add the the actual block device mappings
+	// @step: add the actual block device mappings
 	rootDevices, err := t.buildRootDevice(c.Cloud)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 			Name: t.IAMInstanceProfile.Name,
 		}
 	}
-	// @step: are the node publically facing
+	// @step: are the node publicly facing
 	if fi.BoolValue(t.AssociatePublicIP) {
 		lc.NetworkInterfaces = append(lc.NetworkInterfaces,
 			&ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
@@ -213,7 +213,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	}
 
 	// @step: get the image is order to find out the root device name as using the index
-	// is not vaiable, under conditions they move
+	// is not variable, under conditions they move
 	image, err := cloud.ResolveImage(fi.StringValue(t.ImageID))
 	if err != nil {
 		return nil, err
@@ -276,9 +276,7 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTem
 		if err != nil {
 			return nil, err
 		}
-		for _, x := range resp.LaunchTemplates {
-			list = append(list, x)
-		}
+		list = append(list, resp.LaunchTemplates...)
 
 		if resp.NextToken == nil {
 			return list, nil
@@ -312,9 +310,7 @@ func (t *LaunchTemplate) findAllLaunchTemplatesVersions(c *fi.Context) ([]*ec2.L
 				if err != nil {
 					return err
 				}
-				for _, x := range resp.LaunchTemplateVersions {
-					list = append(list, x)
-				}
+				list = append(list, resp.LaunchTemplateVersions...)
 				if resp.NextToken == nil {
 					return nil
 				}

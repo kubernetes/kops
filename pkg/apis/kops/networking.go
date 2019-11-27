@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -96,6 +96,14 @@ type CalicoNetworkingSpec struct {
 	MajorVersion string `json:"majorVersion,omitempty"`
 	// IPIPMode is mode for CALICO_IPV4POOL_IPIP
 	IPIPMode string `json:"ipipMode,omitempty"`
+	// TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha
+	// (default: false)
+	TyphaPrometheusMetricsEnabled bool `json:"typhaPrometheusMetricsEnabled,omitempty"`
+	// TyphaPrometheusMetricsPort is the TCP port the typha Prometheus metrics server
+	// should bind to (default: 9093)
+	TyphaPrometheusMetricsPort int32 `json:"typhaPrometheusMetricsPort,omitempty"`
+	// TyphaReplicas is the number of replicas of Typha to deploy
+	TyphaReplicas int32 `json:"typhaReplicas,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking
@@ -143,11 +151,11 @@ type RomanaNetworkingSpec struct {
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {
 	// The container image name to use, which by default is:
-	// 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.0
+	// 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5
 	ImageName string `json:"imageName,omitempty"`
 }
 
-const CiliumDefaultVersion = "v1.0-stable"
+const CiliumDefaultVersion = "v1.6.1"
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
@@ -201,6 +209,27 @@ type CiliumNetworkingSpec struct {
 	StateDir                 string            `json:"stateDir,omitempty"`
 	TracePayloadLen          int               `json:"tracePayloadlen,omitempty"`
 	Tunnel                   string            `json:"tunnel,omitempty"`
+
+	EnableIpv6             bool   `json:"enableipv6"`
+	EnableIpv4             bool   `json:"enableipv4"`
+	MonitorAggregation     string `json:"monitorAggregation"`
+	BPFCTGlobalTCPMax      int    `json:"bpfCTGlobalTCPMax"`
+	BPFCTGlobalAnyMax      int    `json:"bpfCTGlobalAnyMax"`
+	PreallocateBPFMaps     bool   `json:"preallocateBPFMaps"`
+	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
+	ClusterName            string `json:"clusterName"`
+	ToFqdnsEnablePoller    bool   `json:"toFqdnsEnablePoller"`
+	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
+	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
+	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
+	EnableNodePort         bool   `json:"enableNodePort"`
+
+	//node init options
+	RemoveCbrBridge       bool   `json:"removeCbrBridge"`
+	RestartPods           bool   `json:"restartPods"`
+	ReconfigureKubelet    bool   `json:"reconfigureKubelet"`
+	NodeInitBootstrapFile string `json:"nodeInitBootstrapFile"`
+	CniBinPath            string `json:"cniBinPath"`
 }
 
 // LyftIpVlanNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -339,6 +339,23 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{},
 				Etcd:   &kops.EtcdClusterSpec{},
 			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					TyphaReplicas: 3,
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					TyphaReplicas: -1,
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::Calico.TyphaReplicas"},
 		},
 		{
 			Input: caliInput{

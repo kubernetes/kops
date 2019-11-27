@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -89,12 +89,14 @@ func NewAuthorizer(config *server.Config) (server.Authorizer, error) {
 		zap.String("region", document.Region))
 
 	// @step: we create a ec2 and autoscaling client
-	client := ec2.New(session.New(&aws.Config{
+	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(document.Region),
-	}))
-	asgc := autoscaling.New(session.New(&aws.Config{
-		Region: aws.String(document.Region),
-	}))
+	})
+	if err != nil {
+		return nil, err
+	}
+	client := ec2.New(sess)
+	asgc := autoscaling.New(sess)
 
 	// @step: get information on the instance we are running
 	instance, err := getInstance(client, document.InstanceID)
@@ -283,12 +285,15 @@ func hasInstanceTags(name, value string, tags []*ec2.Tag) bool {
 // getInstanceIdentityDocument is responsible for retrieving the instance identity document
 func getInstanceIdentityDocument() (ec2metadata.EC2InstanceIdentityDocument, error) {
 	var document ec2metadata.EC2InstanceIdentityDocument
-
-	client := ec2metadata.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		return document, err
+	}
+	client := ec2metadata.New(sess)
 	maxInterval := 500 * time.Millisecond
 	maxTime := 5 * time.Second
 
-	err := utils.Retry(context.TODO(), maxInterval, maxTime, func() error {
+	err = utils.Retry(context.TODO(), maxInterval, maxTime, func() error {
 		x, err := client.GetInstanceIdentityDocument()
 		if err != nil {
 			return err

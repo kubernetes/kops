@@ -10,6 +10,9 @@ While bazel works well for small projects, building with kubernetes still has a 
 * We vendor our dependencies, rather than relying on gazelle (although actually gazelle works, the issue is when external dependencies like apimachinery include bazel files that confuse gazelle)
 * We strip bazel files from external dependencies, so we don't confuse gazelle
 
+## Bazel versions:
+For building kops release branches 1.14 and older, you may need to run an older version of bazel such as `0.24.0`. kops 1.15 and newer should be able to use more recent versions of bazel due to deprecation fixes that have not be backported.
+
 ## How to run
 
 ```

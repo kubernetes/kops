@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ func buildEphemeralDevices(cloud awsup.AWSCloud, machineType string) (map[string
 
 // buildAdditionalDevices is responsible for creating additional volumes in this lc
 func buildAdditionalDevices(volumes []*BlockDeviceMapping) (map[string]*BlockDeviceMapping, error) {
-	devices := make(map[string]*BlockDeviceMapping, 0)
+	devices := make(map[string]*BlockDeviceMapping)
 
 	// @step: iterate the volumes and create devices from them
 	for _, x := range volumes {

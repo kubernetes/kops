@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ var Version = KOPS_RELEASE_VERSION
 
 // These constants are parsed by build tooling - be careful about changing the formats
 const (
-	KOPS_RELEASE_VERSION = "1.14.0-alpha.1"
-	KOPS_CI_VERSION      = "1.14.0-alpha.2"
+	KOPS_RELEASE_VERSION = "1.17.0-alpha.1"
+	KOPS_CI_VERSION      = "1.17.0.alpha.2"
 )
 
 // GitVersion should be replaced by the makefile

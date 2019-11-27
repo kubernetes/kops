@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ const (
 	FileType_Symlink = "symlink"
 	// FileType_Directory defines a directory
 	FileType_Directory = "directory"
-	// FileType_File is a regualar file
+	// FileType_File is a regular file
 	FileType_File = "file"
 )
 
@@ -105,9 +105,7 @@ func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 
 	// Requires parent directories to be created
-	for _, v := range findCreatesDirParents(e.Path, tasks) {
-		deps = append(deps, v)
-	}
+	deps = append(deps, findCreatesDirParents(e.Path, tasks)...)
 
 	// Requires other files to be created first
 	for _, f := range e.AfterFiles {

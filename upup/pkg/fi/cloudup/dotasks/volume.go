@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package dotasks
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/digitalocean/godo"
 
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
@@ -35,6 +37,7 @@ type Volume struct {
 
 	SizeGB *int64
 	Region *string
+	Tags   map[string]string
 }
 
 var _ fi.CompareWithID = &Volume{}
@@ -108,12 +111,22 @@ func (_ *Volume) RenderDO(t *do.DOAPITarget, a, e, changes *Volume) error {
 		return nil
 	}
 
+	tagArray := []string{}
+
+	for k, v := range e.Tags {
+		// DO tags don't accept =. Separate the key and value with an ":"
+		klog.V(10).Infof("DO - Join the volume tag - %s", fmt.Sprintf("%s:%s", k, v))
+		tagArray = append(tagArray, fmt.Sprintf("%s:%s", k, v))
+	}
+
 	volService := t.Cloud.Volumes()
 	_, _, err := volService.CreateVolume(context.TODO(), &godo.VolumeCreateRequest{
 		Name:          fi.StringValue(e.Name),
 		Region:        fi.StringValue(e.Region),
 		SizeGigaBytes: fi.Int64Value(e.SizeGB),
+		Tags:          tagArray,
 	})
+
 	return err
 }
 

@@ -1,0 +1,210 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kops-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+data:
+  config.yaml: |
+    {{ KopsControllerConfig }}
+
+---
+
+# Deployment of size 0, to move from Deployment to DaemonSet
+# TODO: Remove in beta? (it's only been on master branch)
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kops-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+    k8s-app: kops-controller
+    version: v1.15.0-alpha.1
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      k8s-app: kops-controller
+  template:
+    metadata:
+      labels:
+        k8s-addon: kops-controller.addons.k8s.io
+        k8s-app: kops-controller
+        version: v1.15.0-alpha.1
+    spec:
+      serviceAccountName: default
+      containers:
+      - name: sleep
+        image: k8s.gcr.io/pause-amd64:3.0
+        command: [ "/pause" ]
+
+---
+
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: kops-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+    k8s-app: kops-controller
+    version: v1.15.0-alpha.1
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kops-controller
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        k8s-addon: kops-controller.addons.k8s.io
+        k8s-app: kops-controller
+        version: v1.15.0-alpha.1
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        operator: Exists
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
+      serviceAccount: kops-controller
+      containers:
+      - name: kops-controller
+        image: kope/kops-controller:1.15.0-alpha.1
+        volumeMounts:
+{{ if .UseHostCertificates }}
+        - mountPath: /etc/ssl/certs
+          name: etc-ssl-certs
+          readOnly: true
+{{ end }}
+        - mountPath: /etc/kubernetes/kops-controller/
+          name: kops-controller-config
+        command:
+{{ range $arg := KopsControllerArgv }}
+        - "{{ $arg }}"
+{{ end }}
+{{- if KopsSystemEnv }}
+        env:
+{{ range $var := KopsSystemEnv }}
+        - name: {{ $var.Name }}
+          value: {{ $var.Value }}
+{{ end }}
+{{- end }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+      volumes:
+{{ if .UseHostCertificates }}
+      - hostPath:
+          path: /etc/ssl/certs
+          type: DirectoryOrCreate
+        name: etc-ssl-certs
+{{ end }}
+      - name: kops-controller-config
+        configMap:
+          name: kops-controller
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kops-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops-controller
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:kops-controller
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  resourceNames:
+  - kops-controller-leader
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - update
+  - delete
+# Workaround for https://github.com/kubernetes/kubernetes/issues/80295
+# We can't restrict creation of objects by name
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    k8s-addon: kops-controller.addons.k8s.io
+  name: kops-controller
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kops-controller
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:kops-controller

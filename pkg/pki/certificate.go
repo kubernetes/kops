@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -102,9 +102,8 @@ func parsePEMCertificate(pemData []byte) (*x509.Certificate, error) {
 		if block.Type == "CERTIFICATE" {
 			klog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParseCertificate(block.Bytes)
-		} else {
-			klog.Infof("Ignoring unexpected PEM block: %q", block.Type)
 		}
+		klog.Infof("Ignoring unexpected PEM block: %q", block.Type)
 
 		pemData = rest
 	}

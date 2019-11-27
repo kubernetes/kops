@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -174,8 +174,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Format:    format,
 		})
 
-		// @check if calico or Cilium is enabled as the CNI provider
-		if b.KopsModelContext.Cluster.Spec.Networking.Calico != nil || b.KopsModelContext.Cluster.Spec.Networking.Cilium != nil {
+		// @check if calico is enabled as the CNI provider
+		if b.KopsModelContext.Cluster.Spec.Networking.Calico != nil {
 			c.AddTask(&fitasks.Keypair{
 				Name:      fi.String("calico-client"),
 				Lifecycle: b.Lifecycle,

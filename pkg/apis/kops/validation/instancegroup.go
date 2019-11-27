@@ -98,7 +98,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 
 	// @step: iterate and check the volume specs
 	for i, x := range g.Spec.Volumes {
-		devices := make(map[string]bool, 0)
+		devices := make(map[string]bool)
 		path := field.NewPath("volumes").Index(i)
 
 		if err := validateVolumeSpec(path, x); err != nil {
@@ -115,7 +115,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 
 	// @step: iterate and check the volume mount specs
 	for i, x := range g.Spec.VolumeMounts {
-		used := make(map[string]bool, 0)
+		used := make(map[string]bool)
 		path := field.NewPath("volumeMounts").Index(i)
 
 		if err := validateVolumeMountSpec(path, x); err != nil {

@@ -21,6 +21,7 @@ go_library(
         "//pkg/model/components:go_default_library",
         "//pkg/model/defaults:go_default_library",
         "//pkg/model/iam:go_default_library",
+        "//pkg/nodeidentity/gce:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/cloudup/gcetasks:go_default_library",

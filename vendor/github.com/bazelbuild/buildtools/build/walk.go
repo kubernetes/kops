@@ -24,7 +24,16 @@ package build
 //
 func Walk(v Expr, f func(x Expr, stk []Expr)) {
 	var stack []Expr
-	walk1(&v, &stack, func(x Expr, stk []Expr) Expr {
+	walk1(&v, &stack, func(x *Expr, stk []Expr) Expr {
+		f(*x, stk)
+		return nil
+	})
+}
+
+// WalkPointers is the same as Walk but calls the callback function with pointers to nodes.
+func WalkPointers(v Expr, f func(x *Expr, stk []Expr)) {
+	var stack []Expr
+	walk1(&v, &stack, func(x *Expr, stk []Expr) Expr {
 		f(x, stk)
 		return nil
 	})
@@ -39,7 +48,9 @@ func Walk(v Expr, f func(x Expr, stk []Expr)) {
 //
 func Edit(v Expr, f func(x Expr, stk []Expr) Expr) Expr {
 	var stack []Expr
-	return walk1(&v, &stack, f)
+	return walk1(&v, &stack, func(x *Expr, stk []Expr) Expr {
+		return f(*x, stk)
+	})
 }
 
 // EditChildren is similar to Edit but doesn't visit the initial node, instead goes
@@ -47,17 +58,19 @@ func Edit(v Expr, f func(x Expr, stk []Expr) Expr) Expr {
 func EditChildren(v Expr, f func(x Expr, stk []Expr) Expr) {
 	stack := []Expr{v}
 	WalkOnce(v, func(x *Expr) {
-		walk1(x, &stack, f)
+		walk1(x, &stack, func(x *Expr, stk []Expr) Expr {
+			return f(*x, stk)
+		})
 	})
 }
 
 // walk1 is a helper function for Walk, WalkWithPostfix, and Edit.
-func walk1(v *Expr, stack *[]Expr, f func(x Expr, stk []Expr) Expr) Expr {
+func walk1(v *Expr, stack *[]Expr, f func(x *Expr, stk []Expr) Expr) Expr {
 	if v == nil {
 		return nil
 	}
 
-	if res := f(*v, *stack); res != nil {
+	if res := f(v, *stack); res != nil {
 		*v = res
 	}
 	*stack = append(*stack, *v)
@@ -103,6 +116,9 @@ func WalkOnce(v Expr, f func(x *Expr)) {
 	case *BinaryExpr:
 		f(&v.X)
 		f(&v.Y)
+	case *AssignExpr:
+		f(&v.LHS)
+		f(&v.RHS)
 	case *LambdaExpr:
 		for i := range v.Params {
 			f(&v.Params[i])

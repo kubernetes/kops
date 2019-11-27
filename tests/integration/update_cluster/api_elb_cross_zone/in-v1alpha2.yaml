@@ -1,4 +1,4 @@
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
@@ -30,7 +30,7 @@ spec:
     name: events
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
-  kubernetesVersion: v1.4.12
+  kubernetesVersion: v1.14.0
   masterInternalName: api.internal.crosszone.example.com
   masterPublicName: api.crosszone.example.com
   networkCIDR: 172.20.0.0/16
@@ -53,7 +53,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
@@ -78,7 +78,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"

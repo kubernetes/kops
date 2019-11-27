@@ -32,6 +32,7 @@ kops validate cluster [flags]
 ```
   -h, --help            help for cluster
   -o, --output string   Output format. One of json|yaml|table. (default "table")
+      --wait duration   If set, will wait for cluster to be ready
 ```
 
 ### Options inherited from parent commands

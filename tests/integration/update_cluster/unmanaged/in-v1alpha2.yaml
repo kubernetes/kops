@@ -1,4 +1,4 @@
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-12T04:13:14Z"
@@ -18,7 +18,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  kubernetesVersion: v1.8.2
+  kubernetesVersion: v1.14.0
   masterInternalName: api.internal.unmanaged.example.com
   masterPublicName: api.unmanaged.example.com
   networkID: vpc-12345678
@@ -55,7 +55,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-12T04:13:15Z"
@@ -64,7 +64,7 @@ metadata:
     kops.k8s.io/cluster: unmanaged.example.com
 spec:
   associatePublicIp: true
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -74,7 +74,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-12T04:13:15Z"
@@ -83,7 +83,7 @@ metadata:
     kops.k8s.io/cluster: unmanaged.example.com
 spec:
   associatePublicIp: true
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
   machineType: t2.medium
   maxSize: 2
   minSize: 2
@@ -95,7 +95,7 @@ spec:
 
 ---
 
-apiVersion: kops/v1alpha2
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-14T15:32:41Z"
@@ -104,7 +104,7 @@ metadata:
     kops.k8s.io/cluster: unmanaged.example.com
 spec:
   associatePublicIp: true
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
   machineType: t2.micro
   maxSize: 1
   minSize: 1

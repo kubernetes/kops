@@ -20,9 +20,11 @@ type LaunchSpec struct {
 	ImageID            *string             `json:"imageId,omitempty"`
 	UserData           *string             `json:"userData,omitempty"`
 	SecurityGroupIDs   []string            `json:"securityGroupIds,omitempty"`
+	SubnetIDs          []string            `json:"subnetIds,omitempty"`
 	IAMInstanceProfile *IAMInstanceProfile `json:"iamInstanceProfile,omitempty"`
 	Labels             []*Label            `json:"labels,omitempty"`
 	Taints             []*Taint            `json:"taints,omitempty"`
+	AutoScale          *AutoScale          `json:"autoScale,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -57,6 +59,23 @@ type Taint struct {
 	Key    *string `json:"key,omitempty"`
 	Value  *string `json:"value,omitempty"`
 	Effect *string `json:"effect,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AutoScale struct {
+	Headrooms []*AutoScaleHeadroom `json:"headrooms,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AutoScaleHeadroom struct {
+	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
+	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
+	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
+	NumOfUnits    *int `json:"numOfUnits,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -311,6 +330,13 @@ func (o *LaunchSpec) SetSecurityGroupIDs(v []string) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetSubnetIDs(v []string) *LaunchSpec {
+	if o.SubnetIDs = v; o.SubnetIDs == nil {
+		o.nullFields = append(o.nullFields, "SubnetIDs")
+	}
+	return o
+}
+
 func (o *LaunchSpec) SetIAMInstanceProfile(v *IAMInstanceProfile) *LaunchSpec {
 	if o.IAMInstanceProfile = v; o.IAMInstanceProfile == nil {
 		o.nullFields = append(o.nullFields, "IAMInstanceProfile")
@@ -328,6 +354,13 @@ func (o *LaunchSpec) SetLabels(v []*Label) *LaunchSpec {
 func (o *LaunchSpec) SetTaints(v []*Taint) *LaunchSpec {
 	if o.Taints = v; o.Taints == nil {
 		o.nullFields = append(o.nullFields, "Taints")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetAutoScale(v *AutoScale) *LaunchSpec {
+	if o.AutoScale = v; o.AutoScale == nil {
+		o.nullFields = append(o.nullFields, "AutoScale")
 	}
 	return o
 }
@@ -383,6 +416,61 @@ func (o *Taint) SetValue(v *string) *Taint {
 func (o *Taint) SetEffect(v *string) *Taint {
 	if o.Effect = v; o.Effect == nil {
 		o.nullFields = append(o.nullFields, "Effect")
+	}
+	return o
+}
+
+// endregion
+
+//region AutoScale
+
+func (o AutoScale) MarshalJSON() ([]byte, error) {
+	type noMethod AutoScale
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AutoScale) SetHeadrooms(v []*AutoScaleHeadroom) *AutoScale {
+	if o.Headrooms = v; o.Headrooms == nil {
+		o.nullFields = append(o.nullFields, "Headrooms")
+	}
+	return o
+}
+
+//endregion
+
+// region AutoScaleHeadroom
+
+func (o AutoScaleHeadroom) MarshalJSON() ([]byte, error) {
+	type noMethod AutoScaleHeadroom
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AutoScaleHeadroom) SetCPUPerUnit(v *int) *AutoScaleHeadroom {
+	if o.CPUPerUnit = v; o.CPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "CPUPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetGPUPerUnit(v *int) *AutoScaleHeadroom {
+	if o.GPUPerUnit = v; o.GPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "GPUPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetMemoryPerUnit(v *int) *AutoScaleHeadroom {
+	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
+		o.nullFields = append(o.nullFields, "MemoryPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetNumOfUnits(v *int) *AutoScaleHeadroom {
+	if o.NumOfUnits = v; o.NumOfUnits == nil {
+		o.nullFields = append(o.nullFields, "NumOfUnits")
 	}
 	return o
 }

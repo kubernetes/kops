@@ -59,13 +59,24 @@ metadata:
 data:
   cni-conf.json: |
     {
+      "cniVersion": "0.2.0",
       "name": "cbr0",
-      "type": "flannel",
-      "delegate": {
-        "forceAddress": true,
-        "isDefaultGateway": true,
-        "hairpinMode": true
-      }
+      "plugins": [
+        {
+          "type": "flannel",
+          "delegate": {
+            "forceAddress": true,
+            "isDefaultGateway": true,
+            "hairpinMode": true
+          }
+        },
+        {
+          "type": "portmap",
+          "capabilities": {
+            "portMappings": true
+          }
+        }
+      ]
     }
   net-conf.json: |
     {
@@ -96,6 +107,7 @@ spec:
         app: flannel
         role.kubernetes.io/networking: "1"
     spec:
+      priorityClassName: system-node-critical
       hostNetwork: true
       nodeSelector:
         beta.kubernetes.io/arch: amd64
@@ -110,7 +122,7 @@ spec:
         args:
         - -f
         - /etc/kube-flannel/cni-conf.json
-        - /etc/cni/net.d/10-flannel.conf
+        - /etc/cni/net.d/10-flannel.conflist
         volumeMounts:
         - name: cni
           mountPath: /etc/cni/net.d

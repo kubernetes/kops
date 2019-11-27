@@ -204,7 +204,7 @@ func discoverKubernetesClusters(timeout time.Duration) (map[string][]net.IP, err
 		}
 		msg := new(dns.Msg)
 		if err := msg.Unpack(buf[:n]); err != nil {
-			klog.Warningf("got unparseable DNS packet: %v", err)
+			klog.Warningf("got unparsable DNS packet: %v", err)
 			continue
 		}
 		klog.V(4).Infof("got response: %v", msg)

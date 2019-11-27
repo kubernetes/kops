@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -79,6 +79,9 @@ func downloadURLAlways(url string, destPath string, dirMode os.FileMode) error {
 	response, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("error doing HTTP fetch of %q: %v", url, err)
+	}
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("error response from %q: HTTP %v", url, response.StatusCode)
 	}
 	defer response.Body.Close()
 

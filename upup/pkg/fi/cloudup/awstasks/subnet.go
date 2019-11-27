@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -141,7 +141,7 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	}
 
 	if a != nil {
-		// TODO: Do we want to destroy & recreate the subnet when theses immutable fields change?
+		// TODO: Do we want to destroy & recreate the subnet when these immutable fields change?
 		if changes.VPC != nil {
 			var aID *string
 			if a.VPC != nil {

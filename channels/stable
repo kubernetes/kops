@@ -23,12 +23,21 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.10.0 <1.11.0"
     # Stretch is the default for 1.11 (for nvme)
-    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2018-08-17
+    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2019-09-26
       providerID: aws
       kubernetesVersion: ">=1.11.0 <1.12.0"
-    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-06-21
+    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-09-26
       providerID: aws
-      kubernetesVersion: ">=1.12.0"
+      kubernetesVersion: ">=1.12.0 <1.13.0"
+    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.13.0 <1.14.0"
+    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.14.0 <1.15.0"
+    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.15.0"
     - providerID: gce
       name: "cos-cloud/cos-stable-65-10323-99-0"
   cluster:
@@ -36,14 +45,20 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
+  - range: ">=1.17.0-alpha.1"
+    recommendedVersion: 1.17.0-beta.2
+    requiredVersion: 1.17.0-beta.2
+  - range: ">=1.16.0"
+    recommendedVersion: 1.16.2
+    requiredVersion: 1.16.0
   - range: ">=1.15.0"
-    recommendedVersion: 1.15.3
+    recommendedVersion: 1.15.5
     requiredVersion: 1.15.0
   - range: ">=1.14.0"
-    recommendedVersion: 1.14.6
+    recommendedVersion: 1.14.8
     requiredVersion: 1.14.0
   - range: ">=1.13.0"
-    recommendedVersion: 1.13.10
+    recommendedVersion: 1.13.12
     requiredVersion: 1.13.0
   - range: ">=1.12.0"
     recommendedVersion: 1.12.10
@@ -51,73 +66,39 @@ spec:
   - range: ">=1.11.0"
     recommendedVersion: 1.11.10
     requiredVersion: 1.11.0
-  - range: ">=1.10.0"
-    recommendedVersion: 1.10.13
-    requiredVersion: 1.10.0
-  - range: ">=1.9.0"
-    recommendedVersion: 1.9.11
-    requiredVersion: 1.9.0
-  - range: ">=1.8.0"
-    recommendedVersion: 1.8.15
-    requiredVersion: 1.8.0
-  - range: ">=1.7.0"
-    recommendedVersion: 1.7.16
-    requiredVersion: 1.7.0
-  - range: ">=1.6.0"
-    recommendedVersion: 1.6.13
-    requiredVersion: 1.6.0
-  - range: ">=1.5.0"
-    recommendedVersion: 1.5.8
-    requiredVersion: 1.5.1
-  - range: "<1.5.0"
-    recommendedVersion: 1.4.12
-    requiredVersion: 1.4.2
+  - range: "<1.11.0"
+    recommendedVersion: 1.11.10
+    requiredVersion: 1.11.10
   kopsVersions:
+  - range: ">=1.17.0-alpha.1"
+    #recommendedVersion: "1.17.0"
+    #requiredVersion: 1.17.0
+    kubernetesVersion: 1.17.0-beta.2
+  - range: ">=1.16.0-alpha.1"
+    #recommendedVersion: "1.16.0"
+    #requiredVersion: 1.16.0
+    kubernetesVersion: 1.16.2
   - range: ">=1.15.0-alpha.1"
-    #recommendedVersion: "1.14.0"
-    #requiredVersion: 1.14.0
-    kubernetesVersion: 1.15.3
+    #recommendedVersion: "1.15.0"
+    #requiredVersion: 1.15.0
+    kubernetesVersion: 1.15.5
   - range: ">=1.14.0-alpha.1"
     #recommendedVersion: "1.14.0"
     #requiredVersion: 1.14.0
-    kubernetesVersion: 1.14.6
+    kubernetesVersion: 1.14.8
   - range: ">=1.13.0-alpha.1"
     #recommendedVersion: "1.13.0"
     #requiredVersion: 1.13.0
-    kubernetesVersion: 1.13.10
+    kubernetesVersion: 1.13.12
   - range: ">=1.12.0-alpha.1"
     recommendedVersion: "1.12.1"
     #requiredVersion: 1.12.0
     kubernetesVersion: 1.12.10
   - range: ">=1.11.0-alpha.1"
-    #recommendedVersion: "1.11.0"
+    recommendedVersion: "1.11.1"
     #requiredVersion: 1.11.0
     kubernetesVersion: 1.11.10
-  - range: ">=1.10.0-alpha.1"
-    recommendedVersion: "1.10.0"
+  - range: "<1.11.0-alpha.1"
+    recommendedVersion: "1.11.1"
     #requiredVersion: 1.10.0
-    kubernetesVersion: 1.10.13
-  - range: ">=1.9.0-alpha.1"
-    recommendedVersion: 1.9.2
-    #requiredVersion: 1.9.0
-    kubernetesVersion: 1.9.11
-  - range: ">=1.8.0-alpha.1"
-    recommendedVersion: 1.8.1
-    requiredVersion: 1.7.1
-    kubernetesVersion: 1.8.15
-  - range: ">=1.7.0-alpha.1"
-    recommendedVersion: 1.8.1
-    requiredVersion: 1.7.1
-    kubernetesVersion: 1.7.16
-  - range: ">=1.6.0-alpha.1"
-    recommendedVersion: 1.8.1
-    requiredVersion: 1.7.1
-    kubernetesVersion: 1.6.13
-  - range: ">=1.5.0-alpha1"
-    recommendedVersion: 1.8.1
-    requiredVersion: 1.7.1
-    kubernetesVersion: 1.5.8
-  - range: "<1.5.0"
-    recommendedVersion: 1.8.1
-    requiredVersion: 1.7.1
-    kubernetesVersion: 1.4.12
+    kubernetesVersion: 1.11.10

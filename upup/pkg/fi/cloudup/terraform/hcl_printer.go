@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ func (v *astSanitizer) visitObjectItem(o *ast.ObjectItem) {
 				v := text[1 : len(text)-1]
 				safe := true
 				for _, c := range v {
-					if strings.IndexRune(safeChars, c) == -1 {
+					if !strings.ContainsRune(safeChars, c) {
 						safe = false
 						break
 					}

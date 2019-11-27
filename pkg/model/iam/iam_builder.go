@@ -259,6 +259,8 @@ func (b *PolicyBuilder) IAMPrefix() string {
 		return "arn:aws-cn"
 	case "cn-northwest-1":
 		return "arn:aws-cn"
+	case "us-gov-east-1":
+		return "arn:aws-us-gov"
 	case "us-gov-west-1":
 		return "arn:aws-us-gov"
 	default:
@@ -385,7 +387,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						}
 
 						// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
-						if b.Cluster.Spec.Networking.Calico != nil || b.Cluster.Spec.Networking.Cilium != nil {
+						if b.Cluster.Spec.Networking.Calico != nil {
 							p.Statement = append(p.Statement, &Statement{
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
@@ -627,12 +629,14 @@ func addMasterEC2Policies(p *Policy, resource stringorslice.StringOrSlice, legac
 			&Statement{
 				Effect: StatementEffectAllow,
 				Action: stringorslice.Slice([]string{
-					"ec2:DescribeInstances",      // aws.go
-					"ec2:DescribeRegions",        // s3context.go
-					"ec2:DescribeRouteTables",    // aws.go
-					"ec2:DescribeSecurityGroups", // aws.go
-					"ec2:DescribeSubnets",        // aws.go
-					"ec2:DescribeVolumes",        // aws.go
+					"ec2:DescribeAccountAttributes", // aws.go
+					"ec2:DescribeInstances",         // aws.go
+					"ec2:DescribeInternetGateways",  // aws.go
+					"ec2:DescribeRegions",           // s3context.go
+					"ec2:DescribeRouteTables",       // aws.go
+					"ec2:DescribeSecurityGroups",    // aws.go
+					"ec2:DescribeSubnets",           // aws.go
+					"ec2:DescribeVolumes",           // aws.go
 				}),
 				Resource: resource,
 			},
@@ -851,6 +855,7 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 				"ec2:DetachNetworkInterface",
 				"ec2:DeleteNetworkInterface",
 				"ec2:ModifyNetworkInterfaceAttribute",
+				"ec2:DescribeVpcs",
 			}),
 			Resource: resource,
 		},

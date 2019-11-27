@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -159,29 +159,24 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 			if err != nil {
 				return err
 			}
-			break
 
 		case InstanceGroupLabelOrientation:
 			group.Orientation = fi.String(v)
-			break
 
 		case InstanceGroupLabelUtilizeReservedInstances:
 			group.UtilizeReservedInstances, err = parseBool(v)
 			if err != nil {
 				return err
 			}
-			break
 
 		case InstanceGroupLabelFallbackToOnDemand:
 			group.FallbackToOnDemand, err = parseBool(v)
 			if err != nil {
 				return err
 			}
-			break
 
 		case InstanceGroupLabelHealthCheckType:
 			group.HealthCheckType = fi.String(strings.ToUpper(v))
-			break
 		}
 	}
 
@@ -334,21 +329,18 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 			if err != nil {
 				return err
 			}
-			break
 
 		case InstanceGroupLabelUtilizeReservedInstances:
 			ocean.UtilizeReservedInstances, err = parseBool(v)
 			if err != nil {
 				return err
 			}
-			break
 
 		case InstanceGroupLabelFallbackToOnDemand:
 			ocean.FallbackToOnDemand, err = parseBool(v)
 			if err != nil {
 				return err
 			}
-			break
 		}
 	}
 
@@ -645,7 +637,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					return nil, err
 				}
 				opts.Enabled = fi.Bool(!fi.BoolValue(v))
-				break
 			}
 
 		case InstanceGroupLabelAutoScalerDefaultNodeLabels:
@@ -655,7 +646,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					return nil, err
 				}
 				defaultNodeLabels = fi.BoolValue(v)
-				break
 			}
 
 		case InstanceGroupLabelAutoScalerHeadroomCPUPerUnit:
@@ -668,7 +658,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
 				opts.Headroom.CPUPerUnit = fi.Int(int(fi.Int64Value(v)))
-				break
 			}
 
 		case InstanceGroupLabelAutoScalerHeadroomGPUPerUnit:
@@ -681,7 +670,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
 				opts.Headroom.GPUPerUnit = fi.Int(int(fi.Int64Value(v)))
-				break
 			}
 
 		case InstanceGroupLabelAutoScalerHeadroomMemPerUnit:
@@ -694,7 +682,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
 				opts.Headroom.MemPerUnit = fi.Int(int(fi.Int64Value(v)))
-				break
 			}
 
 		case InstanceGroupLabelAutoScalerHeadroomNumOfUnits:
@@ -707,7 +694,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
 				opts.Headroom.NumOfUnits = fi.Int(int(fi.Int64Value(v)))
-				break
 			}
 
 		case InstanceGroupLabelAutoScalerScaleDownMaxPercentage:
@@ -720,7 +706,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					opts.Down = new(spotinsttasks.AutoScalerDownOpts)
 				}
 				opts.Down.MaxPercentage = fi.Int(int(fi.Int64Value(v)))
-				break
 			}
 
 		case InstanceGroupLabelAutoScalerScaleDownEvaluationPeriods:
@@ -733,7 +718,6 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					opts.Down = new(spotinsttasks.AutoScalerDownOpts)
 				}
 				opts.Down.EvaluationPeriods = fi.Int(int(fi.Int64Value(v)))
-				break
 			}
 		}
 	}

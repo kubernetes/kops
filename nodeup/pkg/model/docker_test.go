@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,8 +55,8 @@ func sanityCheckPackageName(t *testing.T, u string, version string, name string)
 
 	expectedNames := []string{}
 	// Match known RPM formats
-	for _, v := range []string{"-1.", "-2.", "-3."} {
-		for _, d := range []string{"el7", "el7.centos"} {
+	for _, v := range []string{"-1.", "-2.", "-3.", "-3.2."} {
+		for _, d := range []string{"el7", "el7.centos", "el7_6"} {
 			for _, a := range []string{"noarch", "x86_64"} {
 				expectedNames = append(expectedNames, name+"-"+version+v+d+"."+a+".rpm")
 			}
@@ -124,6 +124,10 @@ func TestDockerBuilder_1_12_1(t *testing.T) {
 
 func TestDockerBuilder_LogFlags(t *testing.T) {
 	runDockerBuilderTest(t, "logflags")
+}
+
+func TestDockerBuilder_SkipInstall(t *testing.T) {
+	runDockerBuilderTest(t, "skipinstall")
 }
 
 func TestDockerBuilder_BuildFlags(t *testing.T) {

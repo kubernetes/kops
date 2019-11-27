@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ func (c *Config) UseFeature(name string) bool {
 	return false
 }
 
-// NodeRegistration is an incomming request
+// NodeRegistration is an incoming request
 type NodeRegistration struct {
 	// Spec is the request specification
 	Spec NodeRegistrationSpec

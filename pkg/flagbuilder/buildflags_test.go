@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,10 +20,16 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
+
+func resourceValue(s string) *resource.Quantity {
+	q := resource.MustParse(s)
+	return &q
+}
 
 func TestBuildKCMFlags(t *testing.T) {
 	grid := []struct {
@@ -44,7 +50,7 @@ func TestBuildKCMFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeControllerManagerConfig{
-				KubeAPIQPS: fi.Float32(42),
+				KubeAPIQPS: resourceValue("42"),
 			},
 			Expected: "--kube-api-qps=42",
 		},
@@ -168,7 +174,7 @@ func TestBuildAPIServerFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
-				AuditWebhookBatchThrottleQps: fi.Float32(3.14),
+				AuditWebhookBatchThrottleQps: resourceValue("3.14"),
 			},
 			Expected: "--audit-webhook-batch-throttle-qps=3.14 --insecure-port=0 --secure-port=0",
 		},
@@ -213,6 +219,12 @@ func TestBuildAPIServerFlags(t *testing.T) {
 				AuthorizationWebhookCacheUnauthorizedTTL: &metav1.Duration{Duration: 10 * time.Second},
 			},
 			Expected: "--authorization-webhook-cache-unauthorized-ttl=10s --insecure-port=0 --secure-port=0",
+		},
+		{
+			Config: &kops.KubeAPIServerConfig{
+				EventTTL: &metav1.Duration{Duration: 3 * time.Hour},
+			},
+			Expected: "--event-ttl=3h0m0s --insecure-port=0 --secure-port=0",
 		},
 	}
 

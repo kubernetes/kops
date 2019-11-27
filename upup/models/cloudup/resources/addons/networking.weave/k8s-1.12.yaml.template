@@ -257,5 +257,6 @@ spec:
           hostPath:
             path: /run/xtables.lock
             type: FileOrCreate
+      priorityClassName: system-node-critical
   updateStrategy:
     type: RollingUpdate

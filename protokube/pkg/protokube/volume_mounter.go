@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -178,9 +178,8 @@ func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint st
 			}
 
 			return fmt.Errorf("found multiple existing mounts of %q at %q", device, mountpoint)
-		} else {
-			klog.Infof("Found existing mount of %q at %q", device, mountpoint)
 		}
+		klog.Infof("Found existing mount of %q at %q", device, mountpoint)
 	}
 
 	// If we're containerized we also want to mount the device (again) into our container

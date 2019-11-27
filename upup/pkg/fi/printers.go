@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -60,16 +60,12 @@ func PrintCompareWithID(o interface{}) (string, bool) {
 		// Uninformative, but we can often print the name instead
 		if name != "" {
 			return fmt.Sprintf("name:%s", name), true
-		} else {
-			return "id:<nil>", true
 		}
-	} else {
-		// Uninformative, but we can often print the name instead
-		if name != "" {
-			return fmt.Sprintf("name:%s id:%s", name, *id), true
-		} else {
-			return fmt.Sprintf("id:%s", *id), true
-		}
-
+		return "id:<nil>", true
 	}
+	// Uninformative, but we can often print the name instead
+	if name != "" {
+		return fmt.Sprintf("name:%s id:%s", name, *id), true
+	}
+	return fmt.Sprintf("id:%s", *id), true
 }

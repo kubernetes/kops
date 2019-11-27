@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -266,9 +266,8 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 						continue
 					}
 					return fmt.Errorf("error detaching volume %q from master instance %q: %v", volumeID, masterInstanceID, err)
-				} else {
-					break
 				}
+				break
 			}
 		}
 	}

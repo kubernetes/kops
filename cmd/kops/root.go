@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ var (
 	We like to think of it as kubectl for clusters.
 
 	kops helps you create, destroy, upgrade and maintain production-grade, highly available,
-	Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently
+	Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently
 	officially supported, with GCE and VMware vSphere in alpha support.
 	`))
 

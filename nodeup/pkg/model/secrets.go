@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	// Write out docker auth secret, if exists
 	if b.SecretStore != nil {
 		key := "dockerconfig"
 		dockercfg, _ := b.SecretStore.Secret(key)

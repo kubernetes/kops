@@ -46,5 +46,5 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("Subnets"), strings.Join(regions.List(), ","), "clusters cannot span GCE regions"))
 	}
 
-	return nil
+	return allErrs
 }

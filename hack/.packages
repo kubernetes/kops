@@ -11,6 +11,9 @@ k8s.io/kops/cloudmock/aws/mockiam
 k8s.io/kops/cloudmock/aws/mockroute53
 k8s.io/kops/cmd/kops
 k8s.io/kops/cmd/kops/util
+k8s.io/kops/cmd/kops-controller
+k8s.io/kops/cmd/kops-controller/controllers
+k8s.io/kops/cmd/kops-controller/pkg/config
 k8s.io/kops/cmd/nodeup
 k8s.io/kops/dns-controller/cmd/dns-controller
 k8s.io/kops/dns-controller/pkg/dns
@@ -107,6 +110,12 @@ k8s.io/kops/pkg/model/openstackmodel
 k8s.io/kops/pkg/model/resources
 k8s.io/kops/pkg/model/spotinstmodel
 k8s.io/kops/pkg/model/vspheremodel
+k8s.io/kops/pkg/nodeidentity
+k8s.io/kops/pkg/nodeidentity/aws
+k8s.io/kops/pkg/nodeidentity/do
+k8s.io/kops/pkg/nodeidentity/gce
+k8s.io/kops/pkg/nodeidentity/openstack
+k8s.io/kops/pkg/nodelabels
 k8s.io/kops/pkg/pki
 k8s.io/kops/pkg/pkiutil
 k8s.io/kops/pkg/pretty
@@ -132,6 +141,7 @@ k8s.io/kops/pkg/util/subnet
 k8s.io/kops/pkg/util/templater
 k8s.io/kops/pkg/validation
 k8s.io/kops/pkg/values
+k8s.io/kops/pkg/wellknownports
 k8s.io/kops/protokube/cmd/protokube
 k8s.io/kops/protokube/pkg/etcd
 k8s.io/kops/protokube/pkg/gossip
@@ -140,7 +150,9 @@ k8s.io/kops/protokube/pkg/gossip/aws
 k8s.io/kops/protokube/pkg/gossip/dns
 k8s.io/kops/protokube/pkg/gossip/dns/hosts
 k8s.io/kops/protokube/pkg/gossip/dns/provider
+k8s.io/kops/protokube/pkg/gossip/do
 k8s.io/kops/protokube/pkg/gossip/gce
+k8s.io/kops/protokube/pkg/gossip/memberlist
 k8s.io/kops/protokube/pkg/gossip/mesh
 k8s.io/kops/protokube/pkg/gossip/openstack
 k8s.io/kops/protokube/pkg/protokube

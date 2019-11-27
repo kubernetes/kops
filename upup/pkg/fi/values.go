@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -123,6 +123,16 @@ func Uint64Value(v *uint64) uint64 {
 		return 0
 	}
 	return *v
+}
+
+// ArrayContains is checking does array contain single word
+func ArrayContains(array []string, word string) bool {
+	for _, item := range array {
+		if item == word {
+			return true
+		}
+	}
+	return false
 }
 
 func DebugPrint(o interface{}) string {

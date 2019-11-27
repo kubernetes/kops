@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,3 +63,24 @@ echo "STABLE_KOPS_VERSION ${VERSION}"
 
 PROTOKUBE_TAG=${VERSION/+/-}
 echo "STABLE_PROTOKUBE_TAG ${PROTOKUBE_TAG}"
+
+
+
+if [[ -z "${DOCKER_REGISTRY}" ]]; then
+  DOCKER_REGISTRY="index.docker.io"
+fi
+if [[ -z "${DOCKER_IMAGE_PREFIX}" ]]; then
+  DOCKER_IMAGE_PREFIX=`whoami`/
+fi
+echo "STABLE_DOCKER_REGISTRY ${DOCKER_REGISTRY}"
+echo "STABLE_DOCKER_IMAGE_PREFIX ${DOCKER_IMAGE_PREFIX}"
+
+if [[ -z "${KOPS_CONTROLLER_TAG}" ]]; then
+  KOPS_CONTROLLER_TAG="${PROTOKUBE_TAG}"
+fi
+echo "STABLE_KOPS_CONTROLLER_TAG ${KOPS_CONTROLLER_TAG}"
+
+if [[ -z "${DNS_CONTROLLER_TAG}" ]]; then
+  DNS_CONTROLLER_TAG="${PROTOKUBE_TAG}"
+fi
+echo "STABLE_DNS_CONTROLLER_TAG ${DNS_CONTROLLER_TAG}"

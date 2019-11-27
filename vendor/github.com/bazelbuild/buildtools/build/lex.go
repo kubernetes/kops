@@ -33,22 +33,26 @@ import (
 type FileType int
 
 const (
-	// TypeDefault represents .bzl or other Starlark files
+	// TypeDefault represents general Starlark files
 	TypeDefault FileType = 1 << iota
 	// TypeBuild represents BUILD files
 	TypeBuild
 	// TypeWorkspace represents WORKSPACE files
 	TypeWorkspace
+	// TypeBzl represents .bzl files
+	TypeBzl
 )
 
 func (t FileType) String() string {
 	switch t {
 	case TypeDefault:
-		return ".bzl"
+		return "default"
 	case TypeBuild:
 		return "BUILD"
 	case TypeWorkspace:
 		return "WORKSPACE"
+	case TypeBzl:
+		return ".bzl"
 	}
 	return "unknown"
 }
@@ -77,7 +81,19 @@ func ParseWorkspace(filename string, data []byte) (*File, error) {
 	return f, err
 }
 
-// ParseDefault parses a file, marks it as not a BUILD file (e.g. bzl file) and returns the corresponding parse tree.
+// ParseBzl parses a file, marks it as a .bzl file and returns the corresponding parse tree.
+//
+// The filename is used only for generating error messages.
+func ParseBzl(filename string, data []byte) (*File, error) {
+	in := newInput(filename, data)
+	f, err := in.parse()
+	if f != nil {
+		f.Type = TypeBzl
+	}
+	return f, err
+}
+
+// ParseDefault parses a file, marks it as a generic Starlark file and returns the corresponding parse tree.
 //
 // The filename is used only for generating error messages.
 func ParseDefault(filename string, data []byte) (*File, error) {
@@ -91,11 +107,17 @@ func ParseDefault(filename string, data []byte) (*File, error) {
 
 func getFileType(filename string) FileType {
 	if filename == "" { // stdin
-		return TypeBuild // For compatibility
+		return TypeDefault
 	}
 	basename := strings.ToLower(filepath.Base(filename))
+	if strings.HasSuffix(basename, ".oss") {
+		basename = basename[:len(basename)-4]
+	}
 	ext := filepath.Ext(basename)
-	if ext == ".bzl" || ext == ".sky" {
+	switch ext {
+	case ".bzl":
+		return TypeBzl
+	case ".sky":
 		return TypeDefault
 	}
 	base := basename[:len(basename)-len(ext)]
@@ -118,6 +140,8 @@ func Parse(filename string, data []byte) (*File, error) {
 		return ParseBuild(filename, data)
 	case TypeWorkspace:
 		return ParseWorkspace(filename, data)
+	case TypeBzl:
+		return ParseBzl(filename, data)
 	}
 	return ParseDefault(filename, data)
 }
@@ -444,17 +468,35 @@ func (in *input) Lex(val *yySymType) int {
 		in.readRune()
 		return c
 
-	case '<', '>', '=', '!', '+', '-', '*', '/', '%', '|': // possibly followed by =
+	case '<', '>', '=', '!', '+', '-', '*', '/', '%', '|', '&', '~', '^': // possibly followed by =
 		in.readRune()
+
+		if c == '~' {
+			// unary bitwise not, shouldn't be followed by anything
+			return c
+		}
+
 		if c == '*' && in.peekRune() == '*' {
 			// double asterisk
 			in.readRune()
 			return _STAR_STAR
 		}
 
-		if c == '/' && in.peekRune() == '/' {
-			// integer division
-			in.readRune()
+		if c == in.peekRune() {
+			switch c {
+			case '/':
+				// integer division
+				in.readRune()
+				c = _INT_DIV
+			case '<':
+				// left shift
+				in.readRune()
+				c = _BIT_LSH
+			case '>':
+				// right shift
+				in.readRune()
+				c = _BIT_RSH
+			}
 		}
 
 		if in.peekRune() == '=' {
@@ -531,7 +573,7 @@ func (in *input) Lex(val *yySymType) int {
 			}
 		}
 		in.endToken(val)
-		s, triple, err := unquote(val.tok)
+		s, triple, err := Unquote(val.tok)
 		if err != nil {
 			in.Error(fmt.Sprint(err))
 		}
@@ -568,12 +610,10 @@ func (in *input) Lex(val *yySymType) int {
 	case "continue":
 		return _CONTINUE
 	}
-	for _, c := range val.tok {
-		if c > '9' || c < '0' {
-			return _IDENT
-		}
+	if len(val.tok) > 0 && val.tok[0] >= '0' && val.tok[0] <= '9' {
+		return _NUMBER
 	}
-	return _NUMBER
+	return _IDENT
 }
 
 // isIdent reports whether c is an identifier rune.
@@ -695,6 +735,9 @@ func (in *input) order(v Expr) {
 	case *BinaryExpr:
 		in.order(v.X)
 		in.order(v.Y)
+	case *AssignExpr:
+		in.order(v.LHS)
+		in.order(v.RHS)
 	case *ConditionalExpr:
 		in.order(v.Then)
 		in.order(v.Test)

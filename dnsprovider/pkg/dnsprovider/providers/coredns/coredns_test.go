@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,8 +37,7 @@ func newTestInterface() (dnsprovider.Interface, error) {
 }
 
 func newFakeInterface() (dnsprovider.Interface, error) {
-	var service corednstesting.EtcdKeysAPI
-	service = corednstesting.NewEtcdKeysAPIStub()
+	service := corednstesting.NewEtcdKeysAPIStub()
 	intf := newInterfaceWithStub(service)
 	intf.etcdPathPrefix = "skydns"
 

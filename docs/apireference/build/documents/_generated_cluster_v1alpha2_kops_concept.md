@@ -113,7 +113,7 @@ Appears In:
 
 Field        | Description
 ------------ | -----------
-additionalNetworkCIDRs <br /> *string array*    | AdditionalNetworkCIDRs is a list of aditional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any aditional CIDRs added to a VPC.
+additionalNetworkCIDRs <br /> *string array*    | AdditionalNetworkCIDRs is a list of additional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any additional CIDRs added to a VPC.
 additionalPolicies <br /> *object*    | Additional policies to add for roles
 additionalSans <br /> *string array*    | AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates
 addons <br /> *[AddonSpec](#addonspec-v1alpha2-kops) array*    | Additional addons that should be installed on the cluster

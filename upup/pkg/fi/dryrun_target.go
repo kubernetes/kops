@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ type DeletionByTaskName []Deletion
 func (a DeletionByTaskName) Len() int      { return len(a) }
 func (a DeletionByTaskName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a DeletionByTaskName) Less(i, j int) bool {
-	return a[i].TaskName() < a[i].TaskName()
+	return a[i].TaskName() < a[j].TaskName()
 }
 
 var _ Target = &DryRunTarget{}

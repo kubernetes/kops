@@ -4,15 +4,15 @@
 
 Kops used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Should support both `cn-north-1` and `cn-northwest-1`, but only `cn-north-1` is tested.
 
-Most of the following procedures to provision a cluster are the same with [the guide to use kops in AWS](aws.md). The differences will be highlighted and the similar parts will be omitted.
+Most of the following procedures to provision a cluster are the same with [the guide to use kops in AWS](getting_started/aws.md). The differences will be highlighted and the similar parts will be omitted.
 
-*NOTE: THE FOLLOWING PROCEDURES ARE ONLY TESTED WITH KOPS 1.10.0, 1.10.1 AND KUBERNETES 1.9.11, 1.10.12* 
+*NOTE: THE FOLLOWING PROCEDURES ARE ONLY TESTED WITH KOPS 1.10.0, 1.10.1 AND KUBERNETES 1.9.11, 1.10.12*
 
-### [Install kops](aws.md#install-kops)
+### [Install kops](getting_started/aws.md#install-kops)
 
-### [Install kubectl](aws.md#install-kubectl)
+### [Install kubectl](getting_started/aws.md#install-kubectl)
 
-### [Setup your environment](aws.md#setup-your-environment)
+### [Setup your environment](getting_started/aws.md#setup-your-environment)
 
 #### AWS
 
@@ -31,15 +31,15 @@ And export it correctly.
 export AWS_REGION=$(aws configure get region)
 ```
 
-## [Configure DNS](aws.md#configure-dns)
+## [Configure DNS](getting_started/aws.md#configure-dns)
 
 As the note kindly pointing out, a gossip-based cluster can be easily created by having the cluster name end with `.k8s.local`. We will adopt this trick below. Rest of this section can be skipped safely.
 
-## [Testing your DNS setup](aws.md#testing-your-dns-setup)
+## [Testing your DNS setup](getting_started/aws.md#testing-your-dns-setup)
 
 Thanks to `gossip`, this section can be skipped safely as well.
 
-## [Cluster State storage](aws.md#cluster-state-storage)
+## [Cluster State storage](getting_started/aws.md#cluster-state-storage)
 
 Since we are provisioning a cluster in AWS China Region, we need to create a dedicated S3 bucket in AWS China Region.
 
@@ -47,7 +47,7 @@ Since we are provisioning a cluster in AWS China Region, we need to create a ded
 aws s3api create-bucket --bucket prefix-example-com-state-store --create-bucket-configuration LocationConstraint=$AWS_REGION
 ```
 
-## [Creating your first cluster](aws.md#creating-your-first-cluster)
+## [Creating your first cluster](getting_started/aws.md#creating-your-first-cluster)
 
 ### Ensure you have a VPC which can access the internet NORMALLY
 
@@ -55,7 +55,7 @@ First of all, we have to solve the slow and unstable connection to the internet 
 
 ### Prepare kops ami
 
-We have to build our own AMI because there is [no official kops ami in AWS China Regions][3]. There're two ways to accomplish so. 
+We have to build our own AMI because there is [no official kops ami in AWS China Regions][3]. There're two ways to accomplish so.
 
 #### ImageBuilder **RECOMMENDED**
 
@@ -99,7 +99,7 @@ Following [the comment][5] to copy the kops image from another region, e.g. `ap-
 
 No matter how to build the AMI, we get an AMI finally, e.g. `k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-07-18`.
 
-### [Prepare local environment](aws.md#prepare-local-environment)
+### [Prepare local environment](getting_started/aws.md#prepare-local-environment)
 
 Set up a few environment variables.
 
@@ -108,7 +108,7 @@ export NAME=example.k8s.local
 export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 ```
 
-### [Create cluster configuration](aws.md#create-cluster-configuration)
+### [Create cluster configuration](getting_started/aws.md#create-cluster-configuration)
 
 We will need to note which availability zones are available to us. AWS China (Beijing) Region only has two availability zones. It will have [the same problem][6], like other regions having less than three AZs, that there is no true HA support in two AZs. You can [add more master nodes](#add-more-master-nodes) to improve the reliability in one AZ.
 
@@ -135,7 +135,7 @@ kops create cluster \
     ${NAME}
 ```
 
-### [Customize Cluster Configuration](aws.md#prepare-local-environment)
+### [Customize Cluster Configuration](getting_started/aws.md#prepare-local-environment)
 
 Now we have a cluster configuration, we adjust the subnet config to reuse [shared subnets](run_in_existing_vpc.md#shared-subnets) by editing the description.
 
@@ -169,13 +169,13 @@ spec:
 
 Please note that this mirror *MIGHT BE* not suitable for some cases. It's can be replaced by any other registry mirror as long as it's compatible with the docker api.
 
-### [Build the Cluster](aws.md#build-the-cluster)
+### [Build the Cluster](getting_started/aws.md#build-the-cluster)
 
-### [Use the Cluster](aws.md#use-the-cluster)
+### [Use the Cluster](getting_started/aws.md#use-the-cluster)
 
-### [Delete the Cluster](aws.md#delete-the-cluster)
+### [Delete the Cluster](getting_started/aws.md#delete-the-cluster)
 
-## [What's next?](aws.md#whats-next)
+## [What's next?](getting_started/aws.md#whats-next)
 
 ### Add more master nodes
 

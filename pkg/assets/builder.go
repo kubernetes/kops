@@ -148,6 +148,17 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
+	if strings.HasPrefix(image, "kope/kops-controller:") {
+		// To use user-defined DNS Controller:
+		// 1. DOCKER_REGISTRY=[your docker hub repo] make kops-controller-push
+		// 2. export KOPSCONTROLLER_IMAGE=[your docker hub repo]
+		// 3. make kops and create/apply cluster
+		override := os.Getenv("KOPSCONTROLLER_IMAGE")
+		if override != "" {
+			image = override
+		}
+	}
+
 	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
 		containerProxy := strings.TrimRight(*a.AssetsLocation.ContainerProxy, "/")
 		normalized := image
@@ -306,7 +317,12 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 			hashURL := u.String() + ext
 			b, err := vfs.Context.ReadFile(hashURL, vfs.WithBackoff(backoff))
 			if err != nil {
-				klog.Infof("error reading hash file %q: %v", hashURL, err)
+				// Try to log without being too alarming - issue #7550
+				if ext == ".sha256" {
+					klog.V(2).Infof("unable to read new sha256 hash file (is this an older/unsupported kubernetes release?) %q: %v", hashURL, err)
+				} else {
+					klog.V(2).Infof("unable to read hash file %q: %v", hashURL, err)
+				}
 				continue
 			}
 			hashString := strings.TrimSpace(string(b))

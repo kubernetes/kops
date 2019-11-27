@@ -119,13 +119,13 @@ data:
 
 ### Creating a new cluster with IAM Authenticator on.
 
-* Create a cluster following the [AWS getting started guide](https://github.com/kubernetes/kops/blob/master/docs/aws.md)
+* Create a cluster following the [AWS getting started guide](getting_started/aws.md)
 * When you reach the "Customize Cluster Configuration" section of the guide modify the cluster spec and add the Authentication and Authorization configs to the YAML config.
 * Continue following the cluster creation guide to build the cluster.
     * :warning: When the cluster first comes up the aws-iam-authenticator PODs will be in a bad state.
 as it is trying to find the aws-iam-authenticator ConfigMap and we have not yet created it.
 * Once the cluster is up, you'll need to create an aws-iam-authenticator configMap on the cluster `kubectl apply -f aws-iam-authenticator_example-config.yaml`
-* Once the configuration is created you need to delete the initially created aws-iam-authenticator PODs, this will force new ones to come and and correctly find the ConfigMap.
+* Once the configuration is created you need to delete the initially created aws-iam-authenticator PODs, this will force new ones to come and correctly find the ConfigMap.
 ```
 kubectl get pods -n kube-system | grep aws-iam-authenticator | awk '{print $1}' | xargs kubectl delete pod -n kube-system
 ```
@@ -135,4 +135,6 @@ kubectl get pods -n kube-system | grep aws-iam-authenticator | awk '{print $1}' 
 * Create an aws-iam-authenticator configMap on the cluster `kubectl apply -f aws-iam-authenticator_example-config.yaml`
 * Edit the clusters configuration `kops edit cluster ${NAME}` and add the Authentication and Authorization configs to the YAML config.
 * Update the clusters configuration `kops update cluster ${CLUSTER_NAME} --yes`
+* Temporarily disable aws-iam-authenticator DaemonSet `kubectl patch daemonset -n kube-system aws-iam-authenticator -p '{"spec": {"template": {"spec": {"nodeSelector": {"disable-aws-iam-authenticator": "true"}}}}}'`
 * Perform a rolling update of the masters `kops rolling-update cluster ${CLUSTER_NAME} --instance-group-roles=Master --force --yes`
+* Re-enable aws-iam-authenticator DaemonSet `kubectl patch daemonset -n kube-system aws-iam-authenticator --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/disable-aws-iam-authenticator"}]'` 

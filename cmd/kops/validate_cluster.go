@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
@@ -46,6 +47,7 @@ func init() {
 
 type ValidateClusterOptions struct {
 	output string
+	wait   time.Duration
 }
 
 func (o *ValidateClusterOptions) InitDefaults() {
@@ -75,6 +77,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Output format. One of json|yaml|table.")
+	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "If set, will wait for cluster to be ready")
 
 	return cmd
 }
@@ -128,40 +131,61 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return nil, fmt.Errorf("Cannot build kubernetes api client for %q: %v", contextName, err)
 	}
 
-	result, err := validation.ValidateCluster(cluster, list, k8sClient)
+	timeout := time.Now().Add(options.wait)
+	pollInterval := 10 * time.Second
+
+	validator, err := validation.NewClusterValidator(cluster, list, k8sClient)
 	if err != nil {
-		return nil, fmt.Errorf("unexpected error during validation: %v", err)
+		return nil, fmt.Errorf("unexpected error creating validatior: %v", err)
 	}
 
-	switch options.output {
-	case OutputTable:
-		if err := validateClusterOutputTable(result, cluster, instanceGroups, out); err != nil {
-			return nil, err
-		}
-
-	case OutputYaml:
-		y, err := yaml.Marshal(result)
+	for {
+		result, err := validator.Validate()
 		if err != nil {
-			return nil, fmt.Errorf("unable to marshal YAML: %v", err)
-		}
-		if _, err := out.Write(y); err != nil {
-			return nil, fmt.Errorf("error writing to output: %v", err)
-		}
-
-	case OutputJSON:
-		j, err := json.Marshal(result)
-		if err != nil {
-			return nil, fmt.Errorf("unable to marshal JSON: %v", err)
-		}
-		if _, err := out.Write(j); err != nil {
-			return nil, fmt.Errorf("error writing to output: %v", err)
+			if time.Now().After(timeout) {
+				return nil, fmt.Errorf("unexpected error during validation: %v", err)
+			}
+			klog.Warningf("(will retry): unexpected error during validation: %v", err)
+			time.Sleep(pollInterval)
+			continue
 		}
 
-	default:
-		return nil, fmt.Errorf("Unknown output format: %q", options.output)
+		switch options.output {
+		case OutputTable:
+			if err := validateClusterOutputTable(result, cluster, instanceGroups, out); err != nil {
+				return nil, err
+			}
+
+		case OutputYaml:
+			y, err := yaml.Marshal(result)
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal YAML: %v", err)
+			}
+			if _, err := out.Write(y); err != nil {
+				return nil, fmt.Errorf("error writing to output: %v", err)
+			}
+
+		case OutputJSON:
+			j, err := json.Marshal(result)
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %v", err)
+			}
+			if _, err := out.Write(j); err != nil {
+				return nil, fmt.Errorf("error writing to output: %v", err)
+			}
+
+		default:
+			return nil, fmt.Errorf("Unknown output format: %q", options.output)
+		}
+
+		if options.wait == 0 || len(result.Failures) == 0 {
+			return result, nil
+		}
+
+		klog.Warningf("(will retry): cluster not yet healthy")
+		time.Sleep(pollInterval)
 	}
 
-	return result, nil
 }
 
 func validateClusterOutputTable(result *validation.ValidationCluster, cluster *api.Cluster, instanceGroups []api.InstanceGroup, out io.Writer) error {

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ set -o pipefail
 
 KOPS_ROOT=$(git rev-parse --show-toplevel)
 
-export API_OPTIONS="--verify-only" 
+export API_OPTIONS="--verify-only"
 if make apimachinery-codegen; then
 	echo "apimachinery is up to date"
 else

@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ type alwaysallowVerifier struct{}
 
 // NewVerifier creates and returns a new Verifier
 func NewVerifier() (server.Verifier, error) {
-	utils.Logger.Warn("note the alwaysallow authorizer performs no authoritive checks and should only be used in test environments")
+	utils.Logger.Warn("note the alwaysallow authorizer performs no authoritative checks and should only be used in test environments")
 
 	return &alwaysallowVerifier{}, nil
 }

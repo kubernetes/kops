@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,13 +49,17 @@ func NewVerifier() (server.Verifier, error) {
 
 // Verify is responsible for build a identification document
 func (a *awsNodeVerifier) VerifyIdentity(ctx context.Context) ([]byte, error) {
-	errs := make(chan error, 0)
-	doneCh := make(chan []byte, 0)
+	errs := make(chan error)
+	doneCh := make(chan []byte)
 
 	go func() {
 		encoded, err := func() ([]byte, error) {
 			// @step: create a metadata client
-			client := ec2metadata.New(session.New())
+			sess, err := session.NewSession()
+			if err != nil {
+				return []byte{}, err
+			}
+			client := ec2metadata.New(sess)
 
 			// @step: get the pkcs7 signature from the metadata service
 			signature, err := client.GetDynamicData("/instance-identity/pkcs7")

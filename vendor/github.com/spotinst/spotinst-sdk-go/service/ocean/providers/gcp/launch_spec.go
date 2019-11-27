@@ -19,6 +19,7 @@ type LaunchSpec struct {
 	Metadata    []*Metadata `json:"metadata,omitempty"`
 	Labels      []*Label    `json:"labels,omitempty"`
 	Taints      []*Taint    `json:"taints,omitempty"`
+	AutoScale   *AutoScale  `json:"autoScale,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -49,6 +50,23 @@ type Taint struct {
 	Key    *string `json:"key,omitempty"`
 	Value  *string `json:"value,omitempty"`
 	Effect *string `json:"effect,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AutoScale struct {
+	Headrooms []*AutoScaleHeadroom `json:"headrooms,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AutoScaleHeadroom struct {
+	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
+	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
+	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
+	NumOfUnits    *int `json:"numOfUnits,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -251,6 +269,34 @@ func (s *ServiceOp) DeleteLaunchSpec(ctx context.Context, input *DeleteLaunchSpe
 	return &DeleteLaunchSpecOutput{}, nil
 }
 
+func (s *ServiceOp) ImportOceanGKELaunchSpec(ctx context.Context, input *ImportOceanGKELaunchSpecInput) (*ImportOceanGKELaunchSpecOutput, error) {
+	r := client.NewRequest(http.MethodPost, "/ocean/gcp/k8s/launchSpec/import")
+
+	r.Params["oceanId"] = []string{spotinst.StringValue(input.OceanId)}
+	r.Params["nodePoolName"] = []string{spotinst.StringValue(input.NodePoolName)}
+
+	body := &ImportOceanGKELaunchSpecInput{}
+	r.Obj = body
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	ls, err := launchSpecsFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ImportOceanGKELaunchSpecOutput)
+	if len(ls) > 0 {
+		output.LaunchSpec = ls[0]
+	}
+
+	return output, nil
+}
+
 // endregion
 
 // region LaunchSpec
@@ -299,6 +345,13 @@ func (o *LaunchSpec) SetLabels(v []*Label) *LaunchSpec {
 func (o *LaunchSpec) SetTaints(v []*Taint) *LaunchSpec {
 	if o.Taints = v; o.Taints == nil {
 		o.nullFields = append(o.nullFields, "Taints")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetAutoScale(v *AutoScale) *LaunchSpec {
+	if o.AutoScale = v; o.AutoScale == nil {
+		o.nullFields = append(o.nullFields, "AutoScale")
 	}
 	return o
 }
@@ -354,6 +407,75 @@ func (o *Taint) SetValue(v *string) *Taint {
 func (o *Taint) SetEffect(v *string) *Taint {
 	if o.Effect = v; o.Effect == nil {
 		o.nullFields = append(o.nullFields, "Effect")
+	}
+	return o
+}
+
+// endregion
+
+// region Import
+
+type ImportOceanGKELaunchSpecInput struct {
+	OceanId      *string `json:"oceanId,omitempty"`
+	NodePoolName *string `json:"nodePoolName,omitempty"`
+}
+
+// TODO: Might use LaunchSpec directly
+type ImportOceanGKELaunchSpecOutput struct {
+	LaunchSpec *LaunchSpec `json:"launchSpec,omitempty"`
+}
+
+// endregion
+
+//region AutoScale
+
+func (o AutoScale) MarshalJSON() ([]byte, error) {
+	type noMethod AutoScale
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AutoScale) SetHeadrooms(v []*AutoScaleHeadroom) *AutoScale {
+	if o.Headrooms = v; o.Headrooms == nil {
+		o.nullFields = append(o.nullFields, "Headrooms")
+	}
+	return o
+}
+
+//endregion
+
+// region AutoScaleHeadroom
+
+func (o AutoScaleHeadroom) MarshalJSON() ([]byte, error) {
+	type noMethod AutoScaleHeadroom
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AutoScaleHeadroom) SetCPUPerUnit(v *int) *AutoScaleHeadroom {
+	if o.CPUPerUnit = v; o.CPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "CPUPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetGPUPerUnit(v *int) *AutoScaleHeadroom {
+	if o.GPUPerUnit = v; o.GPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "GPUPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetMemoryPerUnit(v *int) *AutoScaleHeadroom {
+	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
+		o.nullFields = append(o.nullFields, "MemoryPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetNumOfUnits(v *int) *AutoScaleHeadroom {
+	if o.NumOfUnits = v; o.NumOfUnits == nil {
+		o.nullFields = append(o.nullFields, "NumOfUnits")
 	}
 	return o
 }

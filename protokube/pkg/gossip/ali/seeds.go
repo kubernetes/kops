@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -62,9 +62,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 
 	for _, instance := range instances {
 		// TODO: Multiple IP addresses?
-		for _, ip := range instance.VpcAttributes.PrivateIpAddress.IpAddress {
-			seeds = append(seeds, ip)
-		}
+		seeds = append(seeds, instance.VpcAttributes.PrivateIpAddress.IpAddress...)
 	}
 
 	return seeds, nil

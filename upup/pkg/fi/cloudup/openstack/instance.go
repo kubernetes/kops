@@ -32,6 +32,9 @@ import (
 const (
 	INSTANCE_GROUP_GENERATION = "ig_generation"
 	CLUSTER_GENERATION        = "cluster_generation"
+	OS_ANNOTATION             = "openstack.kops.io/"
+	BOOT_FROM_VOLUME          = "osVolumeBoot"
+	BOOT_VOLUME_SIZE          = "osVolumeSize"
 )
 
 // floatingBackoff is the backoff strategy for listing openstack floatingips
@@ -39,7 +42,7 @@ var floatingBackoff = wait.Backoff{
 	Duration: time.Second,
 	Factor:   1.5,
 	Jitter:   0.1,
-	Steps:    10,
+	Steps:    20,
 }
 
 func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
@@ -78,7 +81,11 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 
 		for _, addrList := range addresses {
 			for _, props := range addrList {
-				if props.IPType == "floating" {
+				if c.floatingEnabled {
+					if props.IPType == "floating" {
+						result = append(result, fi.String(props.Addr))
+					}
+				} else {
 					result = append(result, fi.String(props.Addr))
 				}
 			}

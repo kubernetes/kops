@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -77,6 +77,8 @@ func TestHighAvailabilityGCE(t *testing.T) {
 func TestComplex(t *testing.T) {
 	runTestAWS(t, "complex.example.com", "complex", "v1alpha2", false, 1, true, false, nil)
 	runTestAWS(t, "complex.example.com", "complex", "legacy-v1alpha2", false, 1, true, false, nil)
+
+	runTestCloudformation(t, "complex.example.com", "complex", "v1alpha2", false, nil)
 }
 
 // TestCrossZone tests that the cross zone setting on the API ELB is set properly
@@ -330,6 +332,12 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 
 		sort.Strings(expectedDataFilenames)
 		if !reflect.DeepEqual(actualDataFilenames, expectedDataFilenames) {
+			for i := 0; i < len(actualDataFilenames) && i < len(expectedDataFilenames); i++ {
+				if actualDataFilenames[i] != expectedDataFilenames[i] {
+					t.Errorf("diff @%d: %q vs %q", i, actualDataFilenames[i], expectedDataFilenames[i])
+					break
+				}
+			}
 			t.Fatalf("unexpected data files.  actual=%q, expected=%q", actualDataFilenames, expectedDataFilenames)
 		}
 
@@ -477,6 +485,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_cluster-name",
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_startup-script",
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_ssh-keys",
+		"google_compute_instance_template_nodes-" + gce.SafeClusterName(clusterName) + "_metadata_kops-k8s-io-instance-group-name",
 	}
 
 	for i := 0; i < zones; i++ {
@@ -486,6 +495,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 		expectedFilenames = append(expectedFilenames, prefix+"cluster-name")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
 		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
+		expectedFilenames = append(expectedFilenames, prefix+"kops-k8s-io-instance-group-name")
 	}
 
 	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil, nil)

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -244,9 +244,8 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
-		} else {
-			return nil, fmt.Errorf("unable to read bundle %q: %v", p, err)
 		}
+		return nil, fmt.Errorf("unable to read bundle %q: %v", p, err)
 	}
 
 	o, format, err := c.parseKeysetYaml(data)
