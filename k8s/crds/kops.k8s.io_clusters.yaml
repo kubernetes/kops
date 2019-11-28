@@ -2870,6 +2870,25 @@ spec:
               description: Project is the cloud project we should use, required on
                 GCE
               type: string
+            rollingUpdate:
+              description: RollingUpdate defines the default rolling-update settings
+                for instance groups
+              properties:
+                maxUnavailable:
+                  anyOf:
+                  - type: string
+                  - type: integer
+                  description: 'MaxUnavailable is the maximum number of nodes that
+                    can be unavailable during the update. The value can be an absolute
+                    number (for example 5) or a percentage of desired nodes (for example
+                    10%). The absolute number is calculated from a percentage by rounding
+                    down. A value of 0 disables rolling updates. Defaults to 1. Example:
+                    when this is set to 30%, the InstanceGroup can be scaled down
+                    to 70% of desired nodes immediately when the rolling update starts.
+                    Once new nodes are ready, more old nodes can be drained, ensuring
+                    that the total number of nodes available at all times during the
+                    update is at least 70% of desired nodes.'
+              type: object
             secretStore:
               description: SecretStore is the VFS path to where secrets are stored
               type: string
