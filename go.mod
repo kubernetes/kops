@@ -82,7 +82,7 @@ require (
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/client9/misspell v0.0.0-20170928000206-9ce5d979ffda
 	github.com/coreos/etcd v3.3.13+incompatible
-	github.com/denverdino/aliyungo v0.0.0-20180316152028-2581e433b270
+	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 	github.com/digitalocean/godo v1.19.0
 	github.com/docker/engine-api v0.0.0-20160509170047-dea108d3aa0c
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
