@@ -20,15 +20,16 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/controller/nodeipam/ipam"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 	"text/template"
+
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/controller/nodeipam/ipam"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
