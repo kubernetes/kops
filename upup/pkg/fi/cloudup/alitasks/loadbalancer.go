@@ -36,6 +36,7 @@ type LoadBalancer struct {
 	Name                *string
 	LoadbalancerId      *string
 	AddressType         *string
+	VSwitchId           *string
 	LoadBalancerAddress *string
 	Lifecycle           *fi.Lifecycle
 	Tags                map[string]string
@@ -63,21 +64,25 @@ func (l *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		return nil, fmt.Errorf("error finding LoadBalancers: %v", err)
 	}
 
-	// Don't exist loadbalancer with specified ClusterTags or Name.
+	// There's no loadbalancer with specified ClusterTags or Name.
 	if len(responseLoadBalancers) == 0 {
+		klog.V(4).Infof("can't find loadbalancer with name: %q", *l.Name)
 		return nil, nil
 	}
 	if len(responseLoadBalancers) > 1 {
-		klog.V(4).Infof("The number of specified loadbalancer with the same name exceeds 1, loadbalancerName:%q", *l.Name)
+		return nil, fmt.Errorf("more than 1 loadbalancer is found with name: %q", *l.Name)
 	}
 
 	klog.V(2).Infof("found matching LoadBalancer: %q", *l.Name)
+	lb := responseLoadBalancers[0]
 
-	actual := &LoadBalancer{}
-	actual.Name = fi.String(responseLoadBalancers[0].LoadBalancerName)
-	actual.AddressType = fi.String(string(responseLoadBalancers[0].AddressType))
-	actual.LoadbalancerId = fi.String(responseLoadBalancers[0].LoadBalancerId)
-	actual.LoadBalancerAddress = fi.String(responseLoadBalancers[0].Address)
+	actual := &LoadBalancer{
+		Name:                fi.String(lb.LoadBalancerName),
+		AddressType:         fi.String(string(lb.AddressType)),
+		LoadbalancerId:      fi.String(lb.LoadBalancerId),
+		LoadBalancerAddress: fi.String(lb.Address),
+		VSwitchId:           fi.String(lb.VSwitchId),
+	}
 
 	describeTagsArgs := &slb.DescribeTagsArgs{
 		RegionId:       common.Region(cloud.Region()),
@@ -165,6 +170,7 @@ func (_ *LoadBalancer) RenderALI(t *aliup.ALIAPITarget, a, e, changes *LoadBalan
 			RegionId:         common.Region(t.Cloud.Region()),
 			LoadBalancerName: fi.StringValue(e.Name),
 			AddressType:      slb.AddressType(fi.StringValue(e.AddressType)),
+			VSwitchId:        fi.StringValue(e.VSwitchId),
 		}
 		response, err := t.Cloud.SlbClient().CreateLoadBalancer(createLoadBalancerArgs)
 		if err != nil {
