@@ -4,8 +4,10 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -49,6 +51,12 @@ var (
 			"slb": "https://slb.eu-central-1.aliyuncs.com",
 			"rds": "https://rds.eu-central-1.aliyuncs.com",
 			"vpc": "https://vpc.eu-central-1.aliyuncs.com",
+		},
+		EUWest1: {
+			"ecs": "https://ecs.eu-west-1.aliyuncs.com",
+			"slb": "https://slb.eu-west-1.aliyuncs.com",
+			"rds": "https://rds.eu-west-1.aliyuncs.com",
+			"vpc": "https://vpc.eu-west-1.aliyuncs.com",
 		},
 		Zhangjiakou: {
 			"ecs": "https://ecs.cn-zhangjiakou.aliyuncs.com",
@@ -140,7 +148,6 @@ func (client *LocationClient) DescribeOpenAPIEndpoint(region Region, serviceCode
 	if endpoint := getProductRegionEndpoint(region, serviceCode); endpoint != "" {
 		return endpoint
 	}
-
 	defaultProtocols := HTTP_PROTOCOL
 
 	args := &DescribeEndpointsArgs{
@@ -149,8 +156,18 @@ func (client *LocationClient) DescribeOpenAPIEndpoint(region Region, serviceCode
 		Type:        "openAPI",
 	}
 
-	endpoint, err := client.DescribeEndpoints(args)
-	if err != nil || len(endpoint.Endpoints.Endpoint) <= 0 {
+	var endpoint *DescribeEndpointsResponse
+	var err error
+	for index := 0; index < 5; index++ {
+		endpoint, err = client.DescribeEndpoints(args)
+		if err == nil && endpoint != nil && len(endpoint.Endpoints.Endpoint) > 0 {
+			break
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	if err != nil || endpoint == nil || len(endpoint.Endpoints.Endpoint) <= 0 {
+		log.Printf("aliyungo: can not get endpoint from service, use default. endpoint=[%v], error=[%v]\n", endpoint, err)
 		return ""
 	}
 
@@ -163,7 +180,7 @@ func (client *LocationClient) DescribeOpenAPIEndpoint(region Region, serviceCode
 
 	ep := fmt.Sprintf("%s://%s", defaultProtocols, endpoint.Endpoints.Endpoint[0].Endpoint)
 
-	//setProductRegionEndpoint(region, serviceCode, ep)
+	setProductRegionEndpoint(region, serviceCode, ep)
 	return ep
 }
 

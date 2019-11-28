@@ -1336,6 +1336,17 @@
             <Product><ProductName>Slb</ProductName><DomainName>slb.eu-central-1.aliyuncs.com</DomainName></Product>
         </Products>
     </Endpoint>
+    <Endpoint name="eu-west-1">
+        <RegionIds><RegionId>eu-west-1</RegionId></RegionIds>
+        <Products>
+            <Product><ProductName>Rds</ProductName><DomainName>rds.eu-west-1.aliyuncs.com</DomainName></Product>
+            <Product><ProductName>Ecs</ProductName><DomainName>ecs.eu-west-1.aliyuncs.com</DomainName></Product>
+            <Product><ProductName>Vpc</ProductName><DomainName>vpc.eu-west-1.aliyuncs.com</DomainName></Product>
+            <Product><ProductName>Kms</ProductName><DomainName>kms.eu-west-1.aliyuncs.com</DomainName></Product>
+            <Product><ProductName>Cms</ProductName><DomainName>metrics.cn-hangzhou.aliyuncs.com</DomainName></Product>
+            <Product><ProductName>Slb</ProductName><DomainName>slb.eu-west-1.aliyuncs.com</DomainName></Product>
+        </Products>
+    </Endpoint>
     <Endpoint name="cn-zhangjiakou">
         <RegionIds><RegionId>cn-zhangjiakou</RegionId></RegionIds>
         <Products>

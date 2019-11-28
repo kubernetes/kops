@@ -81,4 +81,7 @@ type RamClientInterface interface {
 	ClearAccountAlias() (RamCommonResponse, error)
 	SetPasswordPolicy(passwordPolicy PasswordPolicyRequest) (PasswordPolicyResponse, error)
 	GetPasswordPolicy() (PasswordPolicyResponse, error)
+
+	// Common Client Methods
+	SetUserAgent(userAgent string)
 }
