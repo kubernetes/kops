@@ -21,12 +21,11 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/kops/pkg/validation"
-
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
