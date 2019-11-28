@@ -1222,6 +1222,9 @@ func autoConvert_v1alpha2_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
+	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
+	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
+	out.TyphaReplicas = in.TyphaReplicas
 	return nil
 }
 
@@ -1240,6 +1243,9 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *ko
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
+	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
+	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
+	out.TyphaReplicas = in.TyphaReplicas
 	return nil
 }
 
