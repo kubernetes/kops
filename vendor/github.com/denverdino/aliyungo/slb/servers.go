@@ -2,7 +2,6 @@ package slb
 
 import (
 	"encoding/json"
-
 	"github.com/denverdino/aliyungo/common"
 )
 
@@ -63,7 +62,7 @@ func (client *Client) AddBackendServers(loadBalancerId string, backendServers []
 
 type RemoveBackendServersArgs struct {
 	LoadBalancerId string
-	BackendServers []string
+	BackendServers string
 }
 
 type RemoveBackendServersResponse struct {
@@ -77,12 +76,15 @@ type RemoveBackendServersResponse struct {
 // RemoveBackendServers Remove backend servers
 //
 // You can read doc at http://docs.aliyun.com/#/pub/slb/api-reference/api-related-backendserver&RemoveBackendServers
-func (client *Client) RemoveBackendServers(loadBalancerId string, backendServers []string) (result []BackendServerType, err error) {
+func (client *Client) RemoveBackendServers(loadBalancerId string, backendServers []BackendServerType) (result []BackendServerType, err error) {
+	bytes, _ := json.Marshal(backendServers)
+
 	args := &RemoveBackendServersArgs{
 		LoadBalancerId: loadBalancerId,
-		BackendServers: backendServers,
+		BackendServers: string(bytes),
 	}
 	response := &RemoveBackendServersResponse{}
+
 	err = client.Invoke("RemoveBackendServers", args, response)
 	if err != nil {
 		return nil, err

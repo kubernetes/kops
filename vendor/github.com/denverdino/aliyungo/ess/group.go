@@ -1,8 +1,9 @@
 package ess
 
 import (
-	"github.com/denverdino/aliyungo/common"
 	"time"
+
+	"github.com/denverdino/aliyungo/common"
 )
 
 type LifecycleState string
@@ -16,6 +17,14 @@ const (
 	Removing  = LifecycleState("Removing")
 )
 
+type MultiAZPolicy string
+
+const (
+	MultiAZPolicyPriority      = MultiAZPolicy("PRIORITY")
+	MultiAZPolicyCostOptimized = MultiAZPolicy("COST_OPTIMIZED")
+	MultiAZPolicyBalance       = MultiAZPolicy("BALANCE")
+)
+
 type CreateScalingGroupArgs struct {
 	RegionId         common.Region
 	ScalingGroupName string
@@ -26,6 +35,7 @@ type CreateScalingGroupArgs struct {
 	// NOTE: Set MinSize, MaxSize and DefaultCooldown type to int pointer to distinguish zero value from unset value.
 	MinSize         *int
 	MaxSize         *int
+	MultiAZPolicy   MultiAZPolicy
 	DefaultCooldown *int
 	RemovalPolicy   common.FlattenArray
 	DBInstanceIds   string

@@ -15,6 +15,7 @@ import (
 	"reflect"
 
 	"github.com/denverdino/aliyungo/util"
+	"os"
 )
 
 const (
@@ -43,7 +44,7 @@ const (
 	VSWITCH_CIDR_BLOCK = "vswitch-cidr-block"
 	VSWITCH_ID         = "vswitch-id"
 	ZONE               = "zone-id"
-	RAM_SECURITY       = "Ram/security-credentials"
+	RAM_SECURITY       = "ram/security-credentials"
 )
 
 type IMetaDataRequest interface {
@@ -318,7 +319,11 @@ func (vpc *MetaDataRequest) Url() (string, error) {
 	if vpc.resource == "" {
 		return "", errors.New("the resource you want to visit must not be nil!")
 	}
-	r := fmt.Sprintf("%s/%s/%s/%s", ENDPOINT, vpc.version, vpc.resourceType, vpc.resource)
+	endpoint := os.Getenv("METADATA_ENDPOINT")
+	if endpoint == "" {
+		endpoint = ENDPOINT
+	}
+	r := fmt.Sprintf("%s/%s/%s/%s", endpoint, vpc.version, vpc.resourceType, vpc.resource)
 	if vpc.subResource == "" {
 		return r, nil
 	}
