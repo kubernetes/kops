@@ -308,7 +308,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				if t.HasTag("_jessie") {
 					args = []string{"dpkg", "-i"}
 				} else {
-					args = []string{"apt-get", "install", "--yes"}
+					args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
 					env = append(env, "DEBIAN_FRONTEND=noninteractive")
 				}
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
@@ -329,7 +329,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			var args []string
 			env := os.Environ()
 			if t.HasTag(tags.TagOSFamilyDebian) {
-				args = []string{"apt-get", "install", "--yes", e.Name}
+				args = []string{"apt-get", "install", "--yes", "--no-install-recommends", e.Name}
 				env = append(env, "DEBIAN_FRONTEND=noninteractive")
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
 				args = []string{"/usr/bin/yum", "install", "-y", e.Name}
