@@ -801,7 +801,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "186f2f2c570f37b363102e6b879073db6dec671d",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "pigz"},
 	},
 
 	// 18.09.9 - Debian Buster
@@ -825,7 +825,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "365e4a7541ce2cf3c3036ea2a9bf6b40a50893a8",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "pigz"},
 	},
 
 	// 18.09.9 - Xenial
@@ -873,7 +873,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "f4c941807310e3fa470dddfb068d599174a3daec",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "pigz"},
 	},
 
 	// 18.09.9 - CentOS / Rhel7
@@ -952,7 +952,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "186f2f2c570f37b363102e6b879073db6dec671d",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "pigz"},
 	},
 
 	// 19.03.4 - Debian Buster
@@ -976,7 +976,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "365e4a7541ce2cf3c3036ea2a9bf6b40a50893a8",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "pigz"},
 	},
 
 	// 19.03.4 - Xenial
@@ -1024,7 +1024,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "f4c941807310e3fa470dddfb068d599174a3daec",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "pigz"},
 	},
 
 	// 19.03.4 - CentOS / Rhel7
