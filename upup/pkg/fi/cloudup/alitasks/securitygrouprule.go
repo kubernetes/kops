@@ -18,6 +18,7 @@ package alitasks
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
@@ -47,6 +48,13 @@ func (s *SecurityGroupRule) CompareWithID() *string {
 	return s.Name
 }
 
+func equalsIgnoreCase(a, b string) bool {
+	if strings.ToLower(a) == strings.ToLower(b) {
+		return true
+	}
+	return false
+}
+
 func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	if s.SecurityGroup == nil || s.SecurityGroup.SecurityGroupId == nil {
 		klog.V(4).Infof("SecurityGroup / SecurityGroupId not found for %s, skipping Find", fi.StringValue(s.Name))
@@ -74,14 +82,14 @@ func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	}
 
 	if len(describeResponse.Permissions.Permission) == 0 {
+		klog.V(2).Infof("can't find any security rule in security group: %q", fi.StringValue(s.SecurityGroup.SecurityGroupId))
 		return nil, nil
 	}
 
 	actual := &SecurityGroupRule{}
 	// Find securityGroupRule with specified ipProtocol, securityGroupId,SourceGroupId
 	for _, securityGroupRule := range describeResponse.Permissions.Permission {
-
-		if securityGroupRule.IpProtocol != ecs.IpProtocol(fi.StringValue(s.IpProtocol)) {
+		if !equalsIgnoreCase(string(securityGroupRule.IpProtocol), fi.StringValue(s.IpProtocol)) {
 			continue
 		}
 		if s.SourceGroup != nil && securityGroupRule.SourceGroupId != fi.StringValue(s.SourceGroup.SecurityGroupId) {
@@ -94,11 +102,12 @@ func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 			continue
 		}
 
-		klog.V(2).Infof("found matching SecurityGroupRule of securityGroup: %q", *s.SecurityGroup.SecurityGroupId)
+		klog.V(2).Infof("found matching SecurityGroupRule of securityGroup: %q", fi.StringValue(s.SecurityGroup.SecurityGroupId))
 
 		actual.PortRange = fi.String(securityGroupRule.PortRange)
 		actual.SourceCidrIp = fi.String(securityGroupRule.SourceCidrIp)
-		actual.IpProtocol = fi.String(string(securityGroupRule.IpProtocol))
+		actual.IpProtocol = fi.String(strings.ToLower(string(securityGroupRule.IpProtocol)))
+
 		// Ignore "system" fields
 		actual.Name = s.Name
 		actual.SecurityGroup = s.SecurityGroup
@@ -107,9 +116,7 @@ func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		actual.SourceGroup = s.SourceGroup
 
 		return actual, nil
-
 	}
-
 	return nil, nil
 }
 
@@ -176,7 +183,6 @@ func (_ *SecurityGroupRule) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Secu
 				return fmt.Errorf("error creating securityGroupRule: %v", err)
 			}
 		}
-
 	}
 	return nil
 }
