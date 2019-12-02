@@ -47,7 +47,6 @@ func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster, ma
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-	setUpCloud(mockcloud)
 
 	cluster := &kopsapi.Cluster{}
 	cluster.Name = "test.k8s.local"
@@ -65,57 +64,9 @@ func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster, ma
 		ValidateSuccessDuration: 5 * time.Millisecond,
 	}
 
-	return c, mockcloud, cluster, getGroups(k8sClient)
-}
+	groups := getGroups(k8sClient, mockcloud)
 
-func setUpCloud(cloud awsup.AWSCloud) {
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("node-1"),
-		DesiredCapacity:      aws.Int64(3),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("node-1"),
-		InstanceIds:          []*string{aws.String("node-1a"), aws.String("node-1b"), aws.String("node-1c")},
-	})
-
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("node-2"),
-		DesiredCapacity:      aws.Int64(3),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("node-2"),
-		InstanceIds:          []*string{aws.String("node-2a"), aws.String("node-2b"), aws.String("node-2c")},
-	})
-
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("master-1"),
-		DesiredCapacity:      aws.Int64(2),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("master-1"),
-		InstanceIds:          []*string{aws.String("master-1a"), aws.String("master-1b")},
-	})
-
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("bastion-1"),
-		DesiredCapacity:      aws.Int64(1),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("bastion-1"),
-		InstanceIds:          []*string{aws.String("bastion-1a")},
-	})
+	return c, mockcloud, cluster, groups
 }
 
 type successfulClusterValidator struct{}
@@ -153,7 +104,7 @@ func (v *assertNotCalledClusterValidator) Validate() (*validation.ValidationClus
 	return nil, errors.New("validator called unexpectedly")
 }
 
-func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient *fake.Clientset, name string, role kopsapi.InstanceGroupRole, count int) {
+func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient *fake.Clientset, cloud awsup.AWSCloud, name string, role kopsapi.InstanceGroupRole, count int) {
 	groups[name] = &cloudinstances.CloudInstanceGroup{
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
@@ -164,6 +115,14 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient *
 			},
 		},
 	}
+	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
+		AutoScalingGroupName: aws.String(name),
+		DesiredCapacity:      aws.Int64(int64(count)),
+		MinSize:              aws.Int64(1),
+		MaxSize:              aws.Int64(5),
+	})
+
+	var instanceIds []*string
 	for i := 0; i < count; i++ {
 		id := name + string('a'+i)
 		var node *v1.Node
@@ -177,15 +136,20 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient *
 			ID:   id,
 			Node: node,
 		})
+		instanceIds = append(instanceIds, aws.String(id))
 	}
+	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
+		AutoScalingGroupName: aws.String(name),
+		InstanceIds:          instanceIds,
+	})
 }
 
-func getGroups(k8sClient *fake.Clientset) map[string]*cloudinstances.CloudInstanceGroup {
+func getGroups(k8sClient *fake.Clientset, cloud awsup.AWSCloud) map[string]*cloudinstances.CloudInstanceGroup {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroup(groups, k8sClient, "node-1", kopsapi.InstanceGroupRoleNode, 3)
-	makeGroup(groups, k8sClient, "node-2", kopsapi.InstanceGroupRoleNode, 3)
-	makeGroup(groups, k8sClient, "master-1", kopsapi.InstanceGroupRoleMaster, 2)
-	makeGroup(groups, k8sClient, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1)
+	makeGroup(groups, k8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3)
+	makeGroup(groups, k8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3)
+	makeGroup(groups, k8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2)
+	makeGroup(groups, k8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1)
 	return groups
 }
 
