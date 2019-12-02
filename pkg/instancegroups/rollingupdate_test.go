@@ -153,19 +153,27 @@ func (v *assertNotCalledClusterValidator) Validate() (*validation.ValidationClus
 	return nil, errors.New("validator called unexpectedly")
 }
 
-func makeGroupMembers(k8sClient *fake.Clientset, group *cloudinstances.CloudInstanceGroup, count int) {
-	name := group.InstanceGroup.Name
-	group.Ready = nil
+func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient *fake.Clientset, name string, role kopsapi.InstanceGroupRole, count int) {
+	groups[name] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: v1meta.ObjectMeta{
+				Name: name,
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: role,
+			},
+		},
+	}
 	for i := 0; i < count; i++ {
 		id := name + string('a'+i)
 		var node *v1.Node
-		if group.InstanceGroup.Spec.Role != kopsapi.InstanceGroupRoleBastion {
+		if role != kopsapi.InstanceGroupRoleBastion {
 			node = &v1.Node{
 				ObjectMeta: v1meta.ObjectMeta{Name: id + ".local"},
 			}
 			_ = k8sClient.Tracker().Add(node)
 		}
-		group.Ready = append(group.Ready, &cloudinstances.CloudInstanceGroupMember{
+		groups[name].Ready = append(groups[name].Ready, &cloudinstances.CloudInstanceGroupMember{
 			ID:   id,
 			Node: node,
 		})
@@ -174,50 +182,10 @@ func makeGroupMembers(k8sClient *fake.Clientset, group *cloudinstances.CloudInst
 
 func getGroups(k8sClient *fake.Clientset) map[string]*cloudinstances.CloudInstanceGroup {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "node-1",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
-			},
-		},
-	}
-	makeGroupMembers(k8sClient, groups["node-1"], 3)
-	groups["node-2"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "node-2",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
-			},
-		},
-	}
-	makeGroupMembers(k8sClient, groups["node-2"], 3)
-	groups["master-1"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "master-1",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleMaster,
-			},
-		},
-	}
-	makeGroupMembers(k8sClient, groups["master-1"], 2)
-	groups["bastion-1"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "bastion-1",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleBastion,
-			},
-		},
-	}
-	makeGroupMembers(k8sClient, groups["bastion-1"], 1)
+	makeGroup(groups, k8sClient, "node-1", kopsapi.InstanceGroupRoleNode, 3)
+	makeGroup(groups, k8sClient, "node-2", kopsapi.InstanceGroupRoleNode, 3)
+	makeGroup(groups, k8sClient, "master-1", kopsapi.InstanceGroupRoleMaster, 2)
+	makeGroup(groups, k8sClient, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1)
 	return groups
 }
 
