@@ -79,13 +79,13 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
-		return fmt.Errorf("Could not create startup script for instance group %s: %v", ig.Name, err)
+		return fmt.Errorf("could not create startup script for instance group %s: %v", ig.Name, err)
 	}
 	if startupScript != nil {
 		// var userData bytes.Buffer
 		startupStr, err := startupScript.AsString()
 		if err != nil {
-			return fmt.Errorf("Could not create startup script for instance group %s: %v", ig.Name, err)
+			return fmt.Errorf("could not create startup script for instance group %s: %v", ig.Name, err)
 		}
 		igUserData = fi.String(startupStr)
 	}
