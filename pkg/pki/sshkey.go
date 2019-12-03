@@ -114,7 +114,7 @@ func toDER(pubkey ssh.PublicKey) ([]byte, error) {
 	//	cryptoKey = dsaPublicKey
 
 	default:
-		return nil, fmt.Errorf("Unexpected type of SSH key (%q); AWS can only import RSA keys", typeName)
+		return nil, fmt.Errorf("unexpected type of SSH key (%q); AWS can only import RSA keys", typeName)
 	}
 
 	der, err := x509.MarshalPKIXPublicKey(cryptoKey)
