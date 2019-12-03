@@ -300,6 +300,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.ContainerdOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeDnsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})

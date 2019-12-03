@@ -54,7 +54,9 @@ type Package struct {
 }
 
 const (
-	localPackageDir = "/var/cache/nodeup/packages/"
+	localPackageDir       = "/var/cache/nodeup/packages/"
+	containerdPackageName = "containerd.io"
+	dockerPackageName     = "docker-ce"
 )
 
 var _ fi.HasDependencies = &Package{}
@@ -75,6 +77,17 @@ func (e *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		for _, v := range tasks {
 			if vp, ok := v.(*Package); ok {
 				if vp.isOSPackage() {
+					deps = append(deps, v)
+				}
+			}
+		}
+	}
+
+	// Docker should wait for containerd to be installed
+	if e.Name == dockerPackageName {
+		for _, v := range tasks {
+			if vp, ok := v.(*Package); ok {
+				if vp.Name == containerdPackageName {
 					deps = append(deps, v)
 				}
 			}
