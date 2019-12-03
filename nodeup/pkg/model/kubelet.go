@@ -239,6 +239,13 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --experimental-mounter-path=" + path.Join(containerizedMounterHome, "mounter")
 	}
 
+	// Add container runtime flags
+	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+		flags += " --container-runtime=remote"
+		flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+		flags += " --runtime-request-timeout=15m"
+	}
+
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 	// Makes kubelet read /root/.docker/config.json properly
 	sysconfig = sysconfig + "HOME=\"/root" + "\"\n"

@@ -47,6 +47,11 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	docker := clusterSpec.Docker
 
+	// Container runtime is not Docker, should not install
+	if clusterSpec.ContainerRuntime != "docker" {
+		docker.SkipInstall = true
+	}
+
 	if fi.StringValue(clusterSpec.Docker.Version) == "" {
 		if clusterSpec.KubernetesVersion == "" {
 			return fmt.Errorf("KubernetesVersion is required")
