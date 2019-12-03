@@ -591,25 +591,30 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 	if g.MixedInstancesPolicy != nil {
 		if g.MixedInstancesPolicy.LaunchTemplate != nil {
 			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
-				// honestly!!
-				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
-				request := &ec2.DescribeLaunchTemplateVersionsInput{
-					LaunchTemplateName: &name,
-				}
-
-				versions, err := c.EC2().DescribeLaunchTemplateVersions(request)
-				if err != nil {
-					return "", fmt.Errorf("error finding versions for launch template: %v", err)
-				}
-
 				var version string
-				for _, v := range versions.LaunchTemplateVersions {
-					if *v.DefaultVersion {
-						version = strconv.FormatInt(*v.VersionNumber, 10)
-						break
+				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
+				//See what version the ASG is set to use
+				mixedVersion := aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
+				//Correctly Handle Default and Latest Versions
+				if mixedVersion == "$Default" || mixedVersion == "$Latest" {
+					request := &ec2.DescribeLaunchTemplatesInput{
+						LaunchTemplateNames: []*string{&name},
 					}
+					dltResponse, err := c.EC2().DescribeLaunchTemplates(request)
+					if err != nil {
+						return "", fmt.Errorf("error describing launch templates: %v", err)
+					}
+					launchTemplate := dltResponse.LaunchTemplates[0]
+					if mixedVersion == "$Default" {
+						version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
+					} else {
+						version = strconv.FormatInt(*launchTemplate.LatestVersionNumber, 10)
+					}
+				} else {
+					version = mixedVersion
 				}
-
+				klog.V(4).Infof("Launch Template Version Specified By ASG: %v", mixedVersion)
+				klog.V(4).Infof("Luanch Template Version we are using for compare: %v", version)
 				if name != "" {
 					launchTemplate := name + ":" + version
 					return launchTemplate, nil
