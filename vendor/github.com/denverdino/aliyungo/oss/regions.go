@@ -27,6 +27,7 @@ const (
 	MEEast1 = Region("oss-me-east-1")
 
 	EUCentral1 = Region("oss-eu-central-1")
+	EUWest1    = Region("oss-eu-west-1")
 
 	DefaultRegion = Hangzhou
 )

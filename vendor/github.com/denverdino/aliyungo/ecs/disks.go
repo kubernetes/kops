@@ -141,6 +141,7 @@ type CreateDiskArgs struct {
 	Size         int
 	SnapshotId   string
 	ClientToken  string
+	KMSKeyID     string
 }
 
 type CreateDisksResponse struct {

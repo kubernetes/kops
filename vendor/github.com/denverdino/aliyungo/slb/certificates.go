@@ -106,3 +106,15 @@ func (client *Client) DescribeServerCertificatesArgs(regionId common.Region, ser
 	}
 	return response.ServerCertificates.ServerCertificate, err
 }
+
+// DescribeServerCertificates Describe server certificates
+//
+// You can read doc at http://docs.aliyun.com/#pub/slb/api-reference/api-servercertificate&DescribeServerCertificates
+func (client *Client) DescribeServerCertificates(args *DescribeServerCertificatesArgs) (response *DescribeServerCertificatesResponse, err error) {
+	response = &DescribeServerCertificatesResponse{}
+	err = client.Invoke("DescribeServerCertificates", args, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, err
+}

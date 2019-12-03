@@ -28,6 +28,7 @@ const (
 	MEEast1 = Region("me-east-1")
 
 	EUCentral1 = Region("eu-central-1")
+	EUWest1    = Region("eu-west-1")
 
 	ShenZhenFinance = Region("cn-shenzhen-finance-1")
 	ShanghaiFinance = Region("cn-shanghai-finance-1")
@@ -39,6 +40,16 @@ var ValidRegions = []Region{
 	APNorthEast1, APSouthEast1, APSouthEast2, APSouthEast3, APSouthEast5,
 	APSouth1,
 	MEEast1,
-	EUCentral1,
+	EUCentral1, EUWest1,
 	ShenZhenFinance, ShanghaiFinance,
+}
+
+// IsValidRegion checks if r is an Ali supported region.
+func IsValidRegion(r string) bool {
+	for _, v := range ValidRegions {
+		if r == string(v) {
+			return true
+		}
+	}
+	return false
 }

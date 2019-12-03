@@ -57,12 +57,14 @@ type Owner struct {
 // Options struct
 //
 type Options struct {
-	ServerSideEncryption bool
-	Meta                 map[string][]string
-	ContentEncoding      string
-	CacheControl         string
-	ContentMD5           string
-	ContentDisposition   string
+	ServerSideEncryption      bool
+	ServerSideEncryptionKeyID string
+
+	Meta               map[string][]string
+	ContentEncoding    string
+	CacheControl       string
+	ContentMD5         string
+	ContentDisposition string
 	//Range              string
 	//Expires int
 }
@@ -72,6 +74,9 @@ type CopyOptions struct {
 	CopySourceOptions string
 	MetadataDirective string
 	//ContentType       string
+
+	ServerSideEncryption      bool
+	ServerSideEncryptionKeyID string
 }
 
 // CopyObjectResult is the output from a Copy request
@@ -491,7 +496,10 @@ func (b *Bucket) PutFile(path string, file *os.File, perm ACL, options Options) 
 
 // addHeaders adds o's specified fields to headers
 func (o Options) addHeaders(headers http.Header) {
-	if o.ServerSideEncryption {
+	if len(o.ServerSideEncryptionKeyID) != 0 {
+		headers.Set("x-oss-server-side-encryption", "KMS")
+		headers.Set("x-oss-server-side-encryption-key-id", o.ServerSideEncryptionKeyID)
+	} else if o.ServerSideEncryption {
 		headers.Set("x-oss-server-side-encryption", "AES256")
 	}
 	if len(o.ContentEncoding) != 0 {
@@ -516,6 +524,13 @@ func (o Options) addHeaders(headers http.Header) {
 
 // addHeaders adds o's specified fields to headers
 func (o CopyOptions) addHeaders(headers http.Header) {
+	if len(o.ServerSideEncryptionKeyID) != 0 {
+		headers.Set("x-oss-server-side-encryption", "KMS")
+		headers.Set("x-oss-server-side-encryption-key-id", o.ServerSideEncryptionKeyID)
+	} else if o.ServerSideEncryption {
+		headers.Set("x-oss-server-side-encryption", "AES256")
+	}
+
 	if len(o.MetadataDirective) != 0 {
 		headers.Set("x-oss-metadata-directive", o.MetadataDirective)
 	}
@@ -836,6 +851,17 @@ func (b *Bucket) SignedURLWithArgs(path string, expires time.Time, params url.Va
 	return b.SignedURLWithMethod("GET", path, expires, params, headers)
 }
 
+func (b *Bucket) SignedURLWithMethodForAssumeRole(method, path string, expires time.Time, params url.Values, headers http.Header) string {
+	var uv = url.Values{}
+	if params != nil {
+		uv = params
+	}
+	if len(b.Client.SecurityToken) != 0 {
+		uv.Set("security-token", b.Client.SecurityToken)
+	}
+	return b.SignedURLWithMethod(method, path, expires, params, headers)
+}
+
 // SignedURLWithMethod returns a signed URL that allows anyone holding the URL
 // to either retrieve the object at path or make a HEAD request against it. The signature is valid until expires.
 func (b *Bucket) SignedURLWithMethod(method, path string, expires time.Time, params url.Values, headers http.Header) string {
@@ -1024,7 +1050,8 @@ func partiallyEscapedPath(path string) string {
 func (client *Client) prepare(req *request) error {
 	// Copy so they can be mutated without affecting on retries.
 	headers := copyHeader(req.headers)
-	if len(client.SecurityToken) != 0 {
+	// security-token should be in either Params or Header, cannot be in both
+	if len(req.params.Get("security-token")) == 0 && len(client.SecurityToken) != 0 {
 		headers.Set("x-oss-security-token", client.SecurityToken)
 	}
 
@@ -1100,7 +1127,7 @@ func (client *Client) setupHttpRequest(req *request) (*http.Request, error) {
 // body will be unmarshalled on it.
 func (client *Client) doHttpRequest(c *http.Client, hreq *http.Request, resp interface{}) (*http.Response, error) {
 
-	if true {
+	if client.debug {
 		log.Printf("%s %s ...\n", hreq.Method, hreq.URL.String())
 	}
 	hresp, err := c.Do(hreq)
