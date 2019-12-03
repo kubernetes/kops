@@ -32,14 +32,23 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	sharedVPC := b.Cluster.SharedVPC()
+	vpcName := b.ClusterName()
+	tags := b.CloudTags(vpcName, sharedVPC)
 
 	// VPC that holds everything for the cluster
-	vpc := &alitasks.VPC{}
 	{
-		vpcName := b.GetNameForVPC()
-		vpc.Name = s(vpcName)
-		vpc.Lifecycle = b.Lifecycle
-		vpc.Shared = fi.Bool(sharedVPC)
+		vpcTags := tags
+		if sharedVPC {
+			// We don't tag a shared VPC
+			vpcTags = nil
+		}
+
+		vpc := &alitasks.VPC{
+			Name:      s(vpcName),
+			Lifecycle: b.Lifecycle,
+			Shared:    fi.Bool(sharedVPC),
+			Tags:      vpcTags,
+		}
 
 		if b.Cluster.Spec.NetworkID != "" {
 			vpc.ID = s(b.Cluster.Spec.NetworkID)
