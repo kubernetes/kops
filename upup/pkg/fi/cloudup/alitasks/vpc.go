@@ -36,6 +36,7 @@ type VPC struct {
 	Region *string
 	CIDR   *string
 	Shared *bool
+	Tags   map[string]string
 }
 
 var _ fi.CompareWithID = &VPC{}
@@ -51,52 +52,54 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 		RegionId: common.Region(cloud.Region()),
 	}
 
-	if fi.StringValue(e.ID) != "" {
+	if e.ID != nil {
 		request.VpcId = fi.StringValue(e.ID)
 	}
 
 	vpcs, _, err := cloud.EcsClient().DescribeVpcs(request)
-
 	if err != nil {
 		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
 
-	if fi.BoolValue(e.Shared) {
-		if len(vpcs) != 1 {
-			return nil, fmt.Errorf("found multiple VPCs for %q", fi.StringValue(e.ID))
-		} else {
-			actual := &VPC{
-				ID:        fi.String(vpcs[0].VpcId),
-				CIDR:      fi.String(vpcs[0].CidrBlock),
-				Name:      fi.String(vpcs[0].VpcName),
-				Region:    fi.String(cloud.Region()),
-				Shared:    e.Shared,
-				Lifecycle: e.Lifecycle,
-			}
-			e.ID = actual.ID
-			klog.V(4).Infof("found matching VPC %v", actual)
-			return actual, nil
-		}
-	}
-
-	if len(vpcs) == 0 {
+	if vpcs == nil || len(vpcs) == 0 {
 		return nil, nil
 	}
 
+	var actual *VPC
 	for _, vpc := range vpcs {
-		if vpc.CidrBlock == fi.StringValue(e.CIDR) && vpc.VpcName == fi.StringValue(e.Name) {
-			actual := &VPC{
-				ID:        fi.String(vpc.VpcId),
-				CIDR:      fi.String(vpc.CidrBlock),
-				Name:      fi.String(vpc.VpcName),
-				Region:    fi.String(cloud.Region()),
-				Shared:    e.Shared,
-				Lifecycle: e.Lifecycle,
-			}
-			e.ID = actual.ID
-			klog.V(4).Infof("found matching VPC %v", actual)
-			return actual, nil
+		if actual != nil {
+			return nil, fmt.Errorf("found multiple matching VPCs")
 		}
+		if vpc.VpcId == fi.StringValue(e.ID) {
+			actual = &VPC{
+				ID:   fi.String(vpc.VpcId),
+				CIDR: fi.String(vpc.CidrBlock),
+				Name: fi.String(vpc.VpcName),
+			}
+			continue
+		}
+		if vpc.CidrBlock == fi.StringValue(e.CIDR) && vpc.VpcName == fi.StringValue(e.Name) {
+			actual = &VPC{
+				ID:   fi.String(vpc.VpcId),
+				CIDR: fi.String(vpc.CidrBlock),
+				Name: fi.String(vpc.VpcName),
+			}
+		}
+	}
+
+	if actual != nil {
+		klog.V(2).Infof("found matching VPC %v", actual)
+
+		// Prevent spurious comparison failures
+		actual.Shared = e.Shared
+		if e.ID == nil {
+			e.ID = actual.ID
+		}
+		actual.Lifecycle = e.Lifecycle
+		actual.Name = e.Name
+		actual.Region = fi.String(cloud.Region())
+
+		return actual, nil
 	}
 
 	return nil, nil
