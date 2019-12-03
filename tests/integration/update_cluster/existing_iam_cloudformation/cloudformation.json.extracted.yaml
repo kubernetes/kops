@@ -133,6 +133,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configFile: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
@@ -422,6 +428,12 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configFile: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
