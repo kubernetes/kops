@@ -14,6 +14,17 @@ const (
 	PostPaid = InstanceChargeType("PostPaid")
 )
 
+var  RegionalDomainServices = []string{
+	"ecs",
+	"vpc",
+	"slb",
+	"pvtz",
+}
+
+var UnitRegions = map[Region]interface{}{
+	Hangzhou:Hangzhou,
+}
+
 type DescribeEndpointArgs struct {
 	Id          Region
 	ServiceCode string

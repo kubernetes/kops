@@ -1,6 +1,8 @@
 package ecs
 
-import "github.com/denverdino/aliyungo/common"
+import (
+	"github.com/denverdino/aliyungo/common"
+)
 
 type ResourceType string
 
@@ -101,4 +103,56 @@ func (client *Client) DescribeZonesWithRaw(regionId common.Region) (response *De
 	}
 
 	return nil, err
+}
+
+type DescribeAvailableResourceArgs struct {
+	RegionId            string
+	DestinationResource string
+	ZoneId              string
+	InstanceChargeType  string
+	SpotStrategy        string
+	IoOptimized         string
+	InstanceType        string
+	SystemDiskCategory  string
+	DataDiskCategory    string
+	NetworkCategory     string
+}
+
+type DescribeAvailableResourceResponse struct {
+	common.Response
+	AvailableZones struct {
+		AvailableZone []AvailableZoneType
+	}
+}
+
+type AvailableZoneType struct {
+	RegionId           string
+	ZoneId             string
+	Status             string
+	AvailableResources struct {
+		AvailableResource []NewAvailableResourcesType
+	}
+}
+
+type NewAvailableResourcesType struct {
+	Type               string
+	SupportedResources struct {
+		SupportedResource []SupportedResourcesType
+	}
+}
+
+type SupportedResourcesType struct {
+	Value  string
+	Status string
+	Min    string
+	Max    string
+	Unit   string
+}
+
+// https://www.alibabacloud.com/help/doc-detail/66186.htm
+func (client *Client) DescribeAvailableResource(args *DescribeAvailableResourceArgs) (response *DescribeAvailableResourceResponse, err error) {
+
+	response = &DescribeAvailableResourceResponse{}
+	err = client.Invoke("DescribeAvailableResource", args, response)
+	return response, err
 }

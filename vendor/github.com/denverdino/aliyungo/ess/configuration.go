@@ -2,6 +2,7 @@ package ess
 
 import (
 	"encoding/base64"
+
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 )
@@ -89,6 +90,7 @@ type ScalingConfigurationItemType struct {
 	CreationTime             string
 	InternetMaxBandwidthIn   int
 	InternetMaxBandwidthOut  int
+	SystemDiskSize           int
 	SystemDiskCategory       string
 	DataDisks                struct {
 		DataDisk []DataDiskItemType
