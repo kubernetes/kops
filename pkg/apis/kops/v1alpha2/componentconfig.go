@@ -543,6 +543,23 @@ type KubeControllerManagerConfig struct {
 	KubeAPIQPS *resource.Quantity `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
 	// KubeAPIBurst Burst to use while talking with kubernetes apiserver. (default 30)
 	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty" flag:"kube-api-burst"`
+	// The number of deployment objects that are allowed to sync concurrently.
+	ConcurrentDeploymentSyncs *int32 `json:"concurrentDeploymentSyncs,omitempty" flag:"concurrent-deployment-syncs"`
+	// The number of endpoint objects that are allowed to sync concurrently.
+	ConcurrentEndpointSyncs *int32 `json:"concurrentEndpointSyncs,omitempty" flag:"concurrent-endpoint-syncs"`
+	// The number of namespace objects that are allowed to sync concurrently.
+	ConcurrentNamespaceSyncs *int32 `json:"concurrentNamespaceSyncs,omitempty" flag:"concurrent-namespace-syncs"`
+	// The number of replicaset objects that are allowed to sync concurrently.
+	ConcurrentReplicasetSyncs *int32 `json:"concurrentReplicasetSyncs,omitempty" flag:"concurrent-replicaset-syncs"`
+	// The number of service objects that are allowed to sync concurrently.
+	ConcurrentServiceSyncs *int32 `json:"concurrentServiceSyncs,omitempty" flag:"concurrent-service-syncs"`
+	// The number of resourcequota objects that are allowed to sync concurrently.
+	ConcurrentResourceQuotaSyncs *int32 `json:"concurrentResourceQuotaSyncs,omitempty" flag:"concurrent-resource-quota-syncs"`
+	// The number of serviceaccount objects that are allowed to sync concurrently to create tokens.
+	ConcurrentServiceaccountTokenSyncs *int32 `json:"concurrentServiceaccountTokenSyncs,omitempty" flag:"concurrent-serviceaccount-token-syncs"`
+	// The number of replicationcontroller objects that are allowed to sync concurrently.
+	// This only works on kubernetes >= 1.14
+	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller

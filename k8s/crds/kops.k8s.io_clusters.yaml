@@ -1179,6 +1179,47 @@ spec:
                 clusterName:
                   description: ClusterName is the instance prefix for the cluster.
                   type: string
+                concurrentDeploymentSyncs:
+                  description: The number of deployment objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentEndpointSyncs:
+                  description: The number of endpoint objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentNamespaceSyncs:
+                  description: The number of namespace objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentRcSyncs:
+                  description: The number of replicationcontroller objects that are
+                    allowed to sync concurrently. This only works on kubernetes >=
+                    1.14
+                  format: int32
+                  type: integer
+                concurrentReplicasetSyncs:
+                  description: The number of replicaset objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentResourceQuotaSyncs:
+                  description: The number of resourcequota objects that are allowed
+                    to sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentServiceSyncs:
+                  description: The number of service objects that are allowed to sync
+                    concurrently.
+                  format: int32
+                  type: integer
+                concurrentServiceaccountTokenSyncs:
+                  description: The number of serviceaccount objects that are allowed
+                    to sync concurrently to create tokens.
+                  format: int32
+                  type: integer
                 configureCloudRoutes:
                   description: ConfigureCloudRoutes enables CIDRs allocated with to
                     be configured on the cloud provider.
