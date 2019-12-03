@@ -364,6 +364,37 @@ spec:
               description: ConfigStore is the VFS path to where the configuration
                 (Cluster, InstanceGroups etc) is stored
               type: string
+            containerRuntime:
+              description: Container runtime to use for Kubernetes
+              type: string
+            containerd:
+              description: Component configurations
+              properties:
+                address:
+                  description: Address of containerd's GRPC server (default "/run/containerd/containerd.sock")
+                  type: string
+                configFile:
+                  description: Complete containerd config file provided by the user
+                  type: string
+                logLevel:
+                  description: Logging level [trace, debug, info, warn, error, fatal,
+                    panic] (default "warn")
+                  type: string
+                root:
+                  description: Directory for persistent data (default "/var/lib/containerd")
+                  type: string
+                skipInstall:
+                  description: Prevents kops from installing and modifying containerd
+                    in any way (default "false")
+                  type: boolean
+                state:
+                  description: Directory for execution state files (default "/run/containerd")
+                  type: string
+                version:
+                  description: Consumed by nodeup and used to pick the containerd
+                    version
+                  type: string
+              type: object
             dnsControllerGossipConfig:
               description: DNSControllerGossipConfig for the cluster assuming the
                 use of gossip DNS
@@ -387,7 +418,7 @@ spec:
                 of the zone (containing dots), or can be an identifier for the zone.
               type: string
             docker:
-              description: Component configurations
+              description: DockerConfig is the configuration for docker
               properties:
                 authorizationPlugins:
                   description: AuthorizationPlugins is a list of authorization plugins
