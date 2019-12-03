@@ -3652,6 +3652,14 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
 	out.KubeAPIBurst = in.KubeAPIBurst
+	out.ConcurrentDeploymentSyncs = in.ConcurrentDeploymentSyncs
+	out.ConcurrentEndpointSyncs = in.ConcurrentEndpointSyncs
+	out.ConcurrentNamespaceSyncs = in.ConcurrentNamespaceSyncs
+	out.ConcurrentReplicasetSyncs = in.ConcurrentReplicasetSyncs
+	out.ConcurrentServiceSyncs = in.ConcurrentServiceSyncs
+	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
+	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
+	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
 	return nil
 }
 
@@ -3702,6 +3710,14 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
 	out.KubeAPIBurst = in.KubeAPIBurst
+	out.ConcurrentDeploymentSyncs = in.ConcurrentDeploymentSyncs
+	out.ConcurrentEndpointSyncs = in.ConcurrentEndpointSyncs
+	out.ConcurrentNamespaceSyncs = in.ConcurrentNamespaceSyncs
+	out.ConcurrentReplicasetSyncs = in.ConcurrentReplicasetSyncs
+	out.ConcurrentServiceSyncs = in.ConcurrentServiceSyncs
+	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
+	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
+	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
 	return nil
 }
 

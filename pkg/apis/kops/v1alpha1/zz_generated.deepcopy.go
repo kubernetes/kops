@@ -2147,6 +2147,46 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(int32)
 		**out = **in
 	}
+	if in.ConcurrentDeploymentSyncs != nil {
+		in, out := &in.ConcurrentDeploymentSyncs, &out.ConcurrentDeploymentSyncs
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConcurrentEndpointSyncs != nil {
+		in, out := &in.ConcurrentEndpointSyncs, &out.ConcurrentEndpointSyncs
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConcurrentNamespaceSyncs != nil {
+		in, out := &in.ConcurrentNamespaceSyncs, &out.ConcurrentNamespaceSyncs
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConcurrentReplicasetSyncs != nil {
+		in, out := &in.ConcurrentReplicasetSyncs, &out.ConcurrentReplicasetSyncs
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConcurrentServiceSyncs != nil {
+		in, out := &in.ConcurrentServiceSyncs, &out.ConcurrentServiceSyncs
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConcurrentResourceQuotaSyncs != nil {
+		in, out := &in.ConcurrentResourceQuotaSyncs, &out.ConcurrentResourceQuotaSyncs
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConcurrentServiceaccountTokenSyncs != nil {
+		in, out := &in.ConcurrentServiceaccountTokenSyncs, &out.ConcurrentServiceaccountTokenSyncs
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConcurrentRcSyncs != nil {
+		in, out := &in.ConcurrentRcSyncs, &out.ConcurrentRcSyncs
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
