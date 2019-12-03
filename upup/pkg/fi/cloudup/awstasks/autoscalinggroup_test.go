@@ -252,14 +252,15 @@ terraform = {
 		},
 		{
 			Resource: &AutoscalingGroup{
-				Name:                   fi.String("test1"),
-				LaunchTemplate:         &LaunchTemplate{Name: fi.String("test_lt")},
-				MaxSize:                fi.Int64(10),
-				Metrics:                []string{"test"},
-				MinSize:                fi.Int64(5),
-				MixedInstanceOverrides: []string{"t2.medium", "t2.large"},
-				MixedOnDemandBase:      fi.Int64(4),
-				MixedOnDemandAboveBase: fi.Int64(30),
+				Name:                        fi.String("test1"),
+				LaunchTemplate:              &LaunchTemplate{Name: fi.String("test_lt")},
+				MaxSize:                     fi.Int64(10),
+				Metrics:                     []string{"test"},
+				MinSize:                     fi.Int64(5),
+				MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
+				MixedOnDemandBase:           fi.Int64(4),
+				MixedOnDemandAboveBase:      fi.Int64(30),
+				MixedSpotAllocationStrategy: fi.String("capacity-optimized"),
 				Subnets: []*Subnet{
 					{
 						Name: fi.String("test-sg"),
@@ -299,6 +300,7 @@ resource "aws_autoscaling_group" "test1" {
     instances_distribution = {
       on_demand_base_capacity                  = 4
       on_demand_percentage_above_base_capacity = 30
+      spot_allocation_strategy                 = "capacity-optimized"
     }
   }
 
