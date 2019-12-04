@@ -295,6 +295,39 @@ spec:
                         gain leadership before executing the main loop. Enable this
                         when running replicated components for high availability.
                       type: boolean
+                    leaderElectLeaseDuration:
+                      description: leaderElectLeaseDuration is the length in time
+                        non-leader candidates will wait after observing a leadership
+                        renewal until attempting to acquire leadership of a led but
+                        unrenewed leader slot. This is effectively the maximum duration
+                        that a leader can be stopped before it is replaced by another
+                        candidate
+                      type: string
+                    leaderElectRenewDeadlineDuration:
+                      description: LeaderElectRenewDeadlineDuration is the interval
+                        between attempts by the acting master to renew a leadership
+                        slot before it stops leading. This must be less than or equal
+                        to the lease duration.
+                      type: string
+                    leaderElectResourceLock:
+                      description: LeaderElectResourceLock is the type of resource
+                        object that is used for locking during leader election. Supported
+                        options are endpoints (default) and `configmaps`.
+                      type: string
+                    leaderElectResourceName:
+                      description: LeaderElectResourceName is the name of resource
+                        object that is used for locking during leader election.
+                      type: string
+                    leaderElectResourceNamespace:
+                      description: LeaderElectResourceNamespace is the namespace of
+                        resource object that is used for locking during leader election.
+                      type: string
+                    leaderElectRetryPeriod:
+                      description: LeaderElectRetryPeriod is The duration the clients
+                        should wait between attempting acquisition and renewal of
+                        a leadership. This is only applicable if leader election is
+                        enabled.
+                      type: string
                   type: object
                 logLevel:
                   description: LogLevel is the verbosity of the logs.
@@ -1294,6 +1327,39 @@ spec:
                         gain leadership before executing the main loop. Enable this
                         when running replicated components for high availability.
                       type: boolean
+                    leaderElectLeaseDuration:
+                      description: leaderElectLeaseDuration is the length in time
+                        non-leader candidates will wait after observing a leadership
+                        renewal until attempting to acquire leadership of a led but
+                        unrenewed leader slot. This is effectively the maximum duration
+                        that a leader can be stopped before it is replaced by another
+                        candidate
+                      type: string
+                    leaderElectRenewDeadlineDuration:
+                      description: LeaderElectRenewDeadlineDuration is the interval
+                        between attempts by the acting master to renew a leadership
+                        slot before it stops leading. This must be less than or equal
+                        to the lease duration.
+                      type: string
+                    leaderElectResourceLock:
+                      description: LeaderElectResourceLock is the type of resource
+                        object that is used for locking during leader election. Supported
+                        options are endpoints (default) and `configmaps`.
+                      type: string
+                    leaderElectResourceName:
+                      description: LeaderElectResourceName is the name of resource
+                        object that is used for locking during leader election.
+                      type: string
+                    leaderElectResourceNamespace:
+                      description: LeaderElectResourceNamespace is the namespace of
+                        resource object that is used for locking during leader election.
+                      type: string
+                    leaderElectRetryPeriod:
+                      description: LeaderElectRetryPeriod is The duration the clients
+                        should wait between attempting acquisition and renewal of
+                        a leadership. This is only applicable if leader election is
+                        enabled.
+                      type: string
                   type: object
                 logLevel:
                   description: LogLevel is the defined logLevel
@@ -1526,6 +1592,39 @@ spec:
                         gain leadership before executing the main loop. Enable this
                         when running replicated components for high availability.
                       type: boolean
+                    leaderElectLeaseDuration:
+                      description: leaderElectLeaseDuration is the length in time
+                        non-leader candidates will wait after observing a leadership
+                        renewal until attempting to acquire leadership of a led but
+                        unrenewed leader slot. This is effectively the maximum duration
+                        that a leader can be stopped before it is replaced by another
+                        candidate
+                      type: string
+                    leaderElectRenewDeadlineDuration:
+                      description: LeaderElectRenewDeadlineDuration is the interval
+                        between attempts by the acting master to renew a leadership
+                        slot before it stops leading. This must be less than or equal
+                        to the lease duration.
+                      type: string
+                    leaderElectResourceLock:
+                      description: LeaderElectResourceLock is the type of resource
+                        object that is used for locking during leader election. Supported
+                        options are endpoints (default) and `configmaps`.
+                      type: string
+                    leaderElectResourceName:
+                      description: LeaderElectResourceName is the name of resource
+                        object that is used for locking during leader election.
+                      type: string
+                    leaderElectResourceNamespace:
+                      description: LeaderElectResourceNamespace is the namespace of
+                        resource object that is used for locking during leader election.
+                      type: string
+                    leaderElectRetryPeriod:
+                      description: LeaderElectRetryPeriod is The duration the clients
+                        should wait between attempting acquisition and renewal of
+                        a leadership. This is only applicable if leader election is
+                        enabled.
+                      type: string
                   type: object
                 logLevel:
                   description: LogLevel is the logging level
