@@ -144,9 +144,7 @@ func run() error {
 			}
 		}
 
-		for _, p := range result.PriceList {
-			prices = append(prices, p)
-		}
+		prices = append(prices, result.PriceList...)
 
 		if result.NextToken != nil {
 			input.NextToken = result.NextToken
@@ -179,18 +177,23 @@ func run() error {
 					Cores: stringToInt(attributes["vcpu"]),
 				}
 
-				memory := strings.TrimRight(attributes["memory"], " GiB")
+				memory := strings.TrimSuffix(attributes["memory"], " GiB")
 				machine.MemoryGB = stringToFloat32(memory)
 
 				if attributes["storage"] != "EBS only" {
 					storage := strings.Split(attributes["storage"], " ")
-					count := stringToInt(storage[0])
 					var size int
-					if storage[2] == "NVMe" {
-						count = 1
-						size = stringToInt(storage[0])
+					var count int
+					if len(storage) > 1 {
+						count = stringToInt(storage[0])
+						if storage[2] == "NVMe" {
+							count = 1
+							size = stringToInt(storage[0])
+						} else {
+							size = stringToInt(storage[2])
+						}
 					} else {
-						size = stringToInt(storage[2])
+						count = 0
 					}
 
 					ephemeralDisks := []int{}

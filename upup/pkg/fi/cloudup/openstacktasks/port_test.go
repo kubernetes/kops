@@ -82,6 +82,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				Network:        &Network{ID: fi.String("")},
 				SecurityGroups: []*SecurityGroup{},
 				Subnets:        []*Subnet{},
+				Tag:            fi.String(""),
 				Lifecycle:      &syncLifecycle,
 			},
 			expectedError: nil,
@@ -99,6 +100,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				Network:        &Network{ID: fi.String("")},
 				SecurityGroups: []*SecurityGroup{},
 				Subnets:        []*Subnet{},
+				Tag:            fi.String(""),
 				Lifecycle:      &syncLifecycle,
 			},
 			expectedError: nil,
@@ -135,6 +137,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 					{ID: fi.String("subnet-b"), Lifecycle: &syncLifecycle},
 				},
 				Lifecycle: &syncLifecycle,
+				Tag:       fi.String(""),
 			},
 			expectedError: nil,
 		},
@@ -196,6 +199,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 					{ID: fi.String("subnet-b"), Lifecycle: &syncLifecycle},
 				},
 				Lifecycle: &syncLifecycle,
+				Tag:       fi.String(""),
 			},
 			expectedError: nil,
 		},
@@ -278,6 +282,7 @@ func Test_Port_Find(t *testing.T) {
 					{ID: fi.String("subnet-a"), Lifecycle: &syncLifecycle},
 					{ID: fi.String("subnet-b"), Lifecycle: &syncLifecycle},
 				},
+				Tag:       fi.String(""),
 				Lifecycle: &syncLifecycle,
 			},
 			expectedError: nil,
@@ -389,9 +394,25 @@ func Test_Port_CheckChanges(t *testing.T) {
 			},
 			changes: &Port{
 				Name:    nil,
-				Network: &Network{ID: fi.String("networkID")},
+				Network: nil,
 			},
 			expectedError: nil,
+		},
+		{
+			desc: "actual not nil all changeable fields set",
+			actual: &Port{
+				Name:    fi.String("name"),
+				Network: nil,
+			},
+			expected: &Port{
+				Name:    fi.String("name"),
+				Network: nil,
+			},
+			changes: &Port{
+				Name:    nil,
+				Network: &Network{ID: fi.String("networkID")},
+			},
+			expectedError: fi.CannotChangeField("Network"),
 		},
 		{
 			desc: "actual not nil unchangeable field Name set",
@@ -573,6 +594,7 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 func Test_Port_createOptsFromPortTask(t *testing.T) {
 	tests := []struct {
 		desc               string
+		target             *openstack.OpenstackAPITarget
 		actual             *Port
 		expected           *Port
 		changes            *Port
@@ -581,6 +603,18 @@ func Test_Port_createOptsFromPortTask(t *testing.T) {
 	}{
 		{
 			desc: "all fields set",
+			target: &openstack.OpenstackAPITarget{
+				Cloud: &portCloud{
+					listSecurityGroups: map[string][]sg.SecGroup{
+						"add-1": {
+							{ID: "add-1-id", Name: "add-1"},
+						},
+						"add-2": {
+							{ID: "add-2-id", Name: "add-2"},
+						},
+					},
+				},
+			},
 			expected: &Port{
 				ID:      fi.String("expected-id"),
 				Name:    fi.String("name"),
@@ -604,8 +638,8 @@ func Test_Port_createOptsFromPortTask(t *testing.T) {
 				SecurityGroups: &[]string{
 					"sg-1",
 					"sg-2",
-					"add-1",
-					"add-2",
+					"add-1-id",
+					"add-2-id",
 				},
 				FixedIPs: []ports.IP{
 					{SubnetID: "subnet-a"},
@@ -613,11 +647,40 @@ func Test_Port_createOptsFromPortTask(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc: "nonexisting additional security groups",
+			target: &openstack.OpenstackAPITarget{
+				Cloud: &portCloud{
+					listSecurityGroups: map[string][]sg.SecGroup{
+						"add-1": {
+							{ID: "add-1-id", Name: "add-1"},
+						},
+					},
+				},
+			},
+			expected: &Port{
+				ID:      fi.String("expected-id"),
+				Name:    fi.String("name"),
+				Network: &Network{ID: fi.String("networkID")},
+				SecurityGroups: []*SecurityGroup{
+					{ID: fi.String("sg-1")},
+					{ID: fi.String("sg-2")},
+				},
+				AdditionalSecurityGroups: []string{
+					"add-2",
+				},
+				Subnets: []*Subnet{
+					{ID: fi.String("subnet-a")},
+					{ID: fi.String("subnet-b")},
+				},
+			},
+			expectedError: fmt.Errorf("Additional SecurityGroup not found for name add-2"),
+		},
 	}
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			opts, err := portCreateOptsFromPortTask(testCase.actual, testCase.expected, testCase.changes)
+			opts, err := portCreateOptsFromPortTask(testCase.target, testCase.actual, testCase.expected, testCase.changes)
 
 			if !reflect.DeepEqual(err, testCase.expectedError) {
 				t.Errorf("Error differs:\n%v\n\tinstead of\n%v", err, testCase.expectedError)

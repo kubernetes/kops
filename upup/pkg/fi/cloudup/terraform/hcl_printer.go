@@ -69,7 +69,7 @@ func (v *astSanitizer) visitObjectItem(o *ast.ObjectItem) {
 				v := text[1 : len(text)-1]
 				safe := true
 				for _, c := range v {
-					if strings.IndexRune(safeChars, c) == -1 {
+					if !strings.ContainsRune(safeChars, c) {
 						safe = false
 						break
 					}

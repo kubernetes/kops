@@ -125,6 +125,16 @@ func Uint64Value(v *uint64) uint64 {
 	return *v
 }
 
+// ArrayContains is checking does array contain single word
+func ArrayContains(array []string, word string) bool {
+	for _, item := range array {
+		if item == word {
+			return true
+		}
+	}
+	return false
+}
+
 func DebugPrint(o interface{}) string {
 	if o == nil {
 		return "<nil>"

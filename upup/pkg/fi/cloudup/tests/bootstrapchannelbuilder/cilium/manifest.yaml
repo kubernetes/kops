@@ -7,11 +7,11 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 736a3efe35f5edf14a8b7bd6ad723935e12f2a4d
+    manifestHash: 24cf09054ddfdcb490b878b04ff321026daa10c7
     name: kops-controller.addons.k8s.io
     selector:
       k8s-addon: kops-controller.addons.k8s.io
-    version: 1.15.0-alpha.1
+    version: 1.17.0-alpha.1
   - manifest: core.addons.k8s.io/v1.4.0.yaml
     manifestHash: 3ffe9ac576f9eec72e2bdfbd2ea17d56d9b17b90
     name: core.addons.k8s.io
@@ -37,7 +37,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 339b8060032db51e34335f03524619bc876f1548
+    manifestHash: 4da6501bd5ad16fab9e05fbfe7c6d587441a8ec4
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -67,27 +67,27 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: dns-controller.addons.k8s.io/pre-k8s-1.6.yaml
-    manifestHash: 84e0835d9f5536f46c32831515ad78765fc0f999
+    manifestHash: e19c5456a31381c08dd166ce1faf85ce7acc15e3
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.0-alpha.1
+    version: 1.17.0-alpha.1
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: bcb803e1f22d4850bb55c51698e59d00f890927c
+    manifestHash: 2d6fa6910077fecdf1c98da4303631588cfc9c01
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.0-alpha.1
+    version: 1.17.0-alpha.1
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 9e8470bf6146aa708347b7f1b695d02c93868c47
+    manifestHash: 4ba4be235e96068511965bf296375b45e152369a
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.0-alpha.1
+    version: 1.17.0-alpha.1
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml

@@ -141,7 +141,7 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	}
 
 	if a != nil {
-		// TODO: Do we want to destroy & recreate the subnet when theses immutable fields change?
+		// TODO: Do we want to destroy & recreate the subnet when these immutable fields change?
 		if changes.VPC != nil {
 			var aID *string
 			if a.VPC != nil {

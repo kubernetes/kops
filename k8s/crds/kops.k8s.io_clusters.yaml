@@ -331,6 +331,20 @@ spec:
               description: ConfigStore is the VFS path to where the configuration
                 (Cluster, InstanceGroups etc) is stored
               type: string
+            dnsControllerGossipConfig:
+              description: DNSControllerGossipConfig for the cluster assuming the
+                use of gossip DNS
+              properties:
+                listen:
+                  type: string
+                protocol:
+                  type: string
+                secondary: {}
+                secret:
+                  type: string
+                seed:
+                  type: string
+              type: object
             dnsZone:
               description: DNSZone is the DNS zone we should use when configuring
                 DNS This is because some clouds let us define a managed zone foo.bar,
@@ -619,6 +633,18 @@ spec:
                     type: array
                 type: object
               type: array
+            gossipConfig:
+              description: GossipConfig for the cluster assuming the use of gossip
+                DNS
+              properties:
+                listen:
+                  type: string
+                protocol:
+                  type: string
+                secondary: {}
+                secret:
+                  type: string
+              type: object
             hooks:
               description: Hooks for custom actions e.g. on first installation
               items:
@@ -750,6 +776,10 @@ spec:
                   items:
                     type: string
                   type: array
+                auditDynamicConfiguration:
+                  description: AuditDynamicConfiguration enables dynamic audit configuration
+                    via AuditSinks
+                  type: boolean
                 auditLogFormat:
                   description: AuditLogFormat flag specifies the format type for audit
                     log files.
@@ -918,6 +948,9 @@ spec:
                   items:
                     type: string
                   type: array
+                eventTTL:
+                  description: Amount of time to retain Kubernetes events
+                  type: string
                 experimentalEncryptionProviderConfig:
                   description: ExperimentalEncryptionProviderConfig enables encryption
                     at rest for secrets.
@@ -1146,6 +1179,47 @@ spec:
                 clusterName:
                   description: ClusterName is the instance prefix for the cluster.
                   type: string
+                concurrentDeploymentSyncs:
+                  description: The number of deployment objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentEndpointSyncs:
+                  description: The number of endpoint objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentNamespaceSyncs:
+                  description: The number of namespace objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentRcSyncs:
+                  description: The number of replicationcontroller objects that are
+                    allowed to sync concurrently. This only works on kubernetes >=
+                    1.14
+                  format: int32
+                  type: integer
+                concurrentReplicasetSyncs:
+                  description: The number of replicaset objects that are allowed to
+                    sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentResourceQuotaSyncs:
+                  description: The number of resourcequota objects that are allowed
+                    to sync concurrently.
+                  format: int32
+                  type: integer
+                concurrentServiceSyncs:
+                  description: The number of service objects that are allowed to sync
+                    concurrently.
+                  format: int32
+                  type: integer
+                concurrentServiceaccountTokenSyncs:
+                  description: The number of serviceaccount objects that are allowed
+                    to sync concurrently to create tokens.
+                  format: int32
+                  type: integer
                 configureCloudRoutes:
                   description: ConfigureCloudRoutes enables CIDRs allocated with to
                     be configured on the cloud provider.
@@ -1291,6 +1365,10 @@ spec:
                 cacheMaxSize:
                   description: CacheMaxSize is the maximum entries to keep in dnsmasq
                   type: integer
+                coreDNSImage:
+                  description: CoreDNSImage is used to override the default image
+                    used for CoreDNS
+                  type: string
                 cpuRequest:
                   description: CPURequest specifies the cpu requests of each dns container
                     in the cluster. Default 100m.
@@ -2188,7 +2266,7 @@ spec:
                   properties:
                     imageName:
                       description: 'The container image name to use, which by default
-                        is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.0.0'
+                        is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5'
                       type: string
                   type: object
                 calico:

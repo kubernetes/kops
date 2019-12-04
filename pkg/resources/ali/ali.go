@@ -327,9 +327,7 @@ func (d *clusterDiscoveryALI) ListSecurityGroup() ([]*resources.Resource, error)
 				}
 			}
 
-			for _, block := range blocked {
-				groupTracker.Blocked = append(groupTracker.Blocked, block)
-			}
+			groupTracker.Blocked = append(groupTracker.Blocked, blocked...)
 			resourceTrackers = append(resourceTrackers, groupTracker)
 		}
 	}
@@ -455,11 +453,10 @@ func DeleteRoleRam(cloud fi.Cloud, r *resources.Resource) error {
 	response, err := c.RamClient().ListPoliciesForRole(roleQueryRequest)
 	if err != nil {
 		return fmt.Errorf("err listing Policies for role:%v", err)
-	} else {
-		if len(response.Policies.Policy) != 0 {
-			for _, policy := range response.Policies.Policy {
-				policies = append(policies, policy.PolicyName)
-			}
+	}
+	if len(response.Policies.Policy) != 0 {
+		for _, policy := range response.Policies.Policy {
+			policies = append(policies, policy.PolicyName)
 		}
 	}
 
@@ -558,9 +555,7 @@ func (d *clusterDiscoveryALI) ListVPC() ([]*resources.Resource, error) {
 			for _, vpc := range vpcs {
 				if name == vpc.VpcName {
 					vpcsToDelete = append(vpcsToDelete, vpc.VpcId)
-					for _, vswitch := range vpc.VSwitchIds.VSwitchId {
-						vswitchsToDelete = append(vswitchsToDelete, vswitch)
-					}
+					vswitchsToDelete = append(vswitchsToDelete, vpc.VSwitchIds.VSwitchId...)
 				}
 			}
 		}

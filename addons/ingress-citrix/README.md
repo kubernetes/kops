@@ -19,7 +19,7 @@ addons:
   - manifest: ingress-citrix
 
 ```
-For more information on how to enable addon during cluster creation refer [Kops Addon guide](https://github.com/kubernetes/kops/blob/master/docs/addons.md#installing-kubernetes-addons)
+For more information on how to enable addon during cluster creation refer [Kops Addon guide](https://github.com/kubernetes/kops/blob/master/docs/operations/addons.md#installing-kubernetes-addons)
 
 **NOTE:** This method only works for Google Cloud Platform. For using this addon on AWS, please use the `kubectl` method below.
 

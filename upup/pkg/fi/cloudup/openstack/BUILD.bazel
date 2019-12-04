@@ -50,6 +50,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers:go_default_library",

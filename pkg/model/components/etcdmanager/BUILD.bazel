@@ -19,6 +19,7 @@ go_library(
         "//pkg/model:go_default_library",
         "//pkg/model/components:go_default_library",
         "//pkg/urls:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/do:go_default_library",

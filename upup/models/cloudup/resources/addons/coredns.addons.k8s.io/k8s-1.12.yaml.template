@@ -60,7 +60,7 @@ metadata:
 data:
   Corefile: |
   {{- if KubeDNS.ExternalCoreFile }}
-    {{ KubeDNS.ExternalCoreFile }}
+{{ KubeDNS.ExternalCoreFile | indent 4 }}
   {{- else }}
     .:53 {
         errors
@@ -165,7 +165,7 @@ spec:
           beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: k8s.gcr.io/coredns:1.3.1
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns:1.3.1{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -314,6 +314,7 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: kube-dns
+  namespace: kube-system
 spec:
   selector:
     matchLabels:

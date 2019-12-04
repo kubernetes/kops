@@ -137,9 +137,8 @@ func (m *MockRoute53) ChangeResourceRecordSets(request *route53.ChangeResourceRe
 			if foundIndex == -1 {
 				// TODO: Use correct error
 				return nil, fmt.Errorf("record not found %s %q", changeType, changeName)
-			} else {
-				zone.records = append(zone.records[:foundIndex], zone.records[foundIndex+1:]...)
 			}
+			zone.records = append(zone.records[:foundIndex], zone.records[foundIndex+1:]...)
 
 		default:
 			// TODO: Use correct error

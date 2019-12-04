@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/drain"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -103,7 +102,7 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 // TODO: Batch termination, like a rolling-update
 
 // RollingUpdate performs a rolling update on a list of ec2 instances.
-func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
+func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
 
 	// we should not get here, but hey I am going to check.
 	if rollingUpdateData == nil {
@@ -113,10 +112,6 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	// Do not need a k8s client if you are doing cloudonly.
 	if rollingUpdateData.K8sClient == nil && !rollingUpdateData.CloudOnly {
 		return fmt.Errorf("rollingUpdate is missing a k8s client")
-	}
-
-	if instanceGroupList == nil {
-		return fmt.Errorf("rollingUpdate is missing the InstanceGroupList")
 	}
 
 	update := r.CloudGroup.NeedUpdate
@@ -133,13 +128,12 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	} else if rollingUpdateData.CloudOnly {
 		klog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
 	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		if err = r.ValidateCluster(rollingUpdateData, cluster, instanceGroupList); err != nil {
+		if err = r.validateCluster(rollingUpdateData, cluster); err != nil {
 			if rollingUpdateData.FailOnValidate {
-				return fmt.Errorf("error validating cluster: %v", err)
-			} else {
-				klog.V(2).Infof("Ignoring cluster validation error: %v", err)
-				klog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
+				return err
 			}
+			klog.V(2).Infof("Ignoring cluster validation error: %v", err)
+			klog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 		}
 	}
 
@@ -165,9 +159,8 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				if err = r.DrainNode(u, rollingUpdateData); err != nil {
 					if rollingUpdateData.FailOnDrainError {
 						return fmt.Errorf("failed to drain node %q: %v", nodeName, err)
-					} else {
-						klog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 					}
+					klog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 				}
 			} else {
 				klog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceId)
@@ -206,7 +199,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 			klog.Info("Validating the cluster.")
 
-			if err = r.ValidateClusterWithDuration(rollingUpdateData, cluster, instanceGroupList, validationTimeout); err != nil {
+			if err = r.validateClusterWithDuration(rollingUpdateData, validationTimeout); err != nil {
 
 				if rollingUpdateData.FailOnValidate {
 					klog.Errorf("Cluster did not validate within %s", validationTimeout)
@@ -232,13 +225,13 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	return nil
 }
 
-// ValidateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
-func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, duration time.Duration) error {
+// validateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
+func (r *RollingUpdateInstanceGroup) validateClusterWithDuration(rollingUpdateData *RollingUpdateCluster, duration time.Duration) error {
 	// TODO should we expose this to the UI?
 	tickDuration := 30 * time.Second
 	// Try to validate cluster at least once, this will handle durations that are lower
 	// than our tick time
-	if r.tryValidateCluster(rollingUpdateData, cluster, instanceGroupList, duration, tickDuration) {
+	if r.tryValidateCluster(rollingUpdateData, duration, tickDuration) {
 		return nil
 	}
 
@@ -252,7 +245,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 			return fmt.Errorf("cluster did not validate within a duration of %q", duration)
 		case <-tick:
 			// Got a tick, validate cluster
-			if r.tryValidateCluster(rollingUpdateData, cluster, instanceGroupList, duration, tickDuration) {
+			if r.tryValidateCluster(rollingUpdateData, duration, tickDuration) {
 				return nil
 			}
 			// ValidateCluster didn't work yet, so let's try again
@@ -261,8 +254,8 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateDa
 	}
 }
 
-func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList, duration time.Duration, tickDuration time.Duration) bool {
-	result, err := validation.ValidateCluster(cluster, instanceGroupList, rollingUpdateData.K8sClient)
+func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, duration time.Duration, tickDuration time.Duration) bool {
+	result, err := rollingUpdateData.ClusterValidator.Validate()
 
 	if err != nil {
 		klog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", tickDuration, duration, err)
@@ -280,10 +273,18 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 	}
 }
 
-// ValidateCluster runs our validation methods on the K8s Cluster.
-func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, instanceGroupList *api.InstanceGroupList) error {
-	if _, err := validation.ValidateCluster(cluster, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
-		return fmt.Errorf("cluster %q did not pass validation: %v", cluster.Name, err)
+// validateCluster runs our validation methods on the K8s Cluster.
+func (r *RollingUpdateInstanceGroup) validateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster) error {
+	result, err := rollingUpdateData.ClusterValidator.Validate()
+	if err != nil {
+		return fmt.Errorf("cluster %q did not validate: %v", cluster.Name, err)
+	}
+	if len(result.Failures) > 0 {
+		messages := []string{}
+		for _, failure := range result.Failures {
+			messages = append(messages, failure.Message)
+		}
+		return fmt.Errorf("cluster %q did not pass validation: %s", cluster.Name, strings.Join(messages, ", "))
 	}
 
 	return nil

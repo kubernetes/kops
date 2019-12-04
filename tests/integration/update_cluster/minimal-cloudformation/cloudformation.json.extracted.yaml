@@ -18,7 +18,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -263,7 +263,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
   - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
   - 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: minimal.example.com
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: master-us-test-1a
@@ -279,6 +279,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
     name: protokube:1.8.1
     sources:
+    - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
     - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
     - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
@@ -306,7 +307,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -469,7 +470,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
   - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
   - 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: minimal.example.com
   ConfigBase: memfs://clusters.example.com/minimal.example.com
   InstanceGroupName: nodes
@@ -482,6 +483,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
     hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
     name: protokube:1.8.1
     sources:
+    - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
     - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
     - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 

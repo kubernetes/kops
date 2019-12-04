@@ -14,7 +14,7 @@ This strategy can be extended to sequentially upgrade Kops on multiple clusters,
 This page provides examples for managing Kops clusters in CI environments.
 The [Manifest documentation](./manifests_and_customizing_via_api.md) describes how to create the YAML manifest files locally and includes high level examples of commands described below.
 
-If you have a solution for a different CI platform or deployment strategy, feel free to open a Pull Request! 
+If you have a solution for a different CI platform or deployment strategy, feel free to open a Pull Request!
 
 ## GitLab CI
 
@@ -79,9 +79,9 @@ roll:
 * This pipeline setup will create and update existing clusters in place. It does not perform a "blue/green" deployment of multiple clusters.
 * The pipeline can be extended to support multiple clusters by making separate jobs per cluster for each stage.
   Ensure the `KOPS_CLUSTER_NAME` variable is set correctly for each set of jobs.
-  
+
   In this case, it is possible to use `kops toolbox template` to manage one YAML template and per-cluster values files with which to render the template.
-  See the [Cluster Template](./cluster_template.md) documentation for more information.
+  See the [Cluster Template](./operations/cluster_template.md) documentation for more information.
   `kops toolbox template` would then be ran before `kops replace`.
 
 ### Limitations

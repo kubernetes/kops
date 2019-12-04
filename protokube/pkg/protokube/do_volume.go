@@ -31,12 +31,15 @@ import (
 
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipdo "k8s.io/kops/protokube/pkg/gossip/do"
 )
 
 const (
 	dropletRegionMetadataURL     = "http://169.254.169.254/metadata/v1/region"
 	dropletNameMetadataURL       = "http://169.254.169.254/metadata/v1/hostname"
 	dropletIDMetadataURL         = "http://169.254.169.254/metadata/v1/id"
+	dropletIDMetadataTags        = "http://169.254.169.254/metadata/v1/tags"
 	dropletInternalIPMetadataURL = "http://169.254.169.254/metadata/v1/interfaces/private/0/ipv4/address"
 	localDevicePrefix            = "/dev/disk/by-id/scsi-0DO_Volume_"
 )
@@ -48,11 +51,38 @@ type DOVolumes struct {
 	region      string
 	dropletName string
 	dropletID   int
+	dropletTags []string
 }
 
 var _ Volumes = &DOVolumes{}
 
-func NewDOVolumes(clusterID string) (*DOVolumes, error) {
+func GetClusterID() (string, error) {
+	var clusterID = ""
+
+	dropletTags, err := getMetadataDropletTags()
+	if err != nil {
+		return clusterID, fmt.Errorf("GetClusterID failed - unable to retrieve droplet tags: %s", err)
+	}
+
+	for _, dropletTag := range dropletTags {
+		if strings.Contains(dropletTag, "KubernetesCluster:") {
+			clusterID = strings.Replace(dropletTag, ".", "-", -1)
+
+			tokens := strings.Split(clusterID, ":")
+			if len(tokens) != 2 {
+				return clusterID, fmt.Errorf("invalid clusterID (expected two tokens): %q", clusterID)
+			}
+
+			clusterID := tokens[1]
+
+			return clusterID, nil
+		}
+	}
+
+	return clusterID, fmt.Errorf("failed to get droplet clusterID")
+}
+
+func NewDOVolumes() (*DOVolumes, error) {
 	region, err := getMetadataRegion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get droplet region: %s", err)
@@ -78,12 +108,23 @@ func NewDOVolumes(clusterID string) (*DOVolumes, error) {
 		return nil, fmt.Errorf("failed to initialize digitalocean cloud: %s", err)
 	}
 
+	dropletTags, err := getMetadataDropletTags()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get droplet tags: %s", err)
+	}
+
+	clusterID, err := GetClusterID()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get clusterID: %s", err)
+	}
+
 	return &DOVolumes{
 		Cloud:       cloud,
 		ClusterID:   clusterID,
 		dropletID:   dropletIDInt,
 		dropletName: dropletName,
 		region:      region,
+		dropletTags: dropletTags,
 	}, nil
 }
 
@@ -114,7 +155,6 @@ func (d *DOVolumes) AttachVolume(volume *Volume) error {
 
 		time.Sleep(10 * time.Second)
 	}
-
 }
 
 func (d *DOVolumes) FindVolumes() ([]*Volume, error) {
@@ -237,6 +277,20 @@ func getLocalDeviceName(vol *godo.Volume) string {
 	return localDevicePrefix + vol.Name
 }
 
+func (d *DOVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+	for _, dropletTag := range d.dropletTags {
+		if strings.Contains(dropletTag, strings.Replace(d.ClusterID, ".", "-", -1)) {
+			return gossipdo.NewSeedProvider(d.Cloud, dropletTag)
+		}
+	}
+
+	return nil, fmt.Errorf("could not determine a matching droplet tag for gossip seeding")
+}
+
+func (d *DOVolumes) InstanceName() string {
+	return d.dropletName
+}
+
 // GetDropletInternalIP gets the private IP of the droplet running this program
 // This function is exported so it can be called from protokube
 func GetDropletInternalIP() (net.IP, error) {
@@ -258,6 +312,12 @@ func getMetadataDropletName() (string, error) {
 
 func getMetadataDropletID() (string, error) {
 	return getMetadata(dropletIDMetadataURL)
+}
+
+func getMetadataDropletTags() ([]string, error) {
+
+	tagString, err := getMetadata(dropletIDMetadataTags)
+	return strings.Split(tagString, "\n"), err
 }
 
 func getMetadata(url string) (string, error) {

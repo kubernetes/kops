@@ -246,6 +246,24 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
+#### dynamic audit configuration
+
+Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#dynamic-backend
+
+```yaml
+spec:
+  kubeAPIServer:
+    auditDynamicConfiguration: true
+```
+
+By enabling this feature you are allowing for auditsinks to be registered with the API server.  For information on audit sinks please read [Audit Sink](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#auditsink-v1alpha1-auditregistration).  This feature is only supported in kubernetes versions greater than 1.13.  Currently, this feature is alpha and requires enabling the feature gate and a runtime config.
+
+**Note** For kubernetes versions greater than 1.13, this is an alpha feature that requires the API auditregistration.k8s.io/v1alpha1 to be enabled as a runtime-config option, and the feature gate DynamicAuditing to be also enabled.  The options --feature-gates=DynamicAuditing=true and --runtime-config=auditregistration.k8s.io/v1alpha1=true must be enabled on the API server in addition to this flag.  See the sections for how to enable feature gates [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#feature-gates).  See the section on how to enable alphas APIs in the runtime config [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#runtimeconfig).  
+Also, an audit policy should be provided in the file assets section.  If the flag is omitted, no events are logged.
+You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
+
+Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
+
 #### bootstrap tokens
 
 Read more about this here: https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
@@ -260,7 +278,7 @@ By enabling this feature you instructing two things;
 - master nodes will bypass the bootstrap token but they _will_ build kubeconfigs with unique usernames in the system:nodes group _(this ensure's the master nodes confirm with the node authorization mode https://kubernetes.io/docs/reference/access-authn-authz/node/)_
 - secondly the nodes will be configured to use a bootstrap token located by default at `/var/lib/kubelet/bootstrap-kubeconfig` _(though this can be override in the kubelet spec)_. The nodes will sit the until a bootstrap file is created and once available attempt to provision the node.
 
-**Note** enabling bootstrap tokens does not provision bootstrap tokens for the worker nodes. Under this configuration it is assumed a third-party process is provisioning the tokens on behalf of the worker nodes. For the full setup please read [Node Authorizer Service](https://github.com/kubernetes/kops/blob/master/docs/node_authorization.md)
+**Note** enabling bootstrap tokens does not provision bootstrap tokens for the worker nodes. Under this configuration it is assumed a third-party process is provisioning the tokens on behalf of the worker nodes. For the full setup please read [Node Authorizer Service](node_authorization.md)
 
 #### Max Requests Inflight
 
@@ -324,6 +342,16 @@ Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
 spec:
   kubeAPIServer:
     targetRamMb: 4096
+```
+
+#### eventTTL
+
+How long API server retains events. Note that you must fill empty units of time with zeros.
+
+```yaml
+spec:
+  kubeAPIServer:
+    eventTTL: 03h0m0s
 ```
 
 ### externalDns
@@ -458,7 +486,7 @@ Specifying KubeDNS will install kube-dns as the default service discovery.
 
 This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
-If you are using CoreDNS and want to use an entirely custom CoreFile you can do this by specifying the file. This will not work with any other options which interact with the default CoreFile.
+If you are using CoreDNS and want to use an entirely custom CoreFile you can do this by specifying the file. This will not work with any other options which interact with the default CoreFile. You can also override the version of the CoreDNS image used to use a different registry or version by specifying `CoreDNSImage`.
 
 **Note:** If you are using this functionality you will need to be extra vigiliant on version changes of CoreDNS for changes in functionality of the plugins being used etc.
 
@@ -466,6 +494,7 @@ If you are using CoreDNS and want to use an entirely custom CoreFile you can do 
 spec:
   kubeDNS:
     provider: CoreDNS
+    coreDNSImage: mirror.registry.local/mirrors/coredns:1.3.1
     externalCoreFile: |
       amazonaws.com:53 {
             errors

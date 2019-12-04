@@ -80,6 +80,11 @@ type Config struct {
 	// # gazelle:map_kind.
 	KindMap map[string]MappedKind
 
+	// Repos is a list of repository rules declared in the main WORKSPACE file
+	// or in macros called by the main WORKSPACE file. This may affect rule
+	// generation and dependency resolution.
+	Repos []*rule.Rule
+
 	// Exts is a set of configurable extensions. Generally, each language
 	// has its own set of extensions, but other modules may provide their own
 	// extensions as well. Values in here may be populated by command line

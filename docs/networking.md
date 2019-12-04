@@ -43,6 +43,7 @@ Several different CNI providers are currently built into kops:
 * [weave](https://github.com/weaveworks/weave)
 * [amazon-vpc-routed-eni](./networking.md#amazon-vpc-backend)
 * [Cilium](http://docs.cilium.io)
+* [Lyft cni-ipvlan-vpc-k8s](https://github.com/lyft/cni-ipvlan-vpc-k8s)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -249,7 +250,7 @@ This has been solved in kops 1.9.0, when creating a new cluster no action is nee
 
 ### Canal Example for CNI and Network Policy
 
-Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/hosted/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
+Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
 
 #### Installing Canal on a new Cluster
 
@@ -498,6 +499,75 @@ Here are some steps items that will confirm a good CNI install:
 
 The sig-networking and sig-cluster-lifecycle channels on K8s slack are always good starting places
 for Kubernetes specific CNI challenges.
+
+#### Lyft CNI
+
+The [lyft cni-ipvlan-vpc-k8s](https://github.com/lyft/cni-ipvlan-vpc-k8s) plugin uses Amazon Elastic Network Interfaces (ENI) to assign AWS-managed IPs to Pods using the Linux kernel's IPvlan driver in L2 mode.
+
+Read the [prerequisites](https://github.com/lyft/cni-ipvlan-vpc-k8s#prerequisites) before starting. In addition to that, you need to specify the VPC ID as `spec.networkID` in the cluster spec file.
+
+To use the Lyft CNI plugin you specify
+
+```
+  networking:
+    lyftvpc: {}
+```
+
+in the cluster spec file or pass the `--networking lyftvpc` option on the command line to kops:
+
+```console
+$ export ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking lyftvpc \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+You can specify which subnets to use for allocating Pod IPs by specifying
+
+```
+  networking:
+    lyftvpc:
+      subnetTags:
+        kubernetes_kubelet: true
+```
+
+In this example, new interfaces will be attached to subnets tagged with `kubernetes_kubelet = true`.
+
+**Note:** The following permissions are added to all nodes by kops to run the provider:
+
+```json
+  {
+    "Sid": "kopsK8sEC2NodeAmazonVPCPerms",
+    "Effect": "Allow",
+    "Action": [
+      "ec2:CreateNetworkInterface",
+      "ec2:AttachNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DetachNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeInstances",
+      "ec2:ModifyNetworkInterfaceAttribute",
+      "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses",
+      "tag:TagResources"
+    ],
+    "Resource": [
+      "*"
+    ]
+  },
+  {
+    "Effect": "Allow",
+    "Action": "ec2:CreateTags",
+    "Resource": "arn:aws:ec2:*:*:network-interface/*"
+  }
+```
+
+In case of any issues the directory `/var/log/aws-routed-eni` contains the log files of the CNI plugin. This directory is located in all the nodes in the cluster.
 
 ## Switching between networking providers
 

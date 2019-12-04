@@ -131,9 +131,8 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 				if c.ManifestHash == existing.ManifestHash {
 					klog.V(4).Infof("Manifest Match")
 					return false
-				} else {
-					klog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
 				}
+				klog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
 			} else {
 				klog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
 			}

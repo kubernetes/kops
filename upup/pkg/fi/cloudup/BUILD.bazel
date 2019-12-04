@@ -25,6 +25,7 @@ go_library(
     deps = [
         "//:go_default_library",
         "//channels/pkg/api:go_default_library",
+        "//cmd/kops-controller/pkg/config:go_default_library",
         "//dns-controller/pkg/dns:go_default_library",
         "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",
@@ -55,6 +56,7 @@ go_library(
         "//pkg/resources/spotinst:go_default_library",
         "//pkg/templates:go_default_library",
         "//pkg/util/subnet:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/models:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/assettasks:go_default_library",
@@ -81,6 +83,7 @@ go_library(
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/reflectutils:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/Masterminds/sprig:go_default_library",
         "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

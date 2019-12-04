@@ -48,8 +48,6 @@ func (r record) Type() rrstype.RrsType {
 	return rrstype.RrsType(r.type_)
 }
 
-const testDNSZone string = "foo.com"
-
 var testData = []struct {
 	inputs         [2]record
 	expectedOutput bool

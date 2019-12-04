@@ -40,9 +40,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 			depMap[block] = append(depMap[block], k)
 		}
 
-		for _, blocked := range t.Blocked {
-			depMap[k] = append(depMap[k], blocked)
-		}
+		depMap[k] = append(depMap[k], t.Blocked...)
 
 		if t.Done {
 			done[k] = t

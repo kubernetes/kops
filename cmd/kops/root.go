@@ -58,7 +58,7 @@ var (
 	We like to think of it as kubectl for clusters.
 
 	kops helps you create, destroy, upgrade and maintain production-grade, highly available,
-	Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently
+	Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently
 	officially supported, with GCE and VMware vSphere in alpha support.
 	`))
 

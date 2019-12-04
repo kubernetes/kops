@@ -260,9 +260,7 @@ func (m *MockEC2) AuthorizeSecurityGroupEgress(request *ec2.AuthorizeSecurityGro
 		sg.IpPermissionsEgress = append(sg.IpPermissionsEgress, p)
 	}
 
-	for _, p := range request.IpPermissions {
-		sg.IpPermissionsEgress = append(sg.IpPermissionsEgress, p)
-	}
+	sg.IpPermissionsEgress = append(sg.IpPermissionsEgress, request.IpPermissions...)
 
 	// TODO: We need to fold permissions
 
@@ -318,9 +316,7 @@ func (m *MockEC2) AuthorizeSecurityGroupIngress(request *ec2.AuthorizeSecurityGr
 		sg.IpPermissions = append(sg.IpPermissions, p)
 	}
 
-	for _, p := range request.IpPermissions {
-		sg.IpPermissions = append(sg.IpPermissions, p)
-	}
+	sg.IpPermissions = append(sg.IpPermissions, request.IpPermissions...)
 
 	// TODO: We need to fold permissions
 

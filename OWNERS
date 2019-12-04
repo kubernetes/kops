@@ -3,15 +3,15 @@
 approvers:
   - justinsb
   - chrislovecnm
-  - andrewsykim
   - geojaz
   - kashifsaadat
   - gambol99
   - mikesplain
   - chrisz100
   - rdrgmnzs
-reviewers:
-  - robinpercy
   - granular-ryanbonham
-  - zetaab
   - rifelpet
+  - zetaab
+reviewers:
+  - joshbranham
+  - robinpercy

@@ -17,12 +17,13 @@ limitations under the License.
 package domodel
 
 import (
+	"strconv"
+	"strings"
+
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
-	"strconv"
-	"strings"
 )
 
 // DropletBuilder configures droplets for the cluster
@@ -46,6 +47,7 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// replace "." with "-" since DO API does not accept "."
 	clusterTag := do.TagKubernetesClusterNamePrefix + ":" + strings.Replace(d.ClusterName(), ".", "-", -1)
+	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + strings.Replace(d.ClusterName(), ".", "-", -1)
 
 	masterIndexCount := 0
 	// In the future, DigitalOcean will use Machine API to manage groups,
@@ -70,6 +72,10 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			masterIndexCount++
 			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + strconv.Itoa(masterIndexCount)
 			droplet.Tags = append(droplet.Tags, clusterTagIndex)
+			droplet.Tags = append(droplet.Tags, clusterMasterTag)
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"master-"+d.Cluster.Spec.Subnets[0].Region)
+		} else {
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"nodes")
 		}
 
 		userData, err := d.BootstrapScript.ResourceNodeUp(ig, d.Cluster)

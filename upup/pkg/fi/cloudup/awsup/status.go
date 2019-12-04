@@ -85,7 +85,7 @@ func findEtcdStatus(c AWSCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus
 			v := aws.StringValue(tag.Value)
 
 			if strings.HasPrefix(k, TagNameEtcdClusterPrefix) {
-				etcdClusterName := strings.TrimPrefix(k, TagNameEtcdClusterPrefix)
+				etcdClusterName = strings.TrimPrefix(k, TagNameEtcdClusterPrefix)
 				etcdClusterSpec, err = etcd.ParseEtcdClusterSpec(etcdClusterName, v)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing etcd cluster tag %q on volume %q: %v", v, volumeID, err)

@@ -17,6 +17,9 @@ limitations under the License.
 package openstack
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
@@ -36,6 +39,11 @@ const (
 func (os *clusterDiscoveryOS) DeleteSubnetLBs(subnet subnets.Subnet) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
+	preExistingSubnet := false
+	if !strings.HasSuffix(subnet.Name, os.clusterName) {
+		preExistingSubnet = true
+	}
+
 	opts := loadbalancers.ListOpts{
 		VipSubnetID: subnet.ID,
 	}
@@ -44,7 +52,19 @@ func (os *clusterDiscoveryOS) DeleteSubnetLBs(subnet subnets.Subnet) ([]*resourc
 		return nil, err
 	}
 
-	for _, lb := range lbs {
+	filteredLBs := []loadbalancers.LoadBalancer{}
+	if preExistingSubnet {
+		// if we have preExistingSubnet, we cannot delete others than api LB
+		for _, lb := range lbs {
+			if lb.Name == fmt.Sprintf("api.%s", os.clusterName) {
+				filteredLBs = append(filteredLBs, lb)
+			}
+		}
+	} else {
+		filteredLBs = lbs
+	}
+
+	for _, lb := range filteredLBs {
 		resourceTracker := &resources.Resource{
 			Name: lb.Name,
 			ID:   lb.ID,

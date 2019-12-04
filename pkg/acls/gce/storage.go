@@ -64,9 +64,7 @@ func (s *gcsAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, err
 	}
 
 	var acls []*storage.ObjectAccessControl
-	for _, a := range bucket.DefaultObjectAcl {
-		acls = append(acls, a)
-	}
+	acls = append(acls, bucket.DefaultObjectAcl...)
 
 	acls = append(acls, &storage.ObjectAccessControl{
 		Email:  serviceAccount,

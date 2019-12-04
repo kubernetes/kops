@@ -71,8 +71,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if networking.Cilium != nil {
-		var unit *string
-		unit = s(`
+		unit := s(`
 [Unit]
 Description=Cilium BPF mounts
 Documentation=http://docs.cilium.io/

@@ -181,7 +181,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 
 			if ig.IsMaster() {
 				spec["encryptionConfig"] = cs.EncryptionConfig
-				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec, 0)
+				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec)
 				spec["kubeAPIServer"] = cs.KubeAPIServer
 				spec["kubeControllerManager"] = cs.KubeControllerManager
 				spec["kubeScheduler"] = cs.KubeScheduler

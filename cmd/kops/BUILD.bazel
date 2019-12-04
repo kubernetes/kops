@@ -93,6 +93,7 @@ go_library(
         "//upup/pkg/fi/cloudup/aliup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
+        "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//upup/pkg/kutil:go_default_library",
         "//util/pkg/tables:go_default_library",
