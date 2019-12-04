@@ -342,7 +342,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		// @note: it's fine to use AdmissionControl here and it's not populated by the model, thus the only data could have come from the cluster spec
 		c := b.Cluster.Spec.KubeAPIServer
 		if len(c.AdmissionControl) > 0 {
-			copy(c.EnableAdmissionPlugins, c.AdmissionControl)
+			c.EnableAdmissionPlugins = append([]string(nil), c.AdmissionControl...)
 			c.AdmissionControl = []string{}
 		}
 	}
