@@ -15,6 +15,26 @@ The detailed design of the project can be found in the following docs:
 For the broader view of monitoring in Kubernetes take a look into
 [Monitoring architecture](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/monitoring_architecture.md)
 
+## Prerequisites
+you must allow service account tokens to communicate with kubelet, edit your cluster configuration
+```console
+$ kops edit cluster
+```
+
+add configuration below to your cluster configuration.
+```
+kubelet:
+    anonymousAuth: false
+    authorizationMode: Webhook
+    authenticationTokenWebhook: true
+```
+
+update your cluster
+```console
+$ kops update cluster --yes
+$ kops rolling-update cluster --yes
+```
+
 ## Deployment
 
 Compatibility matrix:
