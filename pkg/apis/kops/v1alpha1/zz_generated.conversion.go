@@ -3814,6 +3814,12 @@ func Convert_kops_KuberouterNetworkingSpec_To_v1alpha1_KuberouterNetworkingSpec(
 
 func autoConvert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration(in *LeaderElectionConfiguration, out *kops.LeaderElectionConfiguration, s conversion.Scope) error {
 	out.LeaderElect = in.LeaderElect
+	out.LeaderElectLeaseDuration = in.LeaderElectLeaseDuration
+	out.LeaderElectRenewDeadlineDuration = in.LeaderElectRenewDeadlineDuration
+	out.LeaderElectResourceLock = in.LeaderElectResourceLock
+	out.LeaderElectResourceName = in.LeaderElectResourceName
+	out.LeaderElectResourceNamespace = in.LeaderElectResourceNamespace
+	out.LeaderElectRetryPeriod = in.LeaderElectRetryPeriod
 	return nil
 }
 
@@ -3824,6 +3830,12 @@ func Convert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfigur
 
 func autoConvert_kops_LeaderElectionConfiguration_To_v1alpha1_LeaderElectionConfiguration(in *kops.LeaderElectionConfiguration, out *LeaderElectionConfiguration, s conversion.Scope) error {
 	out.LeaderElect = in.LeaderElect
+	out.LeaderElectLeaseDuration = in.LeaderElectLeaseDuration
+	out.LeaderElectRenewDeadlineDuration = in.LeaderElectRenewDeadlineDuration
+	out.LeaderElectResourceLock = in.LeaderElectResourceLock
+	out.LeaderElectResourceName = in.LeaderElectResourceName
+	out.LeaderElectResourceNamespace = in.LeaderElectResourceNamespace
+	out.LeaderElectRetryPeriod = in.LeaderElectRetryPeriod
 	return nil
 }
 

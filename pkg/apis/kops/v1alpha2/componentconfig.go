@@ -617,6 +617,24 @@ type LeaderElectionConfiguration struct {
 	// before executing the main loop. Enable this when running replicated
 	// components for high availability.
 	LeaderElect *bool `json:"leaderElect,omitempty" flag:"leader-elect"`
+	// leaderElectLeaseDuration is the length in time non-leader candidates
+	// will wait after observing a leadership renewal until attempting to acquire
+	// leadership of a led but unrenewed leader slot. This is effectively the
+	// maximum duration that a leader can be stopped before it is replaced by another candidate
+	LeaderElectLeaseDuration *metav1.Duration `json:"leaderElectLeaseDuration,omitempty" flag:"leader-elect-lease-duration"`
+	// LeaderElectRenewDeadlineDuration is the interval between attempts by the acting master to
+	// renew a leadership slot before it stops leading. This must be less than or equal to the lease duration.
+	LeaderElectRenewDeadlineDuration *metav1.Duration `json:"leaderElectRenewDeadlineDuration,omitempty" flag:"leader-elect-renew-deadline"`
+	// LeaderElectResourceLock is the type of resource object that is used for locking during
+	// leader election. Supported options are endpoints (default) and `configmaps`.
+	LeaderElectResourceLock *string `json:"leaderElectResourceLock,omitempty" flag:"leader-elect-resource-lock"`
+	// LeaderElectResourceName is the name of resource object that is used for locking during leader election.
+	LeaderElectResourceName *string `json:"leaderElectResourceName,omitempty" flag:"leader-elect-resource-name"`
+	// LeaderElectResourceNamespace is the namespace of resource object that is used for locking during leader election.
+	LeaderElectResourceNamespace *string `json:"leaderElectResourceNamespace,omitempty" flag:"leader-elect-resource-namespace"`
+	// LeaderElectRetryPeriod is The duration the clients should wait between attempting acquisition
+	// and renewal of a leadership. This is only applicable if leader election is enabled.
+	LeaderElectRetryPeriod *metav1.Duration `json:"leaderElectRetryPeriod,omitempty" flag:"leader-elect-retry-period"`
 }
 
 // OpenstackLoadbalancerConfig defines the config for a neutron loadbalancer
