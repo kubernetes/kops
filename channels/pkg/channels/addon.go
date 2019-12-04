@@ -66,7 +66,6 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 }
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
-
 	return &ChannelVersion{
 		Channel:      &a.ChannelName,
 		Version:      a.Spec.Version,
@@ -110,7 +109,6 @@ func (a *Addon) GetRequiredUpdates(k8sClient kubernetes.Interface) (*AddonUpdate
 }
 
 func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
-
 	if a.Spec.Manifest == nil || *a.Spec.Manifest == "" {
 		return nil, field.Required(field.NewPath("Spec", "Manifest"), "")
 	}

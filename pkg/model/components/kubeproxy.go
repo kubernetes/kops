@@ -88,5 +88,11 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if cloudProvider == kops.CloudProviderALI {
+		if config.HostnameOverride == "" {
+			config.HostnameOverride = "@alicloud"
+		}
+	}
+
 	return nil
 }

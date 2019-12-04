@@ -128,7 +128,7 @@ func (g tagGroup) check(c *config.Config, os, arch string) bool {
 			if os == "" {
 				return false
 			}
-			match = os == t
+			match = matchesOS(os, t)
 		} else if _, ok := rule.KnownArchSet[t]; ok {
 			if arch == "" {
 				return false
@@ -594,6 +594,20 @@ func isOSArchSpecific(info fileInfo, cgoTags tagLine) (osSpecific, archSpecific 
 	return osSpecific, archSpecific
 }
 
+// matchesOS checks if a value is equal to either an OS value or to any of its
+// aliases.
+func matchesOS(os, value string) bool {
+	if os == value {
+		return true
+	}
+	for _, alias := range rule.OSAliases[os] {
+		if alias == value {
+			return true
+		}
+	}
+	return false
+}
+
 // checkConstraints determines whether build constraints are satisfied on
 // a given platform.
 //
@@ -608,7 +622,7 @@ func isOSArchSpecific(info fileInfo, cgoTags tagLine) (osSpecific, archSpecific 
 // is a list tags from +build comments found near the top of the file. cgoTags
 // is an extra set of tags in a #cgo directive.
 func checkConstraints(c *config.Config, os, arch, osSuffix, archSuffix string, fileTags []tagLine, cgoTags tagLine) bool {
-	if osSuffix != "" && osSuffix != os || archSuffix != "" && archSuffix != arch {
+	if osSuffix != "" && !matchesOS(os, osSuffix) || archSuffix != "" && archSuffix != arch {
 		return false
 	}
 	for _, l := range fileTags {

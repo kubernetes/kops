@@ -2,12 +2,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["lang.go"],
+    srcs = [
+        "lang.go",
+        "update.go",
+    ],
     importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/language",
     importpath = "github.com/bazelbuild/bazel-gazelle/language",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/config:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/repo:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/resolve:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
     ],

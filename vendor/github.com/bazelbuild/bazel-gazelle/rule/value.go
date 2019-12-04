@@ -37,6 +37,50 @@ type GlobValue struct {
 	Excludes []string
 }
 
+// BzlExprValue is implemented by types that have custom translations
+// to Starlark values.
+type BzlExprValue interface {
+	BzlExpr() bzl.Expr
+}
+
+// SelectStringListValue is a value that can be translated to a Bazel
+// select expression that picks a string list based on a string condition.
+type SelectStringListValue map[string][]string
+
+func (s SelectStringListValue) BzlExpr() bzl.Expr {
+	defaultKey := "//conditions:default"
+	keys := make([]string, 0, len(s))
+	haveDefaultKey := false
+	for key := range s {
+		if key == defaultKey {
+			haveDefaultKey = true
+		} else {
+			keys = append(keys, key)
+		}
+	}
+	sort.Strings(keys)
+	if haveDefaultKey {
+		keys = append(keys, defaultKey)
+	}
+
+	args := make([]bzl.Expr, 0, len(s))
+	for _, key := range keys {
+		value := ExprFromValue(s[key])
+		if key != defaultKey {
+			value.(*bzl.ListExpr).ForceMultiLine = true
+		}
+		args = append(args, &bzl.KeyValueExpr{
+			Key:   &bzl.StringExpr{Value: key},
+			Value: value,
+		})
+	}
+	sel := &bzl.CallExpr{
+		X:    &bzl.Ident{Name: "select"},
+		List: []bzl.Expr{&bzl.DictExpr{List: args, ForceMultiLine: true}},
+	}
+	return sel
+}
+
 // ExprFromValue converts a value into an expression that can be written into
 // a Bazel build file. The following types of values can be converted:
 //
@@ -51,6 +95,9 @@ type GlobValue struct {
 func ExprFromValue(val interface{}) bzl.Expr {
 	if e, ok := val.(bzl.Expr); ok {
 		return e
+	}
+	if be, ok := val.(BzlExprValue); ok {
+		return be.BzlExpr()
 	}
 
 	rv := reflect.ValueOf(val)
@@ -85,23 +132,14 @@ func ExprFromValue(val interface{}) bzl.Expr {
 		sort.Sort(byString(rkeys))
 		args := make([]bzl.Expr, len(rkeys))
 		for i, rk := range rkeys {
-			label := fmt.Sprintf("@io_bazel_rules_go//go/platform:%s", mapKeyString(rk))
-			k := &bzl.StringExpr{Value: label}
+			k := &bzl.StringExpr{Value: mapKeyString(rk)}
 			v := ExprFromValue(rv.MapIndex(rk).Interface())
 			if l, ok := v.(*bzl.ListExpr); ok {
 				l.ForceMultiLine = true
 			}
 			args[i] = &bzl.KeyValueExpr{Key: k, Value: v}
 		}
-		args = append(args, &bzl.KeyValueExpr{
-			Key:   &bzl.StringExpr{Value: "//conditions:default"},
-			Value: &bzl.ListExpr{},
-		})
-		sel := &bzl.CallExpr{
-			X:    &bzl.Ident{Name: "select"},
-			List: []bzl.Expr{&bzl.DictExpr{List: args, ForceMultiLine: true}},
-		}
-		return sel
+		return &bzl.DictExpr{List: args, ForceMultiLine: true}
 
 	case reflect.Struct:
 		switch val := val.(type) {
@@ -119,35 +157,6 @@ func ExprFromValue(val interface{}) bzl.Expr {
 				X:    &bzl.LiteralExpr{Token: "glob"},
 				List: globArgs,
 			}
-
-		case PlatformStrings:
-			var pieces []bzl.Expr
-			if len(val.Generic) > 0 {
-				pieces = append(pieces, ExprFromValue(val.Generic))
-			}
-			if len(val.OS) > 0 {
-				pieces = append(pieces, ExprFromValue(val.OS))
-			}
-			if len(val.Arch) > 0 {
-				pieces = append(pieces, ExprFromValue(val.Arch))
-			}
-			if len(val.Platform) > 0 {
-				pieces = append(pieces, ExprFromValue(val.Platform))
-			}
-			if len(pieces) == 0 {
-				return &bzl.ListExpr{}
-			} else if len(pieces) == 1 {
-				return pieces[0]
-			} else {
-				e := pieces[0]
-				if list, ok := e.(*bzl.ListExpr); ok {
-					list.ForceMultiLine = true
-				}
-				for _, piece := range pieces[1:] {
-					e = &bzl.BinaryExpr{X: e, Y: piece, Op: "+"}
-				}
-				return e
-			}
 		}
 	}
 
@@ -159,8 +168,6 @@ func mapKeyString(k reflect.Value) string {
 	switch s := k.Interface().(type) {
 	case string:
 		return s
-	case Platform:
-		return s.String()
 	default:
 		log.Panicf("unexpected map key: %v", k)
 		return ""

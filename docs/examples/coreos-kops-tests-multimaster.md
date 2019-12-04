@@ -47,7 +47,7 @@ export KOPS_STATE_STORE=s3://my-kops-s3-bucket-for-cluster-state
 Some things to note from here:
 
 - "NAME" will be an environment variable that we'll use from now in order to refer to our cluster name. For this practical exercise, our cluster name is "coreosbasedkopscluster.k8s.local".
-- Because we'll use gossip DNS instead of a valid DNS domain on AWS ROUTE53 service, our cluster name needs to include the string **".k8s.local"** at the end (this is covered on our AWS tutorials). You can see more about this on our [Getting Started Doc.](https://github.com/kubernetes/kops/blob/master/docs/aws.md)
+- Because we'll use gossip DNS instead of a valid DNS domain on AWS ROUTE53 service, our cluster name needs to include the string **".k8s.local"** at the end (this is covered on our AWS tutorials). You can see more about this on our [Getting Started Doc.](../getting_started/aws.md)
 
 
 ## COREOS IMAGE INFORMATION:
@@ -119,7 +119,7 @@ aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
     --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}' \
 	--output table
 
-	
+
 ---------------------------------------------------
 |                 DescribeImages                  |
 +----+--------------------------------------------+
@@ -273,7 +273,7 @@ curl http://54.210.119.98
 curl http://34.200.247.63
 <html><body><h1>It works!</h1></body></html>
 
-``` 
+```
 
 **NOTE:** If you are replicating this exercise in a production environment, use a "real" load balancer in order to expose your replicated services. We are here just testing things so we really don't care right now about that, but, if you are doing this for a "real" production environment, either use an AWS ELB service, or an nginx ingress controller as described in our documentation: [NGINX Based ingress controller](https://github.com/kubernetes/kops/tree/master/addons/ingress-nginx).
 

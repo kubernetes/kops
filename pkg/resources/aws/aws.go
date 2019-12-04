@@ -230,7 +230,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 
 		isMain := false
 		for _, a := range rt.Associations {
-			if aws.BoolValue(a.Main) == true {
+			if aws.BoolValue(a.Main) {
 				isMain = true
 			}
 		}
@@ -258,9 +258,7 @@ func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*aut
 		LaunchConfigurationNames: []*string{&name},
 	}
 	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
-		for _, t := range p.LaunchConfigurations {
-			results = append(results, t)
-		}
+		results = append(results, p.LaunchConfigurations...)
 		return true
 	})
 	if err != nil {
@@ -1094,9 +1092,7 @@ func DescribeInternetGateways(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
 	}
 
 	var gateways []*ec2.InternetGateway
-	for _, o := range response.InternetGateways {
-		gateways = append(gateways, o)
-	}
+	gateways = append(gateways, response.InternetGateways...)
 
 	return gateways, nil
 }
@@ -1116,9 +1112,7 @@ func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway,
 
 	var gateways []*ec2.InternetGateway
 
-	for _, igw := range response.InternetGateways {
-		gateways = append(gateways, igw)
-	}
+	gateways = append(gateways, response.InternetGateways...)
 
 	return gateways, nil
 }

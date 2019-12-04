@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "build.go",
+        "sort.go",
         "unmarshal.go",
         "xml_to_struct.go",
     ],

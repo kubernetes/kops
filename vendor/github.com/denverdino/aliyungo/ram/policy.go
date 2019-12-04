@@ -24,7 +24,8 @@ type PolicyListResponse struct {
 
 type PolicyResponse struct {
 	RamCommonResponse
-	Policy Policy
+	Policy               Policy
+	DefaultPolicyVersion PolicyVersion
 }
 
 type PolicyQueryRequest struct {

@@ -2,9 +2,10 @@ package slb
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/util"
-	"time"
 )
 
 type AddressType string
@@ -19,6 +20,13 @@ type InternetChargeType string
 const (
 	PayByBandwidth = InternetChargeType("paybybandwidth")
 	PayByTraffic   = InternetChargeType("paybytraffic")
+)
+
+type AddressIPVersionType string
+
+const (
+	IPv4 = AddressIPVersionType("ipv4")
+	IPv6 = AddressIPVersionType("ipv6")
 )
 
 type LoadBalancerSpecType string
@@ -43,6 +51,8 @@ type CreateLoadBalancerArgs struct {
 	MasterZoneId       string
 	SlaveZoneId        string
 	LoadBalancerSpec   LoadBalancerSpecType
+	AddressIPVersion   AddressIPVersionType
+	DeleteProtection   FlagType
 }
 
 type CreateLoadBalancerResponse struct {
@@ -53,6 +63,9 @@ type CreateLoadBalancerResponse struct {
 	VpcId            string
 	VSwitchId        string
 	LoadBalancerName string
+	MasterZoneId     string
+	SlaveZoneId      string
+	AddressIPVersion AddressIPVersionType
 }
 
 // CreateLoadBalancer create loadbalancer
@@ -186,16 +199,19 @@ type DescribeLoadBalancersArgs struct {
 	Address            string
 	InternetChargeType InternetChargeType
 	ServerId           string
+	Tags               string
 }
 
 type ListenerPortAndProtocolType struct {
 	ListenerPort     int
 	ListenerProtocol string
+	Description      string
 }
 
 type BackendServerType struct {
 	ServerId string
 	Weight   int
+	Type     string
 }
 
 type LoadBalancerType struct {
@@ -213,6 +229,7 @@ type LoadBalancerType struct {
 	InternetChargeType InternetChargeType
 	CreateTime         string //Why not ISO 6801
 	CreateTimeStamp    util.ISO6801Time
+	DeleteProtection   FlagType
 	ListenerPorts      struct {
 		ListenerPort []int
 	}
@@ -223,6 +240,9 @@ type LoadBalancerType struct {
 		BackendServer []BackendServerType
 	}
 	LoadBalancerSpec LoadBalancerSpecType
+	MasterZoneId     string
+	SlaveZoneId      string
+	AddressIPVersion AddressIPVersionType
 }
 
 type DescribeLoadBalancersResponse struct {
@@ -317,4 +337,23 @@ func (client *Client) WaitForLoadBalancerAsyn(loadBalancerId string, status Stat
 		time.Sleep(DefaultWaitForInterval * time.Second)
 	}
 	return nil
+}
+
+type SetLoadBalancerDeleteProtectionArgs struct {
+	LoadBalancerId   string
+	DeleteProtection FlagType
+	RegionId         common.Region
+}
+
+type SetLoadBalancerDeleteProtectionResponse struct {
+	common.Response
+}
+
+// SetLoadBalancerDeleteProtection loadbalancer delete protection
+//
+// You can read doc at https://help.aliyun.com/document_detail/122674.html?spm=a2c4g.11186623.6.720.694f4265hwOdXQ
+func (client *Client) SetLoadBalancerDeleteProtection(args *SetLoadBalancerDeleteProtectionArgs) (err error) {
+	response := &SetLoadBalancerDeleteProtectionResponse{}
+	err = client.Invoke("SetLoadBalancerDeleteProtection", args, response)
+	return err
 }

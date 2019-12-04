@@ -9,7 +9,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"hash"
-	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -124,7 +123,7 @@ func TsigGenerate(m *Msg, secret, requestMAC string, timersOnly bool) ([]byte, s
 	default:
 		return nil, "", ErrKeyAlg
 	}
-	io.WriteString(h, string(buf))
+	h.Write(buf)
 	t.MAC = hex.EncodeToString(h.Sum(nil))
 	t.MACSize = uint16(len(t.MAC) / 2) // Size is half!
 
@@ -208,6 +207,9 @@ func tsigBuffer(msgbuf []byte, rr *TSIG, requestMAC string, timersOnly bool) []b
 	if rr.Fudge == 0 {
 		rr.Fudge = 300 // Standard (RFC) default.
 	}
+
+	// Replace message ID in header with original ID from TSIG
+	binary.BigEndian.PutUint16(msgbuf[0:2], rr.OrigId)
 
 	if requestMAC != "" {
 		m := new(macWireFmt)

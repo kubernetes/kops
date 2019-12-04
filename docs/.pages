@@ -7,4 +7,4 @@ arrange:
 - examples
 - tutorial
 - releases
-- aws.md
+- getting_started/aws.md

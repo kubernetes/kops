@@ -30,19 +30,19 @@ en alpha, y otras plataformas planeadas.
 
 ## Lanzando un anfitrión de Kubernetes cluster en AWS o GCE
 
-Para reproducir exactamente el demo anterior, visualizalo en el [tutorial](/docs/aws.md) para
+Para reproducir exactamente el demo anterior, visualizalo en el [tutorial](/docs/getting_started/aws.md) para
 lanzar un anfitrión de Kubernetes cluster en AWS.
 
-Para instalar un Kubernetes cluster en GCE por fabor siga esta [guide](/docs/tutorial/gce.md).
+Para instalar un Kubernetes cluster en GCE por fabor siga esta [guide](/docs/getting_started/gce.md).
 
 
 ## Caracteristicas
 
-* Automatiza el aprovisionamiento de Kubernetes clusters en [AWS](/docs/aws.md) y [GCE](/docs/tutorial/gce.md)
+* Automatiza el aprovisionamiento de Kubernetes clusters en [AWS](/docs/getting_started/aws.md) y [GCE](/docs/getting_started/gce.md)
 * Un Despliegue Altamente Disponible (HA) Kubernetes Masters
 * Construye en un modelo de estado sincronizado para **dry-runs** y **idempotency** automático
 * Capacidad de generar [Terraform](/docs/terraform.md)
-* Soporta un Kubernetes personalizado [add-ons](/docs/addons.md)
+* Soporta un Kubernetes personalizado [add-ons](/docs/operations/addons.md)
 * Línea de comando [autocompletion](/docs/cli/kops_completion.md)
 * YAML Archivo de Manifiesto Basado en API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * [Templating](/docs/cluster_template.md) y ejecutar modos de simulacro para crear

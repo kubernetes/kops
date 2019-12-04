@@ -168,7 +168,6 @@ func (t *CloudInitTarget) AddCommand(addBehaviour AddBehaviour, args ...string) 
 				return
 			}
 		}
-		break
 
 	default:
 		klog.Fatalf("unknown AddBehaviour: %v", addBehaviour)

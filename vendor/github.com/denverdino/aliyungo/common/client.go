@@ -69,7 +69,16 @@ func (client *Client) NewInit(endpoint, version, accessKeyId, accessKeySecret, s
 	client.Init(endpoint, version, accessKeyId, accessKeySecret)
 	client.serviceCode = serviceCode
 	client.regionID = regionID
-	client.setEndpointByLocation(regionID, serviceCode, accessKeyId, accessKeySecret, client.securityToken)
+}
+
+// Initialize properties of a client instance including regionID
+//only for hz regional Domain
+func (client *Client) NewInit4RegionalDomain(endpoint, version, accessKeyId, accessKeySecret, serviceCode string, regionID Region) {
+	client.Init(endpoint, version, accessKeyId, accessKeySecret)
+	client.serviceCode = serviceCode
+	client.regionID = regionID
+
+	client.setEndpoint4RegionalDomain(client.regionID,client.serviceCode,client.AccessKeyId,client.AccessKeySecret,client.securityToken)
 }
 
 // Intialize client object when all properties are ready
@@ -86,22 +95,64 @@ func (client *Client) InitClient() *Client {
 			TLSHandshakeTimeout: time.Duration(handshakeTimeout) * time.Second}
 		client.httpClient = &http.Client{Transport: t}
 	}
-	client.setEndpointByLocation(client.regionID, client.serviceCode, client.AccessKeyId, client.AccessKeySecret, client.securityToken)
 	return client
 }
+
+// Intialize client object when all properties are ready
+//only for regional domain hz
+func (client *Client) InitClient4RegionalDomain() *Client {
+	client.debug = false
+	handshakeTimeout, err := strconv.Atoi(os.Getenv("TLSHandshakeTimeout"))
+	if err != nil {
+		handshakeTimeout = 0
+	}
+	if handshakeTimeout == 0 {
+		client.httpClient = &http.Client{}
+	} else {
+		t := &http.Transport{
+			TLSHandshakeTimeout: time.Duration(handshakeTimeout) * time.Second}
+		client.httpClient = &http.Client{Transport: t}
+	}
+	//set endpoint
+	client.setEndpoint4RegionalDomain(client.regionID,client.serviceCode,client.AccessKeyId,client.AccessKeySecret,client.securityToken)
+	return client
+}
+
 
 func (client *Client) NewInitForAssumeRole(endpoint, version, accessKeyId, accessKeySecret, serviceCode string, regionID Region, securityToken string) {
 	client.NewInit(endpoint, version, accessKeyId, accessKeySecret, serviceCode, regionID)
 	client.securityToken = securityToken
 }
 
+//getLocationEndpoint
+func (client *Client) getEndpointByLocation() string {
+	locationClient := NewLocationClient(client.AccessKeyId, client.AccessKeySecret, client.securityToken)
+	locationClient.SetDebug(true)
+	return locationClient.DescribeOpenAPIEndpoint(client.regionID, client.serviceCode)
+}
+
 //NewClient using location service
 func (client *Client) setEndpointByLocation(region Region, serviceCode, accessKeyId, accessKeySecret, securityToken string) {
 	locationClient := NewLocationClient(accessKeyId, accessKeySecret, securityToken)
+	locationClient.SetDebug(true)
 	ep := locationClient.DescribeOpenAPIEndpoint(region, serviceCode)
-	if ep == "" {
-		ep = loadEndpointFromFile(region, serviceCode)
+
+	if ep != "" {
+		client.endpoint = ep
 	}
+}
+
+//only for HangZhou Regional Domain, ecs.cn-hangzhou.aliyuncs.com
+func (client *Client) setEndpoint4RegionalDomain(region Region, serviceCode, accessKeyId, accessKeySecret, securityToken string) {
+	for _,service := range RegionalDomainServices{
+		if _,ok := UnitRegions[region];ok && service ==  serviceCode  {
+			client.endpoint = fmt.Sprintf("https://%s.%s.aliyuncs.com",serviceCode,region)
+			return
+		}
+	}
+	locationClient := NewLocationClient(accessKeyId, accessKeySecret, securityToken)
+	locationClient.SetDebug(true)
+	ep := locationClient.DescribeOpenAPIEndpoint(region, serviceCode)
 
 	if ep != "" {
 		client.endpoint = ep
@@ -251,11 +302,33 @@ func (client *Client) SetSecurityToken(securityToken string) {
 	client.securityToken = securityToken
 }
 
+func (client *Client) initEndpoint() error {
+	// if set any value to "CUSTOMIZED_ENDPOINT" could skip location service.
+	// example: export CUSTOMIZED_ENDPOINT=true
+	if os.Getenv("CUSTOMIZED_ENDPOINT") != "" {
+		return nil
+	}
+
+	if client.serviceCode != "" && client.regionID != "" {
+		endpoint := client.getEndpointByLocation()
+		if endpoint == "" {
+			return GetCustomError("InvalidEndpoint", "endpoint is empty,pls check")
+		}
+		client.endpoint = endpoint
+	}
+	return nil
+}
+
 // Invoke sends the raw HTTP request for ECS services
 func (client *Client) Invoke(action string, args interface{}, response interface{}) error {
 	if err := client.ensureProperties(); err != nil {
 		return err
 	}
+
+	//init endpoint
+	//if err := client.initEndpoint(); err != nil {
+	//	return err
+	//}
 
 	request := Request{}
 	request.init(client.version, action, client.AccessKeyId, client.securityToken, client.regionID)
@@ -327,6 +400,11 @@ func (client *Client) Invoke(action string, args interface{}, response interface
 // Invoke sends the raw HTTP request for ECS services
 func (client *Client) InvokeByFlattenMethod(action string, args interface{}, response interface{}) error {
 	if err := client.ensureProperties(); err != nil {
+		return err
+	}
+
+	//init endpoint
+	if err := client.initEndpoint(); err != nil {
 		return err
 	}
 
@@ -405,6 +483,11 @@ func (client *Client) InvokeByAnyMethod(method, action, path string, args interf
 	if err := client.ensureProperties(); err != nil {
 		return err
 	}
+
+	//init endpoint
+	//if err := client.initEndpoint(); err != nil {
+	//	return err
+	//}
 
 	request := Request{}
 	request.init(client.version, action, client.AccessKeyId, client.securityToken, client.regionID)
@@ -499,4 +582,14 @@ func GetClientErrorFromString(str string) error {
 
 func GetClientError(err error) error {
 	return GetClientErrorFromString(err.Error())
+}
+
+func GetCustomError(code, message string) error {
+	return &Error{
+		ErrorResponse: ErrorResponse{
+			Code:    code,
+			Message: message,
+		},
+		StatusCode: 400,
+	}
 }

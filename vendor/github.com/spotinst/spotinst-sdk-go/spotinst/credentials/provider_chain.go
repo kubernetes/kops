@@ -5,16 +5,15 @@ import (
 	"fmt"
 )
 
-// ErrNoValidProvidersFoundInChain Is returned when there are no valid
-// credentials providers in the ChainProvider.
+// ErrNoValidProvidersFoundInChain Is returned when there are no valid credentials
+// providers in the ChainProvider.
 var ErrNoValidProvidersFoundInChain = errors.New("spotinst: no valid credentials providers in chain")
 
-// A ChainProvider will search for a provider which returns credentials
-// and cache that provider until Retrieve is called again.
+// A ChainProvider will search for a provider which returns credentials and cache
+// that provider until Retrieve is called again.
 //
-// The ChainProvider provides a way of chaining multiple providers together
-// which will pick the first available using priority order of the Providers
-// in the list.
+// The ChainProvider provides a way of chaining multiple providers together which
+// will pick the first available using priority order of the Providers in the list.
 //
 // If none of the Providers retrieve valid credentials Value, ChainProvider's
 // Retrieve() will return the error ErrNoValidProvidersFoundInChain.
@@ -23,11 +22,11 @@ var ErrNoValidProvidersFoundInChain = errors.New("spotinst: no valid credentials
 // will cache that Provider for all calls until Retrieve is called again.
 //
 // Example of ChainProvider to be used with an EnvCredentialsProvider and
-// FileCredentialsProvider. In this example EnvProvider will first check if
-// any credentials are available via the environment variables. If there are
-// none ChainProvider will check the next Provider in the list, FileProvider
-// in this case. If FileCredentialsProvider does not return any credentials
-// ChainProvider will return the error ErrNoValidProvidersFoundInChain.
+// FileCredentialsProvider. In this example EnvProvider will first check if any
+// credentials are available via the environment variables. If there are none
+// ChainProvider will check the next Provider in the list, FileProvider in this
+// case. If FileCredentialsProvider does not return any credentials ChainProvider
+// will return the error ErrNoValidProvidersFoundInChain.
 //
 //	creds := credentials.NewChainCredentials(
 //		new(credentials.EnvProvider),
@@ -90,9 +89,10 @@ func (e errorList) Error() string {
 	if size := len(e); size > 0 {
 		for i := 0; i < size; i++ {
 			msg += fmt.Sprintf("%s", e[i].Error())
-			// We check the next index to see if it is within the slice.
-			// If it is, then we append a newline. We do this, because unit tests
-			// could be broken with the additional '\n'.
+
+			// Check the next index to see if it is within the slice. If it is,
+			// append a newline. We do this, because unit tests could be broken
+			// with the additional '\n'.
 			if i+1 < size {
 				msg += "\n"
 			}

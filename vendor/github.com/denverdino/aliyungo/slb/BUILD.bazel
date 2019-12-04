@@ -12,6 +12,7 @@ go_library(
         "servers.go",
         "tags.go",
         "vserver_group.go",
+        "zones.go",
     ],
     importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/slb",
     importpath = "github.com/denverdino/aliyungo/slb",

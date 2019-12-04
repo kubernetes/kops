@@ -35,18 +35,21 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
+	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/resources/spotinst"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/env"
-
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/klog"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -76,6 +79,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return strings.Join(a, sep)
 	}
 
+	sprigTxtFuncMap := sprig.TxtFuncMap()
+	dest["indent"] = sprigTxtFuncMap["indent"]
+
 	dest["ClusterName"] = tf.modelContext.ClusterName
 	dest["HasTag"] = tf.HasTag
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
@@ -92,6 +98,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
+	dest["KopsControllerConfig"] = tf.KopsControllerConfig
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
 
@@ -101,6 +108,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return tf.region
 	}
 
+	if featureflag.EnableExternalCloudController.Enabled() {
+		// will return openstack external ccm image location for current kubernetes version
+		dest["OpenStackCCM"] = tf.OpenStackCCM
+	}
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
@@ -212,7 +223,50 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	if dns.IsGossipHostname(tf.cluster.Spec.MasterInternalName) {
 		argv = append(argv, "--dns=gossip")
-		argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+
+		// Configuration specifically for the DNS controller gossip
+		if tf.cluster.Spec.DNSControllerGossipConfig != nil {
+			if tf.cluster.Spec.DNSControllerGossipConfig.Protocol != nil {
+				argv = append(argv, "--gossip-protocol="+*tf.cluster.Spec.DNSControllerGossipConfig.Protocol)
+			}
+			if tf.cluster.Spec.DNSControllerGossipConfig.Listen != nil {
+				argv = append(argv, "--gossip-listen="+*tf.cluster.Spec.DNSControllerGossipConfig.Listen)
+			}
+			if tf.cluster.Spec.DNSControllerGossipConfig.Secret != nil {
+				argv = append(argv, "--gossip-secret="+*tf.cluster.Spec.DNSControllerGossipConfig.Secret)
+			}
+
+			if tf.cluster.Spec.DNSControllerGossipConfig.Seed != nil {
+				argv = append(argv, "--gossip-seed="+*tf.cluster.Spec.DNSControllerGossipConfig.Seed)
+			} else {
+				argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
+			}
+
+			if tf.cluster.Spec.DNSControllerGossipConfig.Secondary != nil {
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Protocol != nil {
+					argv = append(argv, "--gossip-protocol-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Protocol)
+				}
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Listen != nil {
+					argv = append(argv, "--gossip-listen-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Listen)
+				}
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Secret != nil {
+					argv = append(argv, "--gossip-secret-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Secret)
+				}
+
+				if tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed != nil {
+					argv = append(argv, "--gossip-seed-secondary="+*tf.cluster.Spec.DNSControllerGossipConfig.Secondary.Seed)
+				} else {
+					argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
+				}
+			}
+		} else {
+			// Default to primary mesh and secondary memberlist
+			argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
+
+			argv = append(argv, "--gossip-protocol-secondary=memberlist")
+			argv = append(argv, fmt.Sprintf("--gossip-listen-secondary=0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist))
+			argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
+		}
 	} else {
 		switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 		case kops.CloudProviderAWS:
@@ -252,20 +306,33 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
+// KopsControllerConfig returns the yaml configuration for kops-controller
+func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
+	config := &kopscontrollerconfig.Options{
+		Cloud:      tf.cluster.Spec.CloudProvider,
+		ConfigBase: tf.cluster.Spec.ConfigBase,
+	}
+
+	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
+	b, err := json.Marshal(config)
+	if err != nil {
+		return "", fmt.Errorf("failed to serialize kops-controller config: %v", err)
+	}
+
+	return string(b), nil
+}
+
 // KopsControllerArgv returns the args to kops-controller
 func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
+
 	var argv []string
 
 	argv = append(argv, "/usr/bin/kops-controller")
 
-	argv = append(argv, "--cloud="+tf.cluster.Spec.CloudProvider)
-	argv = append(argv, "--config="+tf.cluster.Spec.ConfigBase)
-
-	// Disable metrics (avoid port conflicts, also risky because we are host network)
-	argv = append(argv, "--metrics-addr=0")
-
-	// Verbose, but not crazy logging
+	// Verbose, but not excessive logging
 	argv = append(argv, "--v=2")
+
+	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config.yaml")
 
 	return argv, nil
 }
@@ -321,4 +388,23 @@ func (tf *TemplateFunctions) KopsSystemEnv() []corev1.EnvVar {
 	envMap := env.BuildSystemComponentEnvVars(&tf.cluster.Spec)
 
 	return envMap.ToEnvVars()
+}
+
+// OpenStackCCM returns OpenStack external cloud controller manager current image
+// with tag specified to k8s version
+func (tf *TemplateFunctions) OpenStackCCM() string {
+	var tag string
+	parsed, err := util.ParseKubernetesVersion(tf.cluster.Spec.KubernetesVersion)
+	if err != nil {
+		tag = "latest"
+	} else {
+		if parsed.Minor == 13 {
+			// The bugfix release
+			tag = "1.13.1"
+		} else {
+			// otherwise we use always .0 ccm image, if needed that can be overrided using clusterspec
+			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
+		}
+	}
+	return fmt.Sprintf("docker.io/k8scloudprovider/openstack-cloud-controller-manager:%s", tag)
 }

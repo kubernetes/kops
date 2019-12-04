@@ -125,7 +125,7 @@ func (c *Context) Render(a, e, changes Task) error {
 
 			switch *lifecycle {
 			case LifecycleExistsAndValidates:
-				return fmt.Errorf("Lifecycle set to ExistsAndValidates, but object was not found")
+				return fmt.Errorf("lifecycle set to ExistsAndValidates, but object was not found")
 			case LifecycleExistsAndWarnIfChanges:
 				return NewExistsAndWarnIfChangesError("Lifecycle set to ExistsAndWarnIfChanges and object was not found.")
 			}
@@ -158,7 +158,7 @@ func (c *Context) Render(a, e, changes Task) error {
 				b.WriteTo(out)
 
 				if *lifecycle == LifecycleExistsAndValidates {
-					return fmt.Errorf("Lifecycle set to ExistsAndValidates, but object did not match")
+					return fmt.Errorf("lifecycle set to ExistsAndValidates, but object did not match")
 				} else {
 					// Warn, but then we continue
 					return nil
@@ -205,7 +205,7 @@ func (c *Context) Render(a, e, changes Task) error {
 		}
 		if match {
 			if renderer != nil {
-				return fmt.Errorf("Found multiple Render methods that could be invokved on %T", e)
+				return fmt.Errorf("found multiple Render methods that could be involved on %T", e)
 			}
 			renderer = &method
 			rendererArgs = args
@@ -213,7 +213,7 @@ func (c *Context) Render(a, e, changes Task) error {
 
 	}
 	if renderer == nil {
-		return fmt.Errorf("Could not find Render method on type %T (target %T)", e, c.Target)
+		return fmt.Errorf("could not find Render method on type %T (target %T)", e, c.Target)
 	}
 	rendererArgs = append(rendererArgs, reflect.ValueOf(a))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(e))

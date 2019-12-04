@@ -240,6 +240,14 @@ type ProtokubeFlags struct {
 
 	// NodeName is the name of the node as will be created in kubernetes.  Primarily used by BootstrapMasterNodeLabels.
 	NodeName string `json:"nodeName,omitempty" flag:"node-name"`
+
+	GossipProtocol *string `json:"gossip-protocol" flag:"gossip-protocol"`
+	GossipListen   *string `json:"gossip-listen" flag:"gossip-listen"`
+	GossipSecret   *string `json:"gossip-secret" flag:"gossip-secret"`
+
+	GossipProtocolSecondary *string `json:"gossip-protocol-secondary" flag:"gossip-protocol-secondary"`
+	GossipListenSecondary   *string `json:"gossip-listen-secondary" flag:"gossip-listen-secondary"`
+	GossipSecretSecondary   *string `json:"gossip-secret-secondary" flag:"gossip-secret-secondary"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -345,6 +353,17 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
 		klog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
 		f.DNSProvider = fi.String("gossip")
+		if t.Cluster.Spec.GossipConfig != nil {
+			f.GossipProtocol = t.Cluster.Spec.GossipConfig.Protocol
+			f.GossipListen = t.Cluster.Spec.GossipConfig.Listen
+			f.GossipSecret = t.Cluster.Spec.GossipConfig.Secret
+
+			if t.Cluster.Spec.GossipConfig.Secondary != nil {
+				f.GossipProtocolSecondary = t.Cluster.Spec.GossipConfig.Secondary.Protocol
+				f.GossipListenSecondary = t.Cluster.Spec.GossipConfig.Secondary.Listen
+				f.GossipSecretSecondary = t.Cluster.Spec.GossipConfig.Secondary.Secret
+			}
+		}
 
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
 		internalSuffix := t.Cluster.Spec.MasterInternalName
@@ -361,7 +380,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderDO:
 				f.DNSProvider = fi.String("digitalocean")
-				f.ClusterID = fi.String(t.Cluster.Name)
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:

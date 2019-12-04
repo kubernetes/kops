@@ -38,7 +38,7 @@ const (
 	FileType_Symlink = "symlink"
 	// FileType_Directory defines a directory
 	FileType_Directory = "directory"
-	// FileType_File is a regualar file
+	// FileType_File is a regular file
 	FileType_File = "file"
 )
 

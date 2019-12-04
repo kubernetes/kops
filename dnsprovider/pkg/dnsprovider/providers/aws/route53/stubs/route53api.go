@@ -60,9 +60,7 @@ func (r *Route53APIStub) ListResourceRecordSetsPages(input *route53.ListResource
 		output.ResourceRecordSets = []*route53.ResourceRecordSet{}
 	} else {
 		for _, rrsets := range r.recordSets[*input.HostedZoneId] {
-			for _, rrset := range rrsets {
-				output.ResourceRecordSets = append(output.ResourceRecordSets, rrset)
-			}
+			output.ResourceRecordSets = append(output.ResourceRecordSets, rrsets...)
 		}
 	}
 	lastPage := true

@@ -310,9 +310,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	t.Tags = tags
 
 	processes := []string{}
-	for _, p := range ig.Spec.SuspendProcesses {
-		processes = append(processes, p)
-	}
+	processes = append(processes, ig.Spec.SuspendProcesses...)
 	t.SuspendProcesses = &processes
 
 	t.InstanceProtection = ig.Spec.InstanceProtection

@@ -1,16 +1,36 @@
 # Migrating from single to multi-master
 
 This document describes how to go from a single-master cluster (created by kops)
-to a multi-master cluster.
+to a multi-master cluster. If you are using etcd-manager you just need to perform some steps of the migration.  
 
-## Warnings
+# etcd-manager 
+
+If you are using etcd-manager, just perform the steps in this section. Etcd-manager is default for kops 1.12. Etcd-manager makes the upgrade to multi-master much smoother. 
+
+The list references steps of the next section. To upgrade from a single master to a cluster with three masters:
+
+- Skip Step 1 since Etcd-manager is doing automatic backups to S3
+- Create Instance Groups (Section 2 below)
+  - create the subnets
+  - create the instance groups (no need to disable the third master, leave minSize and maxSize at 1)
+  - add the masters to your etcd cluster definition (both in section named main and events)
+- Skip Step 3 and 4
+- Now you are ready to update the AWS configuration:
+  - `kops update cluster your-cluster-name` 
+- AWS will launch two new masters, they will be discovered and then configured by etcd-manager
+- check with `kubectl get nodes` to see everything is ready
+- Cleanup (Step 5) to do a rolling restart of all masters (just in case)
+
+# Etcd without etcd-manager 
+
+## 0 - Warnings
 
 This is a risky procedure that **can lead to data-loss** in the etcd cluster.
 Please follow all the backup steps before attempting it. Please read the
 [etcd admin guide](https://github.com/coreos/etcd/blob/v2.2.1/Documentation/admin_guide.md)
 before attempting it.
 
-We can migrate from a single-master cluster to a multi-master cluster, but this is a complicated operation. It is easier to create a multi-master cluster using Kops (described [here](https://github.com/kubernetes/kops/blob/master/docs/high_availability.md)). If possible, try to plan this at time of cluster creation.
+We can migrate from a single-master cluster to a multi-master cluster, but this is a complicated operation. It is easier to create a multi-master cluster using Kops (described [here](operations/high_availability.md)). If possible, try to plan this at time of cluster creation.
 
 During this procedure, you will experience **downtime** on the API server, but
 not on the end user services. During this downtime, existing pods will continue
@@ -60,10 +80,45 @@ $ scp -r admin@<master-node>:backup-events/ .
 
 ## 2 - Create instance groups
 
-### a - Create new master instance group
+### a - Create new subnets
+
+Add new subnets for your availability zones. Also create subnets of type Utility if they are defined in your configuration. 
+```bash
+kops edit cluster
+```
+
+Change the subnet section. An example might be: (**Adapt to your configuration!**)
+```yaml
+  - cidr: 172.20.32.0/19
+    name: eu-west-1a
+    type: Private
+    zone: eu-west-1a
+  - cidr: 172.20.64.0/19
+    name: eu-west-1b
+    type: Private
+    zone: eu-west-1b
+  - cidr: 172.20.96.0/19
+    name: eu-west-1c
+    type: Private
+    zone: eu-west-1c
+  - cidr: 172.20.0.0/22
+    name: utility-eu-west-1a
+    type: Utility
+    zone: eu-west-1a
+  - cidr: 172.20.4.0/22
+    name: utility-eu-west-1b
+    type: Utility
+    zone: eu-west-1b
+  - cidr: 172.20.8.0/22
+    name: utility-eu-west-1c
+    type: Utility
+    zone: eu-west-1c
+```
+
+### b - Create new master instance group
 
 Create 1 kops instance group for the first one of your new masters, in
-a different AZ from the existing one.
+a different AZ from the existing one. 
 
 ```bash
 $ kops create instancegroup master-<availability-zone2> --subnet <availability-zone2> --role Master
@@ -76,8 +131,10 @@ $ kops create ig master-eu-west-1b --subnet eu-west-1b --role Master
 
  * ``maxSize`` and ``minSize`` should be 1,
  * only one zone should be listed.
+ * adjust the machineType
+ * adjust the image to the OS you are using
 
-### b - Create third master instance group
+### c - Create third master instance group
 
 Instance group for the third master, in a different AZ from the existing one, is
 also required. However, real EC2 instance is not required until the second master launches.
@@ -93,9 +150,12 @@ $ kops create ig master-eu-west-1c --subnet eu-west-1c --role Master
 ```
 
  * ``maxSize`` and ``minSize`` should be **0**,
+ * if you are using etcd-manager, you just can leave the `maxSize` and `minSize` at **1**.
  * only one zone should be listed.
+ * adjust the machineType
+ * adjust the image to the OS you are using
 
-### c - Reference the new masters in your cluster configuration
+### d - Reference the new masters in your cluster configuration
 
 *kops will refuse to have only 2 members in the etcd clusters, so we have to
 reference a third one, even if we have not created it yet.*
@@ -136,7 +196,6 @@ etcdClusters:
     name: events
 ```
 
-
 ## 3 - Add a new master
 
 ### a - Add a new member to the etcd clusters
@@ -172,7 +231,7 @@ Reinitialize the etcd instances:
 ``ETCD_INITIAL_CLUSTER_STATE`` variable to ``existing``.
 * In the same files, remove the third non-existing member from
 ``ETCD_INITIAL_CLUSTER``.
-* Delete the containers and the data directories:
+* Delete the containers and the data directories. Mount paths can be determined with the help of ``docker inspect <container-id> | grep /mnt/master-vol``:
 
 ```bash
 root@ip-172-20-116-230:~# docker stop $(docker ps | grep "k8s.gcr.io/etcd" | awk '{print $1}')
@@ -244,11 +303,11 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
  * In both ``/etc/kubernetes/manifests/etcd-events.manifest`` and
  ``/etc/kubernetes/manifests/etcd.manifest``, edit the
  ``ETCD_INITIAL_CLUSTER_STATE`` variable to ``existing``.
- * Delete the containers and the data directories:
+ * Delete the containers and the data directories. Mount paths can be determined with the help of ``docker inspect <container-id> | grep /mnt/master-vol``:
 
  ```bash
  root@ip-172-20-139-130:~# docker stop $(docker ps | grep "k8s.gcr.io/etcd" | awk '{print $1}')
- root@ip-172-20-139-130:~# rm -r /mnt/master-vol-019796c3511a91b4f//var/etcd/data-events/member/
+ root@ip-172-20-139-130:~# rm -r /mnt/master-vol-019796c3511a91b4f/var/etcd/data-events/member/
  root@ip-172-20-139-130:~# rm -r /mnt/master-vol-0c89fd6f6a256b686/var/etcd/data/member/
  ```
 

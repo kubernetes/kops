@@ -3478,7 +3478,7 @@ func (c *EC2) CreateCustomerGatewayRequest(input *CreateCustomerGatewayInput) (r
 // gateway is the appliance at your end of the VPN connection. (The device on
 // the AWS side of the VPN connection is the virtual private gateway.) You must
 // provide the Internet-routable IP address of the customer gateway's external
-// interface. The IP address must be static and may be behind a device performing
+// interface. The IP address must be static and can be behind a device performing
 // network address translation (NAT).
 //
 // For devices that use Border Gateway Protocol (BGP), you can also provide
@@ -3493,11 +3493,10 @@ func (c *EC2) CreateCustomerGatewayRequest(input *CreateCustomerGatewayInput) (r
 // For more information, see AWS Site-to-Site VPN (https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html)
 // in the AWS Site-to-Site VPN User Guide.
 //
-// You cannot create more than one customer gateway with the same VPN type,
-// IP address, and BGP ASN parameter values. If you run an identical request
-// more than one time, the first request creates the customer gateway, and subsequent
-// requests return information about the existing customer gateway. The subsequent
-// requests do not create new customer gateway resources.
+// To create more than one customer gateway with the same VPN type, IP address,
+// and BGP ASN, specify a unique device name for each customer gateway. Identical
+// requests return information about the existing customer gateway and do not
+// create new customer gateways.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5619,7 +5618,7 @@ func (c *EC2) CreateSnapshotsRequest(input *CreateSnapshotsInput) (req *request.
 // Creates crash-consistent snapshots of multiple EBS volumes and stores the
 // data in S3. Volumes are chosen by specifying an instance. Any attached volumes
 // will produce one snapshot each that is crash-consistent across the instance.
-// Boot volumes can be excluded by changing the paramaters.
+// Boot volumes can be excluded by changing the parameters.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5958,8 +5957,10 @@ func (c *EC2) CreateTrafficMirrorFilterRequest(input *CreateTrafficMirrorFilterI
 // A Traffic Mirror filter is a set of rules that defines the traffic to mirror.
 //
 // By default, no traffic is mirrored. To mirror traffic, use CreateTrafficMirrorFilterRule
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTrafficMirrorFilterRule.htm)
 // to add Traffic Mirror rules to the filter. The rules you add define what
 // traffic gets mirrored. You can also use ModifyTrafficMirrorFilterNetworkServices
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyTrafficMirrorFilterNetworkServices.html)
 // to mirror supported network services.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -6034,7 +6035,7 @@ func (c *EC2) CreateTrafficMirrorFilterRuleRequest(input *CreateTrafficMirrorFil
 
 // CreateTrafficMirrorFilterRule API operation for Amazon Elastic Compute Cloud.
 //
-// Creates a Traffic Mirror rule.
+// Creates a Traffic Mirror filter rule.
 //
 // A Traffic Mirror rule defines the Traffic Mirror source traffic to mirror.
 //
@@ -6122,8 +6123,8 @@ func (c *EC2) CreateTrafficMirrorSessionRequest(input *CreateTrafficMirrorSessio
 // can be in the same VPC, or in a different VPC connected via VPC peering or
 // a transit gateway.
 //
-// By default, no traffic is mirrored. Use CreateTrafficMirrorFilter to create
-// filter rules that specify the traffic to mirror.
+// By default, no traffic is mirrored. Use CreateTrafficMirrorFilter (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTrafficMirrorFilter.htm)
+// to create filter rules that specify the traffic to mirror.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6206,7 +6207,8 @@ func (c *EC2) CreateTrafficMirrorTargetRequest(input *CreateTrafficMirrorTargetI
 //
 // A Traffic Mirror target can be a network interface, or a Network Load Balancer.
 //
-// To use the target in a Traffic Mirror session, use CreateTrafficMirrorSession.
+// To use the target in a Traffic Mirror session, use CreateTrafficMirrorSession
+// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTrafficMirrorSession.htm).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7128,7 +7130,7 @@ func (c *EC2) CreateVpnConnectionRequest(input *CreateVpnConnectionInput) (req *
 // CreateVpnConnection API operation for Amazon Elastic Compute Cloud.
 //
 // Creates a VPN connection between an existing virtual private gateway and
-// a VPN customer gateway. The supported connection types is ipsec.1.
+// a VPN customer gateway. The supported connection type is ipsec.1.
 //
 // The response includes information that you need to give to your network administrator
 // to configure your customer gateway.
@@ -8701,6 +8703,80 @@ func (c *EC2) DeletePlacementGroup(input *DeletePlacementGroupInput) (*DeletePla
 // for more information on using Contexts.
 func (c *EC2) DeletePlacementGroupWithContext(ctx aws.Context, input *DeletePlacementGroupInput, opts ...request.Option) (*DeletePlacementGroupOutput, error) {
 	req, out := c.DeletePlacementGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteQueuedReservedInstances = "DeleteQueuedReservedInstances"
+
+// DeleteQueuedReservedInstancesRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteQueuedReservedInstances operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteQueuedReservedInstances for more information on using the DeleteQueuedReservedInstances
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteQueuedReservedInstancesRequest method.
+//    req, resp := client.DeleteQueuedReservedInstancesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteQueuedReservedInstances
+func (c *EC2) DeleteQueuedReservedInstancesRequest(input *DeleteQueuedReservedInstancesInput) (req *request.Request, output *DeleteQueuedReservedInstancesOutput) {
+	op := &request.Operation{
+		Name:       opDeleteQueuedReservedInstances,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteQueuedReservedInstancesInput{}
+	}
+
+	output = &DeleteQueuedReservedInstancesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteQueuedReservedInstances API operation for Amazon Elastic Compute Cloud.
+//
+// Deletes the queued purchases for the specified Reserved Instances.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DeleteQueuedReservedInstances for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteQueuedReservedInstances
+func (c *EC2) DeleteQueuedReservedInstances(input *DeleteQueuedReservedInstancesInput) (*DeleteQueuedReservedInstancesOutput, error) {
+	req, out := c.DeleteQueuedReservedInstancesRequest(input)
+	return out, req.Send()
+}
+
+// DeleteQueuedReservedInstancesWithContext is the same as DeleteQueuedReservedInstances with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteQueuedReservedInstances for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DeleteQueuedReservedInstancesWithContext(ctx aws.Context, input *DeleteQueuedReservedInstancesInput, opts ...request.Option) (*DeleteQueuedReservedInstancesOutput, error) {
+	req, out := c.DeleteQueuedReservedInstancesRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -11269,10 +11345,12 @@ func (c *EC2) DescribeByoipCidrsPagesWithContext(ctx aws.Context, input *Describ
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeByoipCidrsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeByoipCidrsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -11400,10 +11478,12 @@ func (c *EC2) DescribeCapacityReservationsPagesWithContext(ctx aws.Context, inpu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeCapacityReservationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeCapacityReservationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -11533,10 +11613,12 @@ func (c *EC2) DescribeClassicLinkInstancesPagesWithContext(ctx aws.Context, inpu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeClassicLinkInstancesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClassicLinkInstancesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -11663,10 +11745,12 @@ func (c *EC2) DescribeClientVpnAuthorizationRulesPagesWithContext(ctx aws.Contex
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeClientVpnAuthorizationRulesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClientVpnAuthorizationRulesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -11794,10 +11878,12 @@ func (c *EC2) DescribeClientVpnConnectionsPagesWithContext(ctx aws.Context, inpu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeClientVpnConnectionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClientVpnConnectionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -11924,10 +12010,12 @@ func (c *EC2) DescribeClientVpnEndpointsPagesWithContext(ctx aws.Context, input 
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeClientVpnEndpointsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClientVpnEndpointsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -12054,10 +12142,12 @@ func (c *EC2) DescribeClientVpnRoutesPagesWithContext(ctx aws.Context, input *De
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeClientVpnRoutesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClientVpnRoutesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -12184,10 +12274,12 @@ func (c *EC2) DescribeClientVpnTargetNetworksPagesWithContext(ctx aws.Context, i
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeClientVpnTargetNetworksOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClientVpnTargetNetworksOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -12472,10 +12564,12 @@ func (c *EC2) DescribeDhcpOptionsPagesWithContext(ctx aws.Context, input *Descri
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeDhcpOptionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeDhcpOptionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -12602,10 +12696,12 @@ func (c *EC2) DescribeEgressOnlyInternetGatewaysPagesWithContext(ctx aws.Context
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeEgressOnlyInternetGatewaysOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeEgressOnlyInternetGatewaysOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -12685,6 +12781,80 @@ func (c *EC2) DescribeElasticGpusWithContext(ctx aws.Context, input *DescribeEla
 	return out, req.Send()
 }
 
+const opDescribeExportImageTasks = "DescribeExportImageTasks"
+
+// DescribeExportImageTasksRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeExportImageTasks operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeExportImageTasks for more information on using the DescribeExportImageTasks
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeExportImageTasksRequest method.
+//    req, resp := client.DescribeExportImageTasksRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeExportImageTasks
+func (c *EC2) DescribeExportImageTasksRequest(input *DescribeExportImageTasksInput) (req *request.Request, output *DescribeExportImageTasksOutput) {
+	op := &request.Operation{
+		Name:       opDescribeExportImageTasks,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeExportImageTasksInput{}
+	}
+
+	output = &DescribeExportImageTasksOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeExportImageTasks API operation for Amazon Elastic Compute Cloud.
+//
+// Describes the specified export image tasks or all your export image tasks.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeExportImageTasks for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeExportImageTasks
+func (c *EC2) DescribeExportImageTasks(input *DescribeExportImageTasksInput) (*DescribeExportImageTasksOutput, error) {
+	req, out := c.DescribeExportImageTasksRequest(input)
+	return out, req.Send()
+}
+
+// DescribeExportImageTasksWithContext is the same as DescribeExportImageTasks with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeExportImageTasks for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeExportImageTasksWithContext(ctx aws.Context, input *DescribeExportImageTasksInput, opts ...request.Option) (*DescribeExportImageTasksOutput, error) {
+	req, out := c.DescribeExportImageTasksRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeExportTasks = "DescribeExportTasks"
 
 // DescribeExportTasksRequest generates a "aws/request.Request" representing the
@@ -12729,7 +12899,8 @@ func (c *EC2) DescribeExportTasksRequest(input *DescribeExportTasksInput) (req *
 
 // DescribeExportTasks API operation for Amazon Elastic Compute Cloud.
 //
-// Describes the specified export tasks or all your export tasks.
+// Describes the specified export instance tasks or all your export instance
+// tasks.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13030,10 +13201,12 @@ func (c *EC2) DescribeFleetsPagesWithContext(ctx aws.Context, input *DescribeFle
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeFleetsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeFleetsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -13162,10 +13335,12 @@ func (c *EC2) DescribeFlowLogsPagesWithContext(ctx aws.Context, input *DescribeF
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeFlowLogsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeFlowLogsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -13368,10 +13543,12 @@ func (c *EC2) DescribeFpgaImagesPagesWithContext(ctx aws.Context, input *Describ
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeFpgaImagesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeFpgaImagesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -13506,10 +13683,12 @@ func (c *EC2) DescribeHostReservationOfferingsPagesWithContext(ctx aws.Context, 
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeHostReservationOfferingsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeHostReservationOfferingsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -13636,10 +13815,12 @@ func (c *EC2) DescribeHostReservationsPagesWithContext(ctx aws.Context, input *D
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeHostReservationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeHostReservationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -13770,10 +13951,12 @@ func (c *EC2) DescribeHostsPagesWithContext(ctx aws.Context, input *DescribeHost
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeHostsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeHostsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -13900,10 +14083,12 @@ func (c *EC2) DescribeIamInstanceProfileAssociationsPagesWithContext(ctx aws.Con
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeIamInstanceProfileAssociationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeIamInstanceProfileAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -14372,10 +14557,12 @@ func (c *EC2) DescribeImportImageTasksPagesWithContext(ctx aws.Context, input *D
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeImportImageTasksOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeImportImageTasksOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -14502,10 +14689,12 @@ func (c *EC2) DescribeImportSnapshotTasksPagesWithContext(ctx aws.Context, input
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeImportSnapshotTasksOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeImportSnapshotTasksOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -14733,10 +14922,12 @@ func (c *EC2) DescribeInstanceCreditSpecificationsPagesWithContext(ctx aws.Conte
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeInstanceCreditSpecificationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInstanceCreditSpecificationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -14884,10 +15075,12 @@ func (c *EC2) DescribeInstanceStatusPagesWithContext(ctx aws.Context, input *Des
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeInstanceStatusOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInstanceStatusOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -15029,10 +15222,12 @@ func (c *EC2) DescribeInstancesPagesWithContext(ctx aws.Context, input *Describe
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeInstancesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInstancesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -15159,10 +15354,12 @@ func (c *EC2) DescribeInternetGatewaysPagesWithContext(ctx aws.Context, input *D
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeInternetGatewaysOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInternetGatewaysOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -15367,10 +15564,12 @@ func (c *EC2) DescribeLaunchTemplateVersionsPagesWithContext(ctx aws.Context, in
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeLaunchTemplateVersionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeLaunchTemplateVersionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -15497,10 +15696,12 @@ func (c *EC2) DescribeLaunchTemplatesPagesWithContext(ctx aws.Context, input *De
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeLaunchTemplatesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeLaunchTemplatesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -15629,10 +15830,12 @@ func (c *EC2) DescribeMovingAddressesPagesWithContext(ctx aws.Context, input *De
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeMovingAddressesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeMovingAddressesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -15759,10 +15962,12 @@ func (c *EC2) DescribeNatGatewaysPagesWithContext(ctx aws.Context, input *Descri
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeNatGatewaysOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeNatGatewaysOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -15892,10 +16097,12 @@ func (c *EC2) DescribeNetworkAclsPagesWithContext(ctx aws.Context, input *Descri
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeNetworkAclsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeNetworkAclsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -16097,10 +16304,12 @@ func (c *EC2) DescribeNetworkInterfacePermissionsPagesWithContext(ctx aws.Contex
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeNetworkInterfacePermissionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeNetworkInterfacePermissionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -16227,10 +16436,12 @@ func (c *EC2) DescribeNetworkInterfacesPagesWithContext(ctx aws.Context, input *
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeNetworkInterfacesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeNetworkInterfacesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -16438,10 +16649,12 @@ func (c *EC2) DescribePrefixListsPagesWithContext(ctx aws.Context, input *Descri
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribePrefixListsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribePrefixListsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -16582,10 +16795,12 @@ func (c *EC2) DescribePrincipalIdFormatPagesWithContext(ctx aws.Context, input *
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribePrincipalIdFormatOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribePrincipalIdFormatOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -16712,10 +16927,12 @@ func (c *EC2) DescribePublicIpv4PoolsPagesWithContext(ctx aws.Context, input *De
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribePublicIpv4PoolsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribePublicIpv4PoolsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -17101,10 +17318,12 @@ func (c *EC2) DescribeReservedInstancesModificationsPagesWithContext(ctx aws.Con
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeReservedInstancesModificationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeReservedInstancesModificationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -17242,10 +17461,12 @@ func (c *EC2) DescribeReservedInstancesOfferingsPagesWithContext(ctx aws.Context
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeReservedInstancesOfferingsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeReservedInstancesOfferingsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -17380,10 +17601,12 @@ func (c *EC2) DescribeRouteTablesPagesWithContext(ctx aws.Context, input *Descri
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeRouteTablesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeRouteTablesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -17518,10 +17741,12 @@ func (c *EC2) DescribeScheduledInstanceAvailabilityPagesWithContext(ctx aws.Cont
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeScheduledInstanceAvailabilityOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeScheduledInstanceAvailabilityOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -17648,10 +17873,12 @@ func (c *EC2) DescribeScheduledInstancesPagesWithContext(ctx aws.Context, input 
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeScheduledInstancesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeScheduledInstancesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -17860,10 +18087,12 @@ func (c *EC2) DescribeSecurityGroupsPagesWithContext(ctx aws.Context, input *Des
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeSecurityGroupsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSecurityGroupsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -18115,10 +18344,12 @@ func (c *EC2) DescribeSnapshotsPagesWithContext(ctx aws.Context, input *Describe
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeSnapshotsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSnapshotsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -18477,10 +18708,12 @@ func (c *EC2) DescribeSpotFleetRequestsPagesWithContext(ctx aws.Context, input *
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeSpotFleetRequestsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSpotFleetRequestsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -18623,10 +18856,12 @@ func (c *EC2) DescribeSpotInstanceRequestsPagesWithContext(ctx aws.Context, inpu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeSpotInstanceRequestsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSpotInstanceRequestsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -18760,10 +18995,12 @@ func (c *EC2) DescribeSpotPriceHistoryPagesWithContext(ctx aws.Context, input *D
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeSpotPriceHistoryOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSpotPriceHistoryOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -18893,10 +19130,12 @@ func (c *EC2) DescribeStaleSecurityGroupsPagesWithContext(ctx aws.Context, input
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeStaleSecurityGroupsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeStaleSecurityGroupsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19026,10 +19265,12 @@ func (c *EC2) DescribeSubnetsPagesWithContext(ctx aws.Context, input *DescribeSu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeSubnetsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSubnetsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19159,10 +19400,12 @@ func (c *EC2) DescribeTagsPagesWithContext(ctx aws.Context, input *DescribeTagsI
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTagsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTagsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19289,10 +19532,12 @@ func (c *EC2) DescribeTrafficMirrorFiltersPagesWithContext(ctx aws.Context, inpu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTrafficMirrorFiltersOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrafficMirrorFiltersOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19420,10 +19665,12 @@ func (c *EC2) DescribeTrafficMirrorSessionsPagesWithContext(ctx aws.Context, inp
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTrafficMirrorSessionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrafficMirrorSessionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19550,10 +19797,12 @@ func (c *EC2) DescribeTrafficMirrorTargetsPagesWithContext(ctx aws.Context, inpu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTrafficMirrorTargetsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrafficMirrorTargetsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19683,10 +19932,12 @@ func (c *EC2) DescribeTransitGatewayAttachmentsPagesWithContext(ctx aws.Context,
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTransitGatewayAttachmentsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTransitGatewayAttachmentsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19814,10 +20065,12 @@ func (c *EC2) DescribeTransitGatewayRouteTablesPagesWithContext(ctx aws.Context,
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTransitGatewayRouteTablesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTransitGatewayRouteTablesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -19945,10 +20198,12 @@ func (c *EC2) DescribeTransitGatewayVpcAttachmentsPagesWithContext(ctx aws.Conte
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTransitGatewayVpcAttachmentsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTransitGatewayVpcAttachmentsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -20076,10 +20331,12 @@ func (c *EC2) DescribeTransitGatewaysPagesWithContext(ctx aws.Context, input *De
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeTransitGatewaysOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTransitGatewaysOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -20319,10 +20576,12 @@ func (c *EC2) DescribeVolumeStatusPagesWithContext(ctx aws.Context, input *Descr
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVolumeStatusOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVolumeStatusOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -20459,10 +20718,12 @@ func (c *EC2) DescribeVolumesPagesWithContext(ctx aws.Context, input *DescribeVo
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVolumesOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVolumesOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -20602,10 +20863,12 @@ func (c *EC2) DescribeVolumesModificationsPagesWithContext(ctx aws.Context, inpu
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVolumesModificationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVolumesModificationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -20887,10 +21150,12 @@ func (c *EC2) DescribeVpcClassicLinkDnsSupportPagesWithContext(ctx aws.Context, 
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcClassicLinkDnsSupportOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcClassicLinkDnsSupportOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -21018,10 +21283,12 @@ func (c *EC2) DescribeVpcEndpointConnectionNotificationsPagesWithContext(ctx aws
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcEndpointConnectionNotificationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcEndpointConnectionNotificationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -21149,10 +21416,12 @@ func (c *EC2) DescribeVpcEndpointConnectionsPagesWithContext(ctx aws.Context, in
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcEndpointConnectionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcEndpointConnectionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -21279,10 +21548,12 @@ func (c *EC2) DescribeVpcEndpointServiceConfigurationsPagesWithContext(ctx aws.C
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcEndpointServiceConfigurationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcEndpointServiceConfigurationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -21410,10 +21681,12 @@ func (c *EC2) DescribeVpcEndpointServicePermissionsPagesWithContext(ctx aws.Cont
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcEndpointServicePermissionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcEndpointServicePermissionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -21614,10 +21887,12 @@ func (c *EC2) DescribeVpcEndpointsPagesWithContext(ctx aws.Context, input *Descr
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcEndpointsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcEndpointsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -21744,10 +22019,12 @@ func (c *EC2) DescribeVpcPeeringConnectionsPagesWithContext(ctx aws.Context, inp
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcPeeringConnectionsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcPeeringConnectionsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -21874,10 +22151,12 @@ func (c *EC2) DescribeVpcsPagesWithContext(ctx aws.Context, input *DescribeVpcsI
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*DescribeVpcsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*DescribeVpcsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -24001,6 +24280,82 @@ func (c *EC2) ExportClientVpnClientConfigurationWithContext(ctx aws.Context, inp
 	return out, req.Send()
 }
 
+const opExportImage = "ExportImage"
+
+// ExportImageRequest generates a "aws/request.Request" representing the
+// client's request for the ExportImage operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ExportImage for more information on using the ExportImage
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ExportImageRequest method.
+//    req, resp := client.ExportImageRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportImage
+func (c *EC2) ExportImageRequest(input *ExportImageInput) (req *request.Request, output *ExportImageOutput) {
+	op := &request.Operation{
+		Name:       opExportImage,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ExportImageInput{}
+	}
+
+	output = &ExportImageOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ExportImage API operation for Amazon Elastic Compute Cloud.
+//
+// Exports an Amazon Machine Image (AMI) to a VM file. For more information,
+// see Exporting a VM Directory from an Amazon Machine Image (AMI) (https://docs.aws.amazon.com/vm-import/latest/userguide/vmexport_image.html)
+// in the VM Import/Export User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ExportImage for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportImage
+func (c *EC2) ExportImage(input *ExportImageInput) (*ExportImageOutput, error) {
+	req, out := c.ExportImageRequest(input)
+	return out, req.Send()
+}
+
+// ExportImageWithContext is the same as ExportImage with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ExportImage for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ExportImageWithContext(ctx aws.Context, input *ExportImageInput, opts ...request.Option) (*ExportImageOutput, error) {
+	req, out := c.ExportImageRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opExportTransitGatewayRoutes = "ExportTransitGatewayRoutes"
 
 // ExportTransitGatewayRoutesRequest generates a "aws/request.Request" representing the
@@ -24120,6 +24475,12 @@ func (c *EC2) GetCapacityReservationUsageRequest(input *GetCapacityReservationUs
 }
 
 // GetCapacityReservationUsage API operation for Amazon Elastic Compute Cloud.
+//
+// Gets usage information about a Capacity Reservation. If the Capacity Reservation
+// is shared, it shows usage information for the Capacity Reservation owner
+// and each AWS account that is currently using the shared capacity. If the
+// Capacity Reservation is not shared, it shows only the Capacity Reservation
+// owner's usage.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -24918,10 +25279,12 @@ func (c *EC2) GetTransitGatewayAttachmentPropagationsPagesWithContext(ctx aws.Co
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*GetTransitGatewayAttachmentPropagationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*GetTransitGatewayAttachmentPropagationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -25049,10 +25412,12 @@ func (c *EC2) GetTransitGatewayRouteTableAssociationsPagesWithContext(ctx aws.Co
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*GetTransitGatewayRouteTableAssociationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*GetTransitGatewayRouteTableAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -25180,10 +25545,12 @@ func (c *EC2) GetTransitGatewayRouteTablePropagationsPagesWithContext(ctx aws.Co
 		},
 	}
 
-	cont := true
-	for p.Next() && cont {
-		cont = fn(p.Page().(*GetTransitGatewayRouteTablePropagationsOutput), !p.HasNextPage())
+	for p.Next() {
+		if !fn(p.Page().(*GetTransitGatewayRouteTablePropagationsOutput), !p.HasNextPage()) {
+			break
+		}
 	}
+
 	return p.Err()
 }
 
@@ -25943,7 +26310,34 @@ func (c *EC2) ModifyFleetRequest(input *ModifyFleetInput) (req *request.Request,
 //
 // Modifies the specified EC2 Fleet.
 //
+// You can only modify an EC2 Fleet request of type maintain.
+//
 // While the EC2 Fleet is being modified, it is in the modifying state.
+//
+// To scale up your EC2 Fleet, increase its target capacity. The EC2 Fleet launches
+// the additional Spot Instances according to the allocation strategy for the
+// EC2 Fleet request. If the allocation strategy is lowest-price, the EC2 Fleet
+// launches instances using the Spot Instance pool with the lowest price. If
+// the allocation strategy is diversified, the EC2 Fleet distributes the instances
+// across the Spot Instance pools. If the allocation strategy is capacity-optimized,
+// EC2 Fleet launches instances from Spot Instance pools with optimal capacity
+// for the number of instances that are launching.
+//
+// To scale down your EC2 Fleet, decrease its target capacity. First, the EC2
+// Fleet cancels any open requests that exceed the new target capacity. You
+// can request that the EC2 Fleet terminate Spot Instances until the size of
+// the fleet no longer exceeds the new target capacity. If the allocation strategy
+// is lowest-price, the EC2 Fleet terminates the instances with the highest
+// price per unit. If the allocation strategy is capacity-optimized, the EC2
+// Fleet terminates the instances in the Spot Instance pools that have the least
+// available Spot Instance capacity. If the allocation strategy is diversified,
+// the EC2 Fleet terminates instances across the Spot Instance pools. Alternatively,
+// you can request that the EC2 Fleet keep the fleet at its current size, but
+// not replace any Spot Instances that are interrupted or that you terminate
+// manually.
+//
+// If you are finished with your EC2 Fleet for now, but will use it again later,
+// you can set the target capacity to 0.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -26720,6 +27114,86 @@ func (c *EC2) ModifyInstanceEventStartTimeWithContext(ctx aws.Context, input *Mo
 	return out, req.Send()
 }
 
+const opModifyInstanceMetadataOptions = "ModifyInstanceMetadataOptions"
+
+// ModifyInstanceMetadataOptionsRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyInstanceMetadataOptions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyInstanceMetadataOptions for more information on using the ModifyInstanceMetadataOptions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ModifyInstanceMetadataOptionsRequest method.
+//    req, resp := client.ModifyInstanceMetadataOptionsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceMetadataOptions
+func (c *EC2) ModifyInstanceMetadataOptionsRequest(input *ModifyInstanceMetadataOptionsInput) (req *request.Request, output *ModifyInstanceMetadataOptionsOutput) {
+	op := &request.Operation{
+		Name:       opModifyInstanceMetadataOptions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyInstanceMetadataOptionsInput{}
+	}
+
+	output = &ModifyInstanceMetadataOptionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyInstanceMetadataOptions API operation for Amazon Elastic Compute Cloud.
+//
+// Modify the instance metadata parameters on a running or stopped instance.
+// When you modify the parameters on a stopped instance, they are applied when
+// the instance is started. When you modify the parameters on a running instance,
+// the API responds with a state of “pending”. After the parameter modifications
+// are successfully applied to the instance, the state of the modifications
+// changes from “pending” to “applied” in subsequent describe-instances
+// API calls. For more information, see Instance Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyInstanceMetadataOptions for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyInstanceMetadataOptions
+func (c *EC2) ModifyInstanceMetadataOptions(input *ModifyInstanceMetadataOptionsInput) (*ModifyInstanceMetadataOptionsOutput, error) {
+	req, out := c.ModifyInstanceMetadataOptionsRequest(input)
+	return out, req.Send()
+}
+
+// ModifyInstanceMetadataOptionsWithContext is the same as ModifyInstanceMetadataOptions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyInstanceMetadataOptions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyInstanceMetadataOptionsWithContext(ctx aws.Context, input *ModifyInstanceMetadataOptionsInput, opts ...request.Option) (*ModifyInstanceMetadataOptionsOutput, error) {
+	req, out := c.ModifyInstanceMetadataOptionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyInstancePlacement = "ModifyInstancePlacement"
 
 // ModifyInstancePlacementRequest generates a "aws/request.Request" representing the
@@ -27097,6 +27571,7 @@ func (c *EC2) ModifySnapshotAttributeRequest(input *ModifySnapshotAttributeInput
 // or remove specified AWS account IDs from a snapshot's list of create volume
 // permissions, but you cannot do both in a single operation. If you need to
 // both add and remove account IDs for a snapshot, you must use multiple operations.
+// You can make up to 500 modifications to a snapshot in a single operation.
 //
 // Encrypted snapshots and snapshots with AWS Marketplace product codes cannot
 // be made public. Snapshots encrypted with your default CMK cannot be shared
@@ -27187,19 +27662,24 @@ func (c *EC2) ModifySpotFleetRequestRequest(input *ModifySpotFleetRequestInput) 
 // To scale up your Spot Fleet, increase its target capacity. The Spot Fleet
 // launches the additional Spot Instances according to the allocation strategy
 // for the Spot Fleet request. If the allocation strategy is lowestPrice, the
-// Spot Fleet launches instances using the Spot pool with the lowest price.
-// If the allocation strategy is diversified, the Spot Fleet distributes the
-// instances across the Spot pools.
+// Spot Fleet launches instances using the Spot Instance pool with the lowest
+// price. If the allocation strategy is diversified, the Spot Fleet distributes
+// the instances across the Spot Instance pools. If the allocation strategy
+// is capacityOptimized, Spot Fleet launches instances from Spot Instance pools
+// with optimal capacity for the number of instances that are launching.
 //
 // To scale down your Spot Fleet, decrease its target capacity. First, the Spot
 // Fleet cancels any open requests that exceed the new target capacity. You
 // can request that the Spot Fleet terminate Spot Instances until the size of
 // the fleet no longer exceeds the new target capacity. If the allocation strategy
 // is lowestPrice, the Spot Fleet terminates the instances with the highest
-// price per unit. If the allocation strategy is diversified, the Spot Fleet
-// terminates instances across the Spot pools. Alternatively, you can request
-// that the Spot Fleet keep the fleet at its current size, but not replace any
-// Spot Instances that are interrupted or that you terminate manually.
+// price per unit. If the allocation strategy is capacityOptimized, the Spot
+// Fleet terminates the instances in the Spot Instance pools that have the least
+// available Spot Instance capacity. If the allocation strategy is diversified,
+// the Spot Fleet terminates instances across the Spot Instance pools. Alternatively,
+// you can request that the Spot Fleet keep the fleet at its current size, but
+// not replace any Spot Instances that are interrupted or that you terminate
+// manually.
 //
 // If you are finished with your Spot Fleet for now, but will use it again later,
 // you can set the target capacity to 0.
@@ -27360,7 +27840,7 @@ func (c *EC2) ModifyTrafficMirrorFilterNetworkServicesRequest(input *ModifyTraff
 // to mirror network services, use RemoveNetworkServices to remove the network
 // services from the Traffic Mirror filter.
 //
-// FFor information about filter rule properties, see Network Services (https://docs.aws.amazon.com/vpc/latest/mirroring/traffic-mirroring-considerations.html#traffic-mirroring-network-services)
+// For information about filter rule properties, see Network Services (https://docs.aws.amazon.com/vpc/latest/mirroring/traffic-mirroring-considerations.html)
 // in the Traffic Mirroring User Guide .
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -28415,7 +28895,7 @@ func (c *EC2) ModifyVpnConnectionRequest(input *ModifyVpnConnectionInput) (req *
 
 // ModifyVpnConnection API operation for Amazon Elastic Compute Cloud.
 //
-// Modifies the target gateway of a AWS Site-to-Site VPN connection. The following
+// Modifies the target gateway of an AWS Site-to-Site VPN connection. The following
 // migration options are available:
 //
 //    * An existing virtual private gateway to a new virtual private gateway
@@ -28479,6 +28959,158 @@ func (c *EC2) ModifyVpnConnection(input *ModifyVpnConnectionInput) (*ModifyVpnCo
 // for more information on using Contexts.
 func (c *EC2) ModifyVpnConnectionWithContext(ctx aws.Context, input *ModifyVpnConnectionInput, opts ...request.Option) (*ModifyVpnConnectionOutput, error) {
 	req, out := c.ModifyVpnConnectionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVpnTunnelCertificate = "ModifyVpnTunnelCertificate"
+
+// ModifyVpnTunnelCertificateRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVpnTunnelCertificate operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVpnTunnelCertificate for more information on using the ModifyVpnTunnelCertificate
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ModifyVpnTunnelCertificateRequest method.
+//    req, resp := client.ModifyVpnTunnelCertificateRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnTunnelCertificate
+func (c *EC2) ModifyVpnTunnelCertificateRequest(input *ModifyVpnTunnelCertificateInput) (req *request.Request, output *ModifyVpnTunnelCertificateOutput) {
+	op := &request.Operation{
+		Name:       opModifyVpnTunnelCertificate,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVpnTunnelCertificateInput{}
+	}
+
+	output = &ModifyVpnTunnelCertificateOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVpnTunnelCertificate API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the VPN tunnel endpoint certificate.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVpnTunnelCertificate for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnTunnelCertificate
+func (c *EC2) ModifyVpnTunnelCertificate(input *ModifyVpnTunnelCertificateInput) (*ModifyVpnTunnelCertificateOutput, error) {
+	req, out := c.ModifyVpnTunnelCertificateRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVpnTunnelCertificateWithContext is the same as ModifyVpnTunnelCertificate with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVpnTunnelCertificate for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVpnTunnelCertificateWithContext(ctx aws.Context, input *ModifyVpnTunnelCertificateInput, opts ...request.Option) (*ModifyVpnTunnelCertificateOutput, error) {
+	req, out := c.ModifyVpnTunnelCertificateRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opModifyVpnTunnelOptions = "ModifyVpnTunnelOptions"
+
+// ModifyVpnTunnelOptionsRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyVpnTunnelOptions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyVpnTunnelOptions for more information on using the ModifyVpnTunnelOptions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ModifyVpnTunnelOptionsRequest method.
+//    req, resp := client.ModifyVpnTunnelOptionsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnTunnelOptions
+func (c *EC2) ModifyVpnTunnelOptionsRequest(input *ModifyVpnTunnelOptionsInput) (req *request.Request, output *ModifyVpnTunnelOptionsOutput) {
+	op := &request.Operation{
+		Name:       opModifyVpnTunnelOptions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyVpnTunnelOptionsInput{}
+	}
+
+	output = &ModifyVpnTunnelOptionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyVpnTunnelOptions API operation for Amazon Elastic Compute Cloud.
+//
+// Modifies the options for a VPN tunnel in an AWS Site-to-Site VPN connection.
+// You can modify multiple options for a tunnel in a single request, but you
+// can only modify one tunnel at a time. For more information, see Site-to-Site
+// VPN Tunnel Options for Your Site-to-Site VPN Connection (https://docs.aws.amazon.com/vpn/latest/s2svpn/VPNTunnels.html)
+// in the AWS Site-to-Site VPN User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation ModifyVpnTunnelOptions for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpnTunnelOptions
+func (c *EC2) ModifyVpnTunnelOptions(input *ModifyVpnTunnelOptionsInput) (*ModifyVpnTunnelOptionsOutput, error) {
+	req, out := c.ModifyVpnTunnelOptionsRequest(input)
+	return out, req.Send()
+}
+
+// ModifyVpnTunnelOptionsWithContext is the same as ModifyVpnTunnelOptions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyVpnTunnelOptions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) ModifyVpnTunnelOptionsWithContext(ctx aws.Context, input *ModifyVpnTunnelOptionsInput, opts ...request.Option) (*ModifyVpnTunnelOptionsOutput, error) {
+	req, out := c.ModifyVpnTunnelOptionsRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -28861,6 +29493,9 @@ func (c *EC2) PurchaseReservedInstancesOfferingRequest(input *PurchaseReservedIn
 // offerings that match your specifications. After you've purchased a Reserved
 // Instance, you can check for your new Reserved Instance with DescribeReservedInstances.
 //
+// To queue a purchase for a future date and time, specify a purchase time.
+// If you do not specify a purchase time, the default is the current time.
+//
 // For more information, see Reserved Instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts-on-demand-reserved-instances.html)
 // and Reserved Instance Marketplace (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ri-market-general.html)
 // in the Amazon Elastic Compute Cloud User Guide.
@@ -29122,16 +29757,24 @@ func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Requ
 // You can't register an image where a secondary (non-root) snapshot has AWS
 // Marketplace product codes.
 //
-// Some Linux distributions, such as Red Hat Enterprise Linux (RHEL) and SUSE
-// Linux Enterprise Server (SLES), use the EC2 billing product code associated
-// with an AMI to verify the subscription status for package updates. Creating
-// an AMI from an EBS snapshot does not maintain this billing code, and instances
-// launched from such an AMI are not able to connect to package update infrastructure.
-// If you purchase a Reserved Instance offering for one of these Linux distributions
-// and launch instances using an AMI that does not contain the required billing
-// code, your Reserved Instance is not applied to these instances.
+// Windows and some Linux distributions, such as Red Hat Enterprise Linux (RHEL)
+// and SUSE Linux Enterprise Server (SLES), use the EC2 billing product code
+// associated with an AMI to verify the subscription status for package updates.
+// To create a new AMI for operating systems that require a billing product
+// code, do the following:
 //
-// To create an AMI for operating systems that require a billing code, see CreateImage.
+// Launch an instance from an existing AMI with that billing product code.
+//
+// Customize the instance.
+//
+// Create a new AMI from the instance using CreateImage to preserve the billing
+// product code association.
+//
+// If you purchase a Reserved Instance to apply to an On-Demand Instance that
+// was launched from an AMI with a billing product code, make sure that the
+// Reserved Instance has the matching billing product code. If you purchase
+// a Reserved Instance without the matching billing product code, the Reserved
+// Instance will not be applied to the On-Demand Instance.
 //
 // If needed, you can deregister an AMI at any time. Any modifications you make
 // to an AMI backed by an instance store volume invalidates its registration.
@@ -30179,10 +30822,10 @@ func (c *EC2) RequestSpotFleetRequest(input *RequestSpotFleetInput) (req *reques
 // You can submit a single request that includes multiple launch specifications
 // that vary by instance type, AMI, Availability Zone, or subnet.
 //
-// By default, the Spot Fleet requests Spot Instances in the Spot pool where
-// the price per unit is the lowest. Each launch specification can include its
-// own instance weighting that reflects the value of the instance type to your
-// application workload.
+// By default, the Spot Fleet requests Spot Instances in the Spot Instance pool
+// where the price per unit is the lowest. Each launch specification can include
+// its own instance weighting that reflects the value of the instance type to
+// your application workload.
 //
 // Alternatively, you can specify that the Spot Fleet distribute the target
 // capacity across the Spot pools included in its launch specifications. By
@@ -31379,6 +32022,98 @@ func (c *EC2) SearchTransitGatewayRoutes(input *SearchTransitGatewayRoutesInput)
 // for more information on using Contexts.
 func (c *EC2) SearchTransitGatewayRoutesWithContext(ctx aws.Context, input *SearchTransitGatewayRoutesInput, opts ...request.Option) (*SearchTransitGatewayRoutesOutput, error) {
 	req, out := c.SearchTransitGatewayRoutesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opSendDiagnosticInterrupt = "SendDiagnosticInterrupt"
+
+// SendDiagnosticInterruptRequest generates a "aws/request.Request" representing the
+// client's request for the SendDiagnosticInterrupt operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SendDiagnosticInterrupt for more information on using the SendDiagnosticInterrupt
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the SendDiagnosticInterruptRequest method.
+//    req, resp := client.SendDiagnosticInterruptRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SendDiagnosticInterrupt
+func (c *EC2) SendDiagnosticInterruptRequest(input *SendDiagnosticInterruptInput) (req *request.Request, output *SendDiagnosticInterruptOutput) {
+	op := &request.Operation{
+		Name:       opSendDiagnosticInterrupt,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &SendDiagnosticInterruptInput{}
+	}
+
+	output = &SendDiagnosticInterruptOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(ec2query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// SendDiagnosticInterrupt API operation for Amazon Elastic Compute Cloud.
+//
+// Sends a diagnostic interrupt to the specified Amazon EC2 instance to trigger
+// a kernel panic (on Linux instances), or a blue screen/stop error (on Windows
+// instances). For instances based on Intel and AMD processors, the interrupt
+// is received as a non-maskable interrupt (NMI).
+//
+// In general, the operating system crashes and reboots when a kernel panic
+// or stop error is triggered. The operating system can also be configured to
+// perform diagnostic tasks, such as generating a memory dump file, loading
+// a secondary kernel, or obtaining a call trace.
+//
+// Before sending a diagnostic interrupt to your instance, ensure that its operating
+// system is configured to perform the required diagnostic tasks.
+//
+// For more information about configuring your operating system to generate
+// a crash dump when a kernel panic or stop error occurs, see Send a Diagnostic
+// Interrupt (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/diagnostic-interrupt.html)
+// (Linux instances) or Send a Diagnostic Interrupt (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/diagnostic-interrupt.html)
+// (Windows instances).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation SendDiagnosticInterrupt for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SendDiagnosticInterrupt
+func (c *EC2) SendDiagnosticInterrupt(input *SendDiagnosticInterruptInput) (*SendDiagnosticInterruptOutput, error) {
+	req, out := c.SendDiagnosticInterruptRequest(input)
+	return out, req.Send()
+}
+
+// SendDiagnosticInterruptWithContext is the same as SendDiagnosticInterrupt with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SendDiagnosticInterrupt for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) SendDiagnosticInterruptWithContext(ctx aws.Context, input *SendDiagnosticInterruptInput, opts ...request.Option) (*SendDiagnosticInterruptOutput, error) {
+	req, out := c.SendDiagnosticInterruptRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -36457,12 +37192,14 @@ type CapacityReservation struct {
 	// The Availability Zone in which the capacity is reserved.
 	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
 
+	// The Availability Zone ID of the Capacity Reservation.
 	AvailabilityZoneId *string `locationName:"availabilityZoneId" type:"string"`
 
 	// The remaining capacity. Indicates the number of instances that can be launched
 	// in the Capacity Reservation.
 	AvailableInstanceCount *int64 `locationName:"availableInstanceCount" type:"integer"`
 
+	// The Amazon Resource Name (ARN) of the Capacity Reservation.
 	CapacityReservationArn *string `locationName:"capacityReservationArn" type:"string"`
 
 	// The ID of the Capacity Reservation.
@@ -36519,6 +37256,7 @@ type CapacityReservation struct {
 	// The type of instance for which the Capacity Reservation reserves capacity.
 	InstanceType *string `locationName:"instanceType" type:"string"`
 
+	// The ID of the AWS account that owns the Capacity Reservation.
 	OwnerId *string `locationName:"ownerId" type:"string"`
 
 	// The current state of the Capacity Reservation. A Capacity Reservation can
@@ -36527,11 +37265,11 @@ type CapacityReservation struct {
 	//    * active - The Capacity Reservation is active and the capacity is available
 	//    for your use.
 	//
-	//    * cancelled - The Capacity Reservation expired automatically at the date
+	//    * expired - The Capacity Reservation expired automatically at the date
 	//    and time specified in your request. The reserved capacity is no longer
 	//    available for your use.
 	//
-	//    * expired - The Capacity Reservation was manually cancelled. The reserved
+	//    * cancelled - The Capacity Reservation was manually cancelled. The reserved
 	//    capacity is no longer available for your use.
 	//
 	//    * pending - The Capacity Reservation request was successful but the capacity
@@ -36555,7 +37293,8 @@ type CapacityReservation struct {
 	//    that is dedicated to a single AWS account.
 	Tenancy *string `locationName:"tenancy" type:"string" enum:"CapacityReservationTenancy"`
 
-	// The number of instances for which the Capacity Reservation reserves capacity.
+	// The total number of instances for which the Capacity Reservation reserves
+	// capacity.
 	TotalInstanceCount *int64 `locationName:"totalInstanceCount" type:"integer"`
 }
 
@@ -37515,8 +38254,7 @@ type ClientVpnEndpoint struct {
 	// The ARN of the server certificate.
 	ServerCertificateArn *string `locationName:"serverCertificateArn" type:"string"`
 
-	// Indicates whether split-tunnel is enabled in the AWS Client VPN endpoint
-	// endpoint.
+	// Indicates whether split-tunnel is enabled in the AWS Client VPN endpoint.
 	//
 	// For information about split-tunnel VPN endpoints, see Split-Tunnel AWS Client
 	// VPN Endpoint (https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/split-tunnel-vpn.html)
@@ -38508,6 +39246,8 @@ type CopySnapshotInput struct {
 	//
 	// SourceSnapshotId is a required field
 	SourceSnapshotId *string `type:"string" required:"true"`
+
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -38584,12 +39324,20 @@ func (s *CopySnapshotInput) SetSourceSnapshotId(v string) *CopySnapshotInput {
 	return s
 }
 
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CopySnapshotInput) SetTagSpecifications(v []*TagSpecification) *CopySnapshotInput {
+	s.TagSpecifications = v
+	return s
+}
+
 // Contains the output of CopySnapshot.
 type CopySnapshotOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the new snapshot.
 	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -38605,6 +39353,12 @@ func (s CopySnapshotOutput) GoString() string {
 // SetSnapshotId sets the SnapshotId field's value.
 func (s *CopySnapshotOutput) SetSnapshotId(v string) *CopySnapshotOutput {
 	s.SnapshotId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CopySnapshotOutput) SetTags(v []*Tag) *CopySnapshotOutput {
+	s.Tags = v
 	return s
 }
 
@@ -38649,9 +39403,8 @@ type CpuOptionsRequest struct {
 	// The number of CPU cores for the instance.
 	CoreCount *int64 `type:"integer"`
 
-	// The number of threads per CPU core. To disable Intel Hyper-Threading Technology
-	// for the instance, specify a value of 1. Otherwise, specify the default value
-	// of 2.
+	// The number of threads per CPU core. To disable multithreading for the instance,
+	// specify a value of 1. Otherwise, specify the default value of 2.
 	ThreadsPerCore *int64 `type:"integer"`
 }
 
@@ -38683,6 +39436,7 @@ type CreateCapacityReservationInput struct {
 	// The Availability Zone in which to create the Capacity Reservation.
 	AvailabilityZone *string `type:"string"`
 
+	// The ID of the Availability Zone in which to create the Capacity Reservation.
 	AvailabilityZoneId *string `type:"string"`
 
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
@@ -38958,8 +39712,7 @@ type CreateClientVpnEndpointInput struct {
 
 	// Information about the DNS servers to be used for DNS resolution. A Client
 	// VPN endpoint can have up to two DNS servers. If no DNS server is specified,
-	// the DNS address of the VPC that is to be associated with Client VPN endpoint
-	// is used as the DNS server.
+	// the DNS address configured on the device is used for the DNS server.
 	DnsServers []*string `locationNameList:"item" type:"list"`
 
 	// Checks whether you have the required permissions for the action, without
@@ -38974,8 +39727,7 @@ type CreateClientVpnEndpointInput struct {
 	// ServerCertificateArn is a required field
 	ServerCertificateArn *string `type:"string" required:"true"`
 
-	// Indicates whether split-tunnel is enabled on the AWS Client VPN endpoint
-	// endpoint.
+	// Indicates whether split-tunnel is enabled on the AWS Client VPN endpoint.
 	//
 	// By default, split-tunnel on a VPN endpoint is disabled.
 	//
@@ -39274,6 +40026,14 @@ type CreateCustomerGatewayInput struct {
 	// BgpAsn is a required field
 	BgpAsn *int64 `type:"integer" required:"true"`
 
+	// The Amazon Resource Name (ARN) for the customer gateway certificate.
+	CertificateArn *string `type:"string"`
+
+	// A name for the customer gateway device.
+	//
+	// Length Constraints: Up to 255 characters.
+	DeviceName *string `type:"string"`
+
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
 	// the required permissions, the error response is DryRunOperation. Otherwise,
@@ -39282,9 +40042,7 @@ type CreateCustomerGatewayInput struct {
 
 	// The Internet-routable IP address for the customer gateway's outside interface.
 	// The address must be static.
-	//
-	// PublicIp is a required field
-	PublicIp *string `locationName:"IpAddress" type:"string" required:"true"`
+	PublicIp *string `locationName:"IpAddress" type:"string"`
 
 	// The type of VPN connection that this customer gateway supports (ipsec.1).
 	//
@@ -39308,9 +40066,6 @@ func (s *CreateCustomerGatewayInput) Validate() error {
 	if s.BgpAsn == nil {
 		invalidParams.Add(request.NewErrParamRequired("BgpAsn"))
 	}
-	if s.PublicIp == nil {
-		invalidParams.Add(request.NewErrParamRequired("PublicIp"))
-	}
 	if s.Type == nil {
 		invalidParams.Add(request.NewErrParamRequired("Type"))
 	}
@@ -39324,6 +40079,18 @@ func (s *CreateCustomerGatewayInput) Validate() error {
 // SetBgpAsn sets the BgpAsn field's value.
 func (s *CreateCustomerGatewayInput) SetBgpAsn(v int64) *CreateCustomerGatewayInput {
 	s.BgpAsn = &v
+	return s
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *CreateCustomerGatewayInput) SetCertificateArn(v string) *CreateCustomerGatewayInput {
+	s.CertificateArn = &v
+	return s
+}
+
+// SetDeviceName sets the DeviceName field's value.
+func (s *CreateCustomerGatewayInput) SetDeviceName(v string) *CreateCustomerGatewayInput {
+	s.DeviceName = &v
 	return s
 }
 
@@ -40052,6 +40819,17 @@ type CreateFlowLogsInput struct {
 	// Default: cloud-watch-logs
 	LogDestinationType *string `type:"string" enum:"LogDestinationType"`
 
+	// The fields to include in the flow log record, in the order in which they
+	// should appear. For a list of available fields, see Flow Log Records (https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html#flow-log-records).
+	// If you omit this parameter, the flow log is created using the default format.
+	// If you specify this parameter, you must specify at least one field.
+	//
+	// Specify the fields using the ${field-id} format, separated by spaces. For
+	// the AWS CLI, use single quotation marks (' ') to surround the parameter value.
+	//
+	// Only applicable to flow logs that are published to an Amazon S3 bucket.
+	LogFormat *string `type:"string"`
+
 	// The name of a new or existing CloudWatch Logs log group where Amazon EC2
 	// publishes your flow logs.
 	//
@@ -40136,6 +40914,12 @@ func (s *CreateFlowLogsInput) SetLogDestination(v string) *CreateFlowLogsInput {
 // SetLogDestinationType sets the LogDestinationType field's value.
 func (s *CreateFlowLogsInput) SetLogDestinationType(v string) *CreateFlowLogsInput {
 	s.LogDestinationType = &v
+	return s
+}
+
+// SetLogFormat sets the LogFormat field's value.
+func (s *CreateFlowLogsInput) SetLogFormat(v string) *CreateFlowLogsInput {
+	s.LogFormat = &v
 	return s
 }
 
@@ -40232,6 +41016,9 @@ type CreateFpgaImageInput struct {
 
 	// A name for the AFI.
 	Name *string `type:"string"`
+
+	// The tags to apply to the FPGA image during creation.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -40290,6 +41077,12 @@ func (s *CreateFpgaImageInput) SetLogsStorageLocation(v *StorageLocation) *Creat
 // SetName sets the Name field's value.
 func (s *CreateFpgaImageInput) SetName(v string) *CreateFpgaImageInput {
 	s.Name = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateFpgaImageInput) SetTagSpecifications(v []*TagSpecification) *CreateFpgaImageInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -40646,7 +41439,7 @@ type CreateKeyPairOutput struct {
 	KeyFingerprint *string `locationName:"keyFingerprint" type:"string"`
 
 	// An unencrypted PEM encoded RSA private key.
-	KeyMaterial *string `locationName:"keyMaterial" type:"string"`
+	KeyMaterial *string `locationName:"keyMaterial" type:"string" sensitive:"true"`
 
 	// The name of the key pair.
 	KeyName *string `locationName:"keyName" type:"string"`
@@ -40835,7 +41628,9 @@ type CreateLaunchTemplateVersionInput struct {
 
 	// The version number of the launch template version on which to base the new
 	// version. The new version inherits the same launch parameters as the source
-	// version, except for parameters that you specify in LaunchTemplateData.
+	// version, except for parameters that you specify in LaunchTemplateData. Snapshots
+	// applied to the block device mapping are ignored when creating a new version
+	// unless they are explicitly included.
 	SourceVersion *string `type:"string"`
 
 	// A description for the version of the launch template.
@@ -42840,9 +43635,8 @@ type CreateTrafficMirrorSessionInput struct {
 	// The number of bytes in each packet to mirror. These are bytes after the VXLAN
 	// header. Do not specify this parameter when you want to mirror the entire
 	// packet. To mirror a subset of the packet, set this to the length (in bytes)
-	// that you want to mirror. For example, if you set this value to 1network0,
-	// then the first 100 bytes that meet the filter criteria are copied to the
-	// target.
+	// that you want to mirror. For example, if you set this value to 100, then
+	// the first 100 bytes that meet the filter criteria are copied to the target.
 	//
 	// If you do not want to mirror the entire packet, use the PacketLength parameter
 	// to specify the number of bytes in each packet to mirror.
@@ -43607,10 +44401,7 @@ type CreateVolumeInput struct {
 	// IOPS SSD, st1 for Throughput Optimized HDD, sc1 for Cold HDD, or standard
 	// for Magnetic volumes.
 	//
-	// Defaults: If no volume type is specified, the default is standard in us-east-1,
-	// eu-west-1, eu-central-1, us-west-2, us-west-1, sa-east-1, ap-northeast-1,
-	// ap-northeast-2, ap-southeast-1, ap-southeast-2, ap-south-1, us-gov-west-1,
-	// and cn-north-1. In all other Regions, EBS defaults to gp2.
+	// Default: gp2
 	VolumeType *string `type:"string" enum:"VolumeType"`
 }
 
@@ -44718,8 +45509,14 @@ type CustomerGateway struct {
 	// (ASN).
 	BgpAsn *string `locationName:"bgpAsn" type:"string"`
 
+	// The Amazon Resource Name (ARN) for the customer gateway certificate.
+	CertificateArn *string `locationName:"certificateArn" type:"string"`
+
 	// The ID of the customer gateway.
 	CustomerGatewayId *string `locationName:"customerGatewayId" type:"string"`
+
+	// The name of customer gateway device.
+	DeviceName *string `locationName:"deviceName" type:"string"`
 
 	// The Internet-routable IP address of the customer gateway's outside interface.
 	IpAddress *string `locationName:"ipAddress" type:"string"`
@@ -44751,9 +45548,21 @@ func (s *CustomerGateway) SetBgpAsn(v string) *CustomerGateway {
 	return s
 }
 
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *CustomerGateway) SetCertificateArn(v string) *CustomerGateway {
+	s.CertificateArn = &v
+	return s
+}
+
 // SetCustomerGatewayId sets the CustomerGatewayId field's value.
 func (s *CustomerGateway) SetCustomerGatewayId(v string) *CustomerGateway {
 	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetDeviceName sets the DeviceName field's value.
+func (s *CustomerGateway) SetDeviceName(v string) *CustomerGateway {
+	s.DeviceName = &v
 	return s
 }
 
@@ -46342,6 +47151,125 @@ func (s DeletePlacementGroupOutput) String() string {
 // GoString returns the string representation
 func (s DeletePlacementGroupOutput) GoString() string {
 	return s.String()
+}
+
+// Describes the error for a Reserved Instance whose queued purchase could not
+// be deleted.
+type DeleteQueuedReservedInstancesError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code.
+	Code *string `locationName:"code" type:"string" enum:"DeleteQueuedReservedInstancesErrorCode"`
+
+	// The error message.
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation
+func (s DeleteQueuedReservedInstancesError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteQueuedReservedInstancesError) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *DeleteQueuedReservedInstancesError) SetCode(v string) *DeleteQueuedReservedInstancesError {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *DeleteQueuedReservedInstancesError) SetMessage(v string) *DeleteQueuedReservedInstancesError {
+	s.Message = &v
+	return s
+}
+
+type DeleteQueuedReservedInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The IDs of the Reserved Instances.
+	//
+	// ReservedInstancesIds is a required field
+	ReservedInstancesIds []*string `locationName:"ReservedInstancesId" locationNameList:"item" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteQueuedReservedInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteQueuedReservedInstancesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteQueuedReservedInstancesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteQueuedReservedInstancesInput"}
+	if s.ReservedInstancesIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReservedInstancesIds"))
+	}
+	if s.ReservedInstancesIds != nil && len(s.ReservedInstancesIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ReservedInstancesIds", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteQueuedReservedInstancesInput) SetDryRun(v bool) *DeleteQueuedReservedInstancesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetReservedInstancesIds sets the ReservedInstancesIds field's value.
+func (s *DeleteQueuedReservedInstancesInput) SetReservedInstancesIds(v []*string) *DeleteQueuedReservedInstancesInput {
+	s.ReservedInstancesIds = v
+	return s
+}
+
+type DeleteQueuedReservedInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the queued purchases that could not be deleted.
+	FailedQueuedPurchaseDeletions []*FailedQueuedPurchaseDeletion `locationName:"failedQueuedPurchaseDeletionSet" locationNameList:"item" type:"list"`
+
+	// Information about the queued purchases that were successfully deleted.
+	SuccessfulQueuedPurchaseDeletions []*SuccessfulQueuedPurchaseDeletion `locationName:"successfulQueuedPurchaseDeletionSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DeleteQueuedReservedInstancesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteQueuedReservedInstancesOutput) GoString() string {
+	return s.String()
+}
+
+// SetFailedQueuedPurchaseDeletions sets the FailedQueuedPurchaseDeletions field's value.
+func (s *DeleteQueuedReservedInstancesOutput) SetFailedQueuedPurchaseDeletions(v []*FailedQueuedPurchaseDeletion) *DeleteQueuedReservedInstancesOutput {
+	s.FailedQueuedPurchaseDeletions = v
+	return s
+}
+
+// SetSuccessfulQueuedPurchaseDeletions sets the SuccessfulQueuedPurchaseDeletions field's value.
+func (s *DeleteQueuedReservedInstancesOutput) SetSuccessfulQueuedPurchaseDeletions(v []*SuccessfulQueuedPurchaseDeletion) *DeleteQueuedReservedInstancesOutput {
+	s.SuccessfulQueuedPurchaseDeletions = v
+	return s
 }
 
 type DeleteRouteInput struct {
@@ -49997,6 +50925,115 @@ func (s *DescribeElasticGpusOutput) SetNextToken(v string) *DescribeElasticGpusO
 	return s
 }
 
+type DescribeExportImageTasksInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The IDs of the export image tasks.
+	ExportImageTaskIds []*string `locationName:"ExportImageTaskId" locationNameList:"ExportImageTaskId" type:"list"`
+
+	// Filter tasks using the task-state filter and one of the following values:
+	// active, completed, deleting, or deleted.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return in a single call.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A token that indicates the next page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeExportImageTasksInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeExportImageTasksInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeExportImageTasksInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeExportImageTasksInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeExportImageTasksInput) SetDryRun(v bool) *DescribeExportImageTasksInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetExportImageTaskIds sets the ExportImageTaskIds field's value.
+func (s *DescribeExportImageTasksInput) SetExportImageTaskIds(v []*string) *DescribeExportImageTasksInput {
+	s.ExportImageTaskIds = v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeExportImageTasksInput) SetFilters(v []*Filter) *DescribeExportImageTasksInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeExportImageTasksInput) SetMaxResults(v int64) *DescribeExportImageTasksInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeExportImageTasksInput) SetNextToken(v string) *DescribeExportImageTasksInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeExportImageTasksOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the export image tasks.
+	ExportImageTasks []*ExportImageTask `locationName:"exportImageTaskSet" locationNameList:"item" type:"list"`
+
+	// The token to use to get the next page of results. This value is null when
+	// there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeExportImageTasksOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeExportImageTasksOutput) GoString() string {
+	return s.String()
+}
+
+// SetExportImageTasks sets the ExportImageTasks field's value.
+func (s *DescribeExportImageTasksOutput) SetExportImageTasks(v []*ExportImageTask) *DescribeExportImageTasksOutput {
+	s.ExportImageTasks = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeExportImageTasksOutput) SetNextToken(v string) *DescribeExportImageTasksOutput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeExportTasksInput struct {
 	_ struct{} `type:"structure"`
 
@@ -51807,14 +52844,13 @@ type DescribeImportImageTasksInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// Filter tasks using the task-state filter and one of the following values:
-	// active, completed, deleting, deleted.
+	// active, completed, deleting, or deleted.
 	Filters []*Filter `locationNameList:"Filter" type:"list"`
 
-	// A list of import image task IDs.
+	// The IDs of the import image tasks.
 	ImportTaskIds []*string `locationName:"ImportTaskId" locationNameList:"ImportTaskId" type:"list"`
 
-	// The maximum number of results to return in a single call. To retrieve the
-	// remaining results, make another call with the returned NextToken value.
+	// The maximum number of results to return in a single call.
 	MaxResults *int64 `type:"integer"`
 
 	// A token that indicates the next page of results.
@@ -52537,9 +53573,8 @@ type DescribeInstancesInput struct {
 	//    * hypervisor - The hypervisor type of the instance (ovm | xen).
 	//
 	//    * iam-instance-profile.arn - The instance profile associated with the
-	//    instance. Specified as an ARN.
-	//
-	//    * image-id - The ID of the image used to launch the instance.
+	//    instance. Specified as an ARN. image-id - The ID of the image used to
+	//    launch the instance.
 	//
 	//    * instance-id - The ID of the instance.
 	//
@@ -52571,6 +53606,15 @@ type DescribeInstancesInput struct {
 	//    for the instance in the launch group (for example, 0, 1, 2, and so on).
 	//
 	//    * launch-time - The time when the instance was launched.
+	//
+	//    * metadata-http-tokens - The metadata request authorization state (optional
+	//    | required)
+	//
+	//    * metadata-http-put-response-hop-limit - The http metadata request put
+	//    response hop limit (integer, possible values 1 to 64)
+	//
+	//    * metadata-http-endpoint - Enable or disable metadata access on http endpoint
+	//    (enabled | disabled)
 	//
 	//    * monitoring-state - Indicates whether detailed monitoring is enabled
 	//    (disabled | enabled).
@@ -54548,6 +55592,9 @@ type DescribeRegionsInput struct {
 	// The filters.
 	//
 	//    * endpoint - The endpoint of the Region (for example, ec2.us-east-1.amazonaws.com).
+	//
+	//    * opt-in-status - The opt-in status of the Region (opt-in-not-required
+	//    | opted-in | not-opted-in).
 	//
 	//    * region-name - The name of the Region (for example, us-east-1).
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
@@ -59568,8 +60615,8 @@ type DescribeVpcEndpointsInput struct {
 	//
 	//    * vpc-endpoint-id: The ID of the endpoint.
 	//
-	//    * vpc-endpoint-state: The state of the endpoint. (pending | available
-	//    | deleting | deleted)
+	//    * vpc-endpoint-state - The state of the endpoint (pendingAcceptance |
+	//    pending | available | deleting | deleted | rejected | failed).
 	//
 	//    * tag:<key> - The key/value combination of a tag assigned to the resource.
 	//    Use the tag key in the filter name and the tag value as the filter value.
@@ -60019,6 +61066,9 @@ type DescribeVpnConnectionsInput struct {
 	//
 	//    * vpn-gateway-id - The ID of a virtual private gateway associated with
 	//    the VPN connection.
+	//
+	//    * transit-gateway-id - The ID of a transit gateway associated with the
+	//    VPN connection.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
 	// One or more VPN connection IDs.
@@ -60360,6 +61410,19 @@ type DetachNetworkInterfaceInput struct {
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
 	// Specifies whether to force a detachment.
+	//
+	//    * Use the Force parameter only as a last resort to detach a network interface
+	//    from a failed instance.
+	//
+	//    * If you use the Force parameter to detach a network interface, you might
+	//    not be able to attach a different network interface to the same index
+	//    on the instance without first stopping and starting the instance.
+	//
+	//    * If you force the detachment of a network interface, the instance metadata
+	//    (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+	//    might not get updated. This means that the attributes associated with
+	//    the detached network interface might still be visible. The instance metadata
+	//    will get updated when you stop and start the instance.
 	Force *bool `locationName:"force" type:"boolean"`
 }
 
@@ -61851,7 +62914,10 @@ func (s *DnsServersOptionsModifyStructure) SetEnabled(v bool) *DnsServersOptions
 type EbsBlockDevice struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates whether the EBS volume is deleted on instance termination.
+	// Indicates whether the EBS volume is deleted on instance termination. For
+	// more information, see Preserving Amazon EBS Volumes on Instance Termination
+	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html#preserving-volumes-on-termination)
+	// in the Amazon Elastic Compute Cloud User Guide.
 	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
 
 	// Indicates whether the encryption state of an EBS volume is changed while
@@ -61909,9 +62975,10 @@ type EbsBlockDevice struct {
 	// size.
 	VolumeSize *int64 `locationName:"volumeSize" type:"integer"`
 
-	// The volume type. If you set the type to io1, you must also set the Iops property.
+	// The volume type. If you set the type to io1, you must also specify the IOPS
+	// that the volume supports.
 	//
-	// Default: standard
+	// Default: gp2
 	VolumeType *string `locationName:"volumeType" type:"string" enum:"VolumeType"`
 }
 
@@ -63035,6 +64102,295 @@ func (s *ExportClientVpnClientConfigurationOutput) SetClientConfiguration(v stri
 	return s
 }
 
+type ExportImageInput struct {
+	_ struct{} `type:"structure"`
+
+	// Token to enable idempotency for export image requests.
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// A description of the image being exported. The maximum length is 255 bytes.
+	Description *string `type:"string"`
+
+	// The disk image format.
+	//
+	// DiskImageFormat is a required field
+	DiskImageFormat *string `type:"string" required:"true" enum:"DiskImageFormat"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the image.
+	//
+	// ImageId is a required field
+	ImageId *string `type:"string" required:"true"`
+
+	// The name of the role that grants VM Import/Export permission to export images
+	// to your S3 bucket. If this parameter is not specified, the default role is
+	// named 'vmimport'.
+	RoleName *string `type:"string"`
+
+	// Information about the destination S3 bucket. The bucket must exist and grant
+	// WRITE and READ_ACP permissions to the AWS account vm-import-export@amazon.com.
+	//
+	// S3ExportLocation is a required field
+	S3ExportLocation *ExportTaskS3LocationRequest `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s ExportImageInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ExportImageInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExportImageInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExportImageInput"}
+	if s.DiskImageFormat == nil {
+		invalidParams.Add(request.NewErrParamRequired("DiskImageFormat"))
+	}
+	if s.ImageId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ImageId"))
+	}
+	if s.S3ExportLocation == nil {
+		invalidParams.Add(request.NewErrParamRequired("S3ExportLocation"))
+	}
+	if s.S3ExportLocation != nil {
+		if err := s.S3ExportLocation.Validate(); err != nil {
+			invalidParams.AddNested("S3ExportLocation", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ExportImageInput) SetClientToken(v string) *ExportImageInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ExportImageInput) SetDescription(v string) *ExportImageInput {
+	s.Description = &v
+	return s
+}
+
+// SetDiskImageFormat sets the DiskImageFormat field's value.
+func (s *ExportImageInput) SetDiskImageFormat(v string) *ExportImageInput {
+	s.DiskImageFormat = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ExportImageInput) SetDryRun(v bool) *ExportImageInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *ExportImageInput) SetImageId(v string) *ExportImageInput {
+	s.ImageId = &v
+	return s
+}
+
+// SetRoleName sets the RoleName field's value.
+func (s *ExportImageInput) SetRoleName(v string) *ExportImageInput {
+	s.RoleName = &v
+	return s
+}
+
+// SetS3ExportLocation sets the S3ExportLocation field's value.
+func (s *ExportImageInput) SetS3ExportLocation(v *ExportTaskS3LocationRequest) *ExportImageInput {
+	s.S3ExportLocation = v
+	return s
+}
+
+type ExportImageOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A description of the image being exported.
+	Description *string `locationName:"description" type:"string"`
+
+	// The disk image format for the exported image.
+	DiskImageFormat *string `locationName:"diskImageFormat" type:"string" enum:"DiskImageFormat"`
+
+	// The ID of the export image task.
+	ExportImageTaskId *string `locationName:"exportImageTaskId" type:"string"`
+
+	// The ID of the image.
+	ImageId *string `locationName:"imageId" type:"string"`
+
+	// The percent complete of the export image task.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// The name of the role that grants VM Import/Export permission to export images
+	// to your S3 bucket.
+	RoleName *string `locationName:"roleName" type:"string"`
+
+	// Information about the destination S3 bucket.
+	S3ExportLocation *ExportTaskS3Location `locationName:"s3ExportLocation" type:"structure"`
+
+	// The status of the export image task. The possible values are active, completed,
+	// deleting, and deleted.
+	Status *string `locationName:"status" type:"string"`
+
+	// The status message for the export image task.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+}
+
+// String returns the string representation
+func (s ExportImageOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ExportImageOutput) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *ExportImageOutput) SetDescription(v string) *ExportImageOutput {
+	s.Description = &v
+	return s
+}
+
+// SetDiskImageFormat sets the DiskImageFormat field's value.
+func (s *ExportImageOutput) SetDiskImageFormat(v string) *ExportImageOutput {
+	s.DiskImageFormat = &v
+	return s
+}
+
+// SetExportImageTaskId sets the ExportImageTaskId field's value.
+func (s *ExportImageOutput) SetExportImageTaskId(v string) *ExportImageOutput {
+	s.ExportImageTaskId = &v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *ExportImageOutput) SetImageId(v string) *ExportImageOutput {
+	s.ImageId = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *ExportImageOutput) SetProgress(v string) *ExportImageOutput {
+	s.Progress = &v
+	return s
+}
+
+// SetRoleName sets the RoleName field's value.
+func (s *ExportImageOutput) SetRoleName(v string) *ExportImageOutput {
+	s.RoleName = &v
+	return s
+}
+
+// SetS3ExportLocation sets the S3ExportLocation field's value.
+func (s *ExportImageOutput) SetS3ExportLocation(v *ExportTaskS3Location) *ExportImageOutput {
+	s.S3ExportLocation = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ExportImageOutput) SetStatus(v string) *ExportImageOutput {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *ExportImageOutput) SetStatusMessage(v string) *ExportImageOutput {
+	s.StatusMessage = &v
+	return s
+}
+
+// Describes an export image task.
+type ExportImageTask struct {
+	_ struct{} `type:"structure"`
+
+	// A description of the image being exported.
+	Description *string `locationName:"description" type:"string"`
+
+	// The ID of the export image task.
+	ExportImageTaskId *string `locationName:"exportImageTaskId" type:"string"`
+
+	// The ID of the image.
+	ImageId *string `locationName:"imageId" type:"string"`
+
+	// The percent complete of the export image task.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// Information about the destination S3 bucket.
+	S3ExportLocation *ExportTaskS3Location `locationName:"s3ExportLocation" type:"structure"`
+
+	// The status of the export image task. The possible values are active, completed,
+	// deleting, and deleted.
+	Status *string `locationName:"status" type:"string"`
+
+	// The status message for the export image task.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+}
+
+// String returns the string representation
+func (s ExportImageTask) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ExportImageTask) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *ExportImageTask) SetDescription(v string) *ExportImageTask {
+	s.Description = &v
+	return s
+}
+
+// SetExportImageTaskId sets the ExportImageTaskId field's value.
+func (s *ExportImageTask) SetExportImageTaskId(v string) *ExportImageTask {
+	s.ExportImageTaskId = &v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *ExportImageTask) SetImageId(v string) *ExportImageTask {
+	s.ImageId = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *ExportImageTask) SetProgress(v string) *ExportImageTask {
+	s.Progress = &v
+	return s
+}
+
+// SetS3ExportLocation sets the S3ExportLocation field's value.
+func (s *ExportImageTask) SetS3ExportLocation(v *ExportTaskS3Location) *ExportImageTask {
+	s.S3ExportLocation = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ExportImageTask) SetStatus(v string) *ExportImageTask {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *ExportImageTask) SetStatusMessage(v string) *ExportImageTask {
+	s.StatusMessage = &v
+	return s
+}
+
 // Describes an instance export task.
 type ExportTask struct {
 	_ struct{} `type:"structure"`
@@ -63101,6 +64457,87 @@ func (s *ExportTask) SetState(v string) *ExportTask {
 // SetStatusMessage sets the StatusMessage field's value.
 func (s *ExportTask) SetStatusMessage(v string) *ExportTask {
 	s.StatusMessage = &v
+	return s
+}
+
+// Describes the destination for an export image task.
+type ExportTaskS3Location struct {
+	_ struct{} `type:"structure"`
+
+	// The destination S3 bucket.
+	S3Bucket *string `locationName:"s3Bucket" type:"string"`
+
+	// The prefix (logical hierarchy) in the bucket.
+	S3Prefix *string `locationName:"s3Prefix" type:"string"`
+}
+
+// String returns the string representation
+func (s ExportTaskS3Location) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ExportTaskS3Location) GoString() string {
+	return s.String()
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *ExportTaskS3Location) SetS3Bucket(v string) *ExportTaskS3Location {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Prefix sets the S3Prefix field's value.
+func (s *ExportTaskS3Location) SetS3Prefix(v string) *ExportTaskS3Location {
+	s.S3Prefix = &v
+	return s
+}
+
+// Describes the destination for an export image task.
+type ExportTaskS3LocationRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The destination S3 bucket.
+	//
+	// S3Bucket is a required field
+	S3Bucket *string `type:"string" required:"true"`
+
+	// The prefix (logical hierarchy) in the bucket.
+	S3Prefix *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ExportTaskS3LocationRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ExportTaskS3LocationRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExportTaskS3LocationRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExportTaskS3LocationRequest"}
+	if s.S3Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("S3Bucket"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *ExportTaskS3LocationRequest) SetS3Bucket(v string) *ExportTaskS3LocationRequest {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Prefix sets the S3Prefix field's value.
+func (s *ExportTaskS3LocationRequest) SetS3Prefix(v string) *ExportTaskS3LocationRequest {
+	s.S3Prefix = &v
 	return s
 }
 
@@ -63330,6 +64767,39 @@ func (s ExportTransitGatewayRoutesOutput) GoString() string {
 // SetS3Location sets the S3Location field's value.
 func (s *ExportTransitGatewayRoutesOutput) SetS3Location(v string) *ExportTransitGatewayRoutesOutput {
 	s.S3Location = &v
+	return s
+}
+
+// Describes a Reserved Instance whose queued purchase was not deleted.
+type FailedQueuedPurchaseDeletion struct {
+	_ struct{} `type:"structure"`
+
+	// The error.
+	Error *DeleteQueuedReservedInstancesError `locationName:"error" type:"structure"`
+
+	// The ID of the Reserved Instance.
+	ReservedInstancesId *string `locationName:"reservedInstancesId" type:"string"`
+}
+
+// String returns the string representation
+func (s FailedQueuedPurchaseDeletion) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s FailedQueuedPurchaseDeletion) GoString() string {
+	return s.String()
+}
+
+// SetError sets the Error field's value.
+func (s *FailedQueuedPurchaseDeletion) SetError(v *DeleteQueuedReservedInstancesError) *FailedQueuedPurchaseDeletion {
+	s.Error = v
+	return s
+}
+
+// SetReservedInstancesId sets the ReservedInstancesId field's value.
+func (s *FailedQueuedPurchaseDeletion) SetReservedInstancesId(v string) *FailedQueuedPurchaseDeletion {
+	s.ReservedInstancesId = &v
 	return s
 }
 
@@ -64015,6 +65485,9 @@ type FlowLog struct {
 	// Flow log data can be published to CloudWatch Logs or Amazon S3.
 	LogDestinationType *string `locationName:"logDestinationType" type:"string" enum:"LogDestinationType"`
 
+	// The format of the flow log record.
+	LogFormat *string `locationName:"logFormat" type:"string"`
+
 	// The name of the flow log group.
 	LogGroupName *string `locationName:"logGroupName" type:"string"`
 
@@ -64080,6 +65553,12 @@ func (s *FlowLog) SetLogDestination(v string) *FlowLog {
 // SetLogDestinationType sets the LogDestinationType field's value.
 func (s *FlowLog) SetLogDestinationType(v string) *FlowLog {
 	s.LogDestinationType = &v
+	return s
+}
+
+// SetLogFormat sets the LogFormat field's value.
+func (s *FlowLog) SetLogFormat(v string) *FlowLog {
+	s.LogFormat = &v
 	return s
 }
 
@@ -64356,13 +65835,25 @@ func (s *FpgaImageState) SetMessage(v string) *FpgaImageState {
 type GetCapacityReservationUsageInput struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of the Capacity Reservation.
+	//
 	// CapacityReservationId is a required field
 	CapacityReservationId *string `type:"string" required:"true"`
 
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
+	// The maximum number of results to return for the request in a single page.
+	// The remaining results can be seen by sending another request with the returned
+	// nextToken value.
+	//
+	// Valid range: Minimum value of 1. Maximum value of 1000.
 	MaxResults *int64 `min:"1" type:"integer"`
 
+	// The token to retrieve the next page of results.
 	NextToken *string `type:"string"`
 }
 
@@ -64419,18 +65910,45 @@ func (s *GetCapacityReservationUsageInput) SetNextToken(v string) *GetCapacityRe
 type GetCapacityReservationUsageOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The remaining capacity. Indicates the number of instances that can be launched
+	// in the Capacity Reservation.
 	AvailableInstanceCount *int64 `locationName:"availableInstanceCount" type:"integer"`
 
+	// The ID of the Capacity Reservation.
 	CapacityReservationId *string `locationName:"capacityReservationId" type:"string"`
 
+	// The type of instance for which the Capacity Reservation reserves capacity.
 	InstanceType *string `locationName:"instanceType" type:"string"`
 
+	// Information about the Capacity Reservation usage.
 	InstanceUsages []*InstanceUsage `locationName:"instanceUsageSet" locationNameList:"item" type:"list"`
 
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
+	// The current state of the Capacity Reservation. A Capacity Reservation can
+	// be in one of the following states:
+	//
+	//    * active - The Capacity Reservation is active and the capacity is available
+	//    for your use.
+	//
+	//    * expired - The Capacity Reservation expired automatically at the date
+	//    and time specified in your request. The reserved capacity is no longer
+	//    available for your use.
+	//
+	//    * cancelled - The Capacity Reservation was manually cancelled. The reserved
+	//    capacity is no longer available for your use.
+	//
+	//    * pending - The Capacity Reservation request was successful but the capacity
+	//    provisioning is still pending.
+	//
+	//    * failed - The Capacity Reservation request has failed. A request might
+	//    fail due to invalid request parameters, capacity constraints, or instance
+	//    limit constraints. Failed requests are retained for 60 minutes.
 	State *string `locationName:"state" type:"string" enum:"CapacityReservationState"`
 
+	// The number of instances for which the Capacity Reservation reserves capacity.
 	TotalInstanceCount *int64 `locationName:"totalInstanceCount" type:"integer"`
 }
 
@@ -65607,8 +67125,7 @@ func (s *GroupIdentifier) SetGroupName(v string) *GroupIdentifier {
 
 // Indicates whether your instance is configured for hibernation. This parameter
 // is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html#hibernating-prerequisites).
-// Hibernation is currently supported only for Amazon Linux. For more information,
-// see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
+// For more information, see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 type HibernationOptions struct {
 	_ struct{} `type:"structure"`
@@ -65636,8 +67153,7 @@ func (s *HibernationOptions) SetConfigured(v bool) *HibernationOptions {
 
 // Indicates whether your instance is configured for hibernation. This parameter
 // is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html#hibernating-prerequisites).
-// Hibernation is currently supported only for Amazon Linux. For more information,
-// see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
+// For more information, see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 type HibernationOptionsRequest struct {
 	_ struct{} `type:"structure"`
@@ -66197,6 +67713,54 @@ func (s *HostReservation) SetTags(v []*Tag) *HostReservation {
 // SetUpfrontPrice sets the UpfrontPrice field's value.
 func (s *HostReservation) SetUpfrontPrice(v string) *HostReservation {
 	s.UpfrontPrice = &v
+	return s
+}
+
+// The internet key exchange (IKE) version permitted for the VPN tunnel.
+type IKEVersionsListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The IKE version.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s IKEVersionsListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s IKEVersionsListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *IKEVersionsListValue) SetValue(v string) *IKEVersionsListValue {
+	s.Value = &v
+	return s
+}
+
+// The IKE version that is permitted for the VPN tunnel.
+type IKEVersionsRequestListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The IKE version.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation
+func (s IKEVersionsRequestListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s IKEVersionsRequestListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *IKEVersionsRequestListValue) SetValue(v string) *IKEVersionsRequestListValue {
+	s.Value = &v
 	return s
 }
 
@@ -67369,7 +68933,7 @@ type ImportInstanceLaunchSpecification struct {
 	SubnetId *string `locationName:"subnetId" type:"string"`
 
 	// The Base64-encoded user data to make available to the instance.
-	UserData *UserData `locationName:"userData" type:"structure"`
+	UserData *UserData `locationName:"userData" type:"structure" sensitive:"true"`
 }
 
 // String returns the string representation
@@ -68158,6 +69722,9 @@ type Instance struct {
 	// The license configurations.
 	Licenses []*LicenseConfiguration `locationName:"licenseSet" locationNameList:"item" type:"list"`
 
+	// The metadata options for the instance.
+	MetadataOptions *InstanceMetadataOptionsResponse `locationName:"metadataOptions" type:"structure"`
+
 	// The monitoring for the instance.
 	Monitoring *Monitoring `locationName:"monitoring" type:"structure"`
 
@@ -68383,6 +69950,12 @@ func (s *Instance) SetLaunchTime(v time.Time) *Instance {
 // SetLicenses sets the Licenses field's value.
 func (s *Instance) SetLicenses(v []*LicenseConfiguration) *Instance {
 	s.Licenses = v
+	return s
+}
+
+// SetMetadataOptions sets the MetadataOptions field's value.
+func (s *Instance) SetMetadataOptions(v *InstanceMetadataOptionsResponse) *Instance {
+	s.MetadataOptions = v
 	return s
 }
 
@@ -68867,6 +70440,146 @@ func (s *InstanceMarketOptionsRequest) SetSpotOptions(v *SpotMarketOptions) *Ins
 	return s
 }
 
+// The metadata options for the instance.
+type InstanceMetadataOptionsRequest struct {
+	_ struct{} `type:"structure"`
+
+	// This parameter enables or disables the HTTP metadata endpoint on your instances.
+	// If the parameter is not specified, the default state is enabled.
+	//
+	// If you specify a value of disabled, you will not be able to access your instance
+	// metadata.
+	HttpEndpoint *string `type:"string" enum:"InstanceMetadataEndpointState"`
+
+	// The desired HTTP PUT response hop limit for instance metadata requests. The
+	// larger the number, the further instance metadata requests can travel.
+	//
+	// Default: 1
+	//
+	// Possible values: Integers from 1 to 64
+	HttpPutResponseHopLimit *int64 `type:"integer"`
+
+	// The state of token usage for your instance metadata requests. If the parameter
+	// is not specified in the request, the default state is optional.
+	//
+	// If the state is optional, you can choose to retrieve instance metadata with
+	// or without a signed token header on your request. If you retrieve the IAM
+	// role credentials without a token, the version 1.0 role credentials are returned.
+	// If you retrieve the IAM role credentials using a valid signed token, the
+	// version 2.0 role credentials are returned.
+	//
+	// If the state is required, you must send a signed token header with any instance
+	// metadata retrieval requests. In this state, retrieving the IAM role credentials
+	// always returns the version 2.0 credentials; the version 1.0 credentials are
+	// not available.
+	HttpTokens *string `type:"string" enum:"HttpTokensState"`
+}
+
+// String returns the string representation
+func (s InstanceMetadataOptionsRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstanceMetadataOptionsRequest) GoString() string {
+	return s.String()
+}
+
+// SetHttpEndpoint sets the HttpEndpoint field's value.
+func (s *InstanceMetadataOptionsRequest) SetHttpEndpoint(v string) *InstanceMetadataOptionsRequest {
+	s.HttpEndpoint = &v
+	return s
+}
+
+// SetHttpPutResponseHopLimit sets the HttpPutResponseHopLimit field's value.
+func (s *InstanceMetadataOptionsRequest) SetHttpPutResponseHopLimit(v int64) *InstanceMetadataOptionsRequest {
+	s.HttpPutResponseHopLimit = &v
+	return s
+}
+
+// SetHttpTokens sets the HttpTokens field's value.
+func (s *InstanceMetadataOptionsRequest) SetHttpTokens(v string) *InstanceMetadataOptionsRequest {
+	s.HttpTokens = &v
+	return s
+}
+
+// The metadata options for the instance.
+type InstanceMetadataOptionsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// This parameter enables or disables the HTTP metadata endpoint on your instances.
+	// If the parameter is not specified, the default state is enabled.
+	//
+	// If you specify a value of disabled, you will not be able to access your instance
+	// metadata.
+	HttpEndpoint *string `locationName:"httpEndpoint" type:"string" enum:"InstanceMetadataEndpointState"`
+
+	// The desired HTTP PUT response hop limit for instance metadata requests. The
+	// larger the number, the further instance metadata requests can travel.
+	//
+	// Default: 1
+	//
+	// Possible values: Integers from 1 to 64
+	HttpPutResponseHopLimit *int64 `locationName:"httpPutResponseHopLimit" type:"integer"`
+
+	// The state of token usage for your instance metadata requests. If the parameter
+	// is not specified in the request, the default state is optional.
+	//
+	// If the state is optional, you can choose to retrieve instance metadata with
+	// or without a signed token header on your request. If you retrieve the IAM
+	// role credentials without a token, the version 1.0 role credentials are returned.
+	// If you retrieve the IAM role credentials using a valid signed token, the
+	// version 2.0 role credentials are returned.
+	//
+	// If the state is required, you must send a signed token header with any instance
+	// metadata retrieval requests. In this state, retrieving the IAM role credential
+	// always returns the version 2.0 credentials; the version 1.0 credentials are
+	// not available.
+	HttpTokens *string `locationName:"httpTokens" type:"string" enum:"HttpTokensState"`
+
+	// The state of the metadata option changes.
+	//
+	// pending - The metadata options are being updated and the instance is not
+	// ready to process metadata traffic with the new selection.
+	//
+	// applied - The metadata options have been successfully applied on the instance.
+	State *string `locationName:"state" type:"string" enum:"InstanceMetadataOptionsState"`
+}
+
+// String returns the string representation
+func (s InstanceMetadataOptionsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstanceMetadataOptionsResponse) GoString() string {
+	return s.String()
+}
+
+// SetHttpEndpoint sets the HttpEndpoint field's value.
+func (s *InstanceMetadataOptionsResponse) SetHttpEndpoint(v string) *InstanceMetadataOptionsResponse {
+	s.HttpEndpoint = &v
+	return s
+}
+
+// SetHttpPutResponseHopLimit sets the HttpPutResponseHopLimit field's value.
+func (s *InstanceMetadataOptionsResponse) SetHttpPutResponseHopLimit(v int64) *InstanceMetadataOptionsResponse {
+	s.HttpPutResponseHopLimit = &v
+	return s
+}
+
+// SetHttpTokens sets the HttpTokens field's value.
+func (s *InstanceMetadataOptionsResponse) SetHttpTokens(v string) *InstanceMetadataOptionsResponse {
+	s.HttpTokens = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *InstanceMetadataOptionsResponse) SetState(v string) *InstanceMetadataOptionsResponse {
+	s.State = &v
+	return s
+}
+
 // Describes the monitoring of an instance.
 type InstanceMonitoring struct {
 	_ struct{} `type:"structure"`
@@ -69240,8 +70953,8 @@ type InstanceNetworkInterfaceSpecification struct {
 	// request.
 	SecondaryPrivateIpAddressCount *int64 `locationName:"secondaryPrivateIpAddressCount" type:"integer"`
 
-	// The ID of the subnet associated with the network string. Applies only if
-	// creating a network interface when launching an instance.
+	// The ID of the subnet associated with the network interface. Applies only
+	// if creating a network interface when launching an instance.
 	SubnetId *string `locationName:"subnetId" type:"string"`
 }
 
@@ -69740,11 +71453,14 @@ func (s *InstanceStatusSummary) SetStatus(v string) *InstanceStatusSummary {
 	return s
 }
 
+// Information about the Capacity Reservation usage.
 type InstanceUsage struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of the AWS account that is making use of the Capacity Reservation.
 	AccountId *string `locationName:"accountId" type:"string"`
 
+	// The number of instances the AWS account currently has in the Capacity Reservation.
 	UsedInstanceCount *int64 `locationName:"usedInstanceCount" type:"integer"`
 }
 
@@ -70706,9 +72422,8 @@ type LaunchTemplateCpuOptionsRequest struct {
 	// The number of CPU cores for the instance.
 	CoreCount *int64 `type:"integer"`
 
-	// The number of threads per CPU core. To disable Intel Hyper-Threading Technology
-	// for the instance, specify a value of 1. Otherwise, specify the default value
-	// of 2.
+	// The number of threads per CPU core. To disable multithreading for the instance,
+	// specify a value of 1. Otherwise, specify the default value of 2.
 	ThreadsPerCore *int64 `type:"integer"`
 }
 
@@ -70996,7 +72711,6 @@ func (s *LaunchTemplateHibernationOptions) SetConfigured(v bool) *LaunchTemplate
 
 // Indicates whether the instance is configured for hibernation. This parameter
 // is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html#hibernating-prerequisites).
-// Hibernation is currently supported only for Amazon Linux.
 type LaunchTemplateHibernationOptionsRequest struct {
 	_ struct{} `type:"structure"`
 
@@ -72369,7 +74083,7 @@ func (s *ModifyCapacityReservationInput) SetInstanceCount(v int64) *ModifyCapaci
 type ModifyCapacityReservationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Information about the Capacity Reservation.
+	// Returns true if the request succeeds; otherwise, it returns an error.
 	Return *bool `locationName:"return" type:"boolean"`
 }
 
@@ -73774,6 +75488,135 @@ func (s ModifyInstanceEventStartTimeOutput) GoString() string {
 // SetEvent sets the Event field's value.
 func (s *ModifyInstanceEventStartTimeOutput) SetEvent(v *InstanceStatusEvent) *ModifyInstanceEventStartTimeOutput {
 	s.Event = v
+	return s
+}
+
+type ModifyInstanceMetadataOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// This parameter enables or disables the HTTP metadata endpoint on your instances.
+	// If the parameter is not specified, the existing state is maintained.
+	//
+	// If you specify a value of disabled, you will not be able to access your instance
+	// metadata.
+	HttpEndpoint *string `type:"string" enum:"InstanceMetadataEndpointState"`
+
+	// The desired HTTP PUT response hop limit for instance metadata requests. The
+	// larger the number, the further instance metadata requests can travel. If
+	// no parameter is specified, the existing state is maintained.
+	//
+	// Possible values: Integers from 1 to 64
+	HttpPutResponseHopLimit *int64 `type:"integer"`
+
+	// The state of token usage for your instance metadata requests. If the parameter
+	// is not specified in the request, the default state is optional.
+	//
+	// If the state is optional, you can choose to retrieve instance metadata with
+	// or without a signed token header on your request. If you retrieve the IAM
+	// role credentials without a token, the version 1.0 role credentials are returned.
+	// If you retrieve the IAM role credentials using a valid signed token, the
+	// version 2.0 role credentials are returned.
+	//
+	// If the state is required, you must send a signed token header with any instance
+	// metadata retrieval requests. In this state, retrieving the IAM role credential
+	// always returns the version 2.0 credentials; the version 1.0 credentials are
+	// not available.
+	HttpTokens *string `type:"string" enum:"HttpTokensState"`
+
+	// The ID of the instance.
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyInstanceMetadataOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyInstanceMetadataOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyInstanceMetadataOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyInstanceMetadataOptionsInput"}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyInstanceMetadataOptionsInput) SetDryRun(v bool) *ModifyInstanceMetadataOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetHttpEndpoint sets the HttpEndpoint field's value.
+func (s *ModifyInstanceMetadataOptionsInput) SetHttpEndpoint(v string) *ModifyInstanceMetadataOptionsInput {
+	s.HttpEndpoint = &v
+	return s
+}
+
+// SetHttpPutResponseHopLimit sets the HttpPutResponseHopLimit field's value.
+func (s *ModifyInstanceMetadataOptionsInput) SetHttpPutResponseHopLimit(v int64) *ModifyInstanceMetadataOptionsInput {
+	s.HttpPutResponseHopLimit = &v
+	return s
+}
+
+// SetHttpTokens sets the HttpTokens field's value.
+func (s *ModifyInstanceMetadataOptionsInput) SetHttpTokens(v string) *ModifyInstanceMetadataOptionsInput {
+	s.HttpTokens = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ModifyInstanceMetadataOptionsInput) SetInstanceId(v string) *ModifyInstanceMetadataOptionsInput {
+	s.InstanceId = &v
+	return s
+}
+
+type ModifyInstanceMetadataOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the instance.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The metadata options for the instance.
+	InstanceMetadataOptions *InstanceMetadataOptionsResponse `locationName:"instanceMetadataOptions" type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyInstanceMetadataOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyInstanceMetadataOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ModifyInstanceMetadataOptionsOutput) SetInstanceId(v string) *ModifyInstanceMetadataOptionsOutput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceMetadataOptions sets the InstanceMetadataOptions field's value.
+func (s *ModifyInstanceMetadataOptionsOutput) SetInstanceMetadataOptions(v *InstanceMetadataOptionsResponse) *ModifyInstanceMetadataOptionsOutput {
+	s.InstanceMetadataOptions = v
 	return s
 }
 
@@ -75389,8 +77232,7 @@ type ModifyVpcEndpointInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// A policy to attach to the endpoint that controls access to the service. The
-	// policy must be in valid JSON format. If this parameter is not specified,
-	// we attach a default policy that allows full access to the service.
+	// policy must be in valid JSON format.
 	PolicyDocument *string `type:"string"`
 
 	// (Interface endpoint) Indicate whether a private hosted zone is associated
@@ -75915,6 +77757,9 @@ func (s *ModifyVpcTenancyOutput) SetReturnValue(v bool) *ModifyVpcTenancyOutput 
 type ModifyVpnConnectionInput struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of the customer gateway at your end of the VPN connection.
+	CustomerGatewayId *string `type:"string"`
+
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
 	// the required permissions, the error response is DryRunOperation. Otherwise,
@@ -75954,6 +77799,12 @@ func (s *ModifyVpnConnectionInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *ModifyVpnConnectionInput) SetCustomerGatewayId(v string) *ModifyVpnConnectionInput {
+	s.CustomerGatewayId = &v
+	return s
 }
 
 // SetDryRun sets the DryRun field's value.
@@ -76000,6 +77851,416 @@ func (s ModifyVpnConnectionOutput) GoString() string {
 // SetVpnConnection sets the VpnConnection field's value.
 func (s *ModifyVpnConnectionOutput) SetVpnConnection(v *VpnConnection) *ModifyVpnConnectionOutput {
 	s.VpnConnection = v
+	return s
+}
+
+type ModifyVpnTunnelCertificateInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the AWS Site-to-Site VPN connection.
+	//
+	// VpnConnectionId is a required field
+	VpnConnectionId *string `type:"string" required:"true"`
+
+	// The external IP address of the VPN tunnel.
+	//
+	// VpnTunnelOutsideIpAddress is a required field
+	VpnTunnelOutsideIpAddress *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyVpnTunnelCertificateInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpnTunnelCertificateInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVpnTunnelCertificateInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVpnTunnelCertificateInput"}
+	if s.VpnConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnConnectionId"))
+	}
+	if s.VpnTunnelOutsideIpAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnTunnelOutsideIpAddress"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVpnTunnelCertificateInput) SetDryRun(v bool) *ModifyVpnTunnelCertificateInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *ModifyVpnTunnelCertificateInput) SetVpnConnectionId(v string) *ModifyVpnTunnelCertificateInput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// SetVpnTunnelOutsideIpAddress sets the VpnTunnelOutsideIpAddress field's value.
+func (s *ModifyVpnTunnelCertificateInput) SetVpnTunnelOutsideIpAddress(v string) *ModifyVpnTunnelCertificateInput {
+	s.VpnTunnelOutsideIpAddress = &v
+	return s
+}
+
+type ModifyVpnTunnelCertificateOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Describes a VPN connection.
+	VpnConnection *VpnConnection `locationName:"vpnConnection" type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyVpnTunnelCertificateOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpnTunnelCertificateOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpnConnection sets the VpnConnection field's value.
+func (s *ModifyVpnTunnelCertificateOutput) SetVpnConnection(v *VpnConnection) *ModifyVpnTunnelCertificateOutput {
+	s.VpnConnection = v
+	return s
+}
+
+type ModifyVpnTunnelOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The tunnel options to modify.
+	//
+	// TunnelOptions is a required field
+	TunnelOptions *ModifyVpnTunnelOptionsSpecification `type:"structure" required:"true"`
+
+	// The ID of the AWS Site-to-Site VPN connection.
+	//
+	// VpnConnectionId is a required field
+	VpnConnectionId *string `type:"string" required:"true"`
+
+	// The external IP address of the VPN tunnel.
+	//
+	// VpnTunnelOutsideIpAddress is a required field
+	VpnTunnelOutsideIpAddress *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyVpnTunnelOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpnTunnelOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVpnTunnelOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVpnTunnelOptionsInput"}
+	if s.TunnelOptions == nil {
+		invalidParams.Add(request.NewErrParamRequired("TunnelOptions"))
+	}
+	if s.VpnConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnConnectionId"))
+	}
+	if s.VpnTunnelOutsideIpAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnTunnelOutsideIpAddress"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVpnTunnelOptionsInput) SetDryRun(v bool) *ModifyVpnTunnelOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetTunnelOptions sets the TunnelOptions field's value.
+func (s *ModifyVpnTunnelOptionsInput) SetTunnelOptions(v *ModifyVpnTunnelOptionsSpecification) *ModifyVpnTunnelOptionsInput {
+	s.TunnelOptions = v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *ModifyVpnTunnelOptionsInput) SetVpnConnectionId(v string) *ModifyVpnTunnelOptionsInput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// SetVpnTunnelOutsideIpAddress sets the VpnTunnelOutsideIpAddress field's value.
+func (s *ModifyVpnTunnelOptionsInput) SetVpnTunnelOutsideIpAddress(v string) *ModifyVpnTunnelOptionsInput {
+	s.VpnTunnelOutsideIpAddress = &v
+	return s
+}
+
+type ModifyVpnTunnelOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Describes a VPN connection.
+	VpnConnection *VpnConnection `locationName:"vpnConnection" type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyVpnTunnelOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpnTunnelOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpnConnection sets the VpnConnection field's value.
+func (s *ModifyVpnTunnelOptionsOutput) SetVpnConnection(v *VpnConnection) *ModifyVpnTunnelOptionsOutput {
+	s.VpnConnection = v
+	return s
+}
+
+// The AWS Site-to-Site VPN tunnel options to modify.
+type ModifyVpnTunnelOptionsSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// The number of seconds after which a DPD timeout occurs.
+	//
+	// Constraints: A value between 0 and 30.
+	//
+	// Default: 30
+	DPDTimeoutSeconds *int64 `type:"integer"`
+
+	// The IKE versions that are permitted for the VPN tunnel.
+	//
+	// Valid values: ikev1 | ikev2
+	IKEVersions []*IKEVersionsRequestListValue `locationName:"IKEVersion" locationNameList:"item" type:"list"`
+
+	// One or more Diffie-Hellman group numbers that are permitted for the VPN tunnel
+	// for phase 1 IKE negotiations.
+	//
+	// Valid values: 2 | 14 | 15 | 16 | 17 | 18 | 22 | 23 | 24
+	Phase1DHGroupNumbers []*Phase1DHGroupNumbersRequestListValue `locationName:"Phase1DHGroupNumber" locationNameList:"item" type:"list"`
+
+	// One or more encryption algorithms that are permitted for the VPN tunnel for
+	// phase 1 IKE negotiations.
+	//
+	// Valid values: AES128 | AES256
+	Phase1EncryptionAlgorithms []*Phase1EncryptionAlgorithmsRequestListValue `locationName:"Phase1EncryptionAlgorithm" locationNameList:"item" type:"list"`
+
+	// One or more integrity algorithms that are permitted for the VPN tunnel for
+	// phase 1 IKE negotiations.
+	//
+	// Valid values: SHA1 | SHA2-256
+	Phase1IntegrityAlgorithms []*Phase1IntegrityAlgorithmsRequestListValue `locationName:"Phase1IntegrityAlgorithm" locationNameList:"item" type:"list"`
+
+	// The lifetime for phase 1 of the IKE negotiation, in seconds.
+	//
+	// Constraints: A value between 900 and 28,800.
+	//
+	// Default: 28800
+	Phase1LifetimeSeconds *int64 `type:"integer"`
+
+	// One or more Diffie-Hellman group numbers that are permitted for the VPN tunnel
+	// for phase 2 IKE negotiations.
+	//
+	// Valid values: 2 | 5 | 14 | 15 | 16 | 17 | 18 | 22 | 23 | 24
+	Phase2DHGroupNumbers []*Phase2DHGroupNumbersRequestListValue `locationName:"Phase2DHGroupNumber" locationNameList:"item" type:"list"`
+
+	// One or more encryption algorithms that are permitted for the VPN tunnel for
+	// phase 2 IKE negotiations.
+	//
+	// Valid values: AES128 | AES256
+	Phase2EncryptionAlgorithms []*Phase2EncryptionAlgorithmsRequestListValue `locationName:"Phase2EncryptionAlgorithm" locationNameList:"item" type:"list"`
+
+	// One or more integrity algorithms that are permitted for the VPN tunnel for
+	// phase 2 IKE negotiations.
+	//
+	// Valid values: SHA1 | SHA2-256
+	Phase2IntegrityAlgorithms []*Phase2IntegrityAlgorithmsRequestListValue `locationName:"Phase2IntegrityAlgorithm" locationNameList:"item" type:"list"`
+
+	// The lifetime for phase 2 of the IKE negotiation, in seconds.
+	//
+	// Constraints: A value between 900 and 3,600. The value must be less than the
+	// value for Phase1LifetimeSeconds.
+	//
+	// Default: 3600
+	Phase2LifetimeSeconds *int64 `type:"integer"`
+
+	// The pre-shared key (PSK) to establish initial authentication between the
+	// virtual private gateway and the customer gateway.
+	//
+	// Constraints: Allowed characters are alphanumeric characters, periods (.),
+	// and underscores (_). Must be between 8 and 64 characters in length and cannot
+	// start with zero (0).
+	PreSharedKey *string `type:"string"`
+
+	// The percentage of the rekey window (determined by RekeyMarginTimeSeconds)
+	// during which the rekey time is randomly selected.
+	//
+	// Constraints: A value between 0 and 100.
+	//
+	// Default: 100
+	RekeyFuzzPercentage *int64 `type:"integer"`
+
+	// The margin time, in seconds, before the phase 2 lifetime expires, during
+	// which the AWS side of the VPN connection performs an IKE rekey. The exact
+	// time of the rekey is randomly selected based on the value for RekeyFuzzPercentage.
+	//
+	// Constraints: A value between 60 and half of Phase2LifetimeSeconds.
+	//
+	// Default: 540
+	RekeyMarginTimeSeconds *int64 `type:"integer"`
+
+	// The number of packets in an IKE replay window.
+	//
+	// Constraints: A value between 64 and 2048.
+	//
+	// Default: 1024
+	ReplayWindowSize *int64 `type:"integer"`
+
+	// The range of inside IP addresses for the tunnel. Any specified CIDR blocks
+	// must be unique across all VPN connections that use the same virtual private
+	// gateway.
+	//
+	// Constraints: A size /30 CIDR block from the 169.254.0.0/16 range. The following
+	// CIDR blocks are reserved and cannot be used:
+	//
+	//    * 169.254.0.0/30
+	//
+	//    * 169.254.1.0/30
+	//
+	//    * 169.254.2.0/30
+	//
+	//    * 169.254.3.0/30
+	//
+	//    * 169.254.4.0/30
+	//
+	//    * 169.254.5.0/30
+	//
+	//    * 169.254.169.252/30
+	TunnelInsideCidr *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ModifyVpnTunnelOptionsSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpnTunnelOptionsSpecification) GoString() string {
+	return s.String()
+}
+
+// SetDPDTimeoutSeconds sets the DPDTimeoutSeconds field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetDPDTimeoutSeconds(v int64) *ModifyVpnTunnelOptionsSpecification {
+	s.DPDTimeoutSeconds = &v
+	return s
+}
+
+// SetIKEVersions sets the IKEVersions field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetIKEVersions(v []*IKEVersionsRequestListValue) *ModifyVpnTunnelOptionsSpecification {
+	s.IKEVersions = v
+	return s
+}
+
+// SetPhase1DHGroupNumbers sets the Phase1DHGroupNumbers field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase1DHGroupNumbers(v []*Phase1DHGroupNumbersRequestListValue) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase1DHGroupNumbers = v
+	return s
+}
+
+// SetPhase1EncryptionAlgorithms sets the Phase1EncryptionAlgorithms field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase1EncryptionAlgorithms(v []*Phase1EncryptionAlgorithmsRequestListValue) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase1EncryptionAlgorithms = v
+	return s
+}
+
+// SetPhase1IntegrityAlgorithms sets the Phase1IntegrityAlgorithms field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase1IntegrityAlgorithms(v []*Phase1IntegrityAlgorithmsRequestListValue) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase1IntegrityAlgorithms = v
+	return s
+}
+
+// SetPhase1LifetimeSeconds sets the Phase1LifetimeSeconds field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase1LifetimeSeconds(v int64) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase1LifetimeSeconds = &v
+	return s
+}
+
+// SetPhase2DHGroupNumbers sets the Phase2DHGroupNumbers field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase2DHGroupNumbers(v []*Phase2DHGroupNumbersRequestListValue) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase2DHGroupNumbers = v
+	return s
+}
+
+// SetPhase2EncryptionAlgorithms sets the Phase2EncryptionAlgorithms field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase2EncryptionAlgorithms(v []*Phase2EncryptionAlgorithmsRequestListValue) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase2EncryptionAlgorithms = v
+	return s
+}
+
+// SetPhase2IntegrityAlgorithms sets the Phase2IntegrityAlgorithms field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase2IntegrityAlgorithms(v []*Phase2IntegrityAlgorithmsRequestListValue) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase2IntegrityAlgorithms = v
+	return s
+}
+
+// SetPhase2LifetimeSeconds sets the Phase2LifetimeSeconds field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPhase2LifetimeSeconds(v int64) *ModifyVpnTunnelOptionsSpecification {
+	s.Phase2LifetimeSeconds = &v
+	return s
+}
+
+// SetPreSharedKey sets the PreSharedKey field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetPreSharedKey(v string) *ModifyVpnTunnelOptionsSpecification {
+	s.PreSharedKey = &v
+	return s
+}
+
+// SetRekeyFuzzPercentage sets the RekeyFuzzPercentage field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetRekeyFuzzPercentage(v int64) *ModifyVpnTunnelOptionsSpecification {
+	s.RekeyFuzzPercentage = &v
+	return s
+}
+
+// SetRekeyMarginTimeSeconds sets the RekeyMarginTimeSeconds field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetRekeyMarginTimeSeconds(v int64) *ModifyVpnTunnelOptionsSpecification {
+	s.RekeyMarginTimeSeconds = &v
+	return s
+}
+
+// SetReplayWindowSize sets the ReplayWindowSize field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetReplayWindowSize(v int64) *ModifyVpnTunnelOptionsSpecification {
+	s.ReplayWindowSize = &v
+	return s
+}
+
+// SetTunnelInsideCidr sets the TunnelInsideCidr field's value.
+func (s *ModifyVpnTunnelOptionsSpecification) SetTunnelInsideCidr(v string) *ModifyVpnTunnelOptionsSpecification {
+	s.TunnelInsideCidr = &v
 	return s
 }
 
@@ -77489,6 +79750,296 @@ func (s *PeeringConnectionOptionsRequest) SetAllowEgressFromLocalVpcToRemoteClas
 	return s
 }
 
+// The Diffie-Hellmann group number for phase 1 IKE negotiations.
+type Phase1DHGroupNumbersListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The Diffie-Hellmann group number.
+	Value *int64 `locationName:"value" type:"integer"`
+}
+
+// String returns the string representation
+func (s Phase1DHGroupNumbersListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase1DHGroupNumbersListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase1DHGroupNumbersListValue) SetValue(v int64) *Phase1DHGroupNumbersListValue {
+	s.Value = &v
+	return s
+}
+
+// Specifies a Diffie-Hellman group number for the VPN tunnel for phase 1 IKE
+// negotiations.
+type Phase1DHGroupNumbersRequestListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The Diffie-Hellmann group number.
+	Value *int64 `type:"integer"`
+}
+
+// String returns the string representation
+func (s Phase1DHGroupNumbersRequestListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase1DHGroupNumbersRequestListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase1DHGroupNumbersRequestListValue) SetValue(v int64) *Phase1DHGroupNumbersRequestListValue {
+	s.Value = &v
+	return s
+}
+
+// The encryption algorithm for phase 1 IKE negotiations.
+type Phase1EncryptionAlgorithmsListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The value for the encryption algorithm.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s Phase1EncryptionAlgorithmsListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase1EncryptionAlgorithmsListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase1EncryptionAlgorithmsListValue) SetValue(v string) *Phase1EncryptionAlgorithmsListValue {
+	s.Value = &v
+	return s
+}
+
+// Specifies the encryption algorithm for the VPN tunnel for phase 1 IKE negotiations.
+type Phase1EncryptionAlgorithmsRequestListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The value for the encryption algorithm.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation
+func (s Phase1EncryptionAlgorithmsRequestListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase1EncryptionAlgorithmsRequestListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase1EncryptionAlgorithmsRequestListValue) SetValue(v string) *Phase1EncryptionAlgorithmsRequestListValue {
+	s.Value = &v
+	return s
+}
+
+// The integrity algorithm for phase 1 IKE negotiations.
+type Phase1IntegrityAlgorithmsListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The value for the integrity algorithm.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s Phase1IntegrityAlgorithmsListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase1IntegrityAlgorithmsListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase1IntegrityAlgorithmsListValue) SetValue(v string) *Phase1IntegrityAlgorithmsListValue {
+	s.Value = &v
+	return s
+}
+
+// Specifies the integrity algorithm for the VPN tunnel for phase 1 IKE negotiations.
+type Phase1IntegrityAlgorithmsRequestListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The value for the integrity algorithm.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation
+func (s Phase1IntegrityAlgorithmsRequestListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase1IntegrityAlgorithmsRequestListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase1IntegrityAlgorithmsRequestListValue) SetValue(v string) *Phase1IntegrityAlgorithmsRequestListValue {
+	s.Value = &v
+	return s
+}
+
+// The Diffie-Hellmann group number for phase 2 IKE negotiations.
+type Phase2DHGroupNumbersListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The Diffie-Hellmann group number.
+	Value *int64 `locationName:"value" type:"integer"`
+}
+
+// String returns the string representation
+func (s Phase2DHGroupNumbersListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase2DHGroupNumbersListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase2DHGroupNumbersListValue) SetValue(v int64) *Phase2DHGroupNumbersListValue {
+	s.Value = &v
+	return s
+}
+
+// Specifies a Diffie-Hellman group number for the VPN tunnel for phase 2 IKE
+// negotiations.
+type Phase2DHGroupNumbersRequestListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The Diffie-Hellmann group number.
+	Value *int64 `type:"integer"`
+}
+
+// String returns the string representation
+func (s Phase2DHGroupNumbersRequestListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase2DHGroupNumbersRequestListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase2DHGroupNumbersRequestListValue) SetValue(v int64) *Phase2DHGroupNumbersRequestListValue {
+	s.Value = &v
+	return s
+}
+
+// The encryption algorithm for phase 2 IKE negotiations.
+type Phase2EncryptionAlgorithmsListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The encryption algorithm.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s Phase2EncryptionAlgorithmsListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase2EncryptionAlgorithmsListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase2EncryptionAlgorithmsListValue) SetValue(v string) *Phase2EncryptionAlgorithmsListValue {
+	s.Value = &v
+	return s
+}
+
+// Specifies the encryption algorithm for the VPN tunnel for phase 2 IKE negotiations.
+type Phase2EncryptionAlgorithmsRequestListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The encryption algorithm.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation
+func (s Phase2EncryptionAlgorithmsRequestListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase2EncryptionAlgorithmsRequestListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase2EncryptionAlgorithmsRequestListValue) SetValue(v string) *Phase2EncryptionAlgorithmsRequestListValue {
+	s.Value = &v
+	return s
+}
+
+// The integrity algorithm for phase 2 IKE negotiations.
+type Phase2IntegrityAlgorithmsListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The integrity algorithm.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s Phase2IntegrityAlgorithmsListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase2IntegrityAlgorithmsListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase2IntegrityAlgorithmsListValue) SetValue(v string) *Phase2IntegrityAlgorithmsListValue {
+	s.Value = &v
+	return s
+}
+
+// Specifies the integrity algorithm for the VPN tunnel for phase 2 IKE negotiations.
+type Phase2IntegrityAlgorithmsRequestListValue struct {
+	_ struct{} `type:"structure"`
+
+	// The integrity algorithm.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation
+func (s Phase2IntegrityAlgorithmsRequestListValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Phase2IntegrityAlgorithmsRequestListValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *Phase2IntegrityAlgorithmsRequestListValue) SetValue(v string) *Phase2IntegrityAlgorithmsRequestListValue {
+	s.Value = &v
+	return s
+}
+
 // Describes the placement of an instance.
 type Placement struct {
 	_ struct{} `type:"structure"`
@@ -78616,6 +81167,10 @@ type PurchaseReservedInstancesOfferingInput struct {
 	// prices.
 	LimitPrice *ReservedInstanceLimitPrice `locationName:"limitPrice" type:"structure"`
 
+	// The time at which to purchase the Reserved Instance, in UTC format (for example,
+	// YYYY-MM-DDTHH:MM:SSZ).
+	PurchaseTime *time.Time `type:"timestamp"`
+
 	// The ID of the Reserved Instance offering to purchase.
 	//
 	// ReservedInstancesOfferingId is a required field
@@ -78663,6 +81218,12 @@ func (s *PurchaseReservedInstancesOfferingInput) SetInstanceCount(v int64) *Purc
 // SetLimitPrice sets the LimitPrice field's value.
 func (s *PurchaseReservedInstancesOfferingInput) SetLimitPrice(v *ReservedInstanceLimitPrice) *PurchaseReservedInstancesOfferingInput {
 	s.LimitPrice = v
+	return s
+}
+
+// SetPurchaseTime sets the PurchaseTime field's value.
+func (s *PurchaseReservedInstancesOfferingInput) SetPurchaseTime(v time.Time) *PurchaseReservedInstancesOfferingInput {
+	s.PurchaseTime = &v
 	return s
 }
 
@@ -80354,8 +82915,7 @@ type RequestLaunchTemplateData struct {
 
 	// Indicates whether an instance is enabled for hibernation. This parameter
 	// is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html#hibernating-prerequisites).
-	// Hibernation is currently supported only for Amazon Linux. For more information,
-	// see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
+	// For more information, see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	HibernationOptions *LaunchTemplateHibernationOptionsRequest `type:"structure"`
 
@@ -80791,6 +83351,10 @@ type RequestSpotInstancesInput struct {
 	// launch, the request expires, or the request is canceled. If the request is
 	// persistent, the request becomes active at this date and time and remains
 	// active until it expires or is canceled.
+	//
+	// The specified start date and time cannot be equal to the current date and
+	// time. You must specify a start date and time that occurs after the current
+	// date and time.
 	ValidFrom *time.Time `locationName:"validFrom" type:"timestamp"`
 
 	// The end date of the request. If this is a one-time request, the request remains
@@ -80982,7 +83546,9 @@ type RequestSpotLaunchSpecification struct {
 	// you can specify the names or the IDs of the security groups.
 	SecurityGroups []*string `locationName:"SecurityGroup" locationNameList:"item" type:"list"`
 
-	// The ID of the subnet in which to launch the instance.
+	// The IDs of the subnets in which to launch the instance. To specify multiple
+	// subnets, separate them using commas; for example, "subnet-1234abcdeexample1,
+	// subnet-0987cdef6example2".
 	SubnetId *string `locationName:"subnetId" type:"string"`
 
 	// The Base64-encoded user data for the instance. User data is limited to 16
@@ -83554,6 +86120,10 @@ type RunInstancesInput struct {
 	// MaxCount is a required field
 	MaxCount *int64 `type:"integer" required:"true"`
 
+	// The metadata options for the instance. For more information, see Instance
+	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+	MetadataOptions *InstanceMetadataOptionsRequest `type:"structure"`
+
 	// The minimum number of instances to launch. If you specify a minimum that
 	// is more instances than Amazon EC2 can launch in the target Availability Zone,
 	// Amazon EC2 launches no instances.
@@ -83833,6 +86403,12 @@ func (s *RunInstancesInput) SetLicenseSpecifications(v []*LicenseConfigurationRe
 // SetMaxCount sets the MaxCount field's value.
 func (s *RunInstancesInput) SetMaxCount(v int64) *RunInstancesInput {
 	s.MaxCount = &v
+	return s
+}
+
+// SetMetadataOptions sets the MetadataOptions field's value.
+func (s *RunInstancesInput) SetMetadataOptions(v *InstanceMetadataOptionsRequest) *RunInstancesInput {
+	s.MetadataOptions = v
 	return s
 }
 
@@ -84640,7 +87216,7 @@ type ScheduledInstancesEbs struct {
 	// The volume type. gp2 for General Purpose SSD, io1 for Provisioned IOPS SSD,
 	// Throughput Optimized HDD for st1, Cold HDD for sc1, or standard for Magnetic.
 	//
-	// Default: standard
+	// Default: gp2
 	VolumeType *string `type:"string"`
 }
 
@@ -85165,7 +87741,7 @@ type SearchTransitGatewayRoutesInput struct {
 	//
 	//    * state - The state of the route (active | blackhole).
 	//
-	//    * type - The type of roue (propagated | static).
+	//    * type - The type of route (propagated | static).
 	//
 	// Filters is a required field
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list" required:"true"`
@@ -85424,6 +88000,70 @@ func (s *SecurityGroupReference) SetReferencingVpcId(v string) *SecurityGroupRef
 func (s *SecurityGroupReference) SetVpcPeeringConnectionId(v string) *SecurityGroupReference {
 	s.VpcPeeringConnectionId = &v
 	return s
+}
+
+type SendDiagnosticInterruptInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The ID of the instance.
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s SendDiagnosticInterruptInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SendDiagnosticInterruptInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SendDiagnosticInterruptInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SendDiagnosticInterruptInput"}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *SendDiagnosticInterruptInput) SetDryRun(v bool) *SendDiagnosticInterruptInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *SendDiagnosticInterruptInput) SetInstanceId(v string) *SendDiagnosticInterruptInput {
+	s.InstanceId = &v
+	return s
+}
+
+type SendDiagnosticInterruptOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s SendDiagnosticInterruptOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SendDiagnosticInterruptOutput) GoString() string {
+	return s.String()
 }
 
 // Describes a service configuration for a VPC endpoint service.
@@ -86378,7 +89018,7 @@ type SpotFleetLaunchSpecification struct {
 	// Deprecated.
 	AddressingType *string `locationName:"addressingType" type:"string"`
 
-	// One or more block devices that are mapped to the Spot instances. You can't
+	// One or more block devices that are mapped to the Spot Instances. You can't
 	// specify both a snapshot ID and an encryption value. This is because only
 	// blank volumes can be encrypted on creation. If a snapshot is the basis for
 	// a volume, it is not blank and its encryption status is used for the volume
@@ -86436,8 +89076,9 @@ type SpotFleetLaunchSpecification struct {
 	// by the value of WeightedCapacity.
 	SpotPrice *string `locationName:"spotPrice" type:"string"`
 
-	// The ID of the subnet in which to launch the instances. To specify multiple
-	// subnets, separate them using commas; for example, "subnet-a61dafcf, subnet-65ea5f08".
+	// The IDs of the subnets in which to launch the instances. To specify multiple
+	// subnets, separate them using commas; for example, "subnet-1234abcdeexample1,
+	// subnet-0987cdef6example2".
 	SubnetId *string `locationName:"subnetId" type:"string"`
 
 	// The tags to apply during creation.
@@ -86668,8 +89309,19 @@ func (s *SpotFleetRequestConfig) SetSpotFleetRequestState(v string) *SpotFleetRe
 type SpotFleetRequestConfigData struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates how to allocate the target capacity across the Spot pools specified
-	// by the Spot Fleet request. The default is lowestPrice.
+	// Indicates how to allocate the target Spot Instance capacity across the Spot
+	// Instance pools specified by the Spot Fleet request.
+	//
+	// If the allocation strategy is lowestPrice, Spot Fleet launches instances
+	// from the Spot Instance pools with the lowest price. This is the default allocation
+	// strategy.
+	//
+	// If the allocation strategy is diversified, Spot Fleet launches instances
+	// from all the Spot Instance pools that you specify.
+	//
+	// If the allocation strategy is capacityOptimized, Spot Fleet launches instances
+	// from Spot Instance pools with optimal capacity for the number of instances
+	// that are launching.
 	AllocationStrategy *string `locationName:"allocationStrategy" type:"string" enum:"AllocationStrategy"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
@@ -87362,15 +90014,26 @@ func (s *SpotMarketOptions) SetValidUntil(v time.Time) *SpotMarketOptions {
 type SpotOptions struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates how to allocate the target capacity across the Spot pools specified
-	// by the Spot Fleet request. The default is lowest-price.
+	// Indicates how to allocate the target Spot Instance capacity across the Spot
+	// Instance pools specified by the EC2 Fleet.
+	//
+	// If the allocation strategy is lowest-price, EC2 Fleet launches instances
+	// from the Spot Instance pools with the lowest price. This is the default allocation
+	// strategy.
+	//
+	// If the allocation strategy is diversified, EC2 Fleet launches instances from
+	// all the Spot Instance pools that you specify.
+	//
+	// If the allocation strategy is capacity-optimized, EC2 Fleet launches instances
+	// from Spot Instance pools with optimal capacity for the number of instances
+	// that are launching.
 	AllocationStrategy *string `locationName:"allocationStrategy" type:"string" enum:"SpotAllocationStrategy"`
 
 	// The behavior when a Spot Instance is interrupted. The default is terminate.
 	InstanceInterruptionBehavior *string `locationName:"instanceInterruptionBehavior" type:"string" enum:"SpotInstanceInterruptionBehavior"`
 
 	// The number of Spot pools across which to allocate your target Spot capacity.
-	// Valid only when AllocationStrategy is set to lowestPrice. EC2 Fleet selects
+	// Valid only when AllocationStrategy is set to lowest-price. EC2 Fleet selects
 	// the cheapest Spot pools and evenly allocates your target Spot capacity across
 	// the number of Spot pools that you specify.
 	InstancePoolsToUseCount *int64 `locationName:"instancePoolsToUseCount" type:"integer"`
@@ -87447,8 +90110,19 @@ func (s *SpotOptions) SetSingleInstanceType(v bool) *SpotOptions {
 type SpotOptionsRequest struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates how to allocate the target capacity across the Spot pools specified
-	// by the Spot Fleet request. The default is lowestPrice.
+	// Indicates how to allocate the target Spot Instance capacity across the Spot
+	// Instance pools specified by the EC2 Fleet.
+	//
+	// If the allocation strategy is lowest-price, EC2 Fleet launches instances
+	// from the Spot Instance pools with the lowest price. This is the default allocation
+	// strategy.
+	//
+	// If the allocation strategy is diversified, EC2 Fleet launches instances from
+	// all the Spot Instance pools that you specify.
+	//
+	// If the allocation strategy is capacity-optimized, EC2 Fleet launches instances
+	// from Spot Instance pools with optimal capacity for the number of instances
+	// that are launching.
 	AllocationStrategy *string `type:"string" enum:"SpotAllocationStrategy"`
 
 	// The behavior when a Spot Instance is interrupted. The default is terminate.
@@ -88334,6 +91008,30 @@ func (s *SuccessfulInstanceCreditSpecificationItem) SetInstanceId(v string) *Suc
 	return s
 }
 
+// Describes a Reserved Instance whose queued purchase was successfully deleted.
+type SuccessfulQueuedPurchaseDeletion struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Reserved Instance.
+	ReservedInstancesId *string `locationName:"reservedInstancesId" type:"string"`
+}
+
+// String returns the string representation
+func (s SuccessfulQueuedPurchaseDeletion) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SuccessfulQueuedPurchaseDeletion) GoString() string {
+	return s.String()
+}
+
+// SetReservedInstancesId sets the ReservedInstancesId field's value.
+func (s *SuccessfulQueuedPurchaseDeletion) SetReservedInstancesId(v string) *SuccessfulQueuedPurchaseDeletion {
+	s.ReservedInstancesId = &v
+	return s
+}
+
 // Describes a tag.
 type Tag struct {
 	_ struct{} `type:"structure"`
@@ -88430,10 +91128,11 @@ type TagSpecification struct {
 
 	// The type of resource to tag. Currently, the resource types that support tagging
 	// on creation are: capacity-reservation | client-vpn-endpoint | dedicated-host
-	// | fleet | instance | launch-template | snapshot | transit-gateway | transit-gateway-attachment
+	// | fleet | fpga-image | instance | launch-template | snapshot | traffic-mirror-filter
+	// | traffic-mirror-session | traffic-mirror-target | transit-gateway | transit-gateway-attachment
 	// | transit-gateway-route-table | volume.
 	//
-	// To tag a resource after it has been created, see CreateTags.
+	// To tag a resource after it has been created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
 	ResourceType *string `locationName:"resourceType" type:"string" enum:"ResourceType"`
 
 	// The tags to apply to the resource.
@@ -90480,6 +93179,170 @@ func (s *TransitGatewayVpcAttachmentOptions) SetIpv6Support(v string) *TransitGa
 	return s
 }
 
+// The VPN tunnel options.
+type TunnelOption struct {
+	_ struct{} `type:"structure"`
+
+	// The number of seconds after which a DPD timeout occurs.
+	DpdTimeoutSeconds *int64 `locationName:"dpdTimeoutSeconds" type:"integer"`
+
+	// The IKE versions that are permitted for the VPN tunnel.
+	IkeVersions []*IKEVersionsListValue `locationName:"ikeVersionSet" locationNameList:"item" type:"list"`
+
+	// The external IP address of the VPN tunnel.
+	OutsideIpAddress *string `locationName:"outsideIpAddress" type:"string"`
+
+	// The permitted Diffie-Hellman group numbers for the VPN tunnel for phase 1
+	// IKE negotiations.
+	Phase1DHGroupNumbers []*Phase1DHGroupNumbersListValue `locationName:"phase1DHGroupNumberSet" locationNameList:"item" type:"list"`
+
+	// The permitted encryption algorithms for the VPN tunnel for phase 1 IKE negotiations.
+	Phase1EncryptionAlgorithms []*Phase1EncryptionAlgorithmsListValue `locationName:"phase1EncryptionAlgorithmSet" locationNameList:"item" type:"list"`
+
+	// The permitted integrity algorithms for the VPN tunnel for phase 1 IKE negotiations.
+	Phase1IntegrityAlgorithms []*Phase1IntegrityAlgorithmsListValue `locationName:"phase1IntegrityAlgorithmSet" locationNameList:"item" type:"list"`
+
+	// The lifetime for phase 1 of the IKE negotiation, in seconds.
+	Phase1LifetimeSeconds *int64 `locationName:"phase1LifetimeSeconds" type:"integer"`
+
+	// The permitted Diffie-Hellman group numbers for the VPN tunnel for phase 2
+	// IKE negotiations.
+	Phase2DHGroupNumbers []*Phase2DHGroupNumbersListValue `locationName:"phase2DHGroupNumberSet" locationNameList:"item" type:"list"`
+
+	// The permitted encryption algorithms for the VPN tunnel for phase 2 IKE negotiations.
+	Phase2EncryptionAlgorithms []*Phase2EncryptionAlgorithmsListValue `locationName:"phase2EncryptionAlgorithmSet" locationNameList:"item" type:"list"`
+
+	// The permitted integrity algorithms for the VPN tunnel for phase 2 IKE negotiations.
+	Phase2IntegrityAlgorithms []*Phase2IntegrityAlgorithmsListValue `locationName:"phase2IntegrityAlgorithmSet" locationNameList:"item" type:"list"`
+
+	// The lifetime for phase 2 of the IKE negotiation, in seconds.
+	Phase2LifetimeSeconds *int64 `locationName:"phase2LifetimeSeconds" type:"integer"`
+
+	// The pre-shared key (PSK) to establish initial authentication between the
+	// virtual private gateway and the customer gateway.
+	PreSharedKey *string `locationName:"preSharedKey" type:"string"`
+
+	// The percentage of the rekey window determined by RekeyMarginTimeSeconds during
+	// which the rekey time is randomly selected.
+	RekeyFuzzPercentage *int64 `locationName:"rekeyFuzzPercentage" type:"integer"`
+
+	// The margin time, in seconds, before the phase 2 lifetime expires, during
+	// which the AWS side of the VPN connection performs an IKE rekey.
+	RekeyMarginTimeSeconds *int64 `locationName:"rekeyMarginTimeSeconds" type:"integer"`
+
+	// The number of packets in an IKE replay window.
+	ReplayWindowSize *int64 `locationName:"replayWindowSize" type:"integer"`
+
+	// The range of inside IP addresses for the tunnel.
+	TunnelInsideCidr *string `locationName:"tunnelInsideCidr" type:"string"`
+}
+
+// String returns the string representation
+func (s TunnelOption) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TunnelOption) GoString() string {
+	return s.String()
+}
+
+// SetDpdTimeoutSeconds sets the DpdTimeoutSeconds field's value.
+func (s *TunnelOption) SetDpdTimeoutSeconds(v int64) *TunnelOption {
+	s.DpdTimeoutSeconds = &v
+	return s
+}
+
+// SetIkeVersions sets the IkeVersions field's value.
+func (s *TunnelOption) SetIkeVersions(v []*IKEVersionsListValue) *TunnelOption {
+	s.IkeVersions = v
+	return s
+}
+
+// SetOutsideIpAddress sets the OutsideIpAddress field's value.
+func (s *TunnelOption) SetOutsideIpAddress(v string) *TunnelOption {
+	s.OutsideIpAddress = &v
+	return s
+}
+
+// SetPhase1DHGroupNumbers sets the Phase1DHGroupNumbers field's value.
+func (s *TunnelOption) SetPhase1DHGroupNumbers(v []*Phase1DHGroupNumbersListValue) *TunnelOption {
+	s.Phase1DHGroupNumbers = v
+	return s
+}
+
+// SetPhase1EncryptionAlgorithms sets the Phase1EncryptionAlgorithms field's value.
+func (s *TunnelOption) SetPhase1EncryptionAlgorithms(v []*Phase1EncryptionAlgorithmsListValue) *TunnelOption {
+	s.Phase1EncryptionAlgorithms = v
+	return s
+}
+
+// SetPhase1IntegrityAlgorithms sets the Phase1IntegrityAlgorithms field's value.
+func (s *TunnelOption) SetPhase1IntegrityAlgorithms(v []*Phase1IntegrityAlgorithmsListValue) *TunnelOption {
+	s.Phase1IntegrityAlgorithms = v
+	return s
+}
+
+// SetPhase1LifetimeSeconds sets the Phase1LifetimeSeconds field's value.
+func (s *TunnelOption) SetPhase1LifetimeSeconds(v int64) *TunnelOption {
+	s.Phase1LifetimeSeconds = &v
+	return s
+}
+
+// SetPhase2DHGroupNumbers sets the Phase2DHGroupNumbers field's value.
+func (s *TunnelOption) SetPhase2DHGroupNumbers(v []*Phase2DHGroupNumbersListValue) *TunnelOption {
+	s.Phase2DHGroupNumbers = v
+	return s
+}
+
+// SetPhase2EncryptionAlgorithms sets the Phase2EncryptionAlgorithms field's value.
+func (s *TunnelOption) SetPhase2EncryptionAlgorithms(v []*Phase2EncryptionAlgorithmsListValue) *TunnelOption {
+	s.Phase2EncryptionAlgorithms = v
+	return s
+}
+
+// SetPhase2IntegrityAlgorithms sets the Phase2IntegrityAlgorithms field's value.
+func (s *TunnelOption) SetPhase2IntegrityAlgorithms(v []*Phase2IntegrityAlgorithmsListValue) *TunnelOption {
+	s.Phase2IntegrityAlgorithms = v
+	return s
+}
+
+// SetPhase2LifetimeSeconds sets the Phase2LifetimeSeconds field's value.
+func (s *TunnelOption) SetPhase2LifetimeSeconds(v int64) *TunnelOption {
+	s.Phase2LifetimeSeconds = &v
+	return s
+}
+
+// SetPreSharedKey sets the PreSharedKey field's value.
+func (s *TunnelOption) SetPreSharedKey(v string) *TunnelOption {
+	s.PreSharedKey = &v
+	return s
+}
+
+// SetRekeyFuzzPercentage sets the RekeyFuzzPercentage field's value.
+func (s *TunnelOption) SetRekeyFuzzPercentage(v int64) *TunnelOption {
+	s.RekeyFuzzPercentage = &v
+	return s
+}
+
+// SetRekeyMarginTimeSeconds sets the RekeyMarginTimeSeconds field's value.
+func (s *TunnelOption) SetRekeyMarginTimeSeconds(v int64) *TunnelOption {
+	s.RekeyMarginTimeSeconds = &v
+	return s
+}
+
+// SetReplayWindowSize sets the ReplayWindowSize field's value.
+func (s *TunnelOption) SetReplayWindowSize(v int64) *TunnelOption {
+	s.ReplayWindowSize = &v
+	return s
+}
+
+// SetTunnelInsideCidr sets the TunnelInsideCidr field's value.
+func (s *TunnelOption) SetTunnelInsideCidr(v string) *TunnelOption {
+	s.TunnelInsideCidr = &v
+	return s
+}
+
 type UnassignIpv6AddressesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -91097,7 +93960,7 @@ func (s *UserBucketDetails) SetS3Key(v string) *UserBucketDetails {
 
 // Describes the user data for an instance.
 type UserData struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" sensitive:"true"`
 
 	// The user data. If you are using an AWS SDK or command line tool, Base64-encoding
 	// is performed for you, and you can load the text from a file. Otherwise, you
@@ -91222,6 +94085,9 @@ type VgwTelemetry struct {
 	// The number of accepted routes.
 	AcceptedRouteCount *int64 `locationName:"acceptedRouteCount" type:"integer"`
 
+	// The Amazon Resource Name (ARN) of the VPN tunnel endpoint certificate.
+	CertificateArn *string `locationName:"certificateArn" type:"string"`
+
 	// The date and time of the last change in status.
 	LastStatusChange *time.Time `locationName:"lastStatusChange" type:"timestamp"`
 
@@ -91249,6 +94115,12 @@ func (s VgwTelemetry) GoString() string {
 // SetAcceptedRouteCount sets the AcceptedRouteCount field's value.
 func (s *VgwTelemetry) SetAcceptedRouteCount(v int64) *VgwTelemetry {
 	s.AcceptedRouteCount = &v
+	return s
+}
+
+// SetCertificateArn sets the CertificateArn field's value.
+func (s *VgwTelemetry) SetCertificateArn(v string) *VgwTelemetry {
+	s.CertificateArn = &v
 	return s
 }
 
@@ -92787,6 +95659,9 @@ type VpnConnectionOptions struct {
 	// Indicates whether the VPN connection uses static routes only. Static routes
 	// must be used for devices that don't support BGP.
 	StaticRoutesOnly *bool `locationName:"staticRoutesOnly" type:"boolean"`
+
+	// Indicates the VPN tunnel options.
+	TunnelOptions []*TunnelOption `locationName:"tunnelOptionSet" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -92805,6 +95680,12 @@ func (s *VpnConnectionOptions) SetStaticRoutesOnly(v bool) *VpnConnectionOptions
 	return s
 }
 
+// SetTunnelOptions sets the TunnelOptions field's value.
+func (s *VpnConnectionOptions) SetTunnelOptions(v []*TunnelOption) *VpnConnectionOptions {
+	s.TunnelOptions = v
+	return s
+}
+
 // Describes VPN connection options.
 type VpnConnectionOptionsSpecification struct {
 	_ struct{} `type:"structure"`
@@ -92817,7 +95698,7 @@ type VpnConnectionOptionsSpecification struct {
 	StaticRoutesOnly *bool `locationName:"staticRoutesOnly" type:"boolean"`
 
 	// The tunnel options for the VPN connection.
-	TunnelOptions []*VpnTunnelOptionsSpecification `locationNameList:"item" type:"list"`
+	TunnelOptions []*VpnTunnelOptionsSpecification `type:"list"`
 }
 
 // String returns the string representation
@@ -92967,12 +95848,100 @@ func (s *VpnStaticRoute) SetState(v string) *VpnStaticRoute {
 type VpnTunnelOptionsSpecification struct {
 	_ struct{} `type:"structure"`
 
+	// The number of seconds after which a DPD timeout occurs.
+	//
+	// Constraints: A value between 0 and 30.
+	//
+	// Default: 30
+	DPDTimeoutSeconds *int64 `type:"integer"`
+
+	// The IKE versions that are permitted for the VPN tunnel.
+	//
+	// Valid values: ikev1 | ikev2
+	IKEVersions []*IKEVersionsRequestListValue `locationName:"IKEVersion" locationNameList:"item" type:"list"`
+
+	// One or more Diffie-Hellman group numbers that are permitted for the VPN tunnel
+	// for phase 1 IKE negotiations.
+	//
+	// Valid values: 2 | 14 | 15 | 16 | 17 | 18 | 22 | 23 | 24
+	Phase1DHGroupNumbers []*Phase1DHGroupNumbersRequestListValue `locationName:"Phase1DHGroupNumber" locationNameList:"item" type:"list"`
+
+	// One or more encryption algorithms that are permitted for the VPN tunnel for
+	// phase 1 IKE negotiations.
+	//
+	// Valid values: AES128 | AES256
+	Phase1EncryptionAlgorithms []*Phase1EncryptionAlgorithmsRequestListValue `locationName:"Phase1EncryptionAlgorithm" locationNameList:"item" type:"list"`
+
+	// One or more integrity algorithms that are permitted for the VPN tunnel for
+	// phase 1 IKE negotiations.
+	//
+	// Valid values: SHA1 | SHA2-256
+	Phase1IntegrityAlgorithms []*Phase1IntegrityAlgorithmsRequestListValue `locationName:"Phase1IntegrityAlgorithm" locationNameList:"item" type:"list"`
+
+	// The lifetime for phase 1 of the IKE negotiation, in seconds.
+	//
+	// Constraints: A value between 900 and 28,800.
+	//
+	// Default: 28800
+	Phase1LifetimeSeconds *int64 `type:"integer"`
+
+	// One or more Diffie-Hellman group numbers that are permitted for the VPN tunnel
+	// for phase 2 IKE negotiations.
+	//
+	// Valid values: 2 | 5 | 14 | 15 | 16 | 17 | 18 | 22 | 23 | 24
+	Phase2DHGroupNumbers []*Phase2DHGroupNumbersRequestListValue `locationName:"Phase2DHGroupNumber" locationNameList:"item" type:"list"`
+
+	// One or more encryption algorithms that are permitted for the VPN tunnel for
+	// phase 2 IKE negotiations.
+	//
+	// Valid values: AES128 | AES256
+	Phase2EncryptionAlgorithms []*Phase2EncryptionAlgorithmsRequestListValue `locationName:"Phase2EncryptionAlgorithm" locationNameList:"item" type:"list"`
+
+	// One or more integrity algorithms that are permitted for the VPN tunnel for
+	// phase 2 IKE negotiations.
+	//
+	// Valid values: SHA1 | SHA2-256
+	Phase2IntegrityAlgorithms []*Phase2IntegrityAlgorithmsRequestListValue `locationName:"Phase2IntegrityAlgorithm" locationNameList:"item" type:"list"`
+
+	// The lifetime for phase 2 of the IKE negotiation, in seconds.
+	//
+	// Constraints: A value between 900 and 3,600. The value must be less than the
+	// value for Phase1LifetimeSeconds.
+	//
+	// Default: 3600
+	Phase2LifetimeSeconds *int64 `type:"integer"`
+
 	// The pre-shared key (PSK) to establish initial authentication between the
 	// virtual private gateway and customer gateway.
 	//
-	// Constraints: Allowed characters are alphanumeric characters and ._. Must
-	// be between 8 and 64 characters in length and cannot start with zero (0).
+	// Constraints: Allowed characters are alphanumeric characters, periods (.),
+	// and underscores (_). Must be between 8 and 64 characters in length and cannot
+	// start with zero (0).
 	PreSharedKey *string `type:"string"`
+
+	// The percentage of the rekey window (determined by RekeyMarginTimeSeconds)
+	// during which the rekey time is randomly selected.
+	//
+	// Constraints: A value between 0 and 100.
+	//
+	// Default: 100
+	RekeyFuzzPercentage *int64 `type:"integer"`
+
+	// The margin time, in seconds, before the phase 2 lifetime expires, during
+	// which the AWS side of the VPN connection performs an IKE rekey. The exact
+	// time of the rekey is randomly selected based on the value for RekeyFuzzPercentage.
+	//
+	// Constraints: A value between 60 and half of Phase2LifetimeSeconds.
+	//
+	// Default: 540
+	RekeyMarginTimeSeconds *int64 `type:"integer"`
+
+	// The number of packets in an IKE replay window.
+	//
+	// Constraints: A value between 64 and 2048.
+	//
+	// Default: 1024
+	ReplayWindowSize *int64 `type:"integer"`
 
 	// The range of inside IP addresses for the tunnel. Any specified CIDR blocks
 	// must be unique across all VPN connections that use the same virtual private
@@ -93007,9 +95976,87 @@ func (s VpnTunnelOptionsSpecification) GoString() string {
 	return s.String()
 }
 
+// SetDPDTimeoutSeconds sets the DPDTimeoutSeconds field's value.
+func (s *VpnTunnelOptionsSpecification) SetDPDTimeoutSeconds(v int64) *VpnTunnelOptionsSpecification {
+	s.DPDTimeoutSeconds = &v
+	return s
+}
+
+// SetIKEVersions sets the IKEVersions field's value.
+func (s *VpnTunnelOptionsSpecification) SetIKEVersions(v []*IKEVersionsRequestListValue) *VpnTunnelOptionsSpecification {
+	s.IKEVersions = v
+	return s
+}
+
+// SetPhase1DHGroupNumbers sets the Phase1DHGroupNumbers field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase1DHGroupNumbers(v []*Phase1DHGroupNumbersRequestListValue) *VpnTunnelOptionsSpecification {
+	s.Phase1DHGroupNumbers = v
+	return s
+}
+
+// SetPhase1EncryptionAlgorithms sets the Phase1EncryptionAlgorithms field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase1EncryptionAlgorithms(v []*Phase1EncryptionAlgorithmsRequestListValue) *VpnTunnelOptionsSpecification {
+	s.Phase1EncryptionAlgorithms = v
+	return s
+}
+
+// SetPhase1IntegrityAlgorithms sets the Phase1IntegrityAlgorithms field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase1IntegrityAlgorithms(v []*Phase1IntegrityAlgorithmsRequestListValue) *VpnTunnelOptionsSpecification {
+	s.Phase1IntegrityAlgorithms = v
+	return s
+}
+
+// SetPhase1LifetimeSeconds sets the Phase1LifetimeSeconds field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase1LifetimeSeconds(v int64) *VpnTunnelOptionsSpecification {
+	s.Phase1LifetimeSeconds = &v
+	return s
+}
+
+// SetPhase2DHGroupNumbers sets the Phase2DHGroupNumbers field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase2DHGroupNumbers(v []*Phase2DHGroupNumbersRequestListValue) *VpnTunnelOptionsSpecification {
+	s.Phase2DHGroupNumbers = v
+	return s
+}
+
+// SetPhase2EncryptionAlgorithms sets the Phase2EncryptionAlgorithms field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase2EncryptionAlgorithms(v []*Phase2EncryptionAlgorithmsRequestListValue) *VpnTunnelOptionsSpecification {
+	s.Phase2EncryptionAlgorithms = v
+	return s
+}
+
+// SetPhase2IntegrityAlgorithms sets the Phase2IntegrityAlgorithms field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase2IntegrityAlgorithms(v []*Phase2IntegrityAlgorithmsRequestListValue) *VpnTunnelOptionsSpecification {
+	s.Phase2IntegrityAlgorithms = v
+	return s
+}
+
+// SetPhase2LifetimeSeconds sets the Phase2LifetimeSeconds field's value.
+func (s *VpnTunnelOptionsSpecification) SetPhase2LifetimeSeconds(v int64) *VpnTunnelOptionsSpecification {
+	s.Phase2LifetimeSeconds = &v
+	return s
+}
+
 // SetPreSharedKey sets the PreSharedKey field's value.
 func (s *VpnTunnelOptionsSpecification) SetPreSharedKey(v string) *VpnTunnelOptionsSpecification {
 	s.PreSharedKey = &v
+	return s
+}
+
+// SetRekeyFuzzPercentage sets the RekeyFuzzPercentage field's value.
+func (s *VpnTunnelOptionsSpecification) SetRekeyFuzzPercentage(v int64) *VpnTunnelOptionsSpecification {
+	s.RekeyFuzzPercentage = &v
+	return s
+}
+
+// SetRekeyMarginTimeSeconds sets the RekeyMarginTimeSeconds field's value.
+func (s *VpnTunnelOptionsSpecification) SetRekeyMarginTimeSeconds(v int64) *VpnTunnelOptionsSpecification {
+	s.RekeyMarginTimeSeconds = &v
+	return s
+}
+
+// SetReplayWindowSize sets the ReplayWindowSize field's value.
+func (s *VpnTunnelOptionsSpecification) SetReplayWindowSize(v int64) *VpnTunnelOptionsSpecification {
+	s.ReplayWindowSize = &v
 	return s
 }
 
@@ -93559,6 +96606,17 @@ const (
 )
 
 const (
+	// DeleteQueuedReservedInstancesErrorCodeReservedInstancesIdInvalid is a DeleteQueuedReservedInstancesErrorCode enum value
+	DeleteQueuedReservedInstancesErrorCodeReservedInstancesIdInvalid = "reserved-instances-id-invalid"
+
+	// DeleteQueuedReservedInstancesErrorCodeReservedInstancesNotInQueuedState is a DeleteQueuedReservedInstancesErrorCode enum value
+	DeleteQueuedReservedInstancesErrorCodeReservedInstancesNotInQueuedState = "reserved-instances-not-in-queued-state"
+
+	// DeleteQueuedReservedInstancesErrorCodeUnexpectedError is a DeleteQueuedReservedInstancesErrorCode enum value
+	DeleteQueuedReservedInstancesErrorCodeUnexpectedError = "unexpected-error"
+)
+
+const (
 	// DeviceTypeEbs is a DeviceType enum value
 	DeviceTypeEbs = "ebs"
 
@@ -93683,10 +96741,10 @@ const (
 	FleetActivityStatusError = "error"
 
 	// FleetActivityStatusPendingFulfillment is a FleetActivityStatus enum value
-	FleetActivityStatusPendingFulfillment = "pending-fulfillment"
+	FleetActivityStatusPendingFulfillment = "pending_fulfillment"
 
 	// FleetActivityStatusPendingTermination is a FleetActivityStatus enum value
-	FleetActivityStatusPendingTermination = "pending-termination"
+	FleetActivityStatusPendingTermination = "pending_termination"
 
 	// FleetActivityStatusFulfilled is a FleetActivityStatus enum value
 	FleetActivityStatusFulfilled = "fulfilled"
@@ -93733,10 +96791,10 @@ const (
 	FleetStateCodeFailed = "failed"
 
 	// FleetStateCodeDeletedRunning is a FleetStateCode enum value
-	FleetStateCodeDeletedRunning = "deleted-running"
+	FleetStateCodeDeletedRunning = "deleted_running"
 
 	// FleetStateCodeDeletedTerminating is a FleetStateCode enum value
-	FleetStateCodeDeletedTerminating = "deleted-terminating"
+	FleetStateCodeDeletedTerminating = "deleted_terminating"
 
 	// FleetStateCodeModifying is a FleetStateCode enum value
 	FleetStateCodeModifying = "modifying"
@@ -93811,6 +96869,14 @@ const (
 
 	// HostTenancyHost is a HostTenancy enum value
 	HostTenancyHost = "host"
+)
+
+const (
+	// HttpTokensStateOptional is a HttpTokensState enum value
+	HttpTokensStateOptional = "optional"
+
+	// HttpTokensStateRequired is a HttpTokensState enum value
+	HttpTokensStateRequired = "required"
 )
 
 const (
@@ -93977,6 +97043,22 @@ const (
 
 	// InstanceMatchCriteriaTargeted is a InstanceMatchCriteria enum value
 	InstanceMatchCriteriaTargeted = "targeted"
+)
+
+const (
+	// InstanceMetadataEndpointStateDisabled is a InstanceMetadataEndpointState enum value
+	InstanceMetadataEndpointStateDisabled = "disabled"
+
+	// InstanceMetadataEndpointStateEnabled is a InstanceMetadataEndpointState enum value
+	InstanceMetadataEndpointStateEnabled = "enabled"
+)
+
+const (
+	// InstanceMetadataOptionsStatePending is a InstanceMetadataOptionsState enum value
+	InstanceMetadataOptionsStatePending = "pending"
+
+	// InstanceMetadataOptionsStateApplied is a InstanceMetadataOptionsState enum value
+	InstanceMetadataOptionsStateApplied = "applied"
 )
 
 const (
@@ -94333,6 +97415,9 @@ const (
 	// InstanceTypeI3en24xlarge is a InstanceType enum value
 	InstanceTypeI3en24xlarge = "i3en.24xlarge"
 
+	// InstanceTypeI3enMetal is a InstanceType enum value
+	InstanceTypeI3enMetal = "i3en.metal"
+
 	// InstanceTypeHi14xlarge is a InstanceType enum value
 	InstanceTypeHi14xlarge = "hi1.4xlarge"
 
@@ -94461,6 +97546,24 @@ const (
 
 	// InstanceTypeG3sXlarge is a InstanceType enum value
 	InstanceTypeG3sXlarge = "g3s.xlarge"
+
+	// InstanceTypeG4dnXlarge is a InstanceType enum value
+	InstanceTypeG4dnXlarge = "g4dn.xlarge"
+
+	// InstanceTypeG4dn2xlarge is a InstanceType enum value
+	InstanceTypeG4dn2xlarge = "g4dn.2xlarge"
+
+	// InstanceTypeG4dn4xlarge is a InstanceType enum value
+	InstanceTypeG4dn4xlarge = "g4dn.4xlarge"
+
+	// InstanceTypeG4dn8xlarge is a InstanceType enum value
+	InstanceTypeG4dn8xlarge = "g4dn.8xlarge"
+
+	// InstanceTypeG4dn12xlarge is a InstanceType enum value
+	InstanceTypeG4dn12xlarge = "g4dn.12xlarge"
+
+	// InstanceTypeG4dn16xlarge is a InstanceType enum value
+	InstanceTypeG4dn16xlarge = "g4dn.16xlarge"
 
 	// InstanceTypeCg14xlarge is a InstanceType enum value
 	InstanceTypeCg14xlarge = "cg1.4xlarge"
@@ -94651,6 +97754,12 @@ const (
 	// InstanceTypeU12tb1Metal is a InstanceType enum value
 	InstanceTypeU12tb1Metal = "u-12tb1.metal"
 
+	// InstanceTypeU18tb1Metal is a InstanceType enum value
+	InstanceTypeU18tb1Metal = "u-18tb1.metal"
+
+	// InstanceTypeU24tb1Metal is a InstanceType enum value
+	InstanceTypeU24tb1Metal = "u-24tb1.metal"
+
 	// InstanceTypeA1Medium is a InstanceType enum value
 	InstanceTypeA1Medium = "a1.medium"
 
@@ -94665,6 +97774,105 @@ const (
 
 	// InstanceTypeA14xlarge is a InstanceType enum value
 	InstanceTypeA14xlarge = "a1.4xlarge"
+
+	// InstanceTypeA1Metal is a InstanceType enum value
+	InstanceTypeA1Metal = "a1.metal"
+
+	// InstanceTypeM5dnLarge is a InstanceType enum value
+	InstanceTypeM5dnLarge = "m5dn.large"
+
+	// InstanceTypeM5dnXlarge is a InstanceType enum value
+	InstanceTypeM5dnXlarge = "m5dn.xlarge"
+
+	// InstanceTypeM5dn2xlarge is a InstanceType enum value
+	InstanceTypeM5dn2xlarge = "m5dn.2xlarge"
+
+	// InstanceTypeM5dn4xlarge is a InstanceType enum value
+	InstanceTypeM5dn4xlarge = "m5dn.4xlarge"
+
+	// InstanceTypeM5dn8xlarge is a InstanceType enum value
+	InstanceTypeM5dn8xlarge = "m5dn.8xlarge"
+
+	// InstanceTypeM5dn12xlarge is a InstanceType enum value
+	InstanceTypeM5dn12xlarge = "m5dn.12xlarge"
+
+	// InstanceTypeM5dn16xlarge is a InstanceType enum value
+	InstanceTypeM5dn16xlarge = "m5dn.16xlarge"
+
+	// InstanceTypeM5dn24xlarge is a InstanceType enum value
+	InstanceTypeM5dn24xlarge = "m5dn.24xlarge"
+
+	// InstanceTypeM5nLarge is a InstanceType enum value
+	InstanceTypeM5nLarge = "m5n.large"
+
+	// InstanceTypeM5nXlarge is a InstanceType enum value
+	InstanceTypeM5nXlarge = "m5n.xlarge"
+
+	// InstanceTypeM5n2xlarge is a InstanceType enum value
+	InstanceTypeM5n2xlarge = "m5n.2xlarge"
+
+	// InstanceTypeM5n4xlarge is a InstanceType enum value
+	InstanceTypeM5n4xlarge = "m5n.4xlarge"
+
+	// InstanceTypeM5n8xlarge is a InstanceType enum value
+	InstanceTypeM5n8xlarge = "m5n.8xlarge"
+
+	// InstanceTypeM5n12xlarge is a InstanceType enum value
+	InstanceTypeM5n12xlarge = "m5n.12xlarge"
+
+	// InstanceTypeM5n16xlarge is a InstanceType enum value
+	InstanceTypeM5n16xlarge = "m5n.16xlarge"
+
+	// InstanceTypeM5n24xlarge is a InstanceType enum value
+	InstanceTypeM5n24xlarge = "m5n.24xlarge"
+
+	// InstanceTypeR5dnLarge is a InstanceType enum value
+	InstanceTypeR5dnLarge = "r5dn.large"
+
+	// InstanceTypeR5dnXlarge is a InstanceType enum value
+	InstanceTypeR5dnXlarge = "r5dn.xlarge"
+
+	// InstanceTypeR5dn2xlarge is a InstanceType enum value
+	InstanceTypeR5dn2xlarge = "r5dn.2xlarge"
+
+	// InstanceTypeR5dn4xlarge is a InstanceType enum value
+	InstanceTypeR5dn4xlarge = "r5dn.4xlarge"
+
+	// InstanceTypeR5dn8xlarge is a InstanceType enum value
+	InstanceTypeR5dn8xlarge = "r5dn.8xlarge"
+
+	// InstanceTypeR5dn12xlarge is a InstanceType enum value
+	InstanceTypeR5dn12xlarge = "r5dn.12xlarge"
+
+	// InstanceTypeR5dn16xlarge is a InstanceType enum value
+	InstanceTypeR5dn16xlarge = "r5dn.16xlarge"
+
+	// InstanceTypeR5dn24xlarge is a InstanceType enum value
+	InstanceTypeR5dn24xlarge = "r5dn.24xlarge"
+
+	// InstanceTypeR5nLarge is a InstanceType enum value
+	InstanceTypeR5nLarge = "r5n.large"
+
+	// InstanceTypeR5nXlarge is a InstanceType enum value
+	InstanceTypeR5nXlarge = "r5n.xlarge"
+
+	// InstanceTypeR5n2xlarge is a InstanceType enum value
+	InstanceTypeR5n2xlarge = "r5n.2xlarge"
+
+	// InstanceTypeR5n4xlarge is a InstanceType enum value
+	InstanceTypeR5n4xlarge = "r5n.4xlarge"
+
+	// InstanceTypeR5n8xlarge is a InstanceType enum value
+	InstanceTypeR5n8xlarge = "r5n.8xlarge"
+
+	// InstanceTypeR5n12xlarge is a InstanceType enum value
+	InstanceTypeR5n12xlarge = "r5n.12xlarge"
+
+	// InstanceTypeR5n16xlarge is a InstanceType enum value
+	InstanceTypeR5n16xlarge = "r5n.16xlarge"
+
+	// InstanceTypeR5n24xlarge is a InstanceType enum value
+	InstanceTypeR5n24xlarge = "r5n.24xlarge"
 )
 
 const (
@@ -95044,6 +98252,12 @@ const (
 
 	// ReservedInstanceStateRetired is a ReservedInstanceState enum value
 	ReservedInstanceStateRetired = "retired"
+
+	// ReservedInstanceStateQueued is a ReservedInstanceState enum value
+	ReservedInstanceStateQueued = "queued"
+
+	// ReservedInstanceStateQueuedDeleted is a ReservedInstanceState enum value
+	ReservedInstanceStateQueuedDeleted = "queued-deleted"
 )
 
 const (

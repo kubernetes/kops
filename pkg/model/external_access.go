@@ -60,7 +60,6 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		klog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
 	} else {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
-
 			for _, masterGroup := range masterGroups {
 				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{

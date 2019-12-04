@@ -31,7 +31,9 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/aokoli/goutils v1.0.1
 github.com/aokoli/goutils
-# github.com/aws/aws-sdk-go v1.23.0
+# github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
+github.com/armon/go-metrics
+# github.com/aws/aws-sdk-go v1.25.38
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/request
 github.com/aws/aws-sdk-go/service/autoscaling
@@ -62,7 +64,6 @@ github.com/aws/aws-sdk-go/aws/client/metadata
 github.com/aws/aws-sdk-go/aws/signer/v4
 github.com/aws/aws-sdk-go/private/protocol
 github.com/aws/aws-sdk-go/private/protocol/query
-github.com/aws/aws-sdk-go/internal/sdkrand
 github.com/aws/aws-sdk-go/private/protocol/ec2query
 github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
@@ -78,15 +79,17 @@ github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
 github.com/aws/aws-sdk-go/service/kms
 github.com/aws/aws-sdk-go/service/sts
+github.com/aws/aws-sdk-go/internal/sdkrand
 github.com/aws/aws-sdk-go/internal/s3err
 github.com/aws/aws-sdk-go/private/protocol/eventstream
 github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
 github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/internal/sdkmath
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
-# github.com/bazelbuild/bazel-gazelle v0.18.2-0.20190823151146-67c9ddf12d8a
+# github.com/bazelbuild/bazel-gazelle v0.19.1
 github.com/bazelbuild/bazel-gazelle/cmd/gazelle
 github.com/bazelbuild/bazel-gazelle/config
 github.com/bazelbuild/bazel-gazelle/flag
@@ -129,7 +132,7 @@ github.com/coreos/go-semver/semver
 github.com/cpuguy83/go-md2man/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/denverdino/aliyungo v0.0.0-20180316152028-2581e433b270
+# github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 github.com/denverdino/aliyungo/ram
 github.com/denverdino/aliyungo/common
 github.com/denverdino/aliyungo/ecs
@@ -188,7 +191,7 @@ github.com/fsnotify/fsnotify
 github.com/fullsailor/pkcs7
 # github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 github.com/ghodss/yaml
-# github.com/go-ini/ini v1.25.4
+# github.com/go-ini/ini v1.51.0
 github.com/go-ini/ini
 # github.com/go-logr/logr v0.1.0
 github.com/go-logr/logr
@@ -203,8 +206,8 @@ github.com/go-openapi/swag
 # github.com/gobuffalo/flect v0.1.5
 github.com/gobuffalo/flect
 # github.com/gogo/protobuf v1.1.1
-github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
+github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/sortkeys
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/groupcache v0.0.0-20180513044358-24b0969c4cb7
@@ -215,7 +218,7 @@ github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/google/btree v0.0.0-20160524151835-7d79101e329e
+# github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c
 github.com/google/btree
 # github.com/google/go-cmp v0.3.0
 github.com/google/go-cmp/cmp
@@ -240,8 +243,8 @@ github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets
 github.com/gophercloud/gophercloud/openstack/dns/v2/zones
 github.com/gophercloud/gophercloud/pagination
 github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules
-github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes
 github.com/gophercloud/gophercloud/openstack/compute/v2/servers
+github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors
 github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips
@@ -259,6 +262,7 @@ github.com/gophercloud/gophercloud/openstack/compute/v2/flavors
 github.com/gophercloud/gophercloud/openstack/imageservice/v2/images
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools
+github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags
 github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints
@@ -277,6 +281,16 @@ github.com/gorilla/mux
 # github.com/gregjones/httpcache v0.0.0-20170728041850-787624de3eb7
 github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
+# github.com/hashicorp/errwrap v1.0.0
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-immutable-radix v1.0.0
+github.com/hashicorp/go-immutable-radix
+# github.com/hashicorp/go-msgpack v0.5.3
+github.com/hashicorp/go-msgpack/codec
+# github.com/hashicorp/go-multierror v1.0.0
+github.com/hashicorp/go-multierror
+# github.com/hashicorp/go-sockaddr v1.0.2
+github.com/hashicorp/go-sockaddr
 # github.com/hashicorp/golang-lru v0.5.0
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
@@ -291,12 +305,17 @@ github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
 github.com/hashicorp/hcl/hcl/strconv
 github.com/hashicorp/hcl/hcl/scanner
+# github.com/hashicorp/memberlist v0.1.4
+github.com/hashicorp/memberlist
 # github.com/huandu/xstrings v1.2.0
 github.com/huandu/xstrings
 # github.com/imdario/mergo v0.3.6
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
+github.com/jacksontj/memberlistmesh
+github.com/jacksontj/memberlistmesh/clusterpb
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
@@ -324,9 +343,9 @@ github.com/mattn/go-isatty
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
 github.com/miekg/coredns/middleware/etcd/msg
-# github.com/miekg/dns v0.0.0-20160614162101-5d001d020961
+# github.com/miekg/dns v1.0.14
 github.com/miekg/dns
-# github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7
+# github.com/mitchellh/go-wordwrap v1.0.0
 github.com/mitchellh/go-wordwrap
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
@@ -334,6 +353,8 @@ github.com/mitchellh/mapstructure
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
+# github.com/oklog/ulid v1.3.1
+github.com/oklog/ulid
 # github.com/opencontainers/go-digest v0.0.0-20170106003457-a6d0ee40d420
 github.com/opencontainers/go-digest
 # github.com/pborman/uuid v1.2.0
@@ -365,6 +386,8 @@ github.com/prometheus/procfs/xfs
 github.com/prometheus/procfs/internal/util
 # github.com/russross/blackfriday v1.5.2
 github.com/russross/blackfriday
+# github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529
+github.com/sean-/seed
 # github.com/sergi/go-diff v0.0.0-20161102184045-552b4e9bbdca
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/sirupsen/logrus v1.2.0
@@ -383,7 +406,7 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.3.2
 github.com/spf13/viper
-# github.com/spotinst/spotinst-sdk-go v0.0.0-20190505130751-eb52d7ac273c
+# github.com/spotinst/spotinst-sdk-go v1.36.1
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
 github.com/spotinst/spotinst-sdk-go/service/ocean
@@ -399,7 +422,7 @@ github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/gcp
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp
-# github.com/stretchr/testify v1.3.0
+# github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
 # github.com/urfave/cli v1.20.0
 github.com/urfave/cli
@@ -450,10 +473,15 @@ golang.org/x/crypto/salsa20/salsa
 # golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
 golang.org/x/net/context
 golang.org/x/net/http2
+golang.org/x/net/ipv4
+golang.org/x/net/ipv6
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/context/ctxhttp
+golang.org/x/net/bpf
+golang.org/x/net/internal/iana
+golang.org/x/net/internal/socket
 golang.org/x/net/proxy
 golang.org/x/net/internal/socks
 # golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
@@ -462,6 +490,8 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
+# golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+golang.org/x/sync/errgroup
 # golang.org/x/sys v0.0.0-20190412213103-97732733099d
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -480,22 +510,26 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
+# golang.org/x/tools v0.0.0-20191124021906-f5828fc9a103
+golang.org/x/tools/cmd/goimports
+golang.org/x/tools/internal/imports
 golang.org/x/tools/go/analysis
 golang.org/x/tools/go/vcs
+golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/packages
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/module
+golang.org/x/tools/internal/semver
 golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/analysis/passes/inspect
 golang.org/x/tools/go/ast/inspector
 golang.org/x/tools/go/types/typeutil
-golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/packagesdriver
-golang.org/x/tools/internal/gopathwalk
-golang.org/x/tools/internal/semver
-golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/internal/span
 golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/go/internal/gcimporter
 # gomodules.xyz/jsonpatch/v2 v2.0.1
 gomodules.xyz/jsonpatch/v2
 # google.golang.org/api v0.0.0-20181220000619-583d854617af

@@ -78,11 +78,10 @@ func (e *CopyFile) Find(c *fi.Context) (*CopyFile, error) {
 			klog.V(4).Infof("unable to download: %q, assuming target file is not present, and if not present may not be an error: %v",
 				targetSHAFile, err)
 			return nil, nil
-		} else {
-			klog.V(4).Infof("unable to download: %q, %v", targetSHAFile, err)
-			// TODO should we throw err here?
-			return nil, nil
 		}
+		klog.V(4).Infof("unable to download: %q, %v", targetSHAFile, err)
+		// TODO should we throw err here?
+		return nil, nil
 	}
 	targetSHA := string(targetSHABytes)
 

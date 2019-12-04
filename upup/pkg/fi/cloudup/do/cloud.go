@@ -17,15 +17,18 @@ limitations under the License.
 package do
 
 import (
+	"strings"
+
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi"
-	"strings"
 )
 
 const TagKubernetesClusterIndex = "k8s-index"
 const TagNameEtcdClusterPrefix = "etcdCluster-"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
+const TagKubernetesClusterMasterPrefix = "KubernetesCluster-Master"
+const TagKubernetesClusterInstanceGroupPrefix = "kops-instancegroup"
 
 func SafeClusterName(clusterName string) string {
 	// DO does not support . in tags / names

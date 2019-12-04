@@ -38,7 +38,6 @@ func Test_ParseKubernetesVersion(t *testing.T) {
 			t.Errorf("version mismatch: %q -> %q but expected %q", version, actual, expected)
 		}
 	}
-
 }
 
 func Test_IsKubernetesGTEWithPatch(t *testing.T) {

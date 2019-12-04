@@ -272,27 +272,26 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	if !c.Yes {
 		fmt.Printf("\nMust specify --yes to perform upgrade\n")
 		return nil
-	} else {
-		for _, action := range actions {
-			action.apply()
-		}
-
-		if err := commands.UpdateCluster(clientset, cluster, instanceGroups); err != nil {
-			return err
-		}
-
-		for _, g := range instanceGroups {
-			_, err := clientset.InstanceGroupsFor(cluster).Update(g)
-			if err != nil {
-				return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
-			}
-		}
-
-		fmt.Printf("\nUpdates applied to configuration.\n")
-
-		// TODO: automate this step
-		fmt.Printf("You can now apply these changes, using `kops update cluster %s`\n", cluster.ObjectMeta.Name)
 	}
+	for _, action := range actions {
+		action.apply()
+	}
+
+	if err := commands.UpdateCluster(clientset, cluster, instanceGroups); err != nil {
+		return err
+	}
+
+	for _, g := range instanceGroups {
+		_, err := clientset.InstanceGroupsFor(cluster).Update(g)
+		if err != nil {
+			return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
+		}
+	}
+
+	fmt.Printf("\nUpdates applied to configuration.\n")
+
+	// TODO: automate this step
+	fmt.Printf("You can now apply these changes, using `kops update cluster %s`\n", cluster.ObjectMeta.Name)
 
 	return nil
 }

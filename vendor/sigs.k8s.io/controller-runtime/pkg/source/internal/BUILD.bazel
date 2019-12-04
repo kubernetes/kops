@@ -5,7 +5,7 @@ go_library(
     srcs = ["eventsource.go"],
     importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/source/internal",
     importpath = "sigs.k8s.io/controller-runtime/pkg/source/internal",
-    visibility = ["//visibility:public"],
+    visibility = ["//vendor/sigs.k8s.io/controller-runtime/pkg/source:__subpackages__"],
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

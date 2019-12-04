@@ -855,6 +855,7 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 				"ec2:DetachNetworkInterface",
 				"ec2:DeleteNetworkInterface",
 				"ec2:ModifyNetworkInterfaceAttribute",
+				"ec2:DescribeVpcs",
 			}),
 			Resource: resource,
 		},

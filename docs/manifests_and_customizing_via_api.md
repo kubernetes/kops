@@ -305,7 +305,7 @@ The `ClusterSpec` allows a user to set configurations for such values as Docker 
 More information about some of the elements in the `ClusterSpec` is available in the following:
 
 -  Cluster Spec [document](cluster_spec.md) which outlines some of the values in the Cluster Specification.
-- [Etcd Encryption](etcd_volume_encryption.md)
+- [Etcd Encryption](operations/etcd_backup_restore_encryption.md)
 - [GPU](gpu.md) setup
 - [IAM Roles](iam_roles.md) - adding additional IAM roles.
 - [Labels](labels.md)

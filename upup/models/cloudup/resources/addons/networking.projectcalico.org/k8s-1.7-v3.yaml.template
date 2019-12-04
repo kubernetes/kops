@@ -235,7 +235,7 @@ spec:
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .KubeControllerManager.ClusterCIDR }}"
             - name: CALICO_IPV4POOL_IPIP
-              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
+              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}CrossSubnet{{- else -}}Always{{- end -}}"
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"

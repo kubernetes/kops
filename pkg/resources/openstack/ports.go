@@ -31,7 +31,7 @@ const (
 func (os *clusterDiscoveryOS) ListPorts(network networks.Network) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
-	ports, err := os.osCloud.ListPorts(ports.ListOpts{
+	projectPorts, err := os.osCloud.ListPorts(ports.ListOpts{
 		TenantID:  network.ProjectID,
 		NetworkID: network.ID,
 	})
@@ -39,7 +39,24 @@ func (os *clusterDiscoveryOS) ListPorts(network networks.Network) ([]*resources.
 		return nil, err
 	}
 
-	for _, port := range ports {
+	preExistingNet := true
+	if os.clusterName == network.Name {
+		preExistingNet = false
+	}
+
+	filteredPorts := []ports.Port{}
+	if preExistingNet {
+		// if we have preExistingNet, the port must have cluster tag
+		for _, singlePort := range projectPorts {
+			if fi.ArrayContains(singlePort.Tags, os.clusterName) {
+				filteredPorts = append(filteredPorts, singlePort)
+			}
+		}
+	} else {
+		filteredPorts = projectPorts
+	}
+
+	for _, port := range filteredPorts {
 		resourceTracker := &resources.Resource{
 			Name: port.Name,
 			ID:   port.ID,

@@ -46,7 +46,7 @@ type EIP struct {
 var _ fi.CompareWithID = &EIP{}
 
 func (e *EIP) CompareWithID() *string {
-	return e.Name
+	return e.ID
 }
 
 func (e *EIP) Find(c *fi.Context) (*EIP, error) {

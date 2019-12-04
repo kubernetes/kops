@@ -59,6 +59,7 @@ metadata:
 data:
   cni-conf.json: |
     {
+      "cniVersion": "0.2.0",
       "name": "cbr0",
       "plugins": [
         {
@@ -106,6 +107,7 @@ spec:
         app: flannel
         role.kubernetes.io/networking: "1"
     spec:
+      priorityClassName: system-node-critical
       hostNetwork: true
       nodeSelector:
         beta.kubernetes.io/arch: amd64

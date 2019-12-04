@@ -50,6 +50,25 @@ func (c *openstackCloud) ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Sub
 	}
 }
 
+func (c *openstackCloud) GetSubnet(subnetID string) (*subnets.Subnet, error) {
+	var subnet *subnets.Subnet
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		sub, err := subnets.Get(c.neutronClient, subnetID).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error retrieving subnet: %v", err)
+		}
+		subnet = sub
+		return true, nil
+	})
+	if err != nil {
+		return nil, err
+	} else if done {
+		return subnet, nil
+	} else {
+		return nil, wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error) {
 	var s *subnets.Subnet
 

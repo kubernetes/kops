@@ -26,16 +26,18 @@ import (
 	"path"
 	"strings"
 
+	"github.com/spf13/pflag"
+	"k8s.io/klog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
-	"k8s.io/kops/protokube/pkg/gossip/mesh"
+	_ "k8s.io/kops/protokube/pkg/gossip/memberlist"
+	_ "k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
 
 	// Load DNS plugins
-	"github.com/spf13/pflag"
-	"k8s.io/klog"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
@@ -63,7 +65,7 @@ func main() {
 func run() error {
 	var zones []string
 	var applyTaints, initializeRBAC, containerized, master, tlsAuth bool
-	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
+	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
 	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
 	var etcdBackupImage, etcdBackupStore, etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
 	var dnsUpdateInterval int
@@ -78,7 +80,12 @@ func run() error {
 	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
 	flags.IntVar(&dnsUpdateInterval, "dns-update-interval", 5, "Configure interval at which to update DNS records.")
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
-	flag.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3999", "address:port on which to bind for gossip")
+	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
+	flag.StringVar(&gossipListen, "gossip-listen", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipWeaveMesh), "address:port on which to bind for gossip")
+	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
+	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "memberlist", "mesh/memberlist")
+	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipMemberlist), "address:port on which to bind for gossip")
+	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
 	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")
 	flag.StringVar(&peerKey, "peer-key", peerKey, "Path to a file containing the private key for the peers")
@@ -93,7 +100,6 @@ func run() error {
 	flags.StringVar(&etcdImageSource, "etcd-image", "k8s.gcr.io/etcd:2.2.1", "Etcd Source Container Registry")
 	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
 	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
-	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
 	manageEtcd := false
 	flag.BoolVar(&manageEtcd, "manage-etcd", manageEtcd, "Set to manage etcd (deprecated in favor of etcd-manager)")
@@ -132,18 +138,20 @@ func run() error {
 			internalIP = awsVolumes.InternalIP()
 		}
 	} else if cloud == "digitalocean" {
-		if clusterID == "" {
-			klog.Error("digitalocean requires --cluster-id")
-			os.Exit(1)
-		}
-
-		doVolumes, err := protokube.NewDOVolumes(clusterID)
+		doVolumes, err := protokube.NewDOVolumes()
 		if err != nil {
 			klog.Errorf("Error initializing DigitalOcean: %q", err)
 			os.Exit(1)
 		}
-
 		volumes = doVolumes
+
+		if clusterID == "" {
+			clusterID, err = protokube.GetClusterID()
+			if err != nil {
+				klog.Errorf("Error getting clusterid: %s", err)
+				os.Exit(1)
+			}
+		}
 
 		if internalIP == nil {
 			internalIP, err = protokube.GetDropletInternalIP()
@@ -152,7 +160,6 @@ func run() error {
 				os.Exit(1)
 			}
 		}
-
 	} else if cloud == "gce" {
 		gceVolumes, err := protokube.NewGCEVolumes()
 		if err != nil {
@@ -288,6 +295,12 @@ func run() error {
 				return err
 			}
 			gossipName = volumes.(*protokube.ALIVolumes).InstanceID()
+		} else if cloud == "digitalocean" {
+			gossipSeeds, err = volumes.(*protokube.DOVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.DOVolumes).InstanceName()
 		} else {
 			klog.Fatalf("seed provider for %q not yet implemented", cloud)
 		}
@@ -298,12 +311,27 @@ func run() error {
 		}
 
 		channelName := "dns"
-		gossipState, err := mesh.NewMeshGossiper(gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+		var gossipState gossip.GossipState
+
+		gossipState, err = gossip.GetGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
 		if err != nil {
 			klog.Errorf("Error initializing gossip: %v", err)
 			os.Exit(1)
 		}
 
+		if gossipProtocolSecondary != "" {
+
+			secondaryGossipState, err := gossip.GetGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossipSeeds)
+			if err != nil {
+				klog.Errorf("Error initializing secondary gossip: %v", err)
+				os.Exit(1)
+			}
+
+			gossipState = &gossip.MultiGossipState{
+				Primary:   gossipState,
+				Secondary: secondaryGossipState,
+			}
+		}
 		go func() {
 			err := gossipState.Start()
 			if err != nil {

@@ -37,8 +37,7 @@ func newTestInterface() (dnsprovider.Interface, error) {
 }
 
 func newFakeInterface() (dnsprovider.Interface, error) {
-	var service corednstesting.EtcdKeysAPI
-	service = corednstesting.NewEtcdKeysAPIStub()
+	service := corednstesting.NewEtcdKeysAPIStub()
 	intf := newInterfaceWithStub(service)
 	intf.etcdPathPrefix = "skydns"
 
