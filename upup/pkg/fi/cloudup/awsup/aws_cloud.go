@@ -614,7 +614,7 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 					version = mixedVersion
 				}
 				klog.V(4).Infof("Launch Template Version Specified By ASG: %v", mixedVersion)
-				klog.V(4).Infof("Luanch Template Version we are using for compare: %v", version)
+				klog.V(4).Infof("Launch Template Version we are using for compare: %v", version)
 				if name != "" {
 					launchTemplate := name + ":" + version
 					return launchTemplate, nil
