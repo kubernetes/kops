@@ -114,7 +114,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	protokubeContainerDeleteCommand, err := t.ProtokubeContainerStopCommand()
+	protokubeContainerRemoveCommand, err := t.ProtokubeContainerRemoveCommand()
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	// TODO: Why do we pull Protokube image again here?
 	// manifest.Set("Service", "ExecStartPre", protokubeImagePullCommand)
 	manifest.Set("Service", "ExecStartPre", protokubeContainerStopCommand)
-	manifest.Set("Service", "ExecStartPre", protokubeContainerDeleteCommand)
+	manifest.Set("Service", "ExecStartPre", protokubeContainerRemoveCommand)
 	manifest.Set("Service", "ExecStart", protokubeContainerRunCommand+" "+protokubeRunArgs)
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
