@@ -59,7 +59,6 @@ func (l *LaunchConfiguration) CompareWithID() *string {
 }
 
 func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
-
 	if l.ScalingGroup == nil || l.ScalingGroup.ScalingGroupId == nil {
 		klog.V(4).Infof("ScalingGroup / ScalingGroupId not found for %s, skipping Find", fi.StringValue(l.Name))
 		return nil, nil
@@ -68,9 +67,7 @@ func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	cloud := c.Cloud.(aliup.ALICloud)
 
 	describeScalingConfigurationsArgs := &ess.DescribeScalingConfigurationsArgs{
-		RegionId:                 common.Region(cloud.Region()),
-		ScalingConfigurationName: common.FlattenArray{fi.StringValue(l.Name)},
-		ScalingGroupId:           fi.StringValue(l.ScalingGroup.ScalingGroupId),
+		RegionId: common.Region(cloud.Region()),
 	}
 
 	if l.ScalingGroup != nil && l.ScalingGroup.ScalingGroupId != nil {
@@ -81,37 +78,42 @@ func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error finding ScalingConfigurations: %v", err)
 	}
-	// Don't exist ScalingConfigurations with specified  Name.
+
+	// No ScalingConfigurations with specified Name.
 	if len(configList) == 0 {
+		klog.V(2).Infof("can't found matching LaunchConfiguration: %q", fi.StringValue(l.Name))
 		return nil, nil
 	}
 	if len(configList) > 1 {
-		klog.V(4).Infof("The number of specified ScalingConfigurations with the same name and ScalingGroupId exceeds 1, diskName:%q", *l.Name)
+		return nil, fmt.Errorf("found multiple LaunchConfiguration with name: %q", fi.StringValue(l.Name))
 	}
 
-	klog.V(2).Infof("found matching LaunchConfiguration: %q", *l.Name)
+	klog.V(2).Infof("found matching LaunchConfiguration: %q", fi.StringValue(l.Name))
+	lc := configList[0]
 
-	actual := &LaunchConfiguration{}
-	actual.ImageId = fi.String(configList[0].ImageId)
-	actual.InstanceType = fi.String(configList[0].InstanceType)
-	actual.SystemDiskCategory = fi.String(string(configList[0].SystemDiskCategory))
-	actual.ConfigurationId = fi.String(configList[0].ScalingConfigurationId)
-	actual.Name = fi.String(configList[0].ScalingConfigurationName)
+	actual := &LaunchConfiguration{
+		ImageId:            fi.String(lc.ImageId),
+		InstanceType:       fi.String(lc.InstanceType),
+		SystemDiskSize:     fi.Int(lc.SystemDiskSize),
+		SystemDiskCategory: fi.String(string(lc.SystemDiskCategory)),
+		ConfigurationId:    fi.String(lc.ScalingConfigurationId),
+		Name:               fi.String(lc.ScalingConfigurationName),
+	}
 
-	if configList[0].KeyPairName != "" {
+	if lc.KeyPairName != "" {
 		actual.SSHKey = &SSHKey{
-			Name: fi.String(configList[0].KeyPairName),
+			Name: fi.String(lc.KeyPairName),
 		}
 	}
 
-	if configList[0].RamRoleName != "" {
+	if lc.RamRoleName != "" {
 		actual.RAMRole = &RAMRole{
-			Name: fi.String(configList[0].RamRoleName),
+			Name: fi.String(lc.RamRoleName),
 		}
 	}
 
-	if configList[0].UserData != "" {
-		userData, err := base64.StdEncoding.DecodeString(configList[0].UserData)
+	if lc.UserData != "" {
+		userData, err := base64.StdEncoding.DecodeString(lc.UserData)
 		if err != nil {
 			return nil, fmt.Errorf("error decoding UserData: %v", err)
 		}
@@ -119,14 +121,15 @@ func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	}
 
 	actual.ScalingGroup = &ScalingGroup{
-		ScalingGroupId: fi.String(configList[0].ScalingGroupId),
+		ScalingGroupId: fi.String(lc.ScalingGroupId),
 	}
 	actual.SecurityGroup = &SecurityGroup{
-		SecurityGroupId: fi.String(configList[0].SecurityGroupId),
+		SecurityGroupId: fi.String(lc.SecurityGroupId),
 	}
 
-	if len(configList[0].Tags.Tag) != 0 {
-		for _, tag := range configList[0].Tags.Tag {
+	if len(lc.Tags.Tag) != 0 {
+		actual.Tags = make(map[string]string)
+		for _, tag := range lc.Tags.Tag {
 			actual.Tags[tag.Key] = tag.Value
 		}
 	}
@@ -163,12 +166,13 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 	klog.V(2).Infof("Creating LaunchConfiguration for ScalingGroup:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
 
 	createScalingConfiguration := &ess.CreateScalingConfigurationArgs{
-		ScalingGroupId:      fi.StringValue(e.ScalingGroup.ScalingGroupId),
-		ImageId:             fi.StringValue(e.ImageId),
-		InstanceType:        fi.StringValue(e.InstanceType),
-		SecurityGroupId:     fi.StringValue(e.SecurityGroup.SecurityGroupId),
-		SystemDisk_Size:     common.UnderlineString(strconv.Itoa(fi.IntValue(e.SystemDiskSize))),
-		SystemDisk_Category: common.UnderlineString(fi.StringValue(e.SystemDiskCategory)),
+		ScalingGroupId:           fi.StringValue(e.ScalingGroup.ScalingGroupId),
+		ScalingConfigurationName: fi.StringValue(e.Name),
+		ImageId:                  fi.StringValue(e.ImageId),
+		InstanceType:             fi.StringValue(e.InstanceType),
+		SecurityGroupId:          fi.StringValue(e.SecurityGroup.SecurityGroupId),
+		SystemDisk_Size:          common.UnderlineString(strconv.Itoa(fi.IntValue(e.SystemDiskSize))),
+		SystemDisk_Category:      common.UnderlineString(fi.StringValue(e.SystemDiskCategory)),
 	}
 
 	if e.RAMRole != nil && e.RAMRole.Name != nil {
@@ -268,5 +272,5 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 }
 
 func (l *LaunchConfiguration) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("alicloud_ess_scaling_configuration", *l.Name, "id")
+	return terraform.LiteralProperty("alicloud_ess_scaling_configuration", fi.StringValue(l.Name), "id")
 }
