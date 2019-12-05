@@ -726,8 +726,14 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for i := 0; i < int(masterCount); i++ {
 			zone := masterZones[i%len(masterZones)]
 			name := zone
-			if int(masterCount) > len(masterZones) {
-				name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
+				if int(masterCount) >= len(masterZones) {
+					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				}
+			} else {
+				if int(masterCount) > len(masterZones) {
+					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				}
 			}
 
 			g := &api.InstanceGroup{}
