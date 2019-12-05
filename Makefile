@@ -558,8 +558,8 @@ verify-staticcheck:
 
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
-# verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
-# it bombs in travis. verify-gendoc generates the bindata file.
+# verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
+# it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
 ci: govet goimports verify-gofmt verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
@@ -567,11 +567,9 @@ ci: govet goimports verify-gofmt verify-gomod verify-goimports verify-boilerplat
 # travis-ci is the target that travis-ci calls
 # we skip tasks that rely on bazel and are covered by other jobs
 #  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
-#  verify-bazel: uses bazel, covered by pull-kops-verify-bazel
-#  govet: covered by pull-kops-verify-govet
-#  verify-boilerplate: covered by pull-kops-verify-boilerplate
+# govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-misspelling verify-gomod verify-goimports nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
