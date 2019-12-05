@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -75,6 +76,10 @@ func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 
 	if osCloud, ok := cloud.(openstack.OpenstackCloud); ok {
 		return osCloud.GetApiIngressStatus(cluster)
+	}
+
+	if doCloud, ok := cloud.(*digitalocean.Cloud); ok {
+		return doCloud.GetApiIngressStatus(cluster)
 	}
 
 	return nil, fmt.Errorf("API Ingress Status not implemented for %T", cloud)
