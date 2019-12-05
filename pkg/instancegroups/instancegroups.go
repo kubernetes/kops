@@ -154,21 +154,9 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			return err
 		}
 
-		if rollingUpdateData.CloudOnly {
-			klog.Warningf("Not validating cluster as cloudonly flag is set.")
-
-		} else {
-			klog.Info("Validating the cluster.")
-
-			if err = r.validateClusterWithDuration(rollingUpdateData, validationTimeout); err != nil {
-
-				if rollingUpdateData.FailOnValidate {
-					klog.Errorf("Cluster did not validate within %s", validationTimeout)
-					return fmt.Errorf("error validating cluster after removing a node: %v", err)
-				}
-
-				klog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
-			}
+		err = r.maybeValidate(rollingUpdateData, validationTimeout)
+		if err != nil {
+			return err
 		}
 
 		if rollingUpdateData.Interactive {
@@ -301,6 +289,26 @@ func (r *RollingUpdateInstanceGroup) drainTerminateAndWait(u *cloudinstances.Clo
 	klog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
 	time.Sleep(sleepAfterTerminate)
 
+	return nil
+}
+
+func (r *RollingUpdateInstanceGroup) maybeValidate(rollingUpdateData *RollingUpdateCluster, validationTimeout time.Duration) error {
+	if rollingUpdateData.CloudOnly {
+		klog.Warningf("Not validating cluster as cloudonly flag is set.")
+
+	} else {
+		klog.Info("Validating the cluster.")
+
+		if err := r.validateClusterWithDuration(rollingUpdateData, validationTimeout); err != nil {
+
+			if rollingUpdateData.FailOnValidate {
+				klog.Errorf("Cluster did not validate within %s", validationTimeout)
+				return fmt.Errorf("error validating cluster after removing a node: %v", err)
+			}
+
+			klog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
+		}
+	}
 	return nil
 }
 
