@@ -561,7 +561,7 @@ verify-staticcheck:
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
@@ -569,7 +569,7 @@ ci: govet verify-gofmt verify-gomod verify-goimports verify-boilerplate verify-b
 #  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -638,6 +638,10 @@ apimachinery-codegen:
 .PHONY: verify-apimachinery
 verify-apimachinery:
 	hack/verify-apimachinery.sh
+
+.PHONY: verify-generate
+verify-generate:
+	hack/verify-generate.sh
 
 # -----------------------------------------------------
 # kops-server
