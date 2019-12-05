@@ -852,3 +852,28 @@ spec:
   assets:
     containerProxy: proxy.example.com
 ```
+
+### Setting Custom Kernel Runtime Parameters
+
+To add custom kernel runtime parameters to your all instance groups in the
+cluster, specify the `sysctlParameters` field as an array of strings. Each
+string must take the form of `variable=value` the way it would appear in
+sysctl.conf (see also `sysctl(8)` manpage).
+
+You could also use the `sysctlParameters` field on [the instance group](https://github.com/kubernetes/kops/blob/master/docs/instance_groups.md#setting-custom-kernel-runtime-parameters) to specify different parameters for each instance group.
+
+Unlike a simple file asset, specifying kernel runtime parameters in this manner
+would correctly invoke `sysctl --system` automatically for you to apply said
+parameters.
+
+For example:
+
+```yaml
+spec:
+  sysctlParameters:
+    - fs.pipe-user-pages-soft=524288
+    - net.ipv4.tcp_keepalive_time=200
+```
+
+which would end up in a drop-in file on all masters and nodes of the cluster.
+
