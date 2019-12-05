@@ -574,3 +574,31 @@ spec:
 ```
 
 If `openstack.kops.io/osVolumeSize` is not set it will default to the minimum disk specified by the image.
+
+
+## Setting Custom Kernel Runtime Parameters
+
+To add custom kernel runtime parameters to your instance group, specify the
+`sysctlParameters` field as an array of strings. Each string must take the form
+of `variable=value` the way it would appear in sysctl.conf (see also
+`sysctl(8)` manpage).
+
+Unlike a simple file asset, specifying kernel runtime parameters in this manner
+would correctly invoke `sysctl --system` automatically for you to apply said
+parameters.
+
+For example:
+
+```yaml
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: nodes
+spec:
+  sysctlParameters:
+    - fs.pipe-user-pages-soft=524288
+    - net.ipv4.tcp_keepalive_time=200
+```
+
+which would end up in a drop-in file on nodes of the instance group in question.
+
