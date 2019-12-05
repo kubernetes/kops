@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -128,7 +129,46 @@ func (c *Cloud) Droplets() godo.DropletsService {
 	return c.Client.Droplets
 }
 
+func (c *Cloud) LoadBalancers() godo.LoadBalancersService {
+	return c.Client.LoadBalancers
+}
+
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
 func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("not implemented")
+}
+
+func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+	var ingresses []kops.ApiIngressStatus
+	if cluster.Spec.MasterPublicName != "" {
+		// Note that this must match Digital Ocean's lb name
+		klog.V(2).Infof("Querying DO to find Loadbalancers for API (%q)", cluster.Name)
+
+		loadBalaners, _, err := c.LoadBalancers().List(context.TODO(), nil)
+
+		if err != nil {
+			klog.Errorf("LoadBalancers.List returned error: %v", err)
+			return nil, err
+		}
+
+		lbName := "api-" + strings.Replace(cluster.Name, ".", "-", -1)
+
+		for _, lb := range loadBalaners {
+			if lb.Name == lbName {
+				klog.V(10).Infof("Matching LB name found for API (%q)", cluster.Name)
+
+				if lb.Status != "active" {
+					klog.Errorf("load-balancer is not yet active (current status: %s)", lb.Status)
+					return nil, nil
+				}
+
+				address := lb.IP
+				ingresses = append(ingresses, kops.ApiIngressStatus{IP: address})
+
+				return ingresses, nil
+			}
+		}
+	}
+
+	return nil, nil
 }
