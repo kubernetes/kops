@@ -69,6 +69,8 @@ type LaunchConfiguration struct {
 	InstanceMonitoring *bool
 	// InstanceType is the machine type to use
 	InstanceType *string
+	// RootVolumeDeleteOnTermination states if the root volume will be deleted after instance termination
+	RootVolumeDeleteOnTermination *bool
 	// If volume type is io1, then we need to specify the number of Iops.
 	RootVolumeIops *int64
 	// RootVolumeOptimization enables EBS optimization for an instance
@@ -197,6 +199,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 			actual.RootVolumeSize = b.Ebs.VolumeSize
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
+			actual.RootVolumeDeleteOnTermination = b.Ebs.DeleteOnTermination
 		} else {
 			_, d := BlockDeviceMappingFromAutoscaling(b)
 			actual.BlockDeviceMappings = append(actual.BlockDeviceMappings, d)
@@ -391,7 +394,7 @@ func (t *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 	bm := make(map[string]*BlockDeviceMapping)
 
 	bm[aws.StringValue(img.RootDeviceName)] = &BlockDeviceMapping{
-		EbsDeleteOnTermination: aws.Bool(true),
+		EbsDeleteOnTermination: t.RootVolumeDeleteOnTermination,
 		EbsVolumeSize:          t.RootVolumeSize,
 		EbsVolumeType:          t.RootVolumeType,
 		EbsVolumeIops:          t.RootVolumeIops,
@@ -495,7 +498,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 					VolumeType:          bdm.EbsVolumeType,
 					VolumeSize:          bdm.EbsVolumeSize,
 					Iops:                bdm.EbsVolumeIops,
-					DeleteOnTermination: fi.Bool(true),
+					DeleteOnTermination: bdm.EbsDeleteOnTermination,
 				}
 			}
 		}
@@ -516,7 +519,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 			for _, deviceName := range sets.StringKeySet(additionalDevices).List() {
 				bdm := additionalDevices[deviceName]
 				tf.EBSBlockDevice = append(tf.EBSBlockDevice, &terraformBlockDevice{
-					DeleteOnTermination: fi.Bool(true),
+					DeleteOnTermination: bdm.EbsDeleteOnTermination,
 					DeviceName:          fi.String(deviceName),
 					Encrypted:           bdm.EbsEncrypted,
 					VolumeSize:          bdm.EbsVolumeSize,
@@ -649,7 +652,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 						VolumeType:          bdm.EbsVolumeType,
 						VolumeSize:          bdm.EbsVolumeSize,
 						Iops:                bdm.EbsVolumeIops,
-						DeleteOnTermination: fi.Bool(true),
+						DeleteOnTermination: bdm.EbsDeleteOnTermination,
 					},
 				}
 				cf.BlockDeviceMappings = append(cf.BlockDeviceMappings, d)
@@ -672,7 +675,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 					Ebs: &cloudformationBlockDeviceEBS{
 						VolumeType:          bdm.EbsVolumeType,
 						VolumeSize:          bdm.EbsVolumeSize,
-						DeleteOnTermination: fi.Bool(true),
+						DeleteOnTermination: bdm.EbsDeleteOnTermination,
 						Encrypted:           bdm.EbsEncrypted,
 					},
 				}
