@@ -196,7 +196,7 @@ If you don't want KOPS to auto-select the instance type, you can use the followi
 
 But, before doing that, always ensure the instance types are available on your desired AZ.
 
-NOTE: More arguments and kops commands are described on the following document: [commands.md](https://github.com/kubernetes/kops/blob/master/docs/commands.md)
+NOTE: More arguments and kops commands are described [here](../cli/kops.md).
 
 Let's continue exploring our cluster, but now with "kubectl":
 
