@@ -204,7 +204,7 @@ Limitations:
 4. Verify the planned changes with `kops update cluster cluster.example.com`
 5. Create the cluster with `kops update cluster cluster.example.com --yes`
 6. Wait around for the cluster to fully come up and be available. `k get nodes` should return `(master + minions) = 15` available nodes.
-7. (Optional) Create the Dashboard with `kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml`
+7. (Optional) Create the Dashboard with `kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml`
 8. Deploy the existing resource configuration to the new cluster.
 9. Confirm that pods on the new cluster are able to access remote resources.
     - For AWS-hosted services, add the generated `nodes.cluster.example.com` security group to the resources that may need it (i.e. ElastiCache, RDS, etc).
