@@ -335,7 +335,14 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
   root_block_device = {
     volume_type           = "gp2"
     volume_size           = 128
-    delete_on_termination = true
+    delete_on_termination = false
+  }
+
+  ebs_block_device = {
+    device_name           = "/dev/xvdd"
+    volume_type           = "gp2"
+    volume_size           = 20
+    delete_on_termination = false
   }
 
   lifecycle = {

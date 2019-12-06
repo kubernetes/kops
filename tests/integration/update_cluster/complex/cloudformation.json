@@ -174,7 +174,15 @@
             "Ebs": {
               "VolumeType": "gp2",
               "VolumeSize": 128,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": false
+            }
+          },
+          {
+            "DeviceName": "/dev/xvdd",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 20,
+              "DeleteOnTermination": false
             }
           }
         ],
