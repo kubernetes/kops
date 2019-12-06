@@ -1,0 +1,1412 @@
+{
+  "Resources": {
+    "AWSAutoScalingAutoScalingGroupbastionprivatecalicoexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "bastion.privatecalico.example.com",
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationbastionprivatecalicoexamplecom"
+        },
+        "MaxSize": 1,
+        "MinSize": 1,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivatecalicoexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.privatecalico.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/bastion",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "bastion",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ],
+        "LoadBalancerNames": [
+          {
+            "Ref": "AWSElasticLoadBalancingLoadBalancerbastionprivatecalicoexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersprivatecalicoexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "master-us-test-1a.masters.privatecalico.example.com",
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexamplecom"
+        },
+        "MaxSize": 1,
+        "MinSize": 1,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aprivatecalicoexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "master-us-test-1a.masters.privatecalico.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "master-us-test-1a",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ],
+        "LoadBalancerNames": [
+          {
+            "Ref": "AWSElasticLoadBalancingLoadBalancerapiprivatecalicoexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupnodesprivatecalicoexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "nodes.privatecalico.example.com",
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom"
+        },
+        "MaxSize": 2,
+        "MinSize": 2,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aprivatecalicoexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.privatecalico.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/node",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "nodes",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationbastionprivatecalicoexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": true,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 32,
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilebastionsprivatecalicoexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "t2.micro",
+        "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
+          }
+        ],
+        "InstanceMonitoring": false
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": false,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 64,
+              "DeleteOnTermination": true
+            }
+          },
+          {
+            "DeviceName": "/dev/sdc",
+            "VirtualName": "ephemeral0"
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilemastersprivatecalicoexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "m3.medium",
+        "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+          }
+        ],
+        "UserData": "extracted",
+        "InstanceMonitoring": false
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": false,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 128,
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilenodesprivatecalicoexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "t2.medium",
+        "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+          }
+        ],
+        "UserData": "extracted",
+        "InstanceMonitoring": false
+      }
+    },
+    "AWSEC2DHCPOptionsprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "us-test-1.compute.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2EIPustest1aprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2InternetGatewayprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2NatGatewayustest1aprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "AWSEC2EIPustest1aprivatecalicoexamplecom",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetutilityustest1aprivatecalicoexamplecom"
+        },
+        "tags": {
+          "KubernetesCluster": "privatecalico.example.com",
+          "Name": "us-test-1a.privatecalico.example.com",
+          "kubernetes.io/cluster/privatecalico.example.com": "owned"
+        }
+      }
+    },
+    "AWSEC2Route00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivatecalicoexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayprivatecalicoexamplecom"
+        }
+      }
+    },
+    "AWSEC2RouteTableprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
+          }
+        ]
+      }
+    },
+    "AWSEC2RouteTableprivateustest1aprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "private-us-test-1a.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "private-us-test-1a"
+          }
+        ]
+      }
+    },
+    "AWSEC2Routeprivateustest1a00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1aprivatecalicoexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "AWSEC2NatGatewayustest1aprivatecalicoexamplecom"
+        }
+      }
+    },
+    "AWSEC2SecurityGroupEgressapielbegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressbastionegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressbastionelbegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressmasteregress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressnodeegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallnodetonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressbastiontomasterssh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressbastiontonodessh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpsapielb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomasterprotocolipip": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 65535,
+        "IpProtocol": "4"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp12379": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 2379,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp23824001": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "FromPort": 2382,
+        "ToPort": 4001,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp400365535": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "FromPort": 4003,
+        "ToPort": 65535,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomasterudp165535": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshelbtobastion": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatecalicoexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshexternaltobastionelb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatecalicoexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupapielbprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "GroupDescription": "Security group for api ELB",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "api-elb.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupbastionelbprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "GroupDescription": "Security group for bastion ELB",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion-elb.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupbastionprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "GroupDescription": "Security group for bastion",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupmastersprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "GroupDescription": "Security group for masters",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupnodesprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "GroupDescription": "Security group for nodes",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationprivateustest1aprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetustest1aprivatecalicoexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1aprivatecalicoexamplecom"
+        }
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationutilityustest1aprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetutilityustest1aprivatecalicoexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivatecalicoexamplecom"
+        }
+      }
+    },
+    "AWSEC2Subnetustest1aprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "CidrBlock": "172.20.32.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.privatecalico.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Private"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/internal-elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2Subnetutilityustest1aprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "CidrBlock": "172.20.4.0/22",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "utility-us-test-1a.privatecalico.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Utility"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2VPCDHCPOptionsAssociationprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "DhcpOptionsId": {
+          "Ref": "AWSEC2DHCPOptionsprivatecalicoexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCGatewayAttachmentprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivatecalicoexamplecom"
+        },
+        "InternetGatewayId": {
+          "Ref": "AWSEC2InternetGatewayprivatecalicoexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.20.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdeventsprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-events.privatecalico.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/events",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdmainprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-main.privatecalico.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/main",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSElasticLoadBalancingLoadBalancerapiprivatecalicoexamplecom": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": "api-privatecalico-example-0uch4k",
+        "Listeners": [
+          {
+            "InstancePort": 443,
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": 443,
+            "Protocol": "TCP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupapielbprivatecalicoexamplecom"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivatecalicoexamplecom"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "SSL:443",
+          "HealthyThreshold": 2,
+          "UnhealthyThreshold": 2,
+          "Interval": 10,
+          "Timeout": 5
+        },
+        "ConnectionSettings": {
+          "IdleTimeout": 300
+        },
+        "CrossZone": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "api.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSElasticLoadBalancingLoadBalancerbastionprivatecalicoexamplecom": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": "bastion-privatecalico-exa-hocohm",
+        "Listeners": [
+          {
+            "InstancePort": 22,
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": 22,
+            "Protocol": "TCP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupbastionelbprivatecalicoexamplecom"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivatecalicoexamplecom"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "TCP:22",
+          "HealthyThreshold": 2,
+          "UnhealthyThreshold": 2,
+          "Interval": 10,
+          "Timeout": 5
+        },
+        "ConnectionSettings": {
+          "IdleTimeout": 300
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilebastionsprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolebastionsprivatecalicoexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilemastersprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersprivatecalicoexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilenodesprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesprivatecalicoexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMPolicybastionsprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "bastions.privatecalico.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolebastionsprivatecalicoexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeRegions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicymastersprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "masters.privatecalico.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersprivatecalicoexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "autoscaling:UpdateAutoScalingGroup",
+                "ec2:DescribeLaunchTemplateVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "iam:ListServerCertificates",
+                "iam:GetServerCertificate"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicynodesprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "nodes.privatecalico.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesprivatecalicoexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolebastionsprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "bastions.privatecalico.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolemastersprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "masters.privatecalico.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolenodesprivatecalicoexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "nodes.privatecalico.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSRoute53RecordSetapiprivatecalicoexamplecom": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "Name": "api.privatecalico.example.com",
+        "Type": "A",
+        "AliasTarget": {
+          "DNSName": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingLoadBalancerapiprivatecalicoexamplecom",
+              "DNSName"
+            ]
+          },
+          "HostedZoneId": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingLoadBalancerapiprivatecalicoexamplecom",
+              "CanonicalHostedZoneNameID"
+            ]
+          },
+          "EvaluateTargetHealth": false
+        },
+        "HostedZoneId": "/hostedzone/Z1AFAKE1ZON3YO"
+      }
+    }
+  }
+}
