@@ -3002,6 +3002,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.RootVolumeType = in.RootVolumeType
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
+	out.RootVolumeDeleteOnTermination = in.RootVolumeDeleteOnTermination
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]*kops.VolumeSpec, len(*in))
@@ -3128,6 +3129,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.RootVolumeType = in.RootVolumeType
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
+	out.RootVolumeDeleteOnTermination = in.RootVolumeDeleteOnTermination
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]*VolumeSpec, len(*in))
@@ -5049,6 +5051,7 @@ func Convert_kops_VolumeMountSpec_To_v1alpha2_VolumeMountSpec(in *kops.VolumeMou
 }
 
 func autoConvert_v1alpha2_VolumeSpec_To_kops_VolumeSpec(in *VolumeSpec, out *kops.VolumeSpec, s conversion.Scope) error {
+	out.DeleteOnTermination = in.DeleteOnTermination
 	out.Device = in.Device
 	out.Encrypted = in.Encrypted
 	out.Iops = in.Iops
@@ -5063,6 +5066,7 @@ func Convert_v1alpha2_VolumeSpec_To_kops_VolumeSpec(in *VolumeSpec, out *kops.Vo
 }
 
 func autoConvert_kops_VolumeSpec_To_v1alpha2_VolumeSpec(in *kops.VolumeSpec, out *VolumeSpec, s conversion.Scope) error {
+	out.DeleteOnTermination = in.DeleteOnTermination
 	out.Device = in.Device
 	out.Encrypted = in.Encrypted
 	out.Iops = in.Iops
