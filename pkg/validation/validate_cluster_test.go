@@ -17,16 +17,100 @@ limitations under the License.
 package validation
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
+
+type MockCloud struct {
+	awsup.MockAWSCloud
+	Groups map[string]*cloudinstances.CloudInstanceGroup
+
+	t                      *testing.T
+	expectedCluster        *kopsapi.Cluster
+	expectedInstanceGroups []kopsapi.InstanceGroup
+}
+
+var _ fi.Cloud = (*MockCloud)(nil)
+
+func BuildMockCloud(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, expectedCluster *kopsapi.Cluster, expectedInstanceGroups []kopsapi.InstanceGroup) *MockCloud {
+	m := MockCloud{
+		MockAWSCloud:           *awsup.BuildMockAWSCloud("us-east-1", "abc"),
+		Groups:                 groups,
+		t:                      t,
+		expectedCluster:        expectedCluster,
+		expectedInstanceGroups: expectedInstanceGroups,
+	}
+	return &m
+}
+
+func (c *MockCloud) GetCloudGroups(cluster *kopsapi.Cluster, instancegroups []*kopsapi.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	assert.Equal(c.t, c.expectedCluster, cluster, "cluster")
+
+	var igs = make([]kopsapi.InstanceGroup, 0, len(instancegroups))
+	for _, ig := range instancegroups {
+		igs = append(igs, *ig)
+	}
+	assert.ElementsMatch(c.t, c.expectedInstanceGroups, igs)
+
+	// TODO assert nodes contains all the nodes in the mock kubernetes.Interface?
+
+	return c.Groups, nil
+}
+
+func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object) (*ValidationCluster, error) {
+	cluster := &kopsapi.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
+	}
+
+	instanceGroups := make([]kopsapi.InstanceGroup, 0, len(groups))
+	objects = append([]runtime.Object(nil), objects...)
+	for _, g := range groups {
+		instanceGroups = append(instanceGroups, *g.InstanceGroup)
+		for _, member := range g.Ready {
+			node := member.Node
+			if node != nil {
+				objects = append(objects, node)
+			}
+		}
+		for _, member := range g.NeedUpdate {
+			node := member.Node
+			if node != nil {
+				objects = append(objects, node)
+			}
+		}
+	}
+
+	if len(instanceGroups) == 0 {
+		instanceGroups = []kopsapi.InstanceGroup{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "master-1",
+				},
+				Spec: kopsapi.InstanceGroupSpec{
+					Role: kopsapi.InstanceGroupRoleMaster,
+				},
+			},
+		}
+	}
+
+	mockcloud := BuildMockCloud(t, groups, cluster, instanceGroups)
+
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, fake.NewSimpleClientset(objects...))
+	if err != nil {
+		return nil, err
+	}
+	return validator.Validate()
+}
 
 func Test_ValidateNodesNotEnough(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
@@ -67,40 +151,86 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 		},
 	}
 
-	{
-		v := &ValidationCluster{}
+	t.Run("too few nodes", func(t *testing.T) {
 		groups["node-1"].MinSize = 3
-		v.validateNodes(groups)
-		if len(v.Failures) != 2 {
+		v, err := testValidate(t, groups, nil)
+		require.NoError(t, err)
+		if !assert.Len(t, v.Failures, 2) {
 			printDebug(t, v)
-			t.Fatal("Too few nodes not caught")
 		}
-	}
+	})
 
-	{
+	t.Run("not ready node", func(t *testing.T) {
 		groups["node-1"].MinSize = 2
-		v := &ValidationCluster{}
-		v.validateNodes(groups)
-		if len(v.Failures) != 1 {
+		v, err := testValidate(t, groups, nil)
+		require.NoError(t, err)
+		if !assert.Len(t, v.Failures, 1) {
 			printDebug(t, v)
-			t.Fatal("Not ready node not caught")
 		}
-	}
+	})
 
-	{
+	t.Run("unexpected errors", func(t *testing.T) {
 		groups["node-1"].NeedUpdate[0].Node.Status.Conditions[0].Status = v1.ConditionTrue
-		v := &ValidationCluster{}
-		v.validateNodes(groups)
-		if len(v.Failures) != 0 {
+		v, err := testValidate(t, groups, nil)
+		require.NoError(t, err)
+		if !assert.Empty(t, v.Failures) {
 			printDebug(t, v)
-			t.Fatal("unexpected errors")
 		}
+	})
+}
+
+func Test_ValidateNoComponentFailures(t *testing.T) {
+	v, err := testValidate(t, nil, []runtime.Object{
+		&v1.ComponentStatus{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "testcomponent",
+			},
+			Conditions: []v1.ComponentCondition{
+				{
+					Status: v1.ConditionTrue,
+				},
+			},
+		},
+	})
+
+	require.NoError(t, err)
+	assert.Empty(t, v.Failures)
+}
+
+func Test_ValidateComponentFailure(t *testing.T) {
+	for _, status := range []v1.ConditionStatus{
+		v1.ConditionFalse,
+		v1.ConditionUnknown,
+	} {
+		t.Run(string(status), func(t *testing.T) {
+			v, err := testValidate(t, nil, []runtime.Object{
+				&v1.ComponentStatus{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "testcomponent",
+					},
+					Conditions: []v1.ComponentCondition{
+						{
+							Status: status,
+						},
+					},
+				},
+			})
+
+			require.NoError(t, err)
+			if !assert.Len(t, v.Failures, 1) ||
+				!assert.Equal(t, &ValidationError{
+					Kind:    "ComponentStatus",
+					Name:    "testcomponent",
+					Message: "component \"testcomponent\" is unhealthy",
+				}, v.Failures[0]) {
+				printDebug(t, v)
+			}
+		})
 	}
 }
 
 func Test_ValidateNoPodFailures(t *testing.T) {
-	v := &ValidationCluster{}
-	err := v.collectPodFailures(dummyPodClient(
+	v, err := testValidate(t, nil, makePodList(
 		[]map[string]string{
 			{
 				"name":  "pod1",
@@ -115,35 +245,52 @@ func Test_ValidateNoPodFailures(t *testing.T) {
 		},
 	))
 
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if len(v.Failures) != 0 {
-		fmt.Printf("failures: %+v\n", v.Failures)
-		t.Fatal("no failures expected")
-	}
+	require.NoError(t, err)
+	assert.Empty(t, v.Failures)
 }
 
 func Test_ValidatePodFailure(t *testing.T) {
-	v := &ValidationCluster{}
-	err := v.collectPodFailures(dummyPodClient(
-		[]map[string]string{
-			{
-				"name":  "pod1",
-				"ready": "false",
-				"phase": string(v1.PodRunning),
+	for _, tc := range []struct {
+		name     string
+		phase    v1.PodPhase
+		expected ValidationError
+	}{
+		{
+			name:  "pending",
+			phase: v1.PodPending,
+			expected: ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/pod1",
+				Message: "kube-system pod \"pod1\" is pending",
 			},
 		},
-	))
+		{
+			name:  "notready",
+			phase: v1.PodRunning,
+			expected: ValidationError{
+				Kind:    "Pod",
+				Name:    "kube-system/pod1",
+				Message: "kube-system pod \"pod1\" is not ready (container1,container2)",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			v, err := testValidate(t, nil, makePodList(
+				[]map[string]string{
+					{
+						"name":  "pod1",
+						"ready": "false",
+						"phase": string(tc.phase),
+					},
+				},
+			))
 
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if len(v.Failures) != 1 || v.Failures[0].Name != "kube-system/pod1" {
-		printDebug(t, v)
-		t.Fatal("pod1 failure expected")
+			require.NoError(t, err)
+			if !assert.Len(t, v.Failures, 1) ||
+				!assert.Equal(t, &tc.expected, v.Failures[0]) {
+				printDebug(t, v)
+			}
+		})
 	}
 }
 
@@ -152,10 +299,6 @@ func printDebug(t *testing.T, v *ValidationCluster) {
 	for _, fail := range v.Failures {
 		t.Logf("  failure: %+v", fail)
 	}
-}
-
-func dummyPodClient(pods []map[string]string) kubernetes.Interface {
-	return fake.NewSimpleClientset(makePodList(pods))
 }
 
 func dummyPod(podMap map[string]string) v1.Pod {
@@ -169,6 +312,11 @@ func dummyPod(podMap map[string]string) v1.Pod {
 			Phase: v1.PodPhase(podMap["phase"]),
 			ContainerStatuses: []v1.ContainerStatus{
 				{
+					Name:  "container1",
+					Ready: podMap["ready"] == "true",
+				},
+				{
+					Name:  "container2",
 					Ready: podMap["ready"] == "true",
 				},
 			},
@@ -177,12 +325,13 @@ func dummyPod(podMap map[string]string) v1.Pod {
 }
 
 // MakePodList constructs api.PodList from a list of pod attributes
-func makePodList(pods []map[string]string) *v1.PodList {
-	var list v1.PodList
+func makePodList(pods []map[string]string) []runtime.Object {
+	var list []runtime.Object
 	for _, pod := range pods {
-		list.Items = append(list.Items, dummyPod(pod))
+		p := dummyPod(pod)
+		list = append(list, &p)
 	}
-	return &list
+	return list
 }
 
 func Test_ValidateBastionNodes(t *testing.T) {
@@ -191,9 +340,6 @@ func Test_ValidateBastionNodes(t *testing.T) {
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "ig1",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
@@ -205,28 +351,25 @@ func Test_ValidateBastionNodes(t *testing.T) {
 	}
 
 	// When an instancegroup's nodes are not ready, that is an error
-	{
-		v := &ValidationCluster{}
+	t.Run("instancegroup's nodes not ready", func(t *testing.T) {
 		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleNode
-		v.validateNodes(groups)
-		if len(v.Failures) != 1 {
+		v, err := testValidate(t, groups, nil)
+		require.NoError(t, err)
+		if !assert.Len(t, v.Failures, 1) {
 			printDebug(t, v)
-			t.Fatal("Nodes are expected to join cluster")
-		} else if v.Failures[0].Message != "machine \"i-00001\" has not yet joined cluster" {
+		} else if !assert.Equal(t, "machine \"i-00001\" has not yet joined cluster", v.Failures[0].Message) {
 			printDebug(t, v)
-			t.Fatalf("unexpected validation failure: %+v", v.Failures[0])
 		}
-	}
+	})
 
 	// Except for a bastion instancegroup - those are not expected to join as nodes
-	{
-		v := &ValidationCluster{}
+	t.Run("bastion instancegroup nodes not ready", func(t *testing.T) {
 		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleBastion
-		v.validateNodes(groups)
-		if len(v.Failures) != 0 {
+		v, err := testValidate(t, groups, nil)
+		require.NoError(t, err)
+		if !assert.Empty(t, v.Failures, "Bastion nodes are not expected to join cluster") {
 			printDebug(t, v)
-			t.Fatal("Bastion nodes are not expected to join cluster")
 		}
-	}
+	})
 
 }
