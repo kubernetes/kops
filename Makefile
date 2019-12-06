@@ -180,7 +180,7 @@ kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 
 UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
 upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/... && GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v upup/models/bindata.go
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
@@ -561,7 +561,7 @@ verify-staticcheck:
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet goimports verify-gofmt verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
