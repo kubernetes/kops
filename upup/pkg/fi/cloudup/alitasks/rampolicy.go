@@ -19,6 +19,7 @@ package alitasks
 import (
 	"fmt"
 
+	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ram"
 
 	"k8s.io/klog"
@@ -46,34 +47,32 @@ func (r *RAMPolicy) CompareWithID() *string {
 func (r *RAMPolicy) Find(c *fi.Context) (*RAMPolicy, error) {
 	cloud := c.Cloud.(aliup.ALICloud)
 
-	policyQueryRequest := ram.PolicyQueryRequest{
+	policyRequest := ram.PolicyRequest{
+		PolicyName: fi.StringValue(r.Name),
 		PolicyType: ram.Type(fi.StringValue(r.PolicyType)),
 	}
-	policyList, err := cloud.RamClient().ListPolicies(policyQueryRequest)
-
+	policyResp, err := cloud.RamClient().GetPolicy(policyRequest)
 	if err != nil {
-		return nil, fmt.Errorf("error listing RamPolicy: %v", err)
-	}
-
-	if len(policyList.Policies.Policy) == 0 {
-		return nil, nil
-	}
-
-	for _, policy := range policyList.Policies.Policy {
-		if policy.PolicyName == fi.StringValue(r.Name) {
-
-			klog.V(2).Infof("found matching RamPolicy with name: %q", *r.Name)
-			actual := &RAMPolicy{}
-			actual.Name = fi.String(policy.PolicyName)
-			actual.PolicyType = fi.String(string(policy.PolicyType))
-
-			// Ignore "system" fields
-			actual.Lifecycle = r.Lifecycle
-			return actual, nil
+		if e, ok := err.(*common.Error); ok && e.StatusCode == 404 {
+			klog.V(2).Infof("no RamPolicy with name: %q", *r.Name)
+			return nil, nil
 		}
+		return nil, fmt.Errorf("error get RamPolicy %s: %v", *r.Name, err)
 	}
 
-	return nil, nil
+	klog.V(2).Infof("found matching RamPolicy with name: %q", *r.Name)
+	policy := policyResp.Policy
+
+	actual := &RAMPolicy{
+		Name:           fi.String(policy.PolicyName),
+		PolicyType:     fi.String(string(policy.PolicyType)),
+		PolicyDocument: fi.String(compactPolicy(policyResp.DefaultPolicyVersion.PolicyDocument)),
+	}
+
+	// Ignore "system" fields
+	actual.RamRole = r.RamRole
+	actual.Lifecycle = r.Lifecycle
+	return actual, nil
 }
 
 func (r *RAMPolicy) Run(c *fi.Context) error {
