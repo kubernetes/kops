@@ -27,7 +27,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/pkg/util/mount"
+	utilexec "k8s.io/utils/exec"
+	"k8s.io/utils/mount"
 )
 
 // MountDiskTask is responsible for mounting a device on a mountpoint
@@ -139,7 +140,7 @@ func (_ *MountDiskTask) RenderLocal(t *local.LocalTarget, a, e, changes *MountDi
 	if changes.Mountpoint != "" {
 		klog.Infof("Mounting device %q on %q", e.Device, e.Mountpoint)
 
-		mounter := &mount.SafeFormatAndMount{Interface: mount.New(""), Exec: mount.NewOsExec()}
+		mounter := &mount.SafeFormatAndMount{Interface: mount.New(""), Exec: utilexec.New()}
 
 		fstype := ""
 		options := []string{}
