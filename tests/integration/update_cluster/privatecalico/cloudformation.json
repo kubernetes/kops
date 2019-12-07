@@ -333,11 +333,20 @@
         "SubnetId": {
           "Ref": "AWSEC2Subnetutilityustest1aprivatecalicoexamplecom"
         },
-        "tags": {
-          "KubernetesCluster": "privatecalico.example.com",
-          "Name": "us-test-1a.privatecalico.example.com",
-          "kubernetes.io/cluster/privatecalico.example.com": "owned"
-        }
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privatecalico.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.privatecalico.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privatecalico.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSEC2Route00000": {
