@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["nsenter.go"],
+    importpath = "k8s.io/kops/protokube/pkg/hostmount",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/utils/mount:go_default_library",
+        "//vendor/k8s.io/utils/nsenter:go_default_library",
+    ],
+)
