@@ -135,6 +135,7 @@ func TestPrivateFlannel(t *testing.T) {
 func TestPrivateCalico(t *testing.T) {
 	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha1", true, 1, true, false, nil)
 	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, 1, true, false, nil)
+	runTestCloudformation(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, nil)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
