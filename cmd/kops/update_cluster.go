@@ -241,6 +241,17 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		for i := range list.Items {
 			instanceGroups = append(instanceGroups, &list.Items[i])
+
+			// Try to guess the path for additional third party volume plugins in CoreOS and Flatcar
+			image := list.Items[i].Spec.Image
+			if strings.HasPrefix(image, "595879546273/CoreOS") || strings.HasPrefix(image, "075585003325/Flatcar") {
+				if cluster.Spec.Kubelet == nil {
+					cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
+				}
+				if cluster.Spec.Kubelet.VolumePluginDirectory == "" {
+					cluster.Spec.Kubelet.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
+				}
+			}
 		}
 	}
 
