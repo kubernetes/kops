@@ -27,8 +27,9 @@ github.com/MakeNowJust/heredoc
 github.com/Masterminds/semver
 # github.com/Masterminds/sprig v2.17.1+incompatible
 github.com/Masterminds/sprig
-# github.com/Microsoft/go-winio v0.4.11
+# github.com/Microsoft/go-winio v0.4.14
 github.com/Microsoft/go-winio
+github.com/Microsoft/go-winio/pkg/guid
 # github.com/PuerkitoBio/purell v1.1.1
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
@@ -169,7 +170,7 @@ github.com/docker/engine-api/types/registry
 github.com/docker/engine-api/types/strslice
 github.com/docker/engine-api/types/time
 github.com/docker/engine-api/types/versions
-# github.com/docker/go-connections v0.3.0
+# github.com/docker/go-connections v0.4.0
 github.com/docker/go-connections/nat
 github.com/docker/go-connections/sockets
 github.com/docker/go-connections/tlsconfig
@@ -331,7 +332,7 @@ github.com/jteeuwen/go-bindata/go-bindata
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/kr/fs v0.1.0
 github.com/kr/fs
-# github.com/magiconair/properties v1.8.1
+# github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
 # github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63
 github.com/mailru/easyjson/buffer
@@ -402,7 +403,7 @@ github.com/spf13/cast
 # github.com/spf13/cobra v0.0.5
 github.com/spf13/cobra
 github.com/spf13/cobra/doc
-# github.com/spf13/jwalterweatherman v1.1.0
+# github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
@@ -702,7 +703,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.0.0 => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
+# k8s.io/apiextensions-apiserver v0.0.0-20190918161926-8f644eb6e783 => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
 # k8s.io/apimachinery v0.0.0 => k8s.io/apimachinery v0.0.0-20191028221656-72ed19daf4bb
@@ -991,18 +992,18 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/cloud-provider v0.0.0 => k8s.io/cloud-provider v0.0.0-20191114112024-4bbba8331835
+# k8s.io/cloud-provider v0.0.0-20191114112024-4bbba8331835 => k8s.io/cloud-provider v0.0.0-20191114112024-4bbba8331835
 k8s.io/cloud-provider
 k8s.io/cloud-provider/node/helpers
 k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/component-base v0.0.0 => k8s.io/component-base v0.0.0-20191114102325-35a9586014f7
+# k8s.io/component-base v0.0.0-20191114102325-35a9586014f7 => k8s.io/component-base v0.0.0-20191114102325-35a9586014f7
 k8s.io/component-base/metrics
 k8s.io/component-base/metrics/legacyregistry
 k8s.io/component-base/version
-# k8s.io/csi-translation-lib v0.0.0 => k8s.io/csi-translation-lib v0.0.0-20191114112310-0da609c4ca2d
+# k8s.io/csi-translation-lib v0.0.0-20191114112310-0da609c4ca2d => k8s.io/csi-translation-lib v0.0.0-20191114112310-0da609c4ca2d
 k8s.io/csi-translation-lib/plugins
 # k8s.io/helm v2.9.0+incompatible
 k8s.io/helm/pkg/strvals
@@ -1028,8 +1029,6 @@ k8s.io/kubectl/pkg/util/templates
 k8s.io/kubectl/pkg/util/term
 k8s.io/kubectl/pkg/validation
 k8s.io/kubectl/pkg/version
-# k8s.io/kubernetes v1.16.3 => k8s.io/kubernetes v1.16.3
-k8s.io/kubernetes/pkg/client/metrics/prometheus
 # k8s.io/legacy-cloud-providers v0.0.0 => k8s.io/legacy-cloud-providers v0.0.0-20191114112655-db9be3e678bb
 k8s.io/legacy-cloud-providers/aws
 k8s.io/legacy-cloud-providers/gce

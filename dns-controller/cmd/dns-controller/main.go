@@ -32,7 +32,7 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	_ "k8s.io/kubernetes/pkg/client/metrics/prometheus" // for client metric registration
+	// _ "k8s.io/kubernetes/pkg/client/metrics/prometheus" // for client metric registration
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
