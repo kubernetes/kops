@@ -608,6 +608,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			ID:      id,
 			Type:    "volume",
 			Deleter: DeleteVolume,
+			Shared:  HasSharedTag(ec2.ResourceTypeVolume+":"+id, volume.Tags, clusterName),
 		}
 
 		var blocks []string
