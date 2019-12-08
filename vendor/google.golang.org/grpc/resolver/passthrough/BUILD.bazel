@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["passthrough.go"],
+    importmap = "k8s.io/kops/vendor/google.golang.org/grpc/resolver/passthrough",
+    importpath = "google.golang.org/grpc/resolver/passthrough",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/google.golang.org/grpc/resolver:go_default_library"],
+)

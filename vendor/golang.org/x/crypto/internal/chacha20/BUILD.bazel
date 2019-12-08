@@ -4,9 +4,11 @@ go_library(
     name = "go_default_library",
     srcs = [
         "asm_arm64.s",
+        "asm_ppc64le.s",
         "chacha_arm64.go",
         "chacha_generic.go",
         "chacha_noasm.go",
+        "chacha_ppc64le.go",
         "chacha_s390x.go",
         "chacha_s390x.s",
         "xor.go",

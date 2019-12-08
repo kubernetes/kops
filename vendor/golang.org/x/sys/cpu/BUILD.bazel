@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "asm_aix_ppc64.s",
         "byteorder.go",
         "cpu.go",
         "cpu_arm.go",

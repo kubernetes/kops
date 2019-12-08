@@ -11,6 +11,8 @@ go_library(
         "sum_arm.s",
         "sum_generic.go",
         "sum_noasm.go",
+        "sum_ppc64le.go",
+        "sum_ppc64le.s",
         "sum_s390x.go",
         "sum_s390x.s",
         "sum_vmsl_s390x.s",

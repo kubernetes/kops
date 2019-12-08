@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["load.go"],
+    importmap = "k8s.io/kops/vendor/google.golang.org/grpc/internal/balancerload",
+    importpath = "google.golang.org/grpc/internal/balancerload",
+    visibility = ["//vendor/google.golang.org/grpc:__subpackages__"],
+    deps = ["//vendor/google.golang.org/grpc/metadata:go_default_library"],
+)
