@@ -564,12 +564,10 @@ verify-staticcheck:
 ci: govet verify-gofmt verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
-# travis-ci is the target that travis-ci calls
-# we skip tasks that rely on bazel and are covered by other jobs
-#  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
-# govet needs to be after verify-goimports because it generates bindata.go
+# travis-ci is the target that travis-ci calls.
+# The main goal is to make sure that kops builds on OSX & via go build.
 .PHONY: travis-ci
-travis-ci: verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
