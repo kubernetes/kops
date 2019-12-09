@@ -130,6 +130,5 @@ go_test(
         "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/controller/nodeipam/ipam:go_default_library",
     ],
 )

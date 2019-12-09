@@ -566,11 +566,6 @@ gopkg.in/gcfg.v1/token
 gopkg.in/gcfg.v1/types
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
-# gopkg.in/square/go-jose.v2 v2.0.0-20180411045311-89060dee6a84
-gopkg.in/square/go-jose.v2
-gopkg.in/square/go-jose.v2/jwt
-gopkg.in/square/go-jose.v2/cipher
-gopkg.in/square/go-jose.v2/json
 # gopkg.in/warnings.v0 v0.1.1
 gopkg.in/warnings.v0
 # gopkg.in/yaml.v2 v2.2.2
@@ -699,13 +694,6 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
-k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.0.0 => k8s.io/apiserver v0.0.0-20190819142446-92cc630367d0
-k8s.io/apiserver/pkg/authentication/serviceaccount
-k8s.io/apiserver/pkg/util/feature
-k8s.io/apiserver/pkg/authentication/authenticator
-k8s.io/apiserver/pkg/authentication/user
-k8s.io/apiserver/pkg/features
 # k8s.io/cli-runtime v0.0.0 => k8s.io/cli-runtime v0.0.0-20190819144027-541433d7ce35
 k8s.io/cli-runtime/pkg/genericclioptions
 k8s.io/cli-runtime/pkg/kustomize
@@ -851,8 +839,6 @@ k8s.io/client-go/kubernetes/typed/storage/v1alpha1/fake
 k8s.io/client-go/kubernetes/typed/storage/v1beta1
 k8s.io/client-go/kubernetes/typed/storage/v1beta1/fake
 k8s.io/client-go/listers/admissionregistration/v1beta1
-k8s.io/client-go/dynamic/dynamicinformer
-k8s.io/client-go/tools/watch
 k8s.io/client-go/listers/apps/v1
 k8s.io/client-go/listers/apps/v1beta1
 k8s.io/client-go/listers/apps/v1beta2
@@ -866,6 +852,7 @@ k8s.io/client-go/listers/batch/v2alpha1
 k8s.io/client-go/listers/certificates/v1beta1
 k8s.io/client-go/listers/coordination/v1
 k8s.io/client-go/listers/coordination/v1beta1
+k8s.io/client-go/listers/core/v1
 k8s.io/client-go/listers/events/v1beta1
 k8s.io/client-go/listers/extensions/v1beta1
 k8s.io/client-go/listers/networking/v1
@@ -883,7 +870,6 @@ k8s.io/client-go/listers/settings/v1alpha1
 k8s.io/client-go/listers/storage/v1
 k8s.io/client-go/listers/storage/v1alpha1
 k8s.io/client-go/listers/storage/v1beta1
-<<<<<<< HEAD
 k8s.io/client-go/pkg/apis/clientauthentication
 k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1
 k8s.io/client-go/pkg/apis/clientauthentication/v1beta1
@@ -932,9 +918,6 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-=======
-k8s.io/client-go/dynamic/dynamiclister
->>>>>>> dependencies for import k8s.io/kubernetes/pkg/controller/nodeipam/ipam
 # k8s.io/cloud-provider v0.0.0 => k8s.io/cloud-provider v0.0.0-20190819145148-d91c85d212d5
 k8s.io/cloud-provider
 k8s.io/cloud-provider/node/helpers
@@ -942,12 +925,6 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-<<<<<<< HEAD
-=======
-k8s.io/cloud-provider/node/helpers
-# k8s.io/component-base v0.0.0 => k8s.io/component-base v0.0.0-20190819141909-f0f7c184477d
-k8s.io/component-base/featuregate
->>>>>>> dependencies for import k8s.io/kubernetes/pkg/controller/nodeipam/ipam
 # k8s.io/csi-translation-lib v0.0.0 => k8s.io/csi-translation-lib v0.0.0-20190819145328-4831a4ced492
 k8s.io/csi-translation-lib/plugins
 # k8s.io/helm v2.9.0+incompatible
@@ -968,38 +945,11 @@ k8s.io/kubernetes/pkg/kubectl/cmd/util/editor
 k8s.io/kubernetes/pkg/kubectl/cmd/util/editor/crlf
 k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi
 k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi/validation
-<<<<<<< HEAD
 k8s.io/kubernetes/pkg/kubectl/describe
-=======
-k8s.io/kubernetes/pkg/kubectl/scheme
-k8s.io/kubernetes/pkg/kubectl/validation
-k8s.io/kubernetes/pkg/kubectl/version
-k8s.io/kubernetes/pkg/kubectl
-k8s.io/kubernetes/pkg/kubectl/cmd/util/editor/crlf
-k8s.io/kubernetes/pkg/kubectl/util/term
-k8s.io/kubernetes/pkg/kubectl/generated
-k8s.io/kubernetes/pkg/controller/nodeipam/ipam
-k8s.io/kubernetes/pkg/kubectl/apps
->>>>>>> dependencies for import k8s.io/kubernetes/pkg/controller/nodeipam/ipam
 k8s.io/kubernetes/pkg/kubectl/describe/versioned
 k8s.io/kubernetes/pkg/kubectl/generated
 k8s.io/kubernetes/pkg/kubectl/scheme
 k8s.io/kubernetes/pkg/kubectl/util
-<<<<<<< HEAD
-=======
-k8s.io/kubernetes/pkg/kubectl/util/deployment
-k8s.io/kubernetes/pkg/kubectl/util/podutils
-k8s.io/kubernetes/pkg/kubectl/util/slice
-k8s.io/kubernetes/pkg/kubectl/util/interrupt
-k8s.io/kubernetes/pkg/controller
-k8s.io/kubernetes/pkg/controller/nodeipam/ipam/cidrset
-k8s.io/kubernetes/pkg/controller/nodeipam/ipam/sync
-k8s.io/kubernetes/pkg/controller/util/node
-k8s.io/kubernetes/pkg/scheduler/api
-k8s.io/kubernetes/pkg/util/node
-k8s.io/kubernetes/pkg/util/taints
-k8s.io/kubernetes/pkg/kubectl/describe
->>>>>>> dependencies for import k8s.io/kubernetes/pkg/controller/nodeipam/ipam
 k8s.io/kubernetes/pkg/kubectl/util/certificate
 k8s.io/kubernetes/pkg/kubectl/util/deployment
 k8s.io/kubernetes/pkg/kubectl/util/event
@@ -1012,49 +962,15 @@ k8s.io/kubernetes/pkg/kubectl/util/rbac
 k8s.io/kubernetes/pkg/kubectl/util/resource
 k8s.io/kubernetes/pkg/kubectl/util/slice
 k8s.io/kubernetes/pkg/kubectl/util/storage
-<<<<<<< HEAD
 k8s.io/kubernetes/pkg/kubectl/util/templates
 k8s.io/kubernetes/pkg/kubectl/util/term
 k8s.io/kubernetes/pkg/kubectl/validation
 k8s.io/kubernetes/pkg/kubectl/version
 k8s.io/kubernetes/pkg/util/mount
 k8s.io/kubernetes/pkg/volume/util/nsenter
-=======
-k8s.io/kubernetes/pkg/api/legacyscheme
-k8s.io/kubernetes/pkg/api/v1/pod
-k8s.io/kubernetes/pkg/apis/core
-k8s.io/kubernetes/pkg/apis/core/install
-k8s.io/kubernetes/pkg/apis/core/validation
-k8s.io/kubernetes/pkg/serviceaccount
-k8s.io/kubernetes/pkg/util/hash
-k8s.io/kubernetes/pkg/kubelet/util/format
-k8s.io/kubernetes/pkg/apis/core/helper
-k8s.io/kubernetes/pkg/apis/core/v1
-k8s.io/kubernetes/pkg/api/service
-k8s.io/kubernetes/pkg/apis/core/pods
-k8s.io/kubernetes/pkg/apis/core/v1/helper
-k8s.io/kubernetes/pkg/capabilities
-k8s.io/kubernetes/pkg/features
-k8s.io/kubernetes/pkg/fieldpath
-k8s.io/kubernetes/pkg/master/ports
-k8s.io/kubernetes/pkg/security/apparmor
-k8s.io/kubernetes/pkg/apis/apps
-k8s.io/kubernetes/pkg/util/parsers
-k8s.io/kubernetes/pkg/kubelet/types
-k8s.io/kubernetes/pkg/apis/autoscaling
-k8s.io/kubernetes/pkg/apis/scheduling
->>>>>>> dependencies for import k8s.io/kubernetes/pkg/controller/nodeipam/ipam
 # k8s.io/legacy-cloud-providers v0.0.0 => k8s.io/legacy-cloud-providers v0.0.0-20190819145509-592c9a46fd00
 k8s.io/legacy-cloud-providers/aws
-<<<<<<< HEAD
 k8s.io/legacy-cloud-providers/gce
-=======
-# k8s.io/metrics v0.0.0 => k8s.io/metrics v0.0.0-20190819143841-305e1cef1ab1
-k8s.io/metrics/pkg/client/clientset/versioned/scheme
-k8s.io/metrics/pkg/apis/metrics/v1alpha1
-k8s.io/metrics/pkg/apis/metrics/v1beta1
-k8s.io/metrics/pkg/apis/metrics
->>>>>>> dependencies for import k8s.io/kubernetes/pkg/controller/nodeipam/ipam
 # k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
 k8s.io/utils/buffer
 k8s.io/utils/exec
