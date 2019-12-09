@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "inject.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/runtime/inject",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/runtime/inject",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/go-logr/logr:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/cache:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
+    ],
+)

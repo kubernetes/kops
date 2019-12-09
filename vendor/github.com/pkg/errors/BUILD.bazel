@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "errors.go",
+        "stack.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/pkg/errors",
+    importpath = "github.com/pkg/errors",
+    visibility = ["//visibility:public"],
+)

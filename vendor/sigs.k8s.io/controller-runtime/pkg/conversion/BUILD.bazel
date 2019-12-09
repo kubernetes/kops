@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["conversion.go"],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/conversion",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/conversion",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library"],
+)
