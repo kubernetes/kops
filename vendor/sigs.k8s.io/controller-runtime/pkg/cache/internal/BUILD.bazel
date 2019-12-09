@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cache_reader.go",
+        "deleg_map.go",
+        "informers_map.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/cache/internal",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/cache/internal",
+    visibility = ["//vendor/sigs.k8s.io/controller-runtime/pkg/cache:__subpackages__"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/fields:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/selection:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/client-go/dynamic:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/client-go/tools/cache:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/client/apiutil:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/objectutil:go_default_library",
+    ],
+)

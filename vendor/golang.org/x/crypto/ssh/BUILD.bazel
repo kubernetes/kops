@@ -20,6 +20,10 @@ go_library(
         "mux.go",
         "server.go",
         "session.go",
+<<<<<<< HEAD
+=======
+        "ssh_gss.go",
+>>>>>>> vendor
         "streamlocal.go",
         "tcpip.go",
         "transport.go",

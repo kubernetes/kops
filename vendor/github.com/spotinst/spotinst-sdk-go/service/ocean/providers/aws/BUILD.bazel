@@ -5,7 +5,13 @@ go_library(
     srcs = [
         "instance.go",
         "launch_spec.go",
+<<<<<<< HEAD
         "ocean.go",
+=======
+        "launch_spec_ecs.go",
+        "ocean.go",
+        "ocean_ecs.go",
+>>>>>>> vendor
         "service.go",
         "tag.go",
     ],

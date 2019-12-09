@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "parser.go",
+    ],
+    importmap = "k8s.io/kops/vendor/k8s.io/helm/pkg/strvals",
+    importpath = "k8s.io/helm/pkg/strvals",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/ghodss/yaml:go_default_library"],
+)
