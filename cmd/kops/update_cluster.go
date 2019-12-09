@@ -243,8 +243,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			instanceGroups = append(instanceGroups, &list.Items[i])
 
 			// Try to guess the path for additional third party volume plugins in CoreOS and Flatcar
-			image := list.Items[i].Spec.Image
-			if strings.HasPrefix(image, "595879546273/CoreOS") || strings.HasPrefix(image, "075585003325/Flatcar") {
+			image := strings.ToLower(list.Items[i].Spec.Image)
+			if strings.Contains(image, "coreos") || strings.Contains(image, "flatcar") {
 				if cluster.Spec.Kubelet == nil {
 					cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
 				}
