@@ -201,30 +201,21 @@ spec:
         operator: Exists
       containers:
       - name: openstack-cloud-controller-manager
-        image: "{{- .ExternalCloudControllerManager.Image }}"
+        image: "docker.io/k8scloudprovider/openstack-cloud-controller-manager:1.13"
         args:
           - /bin/openstack-cloud-controller-manager
-{{- range $arg := CloudControllerConfigArgv }}
-          - {{ $arg }}
-{{- end }}
+          - --v=2
+          - --cloud-provider=openstack
+          - --cluster-name=k8s
+          - --use-service-account-credentials=true
           - --cloud-config=/etc/kubernetes/cloud.config
           - --address=127.0.0.1
         volumeMounts:
         - mountPath: /etc/kubernetes/cloud.config
           name: cloudconfig
           readOnly: true
-{{ if .UseHostCertificates }}
-        - mountPath: /etc/ssl/certs
-          name: etc-ssl-certs
-          readOnly: true
-{{ end }}
+
       volumes:
       - hostPath:
           path: /etc/kubernetes/cloud.config
         name: cloudconfig
-{{ if .UseHostCertificates }}
-      - hostPath:
-          path: /etc/ssl/certs
-          type: DirectoryOrCreate
-        name: etc-ssl-certs
-{{ end }}
