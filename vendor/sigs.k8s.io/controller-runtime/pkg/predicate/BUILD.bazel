@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "predicate.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/predicate",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/predicate",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/event:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/log:go_default_library",
+    ],
+)

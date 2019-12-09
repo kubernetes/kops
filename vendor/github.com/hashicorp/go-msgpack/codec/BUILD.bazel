@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "0doc.go",
+        "binc.go",
+        "decode.go",
+        "encode.go",
+        "helper.go",
+        "helper_internal.go",
+        "msgpack.go",
+        "rpc.go",
+        "simple.go",
+        "time.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/hashicorp/go-msgpack/codec",
+    importpath = "github.com/hashicorp/go-msgpack/codec",
+    visibility = ["//visibility:public"],
+)
