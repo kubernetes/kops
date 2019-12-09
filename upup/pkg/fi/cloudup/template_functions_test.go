@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/controller/nodeipam/ipam"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
@@ -174,7 +173,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
 				CloudProvider: string(kops.CloudProviderOpenstack),
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					CIDRAllocatorType: fi.String(string(ipam.RangeAllocatorType)),
+					CIDRAllocatorType: fi.String("RangeAllocator"),
 				},
 			}},
 			expectedArgv: []string{
