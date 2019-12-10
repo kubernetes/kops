@@ -819,6 +819,9 @@ spec:
               value: "true"
 
             # kops additions
+            # Set Felix iptables binary variant, Legacy or NFT
+            - name: FELIX_IPTABLESBACKEND
+              value: "{{- or .Networking.Calico.IptablesBackend "Legacy" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
               value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
