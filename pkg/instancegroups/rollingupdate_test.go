@@ -25,7 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -937,7 +937,6 @@ func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error from rolling update, got nil")
 	}
-
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{aws.String("node-1")},
 	})
@@ -945,5 +944,177 @@ func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
 		if len(group.Instances) != 1 {
 			t.Errorf("Expected one instance in group got %v", len(group.Instances))
 		}
+	}
+}
+
+type failThreeTimesClusterValidator struct {
+	invocationCount int
+}
+
+func (v *failThreeTimesClusterValidator) Validate() (*validation.ValidationCluster, error) {
+	v.invocationCount++
+	if v.invocationCount <= 3 {
+		return &validation.ValidationCluster{
+			Failures: []*validation.ValidationError{
+				{
+					Kind:    "testing",
+					Name:    "testingfailure",
+					Message: "testing failure",
+				},
+			},
+		}, nil
+	}
+	return &validation.ValidationCluster{}, nil
+}
+
+func TestRollingUpdateValidatesAfterBastion(t *testing.T) {
+	k8sClient := fake.NewSimpleClientset()
+
+	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
+
+	cluster := &kopsapi.Cluster{}
+	cluster.Name = "test.k8s.local"
+
+	c := &RollingUpdateCluster{
+		Cloud:                mockcloud,
+		MasterInterval:       1 * time.Millisecond,
+		NodeInterval:         1 * time.Millisecond,
+		BastionInterval:      1 * time.Millisecond,
+		Force:                false,
+		K8sClient:            k8sClient,
+		ClusterValidator:     &failThreeTimesClusterValidator{},
+		FailOnValidate:       true,
+		ValidationTimeout:    10 * time.Millisecond,
+		ValidateTickDuration: 1 * time.Millisecond,
+	}
+
+	cloud := c.Cloud.(awsup.AWSCloud)
+	setUpCloud(c)
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: v1meta.ObjectMeta{
+				Name: "node-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "node-1a",
+				Node: &v1.Node{},
+			},
+			{
+				ID:   "node-1b",
+				Node: &v1.Node{},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "node-1a",
+				Node: &v1.Node{},
+			},
+			{
+				ID:   "node-1b",
+				Node: &v1.Node{},
+			},
+		},
+	}
+
+	groups["node-2"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: v1meta.ObjectMeta{
+				Name: "node-2",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "node-2a",
+				Node: &v1.Node{},
+			},
+			{
+				ID:   "node-2b",
+				Node: &v1.Node{},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "node-2a",
+				Node: &v1.Node{},
+			},
+			{
+				ID:   "node-2b",
+				Node: &v1.Node{},
+			},
+		},
+	}
+
+	groups["master-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: v1meta.ObjectMeta{
+				Name: "master-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleMaster,
+			},
+		},
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "master-1a",
+				Node: &v1.Node{},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "master-1a",
+				Node: &v1.Node{},
+			},
+		},
+	}
+
+	groups["bastion-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: v1meta.ObjectMeta{
+				Name: "bastion-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleBastion,
+			},
+		},
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "bastion-1a",
+				Node: &v1.Node{},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID:   "bastion-1a",
+				Node: &v1.Node{},
+			},
+		},
+	}
+
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	assertGroupInstanceCount(t, cloud, "node-2", 0)
+	assertGroupInstanceCount(t, cloud, "master-1", 0)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+}
+
+func assertGroupInstanceCount(t *testing.T, cloud awsup.AWSCloud, groupName string, expected int) {
+	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{aws.String(groupName)},
+	})
+	for _, group := range asgGroups.AutoScalingGroups {
+		assert.Lenf(t, group.Instances, expected, "%s instances", groupName)
 	}
 }

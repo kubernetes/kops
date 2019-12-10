@@ -189,11 +189,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		klog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
 		time.Sleep(sleepAfterTerminate)
 
-		if isBastion {
-			klog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", instanceId)
-
-			continue
-		} else if rollingUpdateData.CloudOnly {
+		if rollingUpdateData.CloudOnly {
 			klog.Warningf("Not validating cluster as cloudonly flag is set.")
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
