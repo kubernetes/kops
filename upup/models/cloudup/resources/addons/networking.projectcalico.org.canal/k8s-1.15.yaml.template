@@ -721,6 +721,9 @@ spec:
                 configMapKeyRef:
                   name: canal-config
                   key: veth_mtu
+            # Set Felix iptables binary variant, Legacy or NFT
+            - name: FELIX_IPTABLESBACKEND
+              value: "{{- or .Networking.Canal.IptablesBackend "Legacy" }}"
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
