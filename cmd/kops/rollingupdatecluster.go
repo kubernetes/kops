@@ -414,7 +414,8 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
 		// TODO should we expose this to the UI?
-		ValidateTickDuration: 30 * time.Second,
+		ValidateTickDuration:    30 * time.Second,
+		ValidateSuccessDuration: 10 * time.Second,
 	}
 	return d.RollingUpdate(groups, cluster, list)
 }
