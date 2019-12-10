@@ -413,6 +413,8 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		ClusterName:       options.ClusterName,
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
+		// TODO should we expose this to the UI?
+		ValidateTickDuration: 30 * time.Second,
 	}
 	return d.RollingUpdate(groups, cluster, list)
 }
