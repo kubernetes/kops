@@ -48,20 +48,6 @@ func newState(self mesh.PeerName) *state {
 	}
 }
 
-func (s *state) get(key string) []byte {
-	s.mtx.RLock()
-	defer s.mtx.RUnlock()
-
-	v, found := s.data.Records[key]
-	if !found {
-		return nil
-	}
-	if v.Tombstone {
-		return nil
-	}
-	return v.Data
-}
-
 func (s *state) now() uint64 {
 	// TODO: This relies on NTP.  We could have a g-counter or something, but this is probably good enough for V1
 	// It's good enough for weave :-)
@@ -91,25 +77,6 @@ func (s *state) snapshot() *gossip.GossipStateSnapshot {
 	}
 	s.lastSnapshot = snapshot
 	return snapshot
-}
-
-func (s *state) put(key string, data []byte) {
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
-
-	now := s.now()
-
-	v := &KVStateRecord{
-		Data:    data,
-		Version: now,
-	}
-
-	if s.data.Records == nil {
-		s.data.Records = make(map[string]*KVStateRecord)
-	}
-
-	s.data.Records[key] = v
-	s.version++
 }
 
 func (s *state) updateValues(removeKeys []string, putEntries map[string]string) {

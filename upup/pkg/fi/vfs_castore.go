@@ -18,8 +18,6 @@ package fi
 
 import (
 	"bytes"
-	crypto_rand "crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
@@ -147,57 +145,6 @@ func BuildCAX509Template() *x509.Certificate {
 		IsCA:                  true,
 	}
 	return template
-}
-
-// Creates and stores CA keypair
-// Should be called with the mutex held, to prevent concurrent creation of different keys
-func (c *VFSCAStore) generateCACertificate(name string) (*keyset, *keyset, error) {
-	template := BuildCAX509Template()
-
-	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
-	}
-
-	caPrivateKey := &pki.PrivateKey{Key: caRsaKey}
-
-	caCertificate, err := pki.SignNewCertificate(caPrivateKey, template, nil, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	serial := c.SerialGenerator().String()
-
-	err = c.storePrivateKey(name, &keysetItem{id: serial, privateKey: caPrivateKey})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Make double-sure it round-trips
-	privateKeys, err := c.loadPrivateKeys(c.buildPrivateKeyPoolPath(name), true)
-	if err != nil {
-		return nil, nil, err
-	}
-	if privateKeys == nil || privateKeys.primary == nil || privateKeys.primary.id != serial {
-		return nil, nil, fmt.Errorf("failed to round-trip CA private key")
-	}
-
-	err = c.storeCertificate(name, &keysetItem{id: serial, certificate: caCertificate})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Make double-sure it round-trips
-	certificates, err := c.loadCertificates(c.buildCertificatePoolPath(name), true)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if certificates == nil || certificates.primary == nil || certificates.primary.id != serial {
-		return nil, nil, fmt.Errorf("failed to round-trip CA certifiacate")
-	}
-
-	return certificates, privateKeys, nil
 }
 
 func (c *VFSCAStore) buildCertificatePoolPath(name string) vfs.Path {
@@ -1141,21 +1088,6 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, erro
 	}
 
 	return items, nil
-}
-
-func (c *VFSCAStore) loadData(p vfs.Path) (*pki.PrivateKey, error) {
-	data, err := p.ReadFile()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	k, err := pki.ParsePEMPrivateKey(data)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing private key from %q: %v", p, err)
-	}
-	return k, err
 }
 
 // DeleteKeysetItem implements CAStore::DeleteKeysetItem
