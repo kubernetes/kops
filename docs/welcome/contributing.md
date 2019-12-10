@@ -2,7 +2,7 @@
 
 Are you interested in contributing to kops? We, the maintainers and community,
 would love your suggestions, contributions, and help! We have a quick-start
-guide on [adding a feature](/docs/development/adding_a_feature.md). Also, the
+guide on [adding a feature](../development/adding_a_feature.md). Also, the
 maintainers can be contacted at any time to learn more about how to get
 involved.
 
@@ -19,17 +19,18 @@ that the only people who can get things done around here are the "maintainers".
 We also would love to add more "official" maintainers, so show us what you can
 do!
 
-
 What this means:
 
 __Issues__
-* Help read and triage issues, assist when possible.
-* Point out issues that are duplicates, out of date, etc.
+
+- Help read and triage issues, assist when possible.
+- Point out issues that are duplicates, out of date, etc.
   - Even if you don't have tagging permissions, make a note and tag maintainers (`/close`,`/dupe #127`).
 
 __Pull Requests__
-* Read and review the code. Leave comments, questions, and critiques (`/lgtm` ).
-* Download, compile, and run the code and make sure the tests pass (make test).
+
+- Read and review the code. Leave comments, questions, and critiques (`/lgtm` ).
+- Download, compile, and run the code and make sure the tests pass (make test).
   - Also verify that the new feature seems sane, follows best architectural patterns, and includes tests.
 
 This repository uses the Kubernetes bots.  See a full list of the commands [here](
