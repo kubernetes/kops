@@ -11,10 +11,6 @@ go_library(
         "eventlog.go",
         "exec_windows.go",
         "memory_windows.go",
-<<<<<<< HEAD
-=======
-        "mkerrors.go",
->>>>>>> vendor
         "mksyscall.go",
         "race.go",
         "race0.go",
@@ -26,10 +22,6 @@ go_library(
         "types_windows.go",
         "types_windows_386.go",
         "types_windows_amd64.go",
-<<<<<<< HEAD
-=======
-        "zerrors_windows.go",
->>>>>>> vendor
         "zsyscall_windows.go",
     ],
     importmap = "k8s.io/kops/vendor/golang.org/x/sys/windows",

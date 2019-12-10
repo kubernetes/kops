@@ -4,10 +4,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "block.go",
-<<<<<<< HEAD
-=======
-        "doc.go",
->>>>>>> vendor
         "html.go",
         "inline.go",
         "latex.go",
@@ -17,8 +13,5 @@ go_library(
     importmap = "k8s.io/kops/vendor/github.com/russross/blackfriday",
     importpath = "github.com/russross/blackfriday",
     visibility = ["//visibility:public"],
-<<<<<<< HEAD
     deps = ["//vendor/github.com/shurcooL/sanitized_anchor_name:go_default_library"],
-=======
->>>>>>> vendor
 )

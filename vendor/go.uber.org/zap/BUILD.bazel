@@ -15,10 +15,6 @@ go_library(
         "level.go",
         "logger.go",
         "options.go",
-<<<<<<< HEAD
-=======
-        "sink.go",
->>>>>>> vendor
         "stacktrace.go",
         "sugar.go",
         "time.go",
