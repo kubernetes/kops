@@ -61,6 +61,9 @@ type RollingUpdateCluster struct {
 
 	// ValidationTimeout is the maximum time to wait for the cluster to validate, once we start validation
 	ValidationTimeout time.Duration
+
+	// ValidateTickDuration is the amount of time to wait between cluster validation attempts
+	ValidateTickDuration time.Duration
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
