@@ -25,7 +25,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/stretchr/testify/assert"
-
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -498,6 +497,41 @@ func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
 	assert.Error(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
+}
+
+type failThreeTimesClusterValidator struct {
+	invocationCount int
+}
+
+func (v *failThreeTimesClusterValidator) Validate() (*validation.ValidationCluster, error) {
+	v.invocationCount++
+	if v.invocationCount <= 3 {
+		return &validation.ValidationCluster{
+			Failures: []*validation.ValidationError{
+				{
+					Kind:    "testing",
+					Name:    "testingfailure",
+					Message: "testing failure",
+				},
+			},
+		}, nil
+	}
+	return &validation.ValidationCluster{}, nil
+}
+
+func TestRollingUpdateValidatesAfterBastion(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	c.ValidationTimeout = 10 * time.Millisecond
+	c.ClusterValidator = &failThreeTimesClusterValidator{}
+
+	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	assertGroupInstanceCount(t, cloud, "node-2", 0)
+	assertGroupInstanceCount(t, cloud, "master-1", 0)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
 }
 
 func assertGroupInstanceCount(t *testing.T, cloud awsup.AWSCloud, groupName string, expected int) {
