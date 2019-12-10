@@ -18,8 +18,6 @@ package fi
 
 import (
 	"bytes"
-	crypto_rand "crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
 	"math/big"
@@ -95,29 +93,6 @@ func (c *ClientsetCAStore) readCAKeypairs(id string) (*keyset, error) {
 	}
 	c.cachedCaKeysets[id] = keyset
 	return keyset, nil
-}
-
-// generateCACertificate creates and stores a CA keypair
-// Should be called with the mutex held, to prevent concurrent creation of different keys
-func (c *ClientsetCAStore) generateCACertificate(id string) (*keyset, error) {
-	template := BuildCAX509Template()
-
-	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
-	if err != nil {
-		return nil, fmt.Errorf("error generating RSA private key: %v", err)
-	}
-
-	caPrivateKey := &pki.PrivateKey{Key: caRsaKey}
-
-	t := time.Now().UnixNano()
-	template.SerialNumber = pki.BuildPKISerial(t)
-
-	caCertificate, err := pki.SignNewCertificate(caPrivateKey, template, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return c.storeAndVerifyKeypair(id, caCertificate, caPrivateKey)
 }
 
 // keyset is a parsed Keyset

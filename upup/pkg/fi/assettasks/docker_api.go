@@ -17,7 +17,6 @@ limitations under the License.
 package assettasks
 
 import (
-	"bufio"
 	"fmt"
 
 	"github.com/docker/engine-api/client"
@@ -77,62 +76,6 @@ func (d *dockerAPI) findImage(name string) (*types.Image, error) {
 		}
 	}
 	return nil, nil
-}
-
-// pullImage does `docker pull`, via the API.
-// Because it is non-trivial to get credentials, we tend to use the CLI
-func (d *dockerAPI) pullImage(name string) error {
-	klog.V(4).Infof("docker pull for image %q", name)
-	ctx := context.Background()
-	pullOptions := types.ImagePullOptions{}
-	resp, err := d.client.ImagePull(ctx, name, pullOptions)
-	if resp != nil {
-		defer resp.Close()
-	}
-	if err != nil {
-		return fmt.Errorf("error pulling image %q: %v", name, err)
-	}
-
-	scanner := bufio.NewScanner(resp)
-	for scanner.Scan() {
-		// {"status":"Already exists","progressDetail":{},"id":"a3ed95caeb02"}
-
-		// {"status":"Status: Image is up to date for k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.0.0"}
-		klog.Infof("docker pull %s", scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error pulling image %q: %v", name, err)
-	}
-
-	return nil
-}
-
-// pushImage does `docker push`, via the API.
-// Because it is non-trivial to get credentials, we tend to use the CLI
-func (d *dockerAPI) pushImage(name string) error {
-	klog.V(4).Infof("docker push for image %q", name)
-
-	ctx := context.Background()
-	options := types.ImagePushOptions{}
-	resp, err := d.client.ImagePush(ctx, name, options)
-	if resp != nil {
-		defer resp.Close()
-	}
-	if err != nil {
-		return fmt.Errorf("error pushing image %q: %v", name, err)
-	}
-
-	scanner := bufio.NewScanner(resp)
-	for scanner.Scan() {
-		klog.Infof("docker pushing %s", scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error pushing image %q: %v", name, err)
-	}
-
-	return nil
 }
 
 // tagImage does a `docker tag`, via the API

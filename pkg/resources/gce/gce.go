@@ -24,7 +24,6 @@ import (
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
-	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -818,78 +817,4 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
 	//		Obj:     zone,
 	//	},
 	//}, nil
-}
-
-func (d *clusterDiscoveryGCE) findDNSZone() (dnsprovider.Zone, error) {
-	dnsProvider, err := d.cloud.DNS()
-	if err != nil {
-		return nil, fmt.Errorf("Error getting dnsprovider: %v", err)
-	}
-
-	zonesLister, supported := dnsProvider.Zones()
-	if !supported {
-		return nil, fmt.Errorf("DNS provier does not support listing zones: %v", err)
-	}
-
-	allZones, err := zonesLister.List()
-	if err != nil {
-		return nil, fmt.Errorf("Error listing dns zones: %v", err)
-	}
-
-	for _, zone := range allZones {
-		if strings.Contains(d.clusterName, strings.TrimSuffix(zone.Name(), ".")) {
-			return zone, nil
-		}
-	}
-
-	return nil, fmt.Errorf("DNS Zone for cluster %s could not be found", d.clusterName)
-}
-
-func (d *clusterDiscoveryGCE) deleteDNSZone(cloud fi.Cloud, r *resources.Resource) error {
-	clusterZone := r.Obj.(dnsprovider.Zone)
-
-	rrs, supported := clusterZone.ResourceRecordSets()
-	if !supported {
-		return fmt.Errorf("ResourceRecordSets not supported with clouddns")
-	}
-	records, err := rrs.List()
-	if err != nil {
-		return fmt.Errorf("Failed to list resource records")
-	}
-
-	changeset := rrs.StartChangeset()
-	for _, record := range records {
-		if record.Type() != "A" {
-			continue
-		}
-
-		name := record.Name()
-		name = "." + strings.TrimSuffix(name, ".")
-		prefix := strings.TrimSuffix(name, "."+d.clusterName)
-
-		remove := false
-		// TODO: Compute the actual set of names?
-		if prefix == ".api" || prefix == ".api.internal" {
-			remove = true
-		} else if strings.HasPrefix(prefix, ".etcd-") {
-			remove = true
-		}
-
-		if !remove {
-			continue
-		}
-
-		changeset.Remove(record)
-	}
-
-	if changeset.IsEmpty() {
-		return nil
-	}
-
-	err = changeset.Apply()
-	if err != nil {
-		return fmt.Errorf("Error deleting cloud dns records: %v", err)
-	}
-
-	return nil
 }
