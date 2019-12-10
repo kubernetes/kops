@@ -1137,6 +1137,7 @@ func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	out.MajorVersion = in.MajorVersion
+	out.IptablesBackend = in.IptablesBackend
 	out.IPIPMode = in.IPIPMode
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
@@ -1158,6 +1159,7 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	out.MajorVersion = in.MajorVersion
+	out.IptablesBackend = in.IptablesBackend
 	out.IPIPMode = in.IPIPMode
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
@@ -1174,6 +1176,7 @@ func autoConvert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *Ca
 	out.ChainInsertMode = in.ChainInsertMode
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
@@ -1195,6 +1198,7 @@ func autoConvert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in *ko
 	out.ChainInsertMode = in.ChainInsertMode
 	out.DefaultEndpointToHostAction = in.DefaultEndpointToHostAction
 	out.DisableFlannelForwardRules = in.DisableFlannelForwardRules
+	out.IptablesBackend = in.IptablesBackend
 	out.LogSeveritySys = in.LogSeveritySys
 	out.MTU = in.MTU
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
