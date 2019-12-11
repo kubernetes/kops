@@ -53,6 +53,7 @@ kops delete cluster my-cluster.example.com --yes
 ## Features Still in Development
 
 kops for DigitalOcean currently does not support these features:
+
 * multi master kubernetes clusters
 * rolling update for instance groups
 * multi-region clusters

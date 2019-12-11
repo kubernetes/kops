@@ -61,6 +61,7 @@ kops delete cluster my-cluster.k8s.local --yes
 ```
 
 #### Optional flags
+
 * `--os-kubelet-ignore-az=true` Nova and Cinder have different availability zones, more information [Kubernetes docs](https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/#block-storage)
 * `--os-octavia=true` If Octavia Loadbalancer api should be used instead of old lbaas v2 api.
 * `--os-dns-servers=8.8.8.8,8.8.4.4` You can define dns servers to be used in your cluster if your openstack setup does not have working dnssetup by default

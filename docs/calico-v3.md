@@ -5,6 +5,7 @@ the requirements, upgrade process, and configuration to install
 Calico Version 3.
 
 ## Requirements
+
 - The main requirement needed for Calico Version 3 is the etcd v3 API available
   with etcd server version 3.
 - Another requirement is for the Kubernetes version to be a minimum of v1.7.0.
@@ -18,6 +19,7 @@ to remain on Calico V2 or update to etcdv3.
 ## Configuration of a new cluster
 To ensure a new cluster will have Calico Version 3 installed the following
 two configurations options should be set:
+
 - `spec.etcdClusters.etcdMembers[0].Version` (Main cluster) should be
   set to a Version of etcd greater than 3.x or the default version
   needs to be greater than 3.x.
@@ -46,6 +48,7 @@ Assuming your cluster meets the requirements it is possible to upgrade
 your Calico Kops cluster.
 
 A few notes about the upgrade:
+
 - During the first portion of the migration, while the calico-kube-controllers
   pod is running its Init, no new policies will be applied though already
   applied policy will be active.
