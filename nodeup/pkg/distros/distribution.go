@@ -90,7 +90,7 @@ func (d Distribution) IsDebianFamily() bool {
 		return true
 	case DistributionCentos7, DistributionRhel7:
 		return false
-	case DistributionCoreOS, DistributionContainerOS:
+	case DistributionCoreOS, DistributionFlatcar, DistributionContainerOS:
 		return false
 	default:
 		klog.Fatalf("unknown distribution: %s", d)
