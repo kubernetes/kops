@@ -181,7 +181,7 @@ spec:
         operator: Exists
       containers:
       - name: openstack-cloud-controller-manager
-        image: "{{- if .ExternalCloudControllerManager.Image -}} {{ .ExternalCloudControllerManager.Image }} {{- else -}} {{OpenStackCCM}} {{- end -}}"
+        image: "{{ .ExternalCloudControllerManager.Image }}"
         args:
           - /bin/openstack-cloud-controller-manager
 {{- range $arg := CloudControllerConfigArgv }}
@@ -196,18 +196,8 @@ spec:
         - mountPath: /etc/kubernetes/cloud.config
           name: cloudconfig
           readOnly: true
-{{ if .UseHostCertificates }}
-        - mountPath: /etc/ssl/certs
-          name: etc-ssl-certs
-          readOnly: true
-{{ end }}
+
       volumes:
       - hostPath:
           path: /etc/kubernetes/cloud.config
         name: cloudconfig
-{{ if .UseHostCertificates }}
-      - hostPath:
-          path: /etc/ssl/certs
-          type: DirectoryOrCreate
-        name: etc-ssl-certs
-{{ end }}

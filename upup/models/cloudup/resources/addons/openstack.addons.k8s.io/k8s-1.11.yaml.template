@@ -201,7 +201,7 @@ spec:
         operator: Exists
       containers:
       - name: openstack-cloud-controller-manager
-        image: "{{- .ExternalCloudControllerManager.Image }}"
+        image: "{{ .ExternalCloudControllerManager.Image }}"
         args:
           - /bin/openstack-cloud-controller-manager
 {{- range $arg := CloudControllerConfigArgv }}
@@ -213,6 +213,7 @@ spec:
         - mountPath: /etc/kubernetes/cloud.config
           name: cloudconfig
           readOnly: true
+
       volumes:
       - hostPath:
           path: /etc/kubernetes/cloud.config
