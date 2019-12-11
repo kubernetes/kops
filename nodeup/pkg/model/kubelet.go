@@ -580,6 +580,10 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			// The /usr directory is read-only for CoreOS
 			c.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
 
+		case distros.DistributionFlatcar:
+			// The /usr directory is read-only for Flatcar
+			c.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
+
 		default:
 			c.VolumePluginDirectory = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 		}
