@@ -3,7 +3,7 @@
 This document describes how to go from a single-master cluster (created by kops)
 to a multi-master cluster. If you are using etcd-manager you just need to perform some steps of the migration.  
 
-# etcd-manager 
+# etcd-manager
 
 If you are using etcd-manager, just perform the steps in this section. Etcd-manager is default for kops 1.12. Etcd-manager makes the upgrade to multi-master much smoother. 
 
@@ -16,12 +16,12 @@ The list references steps of the next section. To upgrade from a single master t
   - add the masters to your etcd cluster definition (both in section named main and events)
 - Skip Step 3 and 4
 - Now you are ready to update the AWS configuration:
-  - `kops update cluster your-cluster-name` 
+  - `kops update cluster your-cluster-name`
 - AWS will launch two new masters, they will be discovered and then configured by etcd-manager
 - check with `kubectl get nodes` to see everything is ready
 - Cleanup (Step 5) to do a rolling restart of all masters (just in case)
 
-# Etcd without etcd-manager 
+# Etcd without etcd-manager
 
 ## 0 - Warnings
 

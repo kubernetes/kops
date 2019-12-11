@@ -98,6 +98,7 @@ means we don't need to manage etcd directly.  We just try to make sure that some
 each volume mounted with etcd running and DNS set correctly.  That is the job of protokube.
 
 Protokube:
+
 * discovers EBS volumes that hold etcd data (using tags)
 * tries to safe_format_and_mount them
 * if successful in mounting the volume, it will write a manifest for etcd into /etc/kubernetes/manifests

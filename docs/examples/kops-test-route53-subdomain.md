@@ -787,6 +787,7 @@ Your cluster mycluster01.kopsclustertest.example.org is ready
 You can see how your cluster scaled up to 3 nodes.
 
 **SCALING RECOMMENDATIONS:**
+
 - Always think ahead. If you want to ensure to have the capability to scale-up to all available zones in the region, ensure to add them to the "--zones=" argument when using the "kops create cluster" command. Example: --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1e. That will make things simpler later.
 - For the masters, always consider "odd" numbers starting from 3. Like many other cluster, odd numbers starting from "3" are the proper way to create a fully redundant multi-master solution. In the specific case of "kops", you add masters by adding zones to the "--master-zones" argument on "kops create command".
 

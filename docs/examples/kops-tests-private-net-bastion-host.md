@@ -136,6 +136,7 @@ kops create instancegroup bastions --role Bastion --subnet utility-us-east-1a --
 ```
 
 **Explanation of this command:**
+
 - This command will add to our cluster definition a new instance group called "bastions" with the "Bastion" role on the aws subnet "utility-us-east-1a". Note that the "Bastion" role need the first letter to be a capital (Bastion=ok, bastion=not ok).
 - The subnet "utility-us-east-1a" was created when we created our cluster the first time. KOPS add the "utility-" prefix to all subnets created on all specified AZ's. In other words, if we instructed kops to deploy our instances on us-east-1a, use-east-1b and use-east-1c, kops will create the subnets "utility-us-east-1a", "utility-us-east-1b" and "utility-us-east-1c". Because we need to tell kops where to deploy our bastion (or bastions), we need to specify the subnet.
 
@@ -307,7 +308,7 @@ ip-172-20-74-55.ec2.internal    master  True
 Your cluster privatekopscluster.k8s.local is ready
 ```
 
-## MAKING THE BASTION LAYER "HIGHLY AVAILABLE".
+## MAKING THE BASTION LAYER "HIGHLY AVAILABLE"
 
 If for any reason any "legendary monster from the comics" decides to destroy the amazon AZ that contains our bastion, we'll basically be unable to enter to our instances. Let's add some H.A. to our bastion layer and force amazon to deploy additional bastion instances on other availability zones.
 
