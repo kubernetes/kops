@@ -11,6 +11,7 @@ The field in the clusterSpec, `.NonMasqueradeCIDR`, captures the IP
 range of the cluster.
 
 Within this IP range, smaller IP ranges are then carved out for:
+
 * Service IPs - as defined as `.serviceClusterIPRange`
 * Pod IPs - as defined as `.kubeControllerManager.clusterCIDR`
 

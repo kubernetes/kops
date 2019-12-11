@@ -41,6 +41,3 @@ kubectl delete pods -lk8s-app=kube-dns --namespace=kube-system
 kubectl delete pods -lk8s-app=kube-dns-autoscaler --namespace=kube-system
 pkill -f kube-controller-manager
 ```
-
-
-

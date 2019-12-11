@@ -206,7 +206,7 @@ Please note:
 * kops won't create a route-table at all if we're not creating subnets.
 * In the example above the first subnet is using a shared NAT Gateway while the
   second one is using a shared NAT Instance
-  
+
 ### Externally Managed Egress
 
 If you are using an unsupported egress configuration in your VPC, _kops_ can be told to ignore egress by using a configuration like:

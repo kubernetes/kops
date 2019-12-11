@@ -25,13 +25,13 @@ __Issues__
 
 - Help read and triage issues, assist when possible.
 - Point out issues that are duplicates, out of date, etc.
-  - Even if you don't have tagging permissions, make a note and tag maintainers (`/close`,`/dupe #127`).
+    - Even if you don't have tagging permissions, make a note and tag maintainers (`/close`,`/dupe #127`).
 
 __Pull Requests__
 
 - Read and review the code. Leave comments, questions, and critiques (`/lgtm` ).
 - Download, compile, and run the code and make sure the tests pass (make test).
-  - Also verify that the new feature seems sane, follows best architectural patterns, and includes tests.
+    - Also verify that the new feature seems sane, follows best architectural patterns, and includes tests.
 
 This repository uses the Kubernetes bots.  See a full list of the commands [here](
 https://go.k8s.io/bot-commands).
