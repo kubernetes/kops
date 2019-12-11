@@ -14,8 +14,8 @@ P2: Rarely occurring issues and features that will bring vSphere support closer 
 
 **Notes:**
 
-*   Effort estimation includes fix for an issue or implementation for a feature, testing and generating a PR.
-*   There are a few issues that are related to startup and base image. If we can resolve "Use PhotonOS for vSphere node template" issue first and replace init-cloud with guestinfo, those issues **might** get resolved automatically. But further investigation is needed and fixed issues will need verifications and testings.
+* Effort estimation includes fix for an issue or implementation for a feature, testing and generating a PR.
+* There are a few issues that are related to startup and base image. If we can resolve "Use PhotonOS for vSphere node template" issue first and replace init-cloud with guestinfo, those issues **might** get resolved automatically. But further investigation is needed and fixed issues will need verifications and testings.
 
 |Priority|Task|Type (bug, feature, test|Effort estimate(in days)|Remarks|
 |--- |--- |--- |--- |--- |
@@ -47,10 +47,10 @@ List of all kops commands and how they behave for vSphere cloud provider, as of 
 
 # Column explanation
 
-*   Command, option and usage example are self-explanatory.
-*   vSphere support: whether or not the command is supported for vSphere cloud provider (Yes/No), followed by current status of that command and explanation of any failures.
-*   Graceful termination needed: If the command will not supported, does it need additional code to fail gracefully for vSphere provider?
-*   Remark: Miscellaneous comments about the command.
+* Command, option and usage example are self-explanatory.
+* vSphere support: whether or not the command is supported for vSphere cloud provider (Yes/No), followed by current status of that command and explanation of any failures.
+* Graceful termination needed: If the command will not supported, does it need additional code to fail gracefully for vSphere provider?
+* Remark: Miscellaneous comments about the command.
 
 |Command|Option|Usage example|vSphere support|Graceful termination needed (if not fixed)|Remark|
 |--- |--- |--- |--- |--- |--- |

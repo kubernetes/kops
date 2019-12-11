@@ -55,6 +55,7 @@ test-infra/jobs/ci-kubernetes-e2e-kops-aws.sh |& tee /tmp/testlog
 ```
 
 This:
+
 * Brings up a cluster using the latest `kops` build from `master` (see below for how to use your current build)
 * Runs the default series of tests (which the Kubernetes team is [also
 running here](https://k8s-testgrid.appspot.com/google-aws#kops-aws)) (see below for how to override the test list)

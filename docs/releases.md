@@ -15,10 +15,10 @@
 
 #### 3. Release kops to github
 
-*  Darwin binary (generated)
-*  Linux binary (generated)
-*  Source code (zip)
-*  Source code (tar.gz)
+* Darwin binary (generated)
+* Linux binary (generated)
+* Source code (zip)
+* Source code (tar.gz)
 
 #### 4. Release kops to homebrew
 

@@ -9,6 +9,7 @@ Each component (kubelet, kube-apiserver...) is explicitly configured: We reuse t
 where we can, and we create additional types for the configuration of additional components.
 
 kops can:
+
 * create a cluster
 * upgrade a cluster
 * reconfigure the components
@@ -32,7 +33,7 @@ There are two primary types:
 
 ## State Store
 
-The API objects are currently stored in an abstraction called a "state store".  [state.md](/docs/state.md) has more detail.
+The API objects are currently stored in an abstraction called a ["state store"](/state.md) has more detail.
 
 ## Configuration inference
 

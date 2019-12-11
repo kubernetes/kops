@@ -8,6 +8,7 @@ By default Kops creates two IAM roles for the cluster: one for the masters, and 
 Work has been done on scoping permissions to the minimum required for a functional Kubernetes Cluster, resulting in a fully revised set of IAM policies for both master & compute nodes.
 
 An example of the new IAM policies can be found here:
+
 - Master Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict.json
 - Compute Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict.json
 

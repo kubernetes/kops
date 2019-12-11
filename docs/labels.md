@@ -19,7 +19,7 @@ An example:
 
 ```
 ...
-spec: 
+spec:
   cloudLabels:
     team: me
     project: ion
@@ -30,7 +30,7 @@ spec:
 
 ```
 ...
-spec: 
+spec:
   cloudLabels:
     team: me
     project: ion
@@ -50,7 +50,7 @@ An example:
 
 ```
 ...
-spec: 
+spec:
   nodeLabels:
     spot: "false"
 ...

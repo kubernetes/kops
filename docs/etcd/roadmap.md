@@ -17,6 +17,7 @@ tooling into composable tooling that can be upgraded (or even used) separately.
 ## Limitations
 
 The current approach for managing etcd makes certain tasks hard:
+
 * upgrades/downgrades between etcd versions
 * resizing the cluster
 

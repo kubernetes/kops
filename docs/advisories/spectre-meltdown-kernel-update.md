@@ -94,6 +94,7 @@ running the updated image.
 `kops rolling-update cluster --name $CLUSTER --yes`
 
 ## Resources / Notes
+
 - https://aws.amazon.com/de/security/security-bulletins/AWS-2018-013/
 - https://security.googleblog.com/2018/01/todays-cpu-vulnerability-what-you-need.html
 - https://coreos.com/blog/container-linux-meltdown-patch

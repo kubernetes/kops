@@ -217,6 +217,7 @@ semver.  The channels tool keeps track of the current version installed (current
 of an annotation on the `kube-system` namespace).
 
 The channel tool updates the installed version when any of the following conditions apply.
+
 * The version declared in the addon manifest is greater then the currently installed version.
 * The version number's match, but the ids are different
 * The version number and ids match, but the hash of the addon's manifest has changed since it was installed.
