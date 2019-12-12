@@ -46,15 +46,16 @@ func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster) {
 	cluster.Name = "test.k8s.local"
 
 	c := &RollingUpdateCluster{
-		Cloud:                mockcloud,
-		MasterInterval:       1 * time.Millisecond,
-		NodeInterval:         1 * time.Millisecond,
-		BastionInterval:      1 * time.Millisecond,
-		Force:                false,
-		K8sClient:            k8sClient,
-		ClusterValidator:     &successfulClusterValidator{},
-		FailOnValidate:       true,
-		ValidateTickDuration: 1 * time.Millisecond,
+		Cloud:                   mockcloud,
+		MasterInterval:          1 * time.Millisecond,
+		NodeInterval:            1 * time.Millisecond,
+		BastionInterval:         1 * time.Millisecond,
+		Force:                   false,
+		K8sClient:               k8sClient,
+		ClusterValidator:        &successfulClusterValidator{},
+		FailOnValidate:          true,
+		ValidateTickDuration:    1 * time.Millisecond,
+		ValidateSuccessDuration: 5 * time.Millisecond,
 	}
 
 	return c, mockcloud, cluster
