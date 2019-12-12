@@ -49,6 +49,14 @@ metadata:
     k8s-addon: openstack.addons.k8s.io
 rules:
 - apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update
+- apiGroups:
   - ""
   resources:
   - events
@@ -115,6 +123,7 @@ rules:
   verbs:
   - list
   - get
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
