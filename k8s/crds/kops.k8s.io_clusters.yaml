@@ -2232,6 +2232,10 @@ spec:
                     ipipMode:
                       description: IPIPMode is mode for CALICO_IPV4POOL_IPIP
                       type: string
+                    iptablesBackend:
+                      description: 'IptablesBackend controls which variant of iptables
+                        binary Felix uses Default: Legacy (other options: NFT)'
+                      type: string
                     logSeverityScreen:
                       description: 'LogSeverityScreen lets us set the desired log
                         level. (Default: info)'
@@ -2297,6 +2301,10 @@ spec:
                         NOT add the default ACCEPT traffic rules to the iptables FORWARD
                         chain
                       type: boolean
+                    iptablesBackend:
+                      description: 'IptablesBackend controls which variant of iptables
+                        binary Felix uses Default: Legacy (other options: NFT)'
+                      type: string
                     logSeveritySys:
                       description: 'LogSeveritySys the severity to set for logs which
                         are sent to syslog Default: INFO (other options: DEBUG, WARNING,
@@ -2325,6 +2333,20 @@ spec:
                       description: PrometheusProcessMetricsEnabled enables Prometheus
                         process metrics collection
                       type: boolean
+                    typhaPrometheusMetricsEnabled:
+                      description: 'TyphaPrometheusMetricsEnabled enables Prometheus
+                        metrics collection from Typha (default: false)'
+                      type: boolean
+                    typhaPrometheusMetricsPort:
+                      description: 'TyphaPrometheusMetricsPort is the TCP port the
+                        typha Prometheus metrics server should bind to (default: 9093)'
+                      format: int32
+                      type: integer
+                    typhaReplicas:
+                      description: TyphaReplicas is the number of replicas of Typha
+                        to deploy
+                      format: int32
+                      type: integer
                   type: object
                 cilium:
                   description: CiliumNetworkingSpec declares that we want Cilium networking

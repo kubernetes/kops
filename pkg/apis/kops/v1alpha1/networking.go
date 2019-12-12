@@ -94,6 +94,9 @@ type CalicoNetworkingSpec struct {
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
 	// MajorVersion is the version of Calico to use
 	MajorVersion string `json:"majorVersion,omitempty"`
+	// IptablesBackend controls which variant of iptables binary Felix uses
+	// Default: Legacy (other options: NFT)
+	IptablesBackend string `json:"iptablesBackend,omitempty"`
 	// IPIPMode is mode for CALICO_IPV4POOL_IPIP
 	IPIPMode string `json:"ipipMode,omitempty"`
 	// TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha
@@ -119,6 +122,9 @@ type CanalNetworkingSpec struct {
 	// DisableFlannelForwardRules configures Flannel to NOT add the
 	// default ACCEPT traffic rules to the iptables FORWARD chain
 	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
+	// IptablesBackend controls which variant of iptables binary Felix uses
+	// Default: Legacy (other options: NFT)
+	IptablesBackend string `json:"iptablesBackend,omitempty"`
 	// LogSeveritySys the severity to set for logs which are sent to syslog
 	// Default: INFO (other options: DEBUG, WARNING, ERROR, CRITICAL, NONE)
 	LogSeveritySys string `json:"logSeveritySys,omitempty"`
@@ -134,6 +140,14 @@ type CanalNetworkingSpec struct {
 	PrometheusMetricsPort int32 `json:"prometheusMetricsPort,omitempty"`
 	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
+	// TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha
+	// (default: false)
+	TyphaPrometheusMetricsEnabled bool `json:"typhaPrometheusMetricsEnabled,omitempty"`
+	// TyphaPrometheusMetricsPort is the TCP port the typha Prometheus metrics server
+	// should bind to (default: 9093)
+	TyphaPrometheusMetricsPort int32 `json:"typhaPrometheusMetricsPort,omitempty"`
+	// TyphaReplicas is the number of replicas of Typha to deploy
+	TyphaReplicas int32 `json:"typhaReplicas,omitempty"`
 }
 
 // KuberouterNetworkingSpec declares that we want Kube-router networking
