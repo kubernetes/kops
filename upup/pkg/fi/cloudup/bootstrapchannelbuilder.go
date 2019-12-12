@@ -323,7 +323,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 		{
 			key := "coredns.addons.k8s.io"
-			version := "1.3.1-kops.5"
+			version := "1.4.0-kops.1"
 
 			{
 				location := key + "/k8s-1.14.yaml"
