@@ -22,8 +22,12 @@ data:
   # the pod network.
   masquerade: "true"
 
-  # MTU default is 1500, can be overridden
-  veth_mtu: "{{- or .Networking.Canal.MTU "1500" }}"
+  # Configure the MTU to use
+  {{- if .Networking.Canal.MTU }}
+  veth_mtu: "{{ .Networking.Canal.MTU }}"
+  {{- else }}
+  veth_mtu: "{{- if eq .CloudProvider "openstack" -}}1430{{- else -}}1440{{- end -}}"
+  {{- end }}
 
   # The CNI network configuration to install on each node.  The special
   # values in this config will be automatically populated.
@@ -36,8 +40,8 @@ data:
           "type": "calico",
           "log_level": "info",
           "datastore_type": "kubernetes",
-          "mtu": __CNI_MTU__,
           "nodename": "__KUBERNETES_NODE_NAME__",
+          "mtu": __CNI_MTU__,
           "ipam": {
               "type": "host-local",
               "subnet": "usePodCidr"
@@ -467,9 +471,9 @@ subjects:
   name: canal
   namespace: kube-system
 
+{{ if .Networking.Canal.TyphaReplicas -}}
 ---
-{{- if .Networking.Canal.TyphaReplicas }}
-
+# Source: calico/templates/calico-typha.yaml
 # This manifest creates a Service, which will be backed by Calico's Typha daemon.
 # Typha sits in between Felix and the API server, reducing Calico's load on the API server.
 
@@ -527,9 +531,8 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
       nodeSelector:
+        beta.kubernetes.io/os: linux
         kubernetes.io/role: master
-      # Since Calico can't network a pod until Typha is up, we need to run Typha itself
-      # as a host-networked pod.
       hostNetwork: true
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
@@ -537,6 +540,8 @@ spec:
           operator: Exists
         - key: "node-role.kubernetes.io/master"
           effect: NoSchedule
+      # Since Calico can't network a pod until Typha is up, we need to run Typha itself
+      # as a host-networked pod.
       serviceAccountName: canal
       priorityClassName: system-cluster-critical
       # fsGroup allows using projected serviceaccount tokens as described here kubernetes/kubernetes#82573
@@ -604,8 +609,8 @@ spec:
   selector:
     matchLabels:
       k8s-app: calico-typha
-
 {{- end }}
+
 ---
 # Source: calico/templates/calico-node.yaml
 # This manifest installs the canal container, as well
@@ -666,12 +671,6 @@ spec:
             # Name of the CNI config file to create.
             - name: CNI_CONF_NAME
               value: "10-canal.conflist"
-            # CNI MTU Config variable
-            - name: CNI_MTU
-              valueFrom:
-                configMapKeyRef:
-                  name: canal-config
-                  key: veth_mtu
             # The CNI network config to install on each node.
             - name: CNI_NETWORK_CONFIG
               valueFrom:
@@ -683,6 +682,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            # CNI MTU Config variable
+            - name: CNI_MTU
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: veth_mtu
             # Prevents the container from sleeping forever.
             - name: SLEEP
               value: "false"
@@ -732,13 +737,17 @@ spec:
               value: "none"
             # Cluster type to identify the deployment type
             - name: CLUSTER_TYPE
+              # was value: "k8s,bgp"
               value: "k8s,canal"
-            # Period, in seconds, at which felix re-applies all iptables state
-            - name: FELIX_IPTABLESREFRESHINTERVAL
-              value: "60"
             # No IP address needed.
             - name: IP
               value: ""
+            # Set MTU for tunnel device used if ipip is enabled
+            - name: FELIX_IPINIPMTU
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: veth_mtu
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -753,17 +762,17 @@ spec:
               value: "{{- or .Networking.Canal.LogSeveritySys "INFO" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
-            - name: FELIX_IPINIPMTU
-              valueFrom:
-                configMapKeyRef:
-                  name: canal-config
-                  key: veth_mtu
-            # Set Felix iptables binary variant, Legacy or NFT
-            - name: FELIX_IPTABLESBACKEND
-              value: "{{- or .Networking.Canal.IptablesBackend "Legacy" }}"
+
+            # kops additions
             # Controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom
             - name: FELIX_CHAININSERTMODE
               value: "{{- or .Networking.Canal.ChainInsertMode "insert" }}"
+            # Set Felix iptables binary variant, Legacy or NFT
+            - name: FELIX_IPTABLESBACKEND
+              value: "{{- or .Networking.Canal.IptablesBackend "Legacy" }}"
+            # Period, in seconds, at which felix re-applies all iptables state
+            - name: FELIX_IPTABLESREFRESHINTERVAL
+              value: "60"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
               value: "{{- or .Networking.Canal.PrometheusMetricsEnabled "false" }}"
