@@ -1,6 +1,6 @@
----
-# Pulled and modified from: https://docs.projectcalico.org/v3.9/manifests/calico-typha.yaml
+{{- /* Pulled and modified from: https://docs.projectcalico.org/v3.10/manifests/calico-typha.yaml */ -}}
 
+---
 # Source: calico/templates/calico-config.yaml
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -570,8 +570,9 @@ spec:
         beta.kubernetes.io/os: linux
       hostNetwork: true
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
+        # Mark the pod as a critical add-on for rescheduling.
+        - key: CriticalAddonsOnly
+          operator: Exists
       # Since Calico can't network a pod until Typha is up, we need to run Typha itself
       # as a host-networked pod.
       serviceAccountName: calico-node
@@ -723,12 +724,6 @@ spec:
             # Name of the CNI config file to create.
             - name: CNI_CONF_NAME
               value: "10-calico.conflist"
-            # CNI MTU Config variable
-            - name: CNI_MTU
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: veth_mtu
             # The CNI network config to install on each node.
             - name: CNI_NETWORK_CONFIG
               valueFrom:
@@ -740,6 +735,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            # CNI MTU Config variable
+            - name: CNI_MTU
+              valueFrom:
+                configMapKeyRef:
+                  name: calico-config
+                  key: veth_mtu
             # Prevents the container from sleeping forever.
             - name: SLEEP
               value: "false"
@@ -815,7 +816,7 @@ spec:
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Set Felix logging to the desired level
+            # Set Felix logging to "info"
             - name: FELIX_LOGSEVERITYSCREEN
               value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
             - name: FELIX_HEALTHENABLED

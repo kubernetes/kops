@@ -1,12 +1,6 @@
-# Canal Version v3.10.2
-# https://docs.projectcalico.org/v3.10/release-notes/#v3101
-# This manifest includes the following component versions:
-#   calico/cni:v3.10.2
-#   calico/node:v3.10.2
-#   calico/pod2daemon-flexvol:v3.10.2
-#   calico/typha:v3.10.2
-#   quay.io/coreos/flannel:v0.11.0
+{{- /* Pulled and modified from: https://docs.projectcalico.org/v3.10/manifests/canal.yaml */ -}}
 
+---
 # Source: calico/templates/calico-config.yaml
 # This ConfigMap is used to configure a self-hosted Canal installation.
 kind: ConfigMap
@@ -15,6 +9,7 @@ metadata:
   name: canal-config
   namespace: kube-system
 data:
+  # Typha is disabled.
   typha_service_name: "{{ if .Networking.Canal.TyphaReplicas }}calico-typha{{ else }}none{{ end }}"
   # The interface used by canal for host <-> host communication.
   # If left blank, then the interface is chosen using the node's
@@ -70,7 +65,6 @@ data:
     }
 
 ---
-
 # Source: calico/templates/kdd-crds.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -278,15 +272,15 @@ spec:
     kind: NetworkSet
     plural: networksets
     singular: networkset
-
 ---
+# Source: calico/templates/rbac.yaml
 
 # Include a clusterrole for the calico-node DaemonSet,
 # and bind it to the calico-node serviceaccount.
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: calico
+  name: calico-node
 rules:
   # The CNI plugin needs to get pods, nodes, and namespaces.
   - apiGroups: [""]
@@ -422,7 +416,6 @@ subjects:
   name: canal
   namespace: kube-system
 ---
-# Bind the Calico ClusterRole to the canal ServiceAccount.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -430,17 +423,9 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: calico
+  name: calico-node
 subjects:
 - kind: ServiceAccount
-  name: canal
-  namespace: kube-system
-
----
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
   name: canal
   namespace: kube-system
 
@@ -500,14 +485,11 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
-      tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
+      nodeSelector:
+        kubernetes.io/role: master
       # Since Calico can't network a pod until Typha is up, we need to run Typha itself
       # as a host-networked pod.
       hostNetwork: true
-      nodeSelector:
-        kubernetes.io/role: master
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
@@ -583,9 +565,9 @@ spec:
 
 {{- end }}
 ---
-
-# This manifest installs the calico/node container, as well
-# as the Calico CNI plugins and network config on
+# Source: calico/templates/calico-node.yaml
+# This manifest installs the canal container, as well
+# as the CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
 kind: DaemonSet
 apiVersion: apps/v1
@@ -613,7 +595,6 @@ spec:
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
-      priorityClassName: system-node-critical
       nodeSelector:
         beta.kubernetes.io/os: linux
       hostNetwork: true
@@ -630,8 +611,9 @@ spec:
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
+      priorityClassName: system-node-critical
       initContainers:
-        # This container installs the Calico CNI binaries
+        # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
           image: calico/cni:v3.10.2
@@ -673,7 +655,7 @@ spec:
           - name: flexvol-driver-host
             mountPath: /host/driver
       containers:
-        # Runs calico/node container on each Kubernetes node.  This
+        # Runs canal container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
@@ -716,6 +698,17 @@ spec:
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
+            # Set Felix endpoint to host default action to ACCEPT.
+            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
+              value: "{{- or .Networking.Canal.DefaultEndpointToHostAction "ACCEPT" }}"
+            # Disable IPv6 on Kubernetes.
+            - name: FELIX_IPV6SUPPORT
+              value: "false"
+            # Set Felix logging to "INFO"
+            - name: FELIX_LOGSEVERITYSCREEN
+              value: "{{- or .Networking.Canal.LogSeveritySys "INFO" }}"
+            - name: FELIX_HEALTHENABLED
+              value: "true"
             - name: FELIX_IPINIPMTU
               valueFrom:
                 configMapKeyRef:
@@ -724,15 +717,6 @@ spec:
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
               value: "{{- or .Networking.Canal.IptablesBackend "Legacy" }}"
-            # Disable IPv6 on Kubernetes.
-            - name: FELIX_IPV6SUPPORT
-              value: "false"
-            # Set Felix logging to "INFO"
-            - name: FELIX_LOGSEVERITYSCREEN
-              value: "{{- or .Networking.Canal.LogSeveritySys "INFO" }}"
-            # Set Felix endpoint to host default action to ACCEPT.
-            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
-              value: "{{- or .Networking.Canal.DefaultEndpointToHostAction "ACCEPT" }}"
             # Controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom
             - name: FELIX_CHAININSERTMODE
               value: "{{- or .Networking.Canal.ChainInsertMode "insert" }}"
@@ -748,8 +732,6 @@ spec:
             # Enable Prometheus process metrics collection
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
               value: "{{- or .Networking.Canal.PrometheusProcessMetricsEnabled "true" }}"
-            - name: FELIX_HEALTHENABLED
-              value: "true"
           securityContext:
             privileged: true
           resources:
@@ -856,3 +838,10 @@ spec:
           hostPath:
             type: DirectoryOrCreate
             path: "{{- or .Kubelet.VolumePluginDirectory "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/" }}nodeagent~uds"
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: canal
+  namespace: kube-system
