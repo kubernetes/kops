@@ -324,48 +324,72 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-ha-gce-exa
   name               = "a-master-us-test1-a-ha-gce-example-com"
   zone               = "us-test1-a"
   base_instance_name = "master-us-test1-a"
-  instance_template  = "${google_compute_instance_template.master-us-test1-a-ha-gce-example-com.self_link}"
-  target_size        = 1
+
+  version = {
+    instance_template = "${google_compute_instance_template.master-us-test1-a-ha-gce-example-com.self_link}"
+  }
+
+  target_size = 1
 }
 
 resource "google_compute_instance_group_manager" "a-nodes-ha-gce-example-com" {
   name               = "a-nodes-ha-gce-example-com"
   zone               = "us-test1-a"
   base_instance_name = "nodes"
-  instance_template  = "${google_compute_instance_template.nodes-ha-gce-example-com.self_link}"
-  target_size        = 1
+
+  version = {
+    instance_template = "${google_compute_instance_template.nodes-ha-gce-example-com.self_link}"
+  }
+
+  target_size = 1
 }
 
 resource "google_compute_instance_group_manager" "b-master-us-test1-b-ha-gce-example-com" {
   name               = "b-master-us-test1-b-ha-gce-example-com"
   zone               = "us-test1-b"
   base_instance_name = "master-us-test1-b"
-  instance_template  = "${google_compute_instance_template.master-us-test1-b-ha-gce-example-com.self_link}"
-  target_size        = 1
+
+  version = {
+    instance_template = "${google_compute_instance_template.master-us-test1-b-ha-gce-example-com.self_link}"
+  }
+
+  target_size = 1
 }
 
 resource "google_compute_instance_group_manager" "b-nodes-ha-gce-example-com" {
   name               = "b-nodes-ha-gce-example-com"
   zone               = "us-test1-b"
   base_instance_name = "nodes"
-  instance_template  = "${google_compute_instance_template.nodes-ha-gce-example-com.self_link}"
-  target_size        = 1
+
+  version = {
+    instance_template = "${google_compute_instance_template.nodes-ha-gce-example-com.self_link}"
+  }
+
+  target_size = 1
 }
 
 resource "google_compute_instance_group_manager" "c-master-us-test1-c-ha-gce-example-com" {
   name               = "c-master-us-test1-c-ha-gce-example-com"
   zone               = "us-test1-c"
   base_instance_name = "master-us-test1-c"
-  instance_template  = "${google_compute_instance_template.master-us-test1-c-ha-gce-example-com.self_link}"
-  target_size        = 1
+
+  version = {
+    instance_template = "${google_compute_instance_template.master-us-test1-c-ha-gce-example-com.self_link}"
+  }
+
+  target_size = 1
 }
 
 resource "google_compute_instance_group_manager" "c-nodes-ha-gce-example-com" {
   name               = "c-nodes-ha-gce-example-com"
   zone               = "us-test1-c"
   base_instance_name = "nodes"
-  instance_template  = "${google_compute_instance_template.nodes-ha-gce-example-com.self_link}"
-  target_size        = 0
+
+  version = {
+    instance_template = "${google_compute_instance_template.nodes-ha-gce-example-com.self_link}"
+  }
+
+  target_size = 0
 }
 
 resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-com" {
@@ -406,7 +430,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   }
 
   tags        = ["ha-gce-example-com-k8s-io-role-master"]
-  name_prefix = "master-us-test1-a-ha-gce-example-com-"
+  name_prefix = "master-us-test1-a-ha-gce--ke5ah6-"
 }
 
 resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-com" {
@@ -447,7 +471,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
   }
 
   tags        = ["ha-gce-example-com-k8s-io-role-master"]
-  name_prefix = "master-us-test1-b-ha-gce-example-com-"
+  name_prefix = "master-us-test1-b-ha-gce--c8u7qq-"
 }
 
 resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-com" {
@@ -488,7 +512,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   }
 
   tags        = ["ha-gce-example-com-k8s-io-role-master"]
-  name_prefix = "master-us-test1-c-ha-gce-example-com-"
+  name_prefix = "master-us-test1-c-ha-gce--3unp7l-"
 }
 
 resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
