@@ -101,7 +101,7 @@
 
 * [Download `kops` configuration](download_config.md)
     * methods to download the current generated `kops` configuration
-* [Get AWS subdomain NS records](ns.md)
+* [Get AWS subdomain NS records](advanced/ns.md)
 
 
 ## Development
