@@ -43,7 +43,7 @@ func New() (nodeidentity.Identifier, error) {
 
 	region := os.Getenv("OS_REGION_NAME")
 	if region == "" {
-		return nil, fmt.Errorf("Unable to find region")
+		return nil, fmt.Errorf("unable to find region")
 	}
 
 	provider, err := openstack.NewClient(env.IdentityEndpoint)
@@ -106,5 +106,5 @@ func (i *nodeIdentifier) getInstanceGroup(instanceID string) (string, error) {
 	if val, ok := instance.Metadata["KopsInstanceGroup"]; ok {
 		return val, nil
 	}
-	return "", fmt.Errorf("Could not find tag 'KopsInstanceGroup' from instance metadata")
+	return "", fmt.Errorf("could not find tag 'KopsInstanceGroup' from instance metadata")
 }

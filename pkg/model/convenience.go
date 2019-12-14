@@ -29,8 +29,3 @@ func s(v string) *string {
 func i64(v int64) *int64 {
 	return fi.Int64(v)
 }
-
-// i32 is a helper that builds a *int32 from an int32 value
-func i32(v int32) *int32 {
-	return fi.Int32(v)
-}

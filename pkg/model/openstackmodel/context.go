@@ -59,7 +59,7 @@ func (c *OpenstackModelContext) findSubnetClusterSpec(subnet string) (string, er
 			return name, nil
 		}
 	}
-	return "", fmt.Errorf("Could not find subnet %s from clusterSpec", subnet)
+	return "", fmt.Errorf("could not find subnet %s from clusterSpec", subnet)
 }
 
 func (c *OpenstackModelContext) findSubnetNameByID(subnetID string, subnetName string) (string, error) {
