@@ -19,6 +19,7 @@ output "region" {
 provider "google" {
   project = "us-test1"
   region  = "us-test1"
+  version = ">= 3.0.0"
 }
 
 resource "google_compute_disk" "d1-etcd-events-ha-gce-example-com" {
