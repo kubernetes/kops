@@ -182,9 +182,13 @@ type terraformInstanceGroupManager struct {
 	Name             *string              `json:"name"`
 	Zone             *string              `json:"zone"`
 	BaseInstanceName *string              `json:"base_instance_name"`
-	InstanceTemplate *terraform.Literal   `json:"instance_template"`
+	Version          *terraformVersion    `json:"version"`
 	TargetSize       *int64               `json:"target_size"`
 	TargetPools      []*terraform.Literal `json:"target_pools,omitempty"`
+}
+
+type terraformVersion struct {
+	InstanceTemplate *terraform.Literal `json:"instance_template"`
 }
 
 func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceGroupManager) error {
@@ -192,8 +196,10 @@ func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, 
 		Name:             e.Name,
 		Zone:             e.Zone,
 		BaseInstanceName: e.BaseInstanceName,
-		InstanceTemplate: e.InstanceTemplate.TerraformLink(),
 		TargetSize:       e.TargetSize,
+	}
+	tf.Version = &terraformVersion{
+		InstanceTemplate: e.InstanceTemplate.TerraformLink(),
 	}
 
 	for _, targetPool := range e.TargetPools {
