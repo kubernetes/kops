@@ -188,6 +188,7 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		resources[tfName] = res.Item
 	}
 
+	requiredProviders := make(map[string]interface{})
 	providersByName := make(map[string]map[string]interface{})
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerGoogle := make(map[string]interface{})
@@ -197,6 +198,7 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 			providerGoogle[k] = v
 		}
 		providersByName["google"] = providerGoogle
+		requiredProviders["google"] = ">= 3.0.0"
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		providerAWS := make(map[string]interface{})
 		providerAWS["region"] = t.Region
@@ -258,7 +260,10 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 	// See https://github.com/kubernetes/kops/pull/2424 for why we require 0.9.3
 	terraformConfiguration := make(map[string]interface{})
 	terraformConfiguration["required_version"] = ">= 0.9.3"
-
+	if len(requiredProviders) != 0 {
+		terraformConfiguration["required_providers"] = requiredProviders
+	}
+	
 	data := make(map[string]interface{})
 	data["terraform"] = terraformConfiguration
 	data["resource"] = resourcesByType

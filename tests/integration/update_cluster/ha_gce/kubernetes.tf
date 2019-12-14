@@ -538,5 +538,9 @@ resource "google_compute_network" "default" {
 }
 
 terraform = {
+  required_providers = {
+    google = ">= 3.0.0"
+  }
+
   required_version = ">= 0.9.3"
 }
