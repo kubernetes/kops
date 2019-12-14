@@ -251,6 +251,12 @@ func (r *RollingUpdateInstanceGroup) validateClusterWithDuration(rollingUpdateDa
 func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, duration time.Duration, tickDuration time.Duration) bool {
 	result, err := rollingUpdateData.ClusterValidator.Validate()
 
+	if err == nil && len(result.Failures) == 0 && rollingUpdateData.ValidateSuccessDuration > 0 {
+		klog.Infof("Cluster validated; revalidating in %s to make sure it does not flap.", rollingUpdateData.ValidateSuccessDuration)
+		time.Sleep(rollingUpdateData.ValidateSuccessDuration)
+		result, err = rollingUpdateData.ClusterValidator.Validate()
+	}
+
 	if err != nil {
 		klog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", tickDuration, duration, err)
 		return false
@@ -262,15 +268,8 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 		klog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %s.", tickDuration, duration, strings.Join(messages, ", "))
 		return false
 	} else {
-		klog.Info("Cluster validated, revalidating to make sure it does not flap.")
-		time.Sleep(rollingUpdateData.ValidateSuccessDuration)
-		result, err = rollingUpdateData.ClusterValidator.Validate()
-		if err == nil && len(result.Failures) == 0 {
-			klog.Info("Cluster validated.")
-			return true
-		}
-		klog.Info("Cluster did not revalidate.")
-		return false
+		klog.Info("Cluster validated.")
+		return true
 	}
 }
 

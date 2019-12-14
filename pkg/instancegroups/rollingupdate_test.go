@@ -500,6 +500,59 @@ func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
 }
 
+type flappingClusterValidator struct {
+	T               *testing.T
+	Cloud           awsup.AWSCloud
+	invocationCount int
+}
+
+func (v *flappingClusterValidator) Validate() (*validation.ValidationCluster, error) {
+	asgGroups, _ := v.Cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{aws.String("master-1")},
+	})
+	for _, group := range asgGroups.AutoScalingGroups {
+		switch len(group.Instances) {
+		case 1:
+			return &validation.ValidationCluster{}, nil
+		case 0:
+			assert.GreaterOrEqual(v.T, v.invocationCount, 7, "validator invocation count")
+		}
+	}
+
+	v.invocationCount++
+	switch v.invocationCount {
+	case 1, 3, 5:
+		return &validation.ValidationCluster{
+			Failures: []*validation.ValidationError{
+				{
+					Kind:    "testing",
+					Name:    "testingfailure",
+					Message: "testing failure",
+				},
+			},
+		}, nil
+	}
+	return &validation.ValidationCluster{}, nil
+}
+
+func TestRollingUpdateFlappingValidation(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	c.ValidationTimeout = 20 * time.Millisecond
+	c.ClusterValidator = &flappingClusterValidator{
+		T:     t,
+		Cloud: cloud,
+	}
+
+	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	assertGroupInstanceCount(t, cloud, "node-2", 0)
+	assertGroupInstanceCount(t, cloud, "master-1", 0)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+}
+
 type failThreeTimesClusterValidator struct {
 	invocationCount int
 }
