@@ -32,9 +32,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-// InstanceTemplateNamePrefixMaxLength is the max length for the NamePrefix of an InstanceTemplate
-//  52 = 63 - 10 - 1; 63 is the GCE limit; 10 is the length of seconds since epoch; and one for the dash
-const InstanceTemplateNamePrefixMaxLength = 63 - 10 - 1
+// terraform 0.12 with google cloud provider 3.2 will complain if the length of the name_prefix is more than 32
+const InstanceTemplateNamePrefixMaxLength = 32
 
 // InstanceTemplate represents a GCE InstanceTemplate
 //go:generate fitask -type=InstanceTemplate
