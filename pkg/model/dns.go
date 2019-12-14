@@ -56,7 +56,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 			dnsZone.PrivateVPC = b.LinkToVPC()
 
 		default:
-			return fmt.Errorf("Unknown DNS type %q", topology.DNS.Type)
+			return fmt.Errorf("unknown DNS type %q", topology.DNS.Type)
 		}
 	}
 
