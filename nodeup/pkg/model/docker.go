@@ -1064,13 +1064,13 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Validate major
-	dockerVersionMajor, err := strconv.ParseInt(parts[0], 10, 64)
+	dockerVersionMajor, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return fmt.Errorf("error parsing major docker version %q: %v", parts[0], err)
 	}
 
 	// Validate minor
-	dockerVersionMinor, err := strconv.ParseInt(parts[1], 10, 64)
+	dockerVersionMinor, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return fmt.Errorf("error parsing minor docker version %q: %v", parts[1], err)
 	}
@@ -1118,7 +1118,7 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 	return service
 }
 
-func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVersionMinor int64) *nodetasks.Service {
+func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersionMinor int) *nodetasks.Service {
 	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
 	usesDockerSocket := true
 
