@@ -108,8 +108,10 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		return nil, err
 	}
 
-	// protokubeImagePullCommand := t.ProtokubeImagePullCommand()
-
+	protokubeImagePullCommand, err := t.ProtokubeImagePullCommand()
+	if err != nil {
+		return nil, err
+	}
 	protokubeContainerStopCommand, err := t.ProtokubeContainerStopCommand()
 	if err != nil {
 		return nil, err
@@ -128,10 +130,9 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
 	// @step: let need a dependency for any volumes to be mounted first
-	// TODO: Why do we pull Protokube image again here?
-	// manifest.Set("Service", "ExecStartPre", protokubeImagePullCommand)
 	manifest.Set("Service", "ExecStartPre", protokubeContainerStopCommand)
 	manifest.Set("Service", "ExecStartPre", protokubeContainerRemoveCommand)
+	manifest.Set("Service", "ExecStartPre", protokubeImagePullCommand)
 	manifest.Set("Service", "ExecStart", protokubeContainerRunCommand+" "+protokubeRunArgs)
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
@@ -165,21 +166,29 @@ func (t *ProtokubeBuilder) ProtokubeImageName() string {
 }
 
 // ProtokubeImagePullCommand returns the command to pull the image
-func (t *ProtokubeBuilder) ProtokubeImagePullCommand() string {
+func (t *ProtokubeBuilder) ProtokubeImagePullCommand() (string, error) {
 	var sources []string
 	if t.NodeupConfig.ProtokubeImage != nil {
 		sources = t.NodeupConfig.ProtokubeImage.Sources
 	}
 	if len(sources) == 0 {
 		// Nothing to pull; return dummy value
-		return "/bin/true"
+		return "/bin/true", nil
 	}
 	if strings.HasPrefix(sources[0], "http:") || strings.HasPrefix(sources[0], "https:") || strings.HasPrefix(sources[0], "s3:") {
 		// We preloaded the image; return a dummy value
-		return "/bin/true"
+		return "/bin/true", nil
 	}
 
-	return "/usr/bin/docker pull " + sources[0]
+	var protokubeImagePullCommand string
+	if t.Cluster.Spec.ContainerRuntime == "docker" {
+		protokubeImagePullCommand = "-/usr/bin/docker pull " + sources[0]
+	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
+		protokubeImagePullCommand = "-/usr/bin/ctr --namespace k8s.io images pull docker.io/" + sources[0]
+	} else {
+		return "", fmt.Errorf("unable to create protokube image pull command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
+	}
+	return protokubeImagePullCommand, nil
 }
 
 // ProtokubeContainerStopCommand returns the command that stops the Protokube container, before being removed
