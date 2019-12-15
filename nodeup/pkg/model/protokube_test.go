@@ -37,7 +37,7 @@ func TestProtokubeBuilder(t *testing.T) {
 		return
 	}
 
-	cluster := nodeupModelContext.Cluster
+	cluster := nodeUpModelContext.Cluster
 	if cluster.Spec.MasterKubelet == nil {
 		cluster.Spec.MasterKubelet = &kops.KubeletConfigSpec{}
 	}
