@@ -644,7 +644,7 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 
 			for _, lb := range lbList {
 				for _, fip := range fips {
-					if fip.FixedIP == lb.VipAddress {
+					if fip.InstanceID == lb.ID {
 						ingresses = append(ingresses, kops.ApiIngressStatus{
 							IP: fip.IP,
 						})
