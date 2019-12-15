@@ -273,13 +273,13 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Validate major
-	containerdVersionMajor, err := strconv.ParseInt(parts[0], 10, 64)
+	containerdVersionMajor, err := strconv.Atoi(parts[0])
 	if err != nil {
 		return fmt.Errorf("error parsing major containerd version %q: %v", parts[0], err)
 	}
 
 	// Validate minor
-	containerdVersionMinor, err := strconv.ParseInt(parts[1], 10, 64)
+	containerdVersionMinor, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return fmt.Errorf("error parsing minor containerd version %q: %v", parts[1], err)
 	}
@@ -293,7 +293,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *ContainerdBuilder) buildSystemdService(containerdVersionMajor int64, containerdVersionMinor int64) *nodetasks.Service {
+func (b *ContainerdBuilder) buildSystemdService(containerdVersionMajor int, containerdVersionMinor int) *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "containerd container runtime")
 	manifest.Set("Unit", "Documentation", "https://containerd.io")
