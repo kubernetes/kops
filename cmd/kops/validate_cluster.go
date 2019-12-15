@@ -46,8 +46,9 @@ func init() {
 }
 
 type ValidateClusterOptions struct {
-	output string
-	wait   time.Duration
+	output     string
+	wait       time.Duration
+	kubeconfig string
 }
 
 func (o *ValidateClusterOptions) InitDefaults() {
@@ -78,6 +79,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Output format. One of json|yaml|table.")
 	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "If set, will wait for cluster to be ready")
+	cmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "", "Path to the kubeconfig file")
 
 	return cmd
 }
@@ -119,8 +121,12 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	// TODO: Refactor into util.Factory
 	contextName := cluster.ObjectMeta.Name
+	configLoadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	if options.kubeconfig != "" {
+		configLoadingRules.ExplicitPath = options.kubeconfig
+	}
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
+		configLoadingRules,
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
 	if err != nil {
 		return nil, fmt.Errorf("Cannot load kubecfg settings for %q: %v", contextName, err)
