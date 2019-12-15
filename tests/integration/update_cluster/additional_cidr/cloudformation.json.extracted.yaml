@@ -135,7 +135,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configFile: |
+    configOverride: |
       disabled_plugins = ["cri"]
     logLevel: warn
     skipInstall: true
@@ -430,7 +430,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configFile: |
+    configOverride: |
       disabled_plugins = ["cri"]
     logLevel: warn
     skipInstall: true

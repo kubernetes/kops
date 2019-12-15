@@ -373,7 +373,7 @@ spec:
                 address:
                   description: Address of containerd's GRPC server (default "/run/containerd/containerd.sock")
                   type: string
-                configFile:
+                configOverride:
                   description: Complete containerd config file provided by the user
                   type: string
                 logLevel:

@@ -144,7 +144,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configFile: |
+    configOverride: |
       disabled_plugins = ["cri"]
     logLevel: warn
     skipInstall: true
@@ -459,7 +459,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configFile: |
+    configOverride: |
       disabled_plugins = ["cri"]
     logLevel: warn
     skipInstall: true
