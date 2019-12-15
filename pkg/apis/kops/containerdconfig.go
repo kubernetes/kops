@@ -21,7 +21,7 @@ type ContainerdConfig struct {
 	// Address of containerd's GRPC server (default "/run/containerd/containerd.sock")
 	Address *string `json:"address,omitempty" flag:"address"`
 	// Complete containerd config file provided by the user
-	ConfigFile *string `json:"configFile,omitempty"`
+	ConfigOverride *string `json:"configOverride,omitempty"`
 	// Logging level [trace, debug, info, warn, error, fatal, panic] (default "warn")
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Directory for persistent data (default "/var/lib/containerd")

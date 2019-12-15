@@ -135,7 +135,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexampl
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configFile: |
+    configOverride: |
       disabled_plugins = ["cri"]
     logLevel: warn
     skipInstall: true
@@ -430,7 +430,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom.Properties.
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configFile: |
+    configOverride: |
       disabled_plugins = ["cri"]
     logLevel: warn
     skipInstall: true

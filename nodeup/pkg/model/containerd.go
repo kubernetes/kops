@@ -183,14 +183,14 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add config file
 	{
-		containerdConfigFile := ""
+		containerdConfigOverride := ""
 		if b.Cluster.Spec.Containerd != nil {
-			containerdConfigFile = fi.StringValue(b.Cluster.Spec.Containerd.ConfigFile)
+			containerdConfigOverride = fi.StringValue(b.Cluster.Spec.Containerd.ConfigOverride)
 		}
 
 		t := &nodetasks.File{
 			Path:     "/etc/containerd/config-kops.toml",
-			Contents: fi.NewStringResource(containerdConfigFile),
+			Contents: fi.NewStringResource(containerdConfigOverride),
 			Type:     nodetasks.FileType_File,
 		}
 		c.AddTask(t)

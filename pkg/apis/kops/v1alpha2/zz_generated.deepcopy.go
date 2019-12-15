@@ -818,8 +818,8 @@ func (in *ContainerdConfig) DeepCopyInto(out *ContainerdConfig) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.ConfigFile != nil {
-		in, out := &in.ConfigFile, &out.ConfigFile
+	if in.ConfigOverride != nil {
+		in, out := &in.ConfigOverride, &out.ConfigOverride
 		*out = new(string)
 		**out = **in
 	}

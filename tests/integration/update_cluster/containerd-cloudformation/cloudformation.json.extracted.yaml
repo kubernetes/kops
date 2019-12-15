@@ -135,7 +135,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configFile: ""
+    configOverride: ""
     logLevel: warn
     version: 1.2.10
   docker:
@@ -430,7 +430,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configFile: ""
+    configOverride: ""
     logLevel: warn
     version: 1.2.10
   docker:

@@ -2179,7 +2179,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 
 func autoConvert_v1alpha1_ContainerdConfig_To_kops_ContainerdConfig(in *ContainerdConfig, out *kops.ContainerdConfig, s conversion.Scope) error {
 	out.Address = in.Address
-	out.ConfigFile = in.ConfigFile
+	out.ConfigOverride = in.ConfigOverride
 	out.LogLevel = in.LogLevel
 	out.Root = in.Root
 	out.SkipInstall = in.SkipInstall
@@ -2195,7 +2195,7 @@ func Convert_v1alpha1_ContainerdConfig_To_kops_ContainerdConfig(in *ContainerdCo
 
 func autoConvert_kops_ContainerdConfig_To_v1alpha1_ContainerdConfig(in *kops.ContainerdConfig, out *ContainerdConfig, s conversion.Scope) error {
 	out.Address = in.Address
-	out.ConfigFile = in.ConfigFile
+	out.ConfigOverride = in.ConfigOverride
 	out.LogLevel = in.LogLevel
 	out.Root = in.Root
 	out.SkipInstall = in.SkipInstall

@@ -94,11 +94,11 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 	// Apply global containerd defaults
 	containerd.LogLevel = fi.String("warn")
 
-	configFile := ""
+	configOverride := ""
 	if clusterSpec.ContainerRuntime == "docker" {
-		configFile += "disabled_plugins = [\"cri\"]\n"
+		configOverride += "disabled_plugins = [\"cri\"]\n"
 	}
-	containerd.ConfigFile = &configFile
+	containerd.ConfigOverride = &configOverride
 
 	return nil
 }
