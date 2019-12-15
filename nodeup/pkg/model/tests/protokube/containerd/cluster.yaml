@@ -5,22 +5,22 @@ metadata:
   name: minimal.example.com
 spec:
   kubernetesApiAccess:
-  - 0.0.0.0/0
+    - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
-  containerRuntime: docker
+  containerRuntime: containerd
   etcdClusters:
-  - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: master-us-test-1a
-    name: main
-    provider: Manager
-  - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: master-us-test-1a
-    name: events
-    provider: Manager
+    - etcdMembers:
+        - instanceGroup: master-us-test-1a
+          name: master-us-test-1a
+      name: main
+      provider: Manager
+    - etcdMembers:
+        - instanceGroup: master-us-test-1a
+          name: master-us-test-1a
+      name: events
+      provider: Manager
   kubelet: {}
   kubernetesVersion: v1.17.0
   masterInternalName: api.internal.minimal.example.com
@@ -35,10 +35,10 @@ spec:
     masters: public
     nodes: public
   subnets:
-  - cidr: 172.20.32.0/19
-    name: us-test-1a
-    type: Public
-    zone: us-test-1a
+    - cidr: 172.20.32.0/19
+      name: us-test-1a
+      type: Public
+      zone: us-test-1a
 
 ---
 
@@ -57,4 +57,4 @@ spec:
   minSize: 2
   role: Node
   subnets:
-  - us-test-1a
+    - us-test-1a
