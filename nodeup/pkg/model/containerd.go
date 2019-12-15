@@ -302,7 +302,6 @@ func (b *ContainerdBuilder) buildSystemdService(containerdVersionMajor int64, co
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/containerd")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStartPre", "-/sbin/modprobe overlay")
-	manifest.Set("Service", "ExecStartPre", "-/sbin/modprobe overlay")
 	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c /etc/containerd/config-kops.toml \"$CONTAINERD_OPTS\"")
 
 	// kill only the containerd process, not all processes in the cgroup
