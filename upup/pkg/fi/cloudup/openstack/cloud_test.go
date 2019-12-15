@@ -125,7 +125,6 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 			},
 			expectedAPIIngress: []kops.ApiIngressStatus{
 				{IP: "8.8.8.8"},
-				{IP: "9.9.9.9"},
 			},
 		},
 		{
