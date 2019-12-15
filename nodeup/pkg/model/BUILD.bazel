@@ -86,12 +86,14 @@ go_test(
         "kube_apiserver_test.go",
         "kube_proxy_test.go",
         "kubelet_test.go",
+        "protokube_test.go",
     ],
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
     deps = [
         "//nodeup/pkg/distros:go_default_library",
         "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/nodeup:go_default_library",
         "//pkg/flagbuilder:go_default_library",
         "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
