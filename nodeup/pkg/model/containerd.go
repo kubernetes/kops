@@ -17,10 +17,7 @@ limitations under the License.
 package model
 
 import (
-	// 	"encoding/json"
 	"fmt"
-	// 	"io/ioutil"
-	// 	"os"
 	"strconv"
 	"strings"
 
