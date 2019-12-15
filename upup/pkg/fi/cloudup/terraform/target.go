@@ -197,6 +197,7 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 			providerGoogle[k] = v
 		}
 		providersByName["google"] = providerGoogle
+		providerGoogle["version"] = ">= 3.0.0"
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		providerAWS := make(map[string]interface{})
 		providerAWS["region"] = t.Region
