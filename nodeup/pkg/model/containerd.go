@@ -340,11 +340,7 @@ func (b *ContainerdBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuild
 		"[Service]",
 		"EnvironmentFile=/etc/sysconfig/containerd",
 		"EnvironmentFile=/etc/environment",
-	}
-
-	if b.IsKubernetesGTE("1.10") {
-		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
-		lines = append(lines, "TasksMax=infinity")
+		"TasksMax=infinity",
 	}
 
 	contents := strings.Join(lines, "\n")
