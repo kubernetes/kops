@@ -28,6 +28,7 @@ import (
 	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -258,7 +259,11 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 
 	// See https://github.com/kubernetes/kops/pull/2424 for why we require 0.9.3
 	terraformConfiguration := make(map[string]interface{})
-	terraformConfiguration["required_version"] = ">= 0.9.3"
+	if featureflag.TerraformJSON.Enabled() {
+		terraformConfiguration["required_version"] = ">= 0.12.0"
+	} else {
+		terraformConfiguration["required_version"] = ">= 0.9.3"
+	}
 
 	data := make(map[string]interface{})
 	data["terraform"] = terraformConfiguration
@@ -278,10 +283,12 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		return fmt.Errorf("error marshaling terraform data to json: %v", err)
 	}
 
-	useJson := false
-
-	if useJson {
-		t.files["kubernetes.tf"] = jsonBytes
+	if featureflag.TerraformJSON.Enabled() {
+		t.files["kubernetes.tf.json"] = jsonBytes
+		p := path.Join(t.outDir, "kubernetes.tf")
+		if _, err := os.Stat(p); err == nil {
+			return fmt.Errorf("Error generating kubernetes.tf.json: If you are upgrading from terraform 0.11 or earlier please read the release notes. Also, the kubernetes.tf file is already present. Please move the file away since it will be replaced by the kubernetes.tf.json file. ")
+		}
 	} else {
 		f, err := hcl_parser.Parse(jsonBytes)
 		if err != nil {
