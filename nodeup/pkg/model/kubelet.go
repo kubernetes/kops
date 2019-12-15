@@ -242,8 +242,12 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	// Add container runtime flags
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
 		flags += " --container-runtime=remote"
-		flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 		flags += " --runtime-request-timeout=15m"
+		if b.Cluster.Spec.Containerd.Address == nil {
+			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+		} else {
+			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
+		}
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
