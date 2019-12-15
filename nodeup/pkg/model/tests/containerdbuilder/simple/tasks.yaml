@@ -223,7 +223,6 @@ definition: |
   EnvironmentFile=/etc/sysconfig/containerd
   EnvironmentFile=/etc/environment
   ExecStartPre=-/sbin/modprobe overlay
-  ExecStartPre=-/sbin/modprobe overlay
   ExecStart=/usr/bin/containerd -c /etc/containerd/config-kops.toml "$CONTAINERD_OPTS"
   KillMode=process
   Delegate=yes
