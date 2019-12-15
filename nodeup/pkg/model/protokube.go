@@ -239,8 +239,14 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 			}...)
 		}
 
+		protokubeEnvVars := t.ProtokubeEnvironmentVariables()
+		if protokubeEnvVars != "" {
+			containerRunArgs = append(containerRunArgs, []string{
+				protokubeEnvVars,
+			}...)
+		}
+
 		containerRunArgs = append(containerRunArgs, []string{
-			t.ProtokubeEnvironmentVariables(),
 			"--name", "protokube",
 			t.ProtokubeImageName(),
 			"/usr/bin/protokube",
@@ -271,8 +277,14 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 			}...)
 		}
 
+		protokubeEnvVars := t.ProtokubeEnvironmentVariables()
+		if protokubeEnvVars != "" {
+			containerRunArgs = append(containerRunArgs, []string{
+				protokubeEnvVars,
+			}...)
+		}
+
 		containerRunArgs = append(containerRunArgs, []string{
-			t.ProtokubeEnvironmentVariables(),
 			"docker.io/library/" + t.ProtokubeImageName(),
 			"protokube",
 			"/usr/bin/protokube",
