@@ -111,7 +111,9 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 
 	expectedBytes, err := ioutil.ReadFile(p)
 	if err != nil {
-		t.Fatalf("error reading file %q: %v", p, err)
+		if !os.IsNotExist(err) || os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") == "" {
+			t.Fatalf("error reading file %q: %v", p, err)
+		}
 	}
 	expected := strings.TrimSpace(string(expectedBytes))
 
