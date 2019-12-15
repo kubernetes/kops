@@ -18,7 +18,6 @@ package model
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"k8s.io/klog"
@@ -266,25 +265,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	// Split into major.minor.(patch+pr+meta)
-	parts := strings.SplitN(containerdVersion, ".", 3)
-	if len(parts) != 3 {
-		return fmt.Errorf("error parsing containerd version %q, no Major.Minor.Patch elements found", containerdVersion)
-	}
-
-	// Validate major
-	containerdVersionMajor, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return fmt.Errorf("error parsing major containerd version %q: %v", parts[0], err)
-	}
-
-	// Validate minor
-	containerdVersionMinor, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return fmt.Errorf("error parsing minor containerd version %q: %v", parts[1], err)
-	}
-
-	c.AddTask(b.buildSystemdService(containerdVersionMajor, containerdVersionMinor))
+	c.AddTask(b.buildSystemdService())
 
 	if err := b.buildSysconfig(c); err != nil {
 		return err
@@ -293,7 +274,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *ContainerdBuilder) buildSystemdService(containerdVersionMajor int, containerdVersionMinor int) *nodetasks.Service {
+func (b *ContainerdBuilder) buildSystemdService() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "containerd container runtime")
 	manifest.Set("Unit", "Documentation", "https://containerd.io")
