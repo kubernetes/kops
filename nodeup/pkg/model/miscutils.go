@@ -40,6 +40,9 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 	case distros.DistributionCoreOS:
 		klog.V(2).Infof("Detected CoreOS; won't install misc. utils")
 		return nil
+	case distros.DistributionFlatcar:
+		klog.V(2).Infof("Detected Flatcar; won't install misc. utils")
+		return nil
 	}
 
 	// TODO: These packages have been auto-installed for a long time, and likely we don't need all of them any longer
