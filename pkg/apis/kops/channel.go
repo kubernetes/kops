@@ -86,15 +86,16 @@ type ChannelImageSpec struct {
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 }
 
-// LoadChannel loads a Channel object from the specified VFS location
-func LoadChannel(location string) (*Channel, error) {
+// ResolveChannel maps a channel to an absolute URL (possibly a VFS URL)
+// If the channel is the well-known "none" value, we return (nil, nil)
+func ResolveChannel(location string) (*url.URL, error) {
 	if location == "none" {
-		return &Channel{}, nil
+		return nil, nil
 	}
 
 	u, err := url.Parse(location)
 	if err != nil {
-		return nil, fmt.Errorf("invalid channel: %q", location)
+		return nil, fmt.Errorf("invalid channel location: %q", location)
 	}
 
 	if !u.IsAbs() {
@@ -106,7 +107,22 @@ func LoadChannel(location string) (*Channel, error) {
 		u = base.ResolveReference(u)
 	}
 
-	resolved := u.String()
+	return u, nil
+}
+
+// LoadChannel loads a Channel object from the specified VFS location
+func LoadChannel(location string) (*Channel, error) {
+	resolvedURL, err := ResolveChannel(location)
+	if err != nil {
+		return nil, err
+	}
+
+	if resolvedURL == nil {
+		return &Channel{}, nil
+	}
+
+	resolved := resolvedURL.String()
+
 	klog.V(2).Infof("Loading channel from %q", resolved)
 	channelBytes, err := vfs.Context.ReadFile(resolved)
 	if err != nil {

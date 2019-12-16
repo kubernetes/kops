@@ -1,0 +1,20 @@
+namespace: kube-system
+
+namePrefix: coredns-operator-
+
+# Labels to add to all resources and selectors.
+commonLabels:
+  k8s-app: kube-dns
+
+bases:
+- https://github.com/kubernetes-sigs/cluster-addons/coredns/config/crd/
+- https://github.com/kubernetes-sigs/cluster-addons/coredns/config/rbac/
+- https://github.com/kubernetes-sigs/cluster-addons/coredns/config/manager/
+
+images:
+  - name: controller
+    newName: justinsb/coredns-operator
+    newTag: latest
+
+patches:
+- resources.yaml

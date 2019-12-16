@@ -21,6 +21,7 @@ go_library(
         "//pkg/model/components/addonmanifests/dnscontroller:go_default_library",
         "//pkg/model/iam:go_default_library",
         "//pkg/templates:go_default_library",
+        "//pkg/wellknownoperators:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
