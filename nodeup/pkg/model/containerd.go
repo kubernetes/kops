@@ -37,10 +37,6 @@ type ContainerdBuilder struct {
 
 var _ fi.ModelBuilder = &ContainerdBuilder{}
 
-// DefaultContainerdVersion is the (legacy) containerd version we use if one is not specified in the manifest.
-// We don't change this with each version of kops, we expect newer versions of kops to populate the field.
-const DefaultContainerdVersion = "1.2.10"
-
 var containerdVersions = []packageVersion{
 	// 1.2.10 - Debian Stretch
 	{
@@ -128,16 +124,15 @@ var containerdVersions = []packageVersion{
 	// then validate the dependencies etc
 }
 
-func (b *ContainerdBuilder) containerdVersion() string {
+func (b *ContainerdBuilder) containerdVersion() (string, error) {
 	containerdVersion := ""
 	if b.Cluster.Spec.Containerd != nil {
 		containerdVersion = fi.StringValue(b.Cluster.Spec.Containerd.Version)
 	}
 	if containerdVersion == "" {
-		containerdVersion = DefaultContainerdVersion
-		klog.Warningf("Containerd version not specified; using default %q", containerdVersion)
+		return "", fmt.Errorf("error finding containerd version")
 	}
-	return containerdVersion
+	return containerdVersion, nil
 }
 
 // Build is responsible for configuring the containerd daemon
@@ -196,7 +191,10 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	containerdVersion := b.containerdVersion()
+	containerdVersion, err := b.containerdVersion()
+	if err != nil {
+		return err
+	}
 
 	// Add packages
 	{

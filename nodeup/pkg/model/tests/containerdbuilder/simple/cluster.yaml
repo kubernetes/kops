@@ -9,6 +9,8 @@ spec:
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
   containerRuntime: containerd
+  containerd:
+    version: 1.2.10
   etcdClusters:
     - etcdMembers:
         - instanceGroup: master-us-test-1a
