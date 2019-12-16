@@ -30,9 +30,10 @@ kops validate cluster [flags]
 ### Options
 
 ```
-  -h, --help            help for cluster
-  -o, --output string   Output format. One of json|yaml|table. (default "table")
-      --wait duration   If set, will wait for cluster to be ready
+  -h, --help                help for cluster
+      --kubeconfig string   Path to the kubeconfig file
+  -o, --output string       Output format. One of json|yaml|table. (default "table")
+      --wait duration       If set, will wait for cluster to be ready
 ```
 
 ### Options inherited from parent commands
