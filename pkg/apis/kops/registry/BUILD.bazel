@@ -13,6 +13,7 @@ go_library(
         "//pkg/acls:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/client/simple:go_default_library",
+        "//pkg/kubemanifest:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

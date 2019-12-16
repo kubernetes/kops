@@ -42,6 +42,7 @@ go_library(
         "//pkg/client/simple/vfsclientset:go_default_library",
         "//pkg/dns:go_default_library",
         "//pkg/featureflag:go_default_library",
+        "//pkg/kubemanifest:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/model/alimodel:go_default_library",
         "//pkg/model/awsmodel:go_default_library",
