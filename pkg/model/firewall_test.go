@@ -60,12 +60,3 @@ func Test_SharedGroups(t *testing.T) {
 		}
 	}
 }
-
-func makeTestInstanceGroupSec(role kops.InstanceGroupRole, secGroup *string) *kops.InstanceGroup {
-	return &kops.InstanceGroup{
-		Spec: kops.InstanceGroupSpec{
-			Role:                  role,
-			SecurityGroupOverride: secGroup,
-		},
-	}
-}

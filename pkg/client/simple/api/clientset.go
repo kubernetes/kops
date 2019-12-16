@@ -177,8 +177,3 @@ func restNamespaceForClusterName(clusterName string) string {
 	namespace := strings.Replace(clusterName, ".", "-", -1)
 	return namespace
 }
-
-func restNamespaceForFederationName(clusterName string) string {
-	namespace := strings.Replace(clusterName, ".", "-", -1)
-	return namespace
-}
