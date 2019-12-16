@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
+	"k8s.io/kops/pkg/wellknownoperators"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -144,6 +145,57 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Location:  fi.String(manifestPath),
 			Name:      fi.String(name),
 		})
+	}
+
+	if featureflag.UseAddonOperators.Enabled() {
+		ob := &wellknownoperators.Builder{
+			Cluster: b.Cluster,
+		}
+
+		wellKnownAddons, crds, err := ob.Build()
+		if err != nil {
+			return fmt.Errorf("error building well-known operators: %v", err)
+		}
+
+		for _, a := range wellKnownAddons {
+			key := *a.Spec.Name
+			if a.Spec.Id != "" {
+				key = key + "-" + a.Spec.Id
+			}
+			name := b.Cluster.ObjectMeta.Name + "-addons-" + key
+			manifestPath := "addons/" + *a.Spec.Manifest
+
+			// Go through any transforms that are best expressed as code
+			manifestBytes, err := addonmanifests.RemapAddonManifest(&a.Spec, b.KopsModelContext, b.assetBuilder, a.Manifest)
+			if err != nil {
+				klog.Infof("invalid manifest: %s", string(a.Manifest))
+				return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)
+			}
+
+			// Trim whitespace
+			manifestBytes = []byte(strings.TrimSpace(string(manifestBytes)))
+
+			rawManifest := string(manifestBytes)
+			klog.V(4).Infof("Manifest %v", rawManifest)
+
+			manifestHash, err := utils.HashString(rawManifest)
+			klog.V(4).Infof("hash %s", manifestHash)
+			if err != nil {
+				return fmt.Errorf("error hashing manifest: %v", err)
+			}
+			a.Spec.ManifestHash = manifestHash
+
+			c.AddTask(&fitasks.ManagedFile{
+				Contents:  fi.NewBytesResource(manifestBytes),
+				Lifecycle: b.Lifecycle,
+				Location:  fi.String(manifestPath),
+				Name:      fi.String(name),
+			})
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &a.Spec)
+		}
+
+		b.ClusterAddons = append(b.ClusterAddons, crds...)
 	}
 
 	if b.ClusterAddons != nil {
@@ -293,7 +345,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	if kubeDNS.Provider == "CoreDNS" {
+	if kubeDNS.Provider == "CoreDNS" && !featureflag.UseAddonOperators.Enabled() {
 		{
 			key := "coredns.addons.k8s.io"
 			version := "1.8.3-kops.3"
