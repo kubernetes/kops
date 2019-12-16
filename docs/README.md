@@ -29,7 +29,7 @@
 * [CLI reference](cli/kops.md)
 * [Commands](usage/commands.md)
     * miscellaneous CLI-related remarks
-* [Experimental features](experimental.md)
+* [Experimental features](advanced/experimental.md)
     * list of and how to enable experimental flags in the CLI
 * [kubectl](kubectl.md)
     * how to point kubectl to your `kops` cluster
@@ -99,7 +99,7 @@
 
 ## Inspection
 
-* [Download `kops` configuration](download_config.md)
+* [Download `kops` configuration](advanced/download_config.md)
     * methods to download the current generated `kops` configuration
 * [Get AWS subdomain NS records](advanced/ns.md)
 
