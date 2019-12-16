@@ -92,6 +92,8 @@ var (
 	Terraform012 = New("Terraform-0.12", Bool(true))
 	// LegacyIAM will permit use of legacy IAM permissions.
 	LegacyIAM = New("LegacyIAM", Bool(false))
+	// ClusterAddons activates experimental cluster-addons support
+	ClusterAddons = New("ClusterAddons", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

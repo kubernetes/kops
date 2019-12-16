@@ -35,9 +35,11 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/clusteraddons"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -87,6 +89,9 @@ type CreateClusterOptions struct {
 	DryRun bool
 	// Output type during a DryRun
 	Output string
+
+	// AddonPaths specify paths to additional components that we can add to a cluster
+	AddonPaths []string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -208,6 +213,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
+
+	if featureflag.ClusterAddons.Enabled() {
+		cmd.Flags().StringSliceVar(&options.AddonPaths, "add", options.AddonPaths, "Paths to addons we should add to the cluster")
+	}
 
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 
@@ -545,8 +554,17 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
+	var addons kubemanifest.ObjectList
+	for _, p := range c.AddonPaths {
+		addon, err := clusteraddons.LoadClusterAddon(p)
+		if err != nil {
+			return fmt.Errorf("error loading cluster addon %s: %v", p, err)
+		}
+		addons = append(addons, addon.Objects...)
+	}
+
 	// Note we perform as much validation as we can, before writing a bad config
-	err = registry.CreateClusterConfig(ctx, clientset, cluster, fullInstanceGroups)
+	err = registry.CreateClusterConfig(ctx, clientset, cluster, fullInstanceGroups, addons)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
