@@ -98,6 +98,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	// TODO: would be good to create these as shared, to verify them
 	if !sharedVPC {
 		dhcp := &awstasks.DHCPOptions{
 			Name:              s(b.ClusterName()),
@@ -120,8 +121,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			VPC:         b.LinkToVPC(),
 			DHCPOptions: dhcp,
 		})
-	} else {
-		// TODO: would be good to create these as shared, to verify them
 	}
 
 	allSubnetsUnmanaged := true
