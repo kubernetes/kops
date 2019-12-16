@@ -243,7 +243,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.Cluster.Spec.ContainerRuntime == "containerd" {
 		flags += " --container-runtime=remote"
 		flags += " --runtime-request-timeout=15m"
-		if b.Cluster.Spec.Containerd.Address == nil {
+		if b.Cluster.Spec.Containerd == nil || b.Cluster.Spec.Containerd.Address == nil {
 			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
 		} else {
 			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
