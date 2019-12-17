@@ -44,5 +44,3 @@ upup/pkg/fi/cloudup/openstacktasks
 upup/pkg/fi/nodeup
 upup/pkg/kutil
 upup/tools/generators/pkg/codegen
-util/pkg/reflectutils
-util/pkg/tables

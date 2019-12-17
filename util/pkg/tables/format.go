@@ -48,8 +48,6 @@ func (c *TableColumn) getFromValue(v reflect.Value) string {
 	return reflectutils.ValueAsString(fv)
 }
 
-type getterFunction func(interface{}) string
-
 // AddColumn registers an available column for formatting
 func (t *Table) AddColumn(name string, getter interface{}) {
 	getterVal := reflect.ValueOf(getter)
