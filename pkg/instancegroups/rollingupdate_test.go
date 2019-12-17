@@ -1003,7 +1003,7 @@ func TestRollingUpdateFlappingValidation(t *testing.T) {
 			Cloud: mockcloud,
 		},
 		FailOnValidate:          true,
-		ValidationTimeout:       20 * time.Millisecond,
+		ValidationTimeout:       200 * time.Second,
 		ValidateTickDuration:    1 * time.Millisecond,
 		ValidateSuccessDuration: 5 * time.Millisecond,
 	}
@@ -1179,7 +1179,7 @@ func TestRollingUpdateValidatesAfterBastion(t *testing.T) {
 		K8sClient:            k8sClient,
 		ClusterValidator:     &failThreeTimesClusterValidator{},
 		FailOnValidate:       true,
-		ValidationTimeout:    10 * time.Millisecond,
+		ValidationTimeout:    1 * time.Second,
 		ValidateTickDuration: 1 * time.Millisecond,
 	}
 
