@@ -162,7 +162,7 @@ F`
 		diffs := dmp.DiffMain(l, r, false)
 
 		// We do need to cleanup, as otherwise we get some spurious changes on complex diffs
-		diffs = dmp.DiffCleanupSemantic(diffs)
+		dmp.DiffCleanupSemantic(diffs)
 
 	}
 
