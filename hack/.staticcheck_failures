@@ -13,16 +13,8 @@ nodeup/pkg/model
 pkg/apis/kops/v1alpha1
 pkg/apis/kops/v1alpha2
 pkg/apis/kops/validation
-pkg/client/simple/api
-pkg/diff
 pkg/instancegroups
-pkg/model
-pkg/model/alimodel
 pkg/model/components
-pkg/model/components/etcdmanager
-pkg/model/gcemodel
-pkg/model/openstackmodel
-pkg/model/spotinstmodel
 pkg/resources/ali
 pkg/resources/aws
 pkg/resources/digitalocean
