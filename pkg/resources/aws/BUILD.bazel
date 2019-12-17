@@ -1,0 +1,55 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "aws.go",
+        "elasticip.go",
+        "errors.go",
+        "filters.go",
+        "natgateway.go",
+        "routetable.go",
+        "securitygroup.go",
+        "subnet.go",
+        "tags.go",
+        "vpc.go",
+    ],
+    importpath = "k8s.io/kops/pkg/resources/aws",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/dns:go_default_library",
+        "//pkg/featureflag:go_default_library",
+        "//pkg/resources:go_default_library",
+        "//pkg/resources/spotinst:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/cloudformation:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elbv2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "aws_test.go",
+        "vpc_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//cloudmock/aws/mockec2:go_default_library",
+        "//pkg/resources:go_default_library",
+        "//pkg/testutils:go_default_library",
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//upup/pkg/fi/utils:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+    ],
+)

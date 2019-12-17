@@ -1,0 +1,41 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "interface.go",
+        "route53.go",
+        "rrchangeset.go",
+        "rrset.go",
+        "rrsets.go",
+        "zone.go",
+        "zones.go",
+    ],
+    importpath = "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/aws/route53/stubs:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/uuid:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["route53_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/aws/route53/stubs:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/tests:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/route53:go_default_library",
+    ],
+)

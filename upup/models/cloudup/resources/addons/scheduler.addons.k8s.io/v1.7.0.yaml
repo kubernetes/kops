@@ -1,0 +1,38 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: scheduler-policy
+  namespace: kube-system
+  labels:
+    k8s-addon: scheduler.addons.k8s.io
+data:
+  policy.cfg: |
+    {
+      "kind" : "Policy",
+      "apiVersion" : "v1",
+      "predicates" : [
+        {"name": "NoDiskConflict"},
+        {"name": "NoVolumeZoneConflict"},
+        {"name": "MaxEBSVolumeCount"},
+        {"name": "MaxGCEPDVolumeCount"},
+        {"name": "MaxAzureDiskVolumeCount"},
+        {"name": "MatchInterPodAffinity"},
+        {"name": "NoDiskConflict"},
+        {"name": "GeneralPredicates"},
+        {"name": "CheckNodeMemoryPressure"},
+        {"name": "CheckNodeDiskPressure"},
+        {"name": "CheckNodeCondition"},
+        {"name": "PodToleratesNodeTaints"},
+        {"name": "NoVolumeNodeConflict"}
+      ],
+      "priorities" : [
+        {"name": "SelectorSpreadPriority", "weight" : 1},
+        {"name": "LeastRequestedPriority", "weight" : 1},
+        {"name": "BalancedResourceAllocation", "weight" : 1},
+        {"name": "NodePreferAvoidPodsPriority", "weight" : 1},
+        {"name": "NodeAffinityPriority", "weight" : 1},
+        {"name": "TaintTolerationPriority", "weight" : 1},
+        {"name": "InterPodAffinityPriority", "weight" : 1}
+      ],
+      "hardPodAffinitySymmetricWeight" : 1
+    }

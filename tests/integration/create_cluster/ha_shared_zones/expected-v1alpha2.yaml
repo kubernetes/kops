@@ -1,0 +1,190 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: ha.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://tests/ha.example.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-us-test-1a-1
+      name: a-1
+    - instanceGroup: master-us-test-1b-1
+      name: b-1
+    - instanceGroup: master-us-test-1a-2
+      name: a-2
+    - instanceGroup: master-us-test-1b-2
+      name: b-2
+    - instanceGroup: master-us-test-1a-3
+      name: a-3
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-us-test-1a-1
+      name: a-1
+    - instanceGroup: master-us-test-1b-1
+      name: b-1
+    - instanceGroup: master-us-test-1a-2
+      name: a-2
+    - instanceGroup: master-us-test-1b-2
+      name: b-2
+    - instanceGroup: master-us-test-1a-3
+      name: a-3
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: v1.4.8
+  masterPublicName: api.ha.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  - cidr: 172.20.64.0/19
+    name: us-test-1b
+    type: Public
+    zone: us-test-1b
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: master-us-test-1a-1
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a-1
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: master-us-test-1a-2
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a-2
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: master-us-test-1a-3
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a-3
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: master-us-test-1b-1
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1b-1
+  role: Master
+  subnets:
+  - us-test-1b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: master-us-test-1b-2
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1b-2
+  role: Master
+  subnets:
+  - us-test-1b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: nodes
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - us-test-1a
+  - us-test-1b

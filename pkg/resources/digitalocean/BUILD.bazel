@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cloud.go",
+        "resources.go",
+    ],
+    importpath = "k8s.io/kops/pkg/resources/digitalocean",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//dns-controller/pkg/dns:go_default_library",
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/cloudinstances:go_default_library",
+        "//pkg/resources:go_default_library",
+        "//pkg/resources/digitalocean/dns:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//vendor/github.com/digitalocean/godo:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

@@ -1,0 +1,20 @@
+kind: Addons
+metadata:
+  name: logging-elasticsearch
+spec:
+  addons:
+  - version: 1.5.0
+    selector:
+      k8s-addon: logging-elasticsearch.addons.k8s.io
+    manifest: v1.5.0.yaml
+    kubernetesVersion: ">=1.5.0 <1.6.0" # We use statefulsets
+  - version: 1.6.0
+    selector:
+      k8s-addon: logging-elasticsearch.addons.k8s.io
+    manifest: v1.6.0.yaml
+    kubernetesVersion: ">=1.6.0" # RBAC v1beta1 is introduced as of v1.6.0
+  - version: 1.7.0
+    selector:
+      k8s-addon: logging-elasticsearch.addons.k8s.io
+    manifest: v1.7.0.yaml
+    kubernetesVersion: ">=1.6.0"

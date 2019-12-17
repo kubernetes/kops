@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["commontests.go"],
+    importpath = "k8s.io/kops/dnsprovider/pkg/dnsprovider/tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
+    ],
+)

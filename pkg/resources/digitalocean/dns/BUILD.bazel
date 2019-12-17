@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["dns.go"],
+    importpath = "k8s.io/kops/pkg/resources/digitalocean/dns",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//dns-controller/pkg/dns:go_default_library",
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
+        "//vendor/github.com/digitalocean/godo:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["dns_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
+        "//vendor/github.com/digitalocean/godo:go_default_library",
+    ],
+)

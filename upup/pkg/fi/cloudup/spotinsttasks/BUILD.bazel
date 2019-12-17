@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "elastigroup.go",
+        "elastigroup_fitask.go",
+        "launch_spec.go",
+        "launch_spec_fitask.go",
+        "ocean.go",
+        "ocean_fitask.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/resources/spotinst:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awstasks:go_default_library",
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//upup/pkg/fi/cloudup/terraform:go_default_library",
+        "//upup/pkg/fi/utils:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

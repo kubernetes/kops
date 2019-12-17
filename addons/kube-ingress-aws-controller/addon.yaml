@@ -1,0 +1,9 @@
+kind: Addons
+metadata:
+  name: kube-ingress-aws-controller
+spec:
+  addons:
+  - version: v1.0.0
+    selector:
+      k8s-addon: kube-ingress-aws-controller.addons.k8s.io
+    manifest: v1.0.0.yaml

@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "aws.go",
+        "interfaces.go",
+        "resources.go",
+        "spotinst.go",
+    ],
+    importpath = "k8s.io/kops/pkg/resources/spotinst",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:go_default_library",
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/cloudinstances:go_default_library",
+        "//pkg/resources:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/credentials:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/log:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/session:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

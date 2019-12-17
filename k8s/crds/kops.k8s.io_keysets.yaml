@@ -1,0 +1,73 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  name: keysets.kops.k8s.io
+spec:
+  group: kops.k8s.io
+  names:
+    kind: Keyset
+    listKind: KeysetList
+    plural: keysets
+    singular: keyset
+  scope: ""
+  validation:
+    openAPIV3Schema:
+      description: Keyset is a set of system keypairs, or other secret material. It
+        is a set to support credential rotation etc.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: KeysetSpec is the spec for a Keyset
+          properties:
+            keys:
+              description: Keys is the set of keys that make up the keyset
+              items:
+                description: KeysetItem is an item (keypair or other secret material)
+                  in a Keyset
+                properties:
+                  id:
+                    description: Id is the unique identifier for this key in the keyset
+                    type: string
+                  privateMaterial:
+                    description: PrivateMaterial holds secret material (e.g. a private
+                      key, or symmetric token)
+                    format: byte
+                    type: string
+                  publicMaterial:
+                    description: PublicMaterial holds non-secret material (e.g. a
+                      certificate)
+                    format: byte
+                    type: string
+                type: object
+              type: array
+            type:
+              description: Type is the type of the Keyset (PKI keypair, or secret
+                token)
+              type: string
+          type: object
+      type: object
+  version: v1alpha2
+  versions:
+  - name: v1alpha2
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

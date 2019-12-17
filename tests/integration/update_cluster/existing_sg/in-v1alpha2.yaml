@@ -1,0 +1,135 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: existingsg.example.com
+spec:
+  api:
+    loadBalancer:
+      securityGroupOverride: sg-elb # Not a valid name format on AWS, but doesn't matter for our tests
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/existingsg.example.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: a
+    - instanceGroup: master-us-test-1b
+      name: b
+    - instanceGroup: master-us-test-1c
+      name: c
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: a
+    - instanceGroup: master-us-test-1b
+      name: b
+    - instanceGroup: master-us-test-1c
+      name: c
+    name: events
+  kubernetesVersion: v1.14.0
+  masterInternalName: api.internal.existingsg.example.com
+  masterPublicName: api.existingsg.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - 0.0.0.0/0
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  - cidr: 172.20.64.0/19
+    name: us-test-1b
+    type: Public
+    zone: us-test-1b
+  - cidr: 172.20.96.0/19
+    name: us-test-1c
+    type: Public
+    zone: us-test-1c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: existingsg.example.com
+  name: master-us-test-1a
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+  securityGroupOverride: sg-master-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: existingsg.example.com
+  name: master-us-test-1b
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1b
+  securityGroupOverride: sg-master-1b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: existingsg.example.com
+  name: master-us-test-1c
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1c
+  # We don't override the default for this master - testing mixing!
+  #securityGroupOverride: sg-master-1c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: nodes
+  labels:
+    kops.k8s.io/cluster: existingsg.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+  securityGroupOverride: sg-nodes
+

@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "copydockerimage.go",
+        "copydockerimage_fitask.go",
+        "copyfile.go",
+        "copyfile_fitask.go",
+        "docker_api.go",
+        "docker_cli.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/assettasks",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/acls:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//util/pkg/hashing:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/docker/engine-api/client:go_default_library",
+        "//vendor/github.com/docker/engine-api/types:go_default_library",
+        "//vendor/golang.org/x/net/context:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["copyfile_test.go"],
+    embed = [":go_default_library"],
+)

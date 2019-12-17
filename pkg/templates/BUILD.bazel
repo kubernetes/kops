@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["templates.go"],
+    importpath = "k8s.io/kops/pkg/templates",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

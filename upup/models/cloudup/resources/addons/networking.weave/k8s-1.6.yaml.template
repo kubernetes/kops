@@ -1,0 +1,235 @@
+{{- if WeaveSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: weave-net
+  namespace: kube-system
+stringData:
+  network-password: {{ WeaveSecret }}
+---
+{{- end }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+      - namespaces
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+roleRef:
+  kind: ClusterRole
+  name: weave-net
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: weave-net
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    resourceNames:
+      - weave-net
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+roleRef:
+  kind: Role
+  name: weave-net
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: weave-net
+    namespace: kube-system
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+spec:
+  template:
+    metadata:
+      labels:
+        name: weave-net
+        role.kubernetes.io/networking: "1"
+      annotations:
+        prometheus.io/scrape: "true"
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      containers:
+        - name: weave
+          command:
+            - /home/weave/launch.sh
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: IPALLOC_RANGE
+              value: {{ .KubeControllerManager.ClusterCIDR }}
+            {{- if .Networking.Weave.MTU }}
+            - name: WEAVE_MTU
+              value: "{{ .Networking.Weave.MTU }}"
+            {{- end }}
+            {{- if .Networking.Weave.ConnLimit }}
+            - name: CONN_LIMIT
+              value: "{{ .Networking.Weave.ConnLimit }}"
+            {{- end }}
+            {{- if .Networking.Weave.NetExtraArgs }}
+            - name: EXTRA_ARGS
+              value: "{{ .Networking.Weave.NetExtraArgs }}"
+            {{- end }}
+            {{- if WeaveSecret }}
+            - name: WEAVE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: weave-net
+                  key: network-password
+            {{- end }}
+          image: 'weaveworks/weave-kube:2.3.0'
+          ports:
+            - name: metrics
+              containerPort: 6782
+          readinessProbe:
+            httpGet:
+              host: 127.0.0.1
+              path: /status
+              port: 6784
+          resources:
+            requests:
+              cpu: 50m
+              memory: 200Mi
+            limits:
+              memory: 200Mi
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: weavedb
+              mountPath: /weavedb
+            - name: cni-bin
+              mountPath: /host/opt
+            - name: cni-bin2
+              mountPath: /host/home
+            - name: cni-conf
+              mountPath: /host/etc
+            - name: dbus
+              mountPath: /host/var/lib/dbus
+            - name: lib-modules
+              mountPath: /lib/modules
+        - name: weave-npc
+          args:
+            - '--use-legacy-netpol'
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          image: 'weaveworks/weave-npc:2.3.0'
+          ports:
+            - name: metrics
+              containerPort: 6781
+          resources:
+            requests:
+              cpu: 50m
+              memory: 200Mi
+            limits:
+              memory: 200Mi
+          securityContext:
+            privileged: true
+      hostNetwork: true
+      hostPID: true
+      restartPolicy: Always
+      securityContext:
+        seLinuxOptions: {}
+      serviceAccountName: weave-net
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - key: CriticalAddonsOnly
+          operator: Exists
+      volumes:
+        - name: weavedb
+          hostPath:
+            path: /var/lib/weave
+        - name: cni-bin
+          hostPath:
+            path: /opt
+        - name: cni-bin2
+          hostPath:
+            path: /home
+        - name: cni-conf
+          hostPath:
+            path: /etc
+        - name: dbus
+          hostPath:
+            path: /var/lib/dbus
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+  updateStrategy:
+    type: RollingUpdate

@@ -1,0 +1,31 @@
+kind: Addons
+metadata:
+  name: monitoring-standalone
+spec:
+  addons:
+  - version: 1.1.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.1.0.yaml
+  - version: 1.2.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.2.0.yaml
+  - version: 1.3.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.3.0.yaml
+  - version: 1.6.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.6.0.yaml
+  - version: 1.7.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.7.0.yaml
+    kubernetesVersion: ">=1.7.0"
+  - version: 1.11.0
+    selector:
+      k8s-addon: monitoring-standalone.addons.k8s.io
+    manifest: v1.11.0.yaml
+    kubernetesVersion: ">=1.11.0"

@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["builder.go"],
+    importpath = "k8s.io/kops/pkg/assets",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/util:go_default_library",
+        "//pkg/featureflag:go_default_library",
+        "//pkg/kubemanifest:go_default_library",
+        "//pkg/values:go_default_library",
+        "//util/pkg/hashing:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["builder_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/util:go_default_library",
+    ],
+)

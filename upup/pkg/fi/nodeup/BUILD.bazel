@@ -1,0 +1,34 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "command.go",
+        "loader.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/nodeup",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//nodeup/pkg/distros:go_default_library",
+        "//nodeup/pkg/model:go_default_library",
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/registry:go_default_library",
+        "//pkg/apis/nodeup:go_default_library",
+        "//pkg/assets:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/loader:go_default_library",
+        "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
+        "//upup/pkg/fi/nodeup/local:go_default_library",
+        "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
+        "//upup/pkg/fi/secrets:go_default_library",
+        "//upup/pkg/fi/utils:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/ec2metadata:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

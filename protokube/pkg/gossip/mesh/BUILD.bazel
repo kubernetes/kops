@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "glogger.go",
+        "gossip.go",
+        "mesh.pb.go",
+        "peer.go",
+        "state.go",
+    ],
+    importpath = "k8s.io/kops/protokube/pkg/gossip/mesh",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//protokube/pkg/gossip:go_default_library",
+        "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/sortkeys:go_default_library",
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/weaveworks/mesh:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

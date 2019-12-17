@@ -1,0 +1,39 @@
+owner: kubernetes
+repo: kops
+assets:
+  - source: .build/dist/darwin/amd64/kops
+    githubName: kops-darwin-amd64
+  - source: .build/dist/darwin/amd64/kops.sha1
+    githubName: kops-darwin-amd64-sha1
+  - source: .build/dist/darwin/amd64/kops.sha256
+    githubName: kops-darwin-amd64-sha256
+  - source: .build/dist/linux/amd64/kops
+    githubName: kops-linux-amd64
+  - source: .build/dist/linux/amd64/kops.sha1
+    githubName: kops-linux-amd64-sha1
+  - source: .build/dist/linux/amd64/kops.sha256
+    githubName: kops-linux-amd64-sha256
+  - source: .build/dist/windows/amd64/kops.exe
+    githubName: kops-windows-amd64
+  - source: .build/dist/windows/amd64/kops.exe.sha1
+    githubName: kops-windows-amd64-sha1
+  - source: .build/dist/windows/amd64/kops.exe.sha256
+    githubName: kops-windows-amd64-sha256
+  - source: .build/dist/images/protokube.tar.gz
+    githubName: images-protokube.tar.gz
+  - source: .build/dist/images/protokube.tar.gz.sha1
+    githubName: images-protokube.tar.gz.sha1
+  - source: .build/dist/images/protokube.tar.gz.sha256
+    githubName: images-protokube.tar.gz.sha256
+  - source: .build/dist/linux/amd64/utils.tar.gz
+    githubName: linux-amd64-utils.tar.gz
+  - source: .build/dist/linux/amd64/utils.tar.gz.sha1
+    githubName: linux-amd64-utils.tar.gz.sha1
+  - source: .build/dist/linux/amd64/utils.tar.gz.sha256
+    githubName: linux-amd64-utils.tar.gz.sha256
+  - source: .build/dist/nodeup
+    githubName: linux-amd64-nodeup
+  - source: .build/dist/nodeup.sha1
+    githubName: linux-amd64-nodeup.sha1
+  - source: .build/dist/nodeup.sha256
+    githubName: linux-amd64-nodeup.sha256

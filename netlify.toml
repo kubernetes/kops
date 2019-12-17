@@ -1,0 +1,4 @@
+# netlify configuration
+[build]
+publish = "site"
+command = "make build-docs-netlify"

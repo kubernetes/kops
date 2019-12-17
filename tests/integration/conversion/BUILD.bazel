@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = ["integration_test.go"],
+    data = [
+        "exported_testdata",  # keep
+    ],
+    deps = [
+        "//pkg/apis/kops/v1alpha1:go_default_library",
+        "//pkg/apis/kops/v1alpha2:go_default_library",
+        "//pkg/diff:go_default_library",
+        "//pkg/kopscodecs:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "exported_testdata",
+    srcs = glob(["minimal/**"]),
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api.go",
+        "attributes.go",
+        "healthcheck.go",
+        "tags.go",
+    ],
+    importpath = "k8s.io/kops/cloudmock/aws/mockelb",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elb/elbiface:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

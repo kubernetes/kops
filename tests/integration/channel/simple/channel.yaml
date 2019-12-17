@@ -1,0 +1,33 @@
+spec:
+  images:
+    # We put the "legacy" version first, for kops versions that don't support versions ( < 1.5.0 )
+    - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+      providerID: aws
+      kubernetesVersion: ">=1.4.0 <1.5.0"
+    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09
+      providerID: aws
+      kubernetesVersion: ">=1.5.0"
+  cluster:
+    kubernetesVersion: v1.4.7
+    networking:
+      kubenet: {}
+  kubernetesVersions:
+  - range: ">=1.5.0"
+    recommendedVersion: 1.5.2
+    requiredVersion: 1.5.1
+  - range: "<1.5.0"
+    recommendedVersion: 1.4.8
+    requiredVersion: 1.4.2
+  kopsVersions:
+  - range: ">=1.5.0"
+    recommendedVersion: 1.5.1
+    requiredVersion: 1.5.0
+    kubernetesVersion: 1.5.2
+  - range: ">=1.5.0-alpha1"
+    recommendedVersion: 1.5.0-beta1
+    requiredVersion: 1.5.0-beta1
+    kubernetesVersion: 1.5.0
+  - range: "<1.5.0"
+    recommendedVersion: 1.4.5
+    requiredVersion: 1.4.5
+    kubernetesVersion: 1.4.8

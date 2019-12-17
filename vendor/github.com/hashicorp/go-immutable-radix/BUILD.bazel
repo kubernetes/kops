@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "edges.go",
+        "iradix.go",
+        "iter.go",
+        "node.go",
+        "raw_iter.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/hashicorp/go-immutable-radix",
+    importpath = "github.com/hashicorp/go-immutable-radix",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/hashicorp/golang-lru/simplelru:go_default_library"],
+)

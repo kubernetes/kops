@@ -1,0 +1,52 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "model.go",
+        "options.go",
+    ],
+    importpath = "k8s.io/kops/pkg/model/components/etcdmanager",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/assets:go_default_library",
+        "//pkg/dns:go_default_library",
+        "//pkg/featureflag:go_default_library",
+        "//pkg/flagbuilder:go_default_library",
+        "//pkg/k8scodecs:go_default_library",
+        "//pkg/kubemanifest:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/model/components:go_default_library",
+        "//pkg/urls:go_default_library",
+        "//pkg/wellknownports:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//upup/pkg/fi/cloudup/do:go_default_library",
+        "//upup/pkg/fi/cloudup/gce:go_default_library",
+        "//upup/pkg/fi/cloudup/openstack:go_default_library",
+        "//upup/pkg/fi/fitasks:go_default_library",
+        "//upup/pkg/fi/loader:go_default_library",
+        "//util/pkg/env:go_default_library",
+        "//util/pkg/exec:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/yaml:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["model_test.go"],
+    data = glob(["tests/**"]),
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/assets:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/testutils:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+    ],
+)

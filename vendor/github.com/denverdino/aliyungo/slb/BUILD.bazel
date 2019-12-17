@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "certificates.go",
+        "client.go",
+        "listeners.go",
+        "loadbalancers.go",
+        "regions.go",
+        "rules.go",
+        "servers.go",
+        "tags.go",
+        "vserver_group.go",
+        "zones.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/slb",
+    importpath = "github.com/denverdino/aliyungo/slb",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/util:go_default_library",
+    ],
+)

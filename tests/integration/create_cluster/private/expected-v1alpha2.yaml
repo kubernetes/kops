@@ -1,0 +1,126 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: private.example.com
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudLabels:
+    Owner: John Doe
+    dn: 'cn=John Doe: dc=example dc=com'
+    foo/bar: fib+baz
+  cloudProvider: aws
+  configBase: memfs://tests/private.example.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: a
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: a
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: v1.4.8
+  masterPublicName: api.private.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kopeio: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Private
+    zone: us-test-1a
+  - cidr: 172.20.0.0/22
+    name: utility-us-test-1a
+    type: Utility
+    zone: us-test-1a
+  topology:
+    bastion:
+      bastionPublicName: bastion.private.example.com
+    dns:
+      type: Public
+    masters: private
+    nodes: private
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: private.example.com
+  name: bastions
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: bastions
+  role: Bastion
+  subnets:
+  - utility-us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: private.example.com
+  name: master-us-test-1a
+spec:
+  additionalSecurityGroups:
+  - sg-exampleid3
+  - sg-exampleid4
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: private.example.com
+  name: nodes
+spec:
+  additionalSecurityGroups:
+  - sg-exampleid
+  - sg-exampleid2
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - us-test-1a

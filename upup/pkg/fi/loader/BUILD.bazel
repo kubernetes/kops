@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "options_loader.go",
+        "tree_walker.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/loader",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upup/pkg/fi/utils:go_default_library",
+        "//util/pkg/reflectutils:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

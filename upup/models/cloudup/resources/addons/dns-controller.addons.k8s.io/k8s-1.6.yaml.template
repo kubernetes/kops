@@ -1,0 +1,116 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: dns-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+    k8s-app: dns-controller
+    version: v1.17.0-alpha.1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: dns-controller
+  template:
+    metadata:
+      labels:
+        k8s-addon: dns-controller.addons.k8s.io
+        k8s-app: dns-controller
+        version: v1.17.0-alpha.1
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+        # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key": "dedicated", "value": "master"}]'
+    spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        effect: NoSchedule
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
+      serviceAccount: dns-controller
+      containers:
+      - name: dns-controller
+        image: kope/dns-controller:1.17.0-alpha.1
+        command:
+{{ range $arg := DnsControllerArgv }}
+        - "{{ $arg }}"
+{{ end }}
+{{- if .EgressProxy }}
+        env:
+{{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
+{{- end }}
+{{- if eq .CloudProvider "digitalocean" }}
+        env:
+        - name: DIGITALOCEAN_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: digitalocean
+              key: access-token
+{{- end }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dns-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+  name: kops:dns-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  - pods
+  - ingress
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "extensions"
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+  name: kops:dns-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops:dns-controller
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:dns-controller

@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "equals.go",
+        "hash.go",
+        "sanitize.go",
+        "yaml.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/utils",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/client-go/util/homedir:go_default_library",
+    ],
+)

@@ -1,0 +1,5 @@
+ClusterName: minimal.example.com
+Zones:
+- us-test-1a
+Cloud: aws
+KubernetesVersion: v1.11.0

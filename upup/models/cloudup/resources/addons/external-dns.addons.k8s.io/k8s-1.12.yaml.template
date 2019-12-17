@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns
+  namespace: kube-system
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+    k8s-app: external-dns
+    version: v0.4.4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: external-dns
+  template:
+    metadata:
+      labels:
+        k8s-addon: external-dns.addons.k8s.io
+        k8s-app: external-dns
+        version: v0.4.4
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      serviceAccount: external-dns
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        effect: NoSchedule
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
+      containers:
+      - name: external-dns
+        image: registry.opensource.zalan.do/teapot/external-dns:v0.4.4
+        args:
+{{ range $arg := ExternalDnsArgv }}
+        - "{{ $arg }}"
+{{ end }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: external-dns
+  namespace: kube-system
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+  name: kops:external-dns
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - list
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - list
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: external-dns.addons.k8s.io
+  name: kops:external-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops:external-dns
+subjects:
+- kind: ServiceAccount
+  name: external-dns
+  namespace: kube-system

@@ -1,0 +1,8 @@
+filegroup(
+    name = "channeldata",
+    srcs = [
+        "alpha",
+        "stable",
+    ],
+    visibility = ["//visibility:public"],
+)

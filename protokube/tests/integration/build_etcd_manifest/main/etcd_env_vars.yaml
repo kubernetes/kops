@@ -1,0 +1,110 @@
+clientPort: 4001
+clusterName: etcd-main
+clusterToken: token-main
+cpuRequest: "200m"
+memoryRequest: "100Mi"
+dataDirName: data-main
+imageSource: k8s.gcr.io/etcd:2.2.1
+logFile: /var/log/etcd.log
+peerPort: 2380
+podName: etcd-server-main
+volumeMountPath: /mnt/main
+electionTimeout: "1000"
+heartbeatInterval: "100"
+me:
+  name: node0
+  internalName: node0.internal
+nodes:
+- name: node0
+  internalName: node0.internal
+- name: node1
+  internalName: node1.internal
+- name: node2
+  internalName: node2.internal
+spec: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  creationTimestamp: null
+  labels:
+    k8s-app: etcd-server-main
+  name: etcd-server-main
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    - -c
+    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /usr/local/bin/etcd  >
+      /tmp/pipe 2>&1
+    env:
+    - name: ETCD_NAME
+      value: node0
+    - name: ETCD_DATA_DIR
+      value: /var/etcd/data-main
+    - name: ETCD_LISTEN_PEER_URLS
+      value: http://0.0.0.0:2380
+    - name: ETCD_LISTEN_CLIENT_URLS
+      value: http://0.0.0.0:4001
+    - name: ETCD_ADVERTISE_CLIENT_URLS
+      value: http://node0.internal:4001
+    - name: ETCD_INITIAL_ADVERTISE_PEER_URLS
+      value: http://node0.internal:2380
+    - name: ETCD_INITIAL_CLUSTER_STATE
+      value: new
+    - name: ETCD_INITIAL_CLUSTER_TOKEN
+      value: token-main
+    - name: ETCD_ELECTION_TIMEOUT
+      value: "1000"
+    - name: ETCD_HEARTBEAT_INTERVAL
+      value: "100"
+    - name: ETCD_INITIAL_CLUSTER
+      value: node0=http://node0.internal:2380,node1=http://node1.internal:2380,node2=http://node2.internal:2380
+    image: k8s.gcr.io/etcd:2.2.1
+    livenessProbe:
+      httpGet:
+        host: 127.0.0.1
+        path: /health
+        port: 4001
+        scheme: HTTP
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: etcd-container
+    ports:
+    - containerPort: 2380
+      hostPort: 2380
+      name: serverport
+    - containerPort: 4001
+      hostPort: 4001
+      name: clientport
+    resources:
+      requests:
+        cpu: 200m
+        memory: 100Mi
+    volumeMounts:
+    - mountPath: /var/etcd/data-main
+      name: varetcdata
+    - mountPath: /var/log/etcd.log
+      name: varlogetcd
+    - mountPath: /etc/hosts
+      name: hosts
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  volumes:
+  - hostPath:
+      path: /mnt/main/var/etcd/data-main
+    name: varetcdata
+  - hostPath:
+      path: /var/log/etcd.log
+    name: varlogetcd
+  - hostPath:
+      path: /etc/hosts
+    name: hosts
+status: {}

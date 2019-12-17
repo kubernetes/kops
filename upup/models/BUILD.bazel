@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bindata.go",
+        "vfs.go",
+    ],
+    importpath = "k8s.io/kops/upup/models",
+    visibility = ["//visibility:public"],
+    deps = ["//util/pkg/vfs:go_default_library"],
+)
+
+genrule(
+    name = "bindata",
+    srcs = glob(
+        [
+            "cloudup/**",
+            "nodeup/**",
+        ],
+    ),
+    outs = ["bindata.go"],
+    cmd = """
+$(location //vendor/github.com/jteeuwen/go-bindata/go-bindata:go-bindata) \
+  -o "$(OUTS)" -pkg models \
+  -prefix $$(pwd) \
+  -prefix upup/models $(SRCS)
+""",
+    tools = [
+        "//vendor/github.com/jteeuwen/go-bindata/go-bindata",
+    ],
+)

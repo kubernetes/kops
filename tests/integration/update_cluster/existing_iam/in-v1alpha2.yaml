@@ -1,0 +1,132 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: existing-iam.example.com
+spec:
+  api:
+    dns: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://tests/existing-iam.example.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: a
+    name: events
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: v1.14.0
+  masterPublicName: api.existing-iam.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  roleCustomIamRoles:
+    Master: foo
+    Node: bar
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  - cidr: 172.20.64.0/19
+    name: us-test-1b
+    type: Public
+    zone: us-test-1b
+  - cidr: 172.20.96.0/19
+    name: us-test-1c
+    type: Public
+    zone: us-test-1c
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: existing-iam.example.com
+  name: master-us-test-1a
+spec:
+  iam:
+    profile: arn:aws:iam::4222917490108:instance-profile/kops-custom-master-role
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: existing-iam.example.com
+  name: master-us-test-1b
+spec:
+  iam:
+    profile: arn:aws:iam::4222917490108:instance-profile/kops-custom-master-role
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: existing-iam.example.com
+  name: master-us-test-1c
+spec:
+  iam:
+    profile: arn:aws:iam::4222917490108:instance-profile/kops-custom-master-role
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: existing-iam.example.com
+  name: nodes
+spec:
+  iam:
+    profile: arn:aws:iam::422917490108:instance-profile/kops-custom-node-role
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+

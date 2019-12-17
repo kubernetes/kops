@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "dns_cleanup.go",
+        "main.go",
+    ],
+    importpath = "k8s.io/kops/protokube/cmd/protokube",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//dns-controller/pkg/dns:go_default_library",
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/coredns:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
+        "//pkg/wellknownports:go_default_library",
+        "//protokube/pkg/gossip:go_default_library",
+        "//protokube/pkg/gossip/dns:go_default_library",
+        "//protokube/pkg/gossip/memberlist:go_default_library",
+        "//protokube/pkg/gossip/mesh:go_default_library",
+        "//protokube/pkg/protokube:go_default_library",
+        "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "protokube",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

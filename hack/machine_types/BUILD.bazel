@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "machine_types.go",
+        "vpc_ip_resource_limit.go",
+    ],
+    importpath = "k8s.io/kops/hack/machine_types",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/pricing:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "machinetypes",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

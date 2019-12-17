@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api.go",
+        "iaminstanceprofile.go",
+        "iamrole.go",
+        "iamrolepolicy.go",
+    ],
+    importpath = "k8s.io/kops/cloudmock/aws/mockiam",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/iam:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/iam/iamiface:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

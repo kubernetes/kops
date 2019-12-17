@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api.go",
+        "attach.go",
+        "group.go",
+        "launchconfigurations.go",
+        "tags.go",
+    ],
+    importpath = "k8s.io/kops/cloudmock/aws/mockautoscaling",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

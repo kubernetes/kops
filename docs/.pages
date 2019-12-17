@@ -1,0 +1,10 @@
+arrange:
+- index.md
+- advisories
+- api-server
+- cli
+- development
+- examples
+- tutorial
+- releases
+- getting_started/aws.md

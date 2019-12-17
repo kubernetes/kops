@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["storage.go"],
+    importpath = "k8s.io/kops/pkg/acls/s3",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/acls:go_default_library",
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/values:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["storage_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/values:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+    ],
+)

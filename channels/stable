@@ -1,0 +1,104 @@
+spec:
+  images:
+    # We put the "legacy" version first, for kops versions that don't support versions ( < 1.5.0 )
+    - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+      providerID: aws
+      kubernetesVersion: ">=1.4.0 <1.5.0"
+    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-08-17
+      providerID: aws
+      kubernetesVersion: ">=1.5.0 <1.6.0"
+    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2018-08-17
+      providerID: aws
+      kubernetesVersion: ">=1.6.0 <1.7.0"
+    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-08-17
+      providerID: aws
+      kubernetesVersion: ">=1.7.0 <1.8.0"
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+      providerID: aws
+      kubernetesVersion: ">=1.8.0 <1.9.0"
+    - name: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-08-17
+      providerID: aws
+      kubernetesVersion: ">=1.9.0 <1.10.0"
+    - name: kope.io/k8s-1.10-debian-jessie-amd64-hvm-ebs-2018-08-17
+      providerID: aws
+      kubernetesVersion: ">=1.10.0 <1.11.0"
+    # Stretch is the default for 1.11 (for nvme)
+    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.11.0 <1.12.0"
+    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.12.0 <1.13.0"
+    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.13.0 <1.14.0"
+    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.14.0 <1.15.0"
+    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+      providerID: aws
+      kubernetesVersion: ">=1.15.0"
+    - providerID: gce
+      name: "cos-cloud/cos-stable-65-10323-99-0"
+  cluster:
+    kubernetesVersion: v1.5.8
+    networking:
+      kubenet: {}
+  kubernetesVersions:
+  - range: ">=1.17.0"
+    recommendedVersion: 1.17.0
+    requiredVersion: 1.17.0
+  - range: ">=1.16.0"
+    recommendedVersion: 1.16.3
+    requiredVersion: 1.16.0
+  - range: ">=1.15.0"
+    recommendedVersion: 1.15.6
+    requiredVersion: 1.15.0
+  - range: ">=1.14.0"
+    recommendedVersion: 1.14.9
+    requiredVersion: 1.14.0
+  - range: ">=1.13.0"
+    recommendedVersion: 1.13.12
+    requiredVersion: 1.13.0
+  - range: ">=1.12.0"
+    recommendedVersion: 1.12.10
+    requiredVersion: 1.12.0
+  - range: ">=1.11.0"
+    recommendedVersion: 1.11.10
+    requiredVersion: 1.11.0
+  - range: "<1.11.0"
+    recommendedVersion: 1.11.10
+    requiredVersion: 1.11.10
+  kopsVersions:
+  - range: ">=1.17.0-alpha.1"
+    #recommendedVersion: "1.17.0"
+    #requiredVersion: 1.17.0
+    kubernetesVersion: 1.17.0
+  - range: ">=1.16.0-alpha.1"
+    #recommendedVersion: "1.16.0"
+    #requiredVersion: 1.16.0
+    kubernetesVersion: 1.16.3
+  - range: ">=1.15.0-alpha.1"
+    #recommendedVersion: "1.15.0"
+    #requiredVersion: 1.15.0
+    kubernetesVersion: 1.15.6
+  - range: ">=1.14.0-alpha.1"
+    #recommendedVersion: "1.14.0"
+    #requiredVersion: 1.14.0
+    kubernetesVersion: 1.14.9
+  - range: ">=1.13.0-alpha.1"
+    #recommendedVersion: "1.13.0"
+    #requiredVersion: 1.13.0
+    kubernetesVersion: 1.13.12
+  - range: ">=1.12.0-alpha.1"
+    recommendedVersion: "1.12.1"
+    #requiredVersion: 1.12.0
+    kubernetesVersion: 1.12.10
+  - range: ">=1.11.0-alpha.1"
+    recommendedVersion: "1.11.1"
+    #requiredVersion: 1.11.0
+    kubernetesVersion: 1.11.10
+  - range: "<1.11.0-alpha.1"
+    recommendedVersion: "1.11.1"
+    #requiredVersion: 1.10.0
+    kubernetesVersion: 1.11.10

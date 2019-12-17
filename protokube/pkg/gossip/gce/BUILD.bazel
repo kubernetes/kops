@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["seeds.go"],
+    importpath = "k8s.io/kops/protokube/pkg/gossip/gce",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//protokube/pkg/gossip:go_default_library",
+        "//vendor/google.golang.org/api/compute/v0.beta:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

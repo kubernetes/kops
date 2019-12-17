@@ -1,0 +1,153 @@
+site_name: Kubernetes Operations - kops
+# strict: true
+repo_name: 'kubernetes/kops'
+repo_url: 'https://github.com/kubernetes/kops'
+site_url: 'https://kubernetes-kops.netlify.com'
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.inlinehilite
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences
+  - pymdownx.tilde
+  - toc:
+      permalink: ' ¶'
+theme:
+  name: material
+  feature:
+    tabs: true
+  logo:
+    icon: 'public'   # globe icon
+  palette:
+    primary: 'teal'
+    accent: 'green'
+plugins:
+  - search
+
+extra_css: [extra.css]
+
+nav:
+  - Welcome:
+    - Welcome: "index.md"
+    - Releases & Versioning: "welcome/releases.md"
+    - Contributing: "welcome/contributing.md"
+    - Office Hours: "welcome/office_hours.md"
+  - Getting Started:
+    - Installing: "getting_started/install.md"
+    - Deploying to AWS: "getting_started/aws.md"
+    - Deploying to GCE: "getting_started/gce.md"
+    - Deploying to OpenStack - Beta: "getting_started/openstack.md"
+    - Deploying to Digital Ocean - Alpha: "getting_started/digitalocean.md"
+    - Kops Commands: "getting_started/commands.md"
+    - Kops Arguments: "getting_started/arguments.md"
+    - kubectl usage: "getting_started/kubectl.md"
+  - CLI:
+    - kops: "cli/kops.md"
+    - kops completion: "cli/kops_completion.md"
+    - kops create: "cli/kops_create.md"
+    - kops delete: "cli/kops_delete.md"
+    - kops describe: "cli/kops_describe.md"
+    - kops edit: "cli/kops_edit.md"
+    - kops export: "cli/kops_export.md"
+    - kops get: "cli/kops_get.md"
+    - kops import: "cli/kops_import.md"
+    - kops replace: "cli/kops_replace.md"
+    - kops rolling-update: "cli/kops_rolling-update.md"
+    - kops set: "cli/kops_set.md"
+    - kops toolbox: "cli/kops_toolbox.md"
+    - kops update: "cli/kops_update.md"
+    - kops upgrade: "cli/kops_upgrade.md"
+    - kops validate: "cli/kops_validate.md"
+    - kops version: "cli/kops_version.md"
+  - API:
+    - Cluster Spec: "cluster_spec.md"
+    - Instance Group API: "instance_groups.md"
+    - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
+    - Godocs for Cluster - ClusterSpec: "https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec"
+    - Godocs for Instance Group - InstanceGroupSpec: "https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec"
+
+  - Operations:
+    - Updates & Upgrades: "operations/updates_and_upgrades.md"
+    - High Availability: "operations/high_availability.md"
+    - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
+    - Instancegroup images: "operations/images.md"
+    - Cluster Addons & Manager : "operations/addons.md"
+    - Cluster configuration management: "changing_configuration.md"
+    - Cluster Templating: "operations/cluster_template.md"
+    - Cluster upgrades and migrations: "operations/cluster_upgrades_and_migrations.md"
+    - GPU setup: "gpu.md"
+    - kube-up to kops upgrade: "upgrade_from_kubeup.md"
+    - Label management: "labels.md"
+    - Secret management: "secrets.md"
+    - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
+    - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
+    - Running kops in a CI environment: "continuous_integration.md"
+  - Networking:
+    - Networking Overview including CNI: "networking.md"
+    - Run kops in an existing VPC: "run_in_existing_vpc.md"
+    - Supported network topologies: "topology.md"
+    - Subdomain setup: "creating_subdomain.md"
+  - Security:
+    - Security: "security.md"
+    - Advisories: "advisories/README.md"
+    - Bastion setup: "bastion.md"
+    - IAM roles: "iam_roles.md"
+    - MFA setup: "mfa.md"
+    - Security Groups: "security_groups.md"
+  - Advanced:
+    - Download Config: "advanced/download_config.md"
+    - Subdomain NS Records: "advanced/ns.md"
+    - Experimental: "advanced/experimental.md"
+    - Cluster boot sequence: "boot-sequence.md"
+    - Philosophy: "philosophy.md"
+    - State store: "state.md"
+    - AWS China: "aws-china.md"
+    - Calico v3: "calico-v3.md"
+    - Custom CA: "custom_ca.md"
+    - etcd3 Migration: "etcd3-migration.md"
+    - Horizontal Pod Autoscaling: "horizontal_pod_autoscaling.md"
+    - Egress Proxy: "http_proxy.md"
+    - Node Authorization: "node_authorization.md"
+    - Node Resource Allocation: "node_resource_handling.md"
+    - Rotate Secrets: "rotate-secrets.md"
+    - Terraform: "terraform.md"
+    - Authentication: "authentication.md"
+  - Development:
+    - Building: "development/building.md"
+    - Releases: "releases.md"
+    - New Kubernetes Version: "development/new_kubernetes_version.md"
+    - Developing using Docker: "development/Docker.md"
+    - Development with vSphere: "vsphere-dev.md"
+    - vSphere support status: "vsphere-development-status.md"
+    - Documentation Guidelines: "development/documentation.md"
+    - E2E testing with `kops` clusters: "development/testing.md"
+    - Example on how to add a feature: "development/adding_a_feature.md"
+    - Hack Directory: "development/hack.md"
+    - How to update `kops` API: "development/api_updates.md"
+    - Low level description on how kops works: "development/how_it_works.md"
+    - Notes on Gossip design: "development/gossip.md"
+    - Notes on master instance sizing: "development/instancesizes.md"
+    - Our release process: "development/release.md"
+    - Releasing with Homebrew: "development/homebrew.md"
+    - Rolling Update Diagrams: "development/rolling_update.md"
+    - Bazel: "development/bazel.md"
+    - Vendoring: "development/vendoring.md"
+    - Ports: "development/ports.md"
+  - Releases:
+    - 1.15: releases/1.15-NOTES.md
+    - 1.14: releases/1.14-NOTES.md
+    - 1.13: releases/1.13-NOTES.md
+    - 1.12: releases/1.12-NOTES.md
+    - 1.11: releases/1.11-NOTES.md
+    - 1.10: releases/1.10-NOTES.md
+    - 1.9: releases/1.9-NOTES.md
+    - 1.8.1: releases/1.8.1.md
+    - 1.8: releases/1.8-NOTES.md
+    - 1.7.1: releases/1.7.1.md
+    - 1.7: releases/1.7-NOTES.md
+    - 1.6.2: releases/1.6.2.md
+    - 1.6.1: releases/1.6.1.md
+    - 1.6.0: releases/1.6-NOTES.md
+    - 1.6.0-alpha: releases/1.6.0-alpha.1.md
+    - legacy-changes.md: releases/legacy-changes.md

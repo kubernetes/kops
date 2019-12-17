@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# Copyright 2017 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Enabling vSphere cloud provider feature flag in kops.
+export KOPS_FEATURE_FLAGS=+VSphereCloudProvider
+
+# If set, this dns controller image will be used.
+# Leave this value unmodified if you are not building a new dns-controller image.
+export DNSCONTROLLER_IMAGE=cnastorage/dns-controller
+
+# S3 bucket that kops should use.
+export KOPS_STATE_STORE=s3://your-obj-store
+
+# S3 state store credentials
+export S3_REGION=us-west-2
+export S3_ACCESS_KEY_ID=something
+export S3_SECRET_ACCESS_KEY=something
+export S3_ENDPOINT=http://endpoint_ip:port
+
+# vSphere credentials
+export VSPHERE_USERNAME=administrator@vsphere.local
+export VSPHERE_PASSWORD=Admin!23
+
+# Set TARGET and TARGET_PATH to values where you want nodeup and protokube binaries to get copied.
+# Urls corresponding to this location are set for NODEUP_URL and PROTOKUBE_IMAGE.
+# Leave TARGET and TARGET_PATH empty if you want to use the pre-build nodeup and protokube.
+export TARGET=jdoe@pa-dbc1131.eng.vmware.com
+export TARGET_PATH=/dbc/pa-dbc1131/jdoe/misc/kops/
+
+# Set urls to access nodeup binary and protokube image tar in NODEUP_URL and PROTOKUBE_IMAGE, respectively.
+# Leave NODEUP_URL and PROTOKUBE_IMAGE unchanged if you want to use the pre-build nodeup and protokube.
+#export NODEUP_URL=http://pa-dbc1131.eng.vmware.com/jdoe/misc/kops/nodeup/nodeup
+#export PROTOKUBE_IMAGE=http://pa-dbc1131.eng.vmware.com/jdoe/misc/kops/protokube/protokube.tar.gz
+export NODEUP_URL=https://storage.googleapis.com/kops-vsphere/nodeup
+export PROTOKUBE_IMAGE=https://storage.googleapis.com/kops-vsphere/protokube.tar.gz
+
+echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
+echo "DNSCONTROLLER_IMAGE=${DNSCONTROLLER_IMAGE}"
+echo "KOPS_STATE_STORE=${KOPS_STATE_STORE}"
+echo "S3_REGION=${S3_REGION}"
+echo "S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}"
+echo "S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}"
+echo "S3_ENDPOINT=${S3_ENDPOINT}"
+echo "VSPHERE_USERNAME=${VSPHERE_USERNAME}"
+echo "VSPHERE_PASSWORD=${VSPHERE_PASSWORD}"
+echo "NODEUP_URL=${NODEUP_URL}"
+echo "PROTOKUBE_IMAGE=${PROTOKUBE_IMAGE}"
+echo "TARGET=${TARGET}"
+echo "TARGET_PATH=${TARGET_PATH}"

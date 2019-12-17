@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "context.go",
+        "droplets.go",
+    ],
+    importpath = "k8s.io/kops/pkg/model/domodel",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/model:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/do:go_default_library",
+        "//upup/pkg/fi/cloudup/dotasks:go_default_library",
+    ],
+)

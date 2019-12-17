@@ -1,0 +1,138 @@
+# ------------------------------------------
+# Config Map
+# ------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spotinst-kubernetes-cluster-controller-config
+  namespace: kube-system
+data:
+  spotinst.token: {{ SpotinstToken }}
+  spotinst.account: {{ SpotinstAccount }}
+  spotinst.cluster-identifier: {{ ClusterName }}
+---
+# ------------------------------------------
+# Secret
+# ------------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spotinst-kubernetes-cluster-controller-certs
+  namespace: kube-system
+type: Opaque
+---
+# ------------------------------------------
+# Service Account
+# ------------------------------------------
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spotinst-kubernetes-cluster-controller
+  namespace: kube-system
+---
+# ------------------------------------------
+# Cluster Role
+# ------------------------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spotinst-kubernetes-cluster-controller
+  namespace: kube-system
+rules:
+- apiGroups: [""]
+  resources: ["pods", "nodes", "replicationcontrollers", "events", "limitranges", "services", "persistentvolumes", "persistentvolumeclaims", "namespaces"]
+  verbs: ["get", "delete", "list", "patch", "update"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get","list","patch"]
+- apiGroups: ["extensions"]
+  resources: ["replicasets"]
+  verbs: ["get","list"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles"]
+  verbs: ["patch", "update", "escalate"]
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets"]
+  verbs: ["list"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods"]
+  verbs: ["list"]
+- nonResourceURLs: ["/version/", "/version"]
+  verbs: ["get"]
+---
+# ------------------------------------------
+# Cluster Role Binding
+# ------------------------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: spotinst-kubernetes-cluster-controller
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: spotinst-kubernetes-cluster-controller
+subjects:
+- kind: ServiceAccount
+  name: spotinst-kubernetes-cluster-controller
+  namespace: kube-system
+---
+# ------------------------------------------
+# Deployment
+# ------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+  name: spotinst-kubernetes-cluster-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+  template:
+    metadata:
+      labels:
+        k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+    spec:
+      containers:
+      - name: spotinst-kubernetes-cluster-controller
+        imagePullPolicy: Always
+        image: spotinst/kubernetes-cluster-controller:1.0.39
+        volumeMounts:
+        - name: spotinst-kubernetes-cluster-controller-certs
+          mountPath: /certs
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 4401
+          initialDelaySeconds: 300
+          periodSeconds: 30
+        env:
+        - name: SPOTINST_TOKEN
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: spotinst.token
+        - name: SPOTINST_ACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: spotinst.account
+        - name: CLUSTER_IDENTIFIER
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: spotinst.cluster-identifier
+      volumes:
+      - name: spotinst-kubernetes-cluster-controller-certs
+        secret:
+          secretName: spotinst-kubernetes-cluster-controller-certs
+      serviceAccountName: spotinst-kubernetes-cluster-controller
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+---

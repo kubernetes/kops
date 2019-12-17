@@ -1,0 +1,31 @@
+mode: "0755"
+path: /etc/kubernetes/manifests
+type: directory
+---
+contents: |
+  DAEMON_ARGS="--feature-gates=AllowExtTrafficLocalEndpoints=false,ExperimentalCriticalPodAnnotation=true --node-labels=kubernetes.io/role=node,node-role.kubernetes.io/node= --pod-manifest-path=/etc/kubernetes/manifests --volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec/ --cni-bin-dir=/opt/cni/bin/ --cni-conf-dir=/etc/cni/net.d/ --network-plugin-dir=/opt/cni/bin/"
+  HOME="/root"
+path: /etc/sysconfig/kubelet
+type: file
+---
+Name: kubelet.service
+definition: |
+  [Unit]
+  Description=Kubernetes Kubelet Server
+  Documentation=https://github.com/kubernetes/kubernetes
+  After=docker.service
+
+  [Service]
+  EnvironmentFile=/etc/sysconfig/kubelet
+  ExecStart=/usr/local/bin/kubelet "$DAEMON_ARGS"
+  Restart=always
+  RestartSec=2s
+  StartLimitInterval=0
+  KillMode=process
+  User=root
+  CPUAccounting=true
+  MemoryAccounting=true
+enabled: true
+manageState: true
+running: true
+smartRestart: true

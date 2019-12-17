@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = ["integration_test.go"],
+    data = [
+        "exported_testdata",  # keep
+        "//channels:channeldata",  # keep
+    ],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "exported_testdata",
+    srcs = glob(["simple/**"]),
+    visibility = ["//visibility:public"],
+)

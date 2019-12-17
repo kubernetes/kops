@@ -1,0 +1,9 @@
+kind: Addons
+metadata:
+  name: ingress-nginx
+spec:
+  addons:
+  - version: 1.4.0
+    selector:
+      k8s-addon: ingress-nginx.addons.k8s.io
+    manifest: v1.4.0.yaml

@@ -1,0 +1,188 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kopeio-auth
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-api
+  namespace: kopeio-auth
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+spec:
+  selector:
+    app: auth-api
+  ports:
+  - port: 443
+    targetPort: 9002
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: auth-api
+  namespace: kopeio-auth
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+spec:
+  selector:
+    matchLabels:
+      app: auth-api
+  template:
+    metadata:
+      labels:
+        app: auth-api
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      serviceAccountName: auth-api
+      hostNetwork: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      containers:
+      - name: auth-api
+        image: kopeio/auth-api:1.0.20171125
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9001
+        command:
+        - /auth-api
+        - --listen=127.0.0.1:9001
+        - --secure-port=9002
+        - --etcd-servers=http://127.0.0.1:4001
+        - --v=8
+        - --storage-backend=etcd2
+
+---
+
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.auth.kope.io
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+spec:
+  insecureSkipTLSVerify: true
+  group: auth.kope.io
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: auth-api
+    namespace: kopeio-auth
+  version: v1alpha1
+
+---
+
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.config.auth.kope.io
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+spec:
+  insecureSkipTLSVerify: true
+  group: config.auth.kope.io
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: auth-api
+    namespace: kopeio-auth
+  version: v1alpha1
+
+---
+
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: auth-api
+  namespace: kopeio-auth
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kopeio-auth:auth-api:auth-reader
+  namespace: kube-system
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: auth-api
+  namespace: kopeio-auth
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kopeio-auth:system:auth-delegator
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: auth-api
+  namespace: kopeio-auth
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auth-api
+  namespace: kopeio-auth
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+rules:
+- apiGroups: ["auth.kope.io"]
+  resources: ["users"]
+  verbs: ["get", "list", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: auth-api
+  namespace: kopeio-auth
+  labels:
+    k8s-addon: authentication.kope.io
+    role.kubernetes.io/authentication: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: auth-api
+subjects:
+- kind: ServiceAccount
+  name: auth-api
+  namespace: kopeio-auth

@@ -1,0 +1,37 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api_loadbalancer.go",
+        "autoscalinggroup.go",
+        "context.go",
+    ],
+    importpath = "k8s.io/kops/pkg/model/awsmodel",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/dns:go_default_library",
+        "//pkg/featureflag:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/model/defaults:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awstasks:go_default_library",
+        "//upup/pkg/fi/fitasks:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["autoscalinggroup_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/model:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awstasks:go_default_library",
+    ],
+)

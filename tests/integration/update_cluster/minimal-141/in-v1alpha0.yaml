@@ -1,0 +1,64 @@
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-11T05:47:53Z"
+  name: minimal-141.example.com
+spec:
+  adminAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/minimal-141.example.com
+  etcdClusters:
+  - etcdMembers:
+    - name: us-test-1a
+      zone: us-test-1a
+    name: main
+  - etcdMembers:
+    - name: us-test-1a
+      zone: us-test-1a
+    name: events
+  kubernetesVersion: v1.14.0
+  masterPublicName: api.minimal-141.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  zones:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+
+---
+
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-11T05:47:54Z"
+  name: nodes
+  labels:
+    kops.k8s.io/cluster: minimal-141.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  zones:
+  - us-test-1a
+
+---
+
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-11T05:47:54Z"
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: minimal-141.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  zones:
+  - us-test-1a

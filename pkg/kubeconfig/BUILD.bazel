@@ -1,0 +1,34 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "config.go",
+        "create_kubecfg.go",
+        "kubecfg_builder.go",
+    ],
+    importpath = "k8s.io/kops/pkg/kubeconfig",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/dns:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
+        "//vendor/k8s.io/client-go/tools/clientcmd/api:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["create_kubecfg_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/pki:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
+    ],
+)

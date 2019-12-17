@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["utils.go"],
+    importpath = "k8s.io/kops/pkg/apis/kops/model",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["utils_test.go"],
+    embed = [":go_default_library"],
+    deps = ["//pkg/apis/kops:go_default_library"],
+)

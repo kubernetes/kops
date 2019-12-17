@@ -1,0 +1,87 @@
+apiVersion: kops.k8s.io/v1alpha1
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: subnet.example.com
+spec:
+  adminAccess:
+  - 0.0.0.0/0
+  api:
+    dns: {}
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://tests/subnet.example.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - name: a
+      zone: us-test-1a
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - name: a
+      zone: us-test-1a
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesVersion: v1.4.8
+  masterPublicName: api.subnet.example.com
+  networkCIDR: 10.0.0.0/12
+  networkID: vpc-12345678
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+  zones:
+  - cidr: 10.10.0.0/24
+    id: subnet-1
+    name: us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha1
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: subnet.example.com
+  name: master-us-test-1a
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a
+  role: Master
+  zones:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha1
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: subnet.example.com
+  name: nodes
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  zones:
+  - us-test-1a

@@ -1,0 +1,70 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/kops/dns-controller/cmd/dns-controller",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//dns-controller/pkg/dns:go_default_library",
+        "//dns-controller/pkg/watchers:go_default_library",
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/aws/route53:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/coredns:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/google/clouddns:go_default_library",
+        "//pkg/resources/digitalocean/dns:go_default_library",
+        "//pkg/wellknownports:go_default_library",
+        "//protokube/pkg/gossip:go_default_library",
+        "//protokube/pkg/gossip/dns:go_default_library",
+        "//protokube/pkg/gossip/dns/provider:go_default_library",
+        "//protokube/pkg/gossip/memberlist:go_default_library",
+        "//protokube/pkg/gossip/mesh:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
+        "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/client/metrics/prometheus:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "dns-controller",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+    "container_push",
+    "container_bundle",
+)
+
+container_image(
+    name = "image",
+    base = "@distroless_base//image",
+    cmd = ["/usr/bin/dns-controller"],
+    directory = "/usr/bin/",
+    files = [
+        "dns-controller",
+    ],
+)
+
+container_push(
+    name = "push-image",
+    format = "Docker",
+    image = ":image",
+    registry = "{STABLE_DOCKER_REGISTRY}",
+    repository = "{STABLE_DOCKER_IMAGE_PREFIX}dns-controller",
+    tag = "{STABLE_DNS_CONTROLLER_TAG}",
+)
+
+container_bundle(
+    name = "image-bundle",
+    images = {
+        "{STABLE_DOCKER_IMAGE_PREFIX}dns-controller:{STABLE_DNS_CONTROLLER_TAG}": "image",
+    },
+)

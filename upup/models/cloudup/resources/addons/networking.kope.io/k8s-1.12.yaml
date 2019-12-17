@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kopeio-networking-agent
+  namespace: kube-system
+  labels:
+    k8s-addon: networking.kope.io
+    role.kubernetes.io/networking: "1"
+spec:
+  selector:
+    matchLabels:
+      name: kopeio-networking-agent
+      role.kubernetes.io/networking: "1"
+  template:
+    metadata:
+      labels:
+        name: kopeio-networking-agent
+        role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
+    spec:
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      containers:
+        - resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              memory: 100Mi
+          securityContext:
+            privileged: true
+          image: kopeio/networking-agent:1.0.20181028
+          name: networking-agent
+          volumeMounts:
+            - name: lib-modules
+              mountPath: /lib/modules
+              readOnly: true
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+      serviceAccountName: kopeio-networking-agent
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      volumes:
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kopeio-networking-agent
+  namespace: kube-system
+  labels:
+    k8s-addon: networking.kope.io
+    role.kubernetes.io/networking: "1"
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: networking.kope.io
+  name: kopeio:networking-agent
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: networking.kope.io
+  name: kopeio:networking-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kopeio:networking-agent
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:kopeio-networking-agent

@@ -1,0 +1,10 @@
+[Unit]
+Description=Prepare AWS GPU instances for Nvidia Kubernetes Device Plugin
+After=cloud-config.target cloud-init.target kops-configuration.service apt-daily-upgrade.timer install-xfs.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "/nvidia-device-plugin/nvidia-device-plugin.sh"
+
+[Install]
+WantedBy=multi-user.target

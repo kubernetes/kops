@@ -1,0 +1,50 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bastion.go",
+        "channel.go",
+        "cluster.go",
+        "componentconfig.go",
+        "doc.go",
+        "dockerconfig.go",
+        "instancegroup.go",
+        "keyset.go",
+        "labels.go",
+        "networking.go",
+        "parse.go",
+        "register.go",
+        "sshcredential.go",
+        "status.go",
+        "topology.go",
+        "zz_generated.deepcopy.go",
+    ],
+    importpath = "k8s.io/kops/pkg/apis/kops",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops/util:go_default_library",
+        "//upup/pkg/fi/utils:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "parse_test.go",
+        "semver_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//upup/pkg/fi/utils:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/gopkg.in/inf.v0:go_default_library",
+    ],
+)

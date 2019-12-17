@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "address.go",
+        "api.go",
+        "convenience.go",
+        "dhcpoptions.go",
+        "images.go",
+        "instances.go",
+        "internetgateways.go",
+        "keypairs.go",
+        "launch_templates.go",
+        "natgateway.go",
+        "routetable.go",
+        "securitygroups.go",
+        "subnets.go",
+        "tags.go",
+        "volumes.go",
+        "vpcs.go",
+    ],
+    importpath = "k8s.io/kops/cloudmock/aws/mockec2",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/pki:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2/ec2iface:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

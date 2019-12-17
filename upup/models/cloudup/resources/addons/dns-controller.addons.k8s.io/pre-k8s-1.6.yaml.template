@@ -1,0 +1,39 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: dns-controller
+  namespace: kube-system
+  labels:
+    k8s-addon: dns-controller.addons.k8s.io
+    k8s-app: dns-controller
+    version: v1.17.0-alpha.1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: dns-controller
+  template:
+    metadata:
+      labels:
+        k8s-addon: dns-controller.addons.k8s.io
+        k8s-app: dns-controller
+        version: v1.17.0-alpha.1
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key": "dedicated", "value": "master"}]'
+    spec:
+      nodeSelector:
+        kubernetes.io/role: master
+      dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
+      containers:
+      - name: dns-controller
+        image: kope/dns-controller:1.17.0-alpha.1
+        command:
+{{ range $arg := DnsControllerArgv }}
+        - "{{ $arg }}"
+{{ end }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi

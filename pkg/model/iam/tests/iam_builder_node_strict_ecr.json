@@ -1,0 +1,58 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeRegions"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::kops-tests"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:Get*"
+      ],
+      "Resource": [
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/cluster.spec",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/config",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/instancegroup/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/issued/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kube-proxy/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kubelet/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/ssh/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:GetRepositoryPolicy",
+        "ecr:DescribeRepositories",
+        "ecr:ListImages",
+        "ecr:BatchGetImage"
+      ],
+      "Resource": [
+        "*"
+      ]
+    }
+  ]
+}

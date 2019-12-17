@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["client.go"],
+    importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/metadata",
+    importpath = "github.com/denverdino/aliyungo/metadata",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/denverdino/aliyungo/util:go_default_library"],
+)

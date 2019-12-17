@@ -1,0 +1,188 @@
+{{- $proxy := .EgressProxy -}}
+{{- $na := .NodeAuthorization.NodeAuthorizer -}}
+{{- $name := "node-authorizer" -}}
+{{- $namespace := "kube-system" -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kops:{{ $name }}:nodes-viewer
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+---
+# permits the node access to create a CSR
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kops:{{ $name }}:system:bootstrappers
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: system:node-bootstrapper
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: Group
+  name: system:bootstrappers
+  apiGroup: rbac.authorization.k8s.io
+---
+# indicates to the controller to auto-sign the CSR for this group
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kops:{{ $name }}:approval
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: system:certificates.k8s.io:certificatesigningrequests:nodeclient
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: Group
+  name: system:bootstrappers
+  apiGroup: rbac.authorization.k8s.io
+---
+# the service permission requires to create the bootstrap tokens
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kops:{{ $namespace }}:{{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - secrets
+  verbs:
+  - create
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kops:{{ $namespace }}:{{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kops:{{ $namespace }}:{{ $name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kops:{{ $name }}:nodes-viewer
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops:{{ $name }}:nodes-viewer
+subjects:
+- kind: ServiceAccount
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+    k8s-app: {{ $name }}
+    k8s-addon: {{ $name }}.addons.k8s.io
+spec:
+  selector:
+    matchLabels:
+      k8s-app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        k8s-app: {{ $name }}
+      annotations:
+        dns.alpha.kubernetes.io/internal: {{ $name }}-internal.{{ ClusterName }}
+        prometheus.io/port: "{{ $na.Port }}"
+        prometheus.io/scheme: "https"
+        prometheus.io/scrape: "true"
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/role: master
+      serviceAccount: {{ $name }}
+      securityContext:
+        fsGroup: 1000
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          effect: NoSchedule
+      volumes:
+        - name: config
+          hostPath:
+            path: /srv/kubernetes/node-authorizer
+            type: DirectoryOrCreate
+      containers:
+        - name: {{ $name }}
+          image: {{ $na.Image }}
+          args:
+            - server
+            - --authorization-timeout={{ $na.Timeout.Duration }}
+            - --authorizer={{ $na.Authorizer }}
+            - --cluster-name={{ ClusterName }}
+            {{- range $na.Features }}
+            - --feature={{ . }}
+            {{- end }}
+            - --listen=0.0.0.0:{{ $na.Port }}
+            - --tls-cert=/config/tls.pem
+            - --tls-client-ca=/config/ca.pem
+            - --tls-private-key=/config/tls-key.pem
+            - --token-ttl={{ $na.TokenTTL.Duration }}
+          {{- if $proxy }}
+          env:
+            - name: http_proxy
+              value: {{ $proxy.HTTPProxy.Host }}:{{ $proxy.HTTPProxy.Port }}
+            {{- if $proxy.ProxyExcludes }}
+            - name: no_proxy
+              value: {{ $proxy.ProxyExcludes }}
+            {{- end }}
+          {{- end }}
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          volumeMounts:
+            - mountPath: /config
+              readOnly: true
+              name: config

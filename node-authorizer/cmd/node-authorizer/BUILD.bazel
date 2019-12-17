@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "main.go",
+        "server.go",
+    ],
+    importpath = "k8s.io/kops/node-authorizer/cmd/node-authorizer",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//node-authorizer/pkg/authorizers/alwaysallow:go_default_library",
+        "//node-authorizer/pkg/authorizers/aws:go_default_library",
+        "//node-authorizer/pkg/client:go_default_library",
+        "//node-authorizer/pkg/server:go_default_library",
+        "//node-authorizer/pkg/utils:go_default_library",
+        "//vendor/github.com/urfave/cli:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "node-authorizer",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
