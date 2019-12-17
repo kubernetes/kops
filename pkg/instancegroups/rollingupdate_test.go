@@ -540,7 +540,7 @@ func TestRollingUpdateFlappingValidation(t *testing.T) {
 
 	// This should only take a few milliseconds,
 	// but we have to pad to allow for random delays (e.g. GC)
-	// TODO: Replace with a virtual clock?	
+	// TODO: Replace with a virtual clock?
 	c.ValidationTimeout = 200 * time.Second
 	
 	c.ClusterValidator = &flappingClusterValidator{
