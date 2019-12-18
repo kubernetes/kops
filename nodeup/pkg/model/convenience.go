@@ -33,11 +33,6 @@ func s(v string) *string {
 	return fi.String(v)
 }
 
-// i64 is a helper that builds a *int64 from an int64 value
-func i64(v int64) *int64 {
-	return fi.Int64(v)
-}
-
 // b returns a pointer to a boolean
 func b(v bool) *bool {
 	return fi.Bool(v)
