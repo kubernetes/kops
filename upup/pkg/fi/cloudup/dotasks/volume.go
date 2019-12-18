@@ -51,7 +51,7 @@ func (v *Volume) Find(c *fi.Context) (*Volume, error) {
 	volService := cloud.Volumes()
 
 	volumes, _, err := volService.ListVolumes(context.TODO(), &godo.ListVolumeParams{
-		Region: cloud.Region,
+		Region: cloud.Region(),
 		Name:   fi.StringValue(v.Name),
 	})
 	if err != nil {

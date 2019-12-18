@@ -72,8 +72,8 @@ func (f fakeStorageClient) DeleteSnapshot(ctx context.Context, id string) (*godo
 
 func newCloud(client *godo.Client) *digitalocean.Cloud {
 	return &digitalocean.Cloud{
-		Client: client,
-		Region: "nyc1",
+		Client:     client,
+		RegionName: "nyc1",
 	}
 }
 
