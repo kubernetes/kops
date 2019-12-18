@@ -147,6 +147,54 @@ rules:
   - watch
   - patch
 
+# New
+- apiGroups:
+  - kops.k8s.io
+  resources:
+  - instancegroups
+  - clusters
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - gcpmachinetemplates
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+  - patch
+- apiGroups:
+  - cluster.x-k8s.io
+  resources:
+  - machinedeployments
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+  - patch
+# Creates secrets containing bootstrap scripts
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+  - patch
+
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1

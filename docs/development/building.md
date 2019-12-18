@@ -45,7 +45,7 @@ export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KO
 ```
 
 Whether using GCS or S3, you probably want to upload dns-controller &
-kops-contoller images if you have changed them:
+kops-controller images if you have changed them:
 
 For dns-controller (note the slightly different env vars until we build
 dns-controller with bazel):

@@ -122,6 +122,11 @@ func (f *FeatureFlag) Enabled() bool {
 	return false
 }
 
+// SetEnabled overrides the enabled status
+func (f *FeatureFlag) SetEnabled(b bool) {
+	f.enabled = Bool(b)
+}
+
 // Bool returns a pointer to the boolean value
 func Bool(b bool) *bool {
 	return &b

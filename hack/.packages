@@ -13,6 +13,7 @@ k8s.io/kops/cmd/kops
 k8s.io/kops/cmd/kops/util
 k8s.io/kops/cmd/kops-controller
 k8s.io/kops/cmd/kops-controller/controllers
+k8s.io/kops/cmd/kops-controller/pkg/clusterapi
 k8s.io/kops/cmd/kops-controller/pkg/config
 k8s.io/kops/cmd/nodeup
 k8s.io/kops/dns-controller/cmd/dns-controller
