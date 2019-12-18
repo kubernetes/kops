@@ -1003,7 +1003,7 @@ func TestRollingUpdateFlappingValidation(t *testing.T) {
 			Cloud: mockcloud,
 		},
 		FailOnValidate:          true,
-		ValidationTimeout:       200 * time.Second,
+		ValidationTimeout:       1 * time.Second,
 		ValidateTickDuration:    1 * time.Millisecond,
 		ValidateSuccessDuration: 5 * time.Millisecond,
 	}
