@@ -20,16 +20,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"sort"
 	"testing"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/testhelper"
-	"github.com/gophercloud/gophercloud/testhelper/client"
-	"github.com/gophercloud/gophercloud/testhelper/fixture"
+	l3floatingips "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -40,6 +40,7 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 		cluster              *kops.Cluster
 		loadbalancers        []loadbalancers.LoadBalancer
 		floatingIPs          []floatingips.FloatingIP
+		l3FloatingIPs        []l3floatingips.FloatingIP
 		instances            serverList
 		cloudFloatingEnabled bool
 		expectedAPIIngress   []kops.ApiIngressStatus
@@ -67,12 +68,12 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					VipNetworkID: "vip_network_id",
 				},
 			},
-			floatingIPs: []floatingips.FloatingIP{
+			l3FloatingIPs: []l3floatingips.FloatingIP{
 				{
 					ID:         "id",
 					FixedIP:    "10.1.2.3",
-					InstanceID: "lb_id",
-					IP:         "8.8.8.8",
+					PortID:     "vip_port_id",
+					FloatingIP: "8.8.8.8",
 				},
 			},
 			expectedAPIIngress: []kops.ApiIngressStatus{
@@ -96,31 +97,31 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 			loadbalancers: []loadbalancers.LoadBalancer{
 				{
 					ID:           "lb_id",
-					Name:         "name",
+					Name:         "master.k8s.local",
 					VipAddress:   "10.1.2.3",
 					VipPortID:    "vip_port_id",
 					VipSubnetID:  "vip_subnet_id",
 					VipNetworkID: "vip_network_id",
 				},
 			},
-			floatingIPs: []floatingips.FloatingIP{
+			l3FloatingIPs: []l3floatingips.FloatingIP{
 				{
 					ID:         "cluster",
 					FixedIP:    "10.1.2.3",
-					InstanceID: "lb_id",
-					IP:         "8.8.8.8",
+					PortID:     "vip_port_id",
+					FloatingIP: "8.8.8.8",
 				},
 				{
 					ID:         "something_else",
 					FixedIP:    "192.168.2.3",
-					InstanceID: "xx_id",
-					IP:         "2.2.2.2",
+					PortID:     "xx_id",
+					FloatingIP: "2.2.2.2",
 				},
 				{
 					ID:         "yet_another",
 					FixedIP:    "10.1.2.3",
-					InstanceID: "yy_id",
-					IP:         "9.9.9.9",
+					PortID:     "yy_id",
+					FloatingIP: "9.9.9.9",
 				},
 			},
 			expectedAPIIngress: []kops.ApiIngressStatus{
@@ -284,13 +285,11 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			testhelper.SetupHTTP()
-			defer testhelper.TeardownHTTP()
-			fixture.SetupHandler(
-				t,
+			mux := http.NewServeMux()
+			fixture(
+				mux,
 				"/servers/detail",
 				http.MethodGet,
-				"",
 				string(mustJSONMarshal(json.Marshal(
 					struct {
 						Servers []servers.Server `json:"servers"`
@@ -301,11 +300,10 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 				http.StatusOK,
 			)
 			for _, server := range testCase.instances {
-				fixture.SetupHandler(
-					t,
+				fixture(
+					mux,
 					fmt.Sprintf("/servers/%s", server.ID),
 					http.MethodGet,
-					"",
 					string(mustJSONMarshal(json.Marshal(
 						struct {
 							Server servers.Server `json:"server"`
@@ -316,11 +314,10 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 					http.StatusOK,
 				)
 			}
-			fixture.SetupHandler(
-				t,
+			fixture(
+				mux,
 				"/lbaas/loadbalancers",
 				http.MethodGet,
-				"",
 				string(mustJSONMarshal(json.Marshal(
 					struct{ LoadBalancers []loadbalancers.LoadBalancer }{
 						LoadBalancers: testCase.loadbalancers,
@@ -328,11 +325,10 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 				))),
 				http.StatusOK,
 			)
-			fixture.SetupHandler(
-				t,
+			fixture(
+				mux,
 				"/os-floating-ips",
 				http.MethodGet,
-				"",
 				string(mustJSONMarshal(json.Marshal(
 					struct {
 						FloatingIPs []floatingips.FloatingIP `json:"floating_ips"`
@@ -342,14 +338,54 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 				))),
 				http.StatusOK,
 			)
-			testhelper.Mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				t.Errorf("Unexpected request for `%v`", r.URL)
+			mux.HandleFunc("/floatingips", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				params := r.URL.Query()
+				portID := params.Get("port_id")
+				if portID == "" {
+					fmt.Fprint(w, string(mustJSONMarshal(json.Marshal(
+						struct {
+							FloatingIPs []l3floatingips.FloatingIP `json:"floatingips"`
+						}{
+							FloatingIPs: testCase.l3FloatingIPs,
+						},
+					))))
+					return
+				}
+				for _, fip := range testCase.l3FloatingIPs {
+					if fip.PortID == portID {
+						json := string(mustJSONMarshal(json.Marshal(
+							struct {
+								FloatingIPs []l3floatingips.FloatingIP `json:"floatingips"`
+							}{
+								FloatingIPs: []l3floatingips.FloatingIP{fip},
+							},
+						)))
+						fmt.Fprint(w, json)
+						return
+					}
+				}
+				fmt.Fprint(w, string(mustJSONMarshal(json.Marshal(
+					struct {
+						FloatingIPs []l3floatingips.FloatingIP `json:"floatingips"`
+					}{
+						FloatingIPs: []l3floatingips.FloatingIP{},
+					},
+				))))
 			})
+			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				t.Errorf("Unexpected request for `%v`", r.URL)
+				http.Error(w, "Unexpected request", http.StatusInternalServerError)
+			})
+			testServer := httptest.NewServer(mux)
+			defer testServer.Close()
 
 			cloud := &openstackCloud{
 				floatingEnabled: testCase.cloudFloatingEnabled,
-				lbClient:        client.ServiceClient(),
-				novaClient:      client.ServiceClient(),
+				lbClient:        serviceClient(testServer.URL),
+				novaClient:      serviceClient(testServer.URL),
+				neutronClient:   serviceClient(testServer.URL),
 			}
 
 			ingress, err := cloud.GetApiIngressStatus(testCase.cluster)
@@ -396,6 +432,25 @@ func (s serverList) Get(id string) *servers.Server {
 		}
 	}
 	return nil
+}
+
+func serviceClient(url string) *gophercloud.ServiceClient {
+	return &gophercloud.ServiceClient{
+		ProviderClient: &gophercloud.ProviderClient{},
+		Endpoint:       url + "/",
+	}
+}
+
+func fixture(mux *http.ServeMux, url string, method string, responseBody string, status int) {
+	mux.HandleFunc(url, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != method {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(status)
+		fmt.Fprint(w, responseBody)
+	})
 }
 
 func mustJSONMarshal(data []byte, err error) []byte {

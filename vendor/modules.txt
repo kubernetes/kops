@@ -281,9 +281,6 @@ github.com/gophercloud/gophercloud/internal
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies
 github.com/gophercloud/gophercloud/openstack/objectstorage/v1/accounts
 github.com/gophercloud/gophercloud/openstack/identity/v2/tenants
-github.com/gophercloud/gophercloud/testhelper
-github.com/gophercloud/gophercloud/testhelper/client
-github.com/gophercloud/gophercloud/testhelper/fixture
 # github.com/gorilla/mux v1.7.0
 github.com/gorilla/mux
 # github.com/gregjones/httpcache v0.0.0-20170728041850-787624de3eb7
