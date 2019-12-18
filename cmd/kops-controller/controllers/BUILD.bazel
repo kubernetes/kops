@@ -2,12 +2,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["node_controller.go"],
+    srcs = [
+        "instancegroup_controller.go",
+        "node_controller.go",
+    ],
     importpath = "k8s.io/kops/cmd/kops-controller/controllers",
     visibility = ["//visibility:public"],
     deps = [
+        "//cmd/kops-controller/pkg/clusterapi:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
+        "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodelabels:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
@@ -15,7 +20,11 @@ go_library(
         "//vendor/github.com/go-logr/logr:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/client-go/dynamic:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime:go_default_library",
