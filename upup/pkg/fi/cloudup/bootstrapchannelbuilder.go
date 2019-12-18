@@ -829,6 +829,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 			"k8s-1.7":     "2.6.12-kops.1",
 			"k8s-1.7-v3":  "3.8.0-kops.2",
 			"k8s-1.12":    "3.9.3-kops.2",
+			"k8s-1.16":    "3.10.2-kops.1",
 		}
 
 		{
@@ -840,7 +841,21 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.12.0",
+				KubernetesVersion: ">=1.12.0 <1.16.0",
+				Id:                id,
+			})
+		}
+
+		{
+			id := "k8s-1.16"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(versions[id]),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.16.0",
 				Id:                id,
 			})
 		}
@@ -911,8 +926,8 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 			"k8s-1.6":     "2.4.2-kops.2",
 			"k8s-1.8":     "2.6.7-kops.3",
 			"k8s-1.9":     "3.2.3-kops.1",
-			"k8s-1.12":    "3.7.4",
-			"k8s-1.15":    "3.10.1-kops.2",
+			"k8s-1.12":    "3.7.4-kops.1",
+			"k8s-1.15":    "3.10.2-kops.1",
 		}
 		{
 			id := "pre-k8s-1.6"
