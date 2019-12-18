@@ -9,12 +9,7 @@ dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
 dnsprovider/pkg/dnsprovider/providers/openstack/designate
 node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
-nodeup/pkg/model
-pkg/apis/kops/v1alpha1
-pkg/apis/kops/v1alpha2
-pkg/apis/kops/validation
 pkg/instancegroups
-pkg/model/components
 pkg/resources/ali
 pkg/resources/aws
 pkg/resources/digitalocean
