@@ -71,7 +71,7 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addLogRotate(c, "etcd", "/var/log/etcd.log", logRotateOptions{})
 	b.addLogRotate(c, "etcd-events", "/var/log/etcd-events.log", logRotateOptions{})
 
-	if *b.Cluster.Spec.KubeAPIServer.AuditLogPath != "" {
+	if b.Cluster.Spec.KubeAPIServer.AuditLogPath != nil {
 		b.addLogRotate(c, "kube-audit", *b.Cluster.Spec.KubeAPIServer.AuditLogPath, logRotateOptions{})
 	}
 	
