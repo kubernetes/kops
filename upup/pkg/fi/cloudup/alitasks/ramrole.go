@@ -41,7 +41,7 @@ type RAMRole struct {
 var _ fi.CompareWithID = &RAMRole{}
 
 func (r *RAMRole) CompareWithID() *string {
-	return r.Name
+	return r.ID
 }
 
 func compactPolicy(s string) string {
