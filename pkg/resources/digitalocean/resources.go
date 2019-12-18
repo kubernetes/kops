@@ -121,7 +121,7 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 
 	volumeMatch := strings.Replace(clusterName, ".", "-", -1)
 
-	volumes, err := getAllVolumesByRegion(c, c.Region)
+	volumes, err := getAllVolumesByRegion(c, c.Region())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list volumes: %s", err)
 	}
