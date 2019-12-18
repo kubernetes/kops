@@ -147,11 +147,11 @@ type ApplyClusterCmd struct {
 	TaskMap map[string]fi.Task
 }
 
-func (c *ApplyClusterCmd) Run() error {
+func (c *ApplyClusterCmd) buildLoader(cloud fi.Cloud, keyStore fi.CAStore, secretStore fi.SecretStore) (*Loader, error) {
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(metav1.ListOptions{})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var instanceGroups []*kops.InstanceGroup
 		for i := range list.Items {
@@ -166,16 +166,15 @@ func (c *ApplyClusterCmd) Run() error {
 
 	modelStore, err := findModelStore()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	channel, err := ChannelForCluster(c.Cluster)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	c.channel = channel
 
-	stageAssetsLifecycle := fi.LifecycleSync
 	securityLifecycle := fi.LifecycleSync
 	networkLifecycle := fi.LifecycleSync
 	clusterLifecycle := fi.LifecycleSync
@@ -184,93 +183,63 @@ func (c *ApplyClusterCmd) Run() error {
 	case Phase(""):
 		// Everything ... the default
 
-		// until we implement finding assets we need to Ignore them
-		stageAssetsLifecycle = fi.LifecycleIgnore
 	case PhaseStageAssets:
 		networkLifecycle = fi.LifecycleIgnore
 		securityLifecycle = fi.LifecycleIgnore
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseNetwork:
-		stageAssetsLifecycle = fi.LifecycleIgnore
 		securityLifecycle = fi.LifecycleIgnore
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseSecurity:
-		stageAssetsLifecycle = fi.LifecycleIgnore
 		networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
-			stageAssetsLifecycle = fi.LifecycleIgnore
 			securityLifecycle = fi.LifecycleExistsAndWarnIfChanges
 			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		} else {
-			stageAssetsLifecycle = fi.LifecycleIgnore
 			networkLifecycle = fi.LifecycleExistsAndValidates
 			securityLifecycle = fi.LifecycleExistsAndValidates
 		}
 
 	default:
-		return fmt.Errorf("unknown phase %q", c.Phase)
-	}
-
-	// This is kinda a hack.  Need to move phases out of fi.  If we use Phase here we introduce a circular
-	// go dependency.
-	phase := string(c.Phase)
-	assetBuilder := assets.NewAssetBuilder(c.Cluster, phase)
-	err = c.upgradeSpecs(assetBuilder)
-	if err != nil {
-		return err
+		return nil, fmt.Errorf("unknown phase %q", c.Phase)
 	}
 
 	err = c.validateKopsVersion()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = c.validateKubernetesVersion()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cluster := c.Cluster
 
 	if cluster.Spec.KubernetesVersion == "" {
-		return fmt.Errorf("KubernetesVersion not set")
+		return nil, fmt.Errorf("KubernetesVersion not set")
 	}
 	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
-		return fmt.Errorf("DNSZone not set")
+		return nil, fmt.Errorf("DNSZone not set")
 	}
 
 	l := &Loader{}
 	l.Init()
 	l.Cluster = c.Cluster
 
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
-	if err != nil {
-		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
-	}
-
-	keyStore, err := c.Clientset.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	sshCredentialStore, err := c.Clientset.SSHCredentialStore(cluster)
 	if err != nil {
-		return err
-	}
-
-	secretStore, err := c.Clientset.SecretStore(cluster)
-	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Normalize k8s version
@@ -283,7 +252,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// check if we should recommend turning off anonymousAuth on k8s versions gte than 1.10
@@ -311,18 +280,17 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
+	assetBuilder := assets.NewAssetBuilder(c.Cluster, string(c.Phase))
 	if err := c.AddFileAssets(assetBuilder); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Only setup transfer of kops assets if using a FileRepository
 	if c.Cluster.Spec.Assets != nil && c.Cluster.Spec.Assets.FileRepository != nil {
 		if err := SetKopsAssetsLocations(assetBuilder); err != nil {
-			return err
+			return nil, err
 		}
 	}
-
-	checkExisting := true
 
 	l.AddTypes(map[string]interface{}{
 		"keypair":        &fitasks.Keypair{},
@@ -332,19 +300,11 @@ func (c *ApplyClusterCmd) Run() error {
 		"mirrorSecrets":  &fitasks.MirrorSecrets{},
 	})
 
-	cloud, err := BuildCloud(cluster)
-	if err != nil {
-		return err
-	}
-
-	region := ""
-	project := ""
-
 	var sshPublicKeys [][]byte
 	{
 		keys, err := sshCredentialStore.FindSSHPublicKeys(fi.SecretNameSSHPrimary)
 		if err != nil {
-			return fmt.Errorf("error retrieving SSH public key %q: %v", fi.SecretNameSSHPrimary, err)
+			return nil, fmt.Errorf("error retrieving SSH public key %q: %v", fi.SecretNameSSHPrimary, err)
 		}
 
 		for _, k := range keys {
@@ -360,12 +320,8 @@ func (c *ApplyClusterCmd) Run() error {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderGCE:
 		{
-			gceCloud := cloud.(gce.GCECloud)
-			region = gceCloud.Region()
-			project = gceCloud.Project()
-
 			if !AlphaAllowGCE.Enabled() {
-				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
+				return nil, fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
@@ -384,11 +340,11 @@ func (c *ApplyClusterCmd) Run() error {
 	case kops.CloudProviderDO:
 		{
 			if !AlphaAllowDO.Enabled() {
-				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
+				return nil, fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
 			}
 
 			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
-				return fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
@@ -400,9 +356,6 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	case kops.CloudProviderAWS:
 		{
-			awsCloud := cloud.(awsup.AWSCloud)
-			region = awsCloud.Region()
-
 			l.AddTypes(map[string]interface{}{
 				// EC2
 				"elasticIP":                   &awstasks.ElasticIP{},
@@ -446,13 +399,13 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 
 			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
-				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
 
 			if len(sshPublicKeys) > 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
@@ -461,11 +414,9 @@ func (c *ApplyClusterCmd) Run() error {
 	case kops.CloudProviderALI:
 		{
 			if !AlphaAllowALI.Enabled() {
-				return fmt.Errorf("aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
+				return nil, fmt.Errorf("aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
 			}
 
-			aliCloud := cloud.(aliup.ALICloud)
-			region = aliCloud.Region()
 			l.AddTypes(map[string]interface{}{
 				"Vpc":                   &alitasks.VPC{},
 				"VSwitch":               &alitasks.VSwitch{},
@@ -483,25 +434,21 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 
 			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with ALICloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with ALICloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
 
 			if len(sshPublicKeys) != 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with ALICloud; please delete a key using `kops delete secret`")
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with ALICloud; please delete a key using `kops delete secret`")
 			}
 		}
 
 	case kops.CloudProviderVSphere:
 		{
 			if !AlphaAllowVsphere.Enabled() {
-				return fmt.Errorf("vsphere support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowVsphere")
+				return nil, fmt.Errorf("vsphere support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowVsphere")
 			}
-
-			vsphereCloud := cloud.(*vsphere.VSphereCloud)
-			// TODO: map region with vCenter cluster, or datacenter, or datastore?
-			region = vsphereCloud.Cluster
 
 			l.AddTypes(map[string]interface{}{
 				"instance": &vspheretasks.VirtualMachine{},
@@ -511,7 +458,7 @@ func (c *ApplyClusterCmd) Run() error {
 	case kops.CloudProviderBareMetal:
 		{
 			if !AlphaAllowBareMetal.Enabled() {
-				return fmt.Errorf("BareMetal support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowBareMetal to enable it")
+				return nil, fmt.Errorf("BareMetal support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowBareMetal to enable it")
 			}
 
 			// No additional tasks (yet)
@@ -519,10 +466,6 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case kops.CloudProviderOpenstack:
 		{
-
-			osCloud := cloud.(openstack.OpenstackCloud)
-			region = osCloud.Region()
-
 			l.AddTypes(map[string]interface{}{
 				// Compute
 				"sshKey":      &openstacktasks.SSHKey{},
@@ -541,40 +484,40 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 
 			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
 
 			if len(sshPublicKeys) != 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
 			}
 		}
 	default:
-		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
+		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
 
-	modelContext.Region = region
+	modelContext.Region = cloud.Region()
 
 	if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		klog.Infof("Gossip DNS: skipping DNS validation")
 	} else {
 		err = validateDNS(cluster, cloud)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	clusterTags, err := buildCloudupTags(cluster)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tf := &TemplateFunctions{
 		cluster:        cluster,
 		instanceGroups: c.InstanceGroups,
 		tags:           clusterTags,
-		region:         region,
+		region:         cloud.Region(),
 		modelContext:   modelContext,
 	}
 
@@ -582,7 +525,6 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	var fileModels []string
 	for _, m := range c.Models {
 		switch m {
 		case "proto":
@@ -591,12 +533,12 @@ func (c *ApplyClusterCmd) Run() error {
 		case "cloudup":
 			templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
 			if err != nil {
-				return fmt.Errorf("error loading templates: %v", err)
+				return nil, fmt.Errorf("error loading templates: %v", err)
 			}
 
 			err = tf.AddTo(templates.TemplateFunctions, secretStore)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			l.Builders = append(l.Builders,
@@ -703,13 +645,8 @@ func (c *ApplyClusterCmd) Run() error {
 				)
 
 			default:
-				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
+				return nil, fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 			}
-
-			fileModels = append(fileModels, m)
-
-		default:
-			fileModels = append(fileModels, m)
 		}
 	}
 
@@ -810,17 +747,66 @@ func (c *ApplyClusterCmd) Run() error {
 		})
 
 	default:
-		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
+		return nil, fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	err = tf.AddTo(l.TemplateFunctions, secretStore)
 	if err != nil {
+		return nil, err
+	}
+
+	return l, nil
+}
+
+func (c *ApplyClusterCmd) Run() error {
+	assetBuilder := assets.NewAssetBuilder(c.Cluster, string(c.Phase))
+	if err := c.upgradeSpecs(assetBuilder); err != nil {
 		return err
 	}
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
+	cluster := c.Cluster
+
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := c.Clientset.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := c.Clientset.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	l, err := c.buildLoader(cloud, keyStore, secretStore)
+	if err != nil {
+		return err
+	}
+
+	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	if err != nil {
+		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
+	}
+
+	stageAssetsLifecycle := fi.LifecycleIgnore
+	if c.Phase == PhaseStageAssets {
+		stageAssetsLifecycle = fi.LifecycleSync
+	}
+
+	// TODO: Can we get rid of fileModels?
+	var fileModels []string
+	for _, m := range c.Models {
+		if m != "proto" {
+			fileModels = append(fileModels, m)
+		}
+	}
+
+	taskMap, err := l.BuildTasks(l.ModelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -830,6 +816,15 @@ func (c *ApplyClusterCmd) Run() error {
 	var target fi.Target
 	dryRun := false
 	shouldPrecreateDNS := true
+
+	checkExisting := true
+
+	region := cloud.Region()
+	project := ""
+	switch cloud := cloud.(type) {
+	case gce.GCECloud:
+		project = cloud.Project()
+	}
 
 	switch c.TargetName {
 	case TargetDirect:
