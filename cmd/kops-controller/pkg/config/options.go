@@ -17,8 +17,13 @@ limitations under the License.
 package config
 
 type Options struct {
-	Cloud      string `json:"cloud,omitempty"`
-	ConfigBase string `json:"configBase,omitempty"`
+	Cloud      string          `json:"cloud,omitempty"`
+	ConfigBase string          `json:"configBase,omitempty"`
+	Cluster    *ClusterOptions `json:"cluster,omitempty"`
+}
+
+type ClusterOptions struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 func (o *Options) PopulateDefaults() {

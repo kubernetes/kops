@@ -145,7 +145,8 @@ type ApplyClusterCmd struct {
 	TaskMap map[string]fi.Task
 }
 
-func (c *ApplyClusterCmd) buildLoader(cloud fi.Cloud, keyStore fi.CAStore, secretStore fi.SecretStore) (*Loader, error) {
+// BuildLoader creates the Loader, which converts from the kops Model to a task-based Model
+func (c *ApplyClusterCmd) BuildLoader(cloud fi.Cloud, keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialStore fi.SSHCredentialStore) (*Loader, error) {
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(metav1.ListOptions{})
 		if err != nil {
@@ -217,11 +218,6 @@ func (c *ApplyClusterCmd) buildLoader(cloud fi.Cloud, keyStore fi.CAStore, secre
 		return nil, err
 	}
 
-	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true)
-	if err != nil {
-		return nil, err
-	}
-
 	cluster := c.Cluster
 
 	if cluster.Spec.KubernetesVersion == "" {
@@ -234,11 +230,6 @@ func (c *ApplyClusterCmd) buildLoader(cloud fi.Cloud, keyStore fi.CAStore, secre
 	l := &Loader{}
 	l.Init()
 	l.Cluster = c.Cluster
-
-	sshCredentialStore, err := c.Clientset.SSHCredentialStore(cluster)
-	if err != nil {
-		return nil, err
-	}
 
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
@@ -766,6 +757,10 @@ func (c *ApplyClusterCmd) Run() error {
 
 	cluster := c.Cluster
 
+	if err := validation.DeepValidate(c.Cluster, c.InstanceGroups, true); err != nil {
+		return err
+	}
+
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
@@ -781,7 +776,12 @@ func (c *ApplyClusterCmd) Run() error {
 		return err
 	}
 
-	l, err := c.buildLoader(cloud, keyStore, secretStore)
+	sshCredentialStore, err := c.Clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	l, err := c.BuildLoader(cloud, keyStore, secretStore, sshCredentialStore)
 	if err != nil {
 		return err
 	}

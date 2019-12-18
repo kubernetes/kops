@@ -354,9 +354,18 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 // KopsControllerConfig returns the yaml configuration for kops-controller
 func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
+	var clusterConfig *kopscontrollerconfig.ClusterOptions
+
+	if featureflag.ClusterAPI.Enabled() {
+		clusterConfig = &kopscontrollerconfig.ClusterOptions{
+			Enabled: true,
+		}
+	}
+
 	config := &kopscontrollerconfig.Options{
 		Cloud:      tf.cluster.Spec.CloudProvider,
 		ConfigBase: tf.cluster.Spec.ConfigBase,
+		Cluster:    clusterConfig,
 	}
 
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
