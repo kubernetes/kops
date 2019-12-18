@@ -108,20 +108,6 @@ func rrs(t *testing.T, zone dnsprovider.Zone) (r dnsprovider.ResourceRecordSets)
 	return rrsets
 }
 
-func listRrsOrFail(t *testing.T, rrsets dnsprovider.ResourceRecordSets) []dnsprovider.ResourceRecordSet {
-	rrset, err := rrsets.List()
-	if err != nil {
-		t.Fatalf("Failed to list recordsets: %v", err)
-	} else {
-		if len(rrset) < 0 {
-			t.Fatalf("Record set length=%d, expected >=0", len(rrset))
-		} else {
-			t.Logf("Got %d recordsets: %v", len(rrset), rrset)
-		}
-	}
-	return rrset
-}
-
 func getRrOrFail(t *testing.T, rrsets dnsprovider.ResourceRecordSets, name string) []dnsprovider.ResourceRecordSet {
 	rrsetList, err := rrsets.Get(name)
 	if err != nil {
