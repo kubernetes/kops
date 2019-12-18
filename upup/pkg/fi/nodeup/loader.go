@@ -37,9 +37,8 @@ import (
 type Loader struct {
 	Builders []fi.ModelBuilder
 
-	templates []*template.Template
-	config    *nodeup.Config
-	cluster   *api.Cluster
+	config  *nodeup.Config
+	cluster *api.Cluster
 
 	assets *fi.AssetStore
 	tasks  map[string]fi.Task
