@@ -20,6 +20,10 @@ const (
 	TagOSFamilyRHEL   = "_rhel_family"
 	TagOSFamilyDebian = "_debian_family"
 
+	TagOSDebianJessie = "_jessie"
+	TagOSCentOS8      = "_centos8"
+	TagOSRHEL8        = "_rhel8"
+
 	TagSystemd = "_systemd"
 )
 

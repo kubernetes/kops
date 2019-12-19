@@ -286,10 +286,20 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("error creating directories %q: %v", localPackageDir, err)
 			}
 
+			// Append file extension for local files
+			var ext string
+			if t.HasTag(tags.TagOSFamilyDebian) {
+				ext = ".deb"
+			} else if t.HasTag(tags.TagOSFamilyRHEL) {
+				ext = ".rpm"
+			} else {
+				return fmt.Errorf("unsupported package system")
+			}
+
 			// Download all the debs/rpms.
 			localPkgs := make([]string, 1+len(e.Deps))
 			for i, pkg := range append([]*Package{e}, e.Deps...) {
-				local := path.Join(localPackageDir, pkg.Name)
+				local := path.Join(localPackageDir, pkg.Name+ext)
 				localPkgs[i] = local
 				var hash *hashing.Hash
 				if fi.StringValue(pkg.Hash) != "" {
@@ -306,16 +316,30 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			}
 
 			var args []string
+			env := os.Environ()
 			if t.HasTag(tags.TagOSFamilyDebian) {
-				args = []string{"dpkg", "-i"}
+				// Only Debian releases newer than Jessie can install .deb via apt-get
+				// TODO: Refactor this function when Jessie support is dropped (duplicated code)
+				if t.HasTag(tags.TagOSDebianJessie) {
+					args = []string{"dpkg", "-i"}
+				} else {
+					args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
+					env = append(env, "DEBIAN_FRONTEND=noninteractive")
+				}
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
-				args = []string{"/usr/bin/rpm", "-i"}
+				if t.HasTag(tags.TagOSCentOS8) || t.HasTag(tags.TagOSRHEL8) {
+					args = []string{"/usr/bin/dnf", "install", "-y", "--setopt=install_weak_deps=False"}
+				} else {
+					args = []string{"/usr/bin/yum", "install", "-y"}
+				}
 			} else {
 				return fmt.Errorf("unsupported package system")
 			}
 			args = append(args, localPkgs...)
+
 			klog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
+			cmd.Env = env
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
@@ -324,10 +348,14 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			var args []string
 			env := os.Environ()
 			if t.HasTag(tags.TagOSFamilyDebian) {
-				args = []string{"apt-get", "install", "--yes", e.Name}
+				args = []string{"apt-get", "install", "--yes", "--no-install-recommends", e.Name}
 				env = append(env, "DEBIAN_FRONTEND=noninteractive")
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
-				args = []string{"/usr/bin/yum", "install", "-y", e.Name}
+				if t.HasTag(tags.TagOSCentOS8) || t.HasTag(tags.TagOSRHEL8) {
+					args = []string{"/usr/bin/dnf", "install", "-y", "--setopt=install_weak_deps=False", e.Name}
+				} else {
+					args = []string{"/usr/bin/yum", "install", "-y", e.Name}
+				}
 			} else {
 				return fmt.Errorf("unsupported package system")
 			}

@@ -39,7 +39,7 @@ func main() {
 
 	gitVersion := ""
 	if kops.GitVersion != "" {
-		gitVersion = " (git-" + kops.GitVersion + ")"
+		gitVersion = fmt.Sprintf(" (git-%s)", kops.GitVersion)
 	}
 	fmt.Printf("nodeup version %s%s\n", kops.Version, gitVersion)
 

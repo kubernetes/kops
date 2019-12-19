@@ -538,7 +538,11 @@ func (v *flappingClusterValidator) Validate() (*validation.ValidationCluster, er
 func TestRollingUpdateFlappingValidation(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
-	c.ValidationTimeout = 20 * time.Millisecond
+	// This should only take a few milliseconds,
+	// but we have to pad to allow for random delays (e.g. GC)
+	// TODO: Replace with a virtual clock?
+	c.ValidationTimeout = 1 * time.Second
+
 	c.ClusterValidator = &flappingClusterValidator{
 		T:     t,
 		Cloud: cloud,
@@ -576,7 +580,11 @@ func (v *failThreeTimesClusterValidator) Validate() (*validation.ValidationClust
 func TestRollingUpdateValidatesAfterBastion(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
-	c.ValidationTimeout = 10 * time.Millisecond
+	// This should only take a few milliseconds,
+	// but we have to pad to allow for random delays (e.g. GC)
+	// TODO: Replace with a virtual clock?
+	c.ValidationTimeout = 1 * time.Second
+
 	c.ClusterValidator = &failThreeTimesClusterValidator{}
 
 	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
