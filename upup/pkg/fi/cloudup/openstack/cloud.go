@@ -581,17 +581,18 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 			if err != nil {
 				return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
 			}
-			// Must Find Floating IP related to this lb
-			fips, err := c.ListFloatingIPs()
-			if err != nil {
-				return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
-			}
-
 			for _, lb := range lbList {
+				// Must Find Floating IP related to this lb
+				fips, err := c.ListL3FloatingIPs(l3floatingip.ListOpts{
+					PortID: lb.VipPortID,
+				})
+				if err != nil {
+					return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
+				}
 				for _, fip := range fips {
-					if fip.FixedIP == lb.VipAddress {
+					if fip.PortID == lb.VipPortID {
 						ingresses = append(ingresses, kops.ApiIngressStatus{
-							IP: fip.IP,
+							IP: fip.FloatingIP,
 						})
 					}
 				}
