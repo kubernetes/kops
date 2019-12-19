@@ -828,6 +828,30 @@ var dockerVersions = []dockerVersion{
 		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
+	// 18.09.9 - Xenial
+	{
+		DockerVersion: "18.09.9",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "18.09.9~3-0~ubuntu-xenial",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.09.9~3-0~ubuntu-xenial_amd64.deb",
+		Hash:          "959a1193ff148cbf98c357e096dafca44f497520",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "18.09.9~3-0~ubuntu-xenial",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_18.09.9~3-0~ubuntu-xenial_amd64.deb",
+				Hash:    "b79b8958f041249bbff0afbfeded794a9e42463f",
+			},
+			"containerd.io": {
+				Version: "1.2.10-3",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
+				Hash:    "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+	},
+
 	// 18.09.9 - Bionic
 	{
 		DockerVersion: "18.09.9",
@@ -953,6 +977,30 @@ var dockerVersions = []dockerVersion{
 			},
 		},
 		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.4 - Xenial
+	{
+		DockerVersion: "19.03.4",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.4~3-0~ubuntu-xenial",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_19.03.4~3-0~ubuntu-xenial_amd64.deb",
+		Hash:          "d9f5855413a5efcca4e756613dafb744b6cae8d2",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.4~3-0~ubuntu-xenial",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~ubuntu-xenial_amd64.deb",
+				Hash:    "3e0164dfef612b533c12dec6cd39da93bedd7e8c",
+			},
+			"containerd.io": {
+				Version: "1.2.10-3",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
+				Hash:    "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Bionic
