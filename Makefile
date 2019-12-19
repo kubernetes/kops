@@ -840,6 +840,10 @@ update-machine-types:
 #-----------------------------------------------------------
 # development targets
 
+.PHONY: dev-build-kops # Build kops using bazel
+dev-build-kops: gobindata-tool ${BINDATA_TARGETS}
+	bazel build //cmd/kops
+
 # dev-upload-nodeup uploads nodeup to GCS
 .PHONY: dev-upload-nodeup
 dev-upload-nodeup: bazel-crossbuild-nodeup
