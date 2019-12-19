@@ -149,6 +149,9 @@ ensure-install-dir
 cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
   nodeTags: something
+containerRuntime: docker
+containerd:
+  logLevel: info
 docker:
   logLevel: INFO
 kubeProxy:

@@ -18,6 +18,8 @@ package nodetasks
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"path"
 	"strings"
@@ -31,12 +33,16 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-const dockerService = "docker.service"
+const (
+	containerdService = "containerd.service"
+	dockerService     = "docker.service"
+)
 
 // LoadImageTask is responsible for downloading a docker image
 type LoadImageTask struct {
 	Sources []string
 	Hash    string
+	Runtime string
 }
 
 var _ fi.Task = &LoadImageTask{}
@@ -48,6 +54,9 @@ func (t *LoadImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// configured.
 	var deps []fi.Task
 	for _, v := range tasks {
+		if svc, ok := v.(*Service); ok && svc.Name == containerdService {
+			deps = append(deps, v)
+		}
 		if svc, ok := v.(*Service); ok && svc.Name == dockerService {
 			deps = append(deps, v)
 		}
@@ -73,6 +82,11 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 }
 
 func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
+	runtime := e.Runtime
+	if runtime != "docker" && runtime != "containerd" {
+		return fmt.Errorf("no runtime specified")
+	}
+
 	hash, err := hashing.FromString(e.Hash)
 	if err != nil {
 		return err
@@ -102,8 +116,39 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 		return err
 	}
 
-	// Load the image into docker
-	args := []string{"docker", "load", "-i", localFile}
+	// containerd can't import gzipped container images, if the image is gzipped extract it to tmp dir
+	// TODO: Improve the naive gzip format detection by checking the content type bytes "\x1F\x8B\x08"
+	var tarFile string
+	if strings.HasSuffix(localFile, "gz") {
+		tmpDir, err := ioutil.TempDir("", "loadimage")
+		if err != nil {
+			return fmt.Errorf("error creating temp dir: %v", err)
+		}
+		defer func() {
+			if err := os.RemoveAll(tmpDir); err != nil {
+				klog.Warningf("error deleting temp dir %q: %v", tmpDir, err)
+			}
+		}()
+		tarFile = path.Join(tmpDir, utils.SanitizeString(primaryURL))
+		err = utils.UngzipFile(localFile, tarFile)
+		if err != nil {
+			return fmt.Errorf("error ungzipping container image: %v", err)
+		}
+	} else {
+		// Assume container image is tar file alerady
+		tarFile = localFile
+	}
+
+	// Load the container image
+	var args []string
+	switch runtime {
+	case "docker":
+		args = []string{"docker", "load", "-i", tarFile}
+	case "containerd":
+		args = []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
+	default:
+		return fmt.Errorf("unknown container runtime: %s", runtime)
+	}
 	human := strings.Join(args, " ")
 
 	klog.Infof("running command %s", human)
