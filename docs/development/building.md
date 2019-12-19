@@ -23,6 +23,32 @@ make
 * The `release` branch is where releases are taken from.  This is the stable code branch.
 * The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
 
+## Full build
+
+To use S3:
+```
+# cd to your kops repo
+export S3_BUCKET_NAME=kops-dev-${USER}
+make dev-build-kops dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
+
+KOPS_VERSION=`bazel run //cmd/kops version -- --short`
+export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
+```
+
+To use GCS:
+```
+export GCS_BUCKET_NAME=kops-dev-${USER}
+make dev-build-kops dev-upload UPLOAD_DEST=gs://${GCS_BUCKET_NAME}
+
+KOPS_VERSION=`bazel run //cmd/kops version -- --short`
+export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KOPS_VERSION}/
+```
+
+When `KOPS_BASE_URL` is set, dns-controller and kops-controller will
+come from the GCS/S3 bucket, and we no longer need to push to a docker
+registry.
+
+
 ## Cross Compiling
 
 Cross compiling for things like `nodeup` are now done automatically via `make nodeup`. `make push-aws-run TARGET=admin@$TARGET` will automatically choose the linux amd64 build from your `.build` directory.

@@ -76,7 +76,7 @@ To use S3:
 ```
 # cd to your kops repo
 export S3_BUCKET_NAME=kops-dev-${USER}
-make kops-install dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
+make dev-build-kops dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
 
 KOPS_VERSION=`bazel run //cmd/kops version -- --short`
 export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
@@ -85,7 +85,7 @@ export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERS
 To use GCS:
 ```
 export GCS_BUCKET_NAME=kops-dev-${USER}
-make kops-install dev-upload UPLOAD_DEST=gs://${GCS_BUCKET_NAME}
+make dev-build-kops dev-upload UPLOAD_DEST=gs://${GCS_BUCKET_NAME}
 
 KOPS_VERSION=`bazel run //cmd/kops version -- --short`
 export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KOPS_VERSION}/
@@ -99,7 +99,8 @@ dns-controller with bazel):
 
 ```bash
 KOPS_VERSION=`bazel run //cmd/kops version -- --short`
-export DOCKER_REGISTRY=${USER}
+export DOCKER_IMAGE_PREFIX=${USER}/
+export DOCKER_REGISTRY=
 make dns-controller-push
 export DNSCONTROLLER_IMAGE=${USER}/dns-controller:${KOPS_VERSION}
 ```
