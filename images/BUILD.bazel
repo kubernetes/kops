@@ -6,16 +6,6 @@ load(
     "container_image",
 )
 
-container_image(
-    name = "dns-controller",
-    base = "@debian_hyperkube_base_amd64//image",
-    cmd = ["/usr/bin/dns-controller"],
-    directory = "/usr/bin/",
-    files = [
-        "//dns-controller/cmd/dns-controller",
-    ],
-)
-
 load("@package_bundle//file:packages.bzl", "packages")
 
 container_image(

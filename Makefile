@@ -456,9 +456,14 @@ dns-controller-build-in-docker: dns-controller-builder-image
 dns-controller-image: dns-controller-build-in-docker
 	docker build -t ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}  -f images/dns-controller/Dockerfile .
 
+.PHONY: bazel-crossbuild-dns-controller
+bazel-crossbuild-dns-controller:
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+
+
 .PHONY: dns-controller-push
-dns-controller-push: dns-controller-image
-	docker push ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}
+dns-controller-push:
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image
 
 # --------------------------------------------------
 # static utils
@@ -691,14 +696,6 @@ bazel-crossbuild-nodeup:
 .PHONY: bazel-crossbuild-protokube
 bazel-crossbuild-protokube:
 	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
-
-.PHONY: bazel-crossbuild-dns-controller
-bazel-crossbuild-dns-controller:
-	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
-
-.PHONY: bazel-crossbuild-dns-controller-image
-bazel-crossbuild-dns-controller-image:
-	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
