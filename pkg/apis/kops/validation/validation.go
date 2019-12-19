@@ -116,6 +116,11 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		}
 	}
 
+	// Container Runtime
+	if spec.ContainerRuntime != "" {
+		allErrs = append(allErrs, validateContainerRuntime(&spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
+	}
+
 	return allErrs
 }
 
@@ -414,6 +419,15 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 	default:
 		allErrs = append(allErrs, field.NotSupported(fldPath.Child("MajorVersion"), v.MajorVersion, []string{"v3"}))
 	}
+
+	return allErrs
+}
+
+func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {
+	valid := []string{"containerd", "docker"}
+
+	allErrs := field.ErrorList{}
+	allErrs = append(allErrs, IsValidValue(fldPath, runtime, valid)...)
 
 	return allErrs
 }

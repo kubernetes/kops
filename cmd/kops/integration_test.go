@@ -226,6 +226,11 @@ func TestMixedInstancesSpotASG(t *testing.T) {
 	runTestCloudformation(t, "mixedinstances.example.com", "mixed_instances_spot", "v1alpha2", false, nil)
 }
 
+// TestContainerdCloudformation runs the test on a containerd configuration
+func TestContainerdCloudformation(t *testing.T) {
+	runTestCloudformation(t, "containerd.example.com", "containerd-cloudformation", "v1alpha2", false, nil)
+}
+
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedDataFilenames []string, tfFileName string, phase *cloudup.Phase, lifecycleOverrides []string) {
 	var stdout bytes.Buffer
 

@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "apiserver.go",
+        "containerd.go",
         "context.go",
         "defaults.go",
         "docker.go",
@@ -37,6 +38,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "containerd_test.go",
         "image_test.go",
         "kubecontrollermanager_test.go",
         "kubelet_test.go",

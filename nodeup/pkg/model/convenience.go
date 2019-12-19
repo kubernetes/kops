@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strconv"
 
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 
@@ -111,4 +112,71 @@ func addHostPathVolume(pod *v1.Pod, container *v1.Container, hostPath v1.HostPat
 // convEtcdSettingsToMs converts etcd settings to a string rep of int milliseconds
 func convEtcdSettingsToMs(dur *metav1.Duration) string {
 	return strconv.FormatInt(dur.Nanoseconds()/1000000, 10)
+}
+
+// packageInfo - fields required for extra packages setup
+type packageInfo struct {
+	Version string // Package version
+	Source  string // URL to download the package from
+	Hash    string // sha1sum of the package file
+}
+
+// packageVersion - fields required for downloaded packages setup
+type packageVersion struct {
+	Name string
+
+	// Version is the version of docker, as specified in the kops
+	Version string
+
+	// Source is the url where the package/tarfile can be found
+	Source string
+
+	// Hash is the sha1 hash of the file
+	Hash string
+
+	// Extra packages to install during the same dpkg/yum transaction.
+	// This is used for:
+	//   - On RHEL/CentOS, the SELinux policy needs to be installed.
+	//   - Starting from Docker 18.09, the Docker package has been split in 3
+	//     separate packages: one for the daemon, one for the CLI, one for
+	//     containerd.  All 3 must be installed at the same time when
+	//     upgrading from an older version of Docker.
+	ExtraPackages map[string]packageInfo
+
+	PackageVersion string
+	Distros        []distros.Distribution
+	// List of dependencies that can be installed using the system's package
+	// manager (e.g. apt-get install or yum install).
+	Dependencies  []string
+	Architectures []Architecture
+
+	// PlainBinary indicates that the Source is not an OS, but a "bare" tar.gz
+	PlainBinary bool
+
+	// MarkImmutable is a list of files on which we should perform a `chattr +i <file>`
+	MarkImmutable []string
+}
+
+// Match package version against configured values
+func (d *packageVersion) matches(arch Architecture, packageVersion string, distro distros.Distribution) bool {
+	if d.PackageVersion != packageVersion {
+		return false
+	}
+	foundDistro := false
+	for _, d := range d.Distros {
+		if d == distro {
+			foundDistro = true
+		}
+	}
+	if !foundDistro {
+		return false
+	}
+
+	foundArch := false
+	for _, a := range d.Architectures {
+		if a == arch {
+			foundArch = true
+		}
+	}
+	return foundArch
 }
