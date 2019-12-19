@@ -787,7 +787,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "bca089a50ea22f02abe88f68d7ca35c26be9967b",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - CentOS / Rhel7
@@ -884,7 +884,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "09402bf5dac40f0c50f1071b17f38f6584a42ad1",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - CentOS / Rhel7

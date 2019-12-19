@@ -195,48 +195,48 @@ var (
 	`))
 
 	createClusterExample = templates.Examples(i18n.T(`
-	# Create a cluster in AWS
+	# Create a cluster in AWS in a single zone.
 	kops create cluster --name=kubernetes-cluster.example.com \
-	--state=s3://kops-state-1234 --zones=eu-west-1a \
-	--node-count=2
+		--state=s3://kops-state-1234 \
+		--zones=eu-west-1a \
+		--node-count=2
 
-	# Create a cluster in AWS that has HA masters.  This cluster
-	# will be setup with an internal networking in a private VPC.
-	# A bastion instance will be setup to provide instance access.
-
+	# Create a cluster in AWS with HA masters. This cluster
+	# has also been configured for private networking in a kops-managed VPC.
+	# The bastion flag is set to create an entrypoint for admins to SSH.
 	export NODE_SIZE=${NODE_SIZE:-m4.large}
-        export MASTER_SIZE=${MASTER_SIZE:-m4.large}
-        export ZONES=${ZONES:-"us-east-1d,us-east-1b,us-east-1c"}
-        export KOPS_STATE_STORE="s3://my-state-store"
-        kops create cluster k8s-clusters.example.com \
-          --node-count 3 \
-          --zones $ZONES \
-          --node-size $NODE_SIZE \
-          --master-size $MASTER_SIZE \
-          --master-zones $ZONES \
-          --networking weave \
-          --topology private \
-          --bastion="true" \
-          --yes
+	export MASTER_SIZE=${MASTER_SIZE:-m4.large}
+	export ZONES=${ZONES:-"us-east-1d,us-east-1b,us-east-1c"}
+	export KOPS_STATE_STORE="s3://my-state-store"
+	kops create cluster k8s-clusters.example.com \
+	    --node-count 3 \
+		--zones $ZONES \
+		--node-size $NODE_SIZE \
+		--master-size $MASTER_SIZE \
+		--master-zones $ZONES \
+		--networking weave \
+		--topology private \
+		--bastion="true" \
+		--yes
 
-	# Create cluster in GCE.
-	# This is an alpha feature.
-        export KOPS_STATE_STORE="gs://mybucket-kops"
-        export ZONES=${MASTER_ZONES:-"us-east1-b,us-east1-c,us-east1-d"}
-        export KOPS_FEATURE_FLAGS=AlphaAllowGCE
-
-        kops create cluster kubernetes-k8s-gce.example.com
-          --zones $ZONES \
-          --master-zones $ZONES \
-          --node-count 3
-          --project my-gce-project \
-          --image "ubuntu-os-cloud/ubuntu-1604-xenial-v20170202" \
-          --yes
-	# Create manifest for a cluster in AWS
+	# Create a cluster in GCE.
+	export KOPS_STATE_STORE="gs://mybucket-kops"
+	export ZONES=${MASTER_ZONES:-"us-east1-b,us-east1-c,us-east1-d"}
+	export KOPS_FEATURE_FLAGS=AlphaAllowGCE # Note: GCE support is not GA.
+	kops create cluster kubernetes-k8s-gce.example.com \
+		--zones $ZONES \
+		--master-zones $ZONES \
+		--node-count 3 \
+		--yes
+		  
+	# Generate a cluster spec to apply later. 
+	# Run the following, then: kops create -f filename.yamlh 
 	kops create cluster --name=kubernetes-cluster.example.com \
-	--state=s3://kops-state-1234 --zones=eu-west-1a \
-	--node-count=2 --dry-run -oyaml
-
+		--state=s3://kops-state-1234 \
+		--zones=eu-west-1a \
+		--node-count=2 \
+		--dry-run \
+		-oyaml > filename.yaml
 	`))
 
 	createClusterShort = i18n.T("Create a Kubernetes cluster.")
