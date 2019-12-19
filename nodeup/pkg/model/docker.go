@@ -771,6 +771,25 @@ var dockerVersions = []packageVersion{
 		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
 	},
 
+	// 18.09.9 - Xenial
+	{
+		PackageVersion: "18.09.9",
+		Name:           "docker-ce",
+		Distros:        []distros.Distribution{distros.DistributionXenial},
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Version:        "18.09.9~3-0~ubuntu-xenial",
+		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.09.9~3-0~ubuntu-xenial_amd64.deb",
+		Hash:           "959a1193ff148cbf98c357e096dafca44f497520",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "18.09.9~3-0~ubuntu-xenial",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_18.09.9~3-0~ubuntu-xenial_amd64.deb",
+				Hash:    "b79b8958f041249bbff0afbfeded794a9e42463f",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
 	// 18.09.9 - Bionic
 	{
 		PackageVersion: "18.09.9",
@@ -866,6 +885,25 @@ var dockerVersions = []packageVersion{
 			},
 		},
 		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.4 - Xenial
+	{
+		PackageVersion: "19.03.4",
+		Name:           "docker-ce",
+		Distros:        []distros.Distribution{distros.DistributionXenial},
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Version:        "19.03.4~3-0~ubuntu-xenial",
+		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_19.03.4~3-0~ubuntu-xenial_amd64.deb",
+		Hash:           "d9f5855413a5efcca4e756613dafb744b6cae8d2",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.4~3-0~ubuntu-xenial",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~ubuntu-xenial_amd64.deb",
+				Hash:    "3e0164dfef612b533c12dec6cd39da93bedd7e8c",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Bionic
