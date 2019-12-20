@@ -50,8 +50,14 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "ntp"})
 		c.AddTask((&nodetasks.Service{Name: "ntp"}).InitDefaults())
 	} else if b.Distribution.IsRHELFamily() {
-		c.AddTask(&nodetasks.Package{Name: "ntp"})
-		c.AddTask((&nodetasks.Service{Name: "ntpd"}).InitDefaults())
+		switch b.Distribution {
+		case distros.DistributionCentos8, distros.DistributionRhel8:
+			c.AddTask(&nodetasks.Package{Name: "chrony"})
+			c.AddTask((&nodetasks.Service{Name: "chronyd"}).InitDefaults())
+		default:
+			c.AddTask(&nodetasks.Package{Name: "ntp"})
+			c.AddTask((&nodetasks.Service{Name: "ntpd"}).InitDefaults())
+		}
 	} else {
 		klog.Warningf("unknown distribution, skipping ntp install: %v", b.Distribution)
 		return nil
