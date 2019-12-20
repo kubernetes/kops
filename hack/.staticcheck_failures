@@ -17,9 +17,6 @@ pkg/resources/digitalocean/dns
 pkg/resources/gce
 pkg/resources/openstack
 pkg/sshcredentials
-protokube/pkg/gossip/dns/hosts
-protokube/pkg/gossip/mesh
-protokube/pkg/protokube
 upup/pkg/fi
 upup/pkg/fi/assettasks
 upup/pkg/fi/cloudup

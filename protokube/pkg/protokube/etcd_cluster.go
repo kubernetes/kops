@@ -95,10 +95,10 @@ type EtcdNode struct {
 
 // EtcdController defines the etcd controller
 type EtcdController struct {
-	kubeBoot   *KubeBoot
-	volume     *Volume
-	volumeSpec *etcd.EtcdClusterSpec
-	cluster    *EtcdCluster
+	kubeBoot *KubeBoot
+	//volume     *Volume
+	//volumeSpec *etcd.EtcdClusterSpec
+	cluster *EtcdCluster
 }
 
 // newEtcdController creates and returns a new etcd controller
