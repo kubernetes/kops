@@ -805,8 +805,8 @@ spec:
                     - use insecure-bind-address and bind-address'
                   type: string
                 admissionControl:
-                  description: 'Deprecated: AdmissionControl is a list of admission
-                    controllers to use'
+                  description: 'AdmissionControl is a list of admission controllers
+                    to use: Deprecated - use enable-admission-plugins instead'
                   items:
                     type: string
                   type: array

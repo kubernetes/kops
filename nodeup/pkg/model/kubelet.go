@@ -577,8 +577,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		// Enable scheduling since it can be controlled via taints.
 		// For pre-1.6.0 clusters, this is handled by tainter.go
 		c.RegisterSchedulable = fi.Bool(true)
-	} else {
-		// For 1.5 and earlier, protokube will taint the master
 	}
 
 	if c.VolumePluginDirectory == "" {

@@ -266,7 +266,7 @@ type KubeAPIServerConfig struct {
 	EnableBootstrapAuthToken *bool `json:"enableBootstrapTokenAuth,omitempty" flag:"enable-bootstrap-token-auth"`
 	// EnableAggregatorRouting enables aggregator routing requests to endpoints IP rather than cluster IP
 	EnableAggregatorRouting *bool `json:"enableAggregatorRouting,omitempty" flag:"enable-aggregator-routing"`
-	// Deprecated: AdmissionControl is a list of admission controllers to use
+	// AdmissionControl is a list of admission controllers to use: Deprecated - use enable-admission-plugins instead
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// AppendAdmissionPlugins appends list of enabled admission plugins
 	AppendAdmissionPlugins []string `json:"appendAdmissionPlugins,omitempty"`
