@@ -2,7 +2,7 @@ ClusterName: overrides.example.com
 Zones:
 - us-test-1a
 Cloud: aws
-KubernetesVersion: v1.7.5
+KubernetesVersion: v1.15.6
 Overrides:
 - cluster.spec.nodePortAccess=1.2.3.4/32
 - cluster.spec.nodePortAccess=10.20.30.0/24

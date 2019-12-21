@@ -35,9 +35,11 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  kubelet:
+    anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.8.0-beta.1
+  kubernetesVersion: v1.15.6-beta.1
   masterPublicName: api.ha-gce.example.com
   networking:
     kubenet: {}
