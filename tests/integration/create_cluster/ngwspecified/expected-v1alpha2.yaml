@@ -28,9 +28,11 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  kubelet:
+    anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.4.8
+  kubernetesVersion: v1.15.6
   masterPublicName: api.private.example.com
   networkCIDR: 172.20.0.0/16
   networking:
@@ -66,7 +68,7 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: bastions
 spec:
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -86,7 +88,7 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: master-us-test-1a
 spec:
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -106,7 +108,7 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: nodes
 spec:
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
   machineType: t2.medium
   maxSize: 2
   minSize: 2
