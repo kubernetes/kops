@@ -28,7 +28,7 @@ import (
 func buildMinimalCluster() *kops.Cluster {
 	c := &kops.Cluster{}
 	c.ObjectMeta.Name = "testcluster.test.com"
-	c.Spec.KubernetesVersion = "1.4.6"
+	c.Spec.KubernetesVersion = "1.14.6"
 	c.Spec.Subnets = []kops.ClusterSubnetSpec{
 		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
 	}

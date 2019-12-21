@@ -244,6 +244,7 @@ definition: |
   LimitNOFILE=1048576
   LimitNPROC=1048576
   LimitCORE=infinity
+  TasksMax=infinity
   Restart=always
   RestartSec=2s
   StartLimitInterval=0
