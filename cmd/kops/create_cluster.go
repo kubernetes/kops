@@ -81,6 +81,7 @@ type CreateClusterOptions struct {
 	EtcdStorageType      string
 	Project              string
 	KubernetesVersion    string
+	ContainerRuntime     string
 	OutDir               string
 	Image                string
 	VPCID                string
@@ -183,6 +184,8 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.AdminAccess = []string{"0.0.0.0/0"}
 
 	o.Authorization = AuthorizationFlagRBAC
+
+	o.ContainerRuntime = "docker"
 }
 
 var (
@@ -297,6 +300,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
+
+	cmd.Flags().StringVar(&options.ContainerRuntime, "container-runtime", options.ContainerRuntime, "Container runtime to use: containerd, docker")
 
 	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)")
 
@@ -987,6 +992,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.KubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = c.KubernetesVersion
+	}
+
+	if c.ContainerRuntime != "" {
+		cluster.Spec.ContainerRuntime = c.ContainerRuntime
 	}
 
 	cluster.Spec.Networking = &api.NetworkingSpec{}
