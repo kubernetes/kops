@@ -135,9 +135,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configOverride: |
-      disabled_plugins = ["cri"]
-    logLevel: warn
     skipInstall: true
   docker:
     ipMasq: false
@@ -428,9 +425,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configOverride: |
-      disabled_plugins = ["cri"]
-    logLevel: warn
     skipInstall: true
   docker:
     ipMasq: false

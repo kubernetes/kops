@@ -135,9 +135,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configOverride: |
-      disabled_plugins = ["cri"]
-    logLevel: warn
     skipInstall: true
   docker:
     ipMasq: false
@@ -432,9 +429,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodescomplexexamplecom.Properties.Use
   cloudConfig: null
   containerRuntime: docker
   containerd:
-    configOverride: |
-      disabled_plugins = ["cri"]
-    logLevel: warn
     skipInstall: true
   docker:
     ipMasq: false
