@@ -12,6 +12,7 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/private.example.com
+  containerRuntime: docker
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:

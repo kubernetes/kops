@@ -11,6 +11,7 @@ spec:
   channel: stable
   cloudProvider: gce
   configBase: memfs://tests/ha-gce.example.com
+  containerRuntime: docker
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
