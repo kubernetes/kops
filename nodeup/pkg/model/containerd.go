@@ -269,6 +269,15 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	// TODO Check why Docker was running in the first place
+	c.AddTask(&nodetasks.Service{
+		Name:         "docker.service",
+		ManageState:  fi.Bool(true),
+		Enabled:      fi.Bool(false),
+		Running:      fi.Bool(false),
+		SmartRestart: fi.Bool(false),
+	})
+
 	return nil
 }
 
