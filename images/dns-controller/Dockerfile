@@ -21,4 +21,6 @@ RUN apt-get update && apt-get install --yes ca-certificates \
 
 COPY /.build/artifacts/dns-controller /usr/bin/dns-controller
 
+USER 1000
+
 CMD /usr/bin/dns-controller
