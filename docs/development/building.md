@@ -44,29 +44,9 @@ KOPS_VERSION=`bazel run //cmd/kops version -- --short`
 export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KOPS_VERSION}/
 ```
 
-Whether using GCS or S3, you probably want to upload dns-controller &
-kops-controller images if you have changed them:
-
-For dns-controller (note the slightly different env vars until we build
-dns-controller with bazel):
-
-```bash
-KOPS_VERSION=`bazel run //cmd/kops version -- --short`
-export DOCKER_REGISTRY=${USER}
-make dns-controller-push
-export DNSCONTROLLER_IMAGE=${USER}/dns-controller:${KOPS_VERSION}
-```
-
-For kops-controller:
-
-```bash
-KOPS_VERSION=`bazel run //cmd/kops version -- --short`
-export DOCKER_IMAGE_PREFIX=${USER}/
-export DOCKER_REGISTRY=
-make kops-controller-push
-export KOPSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_VERSION}
-```
-
+When `KOPS_BASE_URL` is set, dns-controller and kops-controller will
+come from the GCS/S3 bucket, and we no longer need to push to a docker
+registry.
 
 
 ## Cross Compiling
