@@ -51,104 +51,113 @@ var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 // Build the GCE instance template object for an InstanceGroup
 // We are then able to extract out the fields we need from here
 func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(ig *kops.InstanceGroup) (*gcetasks.InstanceTemplate, error) {
-	var err error
+	// Indented to keep diff manageable
+	// TODO: Remove spurious indent
+	{
+		var err error
 
-	name := b.SafeObjectName(ig.ObjectMeta.Name)
+		name := b.SafeObjectName(ig.ObjectMeta.Name)
 
-	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
-	if err != nil {
-		return nil, err
-	}
-
-	volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
-	if volumeSize == 0 {
-		volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
 		if err != nil {
 			return nil, err
 		}
-	}
-	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-	if volumeType == "" {
-		volumeType = DefaultVolumeType
-	}
 
-	namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
+		// Indented to keep diff manageable
+		// TODO: Remove spurious indent
+		{
 
-	t := &gcetasks.InstanceTemplate{
-		Name:           s(name),
-		NamePrefix:     s(namePrefix),
-		Lifecycle:      b.Lifecycle,
-		Network:        b.LinkToNetwork(),
-		MachineType:    s(ig.Spec.MachineType),
-		BootDiskType:   s(volumeType),
-		BootDiskSizeGB: i64(int64(volumeSize)),
-		BootDiskImage:  s(ig.Spec.Image),
+			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
+			if volumeSize == 0 {
+				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+				if err != nil {
+					return nil, err
+				}
+			}
+			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+			if volumeType == "" {
+				volumeType = DefaultVolumeType
+			}
 
-		// TODO: Support preemptible nodes?
-		Preemptible: fi.Bool(false),
+			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
 
-		Scopes: []string{
-			"compute-rw",
-			"monitoring",
-			"logging-write",
-		},
+			t := &gcetasks.InstanceTemplate{
+				Name:           s(name),
+				NamePrefix:     s(namePrefix),
+				Lifecycle:      b.Lifecycle,
+				Network:        b.LinkToNetwork(),
+				MachineType:    s(ig.Spec.MachineType),
+				BootDiskType:   s(volumeType),
+				BootDiskSizeGB: i64(int64(volumeSize)),
+				BootDiskImage:  s(ig.Spec.Image),
 
-		Metadata: map[string]*fi.ResourceHolder{
-			"startup-script": startupScript,
-			//"config": resources/config.yaml $nodeset.Name
-			"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
-			nodeidentitygce.MetadataKeyInstanceGroupName: fi.WrapResource(fi.NewStringResource(ig.Name)),
-		},
-	}
+				// TODO: Support preemptible nodes?
+				Preemptible: fi.Bool(false),
 
-	storagePaths, err := iam.WriteableVFSPaths(b.Cluster, ig.Spec.Role)
-	if err != nil {
-		return nil, err
-	}
-	if len(storagePaths) == 0 {
-		t.Scopes = append(t.Scopes, "storage-ro")
-	} else {
-		klog.Warningf("enabling storage-rw for etcd backups")
-		t.Scopes = append(t.Scopes, "storage-rw")
-	}
+				Scopes: []string{
+					"compute-rw",
+					"monitoring",
+					"logging-write",
+				},
 
-	if len(b.SSHPublicKeys) > 0 {
-		var gFmtKeys []string
-		for _, key := range b.SSHPublicKeys {
-			gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
+				Metadata: map[string]*fi.ResourceHolder{
+					"startup-script": startupScript,
+					//"config": resources/config.yaml $nodeset.Name
+					"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
+					nodeidentitygce.MetadataKeyInstanceGroupName: fi.WrapResource(fi.NewStringResource(ig.Name)),
+				},
+			}
+
+			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, ig.Spec.Role)
+			if err != nil {
+				return nil, err
+			}
+			if len(storagePaths) == 0 {
+				t.Scopes = append(t.Scopes, "storage-ro")
+			} else {
+				klog.Warningf("enabling storage-rw for etcd backups")
+				t.Scopes = append(t.Scopes, "storage-rw")
+			}
+
+			if len(b.SSHPublicKeys) > 0 {
+				var gFmtKeys []string
+				for _, key := range b.SSHPublicKeys {
+					gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
+				}
+
+				t.Metadata["ssh-keys"] = fi.WrapResource(fi.NewStringResource(strings.Join(gFmtKeys, "\n")))
+			}
+
+			switch ig.Spec.Role {
+			case kops.InstanceGroupRoleMaster:
+				// Grant DNS permissions
+				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
+
+			case kops.InstanceGroupRoleNode:
+				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+			}
+
+			if gce.UsesIPAliases(b.Cluster) {
+				t.CanIPForward = fi.Bool(false)
+
+				t.AliasIPRanges = map[string]string{
+					b.NameForIPAliasRange("pods"): "/24",
+				}
+				t.Subnet = b.LinkToIPAliasSubnet()
+			} else {
+				t.CanIPForward = fi.Bool(true)
+			}
+
+			//labels, err := b.CloudTagsForInstanceGroup(ig)
+			//if err != nil {
+			//	return fmt.Errorf("error building cloud tags: %v", err)
+			//}
+			//t.Labels = labels
+
+			return t, nil
 		}
-
-		t.Metadata["ssh-keys"] = fi.WrapResource(fi.NewStringResource(strings.Join(gFmtKeys, "\n")))
 	}
-
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
-		// Grant DNS permissions
-		t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-		t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
-
-	case kops.InstanceGroupRoleNode:
-		t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
-	}
-
-	if gce.UsesIPAliases(b.Cluster) {
-		t.CanIPForward = fi.Bool(false)
-
-		t.AliasIPRanges = map[string]string{
-			b.NameForIPAliasRange("pods"): "/24",
-		}
-		t.Subnet = b.LinkToIPAliasSubnet()
-	} else {
-		t.CanIPForward = fi.Bool(true)
-	}
-
-	//labels, err := b.CloudTagsForInstanceGroup(ig)
-	//if err != nil {
-	//	return fmt.Errorf("error building cloud tags: %v", err)
-	//}
-	//t.Labels = labels
-
-	return t, nil
 }
 
 func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map[string]int, error) {
