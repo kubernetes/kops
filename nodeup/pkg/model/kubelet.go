@@ -270,7 +270,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Kubelet Server")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
-	manifest.Set("Unit", "After", "docker.service")
+	manifest.Set("Unit", "After", "containerd.service")
 
 	if b.Distribution == distros.DistributionCoreOS {
 		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
