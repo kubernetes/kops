@@ -553,7 +553,7 @@ verify-bazel:
 	hack/verify-bazel.sh
 
 .PHONY: verify-staticcheck
-verify-staticcheck:
+verify-staticcheck: ${BINDATA_TARGETS}
 	hack/verify-staticcheck.sh
 
 # ci target is for developers, it aims to cover all the CI jobs
