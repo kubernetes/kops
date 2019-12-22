@@ -20,8 +20,10 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
@@ -48,6 +50,7 @@ type ExportKubecfgOptions struct {
 	tmpdir         string
 	keyStore       fi.CAStore
 	KubeConfigPath string
+	all            bool
 }
 
 func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
@@ -67,42 +70,60 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "The location of the kubeconfig file to create.")
+	cmd.Flags().BoolVar(&options.all, "all", options.all, "export all clusters from the kops state store")
 
 	return cmd
 }
 
 func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
-	err := rootCommand.ProcessArgs(args)
-	if err != nil {
-		return err
-	}
-
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := rootCommand.Cluster()
-	if err != nil {
-		return err
+	var clusterList []*api.Cluster
+	if options.all {
+		list, err := clientset.ListClusters(metav1.ListOptions{})
+		if err != nil {
+			return err
+		}
+		for i := range list.Items {
+			clusterList = append(clusterList, &list.Items[i])
+		}
+	} else {
+		err := rootCommand.ProcessArgs(args)
+		if err != nil {
+			return err
+		}
+		cluster, err := rootCommand.Cluster()
+		if err != nil {
+			return err
+		}
+		clusterList = append(clusterList, cluster)
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
-	if err != nil {
-		return err
+	for _, cluster := range clusterList {
+		keyStore, err := clientset.KeyStore(cluster)
+		if err != nil {
+			return err
+		}
+
+		secretStore, err := clientset.SecretStore(cluster)
+		if err != nil {
+			return err
+		}
+
+		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, buildPathOptions(options))
+		if err != nil {
+			return err
+		}
+
+		if err := conf.WriteKubecfg(); err != nil {
+			return err
+		}
 	}
 
-	secretStore, err := clientset.SecretStore(cluster)
-	if err != nil {
-		return err
-	}
-
-	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, buildPathOptions(options))
-	if err != nil {
-		return err
-	}
-
-	return conf.WriteKubecfg()
+	return nil
 }
 
 func buildPathOptions(options *ExportKubecfgOptions) *clientcmd.PathOptions {
