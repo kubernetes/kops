@@ -37,7 +37,7 @@ func (b *DefaultsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if options.ContainerRuntime == "" {
-		options.ContainerRuntime = "docker"
+		options.ContainerRuntime = "containerd"
 	}
 
 	return nil
