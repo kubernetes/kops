@@ -196,6 +196,8 @@ etcdClusters:
     name: events
 ```
 
+If you are running etcd-manager (kops version >= 0.12), skip to step 5.
+
 ## 3 - Add a new master
 
 ### a - Add a new member to the etcd clusters
@@ -346,8 +348,22 @@ fully configured by Kops and that there is no residual manual configuration.
 If there is any configuration problem, they will be detected during this step
 and not during a future upgrade or, worse, during a master failure.
 
+## 6 - Test operation (optional)
 
-## 6 - Restore (if migration to multi-master failed)
+If you want to set and retrieve a key in etcd, connect to a master node and put a key. Connect to a different master node and retrieve the key. 
+
+```
+export ETCDCTL_CERT=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt
+export ETCDCTL_CACERT=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt
+export ETCDCTL_API=3
+export ETCDCTL_KEY=/etc/kubernetes/pki/kube-apiserver/etcd-client.key
+export ETCDCTL_ENDPOINTS=https://127.0.0.1:4001
+sudo  -E etcdctl --debug  put foo bar
+sudo  -E etcdctl --debug  get foo
+```
+
+
+## 7 - Restore (if migration to multi-master failed)
 
 In case you failed to upgrade to multi-master you will need to restore from the backup you have taken previously.
 
