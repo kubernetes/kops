@@ -1,12 +1,10 @@
 cloudmock/aws/mockelbv2
 cmd/kops
-dnsprovider/pkg/dnsprovider
 dnsprovider/pkg/dnsprovider/providers/aws/route53
 dnsprovider/pkg/dnsprovider/providers/coredns
 dnsprovider/pkg/dnsprovider/providers/google/clouddns
 dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal
 dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
-dnsprovider/pkg/dnsprovider/providers/openstack/designate
 node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
 pkg/instancegroups
