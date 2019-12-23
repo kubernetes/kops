@@ -112,6 +112,7 @@ k8s.io/kops/pkg/model/spotinstmodel
 k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/nodeidentity
 k8s.io/kops/pkg/nodeidentity/aws
+k8s.io/kops/pkg/nodeidentity/do
 k8s.io/kops/pkg/nodeidentity/gce
 k8s.io/kops/pkg/nodeidentity/openstack
 k8s.io/kops/pkg/nodelabels

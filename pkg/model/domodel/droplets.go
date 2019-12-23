@@ -73,6 +73,9 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			clusterTagIndex := do.TagKubernetesClusterIndex + ":" + strconv.Itoa(masterIndexCount)
 			droplet.Tags = append(droplet.Tags, clusterTagIndex)
 			droplet.Tags = append(droplet.Tags, clusterMasterTag)
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"master-"+d.Cluster.Spec.Subnets[0].Region)
+		} else {
+			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"nodes")
 		}
 
 		userData, err := d.BootstrapScript.ResourceNodeUp(ig, d.Cluster)
