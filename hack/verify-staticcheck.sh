@@ -66,6 +66,8 @@ go install k8s.io/kops/vendor/honnef.co/go/tools/cmd/staticcheck
 
 cd "${KUBE_ROOT}"
 
+make upup/models/bindata.go
+
 # Check that the file is in alphabetical order
 failure_file="${KUBE_ROOT}/hack/.staticcheck_failures"
 if ! diff -u "${failure_file}" <(LC_ALL=C sort "${failure_file}"); then
