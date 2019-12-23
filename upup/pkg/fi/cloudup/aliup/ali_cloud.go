@@ -55,7 +55,6 @@ type ALICloud interface {
 	EssClient() *ess.Client
 	VpcClient() *ecs.Client
 
-	Region() string
 	AddClusterTags(tags map[string]string)
 	GetTags(resourceId string, resourceType string) (map[string]string, error)
 	CreateTags(resourceId string, resourceType string, tags map[string]string) error

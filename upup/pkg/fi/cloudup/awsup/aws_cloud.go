@@ -96,8 +96,6 @@ const (
 type AWSCloud interface {
 	fi.Cloud
 
-	Region() string
-
 	CloudFormation() *cloudformation.CloudFormation
 	EC2() ec2iface.EC2API
 	IAM() iamiface.IAMAPI
