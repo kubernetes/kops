@@ -7,7 +7,6 @@ dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal
 dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
 node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
-pkg/instancegroups
 pkg/resources/ali
 pkg/resources/aws
 pkg/resources/digitalocean

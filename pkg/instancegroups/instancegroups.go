@@ -230,14 +230,15 @@ func (r *RollingUpdateInstanceGroup) validateClusterWithDuration(rollingUpdateDa
 	}
 
 	timeout := time.After(duration)
-	tick := time.Tick(rollingUpdateData.ValidateTickDuration)
+	ticker := time.NewTicker(rollingUpdateData.ValidateTickDuration)
+	defer ticker.Stop()
 	// Keep trying until we're timed out or got a result or got an error
 	for {
 		select {
 		case <-timeout:
 			// Got a timeout fail with a timeout error
 			return fmt.Errorf("cluster did not validate within a duration of %q", duration)
-		case <-tick:
+		case <-ticker.C:
 			// Got a tick, validate cluster
 			if r.tryValidateCluster(rollingUpdateData, duration, rollingUpdateData.ValidateTickDuration) {
 				return nil
