@@ -473,13 +473,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
   - _aws
   channels:
   - memfs://clusters.example.com/containerd.example.com/addons/bootstrap-channel.yaml
-  protokubeImage:
-    hash: 42a9c4324fe26d63ce11f3dd7836371bc93fa06ca8f479807728f3746e27061b
-    name: protokube:1.15.0
-    sources:
-    - https://artifacts.k8s.io/binaries/kops/1.15.0/images/protokube.tar.gz
-    - https://github.com/kubernetes/kops/releases/download/1.15.0/images-protokube.tar.gz
-    - https://kubeupv2.s3.amazonaws.com/kops/1.15.0/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
 
