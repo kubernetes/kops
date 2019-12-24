@@ -128,11 +128,6 @@ func getExampleRrs(zone dnsprovider.Zone) dnsprovider.ResourceRecordSet {
 	return rrsets.New("www11."+zone.Name(), []string{"10.10.10.10", "169.20.20.20"}, 180, rrstype.A)
 }
 
-func getInvalidRrs(zone dnsprovider.Zone) dnsprovider.ResourceRecordSet {
-	rrsets, _ := zone.ResourceRecordSets()
-	return rrsets.New("www12."+zone.Name(), []string{"rubbish", "rubbish"}, 180, rrstype.A)
-}
-
 func addRrsetOrFail(t *testing.T, rrsets dnsprovider.ResourceRecordSets, rrset dnsprovider.ResourceRecordSet) {
 	err := rrsets.StartChangeset().Add(rrset).Apply()
 	if err != nil {
