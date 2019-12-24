@@ -54,7 +54,7 @@ func NewFactory(options *FactoryOptions) *Factory {
 const (
 	STATE_ERROR = `Please set the --state flag or export KOPS_STATE_STORE.
 For example, a valid value follows the format s3://<bucket>.
-You can find the supported stores in https://github.com/kubernetes/kops/blob/master/docs/state.md.`
+You can find the supported stores in https://kops.sigs.k8s.io/state.`
 
 	INVALID_STATE_ERROR = `Unable to read state store.
 Please use a valid state store when setting --state or KOPS_STATE_STORE env var.
