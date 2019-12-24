@@ -1294,12 +1294,15 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		config.ConfigBase = fi.String(configBase.Path())
 	}
 
+	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
+	isMaster := role == kops.InstanceGroupRoleMaster
+
 	var images []*nodeup.Image
 
 	if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 		// When using a custom version, we want to preload the images over http
 		components := []string{"kube-proxy"}
-		if role == kops.InstanceGroupRoleMaster {
+		if isMaster {
 			components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
 		}
 
@@ -1326,7 +1329,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 
 	// `docker load` our images when using a KOPS_BASE_URL, so we
 	// don't need to push/pull from a registry
-	if os.Getenv("KOPS_BASE_URL") != "" {
+	if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
 		for _, name := range []string{"kops-controller", "dns-controller"} {
 			baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
 			if err != nil {
@@ -1348,7 +1351,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		}
 	}
 
-	{
+	if isMaster || useGossip {
 		u, hash, err := ProtokubeImageSource(assetBuilder)
 		if err != nil {
 			return nil, err
