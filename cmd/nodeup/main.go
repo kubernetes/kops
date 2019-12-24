@@ -17,6 +17,7 @@ limitations under the License.
 package main // import "k8s.io/kops/cmd/nodeup"
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -112,6 +113,7 @@ func main() {
 				os.Exit(0)
 			}
 		} else {
+			ctx := context.Background()
 			cmd := &nodeup.NodeUpCommand{
 				ConfigLocation: flagConf,
 				Target:         target,
@@ -119,7 +121,7 @@ func main() {
 				FSRoot:         flagRootFS,
 				ModelDir:       models.NewAssetPath("nodeup"),
 			}
-			err = cmd.Run(os.Stdout)
+			err = cmd.Run(ctx, os.Stdout)
 			if err == nil {
 				fmt.Printf("success")
 				os.Exit(0)

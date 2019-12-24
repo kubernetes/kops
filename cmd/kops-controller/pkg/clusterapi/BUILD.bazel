@@ -7,19 +7,13 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
-<<<<<<< HEAD
         "//pkg/apis/kops/registry:go_default_library",
-=======
->>>>>>> 4538868ba1... autogen: bazel & vendor
         "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/client/simple:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
-<<<<<<< HEAD
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-=======
->>>>>>> 4538868ba1... autogen: bazel & vendor
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
     ],
 )

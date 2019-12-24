@@ -215,17 +215,25 @@ func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
 		return "", err
 	}
 
-	cert, err := c.FindCert(name)
+	cert, key, _, err := c.KeyStore.FindKeypair(name)
 	if err != nil {
 		return "", err
 	}
-
-	key, err := c.FindPrivateKey(name)
-	if err != nil {
-		return "", err
+	if cert == nil || key == nil {
+		return "", fmt.Errorf("unable to find keypair %q", name)
 	}
 
-	return c.BuildKubeConfig(name, ca, cert, key)
+	certBytes, err := cert.AsBytes()
+	if err != nil {
+		return "", fmt.Errorf("error serializing cert: %v", err)
+	}
+
+	keyBytes, err := key.AsBytes()
+	if err != nil {
+		return "", fmt.Errorf("error serializing key: %v", err)
+	}
+
+	return c.BuildKubeConfig(name, ca, certBytes, keyBytes)
 }
 
 // BuildKubeConfig is responsible for building a kubeconfig
@@ -576,14 +584,24 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }
 
+// CACertificate is a helper method to get the CA certificate
+// We might cache or special-case this in future
+func (c *NodeupModelContext) CACertificate() ([]byte, error) {
+	ca, err := c.FindCert(fi.CertificateId_CA)
+	if err != nil {
+		return nil, err
+	}
+	return ca, nil
+}
+
 // FindCert is a helper method to retrieving a certificate from the store
 func (c *NodeupModelContext) FindCert(name string) ([]byte, error) {
 	cert, err := c.KeyStore.FindCert(name)
 	if err != nil {
-		return []byte{}, fmt.Errorf("error fetching certificate: %v from keystore: %v", name, err)
+		return []byte{}, fmt.Errorf("error fetching certificate %q from keystore: %v", name, err)
 	}
 	if cert == nil {
-		return []byte{}, fmt.Errorf("unable to found certificate: %s", name)
+		return []byte{}, fmt.Errorf("unable to find certificate %q", name)
 	}
 
 	return cert.AsBytes()
@@ -593,10 +611,10 @@ func (c *NodeupModelContext) FindCert(name string) ([]byte, error) {
 func (c *NodeupModelContext) FindPrivateKey(name string) ([]byte, error) {
 	key, err := c.KeyStore.FindPrivateKey(name)
 	if err != nil {
-		return []byte{}, fmt.Errorf("error fetching private key: %v from keystore: %v", name, err)
+		return []byte{}, fmt.Errorf("error fetching private key %q from keystore: %v", name, err)
 	}
 	if key == nil {
-		return []byte{}, fmt.Errorf("unable to found private key: %s", name)
+		return []byte{}, fmt.Errorf("unable to find private key %q", name)
 	}
 
 	return key.AsBytes()

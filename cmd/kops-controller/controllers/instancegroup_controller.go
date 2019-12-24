@@ -29,6 +29,7 @@ import (
 	"k8s.io/klog"
 	clusterapi "k8s.io/kops/cmd/kops-controller/pkg/clusterapi"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -38,6 +39,7 @@ type InstanceGroupReconciler struct {
 	client.Client
 	Log           logr.Logger
 	DynamicClient dynamic.Interface
+	ConfigServer  *cloudup.ConfigServer
 }
 
 // +kubebuilder:rbac:groups=kops.k8s.io,resources=instancegroups,verbs=get;list;watch;create;update;patch;delete
@@ -66,7 +68,9 @@ func (r *InstanceGroupReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 		return ctrl.Result{}, err
 	}
 
-	b := &clusterapi.Builder{}
+	b := &clusterapi.Builder{
+		ConfigServer: r.ConfigServer,
+	}
 	objects, err := b.BuildMachineDeployment(cluster, instance)
 	if err != nil {
 		return ctrl.Result{}, err

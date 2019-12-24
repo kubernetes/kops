@@ -20,11 +20,31 @@ type Options struct {
 	Cloud      string          `json:"cloud,omitempty"`
 	ConfigBase string          `json:"configBase,omitempty"`
 	Cluster    *ClusterOptions `json:"cluster,omitempty"`
+
+	// GRPC holds the options for the grpc server, used for node configuration
+	GRPC *GRPCOptions `json:"grpc,omitempty"`
 }
 
 type ClusterOptions struct {
 	Enabled bool `json:"enabled,omitempty"`
 }
 
+type GRPCOptions struct {
+	Listen string `json:"listen,omitempty"`
+
+	ClientEndpoint string `json:"clientEndpoint,omitempty"`
+	CACertPath     string `json:"caCert,omitempty"`
+
+	ServerKeyPath  string `json:"serverKey,omitempty"`
+	ServerCertPath string `json:"serverCert,omitempty"`
+}
+
+func (o *GRPCOptions) PopulateDefaults() {
+}
+
 func (o *Options) PopulateDefaults() {
+	if o.GRPC == nil {
+		o.GRPC = &GRPCOptions{}
+	}
+	o.GRPC.PopulateDefaults()
 }

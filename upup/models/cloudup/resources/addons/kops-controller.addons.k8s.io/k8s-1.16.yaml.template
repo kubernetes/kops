@@ -87,6 +87,8 @@ spec:
 {{ end }}
         - mountPath: /etc/kubernetes/kops-controller/
           name: kops-controller-config
+        - mountPath: /etc/kubernetes/pki/kops-controller/
+          name: kops-controller-pki
         command:
 {{ range $arg := KopsControllerArgv }}
         - "{{ $arg }}"
@@ -112,7 +114,10 @@ spec:
       - name: kops-controller-config
         configMap:
           name: kops-controller
-
+      - name: kops-controller-pki
+        hostPath:
+          path: /etc/kubernetes/pki/kops-controller/
+          type: Directory
 ---
 
 apiVersion: v1
@@ -176,6 +181,17 @@ rules:
   - update
   - delete
   - patch
+# We map machines to machinesets to machinedeployments as part of authenticating them
+- apiGroups:
+  - cluster.x-k8s.io
+  resources:
+  - machinedeployments
+  - machinesets
+  - machines
+  verbs:
+  - get
+  - list
+  - watch
 # Creates secrets containing bootstrap scripts
 - apiGroups:
   - ""

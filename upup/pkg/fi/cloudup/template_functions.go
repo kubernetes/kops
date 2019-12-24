@@ -31,6 +31,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -354,18 +355,25 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 // KopsControllerConfig returns the yaml configuration for kops-controller
 func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
-	var clusterConfig *kopscontrollerconfig.ClusterOptions
-
-	if featureflag.ClusterAPI.Enabled() {
-		clusterConfig = &kopscontrollerconfig.ClusterOptions{
-			Enabled: true,
-		}
-	}
-
 	config := &kopscontrollerconfig.Options{
 		Cloud:      tf.cluster.Spec.CloudProvider,
 		ConfigBase: tf.cluster.Spec.ConfigBase,
-		Cluster:    clusterConfig,
+	}
+
+	if featureflag.ClusterAPI.Enabled() {
+		config.Cluster = &kopscontrollerconfig.ClusterOptions{
+			Enabled: true,
+		}
+
+		pkiDir := "/etc/kubernetes/pki/kops-controller"
+
+		config.GRPC = &kopscontrollerconfig.GRPCOptions{
+			Listen:         fmt.Sprintf(":%d", wellknownports.KopsControllerGRPCPort),
+			ClientEndpoint: fmt.Sprintf("%s:%d", tf.cluster.Spec.MasterInternalName, wellknownports.KopsControllerGRPCPort),
+			ServerCertPath: path.Join(pkiDir, "server.crt"),
+			CACertPath:     path.Join(pkiDir, "ca.crt"),
+			ServerKeyPath:  path.Join(pkiDir, "server.key"),
+		}
 	}
 
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
@@ -441,6 +449,11 @@ func (tf *TemplateFunctions) ProxyEnv() map[string]string {
 // KopsSystemEnv builds the env vars for a system component
 func (tf *TemplateFunctions) KopsSystemEnv() []corev1.EnvVar {
 	envMap := env.BuildSystemComponentEnvVars(&tf.cluster.Spec)
+
+	// KOPS_BASE_URL changes how we build scripts; we need it for kops-controller
+	if v := os.Getenv("KOPS_BASE_URL"); v != "" {
+		envMap["KOPS_BASE_URL"] = v
+	}
 
 	return envMap.ToEnvVars()
 }

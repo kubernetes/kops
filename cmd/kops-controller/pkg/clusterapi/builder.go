@@ -28,7 +28,8 @@ import (
 )
 
 type Builder struct {
-	Clientset simple.Clientset
+	ConfigServer *cloudup.ConfigServer
+	Clientset    simple.Clientset
 }
 
 // ClusterAPIBuilder is implemented by the model task that knows how to map an InstanceGroup to k8s objects
@@ -113,6 +114,9 @@ func (b *Builder) BuildMachineDeployment(clusterObj *kopsv1alpha2.Cluster, igObj
 		InstanceGroups: []*kops.InstanceGroup{ig},
 		Phase:          phase,
 	}
+
+	// Fetch configuration over GRPC
+	applyCmd.ConfigServer = b.ConfigServer
 
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {

@@ -17,11 +17,15 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
@@ -30,12 +34,15 @@ import (
 	"k8s.io/klog/klogr"
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/cmd/kops-controller/pkg/nodeconfiguration"
 	kopsapi "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
+	pb "k8s.io/kops/pkg/proto/nodeconfiguration"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -102,10 +109,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	ctx := context.Background()
+
 	if err := addControllers(mgr, &opt); err != nil {
 		klog.Errorf("error adding controllers: %v", err)
 		os.Exit(1)
 	}
+
+	go func() {
+		if err := runGRPCServices(ctx, mgr, &opt); err != nil {
+			setupLog.Error(err, "problem running grpc services")
+			os.Exit(1)
+		}
+		klog.Infof("grpc services exited")
+	}()
 
 	// +kubebuilder:scaffold:builder
 
@@ -148,7 +165,22 @@ func addInstanceGroupController(mgr manager.Manager, opt *config.Options) error 
 		return fmt.Errorf("error building kubernetes dynamic client: %v", err)
 	}
 
+	var configServer *cloudup.ConfigServer
+
+	if opt.GRPC != nil && opt.GRPC.ClientEndpoint != "" {
+		ca, err := ioutil.ReadFile(opt.GRPC.CACertPath)
+		if err != nil {
+			return fmt.Errorf("error reading CA from %q: %v", opt.GRPC.CACertPath, err)
+		}
+
+		configServer = &cloudup.ConfigServer{
+			Endpoint: opt.GRPC.ClientEndpoint,
+			CA:       string(ca),
+		}
+	}
+
 	if err := (&controllers.InstanceGroupReconciler{
+		ConfigServer:  configServer,
 		DynamicClient: dynamicClient,
 		Client:        mgr.GetClient(),
 		Log:           ctrl.Log.WithName("controllers").WithName("InstanceGroup"),
@@ -206,4 +238,49 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 	}
 
 	return nil
+}
+
+func runGRPCServices(ctx context.Context, mgr manager.Manager, opt *config.Options) error {
+	if opt.GRPC == nil || opt.GRPC.Listen == "" {
+		klog.Infof("GRPC service not enabled")
+		<-ctx.Done()
+		return nil
+	}
+
+	klog.Infof("GRPC listening on %s", opt.GRPC.Listen)
+	lis, err := net.Listen("tcp", opt.GRPC.Listen)
+	if err != nil {
+		return fmt.Errorf("failed to listen on %q: %v", opt.GRPC.Listen, err)
+	}
+
+	var opts []grpc.ServerOption
+	{
+		tlsOptions, err := buildTLSForGRPC(*opt.GRPC)
+		if err != nil {
+			return err
+		}
+
+		opts = append(opts, tlsOptions)
+	}
+
+	nodeConfigurationService, err := nodeconfiguration.NewNodeConfigurationService(mgr, opt)
+	if err != nil {
+		return fmt.Errorf("error building node bootstrap service: %v", err)
+	}
+
+	// TODO: Bind lifetime to ctx
+	grpcServer := grpc.NewServer(opts...)
+	pb.RegisterNodeConfigurationServiceServer(grpcServer, nodeConfigurationService)
+	if err := grpcServer.Serve(lis); err != nil {
+		return fmt.Errorf("error from grpc service: %v", err)
+	}
+	return nil
+}
+
+func buildTLSForGRPC(options config.GRPCOptions) (grpc.ServerOption, error) {
+	creds, err := credentials.NewServerTLSFromFile(options.ServerCertPath, options.ServerKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load grpc credentials: %v", err)
+	}
+	return grpc.Creds(creds), nil
 }

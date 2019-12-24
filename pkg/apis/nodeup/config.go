@@ -40,6 +40,11 @@ type Config struct {
 
 	// Manifests for running etcd
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
+
+	// ConfigServer is the address of the configuration server to use (kops-controller)
+	ConfigServer string `json:"configServer,omitempty"`
+	// ConfigServerCACert is the ca-certificate to require for the configuration server
+	ConfigServerCA string `json:"configServerCA,omitempty"`
 }
 
 // Image is a docker image we should pre-load

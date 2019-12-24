@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "keystore.go",
+        "secretstore.go",
+    ],
+    importpath = "k8s.io/kops/cmd/kops-controller/pkg/nodeconfiguration/clients",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/pki:go_default_library",
+        "//pkg/proto/nodeconfiguration:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
+    ],
+)

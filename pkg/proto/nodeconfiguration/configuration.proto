@@ -1,0 +1,27 @@
+syntax = "proto3";
+package nodeconfiguration;
+
+option go_package = "k8s.io/kops/pkg/proto/nodeconfiguration";
+
+service NodeConfigurationService {
+  rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse);
+  rpc GetKeypair(GetKeypairRequest) returns (GetKeypairResponse);
+}
+
+message GetConfigurationRequest {
+}
+
+message GetConfigurationResponse {
+  string cluster_full_config = 1;
+  string instance_group_config = 2;
+  string ca_certificate = 3;
+}
+
+message GetKeypairRequest {
+  string name = 1;
+}
+
+message GetKeypairResponse {
+  string cert = 1;
+  string key = 2;
+}

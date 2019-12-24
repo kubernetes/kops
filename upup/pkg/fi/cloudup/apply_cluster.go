@@ -93,6 +93,14 @@ var (
 	CloudupModels = []string{"proto", "cloudup"}
 )
 
+type ConfigServer struct {
+	// Endpoint is the GRPC address we should connect to
+	Endpoint string
+
+	// CA is the CA certificate that must sign the GRPC server certificate
+	CA string
+}
+
 type ApplyClusterCmd struct {
 	Cluster *kops.Cluster
 
@@ -143,6 +151,9 @@ type ApplyClusterCmd struct {
 
 	// TaskMap is the map of tasks that we built (output)
 	TaskMap map[string]fi.Task
+
+	// ConfigServer to fetch configuration over GRPC
+	ConfigServer *ConfigServer
 }
 
 // BuildLoader creates the Loader, which converts from the kops Model to a task-based Model
@@ -1274,8 +1285,14 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		config.Assets = append(config.Assets, a.CompactString())
 	}
 	config.ClusterName = cluster.ObjectMeta.Name
-	config.ConfigBase = fi.String(configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name
+
+	if c.ConfigServer != nil {
+		config.ConfigServer = c.ConfigServer.Endpoint
+		config.ConfigServerCA = c.ConfigServer.CA
+	} else {
+		config.ConfigBase = fi.String(configBase.Path())
+	}
 
 	var images []*nodeup.Image
 

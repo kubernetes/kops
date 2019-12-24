@@ -17,6 +17,9 @@ limitations under the License.
 package nodeup
 
 import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,12 +31,23 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
+	nodeconfigclients "k8s.io/kops/cmd/kops-controller/pkg/nodeconfiguration/clients"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
+	pb "k8s.io/kops/pkg/proto/nodeconfiguration"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -41,14 +55,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/klog"
 )
 
 // MaxTaskDuration is the amount of time to keep trying for; we retry for a long time - there is not really any great fallback
@@ -57,6 +63,7 @@ const MaxTaskDuration = 365 * 24 * time.Hour
 // NodeUpCommand is the configuration for nodeup
 type NodeUpCommand struct {
 	CacheDir       string
+	ConfigServer   string
 	ConfigLocation string
 	FSRoot         string
 	ModelDir       vfs.Path
@@ -67,7 +74,7 @@ type NodeUpCommand struct {
 }
 
 // Run is responsible for perform the nodeup process
-func (c *NodeUpCommand) Run(out io.Writer) error {
+func (c *NodeUpCommand) Run(ctx context.Context, out io.Writer) error {
 	if c.FSRoot == "" {
 		return fmt.Errorf("FSRoot is required")
 	}
@@ -98,7 +105,41 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	var configBase vfs.Path
-	if fi.StringValue(c.config.ConfigBase) != "" {
+
+	// If we're using a grpc connection instead of vfs, nodeConfig will hold our configuration
+	var nodeConfig *pb.GetConfigurationResponse
+	var configClient pb.NodeConfigurationServiceClient
+
+	if grpcServer := c.config.ConfigServer; grpcServer != "" {
+		var grpcOpts []grpc.DialOption
+
+		{
+			tlsConfig := &tls.Config{}
+			if c.config.ConfigServerCA != "" {
+				certPool := x509.NewCertPool()
+				if !certPool.AppendCertsFromPEM([]byte(c.config.ConfigServerCA)) {
+					return fmt.Errorf("could not parse CA certificate")
+				}
+				tlsConfig.RootCAs = certPool
+			}
+
+			grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+		}
+
+		conn, err := grpc.DialContext(ctx, grpcServer, grpcOpts...)
+		if err != nil {
+			return fmt.Errorf("error dialing %q: %v", grpcServer, err)
+		}
+		configClient = pb.NewNodeConfigurationServiceClient(conn)
+
+		klog.Infof("querying grpc server for config")
+		request := &pb.GetConfigurationRequest{}
+		r, err := configClient.GetConfiguration(ctx, request)
+		if err != nil {
+			return fmt.Errorf("error getting configuration from server: %v", err)
+		}
+		nodeConfig = r
+	} else if fi.StringValue(c.config.ConfigBase) != "" {
 		var err error
 		configBase, err = vfs.Context.BuildVfsPath(*c.config.ConfigBase)
 		if err != nil {
@@ -121,7 +162,11 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	c.cluster = &api.Cluster{}
-	{
+	if nodeConfig != nil {
+		if err := utils.YamlUnmarshal([]byte(nodeConfig.ClusterFullConfig), c.cluster); err != nil {
+			return fmt.Errorf("error parsing Cluster response: %v", err)
+		}
+	} else {
 		clusterLocation := fi.StringValue(c.config.ClusterLocation)
 
 		var p vfs.Path
@@ -146,16 +191,21 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
-	if c.config.InstanceGroupName != "" {
+	if nodeConfig != nil {
+		c.instanceGroup = &api.InstanceGroup{}
+		if err := utils.YamlUnmarshal([]byte(nodeConfig.InstanceGroupConfig), c.instanceGroup); err != nil {
+			return fmt.Errorf("error parsing InstanceGroup config: %v", err)
+		}
+	} else if c.config.InstanceGroupName != "" {
 		instanceGroupLocation := configBase.Join("instancegroup", c.config.InstanceGroupName)
 
-		c.instanceGroup = &api.InstanceGroup{}
 		b, err := instanceGroupLocation.ReadFile()
 		if err != nil {
 			return fmt.Errorf("error loading InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
 
-		if err = utils.YamlUnmarshal(b, c.instanceGroup); err != nil {
+		c.instanceGroup = &api.InstanceGroup{}
+		if err := utils.YamlUnmarshal(b, c.instanceGroup); err != nil {
 			return fmt.Errorf("error parsing InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
 	} else {
@@ -190,7 +240,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		NodeupConfig:  c.config,
 	}
 
-	if c.cluster.Spec.SecretStore != "" {
+	if configClient != nil {
+		modelContext.SecretStore = nodeconfigclients.NewSecretStore(configClient, nodeConfig)
+	} else if c.cluster.Spec.SecretStore != "" {
 		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)
 		if err != nil {
@@ -202,7 +254,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("SecretStore not set")
 	}
 
-	if c.cluster.Spec.KeyStore != "" {
+	if configClient != nil {
+		modelContext.KeyStore = nodeconfigclients.NewKeyStore(configClient, nodeConfig)
+	} else if c.cluster.Spec.KeyStore != "" {
 		klog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.KeyStore)
 		if err != nil {
@@ -247,6 +301,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KopsControllerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
 	if c.cluster.Spec.Networking.Kuberouter == nil {
