@@ -58,6 +58,7 @@ var xxx_messageInfo_GetConfigurationRequest proto.InternalMessageInfo
 type GetConfigurationResponse struct {
 	ClusterFullConfig    string   `protobuf:"bytes,1,opt,name=cluster_full_config,json=clusterFullConfig,proto3" json:"cluster_full_config,omitempty"`
 	InstanceGroupConfig  string   `protobuf:"bytes,2,opt,name=instance_group_config,json=instanceGroupConfig,proto3" json:"instance_group_config,omitempty"`
+	CaCertificate        string   `protobuf:"bytes,3,opt,name=ca_certificate,json=caCertificate,proto3" json:"ca_certificate,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -102,9 +103,104 @@ func (m *GetConfigurationResponse) GetInstanceGroupConfig() string {
 	return ""
 }
 
+func (m *GetConfigurationResponse) GetCaCertificate() string {
+	if m != nil {
+		return m.CaCertificate
+	}
+	return ""
+}
+
+type GetKeypairRequest struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetKeypairRequest) Reset()         { *m = GetKeypairRequest{} }
+func (m *GetKeypairRequest) String() string { return proto.CompactTextString(m) }
+func (*GetKeypairRequest) ProtoMessage()    {}
+func (*GetKeypairRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_606e813b8a8360c9, []int{2}
+}
+
+func (m *GetKeypairRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetKeypairRequest.Unmarshal(m, b)
+}
+func (m *GetKeypairRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetKeypairRequest.Marshal(b, m, deterministic)
+}
+func (m *GetKeypairRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetKeypairRequest.Merge(m, src)
+}
+func (m *GetKeypairRequest) XXX_Size() int {
+	return xxx_messageInfo_GetKeypairRequest.Size(m)
+}
+func (m *GetKeypairRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetKeypairRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetKeypairRequest proto.InternalMessageInfo
+
+func (m *GetKeypairRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+type GetKeypairResponse struct {
+	Cert                 string   `protobuf:"bytes,1,opt,name=cert,proto3" json:"cert,omitempty"`
+	Key                  string   `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetKeypairResponse) Reset()         { *m = GetKeypairResponse{} }
+func (m *GetKeypairResponse) String() string { return proto.CompactTextString(m) }
+func (*GetKeypairResponse) ProtoMessage()    {}
+func (*GetKeypairResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_606e813b8a8360c9, []int{3}
+}
+
+func (m *GetKeypairResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetKeypairResponse.Unmarshal(m, b)
+}
+func (m *GetKeypairResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetKeypairResponse.Marshal(b, m, deterministic)
+}
+func (m *GetKeypairResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetKeypairResponse.Merge(m, src)
+}
+func (m *GetKeypairResponse) XXX_Size() int {
+	return xxx_messageInfo_GetKeypairResponse.Size(m)
+}
+func (m *GetKeypairResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetKeypairResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetKeypairResponse proto.InternalMessageInfo
+
+func (m *GetKeypairResponse) GetCert() string {
+	if m != nil {
+		return m.Cert
+	}
+	return ""
+}
+
+func (m *GetKeypairResponse) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*GetConfigurationRequest)(nil), "nodeconfiguration.GetConfigurationRequest")
 	proto.RegisterType((*GetConfigurationResponse)(nil), "nodeconfiguration.GetConfigurationResponse")
+	proto.RegisterType((*GetKeypairRequest)(nil), "nodeconfiguration.GetKeypairRequest")
+	proto.RegisterType((*GetKeypairResponse)(nil), "nodeconfiguration.GetKeypairResponse")
 }
 
 func init() {
@@ -112,21 +208,27 @@ func init() {
 }
 
 var fileDescriptor_606e813b8a8360c9 = []byte{
-	// 220 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x90, 0xbb, 0x4b, 0xc7, 0x30,
-	0x14, 0x85, 0xa9, 0x83, 0x60, 0x26, 0x9b, 0x22, 0x56, 0x27, 0xe9, 0xe2, 0x0b, 0x12, 0xa8, 0x8b,
-	0xb3, 0x82, 0xdd, 0x1c, 0xea, 0xe6, 0x52, 0x6a, 0x7a, 0x5b, 0x42, 0x42, 0x6e, 0xcc, 0xc3, 0xd1,
-	0xd5, 0x7f, 0x5b, 0x6c, 0x2c, 0x58, 0x8b, 0xf2, 0x1b, 0x93, 0xef, 0x7c, 0xe1, 0x9c, 0x10, 0x6e,
-	0xd5, 0xc4, 0xad, 0xc3, 0x80, 0xdc, 0xe0, 0x00, 0x02, 0xcd, 0x28, 0xa7, 0xe8, 0xfa, 0x20, 0xd1,
-	0xf0, 0xd5, 0x89, 0xcd, 0x29, 0x9a, 0x6f, 0x62, 0xd5, 0x09, 0x39, 0x6e, 0x20, 0xdc, 0xff, 0xbc,
-	0x6b, 0xe1, 0x35, 0x82, 0x0f, 0xd5, 0x3b, 0x29, 0xb7, 0xc8, 0x5b, 0x34, 0x1e, 0x28, 0x23, 0x85,
-	0xd0, 0xd1, 0x07, 0x70, 0xdd, 0x18, 0xb5, 0xee, 0xd2, 0xa3, 0x65, 0x76, 0x96, 0x5d, 0x1c, 0xb4,
-	0xf9, 0x37, 0x7a, 0x88, 0x5a, 0x27, 0x9d, 0xd6, 0xe4, 0x48, 0x1a, 0x1f, 0x7a, 0x23, 0xa0, 0x9b,
-	0x1c, 0x46, 0xbb, 0x18, 0x7b, 0xb3, 0x51, 0x2c, 0xb0, 0xf9, 0x62, 0xc9, 0xa9, 0x3f, 0x32, 0x52,
-	0x3e, 0xe2, 0x00, 0xab, 0x06, 0x4f, 0xe0, 0xde, 0xa4, 0x00, 0xaa, 0xc8, 0xe1, 0xef, 0x72, 0xf4,
-	0x8a, 0x6d, 0xf6, 0xb1, 0x3f, 0xc6, 0x9d, 0x5e, 0xef, 0x94, 0x4d, 0x6b, 0xef, 0x2e, 0x9f, 0xcf,
-	0xd5, 0xad, 0x67, 0x12, 0xb9, 0x42, 0xeb, 0xff, 0xfb, 0xf6, 0x97, 0xfd, 0x19, 0xdc, 0x7c, 0x06,
-	0x00, 0x00, 0xff, 0xff, 0x19, 0x1c, 0x60, 0x49, 0x9c, 0x01, 0x00, 0x00,
+	// 315 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xcd, 0x4a, 0xfb, 0x40,
+	0x14, 0xc5, 0xc9, 0xbf, 0xe5, 0x0f, 0x5e, 0x50, 0xda, 0x29, 0x62, 0xec, 0x4a, 0x82, 0xa5, 0x7e,
+	0x40, 0x02, 0x75, 0x23, 0x2e, 0x2d, 0xd8, 0x85, 0xe0, 0xa2, 0xae, 0x74, 0x13, 0xc6, 0xe9, 0x6d,
+	0x19, 0x12, 0x67, 0xc6, 0xf9, 0x10, 0xfa, 0x40, 0xbe, 0x98, 0x4f, 0x22, 0x49, 0x26, 0xb4, 0x31,
+	0x7e, 0xed, 0x6e, 0xe6, 0xfc, 0xce, 0xe4, 0xdc, 0xc3, 0x40, 0xa2, 0xb2, 0x55, 0xa2, 0xb4, 0xb4,
+	0x32, 0x11, 0x72, 0x81, 0x4c, 0x8a, 0x25, 0x5f, 0x39, 0x4d, 0x2d, 0x97, 0x22, 0x69, 0x7c, 0xc5,
+	0x25, 0x45, 0xfa, 0x2d, 0x2c, 0x3a, 0x84, 0x83, 0x19, 0xda, 0xe9, 0xf6, 0xd9, 0x1c, 0x5f, 0x1c,
+	0x1a, 0x1b, 0xbd, 0x05, 0x10, 0xb6, 0x35, 0xa3, 0xa4, 0x30, 0x48, 0x62, 0x18, 0xb0, 0xdc, 0x19,
+	0x8b, 0x3a, 0x5d, 0xba, 0x3c, 0x4f, 0xab, 0x5b, 0xc3, 0xe0, 0x28, 0x38, 0xd9, 0x99, 0xf7, 0xbd,
+	0x74, 0xe3, 0xf2, 0xbc, 0xb2, 0x93, 0x09, 0xec, 0x73, 0x61, 0x2c, 0x15, 0x0c, 0xd3, 0x95, 0x96,
+	0x4e, 0xd5, 0x8e, 0x7f, 0xa5, 0x63, 0x50, 0x8b, 0xb3, 0x42, 0xf3, 0x9e, 0x11, 0xec, 0x31, 0x9a,
+	0x32, 0xd4, 0x96, 0x2f, 0x39, 0xa3, 0x16, 0xc3, 0x4e, 0x09, 0xef, 0x32, 0x3a, 0xdd, 0x1c, 0x46,
+	0x63, 0xe8, 0xcf, 0xd0, 0xde, 0xe2, 0x5a, 0x51, 0xae, 0x7d, 0x78, 0x42, 0xa0, 0x2b, 0xe8, 0x33,
+	0xfa, 0x40, 0xe5, 0x1c, 0x5d, 0x01, 0xd9, 0x06, 0xfd, 0x26, 0x04, 0xba, 0xc5, 0x2f, 0x6a, 0xb2,
+	0x98, 0x49, 0x0f, 0x3a, 0x19, 0xae, 0x7d, 0xb6, 0x62, 0x9c, 0xbc, 0x07, 0x10, 0xde, 0xc9, 0x05,
+	0x36, 0xda, 0xb8, 0x47, 0xfd, 0xca, 0x19, 0x92, 0x0c, 0x7a, 0x9f, 0x8b, 0x22, 0x67, 0x71, 0xab,
+	0xec, 0xf8, 0x9b, 0xa6, 0x87, 0xe7, 0x7f, 0x62, 0x7d, 0xde, 0x07, 0x80, 0xcd, 0x16, 0xe4, 0xf8,
+	0x6b, 0x6b, 0xb3, 0x8d, 0xe1, 0xe8, 0x17, 0xaa, 0xba, 0xfa, 0xfa, 0xf4, 0x71, 0x9c, 0x5d, 0x9a,
+	0x98, 0xcb, 0x24, 0x93, 0xca, 0xfc, 0xf4, 0xbc, 0x9e, 0xfe, 0x97, 0xc2, 0xc5, 0x47, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0x9e, 0xd0, 0xb2, 0x3d, 0x84, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -142,6 +244,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type NodeConfigurationServiceClient interface {
 	GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error)
+	GetKeypair(ctx context.Context, in *GetKeypairRequest, opts ...grpc.CallOption) (*GetKeypairResponse, error)
 }
 
 type nodeConfigurationServiceClient struct {
@@ -161,9 +264,19 @@ func (c *nodeConfigurationServiceClient) GetConfiguration(ctx context.Context, i
 	return out, nil
 }
 
+func (c *nodeConfigurationServiceClient) GetKeypair(ctx context.Context, in *GetKeypairRequest, opts ...grpc.CallOption) (*GetKeypairResponse, error) {
+	out := new(GetKeypairResponse)
+	err := c.cc.Invoke(ctx, "/nodeconfiguration.NodeConfigurationService/GetKeypair", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NodeConfigurationServiceServer is the server API for NodeConfigurationService service.
 type NodeConfigurationServiceServer interface {
 	GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error)
+	GetKeypair(context.Context, *GetKeypairRequest) (*GetKeypairResponse, error)
 }
 
 // UnimplementedNodeConfigurationServiceServer can be embedded to have forward compatible implementations.
@@ -172,6 +285,9 @@ type UnimplementedNodeConfigurationServiceServer struct {
 
 func (*UnimplementedNodeConfigurationServiceServer) GetConfiguration(ctx context.Context, req *GetConfigurationRequest) (*GetConfigurationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConfiguration not implemented")
+}
+func (*UnimplementedNodeConfigurationServiceServer) GetKeypair(ctx context.Context, req *GetKeypairRequest) (*GetKeypairResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetKeypair not implemented")
 }
 
 func RegisterNodeConfigurationServiceServer(s *grpc.Server, srv NodeConfigurationServiceServer) {
@@ -196,6 +312,24 @@ func _NodeConfigurationService_GetConfiguration_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NodeConfigurationService_GetKeypair_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetKeypairRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeConfigurationServiceServer).GetKeypair(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/nodeconfiguration.NodeConfigurationService/GetKeypair",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeConfigurationServiceServer).GetKeypair(ctx, req.(*GetKeypairRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _NodeConfigurationService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "nodeconfiguration.NodeConfigurationService",
 	HandlerType: (*NodeConfigurationServiceServer)(nil),
@@ -203,6 +337,10 @@ var _NodeConfigurationService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetConfiguration",
 			Handler:    _NodeConfigurationService_GetConfiguration_Handler,
+		},
+		{
+			MethodName: "GetKeypair",
+			Handler:    _NodeConfigurationService_GetKeypair_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
