@@ -55,8 +55,6 @@ type Cloud struct {
 
 	// RegionName holds the region, renamed to avoid conflict with Region()
 	RegionName string
-
-	tags map[string]string
 }
 
 var _ fi.Cloud = &Cloud{}

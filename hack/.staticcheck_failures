@@ -8,9 +8,6 @@ dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
 node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
 pkg/resources/ali
-pkg/resources/aws
-pkg/resources/digitalocean
-pkg/resources/digitalocean/dns
 pkg/resources/openstack
 pkg/sshcredentials
 upup/pkg/fi
