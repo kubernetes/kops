@@ -92,6 +92,7 @@ spec:
         - name: kube-router-cfg
           mountPath: /etc/kube-router
       hostNetwork: true
+      priorityClassName: system-node-critical
       serviceAccountName: kube-router
       tolerations:
       - key: CriticalAddonsOnly
