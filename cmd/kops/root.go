@@ -34,8 +34,6 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/kubeconfig"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
@@ -270,27 +268,6 @@ func ClusterNameFromKubecfg() string {
 	//}
 
 	return clusterName
-}
-
-func readKubectlClusterConfig() (*kubeconfig.KubectlClusterWithName, error) {
-	kubectl := &kutil.Kubectl{}
-	context, err := kubectl.GetCurrentContext()
-	if err != nil {
-		return nil, fmt.Errorf("error getting current context from kubectl: %v", err)
-	}
-	klog.V(4).Infof("context = %q", context)
-
-	config, err := kubectl.GetConfig(true)
-	if err != nil {
-		return nil, fmt.Errorf("error getting current config from kubectl: %v", err)
-	}
-
-	// Minify should have done this
-	if len(config.Clusters) != 1 {
-		return nil, fmt.Errorf("expected exactly one cluster in kubectl config, found %d", len(config.Clusters))
-	}
-
-	return config.Clusters[0], nil
 }
 
 func (c *RootCmd) Clientset() (simple.Clientset, error) {
