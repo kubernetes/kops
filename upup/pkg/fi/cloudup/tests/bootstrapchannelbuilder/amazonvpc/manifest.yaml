@@ -25,7 +25,7 @@ spec:
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.14.13-kops.1
+    version: 1.14.13-kops.2
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
@@ -33,15 +33,15 @@ spec:
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.14.13-kops.1
+    version: 1.14.13-kops.2
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: b4dff071aa340fd71650c96f213fdf4b4f799c71
+    manifestHash: 15ade04df128488a534141bd5b8593d078f4953f
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.14.13-kops.1
+    version: 1.14.13-kops.2
   - id: k8s-1.8
     kubernetesVersion: '>=1.8.0'
     manifest: rbac.addons.k8s.io/k8s-1.8.yaml
@@ -83,7 +83,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: a304440f4f7d2e289eb12c37adeac04253d84906
+    manifestHash: 4d19a9d30591c09243539c4022003d2f875818fc
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
@@ -131,11 +131,11 @@ spec:
   - id: k8s-1.10
     kubernetesVersion: '>=1.10.0 <1.12.0'
     manifest: networking.amazon-vpc-routed-eni/k8s-1.10.yaml
-    manifestHash: 672f2fdfc6286512e9918014f7853728db2f6dad
+    manifestHash: eddd81f1dc347b3ae4566f5aa098106f14597f7c
     name: networking.amazon-vpc-routed-eni
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.5.0-kops.1
+    version: 1.5.0-kops.2
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.amazon-vpc-routed-eni/k8s-1.12.yaml
