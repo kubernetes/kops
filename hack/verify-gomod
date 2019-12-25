@@ -25,7 +25,7 @@ changes=$(git status --porcelain || true)
 if [ -n "${changes}" ]; then
   echo "ERROR: go modules are not up to date; please run: go mod tidy"
   echo "changed files:"
-  printf "${changes}\n"
+  printf "%s" "${changes}\n"
   echo "git diff:"
   git --no-pager diff
   exit 1

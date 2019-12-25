@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 # Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +27,7 @@ changed_files=$(git status --porcelain || true)
 if [ -n "${changed_files}" ]; then
    echo "Detected that generation is needed; run 'make crds'"
    echo "changed files:"
-   printf "${changed_files}\n"
+   printf "%s" "${changed_files}\n"
    echo "git diff:"
    git --no-pager diff
    echo "To fix: run 'make crds'"
