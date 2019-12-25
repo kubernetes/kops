@@ -59,9 +59,6 @@ type clusterDiscoveryALI struct {
 }
 
 func ListResourcesALI(aliCloud aliup.ALICloud, clusterName string, region string) (map[string]*resources.Resource, error) {
-	if region == "" {
-		region = aliCloud.Region()
-	}
 
 	resources := make(map[string]*resources.Resource)
 
@@ -412,8 +409,6 @@ func (d *clusterDiscoveryALI) ListRam() ([]*resources.Resource, error) {
 		"bastions-" + clusterName,
 	}
 
-	roleToDelete := []string{}
-
 	response, err := d.aliCloud.RamClient().ListRoles()
 	if err != nil {
 		return nil, fmt.Errorf("err listing RamRole:%v", err)
@@ -424,7 +419,6 @@ func (d *clusterDiscoveryALI) ListRam() ([]*resources.Resource, error) {
 		for _, role := range response.Roles.Role {
 			for _, roleName := range names {
 				if role.RoleName == roleName {
-					roleToDelete = append(roleToDelete, role.RoleId)
 					resourceTracker := &resources.Resource{
 						Name:    role.RoleName,
 						ID:      role.RoleId,
