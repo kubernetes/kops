@@ -1,5 +1,4 @@
 cloudmock/aws/mockelbv2
-cmd/kops
 node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
 pkg/resources/digitalocean

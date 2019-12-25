@@ -99,9 +99,7 @@ func TestExistingIAMCloudformation(t *testing.T) {
 
 // TestExistingSG runs the test with existing Security Group, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestExistingSG(t *testing.T) {
-	lifecycleOverrides := []string{"SecurityGroup=ExistsAndWarnIfChanges", "SecurityGroupRule=ExistsAndWarnIfChanges"}
-	lifecycleOverrides = nil
-	runTestAWS(t, "existingsg.example.com", "existing_sg", "v1alpha2", false, 3, true, false, lifecycleOverrides)
+	runTestAWS(t, "existingsg.example.com", "existing_sg", "v1alpha2", false, 3, true, false, nil)
 }
 
 // TestAdditionalUserData runs the test on passing additional user-data to an instance at bootstrap.
