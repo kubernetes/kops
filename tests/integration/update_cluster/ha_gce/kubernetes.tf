@@ -102,7 +102,7 @@ resource "google_compute_disk" "d3-etcd-main-ha-gce-example-com" {
 
 resource "google_compute_firewall" "cidr-to-master-ha-gce-example-com" {
   name    = "cidr-to-master-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -120,7 +120,7 @@ resource "google_compute_firewall" "cidr-to-master-ha-gce-example-com" {
 
 resource "google_compute_firewall" "cidr-to-node-ha-gce-example-com" {
   name    = "cidr-to-node-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -152,7 +152,7 @@ resource "google_compute_firewall" "cidr-to-node-ha-gce-example-com" {
 
 resource "google_compute_firewall" "kubernetes-master-https-ha-gce-example-com" {
   name    = "kubernetes-master-https-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -165,7 +165,7 @@ resource "google_compute_firewall" "kubernetes-master-https-ha-gce-example-com" 
 
 resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
   name    = "master-to-master-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -197,7 +197,7 @@ resource "google_compute_firewall" "master-to-master-ha-gce-example-com" {
 
 resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
   name    = "master-to-node-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -229,7 +229,7 @@ resource "google_compute_firewall" "master-to-node-ha-gce-example-com" {
 
 resource "google_compute_firewall" "node-to-master-ha-gce-example-com" {
   name    = "node-to-master-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -247,7 +247,7 @@ resource "google_compute_firewall" "node-to-master-ha-gce-example-com" {
 
 resource "google_compute_firewall" "node-to-node-ha-gce-example-com" {
   name    = "node-to-node-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -279,7 +279,7 @@ resource "google_compute_firewall" "node-to-node-ha-gce-example-com" {
 
 resource "google_compute_firewall" "nodeport-external-to-node-ha-gce-example-com" {
   name    = "nodeport-external-to-node-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -297,7 +297,7 @@ resource "google_compute_firewall" "nodeport-external-to-node-ha-gce-example-com
 
 resource "google_compute_firewall" "ssh-external-to-master-ha-gce-example-com" {
   name    = "ssh-external-to-master-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -310,7 +310,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ha-gce-example-com" {
 
 resource "google_compute_firewall" "ssh-external-to-node-ha-gce-example-com" {
   name    = "ssh-external-to-node-ha-gce-example-com"
-  network = "${google_compute_network.default.name}"
+  network = "${google_compute_network.vpc-ha-gce-example-com.name}"
 
   allow = {
     protocol = "tcp"
@@ -419,7 +419,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   }
 
   network_interface = {
-    network       = "${google_compute_network.default.name}"
+    network       = "${google_compute_network.vpc-ha-gce-example-com.name}"
     access_config = {}
   }
 
@@ -460,7 +460,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
   }
 
   network_interface = {
-    network       = "${google_compute_network.default.name}"
+    network       = "${google_compute_network.vpc-ha-gce-example-com.name}"
     access_config = {}
   }
 
@@ -501,7 +501,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   }
 
   network_interface = {
-    network       = "${google_compute_network.default.name}"
+    network       = "${google_compute_network.vpc-ha-gce-example-com.name}"
     access_config = {}
   }
 
@@ -542,7 +542,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   }
 
   network_interface = {
-    network       = "${google_compute_network.default.name}"
+    network       = "${google_compute_network.vpc-ha-gce-example-com.name}"
     access_config = {}
   }
 
@@ -557,8 +557,8 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   name_prefix = "nodes-ha-gce-example-com-"
 }
 
-resource "google_compute_network" "default" {
-  name                    = "default"
+resource "google_compute_network" "vpc-ha-gce-example-com" {
+  name                    = "vpc-ha-gce-example-com"
   auto_create_subnetworks = true
 }
 

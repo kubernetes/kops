@@ -59,7 +59,7 @@ func performNetworkAssignmentsIPAliases(ctx context.Context, c *kops.Cluster, cl
 
 	networkName := c.Spec.NetworkID
 	if networkName == "" {
-		networkName = "default"
+		networkName = SafeObjectName("vpc", c.ClusterName)
 	}
 
 	cloud := cloudObj.(GCECloud)

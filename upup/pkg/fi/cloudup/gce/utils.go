@@ -17,10 +17,13 @@ limitations under the License.
 package gce
 
 import (
+	"encoding/base32"
 	"fmt"
+	"hash/fnv"
 	"strings"
 
 	"google.golang.org/api/googleapi"
+	"k8s.io/klog"
 )
 
 func IsNotFound(err error) bool {
@@ -55,10 +58,17 @@ func SafeClusterName(clusterName string) string {
 }
 
 // SafeObjectName returns the object name and cluster name escaped for GCE
+// Following requirements (copied from the web UI requirements)
+// * 63 chars or less
+// * must begin with lower case letter
+// * followed by lower case letters/numbers/hyphens
+// * may not end in a hyphen (TODO Check this)
 func SafeObjectName(name string, clusterName string) string {
-	gceName := name + "-" + clusterName
 
-	// TODO: If the cluster name > some max size (32?) we should curtail it
+	gceName := name + "-" + clusterName
+	gceName = strings.ToLower(gceName)
+	gceName = LimitedLengthName(gceName, 63)
+
 	return SafeClusterName(gceName)
 }
 
@@ -80,4 +90,30 @@ func ZoneToRegion(zone string) (string, error) {
 	}
 	region := tokens[0] + "-" + tokens[1]
 	return region, nil
+}
+
+// LimitedLengthName returns a string subject to a maximum length
+func LimitedLengthName(s string, n int) string {
+	// We only use the hash if we need to
+	if len(s) <= n {
+		return s
+	}
+
+	h := fnv.New32a()
+	if _, err := h.Write([]byte(s)); err != nil {
+		klog.Fatalf("error hashing values: %v", err)
+	}
+	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
+	hashString = strings.ToLower(hashString)
+	if len(hashString) > 6 {
+		hashString = hashString[:6]
+	}
+
+	maxBaseLength := n - len(hashString) - 1
+	if len(s) > maxBaseLength {
+		s = s[:maxBaseLength]
+	}
+	s = s + "-" + hashString
+
+	return s
 }

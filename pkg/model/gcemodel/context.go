@@ -37,7 +37,7 @@ func (c *GCEModelContext) LinkToNetwork() *gcetasks.Network {
 func (c *GCEModelContext) NameForNetwork() string {
 	networkName := c.Cluster.Spec.NetworkID
 	if networkName == "" {
-		networkName = "default"
+		networkName = c.SafeObjectName("vpc")
 	}
 	return networkName
 }
