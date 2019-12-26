@@ -2,8 +2,6 @@ cloudmock/aws/mockelbv2
 cmd/kops
 node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
-pkg/resources/digitalocean
-pkg/resources/digitalocean/dns
 pkg/resources/openstack
 upup/pkg/fi
 upup/pkg/fi/cloudup
