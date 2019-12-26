@@ -270,7 +270,14 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Kubelet Server")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
-	manifest.Set("Unit", "After", "docker.service")
+	switch b.Cluster.Spec.ContainerRuntime {
+	case "docker":
+		manifest.Set("Unit", "After", "docker.service")
+	case "containerd":
+		manifest.Set("Unit", "After", "containerd.service")
+	default:
+		klog.Warningf("unknown container runtime %q", b.Cluster.Spec.ContainerRuntime)
+	}
 
 	if b.Distribution == distros.DistributionCoreOS {
 		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
