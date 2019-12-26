@@ -54,9 +54,10 @@ type Package struct {
 }
 
 const (
-	localPackageDir       = "/var/cache/nodeup/packages/"
-	containerdPackageName = "containerd.io"
-	dockerPackageName     = "docker-ce"
+	localPackageDir             = "/var/cache/nodeup/packages/"
+	containerSelinuxPackageName = "container-selinux"
+	containerdPackageName       = "containerd.io"
+	dockerPackageName           = "docker-ce"
 )
 
 var _ fi.HasDependencies = &Package{}
@@ -83,10 +84,24 @@ func (e *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		}
 	}
 
-	// Docker should wait for containerd to be installed
+	// containerd should wait for container-selinux to be installed
+	if e.Name == containerdPackageName {
+		for _, v := range tasks {
+			if vp, ok := v.(*Package); ok {
+				if vp.Name == containerSelinuxPackageName {
+					deps = append(deps, v)
+				}
+			}
+		}
+	}
+
+	// Docker should wait for container-selinux and containerd to be installed
 	if e.Name == dockerPackageName {
 		for _, v := range tasks {
 			if vp, ok := v.(*Package); ok {
+				if vp.Name == containerSelinuxPackageName {
+					deps = append(deps, v)
+				}
 				if vp.Name == containerdPackageName {
 					deps = append(deps, v)
 				}

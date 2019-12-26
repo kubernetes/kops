@@ -158,10 +158,15 @@ func (d *packageVersion) matches(arch Architecture, packageVersion string, distr
 		return false
 	}
 	foundDistro := false
-	for _, d := range d.Distros {
-		if d == distro {
-			foundDistro = true
+	if len(d.Distros) > 0 {
+		for _, d := range d.Distros {
+			if d == distro {
+				foundDistro = true
+			}
 		}
+	} else {
+		// Distro list is empty, assuming ANY
+		foundDistro = true
 	}
 	if !foundDistro {
 		return false
