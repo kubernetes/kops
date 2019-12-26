@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -216,7 +217,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.HostnameOverride = "@alicloud"
 	}
 
-	if clusterSpec.ExternalCloudControllerManager != nil {
+	if featureflag.EnableExternalCloudController.Enabled() && clusterSpec.ExternalCloudControllerManager != nil {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}
 
