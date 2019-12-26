@@ -25,11 +25,8 @@ package internal
 import dns "google.golang.org/api/dns/v1"
 
 type (
-	Project struct{ impl *dns.Project }
-
-	ProjectsGetCall struct{ impl *dns.ProjectsGetCall }
-
+	Project         struct{}
+	ProjectsGetCall struct{}
 	ProjectsService struct{ impl *dns.ProjectsService }
-
-	Quota struct{ impl *dns.Quota }
+	Quota           struct{}
 )

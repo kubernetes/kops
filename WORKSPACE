@@ -71,10 +71,10 @@ load(
 container_pull(
     name = "debian_hyperkube_base_amd64",
     # 'tag' is also supported, but digest is encouraged for reproducibility.
-    digest = "sha256:cc782ed16599000ca4c85d47ec6264753747ae1e77520894dca84b104a7621e2",
+    digest = "sha256:5d4ea2fb5fbe9a9a9da74f67cf2faefc881968bc39f2ac5d62d9167e575812a1",
     registry = "k8s.gcr.io",
     repository = "debian-hyperkube-base-amd64",
-    tag = "0.10",
+    tag = "0.12.1",
 )
 
 git_repository(
@@ -170,7 +170,14 @@ go_repository(
 # Start using distroless base
 container_pull(
     name = "distroless_base",
-    digest = "sha256:a4624843fb1d7d43d9e3d62f6d76b51b6e02b3d03221e29fef4e223d81ef3378",
+    digest = "sha256:7fa7445dfbebae4f4b7ab0e6ef99276e96075ae42584af6286ba080750d6dfe5",
+    registry = "gcr.io",
+    repository = "distroless/base",
+)
+
+container_pull(
+    name = "distroless_base_debug",
+    digest = "sha256:6f78124292427599fcef84139cdc9f4ab2d1851fe129b140c92b997f8fe4d289",
     registry = "gcr.io",
     repository = "distroless/base",
 )
