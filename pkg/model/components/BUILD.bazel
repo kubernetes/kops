@@ -22,6 +22,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/assets:go_default_library",
+        "//pkg/featureflag:go_default_library",
         "//pkg/k8sversion:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",

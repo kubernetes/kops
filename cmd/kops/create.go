@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/text"
@@ -147,6 +148,9 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 
 			switch v := o.(type) {
 			case *kopsapi.Cluster:
+				if v.Spec.ExternalCloudControllerManager != nil && !featureflag.EnableExternalCloudController.Enabled() {
+					klog.Warningf("Without setting the feature flag `+EnableExternalCloudController` the external cloud controller manager configuration will be discarded")
+				}
 				// Adding a PerformAssignments() call here as the user might be trying to use
 				// the new `-f` feature, with an old cluster definition.
 				err = cloudup.PerformAssignments(v)
