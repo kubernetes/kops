@@ -504,16 +504,6 @@ func createRecord(c *godo.Client, zoneName string, createRequest *godo.DomainRec
 	return nil
 }
 
-// editRecord edits a record given an associated zone and a godo.DomainRecordEditRequest
-func editRecord(c *godo.Client, zoneName string, recordID int, editRequest *godo.DomainRecordEditRequest) error {
-	_, _, err := c.Domains.EditRecord(context.TODO(), zoneName, recordID, editRequest)
-	if err != nil {
-		return fmt.Errorf("error editing record: %v", err)
-	}
-
-	return nil
-}
-
 // deleteRecord deletes a record given an associated zone and a record ID
 func deleteRecord(c *godo.Client, zoneName string, recordID int) error {
 	_, err := c.Domains.DeleteRecord(context.TODO(), zoneName, recordID)
