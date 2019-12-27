@@ -19,6 +19,7 @@ package components
 import (
 	"fmt"
 
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -41,64 +42,58 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 
 	containerd := clusterSpec.Containerd
 
-	if fi.StringValue(clusterSpec.Containerd.Version) == "" {
-		containerdVersion := ""
+	if clusterSpec.ContainerRuntime == "containerd" {
+		if b.IsKubernetesLT("1.11") {
+			// Containerd 1.2 is validated against Kubernetes v1.11+
+			// https://github.com/containerd/containerd/blob/master/releases/v1.2.0.toml#L34
+			return fmt.Errorf("kubernetes %s is not compatible with containerd", clusterSpec.KubernetesVersion)
+		} else if b.IsKubernetesLT("1.18") {
+			klog.Warningf("kubernetes %s is untested with containerd", clusterSpec.KubernetesVersion)
+		}
 
-		if clusterSpec.ContainerRuntime == "containerd" {
-			if clusterSpec.KubernetesVersion == "" {
-				return fmt.Errorf("Kubernetes version is required")
+		// Set containerd based on Kubernetes version
+		if fi.StringValue(containerd.Version) == "" {
+			if b.IsKubernetesGTE("1.18") {
+				containerd.Version = fi.String("1.2.10")
+			} else if b.IsKubernetesGTE("1.11") {
+				return fmt.Errorf("containerd version is required")
 			}
+		}
 
-			sv, err := KubernetesVersion(clusterSpec)
-			if err != nil {
-				return fmt.Errorf("unable to determine kubernetes version from %q", clusterSpec.KubernetesVersion)
-			}
+		// Apply defaults for containerd running in container runtime mode
+		containerd.LogLevel = fi.String("warn")
+		containerd.ConfigOverride = fi.String("")
 
-			if sv.Major == 1 && sv.Minor >= 11 {
-				// Containerd 1.2 is validated against Kubernetes v1.11+
-				// https://github.com/containerd/containerd/blob/master/releases/v1.2.0.toml#L34
-				containerdVersion = "1.2.10"
-			} else {
-				return fmt.Errorf("unknown version of kubernetes %q (cannot infer containerd version)", clusterSpec.KubernetesVersion)
-			}
-
-		} else if clusterSpec.ContainerRuntime == "docker" {
+	} else if clusterSpec.ContainerRuntime == "docker" {
+		if fi.StringValue(containerd.Version) == "" {
+			// Docker version should always be available
 			if fi.StringValue(clusterSpec.Docker.Version) == "" {
-				return fmt.Errorf("Docker version is required")
+				return fmt.Errorf("docker version is required")
 			}
 
-			// Set containerd version for known Docker versions
-			dockerVersion := fi.StringValue(clusterSpec.Docker.Version)
-			switch dockerVersion {
+			// Set the containerd version for known Docker versions
+			switch fi.StringValue(clusterSpec.Docker.Version) {
 			case "19.03.4":
-				containerdVersion = "1.2.10"
+				containerd.Version = fi.String("1.2.10")
 			case "18.09.9":
-				containerdVersion = "1.2.10"
+				containerd.Version = fi.String("1.2.10")
 			case "18.09.3":
-				containerdVersion = "1.2.10"
+				containerd.Version = fi.String("1.2.4")
 			default:
-				// Older version of docker
+				// Old version of docker, single package
 				containerd.SkipInstall = true
+				return nil
 			}
-
-		} else {
-			// Unknown container runtime, should not install containerd
-			containerd.SkipInstall = true
 		}
 
-		if containerdVersion != "" {
-			containerd.Version = &containerdVersion
-		}
-	}
+		// Apply defaults for containerd running in Docker mode
+		containerd.LogLevel = fi.String("warn")
+		containerd.ConfigOverride = fi.String("disabled_plugins = [\"cri\"]\n")
 
-	// Apply global containerd defaults
-	containerd.LogLevel = fi.String("warn")
-
-	configOverride := ""
-	if clusterSpec.ContainerRuntime == "docker" {
-		configOverride += "disabled_plugins = [\"cri\"]\n"
+	} else {
+		// Unknown container runtime, should not install containerd
+		containerd.SkipInstall = true
 	}
-	containerd.ConfigOverride = &configOverride
 
 	return nil
 }

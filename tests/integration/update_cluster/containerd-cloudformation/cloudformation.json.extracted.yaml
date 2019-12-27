@@ -139,16 +139,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
     logLevel: warn
     version: 1.2.10
   docker:
-    ipMasq: false
-    ipTables: false
-    logDriver: json-file
-    logLevel: warn
-    logOpt:
-    - max-size=10m
-    - max-file=5
     skipInstall: true
-    storage: overlay2,overlay,aufs
-    version: 18.06.3
   encryptionConfig: null
   etcdClusters:
     events:
@@ -434,16 +425,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
     logLevel: warn
     version: 1.2.10
   docker:
-    ipMasq: false
-    ipTables: false
-    logDriver: json-file
-    logLevel: warn
-    logOpt:
-    - max-size=10m
-    - max-file=5
     skipInstall: true
-    storage: overlay2,overlay,aufs
-    version: 18.06.3
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m

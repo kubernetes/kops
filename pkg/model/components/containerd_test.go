@@ -60,8 +60,36 @@ func Test_Build_Containerd_Unsupported_Version(t *testing.T) {
 	}
 }
 
-func Test_Build_Containerd_Supported_Version(t *testing.T) {
+func Test_Build_Containerd_Untested_Version(t *testing.T) {
 	kubernetesVersions := []string{"1.11.0", "1.11.2", "1.14.0", "1.16.3"}
+
+	for _, v := range kubernetesVersions {
+
+		c := buildContainerdCluster(v)
+		c.Spec.ContainerRuntime = "containerd"
+		b := assets.NewAssetBuilder(c, "")
+
+		version, err := util.ParseKubernetesVersion(v)
+		if err != nil {
+			t.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", v, err)
+		}
+
+		ob := &ContainerdOptionsBuilder{
+			&OptionsContext{
+				AssetBuilder:      b,
+				KubernetesVersion: *version,
+			},
+		}
+
+		err = ob.BuildOptions(&c.Spec)
+		if err == nil {
+			t.Fatalf("expecting error when Kubernetes version >= 1.11 and < 1.18: %s", v)
+		}
+	}
+}
+
+func Test_Build_Containerd_Supported_Version(t *testing.T) {
+	kubernetesVersions := []string{"1.18.0", "1.18.3"}
 
 	for _, v := range kubernetesVersions {
 

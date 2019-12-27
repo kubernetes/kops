@@ -17,8 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"fmt"
-
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -36,11 +34,6 @@ var _ loader.OptionsBuilder = &DockerOptionsBuilder{}
 func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
-	sv, err := KubernetesVersion(clusterSpec)
-	if err != nil {
-		return fmt.Errorf("unable to determine kubernetes version from %q", clusterSpec.KubernetesVersion)
-	}
-
 	if clusterSpec.Docker == nil {
 		clusterSpec.Docker = &kops.DockerConfig{}
 	}
@@ -50,40 +43,31 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	// Container runtime is not Docker, should not install
 	if clusterSpec.ContainerRuntime != "docker" {
 		docker.SkipInstall = true
+		return nil
 	}
 
+	// Set the Docker version for known Kubernetes versions
 	if fi.StringValue(clusterSpec.Docker.Version) == "" {
-		if clusterSpec.KubernetesVersion == "" {
-			return fmt.Errorf("KubernetesVersion is required")
+		if b.IsKubernetesGTE("1.17") {
+			docker.Version = fi.String("19.03.4")
+		} else if b.IsKubernetesGTE("1.16") {
+			docker.Version = fi.String("18.09.9")
+		} else if b.IsKubernetesGTE("1.12") {
+			docker.Version = fi.String("18.06.3")
+		} else if b.IsKubernetesGTE("1.9") {
+			docker.Version = fi.String("17.03.2")
+		} else if b.IsKubernetesGTE("1.8") {
+			docker.Version = fi.String("1.13.1")
+		} else if b.IsKubernetesGTE("1.6") {
+			docker.Version = fi.String("1.12.6")
+		} else if b.IsKubernetesGTE("1.5") {
+			docker.Version = fi.String("1.12.3")
+		} else {
+			docker.Version = fi.String("1.11.2")
 		}
-
-		dockerVersion := ""
-		if sv.Major == 1 && sv.Minor >= 17 {
-			dockerVersion = "19.03.4"
-		} else if sv.Major == 1 && sv.Minor >= 16 {
-			dockerVersion = "18.09.9"
-		} else if sv.Major == 1 && sv.Minor >= 12 {
-			dockerVersion = "18.06.3"
-		} else if sv.Major == 1 && sv.Minor >= 9 {
-			dockerVersion = "17.03.2"
-		} else if sv.Major == 1 && sv.Minor >= 8 {
-			dockerVersion = "1.13.1"
-		} else if sv.Major == 1 && sv.Minor >= 6 {
-			dockerVersion = "1.12.6"
-		} else if sv.Major == 1 && sv.Minor >= 5 {
-			dockerVersion = "1.12.3"
-		} else if sv.Major == 1 && sv.Minor <= 4 {
-			dockerVersion = "1.11.2"
-		}
-
-		if dockerVersion == "" {
-			return fmt.Errorf("unknown version of kubernetes %q (cannot infer docker version)", clusterSpec.KubernetesVersion)
-		}
-
-		clusterSpec.Docker.Version = &dockerVersion
 	}
 
-	if sv.Major == 1 && sv.Minor >= 6 {
+	if b.IsKubernetesGTE("1.6") {
 		if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == nil {
 			// Use built-in docker logging, if not configured otherwise (by the user)
 			logDriver := "json-file"
