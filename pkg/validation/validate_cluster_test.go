@@ -123,6 +123,59 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
+		MinSize: 3,
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00002",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "node-1b"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	v, err := testValidate(t, groups, nil)
+	require.NoError(t, err)
+	if !assert.Len(t, v.Failures, 1) ||
+		!assert.Equal(t, &ValidationError{
+			Kind:    "InstanceGroup",
+			Name:    "node-1",
+			Message: "InstanceGroup \"node-1\" did not have enough nodes 2 vs 3",
+		}, v.Failures[0]) {
+		printDebug(t, v)
+	}
+}
+
+func Test_ValidateNodeNotReady(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+		MinSize: 2,
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID: "i-00001",
@@ -151,32 +204,120 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 		},
 	}
 
-	t.Run("too few nodes", func(t *testing.T) {
-		groups["node-1"].MinSize = 3
-		v, err := testValidate(t, groups, nil)
-		require.NoError(t, err)
-		if !assert.Len(t, v.Failures, 2) {
-			printDebug(t, v)
-		}
-	})
+	v, err := testValidate(t, groups, nil)
+	require.NoError(t, err)
+	if !assert.Len(t, v.Failures, 1) ||
+		!assert.Equal(t, &ValidationError{
+			Kind:    "Node",
+			Name:    "node-1b",
+			Message: "node \"node-1b\" is not ready",
+		}, v.Failures[0]) {
+		printDebug(t, v)
+	}
+}
 
-	t.Run("not ready node", func(t *testing.T) {
-		groups["node-1"].MinSize = 2
-		v, err := testValidate(t, groups, nil)
-		require.NoError(t, err)
-		if !assert.Len(t, v.Failures, 1) {
-			printDebug(t, v)
-		}
-	})
+func Test_ValidateMastersNotEnough(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "master-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleMaster,
+			},
+		},
+		MinSize: 3,
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-1a"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00002",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-1b"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+	}
 
-	t.Run("unexpected errors", func(t *testing.T) {
-		groups["node-1"].NeedUpdate[0].Node.Status.Conditions[0].Status = v1.ConditionTrue
-		v, err := testValidate(t, groups, nil)
-		require.NoError(t, err)
-		if !assert.Empty(t, v.Failures) {
-			printDebug(t, v)
-		}
-	})
+	v, err := testValidate(t, groups, nil)
+	require.NoError(t, err)
+	if !assert.Len(t, v.Failures, 1) ||
+		!assert.Equal(t, &ValidationError{
+			Kind:    "InstanceGroup",
+			Name:    "master-1",
+			Message: "InstanceGroup \"master-1\" did not have enough nodes 2 vs 3",
+		}, v.Failures[0]) {
+		printDebug(t, v)
+	}
+}
+
+func Test_ValidateMasterNotReady(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "master-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleMaster,
+			},
+		},
+		MinSize: 2,
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-1a"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00002",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-1b"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionFalse},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	v, err := testValidate(t, groups, nil)
+	require.NoError(t, err)
+	if !assert.Len(t, v.Failures, 1) ||
+		!assert.Equal(t, &ValidationError{
+			Kind:    "Node",
+			Name:    "master-1b",
+			Message: "master \"master-1b\" is not ready",
+		}, v.Failures[0]) {
+		printDebug(t, v)
+	}
 }
 
 func Test_ValidateNoComponentFailures(t *testing.T) {
