@@ -155,6 +155,8 @@ type InstanceGroupSpec struct {
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// InstanceProtection makes new instances in an autoscaling group protected from scale in
 	InstanceProtection *bool `json:"instanceProtection,omitempty"`
+	// BootstrapScripts are bootstrapping scripts that run before nodeup.
+	BootstrapScripts []BootstrapScriptSpec `json:"bootstrapScripts,omitempty"`
 }
 
 const (

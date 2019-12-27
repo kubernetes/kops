@@ -180,6 +180,8 @@ type ClusterSpec struct {
 	// UseHostCertificates will mount /etc/ssl/certs to inside needed containers.
 	// This is needed if some APIs do have self-signed certs
 	UseHostCertificates *bool `json:"useHostCertificates,omitempty"`
+	// BootstrapScripts are bootstrapping scripts that run before nodeup.
+	BootstrapScripts []BootstrapScriptSpec `json:"bootstrapScripts,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -546,4 +548,11 @@ type DNSControllerGossipConfig struct {
 	Secret    *string                    `json:"secret,omitempty"`
 	Secondary *DNSControllerGossipConfig `json:"secondary,omitempty"`
 	Seed      *string                    `json:"seed,omitempty"`
+}
+
+// BootstrapScriptSpec runs a bootstrapping script on the cluster.
+type BootstrapScriptSpec struct {
+	Name string `json:"name,omitempty"`
+	URL  string `json:"url,omitempty"`
+	Hash string `json:"hash,omitempty"`
 }

@@ -135,6 +135,21 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 	}
 
 	functions := template.FuncMap{
+		"BootstrapHooks": func() string {
+			var hooks []string
+			hookSpecs := make(map[string]bool)
+			for _, specs := range [][]kops.BootstrapScriptSpec{ig.Spec.BootstrapScripts, cluster.Spec.BootstrapScripts} {
+				for _, bs := range specs {
+					if _, ok := hookSpecs[bs.Name]; ok {
+						continue
+					}
+					hookSpecs[bs.Name] = true
+					hooks = append(hooks, fmt.Sprintf("%s %s", bs.URL, bs.Hash))
+				}
+			}
+			return strings.Join(hooks, "\n")
+		},
+
 		"NodeUpSource": func() string {
 			return b.NodeUpSource
 		},
