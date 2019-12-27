@@ -23,6 +23,7 @@ kops export kubecfg CLUSTERNAME [flags]
 ### Options
 
 ```
+      --all                 export all clusters from the kops state store
   -h, --help                help for kubecfg
       --kubeconfig string   The location of the kubeconfig file to create.
 ```
