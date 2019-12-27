@@ -27,7 +27,6 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kubeconfig"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 	"k8s.io/kubernetes/pkg/kubectl/util/templates"
 )
@@ -48,8 +47,6 @@ var (
 )
 
 type ExportKubecfgOptions struct {
-	tmpdir         string
-	keyStore       fi.CAStore
 	KubeConfigPath string
 	all            bool
 }
