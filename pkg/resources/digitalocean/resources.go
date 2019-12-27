@@ -121,7 +121,7 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 
 	volumeMatch := strings.Replace(clusterName, ".", "-", -1)
 
-	volumes, err := getAllVolumesByRegion(c, c.Region)
+	volumes, err := getAllVolumesByRegion(c, c.Region())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list volumes: %s", err)
 	}
@@ -317,12 +317,13 @@ func deleteRecord(cloud fi.Cloud, domain string, t *resources.Resource) error {
 
 func waitForDetach(cloud *Cloud, action *godo.Action) error {
 	timeout := time.After(10 * time.Second)
-	tick := time.Tick(500 * time.Millisecond)
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-timeout:
 			return errors.New("timed out waiting for volume to detach")
-		case <-tick:
+		case <-ticker.C:
 			updatedAction, _, err := cloud.Client.Actions.Get(context.TODO(), action.ID)
 			if err != nil {
 				return err

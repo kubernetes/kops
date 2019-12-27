@@ -133,6 +133,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configOverride: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
@@ -424,6 +430,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configOverride: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
@@ -715,6 +727,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configOverride: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
@@ -1006,6 +1024,12 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configOverride: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false

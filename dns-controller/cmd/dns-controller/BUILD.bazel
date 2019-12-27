@@ -47,6 +47,7 @@ container_image(
     name = "image",
     base = "@distroless_base//image",
     cmd = ["/usr/bin/dns-controller"],
+    user = "1000",
     directory = "/usr/bin/",
     files = [
         "dns-controller",

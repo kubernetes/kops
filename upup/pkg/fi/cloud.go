@@ -39,6 +39,10 @@ type Cloud interface {
 
 	// GetCloudGroups returns a map of cloud instances that back a kops cluster
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
+
+	// Region returns the cloud region bound to the cloud instance
+	// If the region concept does not apply, returns ""
+	Region() string
 }
 
 type VPCInfo struct {

@@ -35,9 +35,11 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  kubelet:
+    anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.6.0-alpha.3
+  kubernetesVersion: v1.15.0-alpha.3
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
   networking:
@@ -74,7 +76,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1a
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-08-17
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -94,7 +96,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1b
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-08-17
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -114,7 +116,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1c
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-08-17
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -134,7 +136,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-08-17
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26
   machineType: t2.medium
   maxSize: 2
   minSize: 2

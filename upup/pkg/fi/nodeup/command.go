@@ -228,6 +228,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.UpdateServiceBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.VolumesBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.ContainerdBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
@@ -297,12 +298,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
+			Runtime: c.cluster.Spec.ContainerRuntime,
 		}
 	}
 	if c.config.ProtokubeImage != nil {
 		taskMap["LoadImage.protokube"] = &nodetasks.LoadImageTask{
 			Sources: c.config.ProtokubeImage.Sources,
 			Hash:    c.config.ProtokubeImage.Hash,
+			Runtime: c.cluster.Spec.ContainerRuntime,
 		}
 	}
 

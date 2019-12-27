@@ -181,6 +181,10 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 			CloudConfig: &kops.CloudConfiguration{
 				NodeTags: s("something"),
 			},
+			ContainerRuntime: "docker",
+			Containerd: &kops.ContainerdConfig{
+				LogLevel: s("info"),
+			},
 			Docker: &kops.DockerConfig{
 				LogLevel: s("INFO"),
 			},

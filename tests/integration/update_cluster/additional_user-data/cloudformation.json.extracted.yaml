@@ -142,6 +142,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configOverride: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
@@ -451,6 +457,12 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
 
   cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    configOverride: |
+      disabled_plugins = ["cri"]
+    logLevel: warn
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false

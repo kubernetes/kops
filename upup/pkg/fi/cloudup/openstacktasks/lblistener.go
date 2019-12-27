@@ -66,10 +66,11 @@ func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Li
 		poolTask, err := NewLBPoolTaskFromCloud(cloud, lifecycle, &pool, find.Pool)
 		if err != nil {
 			return nil, fmt.Errorf("NewLBListenerTaskFromCloud: Failed to create new LBListener task for pool %s: %v", pool.Name, err)
+		} else {
+			listenerTask.Pool = poolTask
+			// TODO: Support Multiple?
+			break
 		}
-		listenerTask.Pool = poolTask
-		// TODO: Support Multiple?
-		break
 	}
 	if find != nil {
 		// Update all search terms
