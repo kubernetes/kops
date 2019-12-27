@@ -92,8 +92,6 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-type getter func(o interface{}) interface{}
-
 func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOptions) error {
 	clusterName := options.ClusterName
 	if clusterName == "" {
