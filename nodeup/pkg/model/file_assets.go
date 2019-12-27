@@ -20,8 +20,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"path/filepath"
-	"strings"
-	"text/template"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -34,11 +32,6 @@ type FileAssetsBuilder struct {
 }
 
 var _ fi.ModelBuilder = &FileAssetsBuilder{}
-
-var templateFuncs = template.FuncMap{
-	"split": strings.Split,
-	"join":  strings.Join,
-}
 
 // Build is responsible for writing out the file assets from cluster and instanceGroup
 func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {

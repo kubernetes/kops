@@ -239,6 +239,17 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --experimental-mounter-path=" + path.Join(containerizedMounterHome, "mounter")
 	}
 
+	// Add container runtime flags
+	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+		flags += " --container-runtime=remote"
+		flags += " --runtime-request-timeout=15m"
+		if b.Cluster.Spec.Containerd == nil || b.Cluster.Spec.Containerd.Address == nil {
+			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+		} else {
+			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
+		}
+	}
+
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 	// Makes kubelet read /root/.docker/config.json properly
 	sysconfig = sysconfig + "HOME=\"/root" + "\"\n"
@@ -566,8 +577,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		// Enable scheduling since it can be controlled via taints.
 		// For pre-1.6.0 clusters, this is handled by tainter.go
 		c.RegisterSchedulable = fi.Bool(true)
-	} else {
-		// For 1.5 and earlier, protokube will taint the master
 	}
 
 	if c.VolumePluginDirectory == "" {

@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/text"
 	"k8s.io/kops/util/pkg/vfs"
@@ -117,6 +118,9 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 			switch v := o.(type) {
 			case *kopsapi.Cluster:
 				{
+					if v.Spec.ExternalCloudControllerManager != nil && !featureflag.EnableExternalCloudController.Enabled() {
+						klog.Warningf("Without setting the feature flag `+EnableExternalCloudController` the external cloud controller manager configuration will be discarded")
+					}
 					// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
 					statusDiscovery := &commands.CloudDiscoveryStatusStore{}
 					status, err := statusDiscovery.FindClusterStatus(v)
