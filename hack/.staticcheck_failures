@@ -7,4 +7,3 @@ upup/pkg/fi
 upup/pkg/fi/cloudup
 upup/pkg/fi/cloudup/awstasks
 upup/pkg/kutil
-upup/tools/generators/pkg/codegen
