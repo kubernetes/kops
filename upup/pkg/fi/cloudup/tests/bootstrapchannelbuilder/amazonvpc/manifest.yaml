@@ -7,7 +7,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: efb1399217d403fa5207e2bc8cf1fbef58c7f8b2
+    manifestHash: 66e39c304bd9f397ef5d66ba7d41d52291f5eb7f
     name: kops-controller.addons.k8s.io
     selector:
       k8s-addon: kops-controller.addons.k8s.io

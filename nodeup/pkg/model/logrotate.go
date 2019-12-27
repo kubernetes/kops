@@ -70,6 +70,7 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
 	b.addLogRotate(c, "etcd", "/var/log/etcd.log", logRotateOptions{})
 	b.addLogRotate(c, "etcd-events", "/var/log/etcd-events.log", logRotateOptions{})
+	b.addLogRotate(c, "kops-controller", "/var/log/kops-controller.log", logRotateOptions{})
 
 	if err := b.addLogrotateService(c); err != nil {
 		return err
