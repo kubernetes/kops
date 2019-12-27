@@ -1047,13 +1047,22 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	}
 
 	if !util.IsKubernetesGTE(OldestSupportedKubernetesVersion, *parsed) {
+		fmt.Printf("This version of Kubernetes is no longer supported; upgrading Kubernetes is required\n")
+		fmt.Printf("\n")
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", OldestSupportedKubernetesVersion))
+		fmt.Printf("\n")
+		fmt.Printf(starline)
+		fmt.Printf("\n")
+		return fmt.Errorf("kubernetes upgrade is required")
+	}
+	if !util.IsKubernetesGTE(OldestSupportedKubernetesVersion, *parsed) {
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
 		fmt.Printf("Kops support for this Kubernetes version is deprecated and will be removed in a future release.\n")
 		fmt.Printf("\n")
-		fmt.Printf("Upgrading is recommended\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", ""))
+		fmt.Printf("Upgrading Kubernetes is recommended\n")
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", OldestSupportedKubernetesVersion))
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
