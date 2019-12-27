@@ -229,6 +229,14 @@ func (p *OSSPath) Path() string {
 	return "oss://" + p.bucket + "/" + p.key
 }
 
+func (p *OSSPath) Bucket() string {
+	return p.bucket
+}
+
+func (p *OSSPath) Key() string {
+	return p.key
+}
+
 func (p *OSSPath) ReadDir() ([]Path, error) {
 	prefix := p.key
 	if !strings.HasSuffix(prefix, "/") {
