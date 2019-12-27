@@ -963,11 +963,9 @@ var dockerVersions = []packageVersion{
 		Dependencies: []string{"libtool-ltdl", "iptables"},
 	},
 
-	// TIP: When adding the next version, copy the previous
-	// version, string replace the version, run `VERIFY_HASHES=1
-	// go test ./nodeup/pkg/model` (you might want to temporarily
-	// comment out older versions on a slower connection), and
-	// then validate the dependencies etc
+	// TIP: When adding the next version, copy the previous version, string replace the version and run:
+	//   VERIFY_HASHES=1 go test ./nodeup/pkg/model -run TestDockerPackageHashes
+	// (you might want to temporarily comment out older versions on a slower connection and then validate)
 }
 
 func (b *DockerBuilder) dockerVersion() string {
