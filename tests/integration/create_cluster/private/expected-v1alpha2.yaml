@@ -16,6 +16,7 @@ spec:
     foo/bar: fib+baz
   cloudProvider: aws
   configBase: memfs://tests/private.example.com
+  containerRuntime: docker
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
