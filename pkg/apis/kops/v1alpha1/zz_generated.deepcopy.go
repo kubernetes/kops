@@ -3411,6 +3411,46 @@ func (in *WeaveNetworkingSpec) DeepCopyInto(out *WeaveNetworkingSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.MemoryRequest != nil {
+		in, out := &in.MemoryRequest, &out.MemoryRequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.CPURequest != nil {
+		in, out := &in.CPURequest, &out.CPURequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.MemoryLimit != nil {
+		in, out := &in.MemoryLimit, &out.MemoryLimit
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.CPULimit != nil {
+		in, out := &in.CPULimit, &out.CPULimit
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.NPCMemoryRequest != nil {
+		in, out := &in.NPCMemoryRequest, &out.NPCMemoryRequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.NPCCPURequest != nil {
+		in, out := &in.NPCCPURequest, &out.NPCCPURequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.NPCMemoryLimit != nil {
+		in, out := &in.NPCMemoryLimit, &out.NPCMemoryLimit
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.NPCCPULimit != nil {
+		in, out := &in.NPCCPULimit, &out.NPCCPULimit
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	return
 }
 
