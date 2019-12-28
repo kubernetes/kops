@@ -1049,7 +1049,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		fmt.Printf("Kops support for this Kubernetes version is deprecated and will be removed in a future release.\n")
 		fmt.Printf("\n")
 		fmt.Printf("Upgrading is recommended\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", ""))
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", ""))
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
