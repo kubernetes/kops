@@ -18,16 +18,8 @@ spec:
     selector:
       k8s-addon: core.addons.k8s.io
     version: 1.4.0
-  - id: pre-k8s-1.6
-    kubernetesVersion: <1.6.0
-    manifest: kube-dns.addons.k8s.io/pre-k8s-1.6.yaml
-    manifestHash: 90f1e4bedea6da183eb4c6788879f7297119ff3e
-    name: kube-dns.addons.k8s.io
-    selector:
-      k8s-addon: kube-dns.addons.k8s.io
-    version: 1.14.13-kops.1
   - id: k8s-1.6
-    kubernetesVersion: '>=1.6.0 <1.12.0'
+    kubernetesVersion: <1.12.0
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
     manifestHash: c74ca65f461c764fc9682c6d9ec171b241bec335
     name: kube-dns.addons.k8s.io
@@ -43,7 +35,6 @@ spec:
       k8s-addon: kube-dns.addons.k8s.io
     version: 1.14.13-kops.1
   - id: k8s-1.8
-    kubernetesVersion: '>=1.8.0'
     manifest: rbac.addons.k8s.io/k8s-1.8.yaml
     manifestHash: 5d53ce7b920cd1e8d65d2306d80a041420711914
     name: rbac.addons.k8s.io
@@ -51,7 +42,6 @@ spec:
       k8s-addon: rbac.addons.k8s.io
     version: 1.8.0
   - id: k8s-1.9
-    kubernetesVersion: '>=1.9.0'
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
     manifestHash: e1508d77cb4e527d7a2939babe36dc350dd83745
     name: kubelet-api.rbac.addons.k8s.io
@@ -64,16 +54,8 @@ spec:
     selector:
       k8s-addon: limit-range.addons.k8s.io
     version: 1.5.0
-  - id: pre-k8s-1.6
-    kubernetesVersion: <1.6.0
-    manifest: dns-controller.addons.k8s.io/pre-k8s-1.6.yaml
-    manifestHash: e19c5456a31381c08dd166ce1faf85ce7acc15e3
-    name: dns-controller.addons.k8s.io
-    selector:
-      k8s-addon: dns-controller.addons.k8s.io
-    version: 1.17.0-alpha.1
   - id: k8s-1.6
-    kubernetesVersion: '>=1.6.0 <1.12.0'
+    kubernetesVersion: <1.12.0
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
     manifestHash: 2d6fa6910077fecdf1c98da4303631588cfc9c01
     name: dns-controller.addons.k8s.io
@@ -97,47 +79,15 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
     version: 1.15.0
   - id: v1.7.0
-    kubernetesVersion: '>=1.7.0 <1.15.0'
+    kubernetesVersion: <1.15.0
     manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
     manifestHash: 62705a596142e6cc283280e8aa973e51536994c5
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 1.15.0
-  - id: v1.6.0
-    kubernetesVersion: <1.7.0
-    manifest: storage-aws.addons.k8s.io/v1.6.0.yaml
-    manifestHash: 7de4b2eb0521d669172038759c521418711d8266
-    name: storage-aws.addons.k8s.io
-    selector:
-      k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.0
-  - id: pre-k8s-1.6
-    kubernetesVersion: <1.6.0
-    manifest: networking.weave/pre-k8s-1.6.yaml
-    manifestHash: 8e7a361fff381e0ed84e0011506ff3bfdc7bc202
-    name: networking.weave
-    selector:
-      role.kubernetes.io/networking: "1"
-    version: 2.3.0-kops.3
-  - id: k8s-1.6
-    kubernetesVersion: '>=1.6.0 <1.7.0'
-    manifest: networking.weave/k8s-1.6.yaml
-    manifestHash: 6dcb06c0178143b534dac093fcad00c331b12319
-    name: networking.weave
-    selector:
-      role.kubernetes.io/networking: "1"
-    version: 2.3.0-kops.3
-  - id: k8s-1.7
-    kubernetesVersion: '>=1.7.0 <1.8.0'
-    manifest: networking.weave/k8s-1.7.yaml
-    manifestHash: 29f0b9379ffda0cc4288c9769371dc5adc75687a
-    name: networking.weave
-    selector:
-      role.kubernetes.io/networking: "1"
-    version: 2.6.0-kops.2
   - id: k8s-1.8
-    kubernetesVersion: '>=1.8.0 <1.12.0'
+    kubernetesVersion: <1.12.0
     manifest: networking.weave/k8s-1.8.yaml
     manifestHash: 75cc6479f36f443600f567e492707efcbb9fbd31
     name: networking.weave
