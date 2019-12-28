@@ -59,10 +59,13 @@ spec:
             initialDelaySeconds: 30
           resources:
             requests:
-              cpu: 50m
-              memory: 200Mi
+              cpu: {{ or .Networking.Weave.CPURequest "50m" }}
+              memory: {{ or .Networking.Weave.MemoryRequest "200mi" }}
             limits:
-              memory: 200Mi
+              {{- if .Networking.Weave.CPULimit }}
+              cpu: {{ .Networking.Weave.CPULimit }}
+              {{- end }}
+              memory: {{ or .Networking.Weave.MemoryLimit "200mi" }}
           securityContext:
             privileged: true
           volumeMounts:
