@@ -82,7 +82,7 @@ func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOpti
 	var clusterList []*api.Cluster
 	if options.all {
 		if len(args) != 0 {
-			return fmt.Errorf("Cannot use both --args flag and positional arguments")
+			return fmt.Errorf("Cannot use both --all flag and positional arguments")
 		}
 		list, err := clientset.ListClusters(metav1.ListOptions{})
 		if err != nil {
