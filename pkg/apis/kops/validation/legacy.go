@@ -602,6 +602,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	allErrs = append(allErrs, newValidateCluster(c)...)
 
+	if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil && c.Spec.Networking.Cilium.EnableNodePort && c.Spec.KubeProxy != nil && *c.Spec.KubeProxy.Enabled {
+		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("KubeProxy"), "enabled", "When Cilium NodePort is enabled, KubeProxy must be disabled"))
+	}
+
 	return allErrs
 }
 
