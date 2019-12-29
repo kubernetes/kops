@@ -1017,6 +1017,12 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	if b.Distribution.IsDebianFamily() {
+		c.AddTask(b.buildSystemdHealthCheckScript())
+		c.AddTask(b.buildSystemdHealthCheckService())
+		c.AddTask(b.buildSystemdHealthCheckTimer())
+	}
+
 	return nil
 }
 
@@ -1139,6 +1145,60 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersio
 
 	service := &nodetasks.Service{
 		Name:       "docker.service",
+		Definition: s(manifestString),
+	}
+
+	service.InitDefaults()
+
+	return service
+}
+
+func (b *DockerBuilder) buildSystemdHealthCheckScript() *nodetasks.File {
+	script := &nodetasks.File{
+		Path:     "/opt/kops/bin/docker-healthcheck",
+		Contents: fi.NewStringResource(resources.DockerHealthCheck),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0755"),
+	}
+
+	return script
+}
+
+func (b *DockerBuilder) buildSystemdHealthCheckService() *nodetasks.Service {
+	manifest := &systemd.Manifest{}
+
+	manifest.Set("Unit", "Description", "Run docker-healthcheck once")
+	manifest.Set("Unit", "Documentation", "https://kops.sigs.k8s.io")
+	manifest.Set("Service", "Type", "oneshot")
+	manifest.Set("Service", "ExecStart", "/opt/kops/bin/docker-healthcheck")
+	manifest.Set("Install", "WantedBy", "multi-user.target")
+
+	manifestString := manifest.Render()
+	klog.V(8).Infof("Built service manifest %q\n%s", "docker-healthcheck.service", manifestString)
+
+	service := &nodetasks.Service{
+		Name:       "docker-healthcheck.service",
+		Definition: s(manifestString),
+	}
+
+	service.InitDefaults()
+
+	return service
+}
+
+func (b *DockerBuilder) buildSystemdHealthCheckTimer() *nodetasks.Service {
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Trigger docker-healthcheck periodically")
+	manifest.Set("Unit", "Documentation", "https://kops.sigs.k8s.io")
+	manifest.Set("Timer", "OnUnitInactiveSec", "10s")
+	manifest.Set("Timer", "Unit", "docker-healthcheck.service")
+	manifest.Set("Install", "WantedBy", "multi-user.target")
+
+	manifestString := manifest.Render()
+	klog.V(8).Infof("Built timer manifest %q\n%s", "docker-healthcheck.timer", manifestString)
+
+	service := &nodetasks.Service{
+		Name:       "docker-healthcheck.timer",
 		Definition: s(manifestString),
 	}
 
