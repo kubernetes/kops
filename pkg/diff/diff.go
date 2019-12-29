@@ -82,8 +82,7 @@ func buildDiffLines(lString, rString string) []lineRecord {
 	// We do need to cleanup, as otherwise we get some spurious changes on complex diffs
 	diffs = dmp.DiffCleanupSemantic(diffs)
 
-	l := ""
-	r := ""
+	var l, r string
 
 	var results []lineRecord
 	for _, diff := range diffs {
@@ -125,24 +124,24 @@ func buildDiffLines(lString, rString string) []lineRecord {
 			if len(lines) == 1 {
 				l += lines[0]
 				r += lines[0]
-			} else if len(lines) > 1 {
+			}
+			if len(lines) > 1 {
 				if l != "" || r != "" {
 					l += lines[0]
 					r += lines[0]
 				} else {
 					results = append(results, lineRecord{Type: diffmatchpatch.DiffEqual, Line: lines[0]})
 				}
-				if len(lines) > 1 {
-					if r != "" {
-						results = append(results, lineRecord{Type: diffmatchpatch.DiffInsert, Line: r})
-						r = ""
-					}
-
-					if l != "" {
-						results = append(results, lineRecord{Type: diffmatchpatch.DiffDelete, Line: l})
-						l = ""
-					}
+				if r != "" {
+					results = append(results, lineRecord{Type: diffmatchpatch.DiffInsert, Line: r})
+					r = ""
 				}
+
+				if l != "" {
+					results = append(results, lineRecord{Type: diffmatchpatch.DiffDelete, Line: l})
+					l = ""
+				}
+
 			}
 			for i := 1; i < len(lines)-1; i++ {
 				line := lines[i]
