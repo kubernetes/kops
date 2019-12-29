@@ -45,3 +45,28 @@ func TestGetUniqueStrings(t *testing.T) {
 		}
 	}
 }
+
+func TestContains(t *testing.T) {
+	tests := []struct {
+		listStr  []string
+		e        string
+		contains bool
+	}{
+		{
+			listStr:  []string{"a", "b"},
+			e:        "a",
+			contains: true,
+		},
+		{
+			listStr:  []string{"a", "b"},
+			e:        "c",
+			contains: false,
+		},
+	}
+	for _, test := range tests {
+		contains := Contains(test.listStr, test.e)
+		if test.contains != contains {
+			t.Errorf("Expected %v, got %v", test.contains, contains)
+		}
+	}
+}
