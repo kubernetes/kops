@@ -1,5 +1,4 @@
 node-authorizer/pkg/server
-pkg/resources/openstack
 upup/pkg/fi
 upup/pkg/fi/cloudup
 upup/pkg/fi/cloudup/awstasks
