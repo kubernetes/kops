@@ -159,8 +159,6 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 	return nil
 }
 
-type runnable func() error
-
 func (e *executor) forkJoin(tasks []*taskState) []error {
 	if len(tasks) == 0 {
 		return nil

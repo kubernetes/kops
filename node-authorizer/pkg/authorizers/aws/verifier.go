@@ -19,26 +19,11 @@ package aws
 import (
 	"context"
 	"encoding/json"
-	"net"
-	"net/http"
-	"time"
-
 	"k8s.io/kops/node-authorizer/pkg/server"
 
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 )
-
-// hc is the http client
-var hc = &http.Client{
-	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: 10 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: 10 * time.Second,
-	},
-}
 
 type awsNodeVerifier struct{}
 
