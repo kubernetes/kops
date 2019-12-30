@@ -48,8 +48,12 @@ FOCUS="${FOCUS%/}"
 # See https://staticcheck.io/docs/checks
 CHECKS=(
   "all"
-  "-S1*"   # Omit code simplifications for now.
-  "-ST1*"  # Mostly stylistic, redundant w/ golint
+  "-ST1000"  # Incorrect or missing package comment
+  "-ST1003"  # Poorly chosen identifier
+  "-ST1005"  # Incorrectly formatted error string
+  "-ST1006"  # Poorly chosen receiver name
+  "-ST1012"  # Poorly chosen name for error variable
+  "-ST1016"  # Use consistent method receiver names
 )
 export IFS=','; checks="${CHECKS[*]}"; unset IFS
 
