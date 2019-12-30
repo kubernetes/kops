@@ -384,7 +384,7 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 	}
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
-		allErrs = append(allErrs, field.InternalError(fldPath.Child("MajorVersion"), fmt.Errorf("Failed to parse Etcd version to check compatibility: %s", err)))
+		allErrs = append(allErrs, field.InternalError(fldPath.Child("MajorVersion"), fmt.Errorf("failed to parse Etcd version to check compatibility: %s", err)))
 	}
 
 	if sem.Major != 3 {
