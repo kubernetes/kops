@@ -1,4 +1,3 @@
-node-authorizer/pkg/authorizers/aws
 node-authorizer/pkg/server
 pkg/resources/openstack
 upup/pkg/fi
