@@ -77,7 +77,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 
 	if g.IsMaster() {
 		if len(g.Spec.Subnets) == 0 {
-			return fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
+			return fmt.Errorf("master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
 		}
 	}
 
@@ -218,7 +218,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 		for i := range cluster.Spec.Subnets {
 			s := &cluster.Spec.Subnets[i]
 			if clusterSubnets[s.Name] != nil {
-				return fmt.Errorf("Subnets contained a duplicate value: %v", s.Name)
+				return fmt.Errorf("subnets contained a duplicate value: %v", s.Name)
 			}
 			clusterSubnets[s.Name] = s
 		}
@@ -232,7 +232,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 
 	k8sVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 	if err != nil {
-		return fmt.Errorf("Unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
+		return fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
 	}
 
 	allErrs := field.ErrorList{}
