@@ -131,7 +131,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 		}
 
 	} else {
-		return fmt.Errorf("Cannot apply changes to ForwardingRule: %v", changes)
+		return fmt.Errorf("cannot apply changes to ForwardingRule: %v", changes)
 	}
 
 	return nil

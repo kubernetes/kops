@@ -73,14 +73,14 @@ func ValidateRegion(region string) error {
 
 		sess, err := session.NewSession(config)
 		if err != nil {
-			return fmt.Errorf("Error starting a new AWS session: %v", err)
+			return fmt.Errorf("error starting a new AWS session: %v", err)
 		}
 
 		client := ec2.New(sess, config)
 
 		response, err := client.DescribeRegions(request)
 		if err != nil {
-			return fmt.Errorf("Got an error while querying for valid regions (verify your AWS credentials?): %v", err)
+			return fmt.Errorf("got an error while querying for valid regions (verify your AWS credentials?): %v", err)
 		}
 		allRegions = response.Regions
 	}
@@ -114,7 +114,7 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 
 		zoneRegion := subnet.Zone[:len(subnet.Zone)-1]
 		if region != "" && zoneRegion != region {
-			return "", fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
+			return "", fmt.Errorf("error Clusters cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
 		}
 
 		region = zoneRegion
