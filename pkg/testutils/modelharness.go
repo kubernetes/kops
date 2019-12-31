@@ -71,7 +71,7 @@ func LoadModel(basedir string) (*Model, error) {
 			spec.InstanceGroups = append(spec.InstanceGroups, v)
 
 		default:
-			return nil, fmt.Errorf("Unhandled kind %q", gvk)
+			return nil, fmt.Errorf("unhandled kind %q", gvk)
 		}
 	}
 
