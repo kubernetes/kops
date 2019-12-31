@@ -131,7 +131,7 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 			return fmt.Errorf("error waiting for IP Address: %v", err)
 		}
 	} else {
-		return fmt.Errorf("Cannot apply changes to IP Address: %v", changes)
+		return fmt.Errorf("cannot apply changes to IP Address: %v", changes)
 	}
 
 	return nil
