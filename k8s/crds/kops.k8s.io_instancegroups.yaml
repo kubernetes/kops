@@ -84,6 +84,21 @@ spec:
               description: AssociatePublicIP is true if we want instances to have
                 a public IP
               type: boolean
+            bootstrapScripts:
+              description: BootstrapScripts are bootstrapping scripts that run before
+                nodeup.
+              items:
+                description: BootstrapScriptSpec runs a bootstrapping script on the
+                  cluster.
+                properties:
+                  hash:
+                    type: string
+                  name:
+                    type: string
+                  url:
+                    type: string
+                type: object
+              type: array
             cloudLabels:
               additionalProperties:
                 type: string
