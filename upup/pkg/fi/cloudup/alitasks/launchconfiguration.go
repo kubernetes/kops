@@ -34,9 +34,9 @@ import (
 //go:generate fitask -type=LaunchConfiguration
 
 type LaunchConfiguration struct {
-	Lifecycle       *fi.Lifecycle
-	Name            *string
-	ConfigurationId *string
+	Lifecycle *fi.Lifecycle
+	ID        *string
+	Name      *string
 
 	ImageID            *string
 	InstanceType       *string
@@ -55,7 +55,7 @@ type LaunchConfiguration struct {
 var _ fi.CompareWithID = &LaunchConfiguration{}
 
 func (l *LaunchConfiguration) CompareWithID() *string {
-	return l.ConfigurationId
+	return l.ID
 }
 
 func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
@@ -203,7 +203,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 	if err != nil {
 		return fmt.Errorf("error creating scalingConfiguration: %v", err)
 	}
-	e.ConfigurationId = fi.String(createScalingConfigurationResponse.ScalingConfigurationId)
+	e.ID = fi.String(createScalingConfigurationResponse.ScalingConfigurationId)
 
 	// Disable ScalingGroup, used to bind scalingConfig, we should execute EnableScalingGroup in the task LaunchConfiguration
 	// If the ScalingGroup is active, we can not execute EnableScalingGroup.
@@ -223,7 +223,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 	//Enable this configuration
 	enableScalingGroupArgs := &ess.EnableScalingGroupArgs{
 		ScalingGroupId:               fi.StringValue(e.ScalingGroup.ScalingGroupId),
-		ActiveScalingConfigurationId: fi.StringValue(e.ConfigurationId),
+		ActiveScalingConfigurationId: fi.StringValue(e.ID),
 	}
 
 	klog.V(2).Infof("Enabling new LaunchConfiguration of LoadBalancer with id:%q", fi.StringValue(e.ScalingGroup.ScalingGroupId))
