@@ -129,7 +129,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 
 	cpuRequest, err := resource.ParseQuantity(c.CPURequest)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing CPURequest=%q", c.CPURequest)
+		return nil, fmt.Errorf("error parsing CPURequest=%q", c.CPURequest)
 	}
 
 	resourceRequests["cpu"] = cpuRequest
@@ -137,7 +137,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if c.CPULimit != "" {
 		cpuLimit, err := resource.ParseQuantity(c.CPULimit)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing CPULimit=%q", c.CPULimit)
+			return nil, fmt.Errorf("error parsing CPULimit=%q", c.CPULimit)
 		}
 		resourceLimits["cpu"] = cpuLimit
 	}
@@ -145,7 +145,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if c.MemoryRequest != "" {
 		memoryRequest, err := resource.ParseQuantity(c.MemoryRequest)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing MemoryRequest=%q", c.MemoryRequest)
+			return nil, fmt.Errorf("error parsing MemoryRequest=%q", c.MemoryRequest)
 		}
 		resourceRequests["memory"] = memoryRequest
 	}
@@ -153,7 +153,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if c.MemoryLimit != "" {
 		memoryLimit, err := resource.ParseQuantity(c.MemoryLimit)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing MemoryLimit=%q", c.MemoryLimit)
+			return nil, fmt.Errorf("error parsing MemoryLimit=%q", c.MemoryLimit)
 		}
 		resourceLimits["memory"] = memoryLimit
 	}
