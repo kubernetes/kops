@@ -38,7 +38,7 @@ type LaunchConfiguration struct {
 	Name            *string
 	ConfigurationId *string
 
-	ImageId            *string
+	ImageID            *string
 	InstanceType       *string
 	SystemDiskSize     *int
 	SystemDiskCategory *string
@@ -92,7 +92,7 @@ func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	lc := configList[0]
 
 	actual := &LaunchConfiguration{
-		ImageId:            fi.String(lc.ImageId),
+		ImageID:            fi.String(lc.ImageId),
 		InstanceType:       fi.String(lc.InstanceType),
 		SystemDiskSize:     fi.Int(lc.SystemDiskSize),
 		SystemDiskCategory: fi.String(string(lc.SystemDiskCategory)),
@@ -146,14 +146,14 @@ func (l *LaunchConfiguration) Run(c *fi.Context) error {
 
 func (_ *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) error {
 	//Configuration can not be modified, we need to create a new one
-
 	if e.Name == nil {
 		return fi.RequiredField("Name")
 	}
 
-	if e.ImageId == nil {
+	if e.ImageID == nil {
 		return fi.RequiredField("ImageId")
 	}
+
 	if e.InstanceType == nil {
 		return fi.RequiredField("InstanceType")
 	}
@@ -168,7 +168,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 	createScalingConfiguration := &ess.CreateScalingConfigurationArgs{
 		ScalingGroupId:           fi.StringValue(e.ScalingGroup.ScalingGroupId),
 		ScalingConfigurationName: fi.StringValue(e.Name),
-		ImageId:                  fi.StringValue(e.ImageId),
+		ImageId:                  fi.StringValue(e.ImageID),
 		InstanceType:             fi.StringValue(e.InstanceType),
 		SecurityGroupId:          fi.StringValue(e.SecurityGroup.SecurityGroupId),
 		SystemDisk_Size:          common.UnderlineString(strconv.Itoa(fi.IntValue(e.SystemDiskSize))),
@@ -257,7 +257,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	userData := base64.StdEncoding.EncodeToString(data)
 
 	tf := &terraformLaunchConfiguration{
-		ImageID:            e.ImageId,
+		ImageID:            e.ImageID,
 		InstanceType:       e.InstanceType,
 		SystemDiskCategory: e.SystemDiskCategory,
 		UserData:           &userData,
