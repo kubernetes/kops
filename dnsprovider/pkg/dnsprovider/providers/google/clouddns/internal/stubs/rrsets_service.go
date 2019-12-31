@@ -38,7 +38,7 @@ func (s ResourceRecordSetsService) managedZone(project, managedZone string) (*Ma
 	}
 	z := s.Service.ManagedZones_.Impl[project][managedZone]
 	if z == nil {
-		return nil, fmt.Errorf("Zone %s not found in project %s", managedZone, project)
+		return nil, fmt.Errorf("zone %s not found in project %s", managedZone, project)
 	}
 	return z.(*ManagedZone), nil
 }
