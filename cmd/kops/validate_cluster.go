@@ -136,12 +136,12 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		configLoadingRules,
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
 	if err != nil {
-		return nil, fmt.Errorf("Cannot load kubecfg settings for %q: %v", contextName, err)
+		return nil, fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
 	}
 
 	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot build kubernetes api client for %q: %v", contextName, err)
+		return nil, fmt.Errorf("cannot build kubernetes api client for %q: %v", contextName, err)
 	}
 
 	timeout := time.Now().Add(options.wait)
@@ -188,7 +188,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			}
 
 		default:
-			return nil, fmt.Errorf("Unknown output format: %q", options.output)
+			return nil, fmt.Errorf("unknown output format: %q", options.output)
 		}
 
 		if options.wait == 0 || len(result.Failures) == 0 {
@@ -264,12 +264,10 @@ func validateClusterOutputTable(result *validation.ValidationCluster, cluster *a
 		if err := failuresTable.Render(result.Failures, out, "KIND", "NAME", "MESSAGE"); err != nil {
 			return fmt.Errorf("error rendering failures table: %v", err)
 		}
-	}
 
-	if len(result.Failures) == 0 {
-		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.Name)
+		fmt.Fprintf(out, "\nValidation Failed\n")
 	} else {
-		fmt.Fprint(out, "\nValidation Failed\n")
+		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.Name)
 	}
 
 	return nil

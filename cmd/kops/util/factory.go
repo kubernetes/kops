@@ -81,7 +81,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 			} else {
 				u, err := url.Parse(registryPath)
 				if err != nil {
-					return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
+					return nil, fmt.Errorf("invalid kops server url: %q", registryPath)
 				}
 				configOverrides.CurrentContext = u.Host
 			}
