@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["grpcrand.go"],
+    importmap = "k8s.io/kops/vendor/google.golang.org/grpc/internal/grpcrand",
+    importpath = "google.golang.org/grpc/internal/grpcrand",
+    visibility = ["//vendor/google.golang.org/grpc:__subpackages__"],
+)

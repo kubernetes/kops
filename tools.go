@@ -31,4 +31,7 @@ import (
 	_ "honnef.co/go/tools/cmd/staticcheck"
 
 	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
+
+	// For building protobuf
+	"github.com/golang/protobuf/protoc-gen-go"
 )

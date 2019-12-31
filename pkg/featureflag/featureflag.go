@@ -84,6 +84,9 @@ var (
 	VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
 	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
+
+	// ClusterAPI enables experimental / in-progress support for cluster-api
+	ClusterAPI = New("ClusterAPI", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
@@ -122,6 +125,11 @@ func (f *FeatureFlag) Enabled() bool {
 		return *f.defaultValue
 	}
 	return false
+}
+
+// SetEnabled overrides the enabled status
+func (f *FeatureFlag) SetEnabled(b bool) {
+	f.enabled = Bool(b)
 }
 
 // Bool returns a pointer to the boolean value

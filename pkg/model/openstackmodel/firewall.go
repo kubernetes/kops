@@ -233,6 +233,8 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	addDirectionalGroupRule(c, masterSG, nodeSG, httpsIngress)
 	addDirectionalGroupRule(c, masterSG, masterSG, httpsIngress)
 
+	// TODO: Enable KopsControllerGRPCPort?
+
 	if b.UseLoadBalancerForAPI() {
 		//Allow API Access to the lb sg
 		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {

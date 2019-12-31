@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["remap.go"],
+    importmap = "k8s.io/kops/vendor/github.com/golang/protobuf/protoc-gen-go/generator/internal/remap",
+    importpath = "github.com/golang/protobuf/protoc-gen-go/generator/internal/remap",
+    visibility = ["//vendor/github.com/golang/protobuf/protoc-gen-go/generator:__subpackages__"],
+)
