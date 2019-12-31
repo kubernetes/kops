@@ -139,12 +139,44 @@ function download-release() {
   ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/kube_env.yaml --v=8  )
 }
 
+function run-bootstrap-scripts() {
+	cat ./bootstrap_scripts.txt | while read scripturl scripthash; do
+		try-run-bootstrap-script "$scripthash" "$scripturl"
+	done
+}
+
+function try-run-bootstrap-script() {
+	local -r scripthash="$1"
+	local -r scripturls=( $(split-commas "$2") )
+	local -r scriptname="${scripturls[0]##*/}"
+
+	if [[ -n "${scripthash}" ]]; then
+		local -r scriptsha1="${scripthash}"
+	else
+		echo "Downloading ${scriptname}.sha1 (not found in env)"
+		download-or-bust "" "${scripturls[@]/%/.sha1}"
+		local -r scriptsha1=$(cat "${scriptname}.sha1")
+	fi
+
+	echo "Downloading ${scriptname} (${scripturls[@]})"
+	download-or-bust "${scriptsha1}" "${scripturls[@]}"
+
+	echo "=== Running ${scriptname} ==="
+	chmod +x "$scriptname"
+	./$scriptname
+	echo "=== Completed ${scriptname} ==="
+}
+
 ####################################################################################
 
 /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
 
 echo "== nodeup node config starting =="
 ensure-install-dir
+
+cat > bootstrap_scripts.txt << '__EOF_BOOTSTRAP_SCRIPTS'
+
+__EOF_BOOTSTRAP_SCRIPTS
 
 cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
@@ -205,5 +237,6 @@ cat > kube_env.yaml << '__EOF_KUBE_ENV'
 
 __EOF_KUBE_ENV
 
+run-bootstrap-scripts
 download-release
 echo "== nodeup node config done =="
