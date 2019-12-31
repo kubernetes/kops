@@ -377,12 +377,3 @@ func (r *RollingUpdateInstanceGroup) deleteNode(node *corev1.Node, rollingUpdate
 
 	return nil
 }
-
-// Delete a CloudInstanceGroups
-func (r *RollingUpdateInstanceGroup) Delete() error {
-	if r.CloudGroup == nil {
-		return fmt.Errorf("group has to be set")
-	}
-	// TODO: Leaving func in place in order to cordon and drain nodes
-	return r.Cloud.DeleteGroup(r.CloudGroup)
-}
