@@ -45,7 +45,7 @@ func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, x := range b.InstanceGroup.Spec.VolumeMounts {
 		// @check the directory exists, else create it
 		if err := b.EnsureDirectory(x.Path); err != nil {
-			return fmt.Errorf("Failed to ensure the directory: %s, error: %s", x.Path, err)
+			return fmt.Errorf("failed to ensure the directory: %s, error: %s", x.Path, err)
 		}
 
 		m := &mount.SafeFormatAndMount{
@@ -64,7 +64,7 @@ func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
 		klog.Infof("Attempting to format and mount device: %s, path: %s", x.Device, x.Path)
 
 		if err := m.FormatAndMount(x.Device, x.Path, x.Filesystem, x.MountOptions); err != nil {
-			klog.Errorf("Failed to mount the device: %s on: %s, error: %s", x.Device, x.Path, err)
+			klog.Errorf("failed to mount the device: %s on: %s, error: %s", x.Device, x.Path, err)
 
 			return err
 		}

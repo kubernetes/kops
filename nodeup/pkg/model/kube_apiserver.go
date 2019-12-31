@@ -275,7 +275,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		return nil
 	}
 
-	return fmt.Errorf("Unrecognized authentication config %v", b.Cluster.Spec.Authentication)
+	return fmt.Errorf("unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 }
 
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
