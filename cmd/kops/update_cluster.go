@@ -219,7 +219,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	for _, override := range c.LifecycleOverrides {
 		values := strings.Split(override, "=")
 		if len(values) != 2 {
-			return results, fmt.Errorf("Incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
+			return results, fmt.Errorf("incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
 		}
 
 		taskName := values[0]

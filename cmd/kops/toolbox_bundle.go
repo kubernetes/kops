@@ -80,10 +80,10 @@ func NewCmdToolboxBundle(f *util.Factory, out io.Writer) *cobra.Command {
 
 func RunToolboxBundle(context Factory, out io.Writer, options *ToolboxBundleOptions, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("Specify name of instance group for node")
+		return fmt.Errorf("specify name of instance group for node")
 	}
 	if len(args) != 1 {
-		return fmt.Errorf("Can only specify one instance group")
+		return fmt.Errorf("can only specify one instance group")
 	}
 
 	if options.Target == "" {
