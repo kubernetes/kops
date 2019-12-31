@@ -746,7 +746,7 @@ func getTags(c AWSCloud, resourceID string) (map[string]string, error) {
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > DescribeTagsMaxAttempts {
-					return nil, fmt.Errorf("Got retryable error while getting tags on %q, but retried too many times without success: %v", resourceID, err)
+					return nil, fmt.Errorf("got retryable error while getting tags on %q, but retried too many times without success: %v", resourceID, err)
 				}
 
 				if (attempt % DescribeTagsLogInterval) == 0 {
@@ -801,7 +801,7 @@ func createTags(c AWSCloud, resourceID string, tags map[string]string) error {
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > CreateTagsMaxAttempts {
-					return fmt.Errorf("Got retryable error while creating tags on %q, but retried too many times without success: %v", resourceID, err)
+					return fmt.Errorf("got retryable error while creating tags on %q, but retried too many times without success: %v", resourceID, err)
 				}
 
 				if (attempt % CreateTagsLogInterval) == 0 {
@@ -849,7 +849,7 @@ func deleteTags(c AWSCloud, resourceID string, tags map[string]string) error {
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > DeleteTagsMaxAttempts {
-					return fmt.Errorf("Got retryable error while deleting tags on %q, but retried too many times without success: %v", resourceID, err)
+					return fmt.Errorf("got retryable error while deleting tags on %q, but retried too many times without success: %v", resourceID, err)
 				}
 
 				if (attempt % DeleteTagsLogInterval) == 0 {
@@ -1237,7 +1237,7 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 			}
 
 			klog.Infof("Known zones: %q", strings.Join(knownZones, ","))
-			return fmt.Errorf("Zone is not a recognized AZ: %q (check you have specified a valid zone?)", zone)
+			return fmt.Errorf("error Zone is not a recognized AZ: %q (check you have specified a valid zone?)", zone)
 		}
 
 		for _, message := range z.Messages {
@@ -1255,7 +1255,7 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 func (c *awsCloudImplementation) DNS() (dnsprovider.Interface, error) {
 	provider, err := dnsprovider.GetDnsProvider(dnsproviderroute53.ProviderName, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+		return nil, fmt.Errorf("error building (k8s) DNS provider: %v", err)
 	}
 	return provider, nil
 }
