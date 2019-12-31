@@ -217,7 +217,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 			default:
 				klog.V(2).Infof("Type of object was %T", v)
-				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
+				return fmt.Errorf("unhandled kind %q in %q", gvk, f)
 			}
 		}
 	}
