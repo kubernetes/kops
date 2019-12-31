@@ -157,7 +157,7 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 	if a != nil && changes != nil {
 		empty := &Disk{}
 		if !reflect.DeepEqual(empty, changes) {
-			return fmt.Errorf("Cannot apply changes to Disk: %v", changes)
+			return fmt.Errorf("cannot apply changes to Disk: %v", changes)
 		}
 	}
 

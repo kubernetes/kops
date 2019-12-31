@@ -70,7 +70,7 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 	_, err := vfs.RetryWithBackoff(floatingBackoff, func() (bool, error) {
 		server, err := c.GetInstance(instanceID)
 		if err != nil {
-			return true, fmt.Errorf("Failed to find server with id (\"%s\"): %v", instanceID, err)
+			return true, fmt.Errorf("failed to find server with id (\"%s\"): %v", instanceID, err)
 		}
 
 		var addresses map[string][]Address
@@ -96,7 +96,7 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 		return false, nil
 	})
 	if len(result) == 0 || err != nil {
-		return result, fmt.Errorf("Could not find floating ip associated to server (\"%s\") %v", instanceID, err)
+		return result, fmt.Errorf("could not find floating ip associated to server (\"%s\") %v", instanceID, err)
 	}
 	return result, nil
 }
