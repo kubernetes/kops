@@ -13,7 +13,6 @@
 # limitations under the License.
 
 {{- if or (.KubeDNS.UpstreamNameservers) (.KubeDNS.StubDomains) }}
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -28,9 +27,9 @@ data:
   stubDomains: |
     {{ ToJSON .KubeDNS.StubDomains }}
   {{- end }}
-{{- end }}
 
 ---
+{{- end }}
 
 apiVersion: extensions/v1beta1
 kind: Deployment
