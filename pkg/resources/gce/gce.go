@@ -22,8 +22,10 @@ import (
 	"strings"
 
 	compute "google.golang.org/api/compute/v0.beta"
+	clouddns "google.golang.org/api/dns/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -42,6 +44,7 @@ const (
 	typeAddress              = "Address"
 	typeRoute                = "Route"
 	typeSubnet               = "Subnet"
+	typeDNSRecord            = "DNSRecord"
 )
 
 // Maximum number of `-` separated tokens in a name
@@ -796,25 +799,80 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 	return false
 }
 
+func (d *clusterDiscoveryGCE) clusterDNSName() string {
+	return d.clusterName + "."
+}
+
+func (d *clusterDiscoveryGCE) isKopsManagedDNSName(name string) bool {
+	prefix := []string{`api`, `api.internal`, `bastion`}
+	for _, p := range prefix {
+		if name == p+"."+d.clusterDNSName() {
+			return true
+		}
+	}
+	return false
+}
+
 func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
-	// We never delete the hosted zone, because it is usually shared and we don't create it
-	return nil, nil
-	// TODO: When shared resource PR lands, reintroduce
-	//if dns.IsGossipHostname(d.clusterName) {
-	//	return nil, nil
-	//}
-	//zone, err := d.findDNSZone()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//return []*resources.Resource{
-	//	{
-	//		Name:    zone.Name(),
-	//		ID:      zone.Name(),
-	//		Type:    "DNS Zone",
-	//		Deleter: d.deleteDNSZone,
-	//		Obj:     zone,
-	//	},
-	//}, nil
+
+	if dns.IsGossipHostname(d.clusterName) {
+		return nil, nil
+	}
+
+	var resourceTrackers []*resources.Resource
+
+	zoneResponse, err := d.gceCloud.CloudDNS().ManagedZones.List(d.gceCloud.Project()).Do()
+	if err != nil {
+		return nil, fmt.Errorf("error getting GCE DNS zones %v", err)
+	}
+
+	for _, zone := range zoneResponse.ManagedZones {
+		if !strings.HasSuffix(d.clusterDNSName(), zone.DnsName) {
+			continue
+		}
+		response, err := d.gceCloud.CloudDNS().ResourceRecordSets.List(d.gceCloud.Project(), zone.Name).Do()
+		if err != nil {
+			return nil, fmt.Errorf("error getting GCE DNS zone data %v", err)
+		}
+
+		for _, record := range response.Rrsets {
+			// adapted from AWS implementation
+			if record.Type != "A" {
+				continue
+			}
+
+			if d.isKopsManagedDNSName(record.Name) {
+				resource := resources.Resource{
+					Name:         zone.Name,
+					ID:           record.Name,
+					Type:         typeDNSRecord,
+					GroupDeleter: deleteDNSRecords,
+					GroupKey:     zone.Name,
+					Obj:          record,
+				}
+				resourceTrackers = append(resourceTrackers, &resource)
+			}
+		}
+	}
+
+	return resourceTrackers, nil
+}
+
+func deleteDNSRecords(cloud fi.Cloud, r []*resources.Resource) error {
+	c := cloud.(gce.GCECloud)
+	var records []*clouddns.ResourceRecordSet
+	var zoneName string
+
+	for _, record := range r {
+		r := record.Obj.(*clouddns.ResourceRecordSet)
+		zoneName = record.Name
+		records = append(records, r)
+	}
+
+	change := clouddns.Change{Deletions: records, Kind: "dns#change", IsServing: true}
+	_, err := c.CloudDNS().Changes.Create(c.Project(), zoneName, &change).Do()
+	if err != nil {
+		return fmt.Errorf("error deleting GCE DNS resource record set %v", err)
+	}
+	return nil
 }

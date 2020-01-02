@@ -9,10 +9,12 @@ go_library(
     importpath = "k8s.io/kops/pkg/resources/gce",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/dns:go_default_library",
         "//pkg/resources:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//vendor/google.golang.org/api/compute/v0.beta:go_default_library",
+        "//vendor/google.golang.org/api/dns/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],
