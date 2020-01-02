@@ -71,3 +71,36 @@ func TestRenderInstanceGroupZones(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderInstanceGroupSubnets(t *testing.T) {
+	cluster := &kops.Cluster{}
+	grid := []struct {
+		ig       *kops.InstanceGroup
+		expected string
+	}{
+		{
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Subnets: []string{"subnet"},
+				},
+			},
+			expected: "subnet",
+		},
+		{
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Subnets: []string{"subnet1", "subnet2"},
+				},
+			},
+			expected: "subnet1,subnet2",
+		},
+	}
+	for _, g := range grid {
+		f := RenderInstanceGroupSubnets(cluster)
+		actual := f(g.ig)
+		if actual != g.expected {
+			t.Errorf("unexpected output: %q vs %q", g.expected, actual)
+			continue
+		}
+	}
+}
