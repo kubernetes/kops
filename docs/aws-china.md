@@ -249,7 +249,7 @@ for asset in "${KOPS_ASSETS[@]}"; do
   mkdir -p "$dir"
   url="https://kubeupv2.s3.amazonaws.com/kops/$KOPS_VERSION/$asset"
   wget -P "$dir" "$url"
-  wget -P "$dir" "$url.sha1"
+  wget -P "$dir" "$url.sha256"
 done
 
 ## Upload assets
