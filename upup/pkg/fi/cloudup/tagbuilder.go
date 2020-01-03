@@ -28,39 +28,39 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
+func buildCloudupTags(cluster *kopsapi.Cluster) (sets.String, error) {
 	tags := sets.NewString()
 
-	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
-	case api.CloudProviderGCE:
+	switch kopsapi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kopsapi.CloudProviderGCE:
 		{
 			tags.Insert("_gce")
 		}
 
-	case api.CloudProviderAWS:
+	case kopsapi.CloudProviderAWS:
 		{
 			tags.Insert("_aws")
 		}
-	case api.CloudProviderDO:
+	case kopsapi.CloudProviderDO:
 		{
 			tags.Insert("_do")
 		}
-	case api.CloudProviderVSphere:
+	case kopsapi.CloudProviderVSphere:
 		{
 			tags.Insert("_vsphere")
 		}
 
-	case api.CloudProviderBareMetal:
+	case kopsapi.CloudProviderBareMetal:
 		// No tags
 
-	case api.CloudProviderOpenstack:
+	case kopsapi.CloudProviderOpenstack:
 
-	case api.CloudProviderALI:
+	case kopsapi.CloudProviderALI:
 		{
 			tags.Insert("_ali")
 		}
@@ -97,7 +97,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	return tags, nil
 }
 
-func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
+func buildNodeupTags(role kopsapi.InstanceGroupRole, cluster *kopsapi.Cluster, clusterTags sets.String) (sets.String, error) {
 	tags := sets.NewString()
 
 	networking := cluster.Spec.Networking
@@ -113,7 +113,7 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	switch fi.StringValue(cluster.Spec.UpdatePolicy) {
 	case "": // default
 		tags.Insert("_automatic_upgrades")
-	case api.UpdatePolicyExternal:
+	case kopsapi.UpdatePolicyExternal:
 	// Skip applying the tag
 	default:
 		klog.Warningf("Unrecognized value for UpdatePolicy: %v", fi.StringValue(cluster.Spec.UpdatePolicy))

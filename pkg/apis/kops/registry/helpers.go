@@ -19,11 +19,11 @@ package registry
 import (
 	"fmt"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 )
 
-func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, groups []*api.InstanceGroup) error {
+func CreateClusterConfig(clientset simple.Clientset, cluster *kopsapi.Cluster, groups []*kopsapi.InstanceGroup) error {
 	// Check for instancegroup Name duplicates before writing
 	{
 		names := map[string]bool{}

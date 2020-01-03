@@ -23,14 +23,14 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 const MockAWSRegion = "us-mock-1"
 
-func buildDefaultCluster(t *testing.T) *api.Cluster {
+func buildDefaultCluster(t *testing.T) *kopsapi.Cluster {
 	c := buildMinimalCluster()
 
 	err := PerformAssignments(c)
@@ -46,10 +46,10 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		etcdZones := zones.List()
 
 		for _, etcdCluster := range EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
+			etcd := &kopsapi.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
 			for _, zone := range etcdZones {
-				m := &api.EtcdMemberSpec{}
+				m := &kopsapi.EtcdMemberSpec{}
 				m.Name = zone
 				m.InstanceGroup = fi.String(zone)
 				etcd.Members = append(etcd.Members, m)
@@ -133,7 +133,7 @@ func TestValidateFull_ClusterName_Required(t *testing.T) {
 
 func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.UpdatePolicy = fi.String(api.UpdatePolicyExternal)
+	c.Spec.UpdatePolicy = fi.String(kopsapi.UpdatePolicyExternal)
 	expectNoErrorFromValidate(t, c)
 }
 
@@ -146,8 +146,8 @@ func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 func Test_Validate_No_Classic_With_14(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.KubernetesVersion = "1.4.1"
-	c.Spec.Networking = &api.NetworkingSpec{
-		Classic: &api.ClassicNetworkingSpec{},
+	c.Spec.Networking = &kopsapi.NetworkingSpec{
+		Classic: &kopsapi.ClassicNetworkingSpec{},
 	}
 
 	expectErrorFromValidate(t, c, "spec.Networking")
@@ -156,8 +156,8 @@ func Test_Validate_No_Classic_With_14(t *testing.T) {
 func Test_Validate_Kubenet_With_14(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.KubernetesVersion = "1.4.1"
-	c.Spec.Networking = &api.NetworkingSpec{
-		Kubenet: &api.KubenetNetworkingSpec{},
+	c.Spec.Networking = &kopsapi.NetworkingSpec{
+		Kubenet: &kopsapi.KubenetNetworkingSpec{},
 	}
 
 	expectNoErrorFromValidate(t, c)
@@ -168,7 +168,7 @@ func TestValidate_ClusterName_Import(t *testing.T) {
 
 	// When we import a cluster, it likely won't have a valid name until we convert it
 	c.ObjectMeta.Annotations = make(map[string]string)
-	c.ObjectMeta.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
+	c.ObjectMeta.Annotations[kopsapi.AnnotationNameManagement] = kopsapi.AnnotationValueManagementImported
 	c.ObjectMeta.Name = "kubernetes"
 
 	expectNoErrorFromValidate(t, c)
@@ -177,7 +177,7 @@ func TestValidate_ClusterName_Import(t *testing.T) {
 func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T) {
 	c := buildDefaultCluster(t)
 
-	assets := new(api.Assets)
+	assets := new(kopsapi.Assets)
 	c.Spec.Assets = assets
 
 	expectNoErrorFromValidate(t, c)
@@ -195,7 +195,7 @@ func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T)
 
 }
 
-func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
+func expectErrorFromValidate(t *testing.T, c *kopsapi.Cluster, message string) {
 	err := validation.ValidateCluster(c, false)
 	if err == nil {
 		t.Fatalf("Expected error from Validate")
@@ -206,7 +206,7 @@ func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
 	}
 }
 
-func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
+func expectNoErrorFromValidate(t *testing.T, c *kopsapi.Cluster) {
 	err := validation.ValidateCluster(c, false)
 	if err != nil {
 		t.Fatalf("Unexpected error from Validate: %v", err)

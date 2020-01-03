@@ -19,7 +19,7 @@ package cloudup
 import (
 	"testing"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -29,7 +29,7 @@ type ClusterParams struct {
 	UpdatePolicy      string
 }
 
-func buildCluster(clusterArgs interface{}) *api.Cluster {
+func buildCluster(clusterArgs interface{}) *kopsapi.Cluster {
 
 	if clusterArgs == nil {
 		clusterArgs = ClusterParams{CloudProvider: "aws", KubernetesVersion: "1.4.0"}
@@ -45,19 +45,19 @@ func buildCluster(clusterArgs interface{}) *api.Cluster {
 		cParams.KubernetesVersion = "v1.4.0"
 	}
 
-	networking := &api.NetworkingSpec{
-		CNI: &api.CNINetworkingSpec{},
+	networking := &kopsapi.NetworkingSpec{
+		CNI: &kopsapi.CNINetworkingSpec{},
 	}
 
-	return &api.Cluster{
-		Spec: api.ClusterSpec{
+	return &kopsapi.Cluster{
+		Spec: kopsapi.ClusterSpec{
 			CloudProvider:     cParams.CloudProvider,
 			KubernetesVersion: cParams.KubernetesVersion,
 			Networking:        networking,
 			UpdatePolicy:      fi.String(cParams.UpdatePolicy),
-			Topology: &api.TopologySpec{
-				Masters: api.TopologyPublic,
-				Nodes:   api.TopologyPublic,
+			Topology: &kopsapi.TopologySpec{
+				Masters: kopsapi.TopologyPublic,
+				Nodes:   kopsapi.TopologyPublic,
 			},
 		},
 	}
@@ -66,7 +66,7 @@ func buildCluster(clusterArgs interface{}) *api.Cluster {
 func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Weave: &api.WeaveNetworkingSpec{}}
+	networking := &kopsapi.NetworkingSpec{Weave: &kopsapi.WeaveNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 
@@ -79,7 +79,7 @@ func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -92,7 +92,7 @@ func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Flannel: &api.FlannelNetworkingSpec{}}
+	networking := &kopsapi.NetworkingSpec{Flannel: &kopsapi.FlannelNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 
@@ -105,7 +105,7 @@ func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 func TestBuildTags_CloudProvider_AWS_Calico(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Calico: &api.CalicoNetworkingSpec{}}
+	networking := &kopsapi.NetworkingSpec{Calico: &kopsapi.CalicoNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 
@@ -131,7 +131,7 @@ func TestBuildTags_CloudProvider_AWS_Calico(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -144,7 +144,7 @@ func TestBuildTags_CloudProvider_AWS_Calico(t *testing.T) {
 func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Canal: &api.CanalNetworkingSpec{}}
+	networking := &kopsapi.NetworkingSpec{Canal: &kopsapi.CanalNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 
@@ -157,7 +157,7 @@ func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -170,7 +170,7 @@ func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
 func TestBuildTags_CloudProvider_AWS_Romana(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Romana: &api.RomanaNetworkingSpec{}}
+	networking := &kopsapi.NetworkingSpec{Romana: &kopsapi.RomanaNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 
@@ -183,7 +183,7 @@ func TestBuildTags_CloudProvider_AWS_Romana(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -206,7 +206,7 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -245,7 +245,7 @@ func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 		t.Fatalf("buildCloudupTags error: %v", err)
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -256,14 +256,14 @@ func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 }
 
 func TestBuildTags_UpdatePolicy_None(t *testing.T) {
-	c := buildCluster(ClusterParams{CloudProvider: "aws", UpdatePolicy: api.UpdatePolicyExternal})
+	c := buildCluster(ClusterParams{CloudProvider: "aws", UpdatePolicy: kopsapi.UpdatePolicyExternal})
 
 	tags, err := buildCloudupTags(c)
 	if err != nil {
 		t.Fatalf("buildTags error: %v", err)
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -276,7 +276,7 @@ func TestBuildTags_UpdatePolicy_None(t *testing.T) {
 func TestBuildTags_CloudProvider_AWS_Cilium(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Cilium: &api.CiliumNetworkingSpec{}}
+	networking := &kopsapi.NetworkingSpec{Cilium: &kopsapi.CiliumNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 
@@ -289,7 +289,7 @@ func TestBuildTags_CloudProvider_AWS_Cilium(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(kopsapi.InstanceGroupRoleNode, c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}

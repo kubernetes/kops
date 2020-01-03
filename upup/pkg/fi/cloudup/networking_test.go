@@ -20,7 +20,7 @@ import (
 	"os"
 	"testing"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 )
 
@@ -32,7 +32,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 		os.Unsetenv(ENV_VAR_CNI_VERSION_URL)
 	}()
 
-	cluster := &api.Cluster{}
+	cluster := &kopsapi.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.9.0"
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
@@ -53,7 +53,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
-	cluster := &api.Cluster{}
+	cluster := &kopsapi.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.7.0"
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder)
@@ -74,7 +74,7 @@ func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
 func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 
-	cluster := &api.Cluster{}
+	cluster := &kopsapi.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.5.12"
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder)

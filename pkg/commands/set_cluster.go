@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 )
 
@@ -72,7 +72,7 @@ func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *
 }
 
 // SetClusterFields sets field values in the cluster
-func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*api.InstanceGroup) error {
+func SetClusterFields(fields []string, cluster *kopsapi.Cluster, instanceGroups []*kopsapi.InstanceGroup) error {
 	for _, field := range fields {
 		kv := strings.SplitN(field, "=", 2)
 		if len(kv) != 2 {
@@ -126,7 +126,7 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 		case "cluster.spec.etcdClusters[*].manager.image":
 			for _, etcd := range cluster.Spec.EtcdClusters {
 				if etcd.Manager == nil {
-					etcd.Manager = &api.EtcdManagerSpec{}
+					etcd.Manager = &kopsapi.EtcdManagerSpec{}
 				}
 				etcd.Manager.Image = kv[1]
 			}
@@ -137,14 +137,14 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 	return nil
 }
 
-func toEtcdProviderType(in string) (api.EtcdProviderType, error) {
+func toEtcdProviderType(in string) (kopsapi.EtcdProviderType, error) {
 	s := strings.ToLower(in)
 	switch s {
 	case "legacy":
-		return api.EtcdProviderTypeLegacy, nil
+		return kopsapi.EtcdProviderTypeLegacy, nil
 	case "manager":
-		return api.EtcdProviderTypeManager, nil
+		return kopsapi.EtcdProviderTypeManager, nil
 	default:
-		return api.EtcdProviderTypeManager, fmt.Errorf("unknown etcd provider type %q", in)
+		return kopsapi.EtcdProviderTypeManager, fmt.Errorf("unknown etcd provider type %q", in)
 	}
 }

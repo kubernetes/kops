@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog"
 	"k8s.io/kops"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
@@ -43,11 +43,11 @@ type ConvertKubeupCluster struct {
 
 	Clientset simple.Clientset
 
-	ClusterConfig  *api.Cluster
-	InstanceGroups []*api.InstanceGroup
+	ClusterConfig  *kopsapi.Cluster
+	InstanceGroups []*kopsapi.InstanceGroup
 
 	// Channel is the channel that we are upgrading to
-	Channel *api.Channel
+	Channel *kopsapi.Channel
 }
 
 func (x *ConvertKubeupCluster) Upgrade() error {
@@ -90,7 +90,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 
 	// Set KubernetesVersion from channel
 	if x.Channel != nil {
-		kubernetesVersion := api.RecommendedKubernetesVersion(x.Channel, kops.Version)
+		kubernetesVersion := kopsapi.RecommendedKubernetesVersion(x.Channel, kops.Version)
 		if kubernetesVersion != nil {
 			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
 		}
@@ -103,7 +103,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 
 	if cluster.ObjectMeta.Annotations != nil {
 		// Remove the management annotation for the new cluster
-		delete(cluster.ObjectMeta.Annotations, api.AnnotationNameManagement)
+		delete(cluster.ObjectMeta.Annotations, kopsapi.AnnotationNameManagement)
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")

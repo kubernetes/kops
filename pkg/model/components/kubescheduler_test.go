@@ -19,19 +19,19 @@ package components
 import (
 	"testing"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 )
 
-func buildSchedulerConfigMapCluster(version string) *api.Cluster {
+func buildSchedulerConfigMapCluster(version string) *kopsapi.Cluster {
 	usePolicyConfigMap := true
 
-	return &api.Cluster{
-		Spec: api.ClusterSpec{
+	return &kopsapi.Cluster{
+		Spec: kopsapi.ClusterSpec{
 			CloudProvider:     "aws",
 			KubernetesVersion: version,
-			KubeScheduler: &api.KubeSchedulerConfig{
+			KubeScheduler: &kopsapi.KubeSchedulerConfig{
 				UsePolicyConfigMap: &usePolicyConfigMap,
 			},
 		},

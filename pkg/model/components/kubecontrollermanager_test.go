@@ -21,14 +21,14 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 )
 
-func buildCluster() *api.Cluster {
+func buildCluster() *kopsapi.Cluster {
 
-	return &api.Cluster{
-		Spec: api.ClusterSpec{
+	return &kopsapi.Cluster{
+		Spec: kopsapi.ClusterSpec{
 			CloudProvider:     "aws",
 			KubernetesVersion: "v1.4.0",
 		},
@@ -100,7 +100,7 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 		},
 	}
 
-	c.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{
+	c.Spec.KubeControllerManager = &kopsapi.KubeControllerManagerConfig{
 		AttachDetachReconcileSyncPeriod: &metav1.Duration{},
 	}
 

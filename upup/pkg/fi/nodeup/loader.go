@@ -24,7 +24,7 @@ import (
 	"text/template"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -38,7 +38,7 @@ type Loader struct {
 	Builders []fi.ModelBuilder
 
 	config  *nodeup.Config
-	cluster *api.Cluster
+	cluster *kopsapi.Cluster
 
 	assets *fi.AssetStore
 	tasks  map[string]fi.Task
@@ -47,7 +47,7 @@ type Loader struct {
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *nodeup.Config, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
+func NewLoader(config *nodeup.Config, cluster *kopsapi.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)

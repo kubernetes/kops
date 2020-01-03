@@ -30,7 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -49,7 +49,7 @@ func newClusterVFS(basePath vfs.Path) *ClusterVFS {
 	return c
 }
 
-func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, error) {
+func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*kopsapi.Cluster, error) {
 	if options.ResourceVersion != "" {
 		return nil, fmt.Errorf("ResourceVersion not supported in ClusterVFS::Get")
 	}
@@ -58,7 +58,7 @@ func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, 
 		return nil, err
 	}
 	if o == nil {
-		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, name)
+		return nil, errors.NewNotFound(schema.GroupResource{Group: kopsapi.GroupName, Resource: "Cluster"}, name)
 	}
 	return o, nil
 }
@@ -72,13 +72,13 @@ func (c *ClusterVFS) configBase(clusterName string) (vfs.Path, error) {
 	return configPath, nil
 }
 
-func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) {
+func (c *ClusterVFS) List(options metav1.ListOptions) (*kopsapi.ClusterList, error) {
 	names, err := c.listNames()
 	if err != nil {
 		return nil, err
 	}
 
-	var items []api.Cluster
+	var items []kopsapi.Cluster
 
 	for _, clusterName := range names {
 		cluster, err := c.find(clusterName)
@@ -95,10 +95,10 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 		items = append(items, *cluster)
 	}
 
-	return &api.ClusterList{Items: items}, nil
+	return &kopsapi.ClusterList{Items: items}, nil
 }
 
-func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
+func (r *ClusterVFS) Create(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 	if err := validation.ValidateCluster(c, false); err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	return c, nil
 }
 
-func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Cluster, error) {
+func (r *ClusterVFS) Update(c *kopsapi.Cluster, status *kopsapi.ClusterStatus) (*kopsapi.Cluster, error) {
 	clusterName := c.ObjectMeta.Name
 	if clusterName == "" {
 		return nil, field.Required(field.NewPath("Name"), "clusterName is required")
@@ -134,7 +134,7 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 	}
 
 	if old == nil {
-		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, clusterName)
+		return nil, errors.NewNotFound(schema.GroupResource{Group: kopsapi.GroupName, Resource: "Cluster"}, clusterName)
 	}
 
 	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {
@@ -178,7 +178,7 @@ func (r *ClusterVFS) listNames() ([]string, error) {
 	return keys, nil
 }
 
-func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
+func (r *ClusterVFS) find(clusterName string) (*kopsapi.Cluster, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
@@ -192,7 +192,7 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 		return nil, fmt.Errorf("error reading cluster configuration %q: %v", clusterName, err)
 	}
 
-	c := o.(*api.Cluster)
+	c := o.(*kopsapi.Cluster)
 
 	if c.ObjectMeta.Name == "" {
 		c.ObjectMeta.Name = clusterName
@@ -225,6 +225,6 @@ func (r *ClusterVFS) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	return nil, fmt.Errorf("cluster Watch not implemented for vfs store")
 }
 
-func (r *ClusterVFS) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Cluster, err error) {
+func (r *ClusterVFS) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kopsapi.Cluster, err error) {
 	return nil, fmt.Errorf("cluster Patch not implemented for vfs store")
 }

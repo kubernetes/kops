@@ -27,7 +27,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/drain"
 	"k8s.io/kops/pkg/featureflag"
@@ -102,7 +102,7 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 // TODO: Batch termination, like a rolling-update
 
 // RollingUpdate performs a rolling update on a list of ec2 instances.
-func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
+func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, cluster *kopsapi.Cluster, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
 
 	// we should not get here, but hey I am going to check.
 	if rollingUpdateData == nil {
@@ -275,7 +275,7 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *Rolli
 }
 
 // validateCluster runs our validation methods on the K8s Cluster.
-func (r *RollingUpdateInstanceGroup) validateCluster(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster) error {
+func (r *RollingUpdateInstanceGroup) validateCluster(rollingUpdateData *RollingUpdateCluster, cluster *kopsapi.Cluster) error {
 	result, err := rollingUpdateData.ClusterValidator.Validate()
 	if err != nil {
 		return fmt.Errorf("cluster %q did not validate: %v", cluster.Name, err)

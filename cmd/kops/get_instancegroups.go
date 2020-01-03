@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/formatter"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
@@ -132,11 +132,11 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 	}
 }
 
-func filterInstanceGroupsByName(instanceGroupNames []string, list []api.InstanceGroup) ([]*api.InstanceGroup, error) {
-	var instancegroups []*api.InstanceGroup
+func filterInstanceGroupsByName(instanceGroupNames []string, list []kopsapi.InstanceGroup) ([]*kopsapi.InstanceGroup, error) {
+	var instancegroups []*kopsapi.InstanceGroup
 	if len(instanceGroupNames) != 0 {
 		// Build a map so we can return items in the same order
-		m := make(map[string]*api.InstanceGroup)
+		m := make(map[string]*kopsapi.InstanceGroup)
 		for i := range list {
 			ig := &list[i]
 			m[ig.ObjectMeta.Name] = ig
@@ -159,23 +159,23 @@ func filterInstanceGroupsByName(instanceGroupNames []string, list []api.Instance
 	return instancegroups, nil
 }
 
-func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, out io.Writer) error {
+func igOutputTable(cluster *kopsapi.Cluster, instancegroups []*kopsapi.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
-	t.AddColumn("NAME", func(c *api.InstanceGroup) string {
+	t.AddColumn("NAME", func(c *kopsapi.InstanceGroup) string {
 		return c.ObjectMeta.Name
 	})
-	t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
+	t.AddColumn("ROLE", func(c *kopsapi.InstanceGroup) string {
 		return string(c.Spec.Role)
 	})
-	t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
+	t.AddColumn("MACHINETYPE", func(c *kopsapi.InstanceGroup) string {
 		return c.Spec.MachineType
 	})
 	t.AddColumn("SUBNETS", formatter.RenderInstanceGroupSubnets(cluster))
 	t.AddColumn("ZONES", formatter.RenderInstanceGroupZones(cluster))
-	t.AddColumn("MIN", func(c *api.InstanceGroup) string {
+	t.AddColumn("MIN", func(c *kopsapi.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MinSize)
 	})
-	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
+	t.AddColumn("MAX", func(c *kopsapi.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MaxSize)
 	})
 	// SUBNETS is not selected by default - not as useful as ZONES

@@ -30,7 +30,7 @@ import (
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
@@ -61,9 +61,9 @@ type NodeUpCommand struct {
 	FSRoot         string
 	ModelDir       vfs.Path
 	Target         string
-	cluster        *api.Cluster
+	cluster        *kopsapi.Cluster
 	config         *nodeup.Config
-	instanceGroup  *api.InstanceGroup
+	instanceGroup  *kopsapi.InstanceGroup
 }
 
 // Run is responsible for perform the nodeup process
@@ -120,7 +120,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("ConfigBase is required")
 	}
 
-	c.cluster = &api.Cluster{}
+	c.cluster = &kopsapi.Cluster{}
 	{
 		clusterLocation := fi.StringValue(c.config.ClusterLocation)
 
@@ -149,7 +149,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.config.InstanceGroupName != "" {
 		instanceGroupLocation := configBase.Join("instancegroup", c.config.InstanceGroupName)
 
-		c.instanceGroup = &api.InstanceGroup{}
+		c.instanceGroup = &kopsapi.InstanceGroup{}
 		b, err := instanceGroupLocation.ReadFile()
 		if err != nil {
 			return fmt.Errorf("error loading InstanceGroup %q: %v", instanceGroupLocation, err)
@@ -353,7 +353,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	return nil
 }
 
-func evaluateSpec(c *api.Cluster) error {
+func evaluateSpec(c *kopsapi.Cluster) error {
 	var err error
 
 	c.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.Kubelet.HostnameOverride)
@@ -551,7 +551,7 @@ func evaluateBindAddress(bindAddress string) (string, error) {
 }
 
 // evaluateDockerSpec selects the first supported storage mode, if it is a list
-func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
+func evaluateDockerSpecStorage(spec *kopsapi.DockerConfig) error {
 	storage := fi.StringValue(spec.Storage)
 	if strings.Contains(fi.StringValue(spec.Storage), ",") {
 		precedence := strings.Split(storage, ",")

@@ -27,7 +27,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
@@ -172,7 +172,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(fmt.Errorf("error parsing config: %s", err), file, out)
 		}
 
-		newCluster, ok := newObj.(*api.Cluster)
+		newCluster, ok := newObj.(*kopsapi.Cluster)
 		if !ok {
 			results = editResults{
 				file: file,

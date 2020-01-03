@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -31,31 +31,31 @@ func up() error {
 	allowList := true
 	clientset := vfsclientset.NewVFSClientset(registryBase, allowList)
 
-	cluster := &api.Cluster{}
+	cluster := &kopsapi.Cluster{}
 	cluster.ObjectMeta.Name = clusterName
-	cluster.Spec = api.ClusterSpec{
+	cluster.Spec = kopsapi.ClusterSpec{
 		Channel:       "stable",
 		CloudProvider: "aws",
 		ConfigBase:    registryBase.Join(cluster.ObjectMeta.Name).Path(),
-		Topology:      &api.TopologySpec{},
+		Topology:      &kopsapi.TopologySpec{},
 	}
-	cluster.Spec.Topology.Masters = api.TopologyPublic
-	cluster.Spec.Topology.Nodes = api.TopologyPublic
+	cluster.Spec.Topology.Masters = kopsapi.TopologyPublic
+	cluster.Spec.Topology.Nodes = kopsapi.TopologyPublic
 
 	for _, z := range nodeZones {
-		cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
+		cluster.Spec.Subnets = append(cluster.Spec.Subnets, kopsapi.ClusterSubnetSpec{
 			Name: z,
 			Zone: z,
-			Type: api.SubnetTypePublic,
+			Type: kopsapi.SubnetTypePublic,
 		})
 	}
 
 	for _, etcdClusterName := range cloudup.EtcdClusters {
-		etcdCluster := &api.EtcdClusterSpec{
+		etcdCluster := &kopsapi.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
 		for _, masterZone := range masterZones {
-			etcdMember := &api.EtcdMemberSpec{
+			etcdMember := &kopsapi.EtcdMemberSpec{
 				Name:          masterZone,
 				InstanceGroup: fi.String(masterZone),
 			}
@@ -75,10 +75,10 @@ func up() error {
 
 	// Create master ig
 	{
-		ig := &api.InstanceGroup{}
+		ig := &kopsapi.InstanceGroup{}
 		ig.ObjectMeta.Name = "master"
-		ig.Spec = api.InstanceGroupSpec{
-			Role:    api.InstanceGroupRoleMaster,
+		ig.Spec = kopsapi.InstanceGroupSpec{
+			Role:    kopsapi.InstanceGroupRoleMaster,
 			Subnets: masterZones,
 		}
 		_, err := clientset.InstanceGroupsFor(cluster).Create(ig)
@@ -89,10 +89,10 @@ func up() error {
 
 	// Create node ig
 	{
-		ig := &api.InstanceGroup{}
+		ig := &kopsapi.InstanceGroup{}
 		ig.ObjectMeta.Name = "nodes"
-		ig.Spec = api.InstanceGroupSpec{
-			Role:    api.InstanceGroupRoleNode,
+		ig.Spec = kopsapi.InstanceGroupSpec{
+			Role:    kopsapi.InstanceGroupRoleNode,
 			Subnets: nodeZones,
 		}
 

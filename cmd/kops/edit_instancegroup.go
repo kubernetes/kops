@@ -26,7 +26,7 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kopscodecs"
@@ -147,7 +147,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("error parsing InstanceGroup: %v", err)
 	}
 
-	newGroup, ok := newObj.(*api.InstanceGroup)
+	newGroup, ok := newObj.(*kopsapi.InstanceGroup)
 	if !ok {
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}

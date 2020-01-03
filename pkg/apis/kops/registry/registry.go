@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -31,7 +31,7 @@ const (
 	PathClusterCompleted = "cluster.spec"
 )
 
-func ConfigBase(c *api.Cluster) (vfs.Path, error) {
+func ConfigBase(c *kopsapi.Cluster) (vfs.Path, error) {
 	if c.Spec.ConfigBase == "" {
 		return nil, field.Required(field.NewPath("Spec", "ConfigBase"), "")
 	}

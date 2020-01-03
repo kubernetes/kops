@@ -20,22 +20,22 @@ import (
 	"fmt"
 
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // DeleteInstanceGroup removes the cloud resources for an InstanceGroup
 type DeleteInstanceGroup struct {
-	Cluster   *api.Cluster
+	Cluster   *kopsapi.Cluster
 	Cloud     fi.Cloud
 	Clientset simple.Clientset
 }
 
 // DeleteInstanceGroup deletes a cloud instance group
-func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
+func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *kopsapi.InstanceGroup) error {
 
-	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, false, nil)
+	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*kopsapi.InstanceGroup{group}, false, nil)
 	if err != nil {
 		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
 	}

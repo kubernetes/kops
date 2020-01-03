@@ -23,7 +23,7 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
@@ -70,7 +70,7 @@ type RollingUpdateCluster struct {
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *kopsapi.Cluster, instanceGroups *kopsapi.InstanceGroupList) error {
 	if len(groups) == 0 {
 		klog.Info("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -84,11 +84,11 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 	bastionGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	for k, group := range groups {
 		switch group.InstanceGroup.Spec.Role {
-		case api.InstanceGroupRoleNode:
+		case kopsapi.InstanceGroupRoleNode:
 			nodeGroups[k] = group
-		case api.InstanceGroupRoleMaster:
+		case kopsapi.InstanceGroupRoleMaster:
 			masterGroups[k] = group
-		case api.InstanceGroupRoleBastion:
+		case kopsapi.InstanceGroupRoleBastion:
 			bastionGroups[k] = group
 		default:
 			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.ObjectMeta.Name)

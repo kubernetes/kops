@@ -37,7 +37,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -175,9 +175,9 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Target = cloudup.TargetDirect
 	o.Models = strings.Join(cloudup.CloudupModels, ",")
 	o.Networking = "kubenet"
-	o.Channel = api.DefaultChannel
-	o.Topology = api.TopologyPublic
-	o.DNSType = string(api.DNSTypePublic)
+	o.Channel = kopsapi.DefaultChannel
+	o.Topology = kopsapi.TopologyPublic
+	o.DNSType = string(kopsapi.DNSTypePublic)
 	o.Bastion = false
 
 	// Default to open API & SSH access
@@ -453,10 +453,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", clusterName)
 	}
 
-	cluster = &api.Cluster{}
+	cluster = &kopsapi.Cluster{}
 	cluster.ObjectMeta.Name = clusterName
 
-	channel, err := api.LoadChannel(c.Channel)
+	channel, err := kopsapi.LoadChannel(c.Channel)
 	if err != nil {
 		return err
 	}
@@ -464,7 +464,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if channel.Spec.Cluster != nil {
 		cluster.Spec = *channel.Spec.Cluster
 
-		kubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
+		kubernetesVersion := kopsapi.RecommendedKubernetesVersion(channel, kops.Version)
 		if kubernetesVersion != nil {
 			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
 		}
@@ -479,11 +479,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	cluster.Spec.ConfigBase = configBase.Path()
 
 	// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
-	cluster.Spec.Authorization = &api.AuthorizationSpec{}
+	cluster.Spec.Authorization = &kopsapi.AuthorizationSpec{}
 	if strings.EqualFold(c.Authorization, AuthorizationFlagAlwaysAllow) {
-		cluster.Spec.Authorization.AlwaysAllow = &api.AlwaysAllowAuthorizationSpec{}
+		cluster.Spec.Authorization.AlwaysAllow = &kopsapi.AlwaysAllowAuthorizationSpec{}
 	} else if strings.EqualFold(c.Authorization, AuthorizationFlagRBAC) {
-		cluster.Spec.Authorization.RBAC = &api.RBACAuthorizationSpec{}
+		cluster.Spec.Authorization.RBAC = &kopsapi.RBACAuthorizationSpec{}
 	} else {
 		return fmt.Errorf("unknown authorization mode %q", c.Authorization)
 	}
@@ -498,7 +498,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.VPCID != "" {
 		cluster.Spec.NetworkID = c.VPCID
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && len(c.SubnetIDs) > 0 {
+	} else if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderAWS && len(c.SubnetIDs) > 0 {
 		cloudTags := map[string]string{}
 		awsCloud, err := awsup.NewAWSCloud(c.Zones[0][:len(c.Zones[0])-1], cloudTags)
 		if err != nil {
@@ -516,19 +516,19 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.NetworkID = *res.Subnets[0].VpcId
 	}
 
-	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
+	if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderOpenstack {
 		if cluster.Spec.CloudConfig == nil {
-			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			cluster.Spec.CloudConfig = &kopsapi.CloudConfiguration{}
 		}
-		cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
-			Router: &api.OpenstackRouter{
+		cluster.Spec.CloudConfig.Openstack = &kopsapi.OpenstackConfiguration{
+			Router: &kopsapi.OpenstackRouter{
 				ExternalNetwork: fi.String(c.OpenstackExternalNet),
 			},
-			BlockStorage: &api.OpenstackBlockStorageConfig{
+			BlockStorage: &kopsapi.OpenstackBlockStorageConfig{
 				Version:  fi.String("v2"),
 				IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
 			},
-			Monitor: &api.OpenstackMonitor{
+			Monitor: &kopsapi.OpenstackMonitor{
 				Delay:      fi.String("1m"),
 				Timeout:    fi.String("30s"),
 				MaxRetries: fi.Int(3),
@@ -577,10 +577,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
-	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
+	zoneToSubnetMap := make(map[string]*kopsapi.ClusterSubnetSpec)
 	if len(c.Zones) == 0 {
 		return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+	} else if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderGCE {
 		// On GCE, subnets are regional - we create one per region, not per zone
 		for _, zoneName := range allZones.List() {
 			region, err := gce.ZoneToRegion(zoneName)
@@ -593,7 +593,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 			subnet := model.FindSubnet(cluster, subnetName)
 			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{
+				subnet = &kopsapi.ClusterSubnetSpec{
 					Name:   subnetName,
 					Region: region,
 				}
@@ -601,7 +601,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			zoneToSubnetMap[zoneName] = subnet
 		}
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
+	} else if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderDO {
 		if len(c.Zones) > 1 {
 			return fmt.Errorf("digitalocean cloud provider currently only supports 1 region, expect multi-region support when digitalocean support is in beta")
 		}
@@ -614,7 +614,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		subnetName := region
 
 		if subnet == nil {
-			subnet = &api.ClusterSubnetSpec{
+			subnet = &kopsapi.ClusterSubnetSpec{
 				Name: subnetName,
 				// region and zone are the same for DO
 				Region: region,
@@ -623,9 +623,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 		}
 		zoneToSubnetMap[region] = subnet
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderALI {
+	} else if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderALI {
 		var zoneToSubnetSwitchID map[string]string
-		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderALI {
+		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderALI {
 			zoneToSubnetSwitchID, err = aliup.ZoneToVSwitchID(cluster.Spec.NetworkID, c.Zones, c.SubnetIDs)
 			if err != nil {
 				return err
@@ -637,7 +637,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 			subnet := model.FindSubnet(cluster, subnetName)
 			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{
+				subnet = &kopsapi.ClusterSubnetSpec{
 					Name:   subnetName,
 					Zone:   subnetName,
 					Egress: c.Egress,
@@ -652,12 +652,12 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	} else {
 		var zoneToSubnetProviderID map[string]string
 		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 {
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+			if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderAWS {
 				zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
 				if err != nil {
 					return err
 				}
-			} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
+			} else if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderOpenstack {
 				tags := make(map[string]string)
 				tags[openstack.TagClusterName] = c.ClusterName
 				zoneToSubnetProviderID, err = getSubnetProviderID(&cluster.Spec, allZones.List(), c.SubnetIDs, tags)
@@ -672,7 +672,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 			subnet := model.FindSubnet(cluster, subnetName)
 			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{
+				subnet = &kopsapi.ClusterSubnetSpec{
 					Name:   subnetName,
 					Zone:   subnetName,
 					Egress: c.Egress,
@@ -686,9 +686,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
-	var masters []*api.InstanceGroup
-	var nodes []*api.InstanceGroup
-	var instanceGroups []*api.InstanceGroup
+	var masters []*kopsapi.InstanceGroup
+	var nodes []*kopsapi.InstanceGroup
+	var instanceGroups []*kopsapi.InstanceGroup
 	cloudLabels, err := parseCloudLabels(c.CloudLabels)
 	if err != nil {
 		return fmt.Errorf("error parsing global cloud labels: %v", err)
@@ -731,7 +731,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for i := 0; i < int(masterCount); i++ {
 			zone := masterZones[i%len(masterZones)]
 			name := zone
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
+			if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderDO {
 				if int(masterCount) >= len(masterZones) {
 					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
 				}
@@ -741,8 +741,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				}
 			}
 
-			g := &api.InstanceGroup{}
-			g.Spec.Role = api.InstanceGroupRoleMaster
+			g := &kopsapi.InstanceGroup{}
+			g.Spec.Role = kopsapi.InstanceGroupRoleMaster
 			g.Spec.MinSize = fi.Int32(1)
 			g.Spec.MaxSize = fi.Int32(1)
 			g.ObjectMeta.Name = "master-" + name
@@ -753,7 +753,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 
 			g.Spec.Subnets = []string{subnet.Name}
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+			if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderGCE {
 				g.Spec.Zones = []string{zone}
 			}
 
@@ -784,7 +784,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 		for _, etcdCluster := range cloudup.EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
+			etcd := &kopsapi.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
 
 			// if this is the main cluster, we use 200 millicores by default.
@@ -813,7 +813,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			names = trimCommonPrefix(names)
 
 			for i, ig := range masters {
-				m := &api.EtcdMemberSpec{}
+				m := &kopsapi.EtcdMemberSpec{}
 				if c.EncryptEtcdStorage {
 					m.EncryptedVolume = &c.EncryptEtcdStorage
 				}
@@ -830,8 +830,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if len(nodes) == 0 {
-		g := &api.InstanceGroup{}
-		g.Spec.Role = api.InstanceGroupRoleNode
+		g := &kopsapi.InstanceGroup{}
+		g.Spec.Role = kopsapi.InstanceGroupRoleNode
 		g.ObjectMeta.Name = "nodes"
 
 		subnetNames := sets.NewString()
@@ -844,7 +844,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 		g.Spec.Subnets = subnetNames.List()
 
-		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderGCE {
 			g.Spec.Zones = c.Zones
 		}
 
@@ -930,7 +930,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 
 			if cluster.Spec.CloudConfig == nil {
-				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+				cluster.Spec.CloudConfig = &kopsapi.CloudConfiguration{}
 			}
 
 			if c.VSphereServer == "" {
@@ -961,7 +961,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 		if featureflag.Spotinst.Enabled() {
 			if cluster.Spec.CloudConfig == nil {
-				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+				cluster.Spec.CloudConfig = &kopsapi.CloudConfiguration{}
 			}
 			if c.SpotinstProduct != "" {
 				cluster.Spec.CloudConfig.SpotinstProduct = fi.String(c.SpotinstProduct)
@@ -976,7 +976,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if c.Project != "" {
 		cluster.Spec.Project = c.Project
 	}
-	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+	if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderGCE {
 		if cluster.Spec.Project == "" {
 			project, err := gce.DefaultProject()
 			if err != nil {
@@ -998,20 +998,20 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.ContainerRuntime = c.ContainerRuntime
 	}
 
-	cluster.Spec.Networking = &api.NetworkingSpec{}
+	cluster.Spec.Networking = &kopsapi.NetworkingSpec{}
 	switch c.Networking {
 	case "classic":
-		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
+		cluster.Spec.Networking.Classic = &kopsapi.ClassicNetworkingSpec{}
 	case "kubenet":
-		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+		cluster.Spec.Networking.Kubenet = &kopsapi.KubenetNetworkingSpec{}
 	case "external":
-		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
+		cluster.Spec.Networking.External = &kopsapi.ExternalNetworkingSpec{}
 	case "cni":
-		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
+		cluster.Spec.Networking.CNI = &kopsapi.CNINetworkingSpec{}
 	case "kopeio-vxlan", "kopeio":
-		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
+		cluster.Spec.Networking.Kopeio = &kopsapi.KopeioNetworkingSpec{}
 	case "weave":
-		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
+		cluster.Spec.Networking.Weave = &kopsapi.WeaveNetworkingSpec{}
 
 		if cluster.Spec.CloudProvider == "aws" {
 			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
@@ -1020,16 +1020,16 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
 		}
 	case "flannel", "flannel-vxlan":
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+		cluster.Spec.Networking.Flannel = &kopsapi.FlannelNetworkingSpec{
 			Backend: "vxlan",
 		}
 	case "flannel-udp":
 		klog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+		cluster.Spec.Networking.Flannel = &kopsapi.FlannelNetworkingSpec{
 			Backend: "udp",
 		}
 	case "calico":
-		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{
+		cluster.Spec.Networking.Calico = &kopsapi.CalicoNetworkingSpec{
 			MajorVersion: "v3",
 		}
 		// Validate to check if etcd clusters have an acceptable version
@@ -1041,19 +1041,19 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 		}
 	case "canal":
-		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
+		cluster.Spec.Networking.Canal = &kopsapi.CanalNetworkingSpec{}
 	case "kube-router":
-		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
+		cluster.Spec.Networking.Kuberouter = &kopsapi.KuberouterNetworkingSpec{}
 	case "romana":
-		cluster.Spec.Networking.Romana = &api.RomanaNetworkingSpec{}
+		cluster.Spec.Networking.Romana = &kopsapi.RomanaNetworkingSpec{}
 	case "amazonvpc", "amazon-vpc-routed-eni":
-		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
+		cluster.Spec.Networking.AmazonVPC = &kopsapi.AmazonVPCNetworkingSpec{}
 	case "cilium":
-		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{}
+		cluster.Spec.Networking.Cilium = &kopsapi.CiliumNetworkingSpec{}
 	case "lyftvpc":
-		cluster.Spec.Networking.LyftVPC = &api.LyftVPCNetworkingSpec{}
+		cluster.Spec.Networking.LyftVPC = &kopsapi.LyftVPCNetworkingSpec{}
 	case "gce":
-		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
+		cluster.Spec.Networking.GCE = &kopsapi.GCENetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
@@ -1068,17 +1068,17 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if c.Topology == "" {
 		// The flag default should have set this, but we might be being called as a library
 		klog.Infof("Empty topology. Defaulting to public topology")
-		c.Topology = api.TopologyPublic
+		c.Topology = kopsapi.TopologyPublic
 	}
 
 	cluster.Spec.DisableSubnetTags = c.DisableSubnetTags
 
 	switch c.Topology {
-	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{
-			Masters: api.TopologyPublic,
-			Nodes:   api.TopologyPublic,
-			//Bastion: &api.BastionSpec{Enable: c.Bastion},
+	case kopsapi.TopologyPublic:
+		cluster.Spec.Topology = &kopsapi.TopologySpec{
+			Masters: kopsapi.TopologyPublic,
+			Nodes:   kopsapi.TopologyPublic,
+			//Bastion: &kopsapi.BastionSpec{Enable: c.Bastion},
 		}
 
 		if c.Bastion {
@@ -1086,32 +1086,32 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 		for i := range cluster.Spec.Subnets {
-			cluster.Spec.Subnets[i].Type = api.SubnetTypePublic
+			cluster.Spec.Subnets[i].Type = kopsapi.SubnetTypePublic
 		}
 
-	case api.TopologyPrivate:
+	case kopsapi.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router', '--networking romana', '--networking amazon-vpc-routed-eni', '--networking cilium', '--networking lyftvpc', '--networking cni' are supported for private topologies", c.Networking)
 		}
-		cluster.Spec.Topology = &api.TopologySpec{
-			Masters: api.TopologyPrivate,
-			Nodes:   api.TopologyPrivate,
+		cluster.Spec.Topology = &kopsapi.TopologySpec{
+			Masters: kopsapi.TopologyPrivate,
+			Nodes:   kopsapi.TopologyPrivate,
 		}
 
 		for i := range cluster.Spec.Subnets {
-			cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
+			cluster.Spec.Subnets[i].Type = kopsapi.SubnetTypePrivate
 		}
 
-		var utilitySubnets []api.ClusterSubnetSpec
+		var utilitySubnets []kopsapi.ClusterSubnetSpec
 
 		var zoneToSubnetProviderID map[string]string
 		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 {
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+			if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderAWS {
 				zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
 				if err != nil {
 					return err
 				}
-			} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
+			} else if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderOpenstack {
 				tags := make(map[string]string)
 				tags[openstack.TagClusterName] = c.ClusterName
 				zoneToSubnetProviderID, err = getSubnetProviderID(&cluster.Spec, allZones.List(), c.UtilitySubnetIDs, tags)
@@ -1122,13 +1122,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 		for _, s := range cluster.Spec.Subnets {
-			if s.Type == api.SubnetTypeUtility {
+			if s.Type == kopsapi.SubnetTypeUtility {
 				continue
 			}
-			subnet := api.ClusterSubnetSpec{
+			subnet := kopsapi.ClusterSubnetSpec{
 				Name: "utility-" + s.Name,
 				Zone: s.Zone,
-				Type: api.SubnetTypeUtility,
+				Type: kopsapi.SubnetTypeUtility,
 			}
 			if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
 				subnet.ProviderID = subnetID
@@ -1138,13 +1138,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
 
 		if c.Bastion {
-			bastionGroup := &api.InstanceGroup{}
-			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
+			bastionGroup := &kopsapi.InstanceGroup{}
+			bastionGroup.Spec.Role = kopsapi.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
 			bastionGroup.Spec.Image = c.Image
 			instanceGroups = append(instanceGroups, bastionGroup)
 
-			cluster.Spec.Topology.Bastion = &api.BastionSpec{
+			cluster.Spec.Topology.Bastion = &kopsapi.BastionSpec{
 				BastionPublicName: "bastion." + clusterName,
 			}
 
@@ -1158,20 +1158,20 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if c.DNSType == "" {
 		// The flag default should have set this, but we might be being called as a library
 		klog.Infof("Empty DNS. Defaulting to public DNS")
-		c.DNSType = string(api.DNSTypePublic)
+		c.DNSType = string(kopsapi.DNSTypePublic)
 	}
 
 	if cluster.Spec.Topology == nil {
-		cluster.Spec.Topology = &api.TopologySpec{}
+		cluster.Spec.Topology = &kopsapi.TopologySpec{}
 	}
 	if cluster.Spec.Topology.DNS == nil {
-		cluster.Spec.Topology.DNS = &api.DNSSpec{}
+		cluster.Spec.Topology.DNS = &kopsapi.DNSSpec{}
 	}
 	switch strings.ToLower(c.DNSType) {
 	case "public":
-		cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
+		cluster.Spec.Topology.DNS.Type = kopsapi.DNSTypePublic
 	case "private":
-		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
+		cluster.Spec.Topology.DNS.Type = kopsapi.DNSTypePrivate
 	default:
 		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
 	}
@@ -1188,7 +1188,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	// check if we should set anonymousAuth to false on k8s versions >=1.11
 	if kv.IsGTE("1.11") {
 		if cluster.Spec.Kubelet == nil {
-			cluster.Spec.Kubelet = &api.KubeletConfigSpec{}
+			cluster.Spec.Kubelet = &kopsapi.KubeletConfigSpec{}
 		}
 
 		if cluster.Spec.Kubelet.AnonymousAuth == nil {
@@ -1199,25 +1199,25 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	// Populate the API access, so that it can be discoverable
 	// TODO: This is the same code as in defaults - try to dedup?
 	if cluster.Spec.API == nil {
-		cluster.Spec.API = &api.AccessSpec{}
+		cluster.Spec.API = &kopsapi.AccessSpec{}
 	}
 	if cluster.Spec.API.IsEmpty() {
 		if c.Cloud == "openstack" {
 			initializeOpenstackAPI(c, cluster)
 		} else if c.APILoadBalancerType != "" {
-			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+			cluster.Spec.API.LoadBalancer = &kopsapi.LoadBalancerAccessSpec{}
 		} else {
 			switch cluster.Spec.Topology.Masters {
-			case api.TopologyPublic:
+			case kopsapi.TopologyPublic:
 				if dns.IsGossipHostname(cluster.Name) {
 					// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
-					cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+					cluster.Spec.API.LoadBalancer = &kopsapi.LoadBalancerAccessSpec{}
 				} else {
-					cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+					cluster.Spec.API.DNS = &kopsapi.DNSAccessSpec{}
 				}
 
-			case api.TopologyPrivate:
-				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+			case kopsapi.TopologyPrivate:
+				cluster.Spec.API.LoadBalancer = &kopsapi.LoadBalancerAccessSpec{}
 
 			default:
 				return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
@@ -1227,9 +1227,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
 		switch c.APILoadBalancerType {
 		case "", "public":
-			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+			cluster.Spec.API.LoadBalancer.Type = kopsapi.LoadBalancerTypePublic
 		case "internal":
-			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
+			cluster.Spec.API.LoadBalancer.Type = kopsapi.LoadBalancerTypeInternal
 		default:
 			return fmt.Errorf("unknown api-loadbalancer-type: %q", c.APILoadBalancerType)
 		}
@@ -1240,7 +1240,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	// Use Strict IAM policy and allow AWS ECR by default when creating a new cluster
-	cluster.Spec.IAM = &api.IAMSpec{
+	cluster.Spec.IAM = &kopsapi.IAMSpec{
 		AllowContainerRegistry: true,
 		Legacy:                 false,
 	}
@@ -1264,7 +1264,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
-	err = api.PerformAssignmentsInstanceGroups(instanceGroups)
+	err = kopsapi.PerformAssignmentsInstanceGroups(instanceGroups)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
@@ -1285,7 +1285,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	var fullInstanceGroups []*api.InstanceGroup
+	var fullInstanceGroups []*kopsapi.InstanceGroup
 	for _, group := range instanceGroups {
 		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, channel)
 		if err != nil {
@@ -1307,7 +1307,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, group := range fullInstanceGroups {
 			// Cluster name is not populated, and we need it
 			group.ObjectMeta.Labels = make(map[string]string)
-			group.ObjectMeta.Labels[api.LabelClusterName] = cluster.ObjectMeta.Name
+			group.ObjectMeta.Labels[kopsapi.LabelClusterName] = cluster.ObjectMeta.Name
 			obj = append(obj, group)
 		}
 		switch c.Output {
@@ -1429,7 +1429,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	return nil
 }
 
-func supportsPrivateTopology(n *api.NetworkingSpec) bool {
+func supportsPrivateTopology(n *kopsapi.NetworkingSpec) bool {
 
 	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil || n.Romana != nil || n.AmazonVPC != nil || n.Cilium != nil || n.LyftVPC != nil || n.GCE != nil {
 		return true
@@ -1488,15 +1488,15 @@ func parseCloudLabels(s string) (map[string]string, error) {
 	return m, nil
 }
 
-func initializeOpenstackAPI(c *CreateClusterOptions, cluster *api.Cluster) {
+func initializeOpenstackAPI(c *CreateClusterOptions, cluster *kopsapi.Cluster) {
 	if c.APILoadBalancerType != "" {
-		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+		cluster.Spec.API.LoadBalancer = &kopsapi.LoadBalancerAccessSpec{}
 		provider := "haproxy"
 		if c.OpenstackLBOctavia {
 			provider = "octavia"
 		}
 
-		cluster.Spec.CloudConfig.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
+		cluster.Spec.CloudConfig.Openstack.Loadbalancer = &kopsapi.OpenstackLoadbalancerConfig{
 			FloatingNetwork: fi.String(c.OpenstackExternalNet),
 			Method:          fi.String("ROUND_ROBIN"),
 			Provider:        fi.String(provider),
@@ -1540,7 +1540,7 @@ func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) 
 	return res, nil
 }
 
-func getSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
+func getSubnetProviderID(spec *kopsapi.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
 	res := make(map[string]string)
 	osCloud, err := openstack.NewOpenstackCloud(tags, spec)
 	if err != nil {

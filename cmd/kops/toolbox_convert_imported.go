@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
@@ -57,7 +57,7 @@ type ToolboxConvertImportedOptions struct {
 }
 
 func (o *ToolboxConvertImportedOptions) InitDefaults() {
-	o.Channel = api.DefaultChannel
+	o.Channel = kopsapi.DefaultChannel
 }
 
 func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command {
@@ -112,12 +112,12 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 	if err != nil {
 		return err
 	}
-	var instanceGroups []*api.InstanceGroup
+	var instanceGroups []*kopsapi.InstanceGroup
 	for i := range list.Items {
 		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
 
-	if cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] != api.AnnotationValueManagementImported {
+	if cluster.ObjectMeta.Annotations[kopsapi.AnnotationNameManagement] != kopsapi.AnnotationValueManagementImported {
 		return fmt.Errorf("cluster %q does not appear to be a cluster imported using kops import", cluster.ObjectMeta.Name)
 	}
 
@@ -155,7 +155,7 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		return fmt.Errorf("error initializing AWS client: %v", err)
 	}
 
-	channel, err := api.LoadChannel(options.Channel)
+	channel, err := kopsapi.LoadChannel(options.Channel)
 	if err != nil {
 		return err
 	}

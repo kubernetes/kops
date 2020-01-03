@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 	"k8s.io/kubernetes/pkg/kubectl/util/templates"
@@ -135,7 +135,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 		fmt.Fprintf(os.Stderr, "No instance groups found\n")
 	}
 
-	var instancegroups []*api.InstanceGroup
+	var instancegroups []*kopsapi.InstanceGroup
 	for i := range igList.Items {
 		instancegroups = append(instancegroups, &igList.Items[i])
 	}
@@ -164,7 +164,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 
 	case OutputTable:
 		fmt.Fprintf(os.Stdout, "Cluster\n")
-		err = clusterOutputTable([]*api.Cluster{cluster}, out)
+		err = clusterOutputTable([]*kopsapi.Cluster{cluster}, out)
 		if err != nil {
 			return err
 		}
