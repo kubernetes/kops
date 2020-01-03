@@ -97,7 +97,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
