@@ -17,8 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL=https://github.com/kubernetes/kops/releases/download/1.8.0/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.0/linux/amd64/nodeup
-NODEUP_HASH=02185512f78dc9d15a8c10774c4cb11f67e4bc20
+NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.15.0/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/nodeup
+NODEUP_HASH=9604ef18267ad7b5cf4cebbf7ab64423cf5bb0342d169c608ac6376e6af26d81
 
 
 export AWS_REGION=us-west-2
@@ -271,7 +271,7 @@ Assets:
 - 125993c220d1a9b5b60ad20a867a0e7cda63e64c@https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kubelet
 - 8e2314db816b9b4465c5f713c1152cb0603db15e@https://storage.googleapis.com/kubernetes-release/release/v1.8.4/bin/linux/amd64/kubectl
 - 1d9788b0f5420e1a219aad2cb8681823fc515e7c@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz
-- f62360d3351bed837ae3ffcdee65e9d57511695a@https://kubeupv2.s3.amazonaws.com/kops/1.8.0/linux/amd64/utils.tar.gz
+- 71b7bc444ba0a5f7cd7a36e91b594c1c3d13890e160d85e0dfde38c46a24e416@https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.15.0/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/utils.tar.gz
 ClusterName: k8s-iam.us-west-2.td.priv
 ConfigBase: s3://tune-k8s-kops-test/k8s-iam.us-west-2.td.priv
 InstanceGroupName: master-us-west-2a
@@ -282,9 +282,12 @@ Tags:
 channels:
 - s3://tune-k8s-kops-test/k8s-iam.us-west-2.td.priv/addons/bootstrap-channel.yaml
 protokubeImage:
-  hash: 1b972e92520b3cafd576893ae3daeafdd1bc9ffd
-  name: protokube:1.8.0
-  source: https://kubeupv2.s3.amazonaws.com/kops/1.8.0/images/protokube.tar.gz
+  hash: 42a9c4324fe26d63ce11f3dd7836371bc93fa06ca8f479807728f3746e27061b
+  name: protokube:1.15.0
+  sources:
+  - https://artifacts.k8s.io/binaries/kops/1.15.0/images/protokube.tar.gz
+  - https://github.com/kubernetes/kops/releases/download/1.15.0/images-protokube.tar.gz
+  - https://kubeupv2.s3.amazonaws.com/kops/1.15.0/images/protokube.tar.gz
 
 __EOF_KUBE_ENV
 
