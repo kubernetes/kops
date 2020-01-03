@@ -13,6 +13,9 @@ script:
   - GOPROXY=https://proxy.golang.org make nodeup examples test
 
 jobs:
+  exclude:
+    - os: osx
+      go: "1.12"
   include:
     - name: Verify
       os: linux
