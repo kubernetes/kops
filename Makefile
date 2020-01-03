@@ -569,7 +569,7 @@ ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boil
 #  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
