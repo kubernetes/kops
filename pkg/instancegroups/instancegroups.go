@@ -37,7 +37,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-const rollingUpdateTaintKey = "kops.k8s.io/rolling-update"
+const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
 
 // RollingUpdateInstanceGroup is the AWS ASG backing an InstanceGroup.
 type RollingUpdateInstanceGroup struct {
