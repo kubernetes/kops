@@ -39,7 +39,7 @@ import (
 
 const (
 	cordonPatch = "{\"spec\":{\"unschedulable\":true}}"
-	taintPatch  = "{\"spec\":{\"taints\":[{\"effect\":\"PreferNoSchedule\",\"key\":\"kops.k8s.io/rolling-update\"}]}}"
+	taintPatch  = "{\"spec\":{\"taints\":[{\"effect\":\"PreferNoSchedule\",\"key\":\"kops.k8s.io/scheduled-for-update\"}]}}"
 )
 
 func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster, map[string]*cloudinstances.CloudInstanceGroup) {
