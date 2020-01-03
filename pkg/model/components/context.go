@@ -127,7 +127,7 @@ func WellKnownServiceIP(clusterSpec *kops.ClusterSpec, id int) (net.IP, error) {
 		return serviceIP, nil
 	}
 
-	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", clusterSpec.ServiceClusterIPRange)
+	return nil, fmt.Errorf("unexpected IP address type for ServiceClusterIPRange: %s", clusterSpec.ServiceClusterIPRange)
 }
 
 func IsBaseURL(kubernetesVersion string) bool {

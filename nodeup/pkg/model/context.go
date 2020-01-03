@@ -567,11 +567,11 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	}
 
 	if len(result.Reservations) != 1 {
-		return "", fmt.Errorf("Too many reservations returned for the single instance-id")
+		return "", fmt.Errorf("too many reservations returned for the single instance-id")
 	}
 
 	if len(result.Reservations[0].Instances) != 1 {
-		return "", fmt.Errorf("Too many instances returned for the single instance-id")
+		return "", fmt.Errorf("too many instances returned for the single instance-id")
 	}
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }

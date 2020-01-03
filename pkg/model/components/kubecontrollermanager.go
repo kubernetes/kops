@@ -52,17 +52,17 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	k8sv148, err := util.ParseKubernetesVersion("v1.4.8")
 	if err != nil {
-		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
+		return fmt.Errorf("unable to parse kubernetesVersion %s", err)
 	}
 
 	k8sv152, err := util.ParseKubernetesVersion("v1.5.2")
 	if err != nil {
-		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
+		return fmt.Errorf("unable to parse kubernetesVersion %s", err)
 	}
 
 	kubernetesVersion, err := KubernetesVersion(clusterSpec)
 	if err != nil {
-		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
+		return fmt.Errorf("unable to parse kubernetesVersion %s", err)
 	}
 
 	// In 1.4.8+ and 1.5.2+ k8s added the capability to tune the duration upon which the volume attach detach
