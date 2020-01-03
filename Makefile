@@ -763,7 +763,7 @@ push-node-authorizer:
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
 	bazel build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar.gz //images:protokube.tar.gz.sha1  //images:protokube.tar.gz.sha256
-	cp -fp bazel-bin/images/bazel-out/k8-fastbuild/bin/images/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz
+	cp -fp bazel-bin/images/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz
 	cp -fp bazel-bin/images/protokube.tar.gz.sha1 ${BAZELIMAGES}/protokube.tar.gz.sha1
 	cp -fp bazel-bin/images/protokube.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
 
