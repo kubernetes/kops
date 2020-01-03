@@ -2769,6 +2769,21 @@ spec:
                     connLimit:
                       format: int32
                       type: integer
+                    cpuLimit:
+                      description: CPULimit CPU limit of weave container.
+                      type: string
+                    cpuRequest:
+                      description: CPURequest CPU request of weave container. Default
+                        50m
+                      type: string
+                    memoryLimit:
+                      description: MemoryLimit memory limit of weave container. Default
+                        200Mi
+                      type: string
+                    memoryRequest:
+                      description: MemoryRequest memory request of weave container.
+                        Default 200Mi
+                      type: string
                     mtu:
                       format: int32
                       type: integer
@@ -2777,6 +2792,21 @@ spec:
                     noMasqLocal:
                       format: int32
                       type: integer
+                    npcCPULimit:
+                      description: NPCCPULimit CPU limit of weave npc container
+                      type: string
+                    npcCPURequest:
+                      description: NPCCPURequest CPU request of weave npc container.
+                        Default 50m
+                      type: string
+                    npcMemoryLimit:
+                      description: NPCMemoryLimit memory limit of weave npc container.
+                        Default 200Mi
+                      type: string
+                    npcMemoryRequest:
+                      description: NPCMemoryRequest memory request of weave npc container.
+                        Default 200Mi
+                      type: string
                   type: object
               type: object
             nodeAuthorization:
