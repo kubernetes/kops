@@ -64,7 +64,7 @@ func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 		if lb != nil {
 			lbDnsName := aws.StringValue(lb.DNSName)
 			if lbDnsName == "" {
-				return nil, fmt.Errorf("Found ELB %q, but it did not have a DNSName", name)
+				return nil, fmt.Errorf("found ELB %q, but it did not have a DNSName", name)
 			}
 
 			ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
@@ -102,5 +102,5 @@ func (s *CloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*k
 	if osCloud, ok := cloud.(openstack.OpenstackCloud); ok {
 		return osCloud.FindClusterStatus(cluster)
 	}
-	return nil, fmt.Errorf("Etcd Status not implemented for %T", cloud)
+	return nil, fmt.Errorf("etcd Status not implemented for %T", cloud)
 }

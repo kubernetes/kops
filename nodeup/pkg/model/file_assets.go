@@ -83,7 +83,7 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 		if asset.IsBase64 {
 			decoded, err := base64.RawStdEncoding.DecodeString(content)
 			if err != nil {
-				return fmt.Errorf("Failed on file asset: %s is invalid, unable to decode base64, error: %q", asset.Name, err)
+				return fmt.Errorf("failed on file asset: %s is invalid, unable to decode base64, error: %q", asset.Name, err)
 			}
 			content = string(decoded)
 		}

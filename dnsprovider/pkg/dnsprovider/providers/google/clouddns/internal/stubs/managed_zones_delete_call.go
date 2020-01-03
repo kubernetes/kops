@@ -45,7 +45,7 @@ func (call ManagedZonesDeleteCall) Do(opts ...googleapi.CallOption) error {
 			delete(project, zone.Name())
 			return nil
 		}
-		return fmt.Errorf("Failed to find zone %s in project %s to delete it", call.ZoneName, call.Project)
+		return fmt.Errorf("failed to find zone %s in project %s to delete it", call.ZoneName, call.Project)
 	}
-	return fmt.Errorf("Failed to find project %s to delete zone %s from it", call.Project, call.ZoneName)
+	return fmt.Errorf("failed to find project %s to delete zone %s from it", call.Project, call.ZoneName)
 }

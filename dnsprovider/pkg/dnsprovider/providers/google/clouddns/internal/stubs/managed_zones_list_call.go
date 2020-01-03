@@ -40,7 +40,7 @@ func (call *ManagedZonesListCall) Do(opts ...googleapi.CallOption) (interfaces.M
 	}
 	proj, projectFound := call.Service.Impl[call.Project]
 	if !projectFound {
-		return nil, fmt.Errorf("Project %s not found.", call.Project)
+		return nil, fmt.Errorf("project %s not found", call.Project)
 	}
 	if call.DnsName_ != "" {
 		return &ManagedZonesListResponse{[]interfaces.ManagedZone{proj[call.DnsName_]}}, nil

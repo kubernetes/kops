@@ -664,6 +664,13 @@ spec:
               items:
                 type: string
               type: array
+            sysctlParameters:
+              description: SysctlParameters will configure kernel parameters using
+                sysctl(8). When specified, each parameter must follow the form variable=value,
+                the way it would appear in sysctl.conf.
+              items:
+                type: string
+              type: array
             taints:
               description: Taints indicates the kubernetes taints for nodes in this
                 group

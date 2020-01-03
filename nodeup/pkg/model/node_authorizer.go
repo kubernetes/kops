@@ -77,8 +77,15 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 		man := &systemd.Manifest{}
 		man.Set("Unit", "Description", "Node Authorization Client")
 		man.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
-		man.Set("Unit", "After", "docker.service")
 		man.Set("Unit", "Before", "kubelet.service")
+		switch b.Cluster.Spec.ContainerRuntime {
+		case "docker":
+			man.Set("Unit", "After", "docker.service")
+		case "containerd":
+			man.Set("Unit", "After", "containerd.service")
+		default:
+			klog.Warningf("unknown container runtime %q", b.Cluster.Spec.ContainerRuntime)
+		}
 
 		clientCert := filepath.Join(b.PathSrvKubernetes(), authorizerDir, "tls.pem")
 		man.Set("Service", "Type", "oneshot")

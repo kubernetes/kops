@@ -32,7 +32,7 @@ func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, group
 				return fmt.Errorf("InstanceGroup #%d did not have a Name", i+1)
 			}
 			if names[ns.ObjectMeta.Name] {
-				return fmt.Errorf("Duplicate InstanceGroup Name found: %q", ns.ObjectMeta.Name)
+				return fmt.Errorf("duplicate InstanceGroup Name found: %q", ns.ObjectMeta.Name)
 			}
 			names[ns.ObjectMeta.Name] = true
 		}

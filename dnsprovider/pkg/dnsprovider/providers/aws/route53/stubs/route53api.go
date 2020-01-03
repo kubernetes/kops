@@ -80,12 +80,12 @@ func (r *Route53APIStub) ChangeResourceRecordSets(input *route53.ChangeResourceR
 		switch *change.Action {
 		case route53.ChangeActionCreate:
 			if _, found := recordSets[key]; found {
-				return nil, fmt.Errorf("Attempt to create duplicate rrset %s", key) // TODO: Return AWS errors with codes etc
+				return nil, fmt.Errorf("attempt to create duplicate rrset %s", key) // TODO: Return AWS errors with codes etc
 			}
 			recordSets[key] = append(recordSets[key], change.ResourceRecordSet)
 		case route53.ChangeActionDelete:
 			if _, found := recordSets[key]; !found {
-				return nil, fmt.Errorf("Attempt to delete non-existent rrset %s", key) // TODO: Check other fields too
+				return nil, fmt.Errorf("attempt to delete non-existent rrset %s", key) // TODO: Check other fields too
 			}
 			delete(recordSets, key)
 		case route53.ChangeActionUpsert:
@@ -110,7 +110,7 @@ func (r *Route53APIStub) CreateHostedZone(input *route53.CreateHostedZoneInput) 
 	name := aws.StringValue(input.Name)
 	id := "/hostedzone/" + name
 	if _, ok := r.zones[id]; ok {
-		return nil, fmt.Errorf("Error creating hosted DNS zone: %s already exists", id)
+		return nil, fmt.Errorf("error creating hosted DNS zone: %s already exists", id)
 	}
 	r.zones[id] = &route53.HostedZone{
 		Id:   aws.String(id),
@@ -121,10 +121,10 @@ func (r *Route53APIStub) CreateHostedZone(input *route53.CreateHostedZoneInput) 
 
 func (r *Route53APIStub) DeleteHostedZone(input *route53.DeleteHostedZoneInput) (*route53.DeleteHostedZoneOutput, error) {
 	if _, ok := r.zones[*input.Id]; !ok {
-		return nil, fmt.Errorf("Error deleting hosted DNS zone: %s does not exist", *input.Id)
+		return nil, fmt.Errorf("error deleting hosted DNS zone: %s does not exist", *input.Id)
 	}
 	if len(r.recordSets[*input.Id]) > 0 {
-		return nil, fmt.Errorf("Error deleting hosted DNS zone: %s has resource records", *input.Id)
+		return nil, fmt.Errorf("error deleting hosted DNS zone: %s has resource records", *input.Id)
 	}
 	delete(r.zones, *input.Id)
 	return &route53.DeleteHostedZoneOutput{}, nil

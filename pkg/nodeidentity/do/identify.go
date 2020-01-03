@@ -169,5 +169,5 @@ func (i *nodeIdentifier) getInstanceGroup(instanceID int) (string, error) {
 		}
 	}
 
-	return "", errors.New("Could not find tag 'kops-instancegroup' from instance metadata")
+	return "", errors.New("could not find tag 'kops-instancegroup' from instance metadata")
 }
