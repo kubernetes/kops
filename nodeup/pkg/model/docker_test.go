@@ -180,6 +180,10 @@ func TestDockerBuilder_SkipInstall(t *testing.T) {
 	runDockerBuilderTest(t, "skipinstall")
 }
 
+func TestDockerBuilder_HealthCheck(t *testing.T) {
+	runDockerBuilderTest(t, "healthcheck")
+}
+
 func TestDockerBuilder_BuildFlags(t *testing.T) {
 	logDriver := "json-file"
 	grid := []struct {
