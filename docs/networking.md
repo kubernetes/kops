@@ -125,6 +125,20 @@ spec:
 
 Note that it is possible to break the cluster networking if flags are improperly used and as such this option should be used with caution.
 
+### Configuring Weave NPC EXTRA_ARGS
+
+Weave-npc (the Weave network policy controller) allows you to customize arguments of the running binary by setting the EXTRA_ARGS environmental variable.
+This can be used for debugging or for customizing the logging level of weave npc.
+
+```
+spec:
+  networking:
+    weave:
+      npcExtraArgs: "--log-level=info"
+```
+
+Note that it is possible to break the cluster networking if flags are improperly used and as such this option should be used with caution.
+
 ### Configuring Weave network encryption
 
 The Weave network encryption is configurable by creating a weave network secret password.

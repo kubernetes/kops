@@ -211,6 +211,10 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
+            {{- if .Networking.Weave.NpcExtraArgs }}
+            - name: EXTRA_ARGS
+              value: "{{ .Networking.Weave.NpcExtraArgs }}"
+            {{- end }}
           image: 'weaveworks/weave-npc:2.6.0'
           ports:
             - name: metrics

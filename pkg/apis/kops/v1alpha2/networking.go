@@ -67,6 +67,7 @@ type WeaveNetworkingSpec struct {
 	ConnLimit    *int32 `json:"connLimit,omitempty"`
 	NoMasqLocal  *int32 `json:"noMasqLocal,omitempty"`
 	NetExtraArgs string `json:"netExtraArgs,omitempty"`
+	NpcExtraArgs string `json:"npcExtraArgs,omitempty"`
 
 	// MemoryRequest memory request of weave container. Default 200Mi
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
