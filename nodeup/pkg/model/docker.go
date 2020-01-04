@@ -1017,7 +1017,8 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	if b.Distribution.IsDebianFamily() {
+	// Enable health-check
+	if b.healthCheck() {
 		c.AddTask(b.buildSystemdHealthCheckScript())
 		c.AddTask(b.buildSystemdHealthCheckService())
 		c.AddTask(b.buildSystemdHealthCheckTimer())
@@ -1319,4 +1320,16 @@ func (b *DockerBuilder) skipInstall() bool {
 	}
 
 	return d.SkipInstall
+}
+
+// healthCheck determines if kops should enable the health-check for Docker
+func (b *DockerBuilder) healthCheck() bool {
+	d := b.Cluster.Spec.Docker
+
+	// don't enable the health-check if the user hasn't specified anything
+	if d == nil {
+		return false
+	}
+
+	return d.HealthCheck
 }

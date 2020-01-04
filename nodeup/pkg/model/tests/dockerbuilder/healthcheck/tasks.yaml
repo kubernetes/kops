@@ -282,10 +282,16 @@ type: file
 Name: bridge-utils
 ---
 Name: docker-engine
-hash: 30f7840704361673db2b62f25b6038628184b056
+hash: b758fc88346a1e5eebf7408b0d0c99f4f134166c
 preventStart: true
-source: http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~xenial_amd64.deb
-version: 1.12.1-0~xenial
+source: http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~xenial_amd64.deb
+version: 1.12.3-0~xenial
+---
+Name: libapparmor1
+---
+Name: libltdl7
+---
+Name: perl
 ---
 Name: docker-healthcheck.service
 definition: |
@@ -340,7 +346,6 @@ definition: |
   LimitNOFILE=1048576
   LimitNPROC=1048576
   LimitCORE=infinity
-  TasksMax=infinity
   Restart=always
   RestartSec=2s
   StartLimitInterval=0
