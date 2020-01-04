@@ -2372,6 +2372,7 @@ func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.ExecOpt = in.ExecOpt
 	out.ExecRoot = in.ExecRoot
 	out.Experimental = in.Experimental
+	out.HealthCheck = in.HealthCheck
 	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
@@ -2406,6 +2407,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 	out.ExecOpt = in.ExecOpt
 	out.ExecRoot = in.ExecRoot
 	out.Experimental = in.Experimental
+	out.HealthCheck = in.HealthCheck
 	out.Hosts = in.Hosts
 	out.IPMasq = in.IPMasq
 	out.IPTables = in.IPTables
