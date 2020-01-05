@@ -11,38 +11,6 @@ data:
 
 ---
 
-# Deployment of size 0, to move from Deployment to DaemonSet
-# TODO: Remove in beta? (it's only been on master branch)
-
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: kops-controller
-  namespace: kube-system
-  labels:
-    k8s-addon: kops-controller.addons.k8s.io
-    k8s-app: kops-controller
-    version: v1.15.0-alpha.1
-spec:
-  replicas: 0
-  selector:
-    matchLabels:
-      k8s-app: kops-controller
-  template:
-    metadata:
-      labels:
-        k8s-addon: kops-controller.addons.k8s.io
-        k8s-app: kops-controller
-        version: v1.15.0-alpha.1
-    spec:
-      serviceAccountName: default
-      containers:
-      - name: sleep
-        image: k8s.gcr.io/pause-amd64:3.0
-        command: [ "/pause" ]
-
----
-
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
