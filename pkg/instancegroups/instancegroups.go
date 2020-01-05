@@ -33,7 +33,6 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/drain"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -132,7 +131,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		klog.V(3).Info("Not validating the cluster as instance is a bastion.")
 	} else if rollingUpdateData.CloudOnly {
 		klog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
-	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+	} else {
 		if err = r.validateCluster(rollingUpdateData, cluster); err != nil {
 			if rollingUpdateData.FailOnValidate {
 				return err
@@ -163,7 +162,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 
 			klog.Warning("Not draining cluster nodes as 'cloudonly' flag is set.")
 
-		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		} else {
 
 			if u.Node != nil {
 				klog.Infof("Draining the node: %q.", nodeName)
@@ -204,7 +203,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		if rollingUpdateData.CloudOnly {
 			klog.Warningf("Not validating cluster as cloudonly flag is set.")
 
-		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		} else {
 			klog.Info("Validating the cluster.")
 
 			if err = r.validateClusterWithDuration(rollingUpdateData, validationTimeout); err != nil {
