@@ -47,7 +47,7 @@ type RollingUpdateCluster struct {
 	// K8sClient is the kubernetes client, used for draining etc
 	K8sClient kubernetes.Interface
 
-	// ClusterValidator is used for validating the cluster. Unused if DrainAndValidateRollingUpdate disabled or CloudOnly
+	// ClusterValidator is used for validating the cluster. Unused if CloudOnly
 	ClusterValidator validation.ClusterValidator
 
 	FailOnDrainError bool
