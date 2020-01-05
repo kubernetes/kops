@@ -55,6 +55,15 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	if protokubeImage := t.NodeupConfig.ProtokubeImage; protokubeImage != nil {
+		c.AddTask(&nodetasks.LoadImageTask{
+			Name:    "protokube",
+			Sources: protokubeImage.Sources,
+			Hash:    protokubeImage.Hash,
+			Runtime: t.Cluster.Spec.ContainerRuntime,
+		})
+	}
+
 	if t.IsMaster {
 		kubeconfig, err := t.BuildPKIKubeconfig("kops")
 		if err != nil {
