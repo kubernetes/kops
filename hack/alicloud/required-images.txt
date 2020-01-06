@@ -1,0 +1,31 @@
+# Kops
+kope/dns-controller:1.15.0-beta.1
+kope/kops-controller:1.15.0-alpha.1
+
+# Kubernetes 1.16.4
+gcr.io/google_containers/kube-apiserver:v1.16.4
+gcr.io/google_containers/kube-scheduler:v1.16.4
+gcr.io/google_containers/kube-proxy:v1.16.4
+gcr.io/google_containers/kube-controller-manager:v1.16.4
+
+# Kubernetes 1.14.10
+gcr.io/google_containers/kube-apiserver:v1.14.10
+gcr.io/google_containers/kube-scheduler:v1.14.10
+gcr.io/google_containers/kube-proxy:v1.14.10
+gcr.io/google_containers/kube-controller-manager:v1.14.10
+
+# Network
+quay.io/coreos/flannel:v0.11.0-amd64
+
+# Alibaba cloud controller manager
+bittopaz/alicloud-ccm-amd64:v1.9.3.164
+
+# Other
+gcr.io/google_containers/pause-amd64:3.0
+
+k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.4.0
+k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.13
+k8s.gcr.io/k8s-dns-kube-dns-amd64:1.14.13
+k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64:1.14.13
+k8s.gcr.io/etcd:3.3.10
+k8s.gcr.io/coredns:1.3.1

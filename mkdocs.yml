@@ -119,6 +119,7 @@ nav:
     - New Kubernetes Version: "development/new_kubernetes_version.md"
     - Developing using Docker: "development/Docker.md"
     - Development with vSphere: "vsphere-dev.md"
+    - Development with Alicloud: "development/alicloud.md"
     - vSphere support status: "vsphere-development-status.md"
     - Documentation Guidelines: "development/documentation.md"
     - E2E testing with `kops` clusters: "development/testing.md"
