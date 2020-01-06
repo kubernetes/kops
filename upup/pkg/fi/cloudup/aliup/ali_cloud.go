@@ -145,6 +145,10 @@ func (c *aliCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceG
 	return errors.New("DeleteInstance not implemented on aliCloud")
 }
 
+func (c *aliCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return errors.New("aliCloud cloud provider does not support surging")
+}
+
 func (c *aliCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	request := &ecs.DescribeVpcsArgs{
 		RegionId: common.Region(c.Region()),

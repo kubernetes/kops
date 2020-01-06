@@ -47,6 +47,8 @@ type CloudInstanceGroupMember struct {
 	Node *v1.Node
 	// CloudInstanceGroup is the managing CloudInstanceGroup
 	CloudInstanceGroup *CloudInstanceGroup
+	// Detached is whether fi.Cloud.DetachInstance has been successfully called on the instance.
+	Detached bool
 }
 
 // NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
@@ -70,6 +72,28 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newG
 	} else {
 		c.NeedUpdate = append(c.NeedUpdate, cm)
 	}
+
+	return nil
+}
+
+// NewDetachedCloudInstanceGroupMember creates a new CloudInstanceGroupMember for a detached instance
+func (c *CloudInstanceGroup) NewDetachedCloudInstanceGroupMember(instanceId string, nodeMap map[string]*v1.Node) error {
+	if instanceId == "" {
+		return fmt.Errorf("instance id for cloud instance member cannot be empty")
+	}
+	cm := &CloudInstanceGroupMember{
+		ID:                 instanceId,
+		CloudInstanceGroup: c,
+		Detached:           true,
+	}
+	node := nodeMap[instanceId]
+	if node != nil {
+		cm.Node = node
+	} else {
+		klog.V(8).Infof("unable to find node for instance: %s", instanceId)
+	}
+
+	c.NeedUpdate = append(c.NeedUpdate, cm)
 
 	return nil
 }
