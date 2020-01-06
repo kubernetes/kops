@@ -85,6 +85,8 @@ const TagNameKopsRole = "kubernetes.io/kops/role"
 // TagNameClusterOwnershipPrefix is the AWS tag used for ownership
 const TagNameClusterOwnershipPrefix = "kubernetes.io/cluster/"
 
+const tagNameDetachedInstance = "kops.k8s.io/detached-from-asg"
+
 const (
 	WellKnownAccountKopeio             = "383156758163"
 	WellKnownAccountRedhat             = "309956199498"
@@ -354,6 +356,23 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 		launchTemplate = aws.StringValue(asg.LaunchTemplate.LaunchTemplateName)
 	}
 
+	// Delete detached instances
+	{
+		detached, err := findDetachedInstances(c, asg)
+		if err != nil {
+			return fmt.Errorf("error searching for detached instances for autoscaling group %q: %v", name, err)
+		}
+		if len(detached) > 0 {
+			klog.V(2).Infof("Deleting detached instances for autoscaling group %q", name)
+			req := &ec2.TerminateInstancesInput{
+				InstanceIds: detached,
+			}
+			if _, err := c.EC2().TerminateInstances(req); err != nil {
+				return fmt.Errorf("error deleting detached instances for autoscaling group %q: %v", name, err)
+			}
+		}
+	}
+
 	// Delete ASG
 	{
 		klog.V(2).Infof("Deleting autoscaling group %q", name)
@@ -427,7 +446,42 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 	return nil
 }
 
-// TODO not used yet, as this requires a major refactor of rolling-update code, slowly but surely
+// DetachInstance causes an aws instance to no longer be counted against the ASG's size limits.
+func (c *awsCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	if c.spotinst != nil {
+		return spotinst.DetachInstance(c.spotinst, i)
+	}
+
+	return detachInstance(c, i)
+}
+
+func detachInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+	id := i.ID
+	if id == "" {
+		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
+	}
+
+	asg := i.CloudInstanceGroup.Raw.(*autoscaling.Group)
+	if err := c.CreateTags(id, map[string]string{tagNameDetachedInstance: *asg.AutoScalingGroupName}); err != nil {
+		return fmt.Errorf("error tagging instance %q: %v", id, err)
+	}
+
+	// TODO this also deregisters the instance from any ELB attached to the ASG. Do we care?
+
+	input := &autoscaling.DetachInstancesInput{
+		AutoScalingGroupName:           aws.String(i.CloudInstanceGroup.HumanName),
+		InstanceIds:                    []*string{aws.String(id)},
+		ShouldDecrementDesiredCapacity: aws.Bool(false),
+	}
+
+	if _, err := c.Autoscaling().DetachInstances(input); err != nil {
+		return fmt.Errorf("error detaching instance %q: %v", id, err)
+	}
+
+	klog.V(8).Infof("detached aws ec2 instance %q", id)
+
+	return nil
+}
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
 func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
@@ -462,7 +516,7 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 			continue
 		}
 
-		groups[instancegroup.ObjectMeta.Name], err = awsBuildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = awsBuildCloudInstanceGroup(c, cluster, instancegroup, asg, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
 		}
@@ -643,11 +697,13 @@ func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
 	return ""
 }
 
-func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	newConfigName, err := findAutoscalingGroupLaunchConfiguration(c, g)
 	if err != nil {
 		return nil, err
 	}
+
+	instanceSeen := map[string]bool{}
 
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
@@ -663,6 +719,7 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 			klog.Warningf("ignoring instance with no instance id: %s in autoscaling group: %s", id, cg.HumanName)
 			continue
 		}
+		instanceSeen[id] = true
 		// @step: check if the instance is terminating
 		if aws.StringValue(i.LifecycleState) == autoscaling.LifecycleStateTerminating {
 			klog.Warningf("ignoring instance as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
@@ -675,7 +732,42 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 		}
 	}
 
+	detached, err := findDetachedInstances(c, g)
+	if err != nil {
+		return nil, fmt.Errorf("error searching for detached instances: %v", err)
+	}
+	for _, id := range detached {
+		if id != nil && *id != "" && !instanceSeen[*id] {
+			if err := cg.NewDetachedCloudInstanceGroupMember(*id, nodeMap); err != nil {
+				return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+			}
+			instanceSeen[*id] = true
+		}
+	}
+
 	return cg, nil
+}
+
+func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) {
+	req := &ec2.DescribeInstancesInput{
+		Filters: []*ec2.Filter{
+			NewEC2Filter("tag:"+tagNameDetachedInstance, aws.StringValue(g.AutoScalingGroupName)),
+			NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
+		},
+	}
+
+	result, err := c.EC2().DescribeInstances(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var detached []*string
+	for _, r := range result.Reservations {
+		for _, i := range r.Instances {
+			detached = append(detached, i.InstanceId)
+		}
+	}
+	return detached, nil
 }
 
 func (c *awsCloudImplementation) Tags() map[string]string {

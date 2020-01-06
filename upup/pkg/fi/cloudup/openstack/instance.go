@@ -110,6 +110,12 @@ func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
 	return servers.Delete(c.novaClient, instanceID).ExtractErr()
 }
 
+// DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
+func (c *openstackCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	klog.V(8).Info("openstack cloud provider DetachInstance not implemented yet")
+	return fmt.Errorf("openstack cloud provider does not support surging")
+}
+
 func (c *openstackCloud) GetInstance(id string) (*servers.Server, error) {
 	var server *servers.Server
 
