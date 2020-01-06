@@ -7,9 +7,9 @@ set -o pipefail
 in=$1
 out=$2
 
-if ( which sha1sum > /dev/null ); then
+if ( command -v sha1sum > /dev/null ); then
   (sha1sum $in | cut -d' ' -f1) > $out
-elif ( which shasum > /dev/null ); then
+elif ( command -v shasum > /dev/null ); then
   (shasum -a 1 $in | cut -d' ' -f1) > $out
 else
   echo "Neither sha1sum nor shasum command is available"
