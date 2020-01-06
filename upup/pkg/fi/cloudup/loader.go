@@ -55,8 +55,6 @@ type Loader struct {
 
 	typeMap map[string]reflect.Type
 
-	templates []*template.Template
-
 	Resources map[string]fi.Resource
 
 	Builders []fi.ModelBuilder

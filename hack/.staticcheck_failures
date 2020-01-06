@@ -1,5 +1,2 @@
 node-authorizer/pkg/server
-upup/pkg/fi
-upup/pkg/fi/cloudup
-upup/pkg/fi/cloudup/awstasks
 upup/pkg/kutil
