@@ -37,6 +37,11 @@ func TestSettings(t *testing.T) {
 			defaultValue:    intstr.FromInt(1),
 			nonDefaultValue: intstr.FromInt(2),
 		},
+		{
+			name:            "MaxSurge",
+			defaultValue:    intstr.FromInt(0),
+			nonDefaultValue: intstr.FromInt(2),
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			defaultCluster := &kops.RollingUpdate{}
@@ -162,6 +167,55 @@ func TestMaxUnavailable(t *testing.T) {
 			resolved := resolveSettings(&kops.Cluster{}, &instanceGroup, tc.numInstances)
 			assert.Equal(t, intstr.Int, resolved.MaxUnavailable.Type)
 			assert.Equal(t, tc.expected, resolved.MaxUnavailable.IntVal)
+		})
+	}
+}
+
+func TestMaxSurge(t *testing.T) {
+	for _, tc := range []struct {
+		numInstances int
+		value        string
+		expected     int32
+	}{
+		{
+			numInstances: 1,
+			value:        "0",
+			expected:     0,
+		},
+		{
+			numInstances: 1,
+			value:        "0%",
+			expected:     0,
+		},
+		{
+			numInstances: 10,
+			value:        "31%",
+			expected:     4,
+		},
+		{
+			numInstances: 10,
+			value:        "100%",
+			expected:     10,
+		},
+	} {
+		t.Run(fmt.Sprintf("%s %d", tc.value, tc.numInstances), func(t *testing.T) {
+			value := intstr.Parse(tc.value)
+			rollingUpdate := kops.RollingUpdate{
+				MaxSurge: &value,
+			}
+			instanceGroup := kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RollingUpdate: &rollingUpdate,
+				},
+			}
+			resolved := resolveSettings(&kops.Cluster{}, &instanceGroup, tc.numInstances)
+			assert.Equal(t, intstr.Int, resolved.MaxSurge.Type)
+			assert.Equal(t, tc.expected, resolved.MaxSurge.IntVal)
+			if tc.expected == 0 {
+				assert.Equal(t, int32(1), resolved.MaxUnavailable.IntVal, "MaxUnavailable default")
+			} else {
+				assert.Equal(t, int32(0), resolved.MaxUnavailable.IntVal, "MaxUnavailable default")
+			}
 		})
 	}
 }
