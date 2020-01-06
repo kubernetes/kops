@@ -101,10 +101,7 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 	return stopPrompting, err
 }
 
-// TODO: Temporarily increase size of ASG?
-// TODO: Remove from ASG first so status is immediately updated?
-
-// RollingUpdate performs a rolling update on a list of ec2 instances.
+// RollingUpdate performs a rolling update on a list of instances.
 func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, cluster *api.Cluster, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
 
 	// we should not get here, but hey I am going to check.
@@ -152,15 +149,57 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	settings := resolveSettings(cluster, r.CloudGroup.InstanceGroup, numInstances)
 
 	runningDrains := 0
-	maxConcurrency := settings.MaxUnavailable.IntValue()
+	maxSurge := settings.MaxSurge.IntValue()
+	if maxSurge > len(update) {
+		maxSurge = len(update)
+	}
+	maxConcurrency := maxSurge + settings.MaxUnavailable.IntValue()
 
 	if maxConcurrency == 0 {
 		klog.Infof("Rolling updates for InstanceGroup %s are disabled", r.CloudGroup.InstanceGroup.Name)
 		return nil
 	}
 
+	if r.CloudGroup.InstanceGroup.Spec.Role == api.InstanceGroupRoleMaster && maxSurge != 0 {
+		// Masters are incapable of surging because they rely on registering themselves through
+		// the local apiserver. That apiserver depends on the local etcd, which relies on being
+		// joined to the etcd cluster.
+		maxSurge = 0
+		maxConcurrency = settings.MaxUnavailable.IntValue()
+		if maxConcurrency == 0 {
+			maxConcurrency = 1
+		}
+	}
+
 	if rollingUpdateData.Interactive {
+		if maxSurge > 1 {
+			maxSurge = 1
+		}
 		maxConcurrency = 1
+	}
+
+	// TODO sort 'update' to put already detached instances last.
+
+	if maxSurge > 0 && !rollingUpdateData.CloudOnly {
+		// TODO don't detach instances that are already detached. Handle effects of that on noneReady behavior.
+		for numSurge := 1; numSurge <= maxSurge; numSurge++ {
+			if err := r.detachInstance(update[len(update)-numSurge]); err != nil {
+				return err
+			}
+
+			// If noneReady, wait until after one node is detached and its replacement validates
+			// before the detaching more in case the current spec does not result in usable nodes.
+			if numSurge == maxSurge || (noneReady && numSurge == 1) {
+				// Wait for the minimum interval
+				klog.Infof("waiting for %v after detaching instance", sleepAfterTerminate)
+				time.Sleep(sleepAfterTerminate)
+
+				if err := r.maybeValidate(rollingUpdateData, validationTimeout, "detaching"); err != nil {
+					return err
+				}
+			}
+		}
+		noneReady = false
 	}
 
 	terminateChan := make(chan error, maxConcurrency)
@@ -183,7 +222,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
 
-		err = r.maybeValidate(rollingUpdateData, validationTimeout)
+		err = r.maybeValidate(rollingUpdateData, validationTimeout, "removing")
 		if err != nil {
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
@@ -229,7 +268,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			}
 		}
 
-		err = r.maybeValidate(rollingUpdateData, validationTimeout)
+		err = r.maybeValidate(rollingUpdateData, validationTimeout, "removing")
 		if err != nil {
 			return err
 		}
@@ -359,7 +398,7 @@ func (r *RollingUpdateInstanceGroup) drainTerminateAndWait(u *cloudinstances.Clo
 	return nil
 }
 
-func (r *RollingUpdateInstanceGroup) maybeValidate(rollingUpdateData *RollingUpdateCluster, validationTimeout time.Duration) error {
+func (r *RollingUpdateInstanceGroup) maybeValidate(rollingUpdateData *RollingUpdateCluster, validationTimeout time.Duration, operation string) error {
 	if rollingUpdateData.CloudOnly {
 		klog.Warningf("Not validating cluster as cloudonly flag is set.")
 
@@ -370,10 +409,10 @@ func (r *RollingUpdateInstanceGroup) maybeValidate(rollingUpdateData *RollingUpd
 
 			if rollingUpdateData.FailOnValidate {
 				klog.Errorf("Cluster did not validate within %s", validationTimeout)
-				return fmt.Errorf("error validating cluster after removing a node: %v", err)
+				return fmt.Errorf("error validating cluster after %s a node: %v", operation, err)
 			}
 
-			klog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
+			klog.Warningf("Cluster validation failed after %s instance, proceeding since fail-on-validate is set to false: %v", operation, err)
 		}
 	}
 	return nil
@@ -448,6 +487,30 @@ func (r *RollingUpdateInstanceGroup) validateCluster(rollingUpdateData *RollingU
 
 	return nil
 
+}
+
+// detachInstance detaches a Cloud Instance
+func (r *RollingUpdateInstanceGroup) detachInstance(u *cloudinstances.CloudInstanceGroupMember) error {
+	id := u.ID
+	nodeName := ""
+	if u.Node != nil {
+		nodeName = u.Node.Name
+	}
+	if nodeName != "" {
+		klog.Infof("Detaching instance %q, node %q, in group %q.", id, nodeName, r.CloudGroup.HumanName)
+	} else {
+		klog.Infof("Detaching instance %q, in group %q.", id, r.CloudGroup.HumanName)
+	}
+
+	if err := r.Cloud.DetachInstance(u); err != nil {
+		if nodeName != "" {
+			return fmt.Errorf("error detaching instance %q, node %q: %v", id, nodeName, err)
+		} else {
+			return fmt.Errorf("error detaching instance %q: %v", id, err)
+		}
+	}
+
+	return nil
 }
 
 // DeleteInstance deletes an Cloud Instance.
