@@ -84,8 +84,8 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 
 	c := &aliCloudImplementation{region: region}
 
-	accessKeyId := os.Getenv("ALIYUN_ACCESS_KEY_ID")
-	if accessKeyId == "" {
+	accessKeyID := os.Getenv("ALIYUN_ACCESS_KEY_ID")
+	if accessKeyID == "" {
 		return nil, errors.New("ALIYUN_ACCESS_KEY_ID is required")
 	}
 	accessKeySecret := os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
@@ -93,13 +93,13 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 		return nil, errors.New("ALIYUN_ACCESS_KEY_SECRET is required")
 	}
 
-	c.ecsClient = ecs.NewClient(accessKeyId, accessKeySecret)
+	c.ecsClient = ecs.NewClient(accessKeyID, accessKeySecret)
 	c.ecsClient.SetUserAgent(KubernetesKopsIdentity)
-	c.slbClient = slb.NewClient(accessKeyId, accessKeySecret)
-	ramclient := ram.NewClient(accessKeyId, accessKeySecret)
+	c.slbClient = slb.NewClient(accessKeyID, accessKeySecret)
+	ramclient := ram.NewClient(accessKeyID, accessKeySecret)
 	c.ramClient = ramclient.(*ram.RamClient)
-	c.essClient = ess.NewClient(accessKeyId, accessKeySecret)
-	c.vpcClient = ecs.NewVPCClient(accessKeyId, accessKeySecret, common.Region(region))
+	c.essClient = ess.NewClient(accessKeyID, accessKeySecret)
+	c.vpcClient = ecs.NewVPCClient(accessKeyID, accessKeySecret, common.Region(region))
 
 	c.tags = tags
 
