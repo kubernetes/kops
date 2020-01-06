@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"runtime"
 	"strings"
 	"time"
 
@@ -39,13 +38,6 @@ import (
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 )
-
-func init() {
-	if runtime.GOOS == "darwin" {
-		// In order for net.LookupHost(apiAddr.Host) to lookup our placeholder address on darwin, we have to
-		os.Setenv("GODEBUG", "netdns=go")
-	}
-}
 
 type ValidateClusterOptions struct {
 	output     string
