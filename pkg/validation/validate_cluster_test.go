@@ -164,6 +164,59 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 	}
 }
 
+func Test_ValidateDetachedNodesDontCount(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+		MinSize: 2,
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00002",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "node-1b"},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+				Detached: true,
+			},
+		},
+	}
+
+	v, err := testValidate(t, groups, nil)
+	require.NoError(t, err)
+	if !assert.Len(t, v.Failures, 1) ||
+		!assert.Equal(t, &ValidationError{
+			Kind:    "InstanceGroup",
+			Name:    "node-1",
+			Message: "InstanceGroup \"node-1\" did not have enough nodes 1 vs 2",
+		}, v.Failures[0]) {
+		printDebug(t, v)
+	}
+}
+
 func Test_ValidateNodeNotReady(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
