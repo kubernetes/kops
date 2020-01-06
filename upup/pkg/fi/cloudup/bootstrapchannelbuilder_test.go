@@ -44,6 +44,7 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	// Use cilium networking, proxy
 	runChannelBuilderTest(t, "cilium", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16"})
 	runChannelBuilderTest(t, "weave", []string{})
+	runChannelBuilderTest(t, "amazonvpc", []string{"networking.amazon-vpc-routed-eni-k8s-1.12"})
 }
 
 func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
@@ -88,7 +89,13 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Error(err)
 	}
 
-	tf := &TemplateFunctions{cluster: cluster, modelContext: &model.KopsModelContext{Cluster: cluster}}
+	tf := &TemplateFunctions{
+		cluster: cluster,
+		modelContext: &model.KopsModelContext{
+			Cluster: cluster,
+		},
+		region: "us-east-1",
+	}
 	tf.AddTo(templates.TemplateFunctions, secretStore)
 
 	bcb := BootstrapChannelBuilder{
