@@ -458,6 +458,16 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
 		}
 	}
+	if rollingUpdate.MaxSurge != nil {
+		surge, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxSurge, 1, false)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxSurge"), rollingUpdate.MaxSurge,
+				fmt.Sprintf("Unable to parse: %v", err)))
+		}
+		if surge < 0 {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxSurge"), rollingUpdate.MaxSurge, "Cannot be negative"))
+		}
+	}
 
 	return allErrs
 }
