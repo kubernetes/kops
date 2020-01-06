@@ -3329,6 +3329,11 @@ func (in *RollingUpdate) DeepCopyInto(out *RollingUpdate) {
 		*out = new(intstr.IntOrString)
 		**out = **in
 	}
+	if in.MaxSurge != nil {
+		in, out := &in.MaxSurge, &out.MaxSurge
+		*out = new(intstr.IntOrString)
+		**out = **in
+	}
 	return
 }
 
