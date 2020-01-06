@@ -28,6 +28,10 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
 
   function ensure-install-dir() {
     INSTALL_DIR="/opt/kops"
+    # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
+    if [[ -d /var/lib/toolbox ]]; then
+      INSTALL_DIR="/var/lib/toolbox/kops"
+    fi
     mkdir -p ${INSTALL_DIR}/bin
     mkdir -p ${INSTALL_DIR}/conf
     cd ${INSTALL_DIR}
@@ -312,6 +316,10 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
 
   function ensure-install-dir() {
     INSTALL_DIR="/opt/kops"
+    # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
+    if [[ -d /var/lib/toolbox ]]; then
+      INSTALL_DIR="/var/lib/toolbox/kops"
+    fi
     mkdir -p ${INSTALL_DIR}/bin
     mkdir -p ${INSTALL_DIR}/conf
     cd ${INSTALL_DIR}
