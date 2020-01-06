@@ -26,7 +26,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
@@ -147,7 +147,7 @@ func parseKeyset(o *kops.Keyset) (*keyset, error) {
 
 // loadKeyset gets the named keyset and the format of the Keyset.
 func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
-	o, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
+	o, err := c.clientset.Keysets(c.namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -271,7 +271,7 @@ func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, e
 
 // FindCertificateKeyset implements CAStore::FindCertificateKeyset
 func (c *ClientsetCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
-	o, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
+	o, err := c.clientset.Keysets(c.namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -286,7 +286,7 @@ func (c *ClientsetCAStore) ListKeysets() ([]*kops.Keyset, error) {
 	var items []*kops.Keyset
 
 	{
-		list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
+		list, err := c.clientset.Keysets(c.namespace).List(metav1.ListOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("error listing Keysets: %v", err)
 		}
@@ -313,7 +313,7 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 	var items []*kops.SSHCredential
 
 	{
-		list, err := c.clientset.SSHCredentials(c.namespace).List(v1.ListOptions{})
+		list, err := c.clientset.SSHCredentials(c.namespace).List(metav1.ListOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("error listing SSHCredentials: %v", err)
 		}
@@ -421,7 +421,7 @@ func (c *ClientsetCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) 
 
 // FindPrivateKeyset implements CAStore::FindPrivateKeyset
 func (c *ClientsetCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
-	o, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
+	o, err := c.clientset.Keysets(c.namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -447,7 +447,7 @@ func (c *ClientsetCAStore) CreateKeypair(signer string, id string, template *x50
 func (c *ClientsetCAStore) addKey(name string, keysetType kops.KeysetType, item *kops.KeysetItem) error {
 	create := false
 	client := c.clientset.Keysets(c.namespace)
-	keyset, err := client.Get(name, v1.GetOptions{})
+	keyset, err := client.Get(name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			keyset = nil
@@ -476,7 +476,7 @@ func (c *ClientsetCAStore) addKey(name string, keysetType kops.KeysetType, item 
 
 // DeleteKeysetItem deletes the specified key from the registry; deleting the whole keyset if it was the last one
 func DeleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, keysetType kops.KeysetType, id string) error {
-	keyset, err := client.Get(name, v1.GetOptions{})
+	keyset, err := client.Get(name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -501,7 +501,7 @@ func DeleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, k
 		return fmt.Errorf("KeysetItem %q not found in Keyset %q", id, name)
 	}
 	if len(newKeys) == 0 {
-		if err := client.Delete(name, &v1.DeleteOptions{}); err != nil {
+		if err := client.Delete(name, &metav1.DeleteOptions{}); err != nil {
 			return fmt.Errorf("error deleting Keyset %q: %v", name, err)
 		}
 	} else {
@@ -517,7 +517,7 @@ func DeleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, k
 func (c *ClientsetCAStore) addSshCredential(name string, publicKey string) error {
 	create := false
 	client := c.clientset.SSHCredentials(c.namespace)
-	sshCredential, err := client.Get(name, v1.GetOptions{})
+	sshCredential, err := client.Get(name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			sshCredential = nil
@@ -546,7 +546,7 @@ func (c *ClientsetCAStore) addSshCredential(name string, publicKey string) error
 // deleteSSHCredential deletes the specified SSHCredential from the registry
 func (c *ClientsetCAStore) deleteSSHCredential(name string) error {
 	client := c.clientset.SSHCredentials(c.namespace)
-	err := client.Delete(name, &v1.DeleteOptions{})
+	err := client.Delete(name, &metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("error deleting SSHCredential %q: %v", name, err)
 	}
@@ -600,7 +600,7 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 
 // FindSSHPublicKeys implements CAStore::FindSSHPublicKeys
 func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
-	o, err := c.clientset.SSHCredentials(c.namespace).Get(name, v1.GetOptions{})
+	o, err := c.clientset.SSHCredentials(c.namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
