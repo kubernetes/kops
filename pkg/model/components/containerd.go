@@ -53,7 +53,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 
 		// Set containerd based on Kubernetes version
 		if fi.StringValue(containerd.Version) == "" {
-			if b.IsKubernetesGTE("1.18") {
+			if b.IsKubernetesGTE("1.17") {
 				containerd.Version = fi.String("1.2.10")
 			} else if b.IsKubernetesGTE("1.11") {
 				return fmt.Errorf("containerd version is required")
