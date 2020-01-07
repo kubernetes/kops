@@ -225,7 +225,7 @@ In kops 1.12.0 and later Calico uses the k8s APIServer as its datastore.
 
 In versions <1.12.0 of kops Calico uses etcd as a backend for storing information about workloads and policies. Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
 
-#### Configuraing Calico to use Typha
+#### Configuring Calico to use Typha
 
 As of Kops 1.12 Calico uses the kube-apiserver as its datastore. The default setup does not make use of [Typha](https://github.com/projectcalico/typha) - a component intended to lower the impact of Calico on the k8s APIServer which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
 It is possible to configure Calico to use Typha by editing a cluster and adding a
@@ -474,7 +474,7 @@ For support with Cilium Network Policies you can reach out on Slack or Github:
 
 ### Flannel Example for CNI
 
-#### Configuraing Flannel iptables resync period
+#### Configuring Flannel iptables resync period
 
 As of Kops 1.12.0, Flannel iptables resync option is configurable via editing a cluster and adding
 `iptablesResyncSeconds` option to spec:
