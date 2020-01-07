@@ -127,7 +127,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	_, _, err := net.ParseCIDR(cidr)
+	ip, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		detail := "Could not be parsed as a CIDR"
 		if !strings.Contains(cidr, "/") {
@@ -136,6 +136,10 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 				detail += fmt.Sprintf(" (did you mean \"%s/32\")", cidr)
 			}
 		}
+		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
+	} else if !ip.Equal(ipNet.IP) {
+		maskSize, _ := ipNet.Mask.Size()
+		detail := fmt.Sprintf("Network contains bits outside prefix (did you mean \"%s/%d\")", ipNet.IP, maskSize)
 		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
 	}
 	return allErrs
@@ -188,6 +192,11 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	// name is required
 	if subnet.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+	}
+
+	// CIDR
+	if subnet.CIDR != "" {
+		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("CIDR"))...)
 	}
 
 	return allErrs
