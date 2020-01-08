@@ -414,12 +414,11 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
 	}
 
-	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     aws.String(id),
-		ShouldDecrementDesiredCapacity: aws.Bool(false),
+	request := &ec2.TerminateInstancesInput{
+		InstanceIds: []*string{aws.String(id)},
 	}
 
-	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
+	if _, err := c.EC2().TerminateInstances(request); err != nil {
 		return fmt.Errorf("error deleting instance %q: %v", id, err)
 	}
 

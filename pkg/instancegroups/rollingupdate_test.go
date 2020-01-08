@@ -25,7 +25,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,7 +50,9 @@ func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud, *kopsapi.Cluste
 	k8sClient := fake.NewSimpleClientset()
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
+	mockAutoscaling := &mockautoscaling.MockAutoscaling{}
+	mockcloud.MockAutoscaling = mockAutoscaling
+	mockcloud.MockEC2 = mockAutoscaling.GetEC2Shim(mockcloud.MockEC2)
 
 	cluster := &kopsapi.Cluster{}
 	cluster.Name = "test.k8s.local"
@@ -672,7 +675,7 @@ func TestRollingUpdateDisabledCloudonly(t *testing.T) {
 //                                 <-- validated
 
 type concurrentTest struct {
-	autoscalingiface.AutoScalingAPI
+	ec2iface.EC2API
 	t                       *testing.T
 	mutex                   sync.Mutex
 	terminationRequestsLeft int
@@ -727,29 +730,35 @@ func (c *concurrentTest) Validate() (*validation.ValidationCluster, error) {
 	return &validation.ValidationCluster{}, nil
 }
 
-func (c *concurrentTest) TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
+func (c *concurrentTest) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
+	if input.DryRun != nil && *input.DryRun {
+		return &ec2.TerminateInstancesOutput{}, nil
+	}
+
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	terminationRequestsLeft := c.terminationRequestsLeft
-	c.terminationRequestsLeft--
-	switch terminationRequestsLeft {
-	case 7, 2, 1:
-		assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
-	case 6, 4:
-		assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
-		c.mutex.Unlock()
-		select {
-		case <-c.terminationChan:
-		case <-time.After(1 * time.Second):
-			c.t.Error("timed out reading from terminationChan")
+	for range input.InstanceIds {
+		terminationRequestsLeft := c.terminationRequestsLeft
+		c.terminationRequestsLeft--
+		switch terminationRequestsLeft {
+		case 7, 2, 1:
+			assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
+		case 6, 4:
+			assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
+			c.mutex.Unlock()
+			select {
+			case <-c.terminationChan:
+			case <-time.After(1 * time.Second):
+				c.t.Error("timed out reading from terminationChan")
+			}
+			c.mutex.Lock()
+			go c.delayThenWakeValidation()
+		case 5, 3:
+			assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
 		}
-		c.mutex.Lock()
-		go c.delayThenWakeValidation()
-	case 5, 3:
-		assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
 	}
-	return c.AutoScalingAPI.TerminateInstanceInAutoScalingGroup(input)
+	return c.EC2API.TerminateInstances(input)
 }
 
 func (c *concurrentTest) delayThenWakeValidation() {
@@ -769,7 +778,7 @@ func (c *concurrentTest) AssertComplete() {
 
 func newConcurrentTest(t *testing.T, cloud *awsup.MockAWSCloud, allNeedUpdate bool) *concurrentTest {
 	test := concurrentTest{
-		AutoScalingAPI:          cloud.MockAutoscaling,
+		EC2API:                  cloud.MockEC2,
 		t:                       t,
 		terminationRequestsLeft: 6,
 		validationChan:          make(chan bool),
@@ -788,7 +797,7 @@ func TestRollingUpdateMaxUnavailableAllNeedUpdate(t *testing.T) {
 	concurrentTest := newConcurrentTest(t, cloud, true)
 	c.ValidateSuccessDuration = 0
 	c.ClusterValidator = concurrentTest
-	cloud.MockAutoscaling = concurrentTest
+	cloud.MockEC2 = concurrentTest
 
 	two := intstr.FromInt(2)
 	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
@@ -811,7 +820,7 @@ func TestRollingUpdateMaxUnavailableAllButOneNeedUpdate(t *testing.T) {
 	concurrentTest := newConcurrentTest(t, cloud, false)
 	c.ValidateSuccessDuration = 0
 	c.ClusterValidator = concurrentTest
-	cloud.MockAutoscaling = concurrentTest
+	cloud.MockEC2 = concurrentTest
 
 	two := intstr.FromInt(2)
 	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
@@ -833,7 +842,7 @@ func TestRollingUpdateMaxUnavailableAllNeedUpdateMaster(t *testing.T) {
 	concurrentTest := newConcurrentTest(t, cloud, true)
 	c.ValidateSuccessDuration = 0
 	c.ClusterValidator = concurrentTest
-	cloud.MockAutoscaling = concurrentTest
+	cloud.MockEC2 = concurrentTest
 
 	two := intstr.FromInt(2)
 	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
