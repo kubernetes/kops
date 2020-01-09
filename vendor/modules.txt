@@ -925,6 +925,9 @@ k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
 k8s.io/cloud-provider/node/helpers
+# k8s.io/component-base v0.0.0 => k8s.io/component-base v0.0.0-20190819141909-f0f7c184477d
+k8s.io/component-base/config/v1alpha1
+k8s.io/component-base/config
 # k8s.io/csi-translation-lib v0.0.0 => k8s.io/csi-translation-lib v0.0.0-20190819145328-4831a4ced492
 k8s.io/csi-translation-lib/plugins
 # k8s.io/helm v2.9.0+incompatible
@@ -936,12 +939,15 @@ k8s.io/klog/klogr
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/proto/validation
 k8s.io/kube-openapi/pkg/common
+# k8s.io/kube-scheduler v0.0.0 => k8s.io/kube-scheduler v0.0.0-20190819144657-d1a724e0828e
+k8s.io/kube-scheduler/config/v1alpha1
 # k8s.io/kubernetes v1.15.3 => k8s.io/kubernetes v1.15.3
 k8s.io/kubernetes/pkg/kubectl/cmd/util
 k8s.io/kubernetes/pkg/kubectl/cmd/util/editor
 k8s.io/kubernetes/pkg/kubectl/util/i18n
 k8s.io/kubernetes/pkg/kubectl/util/templates
 k8s.io/kubernetes/pkg/client/metrics/prometheus
+k8s.io/kubernetes/pkg/scheduler/apis/config/scheme
 k8s.io/kubernetes/pkg/util/mount
 k8s.io/kubernetes/pkg/volume/util/nsenter
 k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi
@@ -953,6 +959,8 @@ k8s.io/kubernetes/pkg/kubectl
 k8s.io/kubernetes/pkg/kubectl/cmd/util/editor/crlf
 k8s.io/kubernetes/pkg/kubectl/util/term
 k8s.io/kubernetes/pkg/kubectl/generated
+k8s.io/kubernetes/pkg/scheduler/apis/config
+k8s.io/kubernetes/pkg/scheduler/apis/config/v1alpha1
 k8s.io/kubernetes/pkg/kubectl/apps
 k8s.io/kubernetes/pkg/kubectl/describe/versioned
 k8s.io/kubernetes/pkg/kubectl/util
@@ -960,6 +968,8 @@ k8s.io/kubernetes/pkg/kubectl/util/deployment
 k8s.io/kubernetes/pkg/kubectl/util/podutils
 k8s.io/kubernetes/pkg/kubectl/util/slice
 k8s.io/kubernetes/pkg/kubectl/util/interrupt
+k8s.io/kubernetes/pkg/apis/core
+k8s.io/kubernetes/pkg/master/ports
 k8s.io/kubernetes/pkg/kubectl/describe
 k8s.io/kubernetes/pkg/kubectl/util/certificate
 k8s.io/kubernetes/pkg/kubectl/util/event
