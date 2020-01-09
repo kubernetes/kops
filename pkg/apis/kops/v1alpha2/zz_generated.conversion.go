@@ -3926,6 +3926,7 @@ func autoConvert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	out.FeatureGates = in.FeatureGates
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
+	out.Config = in.Config
 	return nil
 }
 
@@ -3950,6 +3951,7 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *ko
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	out.FeatureGates = in.FeatureGates
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
+	out.Config = in.Config
 	return nil
 }
 

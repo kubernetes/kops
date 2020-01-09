@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 
@@ -27,6 +28,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/proxy"
+
+	"k8s.io/apimachinery/pkg/runtime"
+	config "k8s.io/kube-scheduler/config/v1alpha1"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -79,6 +84,25 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
+	conf := b.Cluster.Spec.KubeScheduler.Config
+	if conf != nil {
+		if conf.ClientConnection.Kubeconfig == "" {
+			conf.ClientConnection.Kubeconfig = "/var/lib/kube-scheduler/kubeconfig"
+		}
+
+		confB, err := b.encodeConfig(conf)
+		if err != nil {
+			return fmt.Errorf("error marshaling configuration to yaml: %v", err)
+		}
+
+		c.AddTask(&nodetasks.File{
+			Path:     "/var/lib/kube-scheduler/schedulerconfig",
+			Contents: fi.NewBytesResource(confB),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
+	}
+
 	{
 		c.AddTask(&nodetasks.File{
 			Path:        "/var/log/kube-scheduler.log",
@@ -90,6 +114,23 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+func (b *KubeSchedulerBuilder) encodeConfig(cfg *config.KubeSchedulerConfiguration) ([]byte, error) {
+	const mediaType = runtime.ContentTypeYAML
+	info, ok := runtime.SerializerInfoForMediaType(scheme.Codecs.SupportedMediaTypes(), mediaType)
+	if !ok {
+		return nil, fmt.Errorf("unable to locate encoder -- %q is not a supported media type", mediaType)
+	}
+
+	encoder := scheme.Codecs.EncoderForVersion(info.Serializer, config.SchemeGroupVersion)
+
+	var w bytes.Buffer
+	if err := encoder.Encode(cfg, &w); err != nil {
+		return nil, err
+	}
+
+	return w.Bytes(), nil
 }
 
 // buildPod is responsible for constructing the pod specification
@@ -105,6 +146,10 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 
 	if c.UsePolicyConfigMap != nil {
 		flags = append(flags, "--policy-configmap=scheduler-policy --policy-configmap-namespace=kube-system")
+	}
+
+	if c.Config != nil {
+		flags = append(flags, "--config=/var/lib/kube-scheduler/schedulerconfig")
 	}
 
 	pod := &v1.Pod{

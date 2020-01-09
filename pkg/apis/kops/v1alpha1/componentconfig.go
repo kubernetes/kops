@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	schedulerConfig "k8s.io/kube-scheduler/config/v1alpha1"
 )
 
 // KubeletConfigSpec defines the kubelet configuration
@@ -609,6 +610,8 @@ type KubeSchedulerConfig struct {
 	// which has been supported as far back as Kubernetes 1.7. The default depends on the version and the cloud provider
 	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
 	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
+	// Config
+	Config *schedulerConfig.KubeSchedulerConfiguration `json:"config,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
