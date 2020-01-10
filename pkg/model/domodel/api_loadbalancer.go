@@ -45,7 +45,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	lbSpec := b.Cluster.Spec.API.LoadBalancer
 	if lbSpec == nil {
-		// Skipping API ELB creation; not requested in Spec
+		// Skipping API LB creation; not requested in Spec
 		return nil
 	}
 
@@ -58,8 +58,9 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
-	loadbalancerName := "api-" + strings.Replace(b.ClusterName(), ".", "-", -1)
-	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + strings.Replace(b.ClusterName(), ".", "-", -1)
+	clusterName := strings.Replace(b.ClusterName(), ".", "-", -1)
+	loadbalancerName := "api-" + clusterName
+	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + clusterName
 
 	// Create LoadBalancer for API ELB
 	var loadbalancer *dotasks.LoadBalancer
