@@ -114,7 +114,7 @@ var containerdVersions = []packageVersion{
 				Hash:    "7de4211fa0dfd240d8827b93763e1eb5f0d56411",
 			},
 		},
-		Dependencies: []string{"libseccomp", "pigz", "policycoreutils-python"},
+		Dependencies: []string{"libseccomp", "policycoreutils-python"},
 	},
 
 	// 1.2.10 - CentOS / Rhel 8
