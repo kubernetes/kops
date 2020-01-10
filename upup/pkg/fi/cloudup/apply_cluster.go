@@ -468,19 +468,19 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			aliCloud := cloud.(aliup.ALICloud)
 			region = aliCloud.Region()
 			l.AddTypes(map[string]interface{}{
-				"Vpc":                   &alitasks.VPC{},
-				"VSwitch":               &alitasks.VSwitch{},
-				"Disk":                  &alitasks.Disk{},
-				"SecurityGroup":         &alitasks.SecurityGroup{},
-				"SecurityGroupRule":     &alitasks.SecurityGroupRule{},
-				"LoadBalancer":          &alitasks.LoadBalancer{},
-				"LoadBalancerListener":  &alitasks.LoadBalancerListener{},
-				"LoadBalancerWhiteList": &alitasks.LoadBalancerWhiteList{},
-				"AutoscalingGroup":      &alitasks.ScalingGroup{},
-				"LaunchConfiguration":   &alitasks.LaunchConfiguration{},
-				"RAMPolicy":             &alitasks.RAMPolicy{},
-				"RAMRole":               &alitasks.RAMRole{},
-				"SSHKey":                &alitasks.SSHKey{},
+				"Vpc":                  &alitasks.VPC{},
+				"VSwitch":              &alitasks.VSwitch{},
+				"Disk":                 &alitasks.Disk{},
+				"SecurityGroup":        &alitasks.SecurityGroup{},
+				"SecurityGroupRule":    &alitasks.SecurityGroupRule{},
+				"LoadBalancer":         &alitasks.LoadBalancer{},
+				"LoadBalancerListener": &alitasks.LoadBalancerListener{},
+				"LoadBalancerACL":      &alitasks.LoadBalancerACL{},
+				"AutoscalingGroup":     &alitasks.ScalingGroup{},
+				"LaunchConfiguration":  &alitasks.LaunchConfiguration{},
+				"RAMPolicy":            &alitasks.RAMPolicy{},
+				"RAMRole":              &alitasks.RAMRole{},
+				"SSHKey":               &alitasks.SSHKey{},
 			})
 
 			if len(sshPublicKeys) == 0 {
