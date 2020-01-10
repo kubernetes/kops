@@ -22,7 +22,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/klog"
-	"k8s.io/kubernetes/pkg/util/mount"
+	utilexec "k8s.io/utils/exec"
+	"k8s.io/utils/mount"
 )
 
 // VolumesBuilder maintains the volume mounting
@@ -49,7 +50,7 @@ func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		m := &mount.SafeFormatAndMount{
-			Exec:      mount.NewOsExec(),
+			Exec:      utilexec.New(),
 			Interface: mount.New(""),
 		}
 
