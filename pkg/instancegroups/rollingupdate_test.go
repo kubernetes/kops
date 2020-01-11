@@ -1057,7 +1057,150 @@ func TestRollingUpdateMaxSurgeGreaterThanNeedUpdate(t *testing.T) {
 	assert.Equal(t, 2, countDetach.Count)
 }
 
-// TODO tests for surging when instances start off already detached
+// Request validate (1)            -->
+//                                 <-- validated
+// Detach instance                 -->
+// Request validate (2)            -->
+//                                 <-- validated
+// Detach instance                 -->
+// Request validate (3)            -->
+//                                 <-- validated
+// Request terminate 3 nodes       -->
+//                                 <-- 3 nodes terminated, 1 left
+// Request validate (4)            -->
+//                                 <-- validated
+// Request terminate 1 node        -->
+//                                 <-- 1 node terminated, 0 left
+// Request validate (5)            -->
+//                                 <-- validated
+type alreadyDetachedTest struct {
+	ec2iface.EC2API
+	t                       *testing.T
+	mutex                   sync.Mutex
+	terminationRequestsLeft int
+	numValidations          int
+	detached                map[string]bool
+}
+
+func (t *alreadyDetachedTest) Validate() (*validation.ValidationCluster, error) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	t.numValidations++
+	switch t.numValidations {
+	case 1, 2, 3:
+		assert.Equal(t.t, t.numValidations, len(t.detached), "numnber of detached instances")
+	case 4:
+		assert.Equal(t.t, 1, t.terminationRequestsLeft, "terminations left")
+		t.mutex.Unlock()
+		time.Sleep(2 * time.Millisecond) // NodeInterval plus some
+		t.mutex.Lock()
+	case 5:
+		assert.Equal(t.t, 0, t.terminationRequestsLeft, "terminations left")
+	case 6:
+		t.t.Error("unexpected sixth call to Validate")
+	}
+
+	return &validation.ValidationCluster{}, nil
+}
+
+func (t *alreadyDetachedTest) TerminateInstances(input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
+	if input.DryRun != nil && *input.DryRun {
+		return &ec2.TerminateInstancesOutput{}, nil
+	}
+
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	for _, id := range input.InstanceIds {
+		assert.Equal(t.t, 3, len(t.detached), "Number of detached instances")
+		assert.GreaterOrEqual(t.t, t.numValidations, 3, "Number of previous validations")
+		if t.terminationRequestsLeft == 1 {
+			assert.True(t.t, t.detached[*id], "Last deleted instance %q was detached", *id)
+		}
+
+		t.terminationRequestsLeft--
+	}
+	return t.EC2API.TerminateInstances(input)
+}
+
+type alreadyDetachedTestAutoscaling struct {
+	autoscalingiface.AutoScalingAPI
+	AlreadyDetachedTest *alreadyDetachedTest
+}
+
+func (m *alreadyDetachedTestAutoscaling) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+	m.AlreadyDetachedTest.mutex.Lock()
+	defer m.AlreadyDetachedTest.mutex.Unlock()
+
+	for _, id := range input.InstanceIds {
+		assert.Less(m.AlreadyDetachedTest.t, len(m.AlreadyDetachedTest.detached), 3, "Number of detached instances")
+		assert.False(m.AlreadyDetachedTest.t, m.AlreadyDetachedTest.detached[*id], *id+" already detached")
+		m.AlreadyDetachedTest.detached[*id] = true
+	}
+	return &autoscaling.DetachInstancesOutput{}, nil
+}
+
+func TestRollingUpdateMaxSurgeAllNeedUpdateOneAlreadyDetached(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	alreadyDetachedTest := &alreadyDetachedTest{
+		EC2API:                  cloud.MockEC2,
+		t:                       t,
+		terminationRequestsLeft: 4,
+		detached:                map[string]bool{},
+	}
+
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = alreadyDetachedTest
+	cloud.MockAutoscaling = &alreadyDetachedTestAutoscaling{
+		AutoScalingAPI:      cloud.MockAutoscaling,
+		AlreadyDetachedTest: alreadyDetachedTest,
+	}
+	cloud.MockEC2 = &ec2IgnoreTags{EC2API: alreadyDetachedTest}
+
+	three := intstr.FromInt(3)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxSurge: &three,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 4, 4)
+	alreadyDetachedTest.detached[groups["node-1"].NeedUpdate[3].ID] = true
+	groups["node-1"].NeedUpdate[3].Detached = true
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	assert.Equal(t, 5, alreadyDetachedTest.numValidations, "Number of validations")
+}
+
+func TestRollingUpdateMaxSurgeAllNeedUpdateMaxAlreadyDetached(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	// Should behave the same as TestRollingUpdateMaxUnavailableAllNeedUpdate
+	concurrentTest := newConcurrentTest(t, cloud, 0, true)
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = concurrentTest
+	cloud.MockEC2 = concurrentTest
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxSurge: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 7, 7)
+	groups["node-1"].NeedUpdate[1].Detached = true
+	groups["node-1"].NeedUpdate[3].Detached = true
+	// TODO verify those are the last two instances terminated
+
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	concurrentTest.AssertComplete()
+}
 
 func assertCordon(t *testing.T, action testingclient.PatchAction) {
 	assert.Equal(t, "nodes", action.GetResource().Resource)
