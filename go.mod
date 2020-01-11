@@ -3,15 +3,12 @@ module k8s.io/kops
 go 1.13
 
 // Version kubernetes-1.16.3
-//replace k8s.io/kubernetes => k8s.io/kubernetes v1.16.3
 //replace k8s.io/api => k8s.io/api kubernetes-1.16.3
 //replace k8s.io/apimachinery => k8s.io/apimachinery kubernetes-1.16.3
 //replace k8s.io/client-go => k8s.io/client-go kubernetes-1.16.3
 //replace k8s.io/cloud-provider => k8s.io/cloud-provider kubernetes-1.16.3
 //replace k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers kubernetes-1.16.3
 //replace k8s.io/kubectl => k8s.io/kubectl kubernetes-1.16.3
-
-replace k8s.io/kubernetes => k8s.io/kubernetes v1.16.3
 
 replace k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 
@@ -80,6 +77,7 @@ require (
 	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
 	github.com/Masterminds/semver v1.3.1 // indirect
 	github.com/Masterminds/sprig v2.17.1+incompatible
+	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.25.38
 	github.com/bazelbuild/bazel-gazelle v0.19.1
@@ -90,6 +88,7 @@ require (
 	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 	github.com/digitalocean/godo v1.19.0
 	github.com/docker/engine-api v0.0.0-20160509170047-dea108d3aa0c
+	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
@@ -135,10 +134,10 @@ require (
 	k8s.io/apimachinery v0.0.0
 	k8s.io/cli-runtime v0.0.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	k8s.io/component-base v0.0.0
 	k8s.io/helm v2.9.0+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/kubectl v0.0.0
-	k8s.io/kubernetes v1.16.3
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6
 	sigs.k8s.io/controller-runtime v0.4.0
