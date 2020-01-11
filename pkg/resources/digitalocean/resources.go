@@ -384,7 +384,7 @@ func deleteLoadBalancer(cloud fi.Cloud, t *resources.Resource) error {
 	_, err := c.Client.LoadBalancers.Delete(context.TODO(), lb.ID)
 
 	if err != nil {
-		return fmt.Errorf("failed to delete load balancer with name %s", lb.Name)
+		return fmt.Errorf("failed to delete load balancer with name %s %v", lb.Name, err)
 	}
 
 	return nil
