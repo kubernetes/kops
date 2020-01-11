@@ -80,13 +80,15 @@ func New(name string, mgr manager.Manager, options Options) (Controller, error) 
 
 	// Create controller with dependencies set
 	c := &controller.Controller{
-		Do:                      options.Reconciler,
-		Cache:                   mgr.GetCache(),
-		Config:                  mgr.GetConfig(),
-		Scheme:                  mgr.GetScheme(),
-		Client:                  mgr.GetClient(),
-		Recorder:                mgr.GetEventRecorderFor(name),
-		Queue:                   workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), name),
+		Do:       options.Reconciler,
+		Cache:    mgr.GetCache(),
+		Config:   mgr.GetConfig(),
+		Scheme:   mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Recorder: mgr.GetEventRecorderFor(name),
+		MakeQueue: func() workqueue.RateLimitingInterface {
+			return workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), name)
+		},
 		MaxConcurrentReconciles: options.MaxConcurrentReconciles,
 		Name:                    name,
 	}

@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "acceptfunc.go",
         "client.go",
         "clientconfig.go",
         "dane.go",
@@ -24,7 +25,6 @@ go_library(
         "msg_helpers.go",
         "nsecx.go",
         "privaterr.go",
-        "rawmsg.go",
         "reverse.go",
         "sanitize.go",
         "scan.go",
@@ -42,7 +42,6 @@ go_library(
         "update.go",
         "version.go",
         "xfr.go",
-        "zcompress.go",
         "zduplicate.go",
         "zmsg.go",
         "ztypes.go",

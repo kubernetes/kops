@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "handlers.go",
+        "stats.go",
+    ],
+    importmap = "k8s.io/kops/vendor/google.golang.org/grpc/stats",
+    importpath = "google.golang.org/grpc/stats",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/google.golang.org/grpc/metadata:go_default_library"],
+)
