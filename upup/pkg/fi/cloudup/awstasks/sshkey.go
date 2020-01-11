@@ -208,12 +208,12 @@ func (_ *SSHKey) RenderCloudformation(t *cloudformation.CloudformationTarget, a,
 
 	klog.Warningf("Cloudformation does not manage SSH keys; pre-creating SSH key")
 
-	a, err := e.find(cloud)
+	keypair, err := e.find(cloud)
 	if err != nil {
 		return err
 	}
 
-	if a == nil {
+	if keypair == nil {
 		err := e.createKeypair(cloud)
 		if err != nil {
 			return err
