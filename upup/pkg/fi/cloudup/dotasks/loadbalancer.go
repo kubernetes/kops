@@ -19,8 +19,8 @@ package dotasks
 import (
 	"context"
 	"errors"
-	"strconv"
-	"strings"
+	"fmt"
+	"net"
 	"time"
 
 	"github.com/digitalocean/godo"
@@ -52,15 +52,14 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	cloud := c.Cloud.(*digitalocean.Cloud)
 	lbService := cloud.LoadBalancers()
 
-	opt := &godo.ListOptions{}
+	if fi.StringValue(lb.ID) != "" {
+		loadbalancer, _, err := lbService.Get(context.TODO(), fi.StringValue(lb.ID))
 
-	loadbalancers, _, err := lbService.List(context.TODO(), opt)
+		if err != nil {
+			return nil, fmt.Errorf("load balancer service get request returned error %v", err)
+		}
 
-	if err != nil {
-		return nil, err
-	}
-
-	for _, loadbalancer := range loadbalancers {
+		// do another check to double-sure we are talking to the right load balancer.
 		if loadbalancer.Name == fi.StringValue(lb.Name) {
 			return &LoadBalancer{
 				Name:      fi.String(loadbalancer.Name),
@@ -164,37 +163,27 @@ func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {
 
 	address := loadBalancer.IP
 
-	if len(address) > 0 && is_ipv4(address) {
+	if isIPv4(address) {
 		klog.V(10).Infof("load balancer address=%s", address)
 		return &address, nil
 	}
 
 	klog.Errorf("Error fetching IP Address for lb Name=%s", fi.StringValue(lb.Name))
-	time.Sleep(10 * 3)
+	time.Sleep(10 * time.Second)
 
-	klog.V(10).Infof("Sleeping for 30 seconds")
+	klog.V(10).Infof("Sleeping for 10 seconds")
 
 	return nil, errors.New("IP Address is still empty.")
 }
 
-func is_ipv4(host string) bool {
-	parts := strings.Split(host, ".")
+func isIPv4(host string) bool {
 
-	if len(parts) < 4 {
+	ip := net.ParseIP(host)
+	if ip == nil {
 		return false
 	}
 
-	for _, x := range parts {
-		if i, err := strconv.Atoi(x); err == nil {
-			if i < 0 || i > 255 {
-				return false
-			}
-		} else {
-			return false
-		}
-
-	}
-	return true
+	return ip.To4() != nil
 }
 
 // terraformVolume represents the digitalocean_volume resource in terraform
