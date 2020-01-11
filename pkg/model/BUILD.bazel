@@ -67,7 +67,7 @@ go_test(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
-        "//pkg/testutils:go_default_library",
+        "//pkg/testutils/golden:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
