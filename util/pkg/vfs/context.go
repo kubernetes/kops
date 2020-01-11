@@ -29,7 +29,7 @@ import (
 	"github.com/denverdino/aliyungo/oss"
 	"github.com/gophercloud/gophercloud"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
@@ -361,12 +361,8 @@ func (c *VFSContext) getGCSClient() (*storage.Service, error) {
 	// TODO: Should we fall back to read-only?
 	scope := storage.DevstorageReadWriteScope
 
-	httpClient, err := google.DefaultClient(context.Background(), scope)
-	if err != nil {
-		return nil, fmt.Errorf("error building GCS HTTP client: %v", err)
-	}
-
-	gcsClient, err := storage.New(httpClient)
+	ctx := context.Background()
+	gcsClient, err := storage.NewService(ctx, option.WithScopes(scope))
 	if err != nil {
 		return nil, fmt.Errorf("error building GCS client: %v", err)
 	}
