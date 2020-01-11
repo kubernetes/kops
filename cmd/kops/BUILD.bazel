@@ -167,6 +167,7 @@ go_test(
         "//pkg/jsonutils:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/testutils:go_default_library",
+        "//pkg/testutils/golden:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
