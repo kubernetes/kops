@@ -73,7 +73,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Temporarily do not know the role of the following function
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
-		// Ensure the ELB hostname is included in the TLS certificate,
+		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
 		// TODO: I don't love this technique for finding the task by name & modifying it
 		masterKeypairTask, found := c.Tasks["Keypair/master"]
