@@ -111,6 +111,11 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
 
+		// Don't serialize empty objects - they confuse yaml parsers
+		if manifest.IsEmptyObject() {
+			continue
+		}
+
 		y, err := manifest.ToYAML()
 		if err != nil {
 			return nil, fmt.Errorf("error re-marshaling manifest: %v", err)
