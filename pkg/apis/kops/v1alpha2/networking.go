@@ -259,6 +259,7 @@ type CiliumNetworkingSpec struct {
 	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
 	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
 	EnableNodePort         bool   `json:"enableNodePort"`
+	Ipam                   string `json:"ipam,omitempty"`
 
 	//node init options
 	RemoveCbrBridge       bool   `json:"removeCbrBridge"`

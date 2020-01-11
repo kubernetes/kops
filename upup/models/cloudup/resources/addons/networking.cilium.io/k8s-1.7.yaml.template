@@ -121,6 +121,14 @@ data:
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
   enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  {{ with .Ipam }}
+  ipam: {{ . }}
+  {{ if eq . "eni" }}
+  enable-endpoint-routes: "true"
+  auto-create-cilium-node-resource: "true"
+  blacklist-conflicting-routes: "false"
+  {{ end }}
+  {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1
@@ -654,7 +662,6 @@ spec:
           name: prometheus
           protocol: TCP
         {{ end }}
-{{ end }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -667,3 +674,19 @@ spec:
       restartPolicy: Always
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
+      {{if eq .Ipam "eni" }}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+       {{ end }}
+{{ end }}

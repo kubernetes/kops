@@ -192,6 +192,7 @@ type AmazonVPCNetworkingSpec struct {
 }
 
 const CiliumDefaultVersion = "v1.6.6"
+const CiliumIpamEni = "eni"
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
@@ -261,6 +262,7 @@ type CiliumNetworkingSpec struct {
 	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
 	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
 	EnableNodePort         bool   `json:"enableNodePort"`
+	Ipam                   string `json:"ipam,omitempty"`
 
 	//node init options
 	RemoveCbrBridge       bool   `json:"removeCbrBridge"`
