@@ -62,19 +62,14 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	loadbalancerName := "api-" + clusterName
 	clusterMasterTag := do.TagKubernetesClusterMasterPrefix + ":" + clusterName
 
-	// Create LoadBalancer for API ELB
-	var loadbalancer *dotasks.LoadBalancer
-	{
-
-		loadbalancer = &dotasks.LoadBalancer{
-			Name:       fi.String(loadbalancerName),
-			Region:     fi.String(b.Cluster.Spec.Subnets[0].Region),
-			DropletTag: fi.String(clusterMasterTag),
-			Lifecycle:  b.Lifecycle,
-		}
-
-		c.AddTask(loadbalancer)
+	// Create LoadBalancer for API LB
+	loadbalancer := &dotasks.LoadBalancer{
+		Name:       fi.String(loadbalancerName),
+		Region:     fi.String(b.Cluster.Spec.Subnets[0].Region),
+		DropletTag: fi.String(clusterMasterTag),
+		Lifecycle:  b.Lifecycle,
 	}
+	c.AddTask(loadbalancer)
 
 	// Temporarily do not know the role of the following function
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
