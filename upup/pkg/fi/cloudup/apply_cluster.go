@@ -299,14 +299,14 @@ func (c *ApplyClusterCmd) Run() error {
 
 		if warn {
 			fmt.Println("")
-			fmt.Println(starline)
+			fmt.Printf("%s\n", starline)
 			fmt.Println("")
 			fmt.Println("Kubelet anonymousAuth is currently turned on. This allows RBAC escalation and remote code execution possibilities.")
 			fmt.Println("It is highly recommended you turn it off by setting 'spec.kubelet.anonymousAuth' to 'false' via 'kops edit cluster'")
 			fmt.Println("")
 			fmt.Println("See https://kops.sigs.k8s.io/security/#kubelet-api")
 			fmt.Println("")
-			fmt.Println(starline)
+			fmt.Printf("%s\n", starline)
 			fmt.Println("")
 		}
 	}
@@ -1001,20 +1001,20 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 	}
 
 	if recommended != nil && !required {
-		fmt.Println("")
-		fmt.Println(starline)
-		fmt.Println("")
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
 		fmt.Printf("A new kops version is available: %s", recommended)
-		fmt.Println("")
-		fmt.Println("upgrading is recommended")
+		fmt.Printf("\n")
+		fmt.Printf("Upgrading is recommended\n")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
-		fmt.Println("")
-		fmt.Println(starline)
-		fmt.Println("")
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
 	} else if required {
-		fmt.Println("")
-		fmt.Println(starline)
-		fmt.Println("")
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
 		if recommended != nil {
 			fmt.Printf("a new kops version is available: %s\n", recommended)
 		}
@@ -1023,9 +1023,9 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 		fmt.Printf("(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
 		fmt.Println("")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
-		fmt.Println("")
-		fmt.Printf(starline)
-		fmt.Println("")
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
 	}
 
 	if required {
@@ -1048,14 +1048,14 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 
 	if !util.IsKubernetesGTE(OldestSupportedKubernetesVersion, *parsed) {
 		fmt.Printf("\n")
-		fmt.Printf(starline)
+		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 		fmt.Printf("Kops support for this Kubernetes version is deprecated and will be removed in a future release.\n")
 		fmt.Printf("\n")
 		fmt.Printf("Upgrading is recommended\n")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", ""))
 		fmt.Printf("\n")
-		fmt.Printf(starline)
+		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 
 	}
@@ -1082,18 +1082,18 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 
 	if recommended != nil && !required {
 		fmt.Printf("\n")
-		fmt.Printf(starline)
+		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 		fmt.Printf("A new kubernetes version is available: %s\n", recommended)
 		fmt.Printf("Upgrading is recommended (try kops upgrade cluster)\n")
 		fmt.Printf("\n")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
 		fmt.Printf("\n")
-		fmt.Printf(starline)
+		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 	} else if required {
 		fmt.Printf("\n")
-		fmt.Printf(starline)
+		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 		if recommended != nil {
 			fmt.Printf("A new kubernetes version is available: %s\n", recommended)
@@ -1104,7 +1104,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		fmt.Printf("\n")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
 		fmt.Printf("\n")
-		fmt.Printf(starline)
+		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 	}
 
