@@ -178,28 +178,30 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		maxConcurrency = 1
 	}
 
-	// TODO sort 'update' to put already detached instances last.
+	update = prioritizeUpdate(update)
 
 	if maxSurge > 0 && !rollingUpdateData.CloudOnly {
-		// TODO don't detach instances that are already detached. Handle effects of that on noneReady behavior.
 		for numSurge := 1; numSurge <= maxSurge; numSurge++ {
-			if err := r.detachInstance(update[len(update)-numSurge]); err != nil {
-				return err
-			}
-
-			// If noneReady, wait until after one node is detached and its replacement validates
-			// before the detaching more in case the current spec does not result in usable nodes.
-			if numSurge == maxSurge || (noneReady && numSurge == 1) {
-				// Wait for the minimum interval
-				klog.Infof("waiting for %v after detaching instance", sleepAfterTerminate)
-				time.Sleep(sleepAfterTerminate)
-
-				if err := r.maybeValidate(rollingUpdateData, validationTimeout, "detaching"); err != nil {
+			u := update[len(update)-numSurge]
+			if !u.Detached {
+				if err := r.detachInstance(u); err != nil {
 					return err
+				}
+
+				// If noneReady, wait until after one node is detached and its replacement validates
+				// before the detaching more in case the current spec does not result in usable nodes.
+				if numSurge == maxSurge || noneReady {
+					// Wait for the minimum interval
+					klog.Infof("waiting for %v after detaching instance", sleepAfterTerminate)
+					time.Sleep(sleepAfterTerminate)
+
+					if err := r.maybeValidate(rollingUpdateData, validationTimeout, "detaching"); err != nil {
+						return err
+					}
+					noneReady = false
 				}
 			}
 		}
-		noneReady = false
 	}
 
 	terminateChan := make(chan error, maxConcurrency)
@@ -275,6 +277,25 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	}
 
 	return nil
+}
+
+func prioritizeUpdate(update []*cloudinstances.CloudInstanceGroupMember) []*cloudinstances.CloudInstanceGroupMember {
+	// The priorities are, in order:
+	//   attached before detached
+	//   TODO unhealthy before healthy
+	//   NeedUpdate before Ready (preserve original order)
+	result := make([]*cloudinstances.CloudInstanceGroupMember, 0, len(update))
+	var detached []*cloudinstances.CloudInstanceGroupMember
+	for _, u := range update {
+		if u.Detached {
+			detached = append(detached, u)
+		} else {
+			result = append(result, u)
+		}
+	}
+
+	result = append(result, detached...)
+	return result
 }
 
 func waitForPendingBeforeReturningError(runningDrains int, terminateChan chan error, err error) error {
