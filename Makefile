@@ -355,15 +355,6 @@ gen-cli-docs: ${KOPS} # Regenerate CLI docs
 	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
 
-.PHONY: gen-api-docs
-gen-api-docs:
-	# Follow procedure in docs/apireference/README.md
-	hack/make-gendocs.sh
-	# Update the `pkg/openapi/openapi_generated.go`
-	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
-	go install k8s.io/kops/cmd/kops-server
-	${GOPATH}/bin/apiserver-boot build docs --disable-delegated-auth=false --output-dir docs/apireference --server kops-server
-
 .PHONY: push
 # Will always push a linux-based build up to the server
 push: crossbuild-nodeup
@@ -631,25 +622,6 @@ verify-apimachinery:
 .PHONY: verify-generate
 verify-generate:
 	hack/verify-generate.sh
-
-# -----------------------------------------------------
-# kops-server
-
-.PHONY: kops-server-docker-compile
-kops-server-docker-compile:
-	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/amd64/kops-server ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
-
-.PHONY: kops-server-build
-kops-server-build:
-	# Compile the API binary in linux, and copy to local filesystem
-	docker pull golang:${GOVERSION}
-	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ kops-server-docker-compile
-	docker cp kops-server-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
-	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
-
-.PHONY: kops-server-push
-kops-server-push: kops-server-build
-	docker push ${DOCKER_REGISTRY}/kops-server:latest
 
 # -----------------------------------------------------
 # bazel targets
