@@ -58,7 +58,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.Cluster.Spec.EncryptionConfig != nil {
-		if *b.Cluster.Spec.EncryptionConfig && b.IsKubernetesGTE("1.7") {
+		if *b.Cluster.Spec.EncryptionConfig {
 			encryptionConfigPath := fi.String(filepath.Join(b.PathSrvKubernetes(), "encryptionconfig.yaml"))
 
 			if b.IsKubernetesGTE("1.13") {
@@ -319,7 +319,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api-key.pem")
 	}
 
-	if b.IsKubernetesGTE("1.7") {
+	{
 		certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.cert")
 		kubeAPIServer.ProxyClientCertFile = &certPath
 		keyPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.key")
@@ -327,6 +327,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	// APIServer aggregation options
+	// TODO fix Test_KubeAPIServer_Builder so we can remove the conditional
 	if b.IsKubernetesGTE("1.7") {
 		cert, err := b.KeyStore.FindCert("apiserver-aggregator-ca")
 		if err != nil {

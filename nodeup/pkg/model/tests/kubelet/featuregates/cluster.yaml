@@ -24,7 +24,7 @@ spec:
       ExperimentalCriticalPodAnnotation: "true"
       AllowExtTrafficLocalEndpoints: "false"
     podManifestPath: "/etc/kubernetes/manifests"
-  kubernetesVersion: v1.5.0
+  kubernetesVersion: v1.15.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
