@@ -351,22 +351,22 @@ resource "aws_security_group_rule" "all-node-to-node" {
   protocol                 = "-1"
 }
 
-resource "aws_security_group_rule" "https-external-to-master-1-1-1-1--0" {
+resource "aws_security_group_rule" "https-external-to-master-1-1-1-0--24" {
   type              = "ingress"
   security_group_id = "${aws_security_group.masters-restrictaccess-example-com.id}"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
-  cidr_blocks       = ["1.1.1.1/0"]
+  cidr_blocks       = ["1.1.1.0/24"]
 }
 
-resource "aws_security_group_rule" "https-external-to-master-2001_0_85a3__--40" {
+resource "aws_security_group_rule" "https-external-to-master-2001_0_8500__--40" {
   type              = "ingress"
   security_group_id = "${aws_security_group.masters-restrictaccess-example-com.id}"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
-  cidr_blocks       = ["2001:0:85a3::/40"]
+  cidr_blocks       = ["2001:0:8500::/40"]
 }
 
 resource "aws_security_group_rule" "master-egress" {
@@ -423,40 +423,40 @@ resource "aws_security_group_rule" "node-to-master-udp-1-65535" {
   protocol                 = "udp"
 }
 
-resource "aws_security_group_rule" "ssh-external-to-master-1-1-1-1--0" {
+resource "aws_security_group_rule" "ssh-external-to-master-1-1-1-1--32" {
   type              = "ingress"
   security_group_id = "${aws_security_group.masters-restrictaccess-example-com.id}"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["1.1.1.1/0"]
+  cidr_blocks       = ["1.1.1.1/32"]
 }
 
-resource "aws_security_group_rule" "ssh-external-to-master-2001_0_85a3__--40" {
+resource "aws_security_group_rule" "ssh-external-to-master-2001_0_85a3__--48" {
   type              = "ingress"
   security_group_id = "${aws_security_group.masters-restrictaccess-example-com.id}"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["2001:0:85a3::/40"]
+  cidr_blocks       = ["2001:0:85a3::/48"]
 }
 
-resource "aws_security_group_rule" "ssh-external-to-node-1-1-1-1--0" {
+resource "aws_security_group_rule" "ssh-external-to-node-1-1-1-1--32" {
   type              = "ingress"
   security_group_id = "${aws_security_group.nodes-restrictaccess-example-com.id}"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["1.1.1.1/0"]
+  cidr_blocks       = ["1.1.1.1/32"]
 }
 
-resource "aws_security_group_rule" "ssh-external-to-node-2001_0_85a3__--40" {
+resource "aws_security_group_rule" "ssh-external-to-node-2001_0_85a3__--48" {
   type              = "ingress"
   security_group_id = "${aws_security_group.nodes-restrictaccess-example-com.id}"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["2001:0:85a3::/40"]
+  cidr_blocks       = ["2001:0:85a3::/48"]
 }
 
 resource "aws_subnet" "us-test-1a-restrictaccess-example-com" {
