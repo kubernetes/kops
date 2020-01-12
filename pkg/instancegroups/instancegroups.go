@@ -152,14 +152,15 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	settings := resolveSettings(cluster, r.CloudGroup.InstanceGroup, numInstances)
 
 	concurrency := 0
-	maxConcurrency := 1
+	maxConcurrency := settings.MaxUnavailable.IntValue()
 
-	if r.CloudGroup.InstanceGroup.Spec.Role == api.InstanceGroupRoleNode && !rollingUpdateData.Interactive {
-		maxConcurrency = settings.MaxUnavailable.IntValue()
-		if maxConcurrency == 0 {
-			klog.Infof("Rolling updates for InstanceGroup %s are disabled", r.CloudGroup.InstanceGroup.Name)
-			return nil
-		}
+	if maxConcurrency == 0 {
+		klog.Infof("Rolling updates for InstanceGroup %s are disabled", r.CloudGroup.InstanceGroup.Name)
+		return nil
+	}
+
+	if rollingUpdateData.Interactive {
+		maxConcurrency = 1
 	}
 
 	terminateChan := make(chan error, maxConcurrency)
