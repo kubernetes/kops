@@ -91,6 +91,8 @@ var (
 	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// CloudupModels a list of supported models
 	CloudupModels = []string{"proto", "cloudup"}
+	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
+	OldestSupportedKubernetesVersion = "1.9.0"
 )
 
 type ApplyClusterCmd struct {
@@ -1042,6 +1044,20 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		klog.Warningf("unable to parse kubernetes version %q", c.Cluster.Spec.KubernetesVersion)
 		// Not a hard-error
 		return nil
+	}
+
+	if !util.IsKubernetesGTE(OldestSupportedKubernetesVersion, *parsed) {
+		fmt.Printf("\n")
+		fmt.Printf(starline)
+		fmt.Printf("\n")
+		fmt.Printf("Kops support for this Kubernetes version is deprecated and will be removed in a future release.\n")
+		fmt.Printf("\n")
+		fmt.Printf("Upgrading is recommended\n")
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", ""))
+		fmt.Printf("\n")
+		fmt.Printf(starline)
+		fmt.Printf("\n")
+
 	}
 
 	// TODO: make util.ParseKubernetesVersion not return a pointer
