@@ -68,7 +68,7 @@ func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 		}
 	}
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("cannot find DNS Zone %q.  Please pre-create the zone and set up NS records so that it resolves.", cluster.Spec.DNSZone)
+		return nil, fmt.Errorf("cannot find DNS Zone %q.  Please pre-create the zone and set up NS records so that it resolves", cluster.Spec.DNSZone)
 	}
 
 	if len(matches) > 1 {
@@ -205,7 +205,7 @@ func precreateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 		} else {
 			dnsRecords, err := rrs.Get(dnsHostname)
 			if err != nil {
-				return fmt.Errorf("Failed to get DNS record %s with error: %v", dnsHostname, err)
+				return fmt.Errorf("failed to get DNS record %s with error: %v", dnsHostname, err)
 			}
 			for _, dnsRecord := range dnsRecords {
 				if dnsRecord.Type() != "A" {
@@ -242,7 +242,7 @@ func precreateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	if len(created) != 0 {
 		err := changeset.Apply()
 		if err != nil {
-			return fmt.Errorf("Error pre-creating DNS records: %v", err)
+			return fmt.Errorf("error pre-creating DNS records: %v", err)
 		}
 		klog.V(2).Infof("Pre-created DNS names: %v", created)
 	}

@@ -59,7 +59,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			specProfile := fi.StringValue(ig.Spec.IAM.Profile)
 			if matchingRole, ok := sharedProfileARNsToIGRole[specProfile]; ok {
 				if matchingRole != ig.Spec.Role {
-					return fmt.Errorf("Found IAM instance profile assigned to multiple Instance Group roles %v and %v: %v",
+					return fmt.Errorf("found IAM instance profile assigned to multiple Instance Group roles %v and %v: %v",
 						ig.Spec.Role, sharedProfileARNsToIGRole[specProfile], specProfile)
 				}
 			} else {

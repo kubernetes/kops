@@ -85,6 +85,8 @@ spec:
           name: metrics
         name: aws-node
         env:
+          - name: CLUSTER_NAME
+            value: {{ ClusterName }}
           - name: AWS_VPC_K8S_CNI_LOGLEVEL
             value: DEBUG
           - name: MY_NODE_NAME

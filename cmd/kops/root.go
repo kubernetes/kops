@@ -221,7 +221,7 @@ func (c *RootCmd) ProcessArgs(args []string) error {
 	fmt.Printf("For example: use `--bastion=true` or `--bastion`, not `--bastion true`\n\n")
 
 	if len(args) == 1 {
-		return fmt.Errorf("Cannot specify cluster via --name and positional argument")
+		return fmt.Errorf("cannot specify cluster via --name and positional argument")
 	}
 	return fmt.Errorf("expected a single <clustername> to be passed as an argument")
 }

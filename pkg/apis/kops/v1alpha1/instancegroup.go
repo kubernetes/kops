@@ -142,6 +142,10 @@ type InstanceGroupSpec struct {
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// InstanceProtection makes new instances in an autoscaling group protected from scale in
 	InstanceProtection *bool `json:"instanceProtection,omitempty"`
+	// SysctlParameters will configure kernel parameters using sysctl(8). When
+	// specified, each parameter must follow the form variable=value, the way
+	// it would appear in sysctl.conf.
+	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 }
 
 const (

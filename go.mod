@@ -134,7 +134,7 @@ require (
 	k8s.io/klog v0.3.1
 	k8s.io/kubernetes v1.15.3
 	k8s.io/legacy-cloud-providers v0.0.0
-	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
+	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6
 	sigs.k8s.io/controller-runtime v0.2.2
 	sigs.k8s.io/controller-tools v0.2.2-0.20190919191502-76a25b63325a
 	sigs.k8s.io/yaml v1.1.0

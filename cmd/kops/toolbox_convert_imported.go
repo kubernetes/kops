@@ -132,18 +132,18 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 
 	// TODO: Switch to cloudup.BuildCloud
 	if len(cluster.Spec.Subnets) == 0 {
-		return fmt.Errorf("Configuration must include Subnets")
+		return fmt.Errorf("configuration must include Subnets")
 	}
 
 	region := ""
 	for _, subnet := range cluster.Spec.Subnets {
 		if len(subnet.Name) <= 2 {
-			return fmt.Errorf("Invalid AWS zone: %q", subnet.Zone)
+			return fmt.Errorf("invalid AWS zone: %q", subnet.Zone)
 		}
 
 		zoneRegion := subnet.Zone[:len(subnet.Zone)-1]
 		if region != "" && zoneRegion != region {
-			return fmt.Errorf("Clusters cannot span multiple regions")
+			return fmt.Errorf("clusters cannot span multiple regions")
 		}
 
 		region = zoneRegion

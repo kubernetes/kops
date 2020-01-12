@@ -301,13 +301,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Runtime: c.cluster.Spec.ContainerRuntime,
 		}
 	}
-	if c.config.ProtokubeImage != nil {
-		taskMap["LoadImage.protokube"] = &nodetasks.LoadImageTask{
-			Sources: c.config.ProtokubeImage.Sources,
-			Hash:    c.config.ProtokubeImage.Hash,
-			Runtime: c.cluster.Spec.ContainerRuntime,
-		}
-	}
+	// Protokube load image task is in ProtokubeBuilder
 
 	var cloud fi.Cloud
 	var keyStore fi.Keystore

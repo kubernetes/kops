@@ -40,6 +40,7 @@ const (
 
 // LoadImageTask is responsible for downloading a docker image
 type LoadImageTask struct {
+	Name    string
 	Sources []string
 	Hash    string
 	Runtime string
@@ -62,6 +63,19 @@ func (t *LoadImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		}
 	}
 	return deps
+}
+
+var _ fi.HasName = &LoadImageTask{}
+
+func (t *LoadImageTask) GetName() *string {
+	if t.Name == "" {
+		return nil
+	}
+	return &t.Name
+}
+
+func (t *LoadImageTask) SetName(name string) {
+	klog.Fatalf("SetName not supported for LoadImageTask")
 }
 
 func (t *LoadImageTask) String() string {
@@ -145,7 +159,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	case "docker":
 		args = []string{"docker", "load", "-i", tarFile}
 	case "containerd":
-		args = []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
+		args = []string{"ctr", "images", "import", tarFile}
 	default:
 		return fmt.Errorf("unknown container runtime: %s", runtime)
 	}

@@ -22,6 +22,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -150,9 +151,17 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			if err != nil {
 				return "", err
 			}
+
+			// Sort keys to have a stable sequence of "export xx=xxx"" statements
+			var keys []string
+			for k := range env {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+
 			var b bytes.Buffer
-			for k, v := range env {
-				b.WriteString(fmt.Sprintf("export %s=%s\n", k, v))
+			for _, k := range keys {
+				b.WriteString(fmt.Sprintf("export %s=%s\n", k, env[k]))
 			}
 			return b.String(), nil
 		},
@@ -404,7 +413,7 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
 		buffer.WriteString("*[Uu]buntu*)\n")
 		buffer.WriteString(`  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;` + "\n")
 		buffer.WriteString("*[Rr]ed[Hh]at*)\n")
-		buffer.WriteString(`  echo "http_proxy=${http_proxy}" >> /etc/yum.conf ;;` + "\n")
+		buffer.WriteString(`  echo "proxy=${http_proxy}" >> /etc/yum.conf ;;` + "\n")
 		buffer.WriteString("esac\n")
 
 		// Set env variables for systemd

@@ -23,7 +23,15 @@ spec:
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    weave: {}
+    weave:
+      memoryRequest: 300Mi
+      cpuRequest: 100m
+      memoryLimit: 300Mi
+      cpuLimit: 200m
+      npcMemoryRequest: 300Mi
+      npcCPURequest: 100m
+      npcMemoryLimit: 300Mi
+      npcCPULimit: 200m
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
     - 0.0.0.0/0
