@@ -202,9 +202,6 @@ spec:
     # TODO: Would be nice to scope this more tightly, but needed for volume mounting
     - mountPath: /rootfs
       name: rootfs
-    # We write artificial hostnames into etc hosts for the etcd nodes, so they have stable names
-    - mountPath: /etc/hosts
-      name: hosts
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
   hostNetwork: true
@@ -214,10 +211,6 @@ spec:
       path: /
       type: Directory
     name: rootfs
-  - hostPath:
-      path: /etc/hosts
-      type: File
-    name: hosts
   - hostPath:
       path: /etc/kubernetes/pki/etcd-manager
       type: DirectoryOrCreate
@@ -258,6 +251,18 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			klog.Warningf("overloading image in manifest %s with images %s", bundle, etcdCluster.Manager.Image)
 			container.Image = etcdCluster.Manager.Image
 		}
+	}
+
+	// With etcd-manager the hosts changes are self-contained, so
+	// we don't need to share /etc/hosts.  By not sharing we avoid
+	// (1) the temptation to address etcd directly and (2)
+	// problems of concurrent updates to /etc/hosts being hard
+	// from within a container (because locking is very difficult
+	// across bind mounts).
+	//
+	// Introduced with 1.17 to avoid changing existing versions.
+	if b.IsKubernetesLT("1.17") {
+		kubemanifest.MapEtcHosts(pod, container, false)
 	}
 
 	// Remap image via AssetBuilder
