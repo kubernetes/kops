@@ -40,7 +40,7 @@ case $CUDA_VERSION in
         class_to_driver_file=( \
             ["g3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
             ["g3s"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-            ["g4"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-390.46.00.run" \
+            ["g4dn"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-390.46.00.run" \
             ["p2"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
             ["p3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
         )
@@ -48,7 +48,7 @@ case $CUDA_VERSION in
         class_to_driver_checksum=( \
             ["g3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
             ["g3s"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-            ["g4"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
+            ["g4dn"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
             ["p2"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
             ["p3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
         )
@@ -76,7 +76,7 @@ case $CUDA_VERSION in
         class_to_driver_file=( \
             ["g3"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
             ["g3s"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
-            ["g4"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+            ["g4dn"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
             ["p2"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
             ["p3"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
         )
@@ -84,7 +84,7 @@ case $CUDA_VERSION in
         class_to_driver_checksum=( \
             ["g3"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
             ["g3s"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
-            ["g4"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+            ["g4dn"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
             ["p2"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
             ["p3"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
         )
