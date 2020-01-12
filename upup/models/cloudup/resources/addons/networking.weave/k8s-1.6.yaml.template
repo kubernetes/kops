@@ -161,10 +161,13 @@ spec:
               port: 6784
           resources:
             requests:
-              cpu: 50m
-              memory: 200Mi
+              cpu: {{ or .Networking.Weave.CPURequest "50m" }}
+              memory: {{ or .Networking.Weave.MemoryRequest "200Mi" }}
             limits:
-              memory: 200Mi
+              {{- if .Networking.Weave.CPULimit }}
+              cpu: {{ .Networking.Weave.CPULimit }}
+              {{- end }}
+              memory: {{ or .Networking.Weave.MemoryLimit "200Mi" }}
           securityContext:
             privileged: true
           volumeMounts:
@@ -195,10 +198,13 @@ spec:
               containerPort: 6781
           resources:
             requests:
-              cpu: 50m
-              memory: 200Mi
+              cpu: {{ or .Networking.Weave.NPCCPURequest "50m" }}
+              memory: {{ or .Networking.Weave.NPCMemoryRequest "200Mi" }}
             limits:
-              memory: 200Mi
+              {{- if .Networking.Weave.NPCCPULimit }}
+              cpu: {{ .Networking.Weave.NPCCPULimit }}
+              {{- end }}
+              memory: {{ or .Networking.Weave.NPCMemoryLimit "200Mi" }}
           securityContext:
             privileged: true
       hostNetwork: true

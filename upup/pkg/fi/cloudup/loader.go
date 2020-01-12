@@ -55,8 +55,6 @@ type Loader struct {
 
 	typeMap map[string]reflect.Type
 
-	templates []*template.Template
-
 	Resources map[string]fi.Resource
 
 	Builders []fi.ModelBuilder
@@ -294,7 +292,7 @@ func (l *Loader) processDeferrals() error {
 									klog.Infof("  %s", k)
 								}
 
-								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", typeNameForTask+"/"+*name, taskKey, path)
+								return fmt.Errorf("unable to find task %q, referenced from %s:%s", typeNameForTask+"/"+*name, taskKey, path)
 							}
 
 							klog.V(11).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
@@ -317,7 +315,7 @@ func (l *Loader) processDeferrals() error {
 								for k := range l.Resources {
 									klog.Infof("  %s", k)
 								}
-								return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
+								return fmt.Errorf("unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
 							}
 
 							err := l.populateResource(rh, resource, args)

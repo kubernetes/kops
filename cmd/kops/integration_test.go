@@ -387,7 +387,7 @@ func runTestAWS(t *testing.T, clusterName string, srcDir string, version string,
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.8.1")
+	h.MockKopsVersion("1.15.0")
 	h.SetupMockAWS()
 
 	expectedFilenames := []string{
@@ -434,7 +434,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.8.1")
+	h.MockKopsVersion("1.15.0")
 	h.SetupMockAWS()
 	phaseName := string(phase)
 	if phaseName == "" {
@@ -482,7 +482,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.8.1")
+	h.MockKopsVersion("1.15.0")
 	h.SetupMockGCE()
 
 	expectedFilenames := []string{
@@ -518,7 +518,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.8.1")
+	h.MockKopsVersion("1.15.0")
 	h.SetupMockAWS()
 
 	factory := util.NewFactory(factoryOptions)

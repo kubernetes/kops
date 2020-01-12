@@ -225,7 +225,7 @@ func (c *gceCloudImplementation) ServiceAccount() (string, error) {
 func (c *gceCloudImplementation) DNS() (dnsprovider.Interface, error) {
 	provider, err := clouddns.CreateInterface(c.project, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+		return nil, fmt.Errorf("error building (k8s) DNS provider: %v", err)
 	}
 	return provider, nil
 }
@@ -295,7 +295,7 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 
 	if forwardingRule != nil {
 		if forwardingRule.IPAddress == "" {
-			return nil, fmt.Errorf("Found forward rule %q, but it did not have an IPAddress", name)
+			return nil, fmt.Errorf("found forward rule %q, but it did not have an IPAddress", name)
 		}
 
 		ingresses = append(ingresses, kops.ApiIngressStatus{

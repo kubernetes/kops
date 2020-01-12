@@ -30,11 +30,9 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/validation"
@@ -186,10 +184,8 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated (e.g. Master,Node,Bastion)")
 
-	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
-		cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
-	}
+	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
+	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
@@ -389,13 +385,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	var clusterValidator validation.ClusterValidator
-	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		klog.V(2).Infof("Rolling update with drain and validate enabled.")
-		if !options.CloudOnly {
-			clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, k8sClient)
-			if err != nil {
-				return fmt.Errorf("cannot create cluster validator: %v", err)
-			}
+	if !options.CloudOnly {
+		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, k8sClient)
+		if err != nil {
+			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}
 	}
 	d := &instancegroups.RollingUpdateCluster{

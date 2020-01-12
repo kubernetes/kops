@@ -120,7 +120,7 @@ func (d *Helper) EvictPod(pod corev1.Pod, policyGroupVersion string) error {
 		},
 		DeleteOptions: d.makeDeleteOptions(),
 	}
-	// Remember to change change the URL manipulation func when Eviction's version change
+	// Remember to change the URL manipulation func when Eviction's version change
 	return d.Client.PolicyV1beta1().Evictions(eviction.Namespace).Evict(eviction)
 }
 

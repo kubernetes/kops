@@ -26,13 +26,17 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/drain"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
+
+const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
 
 // RollingUpdateInstanceGroup is the AWS ASG backing an InstanceGroup.
 type RollingUpdateInstanceGroup struct {
@@ -127,13 +131,20 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		klog.V(3).Info("Not validating the cluster as instance is a bastion.")
 	} else if rollingUpdateData.CloudOnly {
 		klog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
-	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+	} else {
 		if err = r.validateCluster(rollingUpdateData, cluster); err != nil {
 			if rollingUpdateData.FailOnValidate {
 				return err
 			}
 			klog.V(2).Infof("Ignoring cluster validation error: %v", err)
 			klog.Info("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
+		}
+	}
+
+	if !rollingUpdateData.CloudOnly {
+		err = r.taintAllNeedUpdate(update, rollingUpdateData)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -151,7 +162,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 
 			klog.Warning("Not draining cluster nodes as 'cloudonly' flag is set.")
 
-		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		} else {
 
 			if u.Node != nil {
 				klog.Infof("Draining the node: %q.", nodeName)
@@ -192,7 +203,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		if rollingUpdateData.CloudOnly {
 			klog.Warningf("Not validating cluster as cloudonly flag is set.")
 
-		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		} else {
 			klog.Info("Validating the cluster.")
 
 			if err = r.validateClusterWithDuration(rollingUpdateData, validationTimeout); err != nil {
@@ -219,6 +230,64 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	}
 
 	return nil
+}
+
+func (r *RollingUpdateInstanceGroup) taintAllNeedUpdate(update []*cloudinstances.CloudInstanceGroupMember, rollingUpdateData *RollingUpdateCluster) error {
+	var toTaint []*corev1.Node
+	for _, u := range update {
+		if u.Node != nil && !u.Node.Spec.Unschedulable {
+			foundTaint := false
+			for _, taint := range u.Node.Spec.Taints {
+				if taint.Key == rollingUpdateTaintKey {
+					foundTaint = true
+				}
+			}
+			if !foundTaint {
+				toTaint = append(toTaint, u.Node)
+			}
+		}
+	}
+	if len(toTaint) > 0 {
+		noun := "nodes"
+		if len(toTaint) == 1 {
+			noun = "node"
+		}
+		klog.Infof("Tainting %d %s in %q instancegroup.", len(toTaint), noun, r.CloudGroup.InstanceGroup.Name)
+		for _, n := range toTaint {
+			if err := r.patchTaint(rollingUpdateData, n); err != nil {
+				if rollingUpdateData.FailOnDrainError {
+					return fmt.Errorf("failed to taint node %q: %v", n, err)
+				}
+				klog.Infof("Ignoring error tainting node %q: %v", n, err)
+			}
+		}
+	}
+	return nil
+}
+
+func (r *RollingUpdateInstanceGroup) patchTaint(rollingUpdateData *RollingUpdateCluster, node *corev1.Node) error {
+	oldData, err := json.Marshal(node)
+	if err != nil {
+		return err
+	}
+
+	node.Spec.Taints = append(node.Spec.Taints, corev1.Taint{
+		Key:    rollingUpdateTaintKey,
+		Effect: corev1.TaintEffectPreferNoSchedule,
+	})
+
+	newData, err := json.Marshal(node)
+	if err != nil {
+		return err
+	}
+
+	patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, node)
+	if err != nil {
+		return err
+	}
+
+	_, err = rollingUpdateData.K8sClient.CoreV1().Nodes().Patch(node.Name, types.StrategicMergePatchType, patchBytes)
+	return err
 }
 
 // validateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
@@ -376,13 +445,4 @@ func (r *RollingUpdateInstanceGroup) deleteNode(node *corev1.Node, rollingUpdate
 	}
 
 	return nil
-}
-
-// Delete a CloudInstanceGroups
-func (r *RollingUpdateInstanceGroup) Delete() error {
-	if r.CloudGroup == nil {
-		return fmt.Errorf("group has to be set")
-	}
-	// TODO: Leaving func in place in order to cordon and drain nodes
-	return r.Cloud.DeleteGroup(r.CloudGroup)
 }

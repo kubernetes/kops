@@ -42,7 +42,7 @@ spec:
     manifest: bar.addons.org.io/v0.0.1.yaml
 ```
 
-In this this example the folder structure should look like this;
+In this example the folder structure should look like this;
 
 ```
 addon.yaml

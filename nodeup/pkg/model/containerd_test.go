@@ -85,11 +85,13 @@ func TestContainerdPackageHashes(t *testing.T) {
 	}
 
 	for _, containerdVersion := range containerdVersions {
-		verifyContainerdPackageHash(t, containerdVersion.Source, containerdVersion.Hash)
+		t.Run(containerdVersion.Source, func(t *testing.T) {
+			verifyContainerdPackageHash(t, containerdVersion.Source, containerdVersion.Hash)
 
-		for _, p := range containerdVersion.ExtraPackages {
-			verifyContainerdPackageHash(t, p.Source, p.Hash)
-		}
+			for _, p := range containerdVersion.ExtraPackages {
+				verifyContainerdPackageHash(t, p.Source, p.Hash)
+			}
+		})
 	}
 }
 

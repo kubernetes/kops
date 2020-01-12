@@ -34,7 +34,7 @@ has built in support for CNI networking components.
 
 Several different CNI providers are currently built into kops:
 
-* [Calico](https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/calico#installing-with-the-etcd-datastore)
+* [Calico](https://docs.projectcalico.org/latest/introduction) - use `--networking calico` (See [below](#calico-example-for-cni-and-network-policy) for additional configuration options.)
 * [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
 * [flannel](https://github.com/coreos/flannel) - use `--networking flannel-vxlan` (recommended) or `--networking flannel-udp` (legacy).  `--networking flannel` now selects `flannel-vxlan`.
 * [kopeio-vxlan](https://github.com/kopeio/networking)
@@ -161,15 +161,13 @@ The above will deploy a daemonset installation which requires K8s 1.4.x or above
 
 ##### Enable Cross-Subnet mode in Calico (AWS only)
 
-Calico [since 2.1] supports a new option for IP-in-IP mode where traffic is only encapsulated
+Calico [since 2.1](https://www.projectcalico.org/project-calico-2-1-released/) supports a new option for IP-in-IP mode where traffic is only encapsulated
 when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness
 – for example, across heterogeneous public clouds or on AWS where traffic is crossing availability zones/ regions.
 
-With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS
-multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity
-are connected via a router.
-
-Reference: [Calico 2.1 Release Notes](https://www.projectcalico.org/project-calico-2-1-released/)
+With this mode, IP-in-IP encapsulation is only [performed selectively](https://docs.projectcalico.org/v3.10/networking/vxlan-ipip#configure-ip-in-ip-encapsulation-for-only-cross-subnet-traffic).
+This provides better performance in AWS multi-AZ deployments, and in general when deploying on networks where
+pools of nodes with L2 connectivity are connected via a router.
 
 Note that Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh.
 Each node automatically sets up a BGP peering with every other node within the same L2 network.
@@ -210,7 +208,7 @@ Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execut
 
 For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/latest/getting-started/kubernetes/).
 
-For details on upgrading a Calico v2 deployment see [Calico Version 3](calico-v3.md).
+For details on upgrading a Calico v2 deployment see [Calico Version 3](calico-v3.md#upgrading-an-existing-cluster).
 
 #### Getting help with Calico
 
@@ -225,7 +223,7 @@ In kops 1.12.0 and later Calico uses the k8s APIServer as its datastore.
 
 In versions <1.12.0 of kops Calico uses etcd as a backend for storing information about workloads and policies. Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
 
-#### Configuraing Calico to use Typha
+#### Configuring Calico to use Typha
 
 As of Kops 1.12 Calico uses the kube-apiserver as its datastore. The default setup does not make use of [Typha](https://github.com/projectcalico/typha) - a component intended to lower the impact of Calico on the k8s APIServer which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
 It is possible to configure Calico to use Typha by editing a cluster and adding a
@@ -474,7 +472,7 @@ For support with Cilium Network Policies you can reach out on Slack or Github:
 
 ### Flannel Example for CNI
 
-#### Configuraing Flannel iptables resync period
+#### Configuring Flannel iptables resync period
 
 As of Kops 1.12.0, Flannel iptables resync option is configurable via editing a cluster and adding
 `iptablesResyncSeconds` option to spec:

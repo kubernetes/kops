@@ -267,7 +267,7 @@ func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*aut
 		return nil, nil
 	}
 	if len(results) != 1 {
-		return nil, fmt.Errorf("Found multiple LaunchConfigurations with name %q", name)
+		return nil, fmt.Errorf("found multiple LaunchConfigurations with name %q", name)
 	}
 	return results[0], nil
 }
@@ -362,7 +362,7 @@ func ListCloudFormationStacks(cloud fi.Cloud, clusterName string) ([]*resources.
 	c := cloud.(awsup.AWSCloud)
 	response, err := c.CloudFormation().ListStacks(request)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to list CloudFormation stacks: %v", err)
+		return nil, fmt.Errorf("unable to list CloudFormation stacks: %v", err)
 	}
 	for _, stack := range response.StackSummaries {
 		if *stack.StackName == clusterName {
@@ -606,6 +606,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			ID:      id,
 			Type:    "volume",
 			Deleter: DeleteVolume,
+			Shared:  HasSharedTag(ec2.ResourceTypeVolume+":"+id, volume.Tags, clusterName),
 		}
 
 		var blocks []string

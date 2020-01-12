@@ -330,7 +330,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		enableRBACAddon = false
 	}
 	if b.cluster.Spec.KubeAPIServer != nil {
-		if b.cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken != nil && *b.cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken == true {
+		if b.cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken != nil && *b.cluster.Spec.KubeAPIServer.EnableBootstrapAuthToken {
 			enableRBACAddon = false
 		}
 	}

@@ -52,7 +52,7 @@ func (rrsets ResourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordS
 			klog.V(2).Infof("Subdomain %q does not exist", name)
 			return nil, nil
 		}
-		return nil, fmt.Errorf("Failed to get service from etcd, err: %v", err)
+		return nil, fmt.Errorf("failed to get service from etcd, err: %v", err)
 	}
 	if emptyResponse(response) {
 		klog.V(2).Infof("Subdomain %q does not exist in etcd", name)
@@ -65,7 +65,7 @@ func (rrsets ResourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordS
 		service := dnsmsg.Service{}
 		err = json.Unmarshal([]byte(node.Value), &service)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to unmarshall json data, err: %v", err)
+			return nil, fmt.Errorf("failed to unmarshall json data, err: %v", err)
 		}
 
 		rrset := ResourceRecordSet{name: name, rrdatas: []string{}, rrsets: &rrsets}
