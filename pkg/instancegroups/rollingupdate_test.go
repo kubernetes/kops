@@ -605,52 +605,6 @@ func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
 }
 
-func TestRollingUpdateSettingsIgnoredForMaster(t *testing.T) {
-	c, cloud, cluster := getTestSetup()
-
-	two := intstr.FromInt(2)
-	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
-		MaxUnavailable: &two,
-	}
-
-	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 3, 2)
-	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
-	assert.NoError(t, err, "rolling update")
-
-	cordoned := ""
-	tainted := map[string]bool{}
-	deleted := map[string]bool{}
-	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
-		switch a := action.(type) {
-		case testingclient.PatchAction:
-			if string(a.GetPatch()) == cordonPatch {
-				assertCordon(t, a)
-				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
-				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
-				cordoned = a.GetName()
-			} else {
-				assertTaint(t, a)
-				assert.Equal(t, "", cordoned, "not tainting while node cordoned")
-				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
-				tainted[a.GetName()] = true
-			}
-		case testingclient.DeleteAction:
-			assert.Equal(t, "nodes", a.GetResource().Resource)
-			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
-			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
-			deleted[a.GetName()] = true
-			cordoned = ""
-		case testingclient.ListAction:
-			// Don't care
-		default:
-			t.Errorf("unexpected action %v", a)
-		}
-	}
-
-	assertGroupInstanceCount(t, cloud, "master-1", 1)
-}
-
 func TestRollingUpdateDisabled(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
@@ -665,8 +619,8 @@ func TestRollingUpdateDisabled(t *testing.T) {
 
 	assertGroupInstanceCount(t, cloud, "node-1", 3)
 	assertGroupInstanceCount(t, cloud, "node-2", 3)
-	assertGroupInstanceCount(t, cloud, "master-1", 0)
-	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+	assertGroupInstanceCount(t, cloud, "master-1", 2)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
 }
 
 func TestRollingUpdateDisabledCloudonly(t *testing.T) {
@@ -684,8 +638,8 @@ func TestRollingUpdateDisabledCloudonly(t *testing.T) {
 
 	assertGroupInstanceCount(t, cloud, "node-1", 3)
 	assertGroupInstanceCount(t, cloud, "node-2", 3)
-	assertGroupInstanceCount(t, cloud, "master-1", 0)
-	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+	assertGroupInstanceCount(t, cloud, "master-1", 2)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
 }
 
 // The concurrent update tests attempt to induce the following expected update sequence:
@@ -858,6 +812,29 @@ func TestRollingUpdateMaxUnavailableAllButOneNeedUpdate(t *testing.T) {
 	assert.NoError(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 1)
+	concurrentTest.AssertComplete()
+}
+
+func TestRollingUpdateMaxUnavailableAllNeedUpdateMaster(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	concurrentTest := newConcurrentTest(t, cloud, true)
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = concurrentTest
+	cloud.MockAutoscaling = concurrentTest
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 7, 7)
+
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "master-1", 0)
 	concurrentTest.AssertComplete()
 }
 
