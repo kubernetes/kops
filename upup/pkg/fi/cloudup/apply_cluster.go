@@ -93,6 +93,8 @@ var (
 	CloudupModels = []string{"proto", "cloudup"}
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
 	OldestSupportedKubernetesVersion = "1.9.0"
+	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
+	OldestRecommendedKubernetesVersion = "1.10.0"
 )
 
 type ApplyClusterCmd struct {
@@ -1047,13 +1049,22 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	}
 
 	if !util.IsKubernetesGTE(OldestSupportedKubernetesVersion, *parsed) {
+		fmt.Printf("This version of Kubernetes is no longer supported; upgrading Kubernetes is required\n")
+		fmt.Printf("\n")
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", OldestRecommendedKubernetesVersion))
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
+		return fmt.Errorf("kubernetes upgrade is required")
+	}
+	if !util.IsKubernetesGTE(OldestRecommendedKubernetesVersion, *parsed) {
 		fmt.Printf("\n")
 		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 		fmt.Printf("Kops support for this Kubernetes version is deprecated and will be removed in a future release.\n")
 		fmt.Printf("\n")
-		fmt.Printf("Upgrading is recommended\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", ""))
+		fmt.Printf("Upgrading Kubernetes is recommended\n")
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", OldestRecommendedKubernetesVersion))
 		fmt.Printf("\n")
 		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
