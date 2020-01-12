@@ -1053,7 +1053,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		fmt.Printf("\n")
 		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", OldestRecommendedKubernetesVersion))
 		fmt.Printf("\n")
-		fmt.Printf(starline)
+		fmt.Printf("%s\n", starline)
 		fmt.Printf("\n")
 		return fmt.Errorf("kubernetes upgrade is required")
 	}
