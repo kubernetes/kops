@@ -67,36 +67,9 @@ func Test_Build_Scheduler_Without_PolicyConfigMap(t *testing.T) {
 	}
 
 }
-func Test_Build_Scheduler_PolicyConfigMap_Unsupported_Version(t *testing.T) {
-	versions := []string{"v1.6.0", "v1.6.4"}
-
-	for _, v := range versions {
-
-		c := buildSchedulerConfigMapCluster(v)
-		b := assets.NewAssetBuilder(c, "")
-
-		version, err := util.ParseKubernetesVersion(v)
-		if err != nil {
-			t.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", v, err)
-		}
-
-		ks := &KubeSchedulerOptionsBuilder{
-			&OptionsContext{
-				AssetBuilder:      b,
-				KubernetesVersion: *version,
-			},
-		}
-
-		err = ks.BuildOptions(&c.Spec)
-		if err == nil {
-			t.Fatalf("error is expected, but none are returned")
-		}
-	}
-
-}
 
 func Test_Build_Scheduler_PolicyConfigMap_Supported_Version(t *testing.T) {
-	versions := []string{"v1.7.0", "v1.7.4", "v1.8.0"}
+	versions := []string{"v1.9.0", "v1.10.5", "v1.18.0"}
 
 	for _, v := range versions {
 

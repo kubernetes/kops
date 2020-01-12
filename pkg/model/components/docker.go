@@ -54,27 +54,17 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 			docker.Version = fi.String("18.09.9")
 		} else if b.IsKubernetesGTE("1.12") {
 			docker.Version = fi.String("18.06.3")
-		} else if b.IsKubernetesGTE("1.9") {
-			docker.Version = fi.String("17.03.2")
-		} else if b.IsKubernetesGTE("1.8") {
-			docker.Version = fi.String("1.13.1")
-		} else if b.IsKubernetesGTE("1.6") {
-			docker.Version = fi.String("1.12.6")
-		} else if b.IsKubernetesGTE("1.5") {
-			docker.Version = fi.String("1.12.3")
 		} else {
-			docker.Version = fi.String("1.11.2")
+			docker.Version = fi.String("17.03.2")
 		}
 	}
 
-	if b.IsKubernetesGTE("1.6") {
-		if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == nil {
-			// Use built-in docker logging, if not configured otherwise (by the user)
-			logDriver := "json-file"
-			clusterSpec.Docker.LogDriver = &logDriver
-			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-size=10m")
-			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-file=5")
-		}
+	if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == nil {
+		// Use built-in docker logging, if not configured otherwise (by the user)
+		logDriver := "json-file"
+		clusterSpec.Docker.LogDriver = &logDriver
+		clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-size=10m")
+		clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-file=5")
 	}
 
 	docker.LogLevel = fi.String("warn")
