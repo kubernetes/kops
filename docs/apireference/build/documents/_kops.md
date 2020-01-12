@@ -1,5 +1,0 @@
-
-# <strong>kops</strong>
-
-------------
-
