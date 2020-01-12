@@ -38,6 +38,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
@@ -318,7 +319,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 			t.Fatalf("unexpected error reading actual terraform output: %v", err)
 		}
 
-		testutils.AssertMatchesFile(t, string(actualTF), path.Join(srcDir, testDataTFPath))
+		golden.AssertMatchesFile(t, string(actualTF), path.Join(srcDir, testDataTFPath))
 	}
 
 	// Compare data files if they are provided
@@ -620,7 +621,7 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		}
 		actualCF = buf.Bytes()
 
-		testutils.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
+		golden.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
 
 		// test extracted values
 		{
@@ -639,10 +640,10 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 				t.Fatalf("error serializing yaml: %v", err)
 			}
 
-			testutils.AssertMatchesFile(t, string(actualExtracted), path.Join(srcDir, expectedCfPath+".extracted.yaml"))
+			golden.AssertMatchesFile(t, string(actualExtracted), path.Join(srcDir, expectedCfPath+".extracted.yaml"))
 		}
 
-		testutils.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
+		golden.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
 	}
 }
 
