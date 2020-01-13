@@ -173,12 +173,8 @@ func (c *NodeupModelContext) PathSrvSshproxy() string {
 
 // CNIBinDir returns the path for the CNI binaries
 func (c *NodeupModelContext) CNIBinDir() string {
-	switch c.Distribution {
-	case distros.DistributionContainerOS:
-		return "/home/kubernetes/bin/"
-	default:
-		return "/opt/cni/bin/"
-	}
+	// We used to map this on a per-distro basis, but this can require CNI manifests to be distro aware
+	return "/opt/cni/bin/"
 }
 
 // KubeletBootstrapKubeconfig is the path the bootstrap config file
