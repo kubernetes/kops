@@ -135,7 +135,7 @@ func updateNtpIP(ip string, daemon ntpDaemon) ([]byte, error) {
 	var address string
 	var r *regexp.Regexp
 	var path string
-	switch ntpd {
+	switch daemon {
 	case ntpd:
 		address = fmt.Sprintf("server %s prefer iburst", ip)
 		// the regex strings might need a bit more work
