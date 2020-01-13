@@ -693,7 +693,11 @@ func (c *concurrentTest) Validate() (*validation.ValidationCluster, error) {
 		c.t.Errorf("unexpected call to Validate with %d termination requests left", terminationRequestsLeft)
 	case 4:
 		assert.Equal(c.t, 6, c.previousValidation, "previous validation")
-		c.terminationChan <- true
+		select {
+		case c.terminationChan <- true:
+		default:
+			c.t.Error("terminationChan is full")
+		}
 		c.mutex.Unlock()
 		select {
 		case <-c.validationChan:
@@ -705,7 +709,11 @@ func (c *concurrentTest) Validate() (*validation.ValidationCluster, error) {
 		assert.Equal(c.t, 4, c.previousValidation, "previous validation")
 	case 1:
 		assert.Equal(c.t, 2, c.previousValidation, "previous validation")
-		c.terminationChan <- true
+		select {
+		case c.terminationChan <- true:
+		default:
+			c.t.Error("terminationChan is full")
+		}
 		c.mutex.Unlock()
 		select {
 		case <-c.validationChan:
@@ -745,8 +753,12 @@ func (c *concurrentTest) TerminateInstanceInAutoScalingGroup(input *autoscaling.
 }
 
 func (c *concurrentTest) delayThenWakeValidation() {
-	time.Sleep(2 * time.Millisecond) // NodeInterval plus some
-	c.validationChan <- true
+	time.Sleep(20 * time.Millisecond) // NodeInterval plus some
+	select {
+	case c.validationChan <- true:
+	default:
+		c.t.Error("validationChan is full")
+	}
 }
 
 func (c *concurrentTest) AssertComplete() {
