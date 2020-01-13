@@ -536,6 +536,10 @@ verify-bazel:
 verify-staticcheck: ${BINDATA_TARGETS}
 	hack/verify-staticcheck.sh
 
+.PHONY: verify-shellcheck
+verify-shellcheck:
+	${KOPS_ROOT}/hack/verify-shellcheck.sh
+
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
