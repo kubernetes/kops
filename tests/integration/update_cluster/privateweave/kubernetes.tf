@@ -397,6 +397,7 @@ resource "aws_launch_configuration" "bastion-privateweave-example-com" {
   iam_instance_profile        = "${aws_iam_instance_profile.bastions-privateweave-example-com.id}"
   security_groups             = ["${aws_security_group.bastion-privateweave-example-com.id}"]
   associate_public_ip_address = true
+  user_data                   = "${file("${path.module}/data/aws_launch_configuration_bastion.privateweave.example.com_user_data")}"
 
   root_block_device = {
     volume_type           = "gp2"
