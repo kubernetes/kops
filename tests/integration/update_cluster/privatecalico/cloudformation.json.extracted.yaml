@@ -1,3 +1,4 @@
+Resources.AWSAutoScalingLaunchConfigurationbastionprivatecalicoexamplecom.Properties.UserData: ""
 Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexamplecom.Properties.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
