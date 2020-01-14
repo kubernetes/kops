@@ -22,7 +22,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -348,13 +347,13 @@ func (x *ImportCluster) ImportAWSCluster() error {
 			nodeGroup.Spec.MachineType = ""
 		}
 	}
-	if conf.Version == "1.2" {
-		// If users went with defaults on some things, clear them out so they get the new defaults
-		//if clusterConfig.AdmissionControl == "NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,ResourceQuota" {
-		//	// More admission controllers in 1.2
-		//	clusterConfig.AdmissionControl = ""
-		//}
-	}
+	// if conf.Version == "1.2" {
+	// If users went with defaults on some things, clear them out so they get the new defaults
+	//if clusterConfig.AdmissionControl == "NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,ResourceQuota" {
+	//	// More admission controllers in 1.2
+	//	clusterConfig.AdmissionControl = ""
+	//}
+	// }
 
 	for _, etcdClusterName := range []string{"main", "events"} {
 		etcdCluster := &kops.EtcdClusterSpec{
@@ -507,18 +506,18 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	return nil
 }
 
-func parseInt(s string) (int, error) {
-	if s == "" {
-		return 0, nil
-	}
+// func parseInt(s string) (int, error) {
+// 	if s == "" {
+// 		return 0, nil
+// 	}
 
-	n, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return 0, err
-	}
+// 	n, err := strconv.ParseInt(s, 10, 64)
+// 	if err != nil {
+// 		return 0, err
+// 	}
 
-	return int(n), nil
-}
+// 	return int(n), nil
+// }
 
 //func writeConf(p string, k8s *cloudup.CloudConfig) error {
 //	jsonBytes, err := json.Marshal(k8s)
