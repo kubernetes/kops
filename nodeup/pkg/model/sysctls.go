@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -115,6 +116,23 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"fs.inotify.max_user_watches = 524288",
 			"",
 		)
+	}
+
+	// Running Flannel on CentOS 7 needs custom settings
+	if b.Cluster.Spec.Networking.Flannel != nil {
+		proxyMode := b.Cluster.Spec.KubeProxy.ProxyMode
+		if proxyMode == "" {
+			proxyMode = "iptables"
+		}
+
+		if proxyMode == "iptables" && b.Distribution == distros.DistributionCentos7 {
+			sysctls = append(sysctls,
+				"# Flannel settings on CentOS 7",
+				"# Issue https://github.com/coreos/flannel/issues/902",
+				"net.bridge.bridge-nf-call-ip6tables=1",
+				"net.bridge.bridge-nf-call-iptables=1",
+				"")
+		}
 	}
 
 	if b.Cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
