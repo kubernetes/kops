@@ -63,11 +63,9 @@ type KopeioNetworkingSpec struct {
 
 // WeaveNetworkingSpec declares that we want Weave networking
 type WeaveNetworkingSpec struct {
-	MTU          *int32 `json:"mtu,omitempty"`
-	ConnLimit    *int32 `json:"connLimit,omitempty"`
-	NoMasqLocal  *int32 `json:"noMasqLocal,omitempty"`
-	NetExtraArgs string `json:"netExtraArgs,omitempty"`
-	NpcExtraArgs string `json:"npcExtraArgs,omitempty"`
+	MTU         *int32 `json:"mtu,omitempty"`
+	ConnLimit   *int32 `json:"connLimit,omitempty"`
+	NoMasqLocal *int32 `json:"noMasqLocal,omitempty"`
 
 	// MemoryRequest memory request of weave container. Default 200Mi
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
@@ -77,6 +75,9 @@ type WeaveNetworkingSpec struct {
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 	// CPULimit CPU limit of weave container.
 	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
+	// Extra arguments that are passed to weave-kube
+	NetExtraArgs string `json:"netExtraArgs,omitempty"`
+
 	// NPCMemoryRequest memory request of weave npc container. Default 200Mi
 	NPCMemoryRequest *resource.Quantity `json:"npcMemoryRequest,omitempty"`
 	// NPCCPURequest CPU request of weave npc container. Default 50m
@@ -85,6 +86,8 @@ type WeaveNetworkingSpec struct {
 	NPCMemoryLimit *resource.Quantity `json:"npcMemoryLimit,omitempty"`
 	// NPCCPULimit CPU limit of weave npc container
 	NPCCPULimit *resource.Quantity `json:"npcCPULimit,omitempty"`
+	// Extra arguments that are passed to weave-npc
+	NPCExtraArgs string `json:"npcExtraArgs,omitempty"`
 }
 
 // FlannelNetworkingSpec declares that we want Flannel networking
