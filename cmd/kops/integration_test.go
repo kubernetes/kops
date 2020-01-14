@@ -417,16 +417,9 @@ func runTestAWS(t *testing.T, clusterName string, srcDir string, version string,
 			expectedFilenames = append(expectedFilenames, []string{
 				"aws_iam_role_bastions." + clusterName + "_policy",
 				"aws_iam_role_policy_bastions." + clusterName + "_policy",
-
-				// bastions usually don't have any userdata
-				// "aws_launch_configuration_bastions." + clusterName + "_user_data",
+				"aws_launch_configuration_bastion." + clusterName + "_user_data",
 			}...)
 		}
-	}
-
-	// Special case that tests a bastion with user-data
-	if srcDir == "bastionadditional_user-data" {
-		expectedFilenames = append(expectedFilenames, "aws_launch_configuration_bastion."+clusterName+"_user_data")
 	}
 	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil, lifecycleOverrides)
 }
@@ -457,9 +450,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 			expectedFilenames = append(expectedFilenames, []string{
 				"aws_iam_role_bastions." + clusterName + "_policy",
 				"aws_iam_role_policy_bastions." + clusterName + "_policy",
-
-				// bastions don't have any userdata
-				// "aws_launch_configuration_bastions." + clusterName + "_user_data",
+				"aws_launch_configuration_bastion." + clusterName + "_user_data",
 			}...)
 		}
 	} else if phase == cloudup.PhaseCluster {

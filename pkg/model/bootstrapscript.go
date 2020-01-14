@@ -132,7 +132,11 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.Cluster) (*fi.ResourceHolder, error) {
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
-		return nil, nil
+		templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		return fi.WrapResource(templateResource), nil
 	}
 
 	functions := template.FuncMap{

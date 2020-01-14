@@ -402,6 +402,7 @@ resource "aws_launch_configuration" "bastion-privatekopeio-example-com" {
   iam_instance_profile        = "${aws_iam_instance_profile.bastions-privatekopeio-example-com.id}"
   security_groups             = ["${aws_security_group.bastion-privatekopeio-example-com.id}"]
   associate_public_ip_address = true
+  user_data                   = "${file("${path.module}/data/aws_launch_configuration_bastion.privatekopeio.example.com_user_data")}"
 
   root_block_device = {
     volume_type           = "gp2"
