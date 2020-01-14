@@ -133,21 +133,17 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 // ip to the ntp config file.
 func updateNtpIP(ip string, daemon ntpDaemon) ([]byte, error) {
 	var address string
-	var r *regexp.Regexp
 	var path string
+	r := regexp.MustCompile(`(?m)(^pool|^server)\s.*`)
 	switch daemon {
 	case ntpd:
-		address = fmt.Sprintf("server %s prefer iburst", ip)
-		// the regex strings might need a bit more work
-		r = regexp.MustCompile(`pool\s\d.*[a-z].[a-z].[a-z]\siburst`)
+		address = fmt.Sprintf("server %s prefer iburst\n", ip)
 		path = "/etc/ntp.conf"
 	case chronyd:
-		address = fmt.Sprintf("server %s prefer iburst minpoll 4 maxpoll 4", ip)
-		// the regex strings might need a bit more work
-		r = regexp.MustCompile(`server\s.*iburst.*`)
+		address = fmt.Sprintf("server %s prefer iburst minpoll 4 maxpoll 4\n", ip)
 		path = "/etc/chrony.conf"
 	default:
-		return nil, fmt.Errorf("%s is not a supported ntp application", ntpd)
+		return nil, fmt.Errorf("%s is not a supported ntp application", daemon)
 	}
 
 	f, err := ioutil.ReadFile(path)
