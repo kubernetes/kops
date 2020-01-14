@@ -101,7 +101,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
-
+	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 	dest["Region"] = func() string {
@@ -191,6 +191,52 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 		}
 	}
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
+}
+
+// CloudControllerConfigArgv returns the args to external cloud controller
+func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
+	if tf.cluster.Spec.ExternalCloudControllerManager == nil {
+		return nil, fmt.Errorf("ExternalCloudControllerManager is nil")
+	}
+	var argv []string
+
+	if tf.cluster.Spec.ExternalCloudControllerManager.Master != "" {
+		argv = append(argv, fmt.Sprintf("--master=%s", tf.cluster.Spec.ExternalCloudControllerManager.Master))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.LogLevel != 0 {
+		argv = append(argv, fmt.Sprintf("--v=%d", tf.cluster.Spec.ExternalCloudControllerManager.LogLevel))
+	} else {
+		argv = append(argv, "--v=2")
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider != "" {
+		argv = append(argv, fmt.Sprintf("--cloud-provider=%s", tf.cluster.Spec.ExternalCloudControllerManager.CloudProvider))
+	} else if tf.cluster.Spec.CloudProvider != "" {
+		argv = append(argv, fmt.Sprintf("--cloud-provider=%s", tf.cluster.Spec.CloudProvider))
+	} else {
+		return nil, fmt.Errorf("Cloud Provider is not set")
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.ClusterName != "" {
+		argv = append(argv, fmt.Sprintf("--cluster-name=%s", tf.cluster.Spec.ExternalCloudControllerManager.ClusterName))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.ClusterCIDR != "" {
+		argv = append(argv, fmt.Sprintf("--cluster-cidr=%s", tf.cluster.Spec.ExternalCloudControllerManager.ClusterCIDR))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.AllocateNodeCIDRs != nil {
+		argv = append(argv, fmt.Sprintf("--allocate-node-cidrs=%t", *tf.cluster.Spec.ExternalCloudControllerManager.AllocateNodeCIDRs))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes != nil {
+		argv = append(argv, fmt.Sprintf("--configure-cloud-routes=%t", *tf.cluster.Spec.ExternalCloudControllerManager.ConfigureCloudRoutes))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != nil && *tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType != "" {
+		argv = append(argv, fmt.Sprintf("--cidr-allocator-type=%s", *tf.cluster.Spec.ExternalCloudControllerManager.CIDRAllocatorType))
+	}
+	if tf.cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials != nil {
+		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", *tf.cluster.Spec.ExternalCloudControllerManager.UseServiceAccountCredentials))
+	} else {
+		argv = append(argv, fmt.Sprintf("--use-service-account-credentials=%t", true))
+	}
+
+	return argv, nil
 }
 
 // DnsControllerArgv returns the args to the DNS controller
