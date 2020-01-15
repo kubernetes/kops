@@ -139,8 +139,8 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: 11e566a259bbb5f066cf2b06cd8832e74072a900
+    manifestHash: 96334bfcfa6a3ec9791b50c94674a8821cb6ad67
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.5.2-kops.2
+    version: 2.5.2-kops.3
