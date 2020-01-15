@@ -75,7 +75,7 @@ type WeaveNetworkingSpec struct {
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 	// CPULimit CPU limit of weave container.
 	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
-	// Extra arguments that are passed to weave-kube
+	// NetExtraArgs are extra arguments that are passed to weave-kube.
 	NetExtraArgs string `json:"netExtraArgs,omitempty"`
 
 	// NPCMemoryRequest memory request of weave npc container. Default 200Mi
@@ -86,7 +86,7 @@ type WeaveNetworkingSpec struct {
 	NPCMemoryLimit *resource.Quantity `json:"npcMemoryLimit,omitempty"`
 	// NPCCPULimit CPU limit of weave npc container
 	NPCCPULimit *resource.Quantity `json:"npcCPULimit,omitempty"`
-	// Extra arguments that are passed to weave-npc
+	// NPCExtraArgs are extra arguments that are passed to weave-npc.
 	NPCExtraArgs string `json:"npcExtraArgs,omitempty"`
 }
 
