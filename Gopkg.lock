@@ -99,7 +99,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:20ac61f29dff8fde52e8928f2de03172f4df1fed1beb0399fa649b88a890274f"
+  digest = "1:8a30521546817e5a945aaad320d3c5f4c75aa421ea52bac414e389a5379c75af"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -119,6 +119,7 @@
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/s3err",
     "internal/sdkio",
     "internal/sdkrand",
     "internal/sdkuri",
@@ -154,8 +155,7 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "1825bc12edc3cd682594909d6386f7fcb957c99c"
-  version = "v1.14.30"
+  revision = "bf8067ceb6e7f51e150c218972dccfeeed892b85"
 
 [[projects]]
   digest = "1:8b019763cb155094c7919d577530604dc070a05315f24b3a2b102a8f9570725f"

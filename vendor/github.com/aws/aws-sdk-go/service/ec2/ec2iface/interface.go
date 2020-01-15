@@ -645,6 +645,9 @@ type EC2API interface {
 	DescribeNetworkInterfacesWithContext(aws.Context, *ec2.DescribeNetworkInterfacesInput, ...request.Option) (*ec2.DescribeNetworkInterfacesOutput, error)
 	DescribeNetworkInterfacesRequest(*ec2.DescribeNetworkInterfacesInput) (*request.Request, *ec2.DescribeNetworkInterfacesOutput)
 
+	DescribeNetworkInterfacesPages(*ec2.DescribeNetworkInterfacesInput, func(*ec2.DescribeNetworkInterfacesOutput, bool) bool) error
+	DescribeNetworkInterfacesPagesWithContext(aws.Context, *ec2.DescribeNetworkInterfacesInput, func(*ec2.DescribeNetworkInterfacesOutput, bool) bool, ...request.Option) error
+
 	DescribePlacementGroups(*ec2.DescribePlacementGroupsInput) (*ec2.DescribePlacementGroupsOutput, error)
 	DescribePlacementGroupsWithContext(aws.Context, *ec2.DescribePlacementGroupsInput, ...request.Option) (*ec2.DescribePlacementGroupsOutput, error)
 	DescribePlacementGroupsRequest(*ec2.DescribePlacementGroupsInput) (*request.Request, *ec2.DescribePlacementGroupsOutput)
