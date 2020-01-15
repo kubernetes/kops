@@ -131,7 +131,7 @@ spec:
   - id: k8s-1.7
     kubernetesVersion: '>=1.7.0 <1.8.0'
     manifest: networking.weave/k8s-1.7.yaml
-    manifestHash: 0725cf9a9f3651209a0b726ed00a078d7fb2e7f6
+    manifestHash: 990772f9809ffb0cff4ea9341a9ab7e9094d7587
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"

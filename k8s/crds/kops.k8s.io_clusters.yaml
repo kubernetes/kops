@@ -2788,7 +2788,8 @@ spec:
                       format: int32
                       type: integer
                     netExtraArgs:
-                      description: Extra arguments that are passed to weave-kube
+                      description: NetExtraArgs are extra arguments that are passed
+                        to weave-kube.
                       type: string
                     noMasqLocal:
                       format: int32
@@ -2801,7 +2802,8 @@ spec:
                         Default 50m
                       type: string
                     npcExtraArgs:
-                      description: Extra arguments that are passed to weave-npc
+                      description: NPCExtraArgs are extra arguments that are passed
+                        to weave-npc.
                       type: string
                     npcMemoryLimit:
                       description: NPCMemoryLimit memory limit of weave npc container.
