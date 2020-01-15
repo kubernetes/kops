@@ -136,9 +136,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if strict && c.Spec.KubeControllerManager == nil {
 		return field.Required(fieldSpec.Child("KubeControllerManager"), "KubeControllerManager not configured")
 	}
-	if kubernetesRelease.LT(semver.MustParse("1.7.0")) && c.Spec.ExternalCloudControllerManager != nil {
-		return field.Invalid(fieldSpec.Child("ExternalCloudControllerManager"), c.Spec.ExternalCloudControllerManager, "ExternalCloudControllerManager is not supported in version 1.6.0 or lower")
-	}
 	if strict && c.Spec.KubeDNS == nil {
 		return field.Required(fieldSpec.Child("KubeDNS"), "KubeDNS not configured")
 	}
@@ -448,13 +445,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 
 	// KubeProxy
 	if c.Spec.KubeProxy != nil {
-		ipvsMode := "ipvs"
 		kubeProxyPath := fieldSpec.Child("KubeProxy")
 		master := c.Spec.KubeProxy.Master
 
-		if kubernetesRelease.LT(semver.MustParse("1.8.0")) && c.Spec.KubeProxy.ProxyMode == ipvsMode {
-			return field.Invalid(kubeProxyPath.Child("proxyMode"), c.Spec.KubeProxy.ProxyMode, ipvsMode+" is not available pre v1.8.0")
-		}
 		for i, x := range c.Spec.KubeProxy.IPVSExcludeCIDRS {
 			if _, _, err := net.ParseCIDR(x); err != nil {
 				return field.Invalid(kubeProxyPath.Child("ipvsExcludeCIDRS").Index(i), x, "Invalid network CIDR")
@@ -483,17 +476,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if c.Spec.Kubelet != nil {
 		kubeletPath := fieldSpec.Child("Kubelet")
 
-		if kubernetesRelease.GTE(semver.MustParse("1.6.0")) {
+		{
 			// Flag removed in 1.6
 			if c.Spec.Kubelet.APIServers != "" {
 				return field.Invalid(
 					kubeletPath.Child("APIServers"),
 					c.Spec.Kubelet.APIServers,
 					"api-servers flag was removed in 1.6")
-			}
-		} else {
-			if strict && c.Spec.Kubelet.APIServers == "" {
-				return field.Required(kubeletPath.Child("APIServers"), "")
 			}
 		}
 
@@ -522,17 +511,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if c.Spec.MasterKubelet != nil {
 		masterKubeletPath := fieldSpec.Child("MasterKubelet")
 
-		if kubernetesRelease.GTE(semver.MustParse("1.6.0")) {
+		{
 			// Flag removed in 1.6
 			if c.Spec.MasterKubelet.APIServers != "" {
 				return field.Invalid(
 					masterKubeletPath.Child("APIServers"),
 					c.Spec.MasterKubelet.APIServers,
 					"api-servers flag was removed in 1.6")
-			}
-		} else {
-			if strict && c.Spec.MasterKubelet.APIServers == "" {
-				return field.Required(masterKubeletPath.Child("APIServers"), "")
 			}
 		}
 
@@ -613,7 +598,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
-	if kubernetesRelease.GTE(semver.MustParse("1.4.0")) {
+	{
 		if c.Spec.Networking != nil && c.Spec.Networking.Classic != nil {
 			return field.Invalid(fieldSpec.Child("Networking"), "classic", "classic networking is not supported with kubernetes versions 1.4 and later")
 		}
@@ -622,25 +607,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if c.Spec.Networking != nil && (c.Spec.Networking.AmazonVPC != nil || c.Spec.Networking.LyftVPC != nil) &&
 		c.Spec.CloudProvider != "aws" {
 		return field.Invalid(fieldSpec.Child("Networking"), "amazon-vpc-routed-eni", "amazon-vpc-routed-eni networking is supported only in AWS")
-	}
-
-	if kubernetesRelease.LT(semver.MustParse("1.7.0")) {
-		if c.Spec.Networking != nil && c.Spec.Networking.Romana != nil {
-			return field.Invalid(fieldSpec.Child("Networking"), "romana", "romana networking is not supported with kubernetes versions 1.6 or lower")
-		}
-
-		if c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC != nil {
-			return field.Invalid(fieldSpec.Child("Networking"), "amazon-vpc-routed-eni", "amazon-vpc-routed-eni networking is not supported with kubernetes versions 1.6 or lower")
-		}
-
-		if c.Spec.Networking != nil && c.Spec.Networking.LyftVPC != nil {
-			return field.Invalid(fieldSpec.Child("Networking"), "cni-ipvlan-vpc-k8s", "cni-ipvlan-vpc-k8s networking is not supported with kubernetes versions 1.6 or lower")
-		}
-	}
-
-	// Cilium specific validation rules
-	if err := validateCilium(c); err != nil {
-		return err
 	}
 
 	if errs := newValidateCluster(c); len(errs) != 0 {
@@ -758,19 +724,6 @@ func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) *f
 		return field.Required(fieldPath.Child("InstanceGroup"), "EtcdMember did not have InstanceGroup")
 	}
 
-	return nil
-}
-
-func validateCilium(c *kops.Cluster) *field.Error {
-	if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil {
-		specPath := field.NewPath("Spec")
-
-		minimalKubeVersion := semver.MustParse("1.7.0")
-		kubeVersion := semver.MustParse(c.Spec.KubernetesVersion)
-		if kubeVersion.LT(minimalKubeVersion) {
-			return field.Invalid(specPath.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "Cilium needs at least Kubernetes 1.7")
-		}
-	}
 	return nil
 }
 

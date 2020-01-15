@@ -116,14 +116,6 @@ func usesCNI(c *api.Cluster) bool {
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	// 1.5.x k8s uses release 07a8a28637e97b22eb8dfe710eeae1344f69d16e
-	defaultCNIAssetK8s1_5           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz"
-	defaultCNIAssetHashStringK8s1_5 = "19d49f7b2b99cd2493d5ae0ace896c64e289ccbb"
-
-	// 1.6.x k8s uses release 0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff
-	defaultCNIAssetK8s1_6           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz"
-	defaultCNIAssetHashStringK8s1_6 = "1d9788b0f5420e1a219aad2cb8681823fc515e7c"
-
 	// defaultCNIAssetK8s1_9 is the CNI tarball for 1.9.x k8s.
 	defaultCNIAssetK8s1_9           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.6.0.tgz"
 	defaultCNIAssetHashStringK8s1_9 = "d595d3ded6499a64e8dac02466e2f5f2ce257c9f"
@@ -177,18 +169,10 @@ func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL,
 		cniAsset = defaultCNIAssetK8s1_11
 		cniAssetHash = defaultCNIAssetSHA1StringK8s1_11
 		klog.V(2).Infof("Adding default CNI asset for k8s >= 1.11: %s", defaultCNIAssetK8s1_9)
-	} else if util.IsKubernetesGTE("1.9", *sv) {
+	} else {
 		cniAsset = defaultCNIAssetK8s1_9
 		cniAssetHash = defaultCNIAssetHashStringK8s1_9
 		klog.V(2).Infof("Adding default CNI asset for 1.11 > k8s >= 1.9: %s", defaultCNIAssetK8s1_9)
-	} else if util.IsKubernetesGTE("1.6", *sv) {
-		cniAsset = defaultCNIAssetK8s1_6
-		cniAssetHash = defaultCNIAssetHashStringK8s1_6
-		klog.V(2).Infof("Adding default CNI asset for 1.9 > k8s >= 1.6: %s", defaultCNIAssetK8s1_6)
-	} else {
-		cniAsset = defaultCNIAssetK8s1_5
-		cniAssetHash = defaultCNIAssetHashStringK8s1_5
-		klog.V(2).Infof("Adding default CNI asset for 1.6 > k8s >= 1.5: %s", defaultCNIAssetK8s1_5)
 	}
 
 	u, err := url.Parse(cniAsset)
