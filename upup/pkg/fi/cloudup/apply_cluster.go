@@ -1144,16 +1144,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		"/bin/linux/amd64/kubectl",
 	}
 	if needsMounterAsset(c.Cluster, c.InstanceGroups) {
-		k8sVersion, err := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
-		if err != nil {
-			return fmt.Errorf("unable to determine kubernetes version from %q", c.Cluster.Spec.KubernetesVersion)
-		} else if util.IsKubernetesGTE("1.9", *k8sVersion) {
-			// Available directly
-			k8sAssetsNames = append(k8sAssetsNames, "/bin/linux/amd64/mounter")
-		} else {
-			// Only available in the kubernetes-manifests.tar.gz directory
-			k8sAssetsNames = append(k8sAssetsNames, "/kubernetes-manifests.tar.gz")
-		}
+		k8sAssetsNames = append(k8sAssetsNames, "/bin/linux/amd64/mounter")
 	}
 
 	for _, a := range k8sAssetsNames {

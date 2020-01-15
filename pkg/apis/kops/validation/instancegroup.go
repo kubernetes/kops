@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/slice"
 
@@ -228,26 +227,6 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)
 			}
 		}
-	}
-
-	k8sVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-	if err != nil {
-		return fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
-	}
-
-	allErrs := field.ErrorList{}
-	fieldPath := field.NewPath("InstanceGroup")
-
-	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
-		if len(g.Spec.Taints) > 0 {
-			if !(g.IsMaster() && g.Spec.Taints[0] == kops.TaintNoScheduleMaster15 && len(g.Spec.Taints) == 1) {
-				allErrs = append(allErrs, field.Invalid(fieldPath.Child("Spec").Child("Taints"), g.Spec.Taints, "User-specified taints are not supported before kubernetes version 1.6.0"))
-			}
-		}
-	}
-
-	if len(allErrs) != 0 {
-		return allErrs[0]
 	}
 
 	return nil

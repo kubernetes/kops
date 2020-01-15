@@ -79,7 +79,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.IsKubernetesGTE("1.7") {
+	{
 		// TODO: Remove - we use the apiserver-aggregator keypair instead (which is signed by a different CA)
 		if err := b.BuildCertificateTask(c, "apiserver-proxy-client", "proxy-client.cert"); err != nil {
 			return err
@@ -89,7 +89,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.IsKubernetesGTE("1.7") {
+	{
 		if err := b.BuildCertificateTask(c, "apiserver-aggregator", "apiserver-aggregator.cert"); err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.IsKubernetesGTE("1.7") {
+	{
 		if err := b.BuildCertificateTask(c, "apiserver-aggregator-ca", "apiserver-aggregator-ca.cert"); err != nil {
 			return err
 		}

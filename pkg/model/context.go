@@ -244,13 +244,11 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 
 		// Kubernetes 1.6 introduced the shared ownership tag; that replaces TagClusterName
 		setLegacyTag := true
-		if m.IsKubernetesGTE("1.6") {
-			// For the moment, we only skip the legacy tag for shared resources
-			// (other people may be using it)
-			if shared {
-				klog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
-				setLegacyTag = false
-			}
+		// For the moment, we only skip the legacy tag for shared resources
+		// (other people may be using it)
+		if shared {
+			klog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
+			setLegacyTag = false
 		}
 		if setLegacyTag {
 			tags[awsup.TagClusterName] = m.Cluster.ObjectMeta.Name

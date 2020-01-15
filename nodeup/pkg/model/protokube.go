@@ -446,10 +446,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		}
 	}
 
-	// initialize rbac on Kubernetes >= 1.6 and master
-	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
-		f.InitializeRBAC = fi.Bool(true)
-	}
+	f.InitializeRBAC = fi.Bool(true)
 
 	zone := t.Cluster.Spec.DNSZone
 	if zone != "" {
@@ -510,10 +507,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	if f.DNSInternalSuffix == nil {
 		f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
-	}
-
-	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
-		f.ApplyTaints = fi.Bool(true)
 	}
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 16 {
