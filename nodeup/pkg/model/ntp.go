@@ -134,7 +134,7 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 func updateNtpIP(ip string, daemon ntpDaemon) ([]byte, error) {
 	var address string
 	var path string
-	r := regexp.MustCompile(`(?m)(^pool|^server)\s.*`)
+	r := regexp.MustCompile(`(?m)^(?:pool|server)\s.*`)
 	switch daemon {
 	case ntpd:
 		address = fmt.Sprintf("server %s prefer iburst\n", ip)
