@@ -236,7 +236,7 @@ github.com/google/uuid
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
-# github.com/gophercloud/gophercloud v0.0.0-20190216224116-dcc6e84aef1b
+# github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a
 github.com/gophercloud/gophercloud
 github.com/gophercloud/gophercloud/internal
 github.com/gophercloud/gophercloud/openstack
@@ -276,11 +276,6 @@ github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers
 github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects
 github.com/gophercloud/gophercloud/openstack/utils
 github.com/gophercloud/gophercloud/pagination
-github.com/gophercloud/gophercloud/openstack/compute/v2/images
-github.com/gophercloud/gophercloud/internal
-github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies
-github.com/gophercloud/gophercloud/openstack/objectstorage/v1/accounts
-github.com/gophercloud/gophercloud/openstack/identity/v2/tenants
 # github.com/gorilla/mux v1.7.0
 github.com/gorilla/mux
 # github.com/gregjones/httpcache v0.0.0-20170728041850-787624de3eb7
@@ -461,11 +456,11 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529
+# golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
+golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/nacl/box
 golang.org/x/crypto/nacl/secretbox
@@ -475,7 +470,7 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
+# golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
 golang.org/x/net/bpf
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -497,11 +492,11 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20190412213103-97732733099d
+# golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.1-0.20181227161524-e6919f6577db
+# golang.org/x/text v0.3.2
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal
 golang.org/x/text/encoding/internal/identifier
@@ -515,7 +510,7 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac
+# golang.org/x/tools v0.0.0-20191203134012-c197fd4bf371
 golang.org/x/tools/go/analysis
 golang.org/x/tools/go/analysis/passes/inspect
 golang.org/x/tools/go/ast/astutil
@@ -531,6 +526,7 @@ golang.org/x/tools/go/vcs
 golang.org/x/tools/internal/fastwalk
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/semver
+golang.org/x/tools/internal/span
 # gomodules.xyz/jsonpatch/v2 v2.0.1
 gomodules.xyz/jsonpatch/v2
 # google.golang.org/api v0.0.0-20181220000619-583d854617af
@@ -568,7 +564,7 @@ gopkg.in/gcfg.v1/types
 gopkg.in/inf.v0
 # gopkg.in/warnings.v0 v0.1.1
 gopkg.in/warnings.v0
-# gopkg.in/yaml.v2 v2.2.2
+# gopkg.in/yaml.v2 v2.2.7
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
 gopkg.in/yaml.v3

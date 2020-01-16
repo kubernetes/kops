@@ -82,8 +82,9 @@ func (c *ResourceRecordChangeset) Apply() error {
 		if err != nil {
 			return err
 		}
+		ttl := int(upsert.Ttl())
 		uopts := recordsets.UpdateOpts{
-			TTL:     int(upsert.Ttl()),
+			TTL:     &ttl,
 			Records: upsert.Rrdatas(),
 		}
 		_, err = recordsets.Update(c.zone.zones.iface.sc, zoneID, rrID, uopts).Extract()
