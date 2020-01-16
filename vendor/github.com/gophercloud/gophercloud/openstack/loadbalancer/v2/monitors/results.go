@@ -50,6 +50,10 @@ type Monitor struct {
 	// member to INACTIVE. A valid value is from 1 to 10.
 	MaxRetries int `json:"max_retries"`
 
+	// Number of allowed connection failures before changing the status of the
+	// member to Error. A valid value is from 1 to 10.
+	MaxRetriesDown int `json:"max_retries_down"`
+
 	// The HTTP method that the monitor uses for requests.
 	HTTPMethod string `json:"http_method"`
 

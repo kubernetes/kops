@@ -25,14 +25,15 @@ Example to List Monitors
 Example to Create a Monitor
 
 	createOpts := monitors.CreateOpts{
-		Type:          "HTTP",
-		Name:          "db",
-		PoolID:        "84f1b61f-58c4-45bf-a8a9-2dafb9e5214d",
-		Delay:         20,
-		Timeout:       10,
-		MaxRetries:    5,
-		URLPath:       "/check",
-		ExpectedCodes: "200-299",
+		Type:           "HTTP",
+		Name:           "db",
+		PoolID:         "84f1b61f-58c4-45bf-a8a9-2dafb9e5214d",
+		Delay:          20,
+		Timeout:        10,
+		MaxRetries:     5,
+		MaxRetriesDown: 4,
+		URLPath:        "/check",
+		ExpectedCodes:  "200-299",
 	}
 
 	monitor, err := monitors.Create(networkClient, createOpts).Extract()
@@ -45,12 +46,13 @@ Example to Update a Monitor
 	monitorID := "d67d56a6-4a86-4688-a282-f46444705c64"
 
 	updateOpts := monitors.UpdateOpts{
-		Name:          "NewHealthmonitorName",
-		Delay:         3,
-		Timeout:       20,
-		MaxRetries:    10,
-		URLPath:       "/another_check",
-		ExpectedCodes: "301",
+		Name:           "NewHealthmonitorName",
+		Delay:          3,
+		Timeout:        20,
+		MaxRetries:     10,
+		MaxRetriesDown: 8,
+		URLPath:        "/another_check",
+		ExpectedCodes:  "301",
 	}
 
 	monitor, err := monitors.Update(networkClient, monitorID, updateOpts).Extract()

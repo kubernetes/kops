@@ -1,6 +1,7 @@
 package schedulerhints
 
 import (
+	"encoding/json"
 	"net"
 	"regexp"
 	"strings"
@@ -105,7 +106,18 @@ func (opts SchedulerHints) ToServerSchedulerHintsCreateMap() (map[string]interfa
 			err.Info = "Must be a conditional statement in the format of [op,variable,value]"
 			return nil, err
 		}
-		sh["query"] = opts.Query
+
+		// The query needs to be sent as a marshalled string.
+		b, err := json.Marshal(opts.Query)
+		if err != nil {
+			err := gophercloud.ErrInvalidInput{}
+			err.Argument = "schedulerhints.SchedulerHints.Query"
+			err.Value = opts.Query
+			err.Info = "Must be a conditional statement in the format of [op,variable,value]"
+			return nil, err
+		}
+
+		sh["query"] = string(b)
 	}
 
 	if opts.TargetCell != "" {
