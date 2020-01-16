@@ -68,6 +68,18 @@ type Listener struct {
 
 	// Backend member inactivity timeout in milliseconds
 	TimeoutMemberData int `json:"timeout_member_data"`
+
+	// Backend member connection timeout in milliseconds
+	TimeoutMemberConnect int `json:"timeout_member_connect"`
+
+	// Time, in milliseconds, to wait for additional TCP packets for content inspection
+	TimeoutTCPInspect int `json:"timeout_tcp_inspect"`
+
+	// A dictionary of optional headers to insert into the request before it is sent to the backend member.
+	InsertHeaders map[string]string `json:"insert_headers"`
+
+	// A list of IPv4, IPv6 or mix of both CIDRs
+	AllowedCIDRs []string `json:"allowed_cidrs"`
 }
 
 type Stats struct {
