@@ -100,6 +100,24 @@ func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
 			Mountpoint: "/opt/kops/bin",
 			Options:    []string{"exec", "nosuid", "nodev"},
 		})
+
+		// /opt/cni and /opt/cni/bin
+		c.AddTask(&nodetasks.File{
+			Path: filepath.Join(src, "cni"),
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
+		c.AddTask(&nodetasks.File{
+			Path: filepath.Join(src, "cni", "bin"),
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
+
+		c.AddTask(&nodetasks.BindMount{
+			Source:     filepath.Join(src, "cni", "bin"),
+			Mountpoint: "/opt/cni/bin",
+			Options:    []string{"exec", "nosuid", "nodev"},
+		})
 	}
 
 	return nil
