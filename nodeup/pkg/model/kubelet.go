@@ -595,6 +595,12 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		}
 	}
 
+	// In certain configurations systemd-resolved will put the loopback address 127.0.0.53 as a nameserver into /etc/resolv.conf
+	// https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
+	if b.Distribution == distros.DistributionBionic && c.ResolverConfig == nil {
+		c.ResolverConfig = s("/run/systemd/resolve/resolv.conf")
+	}
+
 	// As of 1.16 we can no longer set critical labels.
 	// kops-controller will set these labels.
 	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
