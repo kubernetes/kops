@@ -35,6 +35,10 @@ const (
 	// ImageStatusDeactivated denotes that access to image data is not allowed to
 	// any non-admin user.
 	ImageStatusDeactivated ImageStatus = "deactivated"
+
+	// ImageStatusImporting denotes that an import call has been made but that
+	// the image is not yet ready for use.
+	ImageStatusImporting ImageStatus = "importing"
 )
 
 // ImageVisibility denotes an image that is fully available in Glance.
