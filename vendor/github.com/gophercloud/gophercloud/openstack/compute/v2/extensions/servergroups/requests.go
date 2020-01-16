@@ -21,11 +21,19 @@ type CreateOptsBuilder interface {
 
 // CreateOpts specifies Server Group creation parameters.
 type CreateOpts struct {
-	// Name is the name of the server group
+	// Name is the name of the server group.
 	Name string `json:"name" required:"true"`
 
-	// Policies are the server group policies
-	Policies []string `json:"policies" required:"true"`
+	// Policies are the server group policies.
+	Policies []string `json:"policies,omitempty"`
+
+	// Policy specifies the name of a policy.
+	// Requires microversion 2.64 or later.
+	Policy string `json:"policy,omitempty"`
+
+	// Rules specifies the set of rules.
+	// Requires microversion 2.64 or later.
+	Rules *Rules `json:"rules,omitempty"`
 }
 
 // ToServerGroupCreateMap constructs a request body from CreateOpts.
