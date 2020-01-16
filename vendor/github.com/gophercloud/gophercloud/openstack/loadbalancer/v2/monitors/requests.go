@@ -19,24 +19,25 @@ type ListOptsBuilder interface {
 // sort by a particular Monitor attribute. SortDir sets the direction, and is
 // either `asc' or `desc'. Marker and Limit are used for pagination.
 type ListOpts struct {
-	ID            string `q:"id"`
-	Name          string `q:"name"`
-	TenantID      string `q:"tenant_id"`
-	ProjectID     string `q:"project_id"`
-	PoolID        string `q:"pool_id"`
-	Type          string `q:"type"`
-	Delay         int    `q:"delay"`
-	Timeout       int    `q:"timeout"`
-	MaxRetries    int    `q:"max_retries"`
-	HTTPMethod    string `q:"http_method"`
-	URLPath       string `q:"url_path"`
-	ExpectedCodes string `q:"expected_codes"`
-	AdminStateUp  *bool  `q:"admin_state_up"`
-	Status        string `q:"status"`
-	Limit         int    `q:"limit"`
-	Marker        string `q:"marker"`
-	SortKey       string `q:"sort_key"`
-	SortDir       string `q:"sort_dir"`
+	ID             string `q:"id"`
+	Name           string `q:"name"`
+	TenantID       string `q:"tenant_id"`
+	ProjectID      string `q:"project_id"`
+	PoolID         string `q:"pool_id"`
+	Type           string `q:"type"`
+	Delay          int    `q:"delay"`
+	Timeout        int    `q:"timeout"`
+	MaxRetries     int    `q:"max_retries"`
+	MaxRetriesDown int    `q:"max_retries_down"`
+	HTTPMethod     string `q:"http_method"`
+	URLPath        string `q:"url_path"`
+	ExpectedCodes  string `q:"expected_codes"`
+	AdminStateUp   *bool  `q:"admin_state_up"`
+	Status         string `q:"status"`
+	Limit          int    `q:"limit"`
+	Marker         string `q:"marker"`
+	SortKey        string `q:"sort_key"`
+	SortDir        string `q:"sort_dir"`
 }
 
 // ToMonitorListQuery formats a ListOpts into a query string.
@@ -107,8 +108,11 @@ type CreateOpts struct {
 	// status to INACTIVE. Must be a number between 1 and 10.
 	MaxRetries int `json:"max_retries" required:"true"`
 
+	// Number of permissible ping failures befor changing the member's
+	// status to ERROR. Must be a number between 1 and 10.
+	MaxRetriesDown int `json:"max_retries_down,omitempty"`
+
 	// URI path that will be accessed if Monitor type is HTTP or HTTPS.
-	// Required for HTTP(S) types.
 	URLPath string `json:"url_path,omitempty"`
 
 	// The HTTP method used for requests by the Monitor. If this attribute
@@ -116,8 +120,8 @@ type CreateOpts struct {
 	HTTPMethod string `json:"http_method,omitempty"`
 
 	// Expected HTTP codes for a passing HTTP(S) Monitor. You can either specify
-	// a single status like "200", or a range like "200-202". Required for HTTP(S)
-	// types.
+	// a single status like "200", a range like "200-202", or a combination like
+	// "200-202, 401".
 	ExpectedCodes string `json:"expected_codes,omitempty"`
 
 	// TenantID is the UUID of the project who owns the Monitor.
@@ -138,24 +142,7 @@ type CreateOpts struct {
 
 // ToMonitorCreateMap builds a request body from CreateOpts.
 func (opts CreateOpts) ToMonitorCreateMap() (map[string]interface{}, error) {
-	b, err := gophercloud.BuildRequestBody(opts, "healthmonitor")
-	if err != nil {
-		return nil, err
-	}
-
-	switch opts.Type {
-	case TypeHTTP, TypeHTTPS:
-		switch opts.URLPath {
-		case "":
-			return nil, fmt.Errorf("URLPath must be provided for HTTP and HTTPS")
-		}
-		switch opts.ExpectedCodes {
-		case "":
-			return nil, fmt.Errorf("ExpectedCodes must be provided for HTTP and HTTPS")
-		}
-	}
-
-	return b, nil
+	return gophercloud.BuildRequestBody(opts, "healthmonitor")
 }
 
 /*
@@ -208,6 +195,10 @@ type UpdateOpts struct {
 	// Number of permissible ping failures before changing the member's
 	// status to INACTIVE. Must be a number between 1 and 10.
 	MaxRetries int `json:"max_retries,omitempty"`
+
+	// Number of permissible ping failures befor changing the member's
+	// status to ERROR. Must be a number between 1 and 10.
+	MaxRetriesDown int `json:"max_retries_down,omitempty"`
 
 	// URI path that will be accessed if Monitor type is HTTP or HTTPS.
 	// Required for HTTP(S) types.
