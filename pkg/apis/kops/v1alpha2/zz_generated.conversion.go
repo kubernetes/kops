@@ -5182,15 +5182,16 @@ func autoConvert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *We
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal
-	out.NetExtraArgs = in.NetExtraArgs
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.MemoryLimit = in.MemoryLimit
 	out.CPULimit = in.CPULimit
+	out.NetExtraArgs = in.NetExtraArgs
 	out.NPCMemoryRequest = in.NPCMemoryRequest
 	out.NPCCPURequest = in.NPCCPURequest
 	out.NPCMemoryLimit = in.NPCMemoryLimit
 	out.NPCCPULimit = in.NPCCPULimit
+	out.NPCExtraArgs = in.NPCExtraArgs
 	return nil
 }
 
@@ -5203,15 +5204,16 @@ func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha2_WeaveNetworkingSpec(in *ko
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal
-	out.NetExtraArgs = in.NetExtraArgs
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.MemoryLimit = in.MemoryLimit
 	out.CPULimit = in.CPULimit
+	out.NetExtraArgs = in.NetExtraArgs
 	out.NPCMemoryRequest = in.NPCMemoryRequest
 	out.NPCCPURequest = in.NPCCPURequest
 	out.NPCMemoryLimit = in.NPCMemoryLimit
 	out.NPCCPULimit = in.NPCCPULimit
+	out.NPCExtraArgs = in.NPCExtraArgs
 	return nil
 }
 
