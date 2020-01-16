@@ -779,6 +779,13 @@ spec:
   sshKeyName: myexistingkey
 ```
 
+If you want to create your instance without any SSH keys you can set this to an empty string:
+```yaml
+spec:
+  sshKeyName: ""
+```
+
+
 ### useHostCertificates
 
 Self-signed certificates towards Cloud APIs. In some cases Cloud APIs do have self-signed certificates.
