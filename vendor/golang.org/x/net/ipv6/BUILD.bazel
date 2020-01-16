@@ -63,6 +63,7 @@ go_library(
         "zsys_openbsd.go",
         "zsys_solaris.go",
     ],
+    cgo = True,
     importmap = "k8s.io/kops/vendor/golang.org/x/net/ipv6",
     importpath = "golang.org/x/net/ipv6",
     visibility = ["//visibility:public"],
