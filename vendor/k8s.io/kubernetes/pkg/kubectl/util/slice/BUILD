@@ -3,19 +3,13 @@ package(default_visibility = ["//visibility:public"])
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
-    "go_test",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["slice.go"],
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubectl/util/slice",
     importpath = "k8s.io/kubernetes/pkg/kubectl/util/slice",
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["slice_test.go"],
-    embed = [":go_default_library"],
 )
 
 filegroup(

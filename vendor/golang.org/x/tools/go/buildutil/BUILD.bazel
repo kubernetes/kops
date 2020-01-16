@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "allpackages.go",
+        "fakecontext.go",
+        "overlay.go",
+        "tags.go",
+        "util.go",
+    ],
+    importmap = "k8s.io/kops/vendor/golang.org/x/tools/go/buildutil",
+    importpath = "golang.org/x/tools/go/buildutil",
+    visibility = ["//visibility:public"],
+)

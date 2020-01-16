@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["crlf.go"],
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/editor/crlf",
     importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor/crlf",
 )
 

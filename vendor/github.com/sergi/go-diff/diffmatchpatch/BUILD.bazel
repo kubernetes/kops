@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["dmp.go"],
+    importmap = "k8s.io/kops/vendor/github.com/sergi/go-diff/diffmatchpatch",
+    importpath = "github.com/sergi/go-diff/diffmatchpatch",
+    visibility = ["//visibility:public"],
+)

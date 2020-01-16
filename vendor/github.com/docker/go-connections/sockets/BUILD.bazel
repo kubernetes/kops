@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "inmem_socket.go",
+        "proxy.go",
+        "sockets.go",
+        "sockets_unix.go",
+        "sockets_windows.go",
+        "tcp_socket.go",
+        "unix_socket.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/docker/go-connections/sockets",
+    importpath = "github.com/docker/go-connections/sockets",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/golang.org/x/net/proxy:go_default_library",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:windows": [
+            "//vendor/github.com/Microsoft/go-winio:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

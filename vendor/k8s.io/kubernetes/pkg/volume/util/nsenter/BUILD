@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -6,65 +6,60 @@ go_library(
         "nsenter_mount.go",
         "nsenter_mount_unsupported.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/volume/util/nsenter",
     importpath = "k8s.io/kubernetes/pkg/volume/util/nsenter",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:android": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/klog:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
+            "//vendor/k8s.io/utils/path:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:darwin": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:dragonfly": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:freebsd": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/utils/nsenter:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:ios": [
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:linux": [
-            "//pkg/util/mount:go_default_library",
             "//vendor/k8s.io/klog:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
             "//vendor/k8s.io/utils/path:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:nacl": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:netbsd": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:openbsd": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:plan9": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:solaris": [
-            "//pkg/util/mount:go_default_library",
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:windows": [
-            "//pkg/util/mount:go_default_library",
-            "//vendor/k8s.io/utils/nsenter:go_default_library",
-        ],
-        "//conditions:default": [],
-    }),
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["nsenter_mount_test.go"],
-    embed = [":go_default_library"],
-    deps = select({
-        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
             "//vendor/k8s.io/utils/nsenter:go_default_library",
         ],
         "//conditions:default": [],

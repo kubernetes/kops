@@ -1,7 +1,6 @@
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
-    "go_test",
 )
 
 go_library(
@@ -13,13 +12,14 @@ go_library(
         "umask_windows.go",
         "util.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubectl/util",
     importpath = "k8s.io/kubernetes/pkg/kubectl/util",
     visibility = ["//build/visible_to:pkg_kubectl_util_CONSUMERS"],
     deps = [
-        "//staging/src/k8s.io/api/core/v1:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/runtime:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
     ] + select({
         "@io_bazel_rules_go//go/platform:android": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
@@ -31,6 +31,9 @@ go_library(
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:ios": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:linux": [
@@ -86,18 +89,4 @@ filegroup(
     ],
     tags = ["automanaged"],
     visibility = ["//build/visible_to:pkg_kubectl_util_CONSUMERS"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "pod_port_test.go",
-        "service_port_test.go",
-        "util_test.go",
-    ],
-    embed = [":go_default_library"],
-    deps = [
-        "//staging/src/k8s.io/api/core/v1:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
-    ],
 )

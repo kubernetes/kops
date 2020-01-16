@@ -35,23 +35,24 @@ go_library(
         "update-repos.go",
         "version.go",
     ],
+    importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
     importpath = "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
     tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
-        "//config:go_default_library",
-        "//flag:go_default_library",
-        "//internal/version:go_default_library",
-        "//label:go_default_library",
-        "//language:go_default_library",
-        "//language/go:go_default_library",
-        "//language/proto:go_default_library",
-        "//merger:go_default_library",
-        "//repo:go_default_library",
-        "//resolve:go_default_library",
-        "//rule:go_default_library",
-        "//walk:go_default_library",
-        "@com_github_pmezard_go_difflib//difflib:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/config:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/flag:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/version:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/label:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/language:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/language/go:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/language/proto:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/merger:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/repo:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/resolve:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/walk:go_default_library",
+        "//vendor/github.com/pmezard/go-difflib/difflib:go_default_library",
     ],
 )
 
@@ -59,20 +60,10 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
-        "diff_test.go",
-        "fix_test.go",
-        "integration_test.go",
         "langs.go",  # keep
     ],
     args = ["-go_sdk=go_sdk"],
     data = ["@go_sdk//:files"],
-    embed = [":go_default_library"],
-    deps = [
-        "//config:go_default_library",
-        "//internal/wspace:go_default_library",
-        "//testtools:go_default_library",
-        "@io_bazel_rules_go//go/tools/bazel:go_default_library",
-    ],
 )
 
 filegroup(

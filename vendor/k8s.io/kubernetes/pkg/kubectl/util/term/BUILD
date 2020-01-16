@@ -3,7 +3,6 @@ package(default_visibility = ["//visibility:public"])
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
-    "go_test",
 )
 
 go_library(
@@ -15,13 +14,14 @@ go_library(
         "term.go",
         "term_writer.go",
     ],
+    importmap = "k8s.io/kops/vendor/k8s.io/kubernetes/pkg/kubectl/util/term",
     importpath = "k8s.io/kubernetes/pkg/kubectl/util/term",
     deps = [
-        "//pkg/kubectl/util/interrupt:go_default_library",
-        "//staging/src/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
-        "//staging/src/k8s.io/client-go/tools/remotecommand:go_default_library",
         "//vendor/github.com/docker/docker/pkg/term:go_default_library",
         "//vendor/github.com/mitchellh/go-wordwrap:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
+        "//vendor/k8s.io/client-go/tools/remotecommand:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/interrupt:go_default_library",
     ] + select({
         "@io_bazel_rules_go//go/platform:android": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
@@ -33,6 +33,9 @@ go_library(
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:ios": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:linux": [
@@ -55,12 +58,6 @@ go_library(
         ],
         "//conditions:default": [],
     }),
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["term_writer_test.go"],
-    embed = [":go_default_library"],
 )
 
 filegroup(

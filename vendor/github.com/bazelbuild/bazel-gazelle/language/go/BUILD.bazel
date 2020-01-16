@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load(":def.bzl", "std_package_list")
 
 # gazelle:exclude testdata
@@ -47,52 +47,22 @@ go_library(
         "std_package_list.go",
         "update.go",
     ],
+    importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/language/go",
     importpath = "github.com/bazelbuild/bazel-gazelle/language/go",
     visibility = ["//visibility:public"],
     deps = [
-        "//config:go_default_library",
-        "//flag:go_default_library",
-        "//label:go_default_library",
-        "//language:go_default_library",
-        "//language/proto:go_default_library",
-        "//pathtools:go_default_library",
-        "//repo:go_default_library",
-        "//resolve:go_default_library",
-        "//rule:go_default_library",
-        "@com_github_bazelbuild_buildtools//build:go_default_library",
-        "@com_github_pelletier_go_toml//:go_default_library",
-        "@org_golang_x_sync//errgroup:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "config_test.go",
-        "fileinfo_go_test.go",
-        "fileinfo_test.go",
-        "fix_test.go",
-        "generate_test.go",
-        "resolve_test.go",
-        "stubs_test.go",
-        "update_import_test.go",
-    ],
-    data = glob(["testdata/**"]),
-    embed = [":go_default_library"],
-    deps = [
-        "//config:go_default_library",
-        "//label:go_default_library",
-        "//language:go_default_library",
-        "//language/proto:go_default_library",
-        "//merger:go_default_library",
-        "//pathtools:go_default_library",
-        "//repo:go_default_library",
-        "//resolve:go_default_library",
-        "//rule:go_default_library",
-        "//testtools:go_default_library",
-        "//walk:go_default_library",
-        "@com_github_bazelbuild_buildtools//build:go_default_library",
-        "@org_golang_x_tools//go/vcs:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/config:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/flag:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/label:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/language:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/language/proto:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/pathtools:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/repo:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/resolve:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
+        "//vendor/github.com/bazelbuild/buildtools/build:go_default_library",
+        "//vendor/github.com/pelletier/go-toml:go_default_library",
+        "//vendor/golang.org/x/sync/errgroup:go_default_library",
     ],
 )
 

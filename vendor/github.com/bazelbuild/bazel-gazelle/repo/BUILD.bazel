@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -6,29 +6,14 @@ go_library(
         "remote.go",
         "repo.go",
     ],
+    importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/repo",
     importpath = "github.com/bazelbuild/bazel-gazelle/repo",
     visibility = ["//visibility:public"],
     deps = [
-        "//label:go_default_library",
-        "//pathtools:go_default_library",
-        "//rule:go_default_library",
-        "@org_golang_x_tools//go/vcs:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "remote_test.go",
-        "repo_test.go",
-        "stubs_test.go",
-    ],
-    embed = [":go_default_library"],
-    deps = [
-        "//pathtools:go_default_library",
-        "//rule:go_default_library",
-        "//testtools:go_default_library",
-        "@org_golang_x_tools//go/vcs:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/label:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/pathtools:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
+        "//vendor/golang.org/x/tools/go/vcs:go_default_library",
     ],
 )
 

@@ -1,0 +1,36 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "disks.go",
+        "eni.go",
+        "forward_entry.go",
+        "images.go",
+        "instance_types.go",
+        "instances.go",
+        "monitoring.go",
+        "nat_gateway.go",
+        "networks.go",
+        "regions.go",
+        "route_tables.go",
+        "router_interface.go",
+        "security_groups.go",
+        "snapshots.go",
+        "snat_entry.go",
+        "ssh_key_pair.go",
+        "tags.go",
+        "vpcs.go",
+        "vrouters.go",
+        "vswitches.go",
+        "zones.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/denverdino/aliyungo/ecs",
+    importpath = "github.com/denverdino/aliyungo/ecs",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/util:go_default_library",
+    ],
+)
