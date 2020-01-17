@@ -29,8 +29,8 @@ import (
 	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
-	"k8s.io/kubernetes/pkg/kubectl/util/templates"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 )
 
 // SecretTypeSSHPublicKey is set in a KeysetItem.Type for an SSH public keypair

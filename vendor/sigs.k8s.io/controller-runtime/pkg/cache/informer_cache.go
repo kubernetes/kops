@@ -38,6 +38,13 @@ var (
 	_ Cache         = &informerCache{}
 )
 
+// ErrCacheNotStarted is returned when trying to read from the cache that wasn't started.
+type ErrCacheNotStarted struct{}
+
+func (*ErrCacheNotStarted) Error() string {
+	return "the cache is not started, can not read objects"
+}
+
 // informerCache is a Kubernetes Object cache populated from InformersMap.  informerCache wraps an InformersMap.
 type informerCache struct {
 	*internal.InformersMap
@@ -50,9 +57,13 @@ func (ip *informerCache) Get(ctx context.Context, key client.ObjectKey, out runt
 		return err
 	}
 
-	cache, err := ip.InformersMap.Get(gvk, out)
+	started, cache, err := ip.InformersMap.Get(gvk, out)
 	if err != nil {
 		return err
+	}
+
+	if !started {
+		return &ErrCacheNotStarted{}
 	}
 	return cache.Reader.Get(ctx, key, out)
 }
@@ -90,9 +101,13 @@ func (ip *informerCache) List(ctx context.Context, out runtime.Object, opts ...c
 		}
 	}
 
-	cache, err := ip.InformersMap.Get(gvk, cacheTypeObj)
+	started, cache, err := ip.InformersMap.Get(gvk, cacheTypeObj)
 	if err != nil {
 		return err
+	}
+
+	if !started {
+		return &ErrCacheNotStarted{}
 	}
 
 	return cache.Reader.List(ctx, out, opts...)
@@ -105,7 +120,7 @@ func (ip *informerCache) GetInformerForKind(gvk schema.GroupVersionKind) (Inform
 	if err != nil {
 		return nil, err
 	}
-	i, err := ip.InformersMap.Get(gvk, obj)
+	_, i, err := ip.InformersMap.Get(gvk, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -118,11 +133,17 @@ func (ip *informerCache) GetInformer(obj runtime.Object) (Informer, error) {
 	if err != nil {
 		return nil, err
 	}
-	i, err := ip.InformersMap.Get(gvk, obj)
+	_, i, err := ip.InformersMap.Get(gvk, obj)
 	if err != nil {
 		return nil, err
 	}
 	return i.Informer, err
+}
+
+// NeedLeaderElection implements the LeaderElectionRunnable interface
+// to indicate that this can be started without requiring the leader lock
+func (ip *informerCache) NeedLeaderElection() bool {
+	return false
 }
 
 // IndexField adds an indexer to the underlying cache, using extraction function to get

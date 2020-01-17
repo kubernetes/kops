@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "manager.go",
+        "producer.go",
+    ],
+    importmap = "k8s.io/kops/vendor/go.opencensus.io/metric/metricproducer",
+    importpath = "go.opencensus.io/metric/metricproducer",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/go.opencensus.io/metric/metricdata:go_default_library"],
+)
