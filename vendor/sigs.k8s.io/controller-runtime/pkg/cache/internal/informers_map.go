@@ -145,7 +145,7 @@ func (ip *specificInformersMap) HasSyncedFuncs() []cache.InformerSynced {
 
 // Get will create a new Informer and add it to the map of specificInformersMap if none exists.  Returns
 // the Informer from the map.
-func (ip *specificInformersMap) Get(gvk schema.GroupVersionKind, obj runtime.Object) (*MapEntry, error) {
+func (ip *specificInformersMap) Get(gvk schema.GroupVersionKind, obj runtime.Object) (bool, *MapEntry, error) {
 	// Return the informer if it is found
 	i, started, ok := func() (*MapEntry, bool, bool) {
 		ip.mu.RLock()
@@ -157,18 +157,18 @@ func (ip *specificInformersMap) Get(gvk schema.GroupVersionKind, obj runtime.Obj
 	if !ok {
 		var err error
 		if i, started, err = ip.addInformerToMap(gvk, obj); err != nil {
-			return nil, err
+			return started, nil, err
 		}
 	}
 
 	if started && !i.Informer.HasSynced() {
 		// Wait for it to sync before returning the Informer so that folks don't read from a stale cache.
 		if !cache.WaitForCacheSync(ip.stop, i.Informer.HasSynced) {
-			return nil, fmt.Errorf("failed waiting for %T Informer to sync", obj)
+			return started, nil, fmt.Errorf("failed waiting for %T Informer to sync", obj)
 		}
 	}
 
-	return i, nil
+	return started, i, nil
 }
 
 func (ip *specificInformersMap) addInformerToMap(gvk schema.GroupVersionKind, obj runtime.Object) (*MapEntry, bool, error) {

@@ -81,6 +81,7 @@ func (wh *Webhook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		wh.writeResponse(w, reviewResponse)
 		return
 	}
+	wh.log.V(1).Info("received request", "UID", req.UID, "kind", req.Kind, "resource", req.Resource)
 
 	// TODO: add panic-recovery for Handle
 	reviewResponse = wh.Handle(r.Context(), req)
@@ -96,5 +97,8 @@ func (wh *Webhook) writeResponse(w io.Writer, response Response) {
 	if err != nil {
 		wh.log.Error(err, "unable to encode the response")
 		wh.writeResponse(w, Errored(http.StatusInternalServerError, err))
+	} else {
+		res := responseAdmissionReview.Response
+		wh.log.V(1).Info("wrote response", "UID", res.UID, "allowed", res.Allowed, "result", res.Result)
 	}
 }
