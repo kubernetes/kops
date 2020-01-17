@@ -23,21 +23,27 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.10.0 <1.11.0"
     # Stretch is the default for 1.11 (for nvme)
-    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2019-09-26
+    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2020-01-17
       providerID: aws
       kubernetesVersion: ">=1.11.0 <1.12.0"
-    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-09-26
+    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2020-01-17
       providerID: aws
       kubernetesVersion: ">=1.12.0 <1.13.0"
-    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2019-09-26
+    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2020-01-17
       providerID: aws
       kubernetesVersion: ">=1.13.0 <1.14.0"
-    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-09-26
+    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2020-01-17
       providerID: aws
       kubernetesVersion: ">=1.14.0 <1.15.0"
-    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
       providerID: aws
-      kubernetesVersion: ">=1.15.0"
+      kubernetesVersion: ">=1.15.0 <1.16.0"
+    - name: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2020-01-17
+      providerID: aws
+      kubernetesVersion: ">=1.16.0 <1.17.0"
+    - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2020-01-17
+      providerID: aws
+      kubernetesVersion: ">=1.17.0"
     - providerID: gce
       kubernetesVersion: "<1.16.0-alpha.1"
       name: "cos-cloud/cos-stable-65-10323-99-0"
