@@ -118,6 +118,9 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 
 			f.clientset = vfsclientset.NewVFSClientset(basePath, allowVFSList)
 		}
+		if strings.HasPrefix(registryPath, "file://") {
+			klog.Warning("The local filesystem state store is not functional for running clusters")
+		}
 	}
 
 	return f.clientset, nil
