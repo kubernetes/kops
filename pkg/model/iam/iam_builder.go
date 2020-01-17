@@ -169,7 +169,7 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 	}
 
 	if b.HostedZoneID != "" {
-		addRoute53Permissions(p, b.HostedZoneID)
+		b.addRoute53Permissions(p, b.HostedZoneID)
 	}
 
 	if b.Cluster.Spec.IAM.Legacy {
@@ -212,7 +212,7 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 
 	if b.Cluster.Spec.IAM.Legacy {
 		if b.HostedZoneID != "" {
-			addRoute53Permissions(p, b.HostedZoneID)
+			b.addRoute53Permissions(p, b.HostedZoneID)
 		}
 		addRoute53ListHostedZonesPermission(p)
 	}
@@ -536,10 +536,12 @@ func addECRPermissions(p *Policy) {
 	})
 }
 
-func addRoute53Permissions(p *Policy, hostedZoneID string) {
+func (b *PolicyBuilder) addRoute53Permissions(p *Policy, hostedZoneID string) {
 
 	// TODO: Route53 currently not supported in China, need to check and fail/return
-
+	//if b.IAMPrefix() == "arn:aws-cn" {
+	//
+	//}
 	// Remove /hostedzone/ prefix (if present)
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/")
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "hostedzone/")
@@ -549,13 +551,13 @@ func addRoute53Permissions(p *Policy, hostedZoneID string) {
 		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
 			"route53:ListResourceRecordSets",
 			"route53:GetHostedZone"),
-		Resource: stringorslice.Slice([]string{"arn:aws:route53:::hostedzone/" + hostedZoneID}),
+		Resource: stringorslice.Slice([]string{b.IAMPrefix() + ":route53:::hostedzone/" + hostedZoneID}),
 	})
 
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,
 		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-		Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
+		Resource: stringorslice.Slice([]string{b.IAMPrefix() + ":route53:::change/*"}),
 	})
 
 	wildcard := stringorslice.Slice([]string{"*"})
