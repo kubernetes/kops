@@ -17,13 +17,8 @@ limitations under the License.
 package model
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
-	"io"
-	"net/http"
 	"os"
 	"path"
-	"strings"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -38,44 +33,11 @@ func TestContainerdPackageNames(t *testing.T) {
 			continue
 		}
 
-		sanityCheckContainerdPackageName(t, containerdVersion.Source, containerdVersion.Version, containerdVersion.Name)
+		sanityCheckPackageName(t, containerdVersion.Source, containerdVersion.Version, containerdVersion.Name)
 
 		for k, p := range containerdVersion.ExtraPackages {
-			sanityCheckContainerdPackageName(t, p.Source, p.Version, k)
+			sanityCheckPackageName(t, p.Source, p.Version, k)
 		}
-	}
-}
-
-func sanityCheckContainerdPackageName(t *testing.T, u string, version string, name string) {
-	filename := u
-	lastSlash := strings.LastIndex(filename, "/")
-	if lastSlash != -1 {
-		filename = filename[lastSlash+1:]
-	}
-
-	expectedNames := []string{}
-	// Match known RPM formats
-	for _, v := range []string{"-1.", "-2.", "-3.", "-3.2."} {
-		for _, d := range []string{"el7", "el7.centos", "el7_6"} {
-			for _, a := range []string{"noarch", "x86_64"} {
-				expectedNames = append(expectedNames, name+"-"+version+v+d+"."+a+".rpm")
-			}
-		}
-	}
-
-	// Match known DEB formats
-	for _, a := range []string{"amd64", "armhf"} {
-		expectedNames = append(expectedNames, name+"_"+version+"_"+a+".deb")
-	}
-
-	found := false
-	for _, s := range expectedNames {
-		if s == filename {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("unexpected name=%q, version=%q for %s", name, version, u)
 	}
 }
 
@@ -86,33 +48,16 @@ func TestContainerdPackageHashes(t *testing.T) {
 
 	for _, containerdVersion := range containerdVersions {
 		t.Run(containerdVersion.Source, func(t *testing.T) {
-			verifyContainerdPackageHash(t, containerdVersion.Source, containerdVersion.Hash)
+			if err := verifyPackageHash(containerdVersion.Source, containerdVersion.Hash, containerdVersion.Version); err != nil {
+				t.Errorf("error verifying package %q: %v", containerdVersion.Source, err)
+			}
 
 			for _, p := range containerdVersion.ExtraPackages {
-				verifyContainerdPackageHash(t, p.Source, p.Hash)
+				if err := verifyPackageHash(p.Source, p.Hash, p.Version); err != nil {
+					t.Errorf("error verifying package %q: %v", p.Source, err)
+				}
 			}
 		})
-	}
-}
-
-func verifyContainerdPackageHash(t *testing.T, u string, hash string) {
-	resp, err := http.Get(u)
-	if err != nil {
-		t.Errorf("%s: error fetching: %v", u, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	hasher := sha1.New()
-	if _, err := io.Copy(hasher, resp.Body); err != nil {
-		t.Errorf("%s: error reading: %v", u, err)
-		return
-	}
-
-	actualHash := hex.EncodeToString(hasher.Sum(nil))
-	if hash != actualHash {
-		t.Errorf("%s: hash was %q", u, actualHash)
-		return
 	}
 }
 
