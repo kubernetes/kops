@@ -124,7 +124,10 @@ func (_ *VPCCIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		CIDRBlock: e.CIDRBlock,
 	}
 
-	return t.RenderResource("aws_vpc_ipv4_cidr_block_association", *e.Name, tf)
+	// Terraform 0.12 doesn't support resource names that start with digits. See #7052
+	// and https://www.terraform.io/upgrade-guides/0-12.html#pre-upgrade-checklist
+	name := fmt.Sprintf("cidr-%v", *e.Name)
+	return t.RenderResource("aws_vpc_ipv4_cidr_block_association", name, tf)
 }
 
 type cloudformationVPCCIDRBlock struct {
