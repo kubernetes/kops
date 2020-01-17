@@ -474,7 +474,7 @@ resource "aws_launch_configuration" "nodes-ha-example-com" {
   enable_monitoring = false
 }
 
-resource "aws_route" "0-0-0-0--0" {
+resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.ha-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.ha-example-com.id}"
