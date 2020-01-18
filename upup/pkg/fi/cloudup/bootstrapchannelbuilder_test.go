@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -126,7 +127,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		}
 
 		expectedManifestPath := path.Join(basedir, "manifest.yaml")
-		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
+		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 
 	for _, k := range addonManifests {
@@ -146,6 +147,6 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		}
 
 		expectedManifestPath := path.Join(basedir, k+".yaml")
-		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
+		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 }
