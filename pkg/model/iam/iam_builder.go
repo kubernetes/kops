@@ -539,9 +539,6 @@ func addECRPermissions(p *Policy) {
 func (b *PolicyBuilder) addRoute53Permissions(p *Policy, hostedZoneID string) {
 
 	// TODO: Route53 currently not supported in China, need to check and fail/return
-	//if b.IAMPrefix() == "arn:aws-cn" {
-	//
-	//}
 	// Remove /hostedzone/ prefix (if present)
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/")
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "hostedzone/")
