@@ -122,7 +122,7 @@ type UpdateOpts struct {
 	Description *string `json:"description,omitempty"`
 
 	// TTL is the time to live of the RecordSet.
-	TTL int `json:"ttl,omitempty"`
+	TTL *int `json:"ttl,omitempty"`
 
 	// Records are the DNS records of the RecordSet.
 	Records []string `json:"records,omitempty"`
@@ -135,10 +135,17 @@ func (opts UpdateOpts) ToRecordSetUpdateMap() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	if opts.TTL > 0 {
-		b["ttl"] = opts.TTL
-	} else {
-		b["ttl"] = nil
+	// If opts.TTL was actually set, use 0 as a special value to send "null",
+	// even though the result from the API is 0.
+	//
+	// Otherwise, don't send the TTL field.
+	if opts.TTL != nil {
+		ttl := *(opts.TTL)
+		if ttl > 0 {
+			b["ttl"] = ttl
+		} else {
+			b["ttl"] = nil
+		}
 	}
 
 	return b, nil

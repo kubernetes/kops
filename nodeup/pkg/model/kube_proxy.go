@@ -114,11 +114,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			// As a special case, if this is the master, we point kube-proxy to the local IP
 			// This prevents a circular dependency where kube-proxy can't come up until DNS comes up,
 			// which would mean that DNS can't rely on API to come up
-			if b.IsKubernetesGTE("1.6") {
-				c.Master = "https://127.0.0.1"
-			} else {
-				c.Master = "http://127.0.0.1:8080"
-			}
+			c.Master = "https://127.0.0.1"
 		} else {
 			c.Master = "https://" + b.Cluster.Spec.MasterInternalName
 		}
@@ -239,7 +235,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	// Mount the iptables lock file
-	if b.IsKubernetesGTE("1.9") {
+	{
 		addHostPathMapping(pod, container, "iptableslock", "/run/xtables.lock").ReadOnly = false
 
 		vol := pod.Spec.Volumes[len(pod.Spec.Volumes)-1]

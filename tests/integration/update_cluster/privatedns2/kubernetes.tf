@@ -382,6 +382,7 @@ resource "aws_launch_configuration" "bastion-privatedns2-example-com" {
   iam_instance_profile        = "${aws_iam_instance_profile.bastions-privatedns2-example-com.id}"
   security_groups             = ["${aws_security_group.bastion-privatedns2-example-com.id}"]
   associate_public_ip_address = true
+  user_data                   = "${file("${path.module}/data/aws_launch_configuration_bastion.privatedns2.example.com_user_data")}"
 
   root_block_device = {
     volume_type           = "gp2"
@@ -458,13 +459,13 @@ resource "aws_nat_gateway" "us-test-1a-privatedns2-example-com" {
   }
 }
 
-resource "aws_route" "0-0-0-0--0" {
+resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.privatedns2-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "igw-1"
 }
 
-resource "aws_route" "private-us-test-1a-0-0-0-0--0" {
+resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.private-us-test-1a-privatedns2-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = "${aws_nat_gateway.us-test-1a-privatedns2-example-com.id}"

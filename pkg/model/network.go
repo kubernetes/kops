@@ -64,10 +64,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:             vpcTags,
 		}
 
-		if sharedVPC && b.IsKubernetesGTE("1.5") {
-			// If we're running k8s 1.5, and we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
-			// then we don't need EnableDNSHostnames any more
-			klog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", b.KubernetesVersion())
+		if sharedVPC {
+			// If we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
+			// then we don't need EnableDNSHostnames
+			klog.V(4).Info("Skipping EnableDNSHostnames requirement on VPC")
 		} else {
 			// In theory we don't need to enable it for >= 1.5,
 			// but seems safer to stick with existing behaviour

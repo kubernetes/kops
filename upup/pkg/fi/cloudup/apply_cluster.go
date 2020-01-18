@@ -389,7 +389,7 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
 			}
 
-			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
+			if len(sshPublicKeys) == 0 && (c.Cluster.Spec.SSHKeyName == nil || *c.Cluster.Spec.SSHKeyName == "") {
 				return fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
@@ -447,7 +447,7 @@ func (c *ApplyClusterCmd) Run() error {
 				"spotinstLaunchSpec":  &spotinsttasks.LaunchSpec{},
 			})
 
-			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == "" {
+			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == nil {
 				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
@@ -1144,16 +1144,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		"/bin/linux/amd64/kubectl",
 	}
 	if needsMounterAsset(c.Cluster, c.InstanceGroups) {
-		k8sVersion, err := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
-		if err != nil {
-			return fmt.Errorf("unable to determine kubernetes version from %q", c.Cluster.Spec.KubernetesVersion)
-		} else if util.IsKubernetesGTE("1.9", *k8sVersion) {
-			// Available directly
-			k8sAssetsNames = append(k8sAssetsNames, "/bin/linux/amd64/mounter")
-		} else {
-			// Only available in the kubernetes-manifests.tar.gz directory
-			k8sAssetsNames = append(k8sAssetsNames, "/kubernetes-manifests.tar.gz")
-		}
+		k8sAssetsNames = append(k8sAssetsNames, "/bin/linux/amd64/mounter")
 	}
 
 	for _, a := range k8sAssetsNames {

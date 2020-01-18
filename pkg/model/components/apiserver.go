@@ -64,18 +64,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.KubeletPreferredAddressTypes == nil {
-		if b.IsKubernetesGTE("1.5") {
-			// We prioritize the internal IP above the hostname
-			c.KubeletPreferredAddressTypes = []string{
-				string(v1.NodeInternalIP),
-				string(v1.NodeHostName),
-				string(v1.NodeExternalIP),
-			}
-
-			if b.IsKubernetesLT("1.7") {
-				// NodeLegacyHostIP was removed in 1.7; we add it to prior versions with lowest precedence
-				c.KubeletPreferredAddressTypes = append(c.KubeletPreferredAddressTypes, "LegacyHostIP")
-			}
+		// We prioritize the internal IP above the hostname
+		c.KubeletPreferredAddressTypes = []string{
+			string(v1.NodeInternalIP),
+			string(v1.NodeHostName),
+			string(v1.NodeExternalIP),
 		}
 	}
 
@@ -105,36 +98,34 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.KubeAPIServer.EtcdQuorumRead == nil {
-		if b.IsKubernetesGTE("1.9") {
-			// 1.9 changed etcd-quorum-reads default to true
-			// There's a balance between some bugs which are attributed to not having etcd-quorum-reads,
-			// and the poor implementation of quorum-reads in etcd2.
+		// 1.9 changed etcd-quorum-reads default to true
+		// There's a balance between some bugs which are attributed to not having etcd-quorum-reads,
+		// and the poor implementation of quorum-reads in etcd2.
 
-			etcdHA := false
-			etcdV2 := true
-			for _, c := range clusterSpec.EtcdClusters {
-				if len(c.Members) > 1 {
-					etcdHA = true
-				}
-				if c.Version != "" && !strings.HasPrefix(c.Version, "2.") {
-					etcdV2 = false
-				}
+		etcdHA := false
+		etcdV2 := true
+		for _, c := range clusterSpec.EtcdClusters {
+			if len(c.Members) > 1 {
+				etcdHA = true
 			}
+			if c.Version != "" && !strings.HasPrefix(c.Version, "2.") {
+				etcdV2 = false
+			}
+		}
 
-			if !etcdV2 {
-				// etcd3 quorum reads are cheap.  Stick with default (which is to enable quorum reads)
-				clusterSpec.KubeAPIServer.EtcdQuorumRead = nil
+		if !etcdV2 {
+			// etcd3 quorum reads are cheap.  Stick with default (which is to enable quorum reads)
+			clusterSpec.KubeAPIServer.EtcdQuorumRead = nil
+		} else {
+			// etcd2 quorum reads go through raft => write to disk => expensive
+			if !etcdHA {
+				// Turn off quorum reads - they still go through raft, but don't serve any purpose in non-HA clusters.
+				clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
 			} else {
-				// etcd2 quorum reads go through raft => write to disk => expensive
-				if !etcdHA {
-					// Turn off quorum reads - they still go through raft, but don't serve any purpose in non-HA clusters.
-					clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
-				} else {
-					// The problematic case.  We risk exposing more bugs, but against that we have to balance performance.
-					// For now we turn off quorum reads - it's a bad enough performance regression
-					// We'll likely make this default to true once we can set IOPS on the etcd volume and can easily upgrade to etcd3
-					clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
-				}
+				// The problematic case.  We risk exposing more bugs, but against that we have to balance performance.
+				// For now we turn off quorum reads - it's a bad enough performance regression
+				// We'll likely make this default to true once we can set IOPS on the etcd volume and can easily upgrade to etcd3
+				clusterSpec.KubeAPIServer.EtcdQuorumRead = fi.Bool(false)
 			}
 		}
 	}
@@ -188,60 +179,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.EtcdServersOverrides = []string{"/events#http://127.0.0.1:4002"}
 
 	// TODO: We can probably rewrite these more clearly in descending order
-	if b.IsKubernetesGTE("1.3") && b.IsKubernetesLT("1.4") {
-		c.AdmissionControl = []string{
-			"NamespaceLifecycle",
-			"LimitRanger",
-			"ServiceAccount",
-			"PersistentVolumeLabel",
-			"ResourceQuota",
-		}
-	}
-	if b.IsKubernetesGTE("1.4") && b.IsKubernetesLT("1.5") {
-		c.AdmissionControl = []string{
-			"NamespaceLifecycle",
-			"LimitRanger",
-			"ServiceAccount",
-			"PersistentVolumeLabel",
-			"DefaultStorageClass",
-			"ResourceQuota",
-		}
-	}
-	if b.IsKubernetesGTE("1.5") && b.IsKubernetesLT("1.6") {
-		c.AdmissionControl = []string{
-			"NamespaceLifecycle",
-			"LimitRanger",
-			"ServiceAccount",
-			"PersistentVolumeLabel",
-			"DefaultStorageClass",
-			"ResourceQuota",
-		}
-	}
-	if b.IsKubernetesGTE("1.6") && b.IsKubernetesLT("1.7") {
-		c.AdmissionControl = []string{
-			"NamespaceLifecycle",
-			"LimitRanger",
-			"ServiceAccount",
-			"PersistentVolumeLabel",
-			"DefaultStorageClass",
-			"DefaultTolerationSeconds",
-			"ResourceQuota",
-		}
-	}
-	if b.IsKubernetesGTE("1.7") && b.IsKubernetesLT("1.9") {
-		c.AdmissionControl = []string{
-			"Initializers",
-			"NamespaceLifecycle",
-			"LimitRanger",
-			"ServiceAccount",
-			"PersistentVolumeLabel",
-			"DefaultStorageClass",
-			"DefaultTolerationSeconds",
-			"NodeRestriction",
-			"ResourceQuota",
-		}
-	}
-	if b.IsKubernetesGTE("1.9") && b.IsKubernetesLT("1.10") {
+	if b.IsKubernetesLT("1.10") {
 		c.AdmissionControl = []string{
 			"Initializers",
 			"NamespaceLifecycle",
@@ -292,10 +230,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.EnableAdmissionPlugins = append(c.EnableAdmissionPlugins, c.AppendAdmissionPlugins...)
 	}
 
-	// We make sure to disable AnonymousAuth from when it was introduced
-	if b.IsKubernetesGTE("1.5") {
-		c.AnonymousAuth = fi.Bool(false)
-	}
+	// We make sure to disable AnonymousAuth
+	c.AnonymousAuth = fi.Bool(false)
 
 	// FIXME : Disable the insecure port when kubernetes issue #43784 is fixed
 	c.InsecurePort = 8080
@@ -340,12 +276,10 @@ func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.Clus
 
 // configureAggregation sets up the aggregation options
 func (b *KubeAPIServerOptionsBuilder) configureAggregation(clusterSpec *kops.ClusterSpec) error {
-	if b.IsKubernetesGTE("1.7") {
-		clusterSpec.KubeAPIServer.RequestheaderAllowedNames = []string{"aggregator"}
-		clusterSpec.KubeAPIServer.RequestheaderExtraHeaderPrefixes = []string{"X-Remote-Extra-"}
-		clusterSpec.KubeAPIServer.RequestheaderGroupHeaders = []string{"X-Remote-Group"}
-		clusterSpec.KubeAPIServer.RequestheaderUsernameHeaders = []string{"X-Remote-User"}
-	}
+	clusterSpec.KubeAPIServer.RequestheaderAllowedNames = []string{"aggregator"}
+	clusterSpec.KubeAPIServer.RequestheaderExtraHeaderPrefixes = []string{"X-Remote-Extra-"}
+	clusterSpec.KubeAPIServer.RequestheaderGroupHeaders = []string{"X-Remote-Group"}
+	clusterSpec.KubeAPIServer.RequestheaderUsernameHeaders = []string{"X-Remote-User"}
 
 	return nil
 }

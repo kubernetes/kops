@@ -149,9 +149,9 @@ func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*aw
 // If an SSH key name is provided in the cluster configuration, it will use that instead.
 func (c *KopsModelContext) SSHKeyName() (string, error) {
 	// use configured SSH key name if present
-	name := c.Cluster.Spec.SSHKeyName
-	if name != "" {
-		return name, nil
+	sshKeyName := c.Cluster.Spec.SSHKeyName
+	if sshKeyName != nil && *sshKeyName != "" {
+		return *sshKeyName, nil
 	}
 
 	fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
@@ -159,7 +159,7 @@ func (c *KopsModelContext) SSHKeyName() (string, error) {
 		return "", err
 	}
 
-	name = "kubernetes." + c.Cluster.ObjectMeta.Name + "-" + fingerprint
+	name := "kubernetes." + c.Cluster.ObjectMeta.Name + "-" + fingerprint
 	return name, nil
 }
 

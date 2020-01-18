@@ -389,7 +389,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		}
 
 		if !reflect.DeepEqual(changes, &Package{}) {
-			klog.Warningf("cannot apply package changes for %q: %v", e.Name, changes)
+			klog.Warningf("cannot apply package changes for %q: %+v", e.Name, changes)
 		}
 	}
 

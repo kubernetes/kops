@@ -303,9 +303,20 @@ type ListOptions struct {
 	// non-namespaced objects, or to list across all namespaces.
 	Namespace string
 
+	// Limit specifies the maximum number of results to return from the server. The server may
+	// not support this field on all resource types, but if it does and more results remain it
+	// will set the continue field on the returned list object. This field is not supported if watch
+	// is true in the Raw ListOptions.
+	Limit int64
+	// Continue is a token returned by the server that lets a client retrieve chunks of results
+	// from the server by specifying limit. The server may reject requests for continuation tokens
+	// it does not recognize and will return a 410 error if the token can no longer be used because
+	// it has expired. This field is not supported if watch is true in the Raw ListOptions.
+	Continue string
+
 	// Raw represents raw ListOptions, as passed to the API server.  Note
 	// that these may not be respected by all implementations of interface,
-	// and the LabelSelector and FieldSelector fields are ignored.
+	// and the LabelSelector, FieldSelector, Limit and Continue fields are ignored.
 	Raw *metav1.ListOptions
 }
 
@@ -325,6 +336,12 @@ func (o *ListOptions) ApplyToList(lo *ListOptions) {
 	if o.Raw != nil {
 		lo.Raw = o.Raw
 	}
+	if o.Limit > 0 {
+		lo.Limit = o.Limit
+	}
+	if o.Continue != "" {
+		lo.Continue = o.Continue
+	}
 }
 
 // AsListOptions returns these options as a flattened metav1.ListOptions.
@@ -341,6 +358,10 @@ func (o *ListOptions) AsListOptions() *metav1.ListOptions {
 	}
 	if o.FieldSelector != nil {
 		o.Raw.FieldSelector = o.FieldSelector.String()
+	}
+	if !o.Raw.Watch {
+		o.Raw.Limit = o.Limit
+		o.Raw.Continue = o.Continue
 	}
 	return o.Raw
 }
@@ -428,6 +449,24 @@ func (n InNamespace) ApplyToList(opts *ListOptions) {
 
 func (n InNamespace) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
 	n.ApplyToList(&opts.ListOptions)
+}
+
+// Limit specifies the maximum number of results to return from the server.
+// Limit does not implement DeleteAllOfOption interface because the server
+// does not support setting it for deletecollection operations.
+type Limit int64
+
+func (l Limit) ApplyToList(opts *ListOptions) {
+	opts.Limit = int64(l)
+}
+
+// Continue sets a continuation token to retrieve chunks of results when using limit.
+// Continue does not implement DeleteAllOfOption interface because the server
+// does not support setting it for deletecollection operations.
+type Continue string
+
+func (c Continue) ApplyToList(opts *ListOptions) {
+	opts.Continue = string(c)
 }
 
 // }}}

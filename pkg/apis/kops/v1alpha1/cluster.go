@@ -136,7 +136,7 @@ type ClusterSpec struct {
 	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
 	// SSHKeyName specifies a preexisting SSH key to use
-	SSHKeyName string `json:"sshKeyName,omitempty"`
+	SSHKeyName *string `json:"sshKeyName,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 	// Component configurations

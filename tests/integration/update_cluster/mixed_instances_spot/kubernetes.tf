@@ -512,7 +512,7 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
   user_data = "${file("${path.module}/data/aws_launch_template_nodes.mixedinstances.example.com_user_data")}"
 }
 
-resource "aws_route" "0-0-0-0--0" {
+resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = "${aws_route_table.mixedinstances-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.mixedinstances-example-com.id}"

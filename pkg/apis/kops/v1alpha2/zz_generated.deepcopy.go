@@ -613,6 +613,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(EgressProxySpec)
 		**out = **in
 	}
+	if in.SSHKeyName != nil {
+		in, out := &in.SSHKeyName, &out.SSHKeyName
+		*out = new(string)
+		**out = **in
+	}
 	if in.KubernetesAPIAccess != nil {
 		in, out := &in.KubernetesAPIAccess, &out.KubernetesAPIAccess
 		*out = make([]string, len(*in))

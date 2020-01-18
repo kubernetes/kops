@@ -6,6 +6,8 @@ import (
 )
 
 // A ServerGroup creates a policy for instance placement in the cloud.
+// You should use extract methods from microversions.go to retrieve additional
+// fields.
 type ServerGroup struct {
 	// ID is the unique ID of the Server Group.
 	ID string `json:"id"`

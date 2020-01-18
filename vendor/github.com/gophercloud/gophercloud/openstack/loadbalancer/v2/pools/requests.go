@@ -275,6 +275,15 @@ type CreateMemberOpts struct {
 	// The administrative state of the Pool. A valid value is true (UP)
 	// or false (DOWN).
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
+
+	// Is the member a backup? Backup members only receive traffic when all non-backup members are down.
+	Backup *bool `json:"backup,omitempty"`
+
+	// An alternate IP address used for health monitoring a backend member.
+	MonitorAddress string `json:"monitor_address,omitempty"`
+
+	// An alternate protocol port used for health monitoring a backend member.
+	MonitorPort *int `json:"monitor_port,omitempty"`
 }
 
 // ToMemberCreateMap builds a request body from CreateMemberOpts.
@@ -283,7 +292,7 @@ func (opts CreateMemberOpts) ToMemberCreateMap() (map[string]interface{}, error)
 }
 
 // CreateMember will create and associate a Member with a particular Pool.
-func CreateMember(c *gophercloud.ServiceClient, poolID string, opts CreateMemberOpts) (r CreateMemberResult) {
+func CreateMember(c *gophercloud.ServiceClient, poolID string, opts CreateMemberOptsBuilder) (r CreateMemberResult) {
 	b, err := opts.ToMemberCreateMap()
 	if err != nil {
 		r.Err = err
@@ -345,16 +354,54 @@ type BatchUpdateMemberOptsBuilder interface {
 	ToBatchMemberUpdateMap() (map[string]interface{}, error)
 }
 
-type BatchUpdateMemberOpts CreateMemberOpts
+// BatchUpdateMemberOpts is the common options struct used in this package's BatchUpdateMembers
+// operation.
+type BatchUpdateMemberOpts struct {
+	// The IP address of the member to receive traffic from the load balancer.
+	Address string `json:"address" required:"true"`
+
+	// The port on which to listen for client traffic.
+	ProtocolPort int `json:"protocol_port" required:"true"`
+
+	// Name of the Member.
+	Name *string `json:"name,omitempty"`
+
+	// ProjectID is the UUID of the project who owns the Member.
+	// Only administrative users can specify a project UUID other than their own.
+	ProjectID string `json:"project_id,omitempty"`
+
+	// A positive integer value that indicates the relative portion of traffic
+	// that this member should receive from the pool. For example, a member with
+	// a weight of 10 receives five times as much traffic as a member with a
+	// weight of 2.
+	Weight *int `json:"weight,omitempty"`
+
+	// If you omit this parameter, LBaaS uses the vip_subnet_id parameter value
+	// for the subnet UUID.
+	SubnetID *string `json:"subnet_id,omitempty"`
+
+	// The administrative state of the Pool. A valid value is true (UP)
+	// or false (DOWN).
+	AdminStateUp *bool `json:"admin_state_up,omitempty"`
+}
 
 // ToBatchMemberUpdateMap builds a request body from BatchUpdateMemberOpts.
 func (opts BatchUpdateMemberOpts) ToBatchMemberUpdateMap() (map[string]interface{}, error) {
-	return gophercloud.BuildRequestBody(opts, "")
+	b, err := gophercloud.BuildRequestBody(opts, "")
+	if err != nil {
+		return nil, err
+	}
+
+	if b["subnet_id"] == "" {
+		b["subnet_id"] = nil
+	}
+
+	return b, nil
 }
 
 // BatchUpdateMembers updates the pool members in batch
 func BatchUpdateMembers(c *gophercloud.ServiceClient, poolID string, opts []BatchUpdateMemberOpts) (r UpdateMembersResult) {
-	var members []map[string]interface{}
+	members := []map[string]interface{}{}
 	for _, opt := range opts {
 		b, err := opt.ToBatchMemberUpdateMap()
 		if err != nil {

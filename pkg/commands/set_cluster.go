@@ -95,6 +95,11 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			cluster.Spec.KubernetesVersion = kv[1]
 		case "spec.masterPublicName":
 			cluster.Spec.MasterPublicName = kv[1]
+		case "spec.kubeDNS.provider":
+			if cluster.Spec.KubeDNS == nil {
+				cluster.Spec.KubeDNS = &api.KubeDNSConfig{}
+			}
+			cluster.Spec.KubeDNS.Provider = kv[1]
 		case "cluster.spec.etcdClusters[*].enableEtcdTLS":
 			v, err := strconv.ParseBool(kv[1])
 			if err != nil {

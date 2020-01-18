@@ -35,7 +35,7 @@ func buildMinimalCluster() *api.Cluster {
 
 	c := &api.Cluster{}
 	c.ObjectMeta.Name = "testcluster.test.com"
-	c.Spec.KubernetesVersion = "1.4.6"
+	c.Spec.KubernetesVersion = "1.14.6"
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
 		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
 		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
@@ -170,8 +170,8 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
 
-	if fi.StringValue(full.Spec.KubeAPIServer.StorageBackend) != "etcd2" {
-		t.Fatalf("Unexpected StorageBackend: %v", full.Spec.KubeAPIServer.StorageBackend)
+	if fi.StringValue(full.Spec.KubeAPIServer.StorageBackend) != "etcd3" {
+		t.Fatalf("Unexpected StorageBackend: %v", *full.Spec.KubeAPIServer.StorageBackend)
 	}
 }
 
@@ -202,10 +202,6 @@ func TestPopulateCluster_Kubenet(t *testing.T) {
 		t.Fatalf("Unexpected NetworkPluginName: %v", full.Spec.Kubelet.NetworkPluginName)
 	}
 
-	if fi.BoolValue(full.Spec.Kubelet.ReconcileCIDR) != true {
-		t.Fatalf("Unexpected ReconcileCIDR: %v", full.Spec.Kubelet.ReconcileCIDR)
-	}
-
 	if fi.BoolValue(full.Spec.KubeControllerManager.ConfigureCloudRoutes) != true {
 		t.Fatalf("Unexpected ConfigureCloudRoutes: %v", full.Spec.KubeControllerManager.ConfigureCloudRoutes)
 	}
@@ -228,10 +224,6 @@ func TestPopulateCluster_CNI(t *testing.T) {
 
 	if full.Spec.Kubelet.NetworkPluginName != "cni" {
 		t.Fatalf("Unexpected NetworkPluginName: %v", full.Spec.Kubelet.NetworkPluginName)
-	}
-
-	if fi.BoolValue(full.Spec.Kubelet.ReconcileCIDR) != true {
-		t.Fatalf("Unexpected ReconcileCIDR: %v", full.Spec.Kubelet.ReconcileCIDR)
 	}
 
 	if fi.BoolValue(full.Spec.Kubelet.ConfigureCBR0) != false {
@@ -308,9 +300,6 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	}
 	if fi.BoolValue(full.Spec.MasterKubelet.EnableDebuggingHandlers) != true {
 		t.Fatalf("Unexpected EnableDebuggingHandlers: %v", fi.BoolValue(full.Spec.MasterKubelet.EnableDebuggingHandlers))
-	}
-	if fi.BoolValue(full.Spec.MasterKubelet.ReconcileCIDR) != true {
-		t.Fatalf("Unexpected ReconcileCIDR: %v", fi.BoolValue(full.Spec.MasterKubelet.ReconcileCIDR))
 	}
 }
 
@@ -418,7 +407,7 @@ func TestPopulateCluster_APIServerCount(t *testing.T) {
 
 func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	c := buildMinimalCluster()
-	c.Spec.KubernetesVersion = "1.5.0"
+	c.Spec.KubernetesVersion = "1.15.0"
 
 	err := PerformAssignments(c)
 	if err != nil {
@@ -441,39 +430,30 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	}
 }
 
-func TestPopulateCluster_AnonymousAuth_14(t *testing.T) {
-	c := buildMinimalCluster()
-	c.Spec.KubernetesVersion = "1.4.0"
-
-	err := PerformAssignments(c)
-	if err != nil {
-		t.Fatalf("error from PerformAssignments: %v", err)
-	}
-
-	addEtcdClusters(c)
-
-	full, err := mockedPopulateClusterSpec(c)
-	if err != nil {
-		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
-	}
-
-	if full.Spec.KubeAPIServer.AnonymousAuth != nil {
-		t.Fatalf("AnonymousAuth is not supported in 1.4")
-	}
-}
-
 func TestPopulateCluster_DockerVersion(t *testing.T) {
 	grid := []struct {
 		KubernetesVersion string
 		DockerVersion     string
 	}{
 		{
-			KubernetesVersion: "1.4.6",
-			DockerVersion:     "1.11.2",
+			KubernetesVersion: "1.11.0",
+			DockerVersion:     "17.03.2",
 		},
 		{
-			KubernetesVersion: "1.5.1",
-			DockerVersion:     "1.12.3",
+			KubernetesVersion: "1.12.0",
+			DockerVersion:     "18.06.3",
+		},
+		{
+			KubernetesVersion: "1.15.6",
+			DockerVersion:     "18.06.3",
+		},
+		{
+			KubernetesVersion: "1.16.0",
+			DockerVersion:     "18.09.9",
+		},
+		{
+			KubernetesVersion: "1.17.0",
+			DockerVersion:     "19.03.4",
 		},
 	}
 
@@ -494,7 +474,7 @@ func TestPopulateCluster_DockerVersion(t *testing.T) {
 
 func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	c := buildMinimalCluster()
-	c.Spec.KubernetesVersion = "v1.5.2"
+	c.Spec.KubernetesVersion = "v1.9.0"
 
 	err := PerformAssignments(c)
 	if err != nil {
@@ -512,25 +492,4 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 		t.Fatalf("AttachDetachReconcileSyncPeriod not set correctly")
 	}
 
-}
-
-func TestPopulateCluster_KubeController_Fail(t *testing.T) {
-	c := buildMinimalCluster()
-	c.Spec.KubernetesVersion = "1.4.7"
-
-	err := PerformAssignments(c)
-	if err != nil {
-		t.Fatalf("error from PerformAssignments: %v", err)
-	}
-
-	addEtcdClusters(c)
-
-	full, err := mockedPopulateClusterSpec(c)
-	if err != nil {
-		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
-	}
-
-	if full.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod != nil {
-		t.Fatalf("AttachDetachReconcileSyncPeriodh is not supported in 1.4.7")
-	}
 }
