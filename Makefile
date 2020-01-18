@@ -599,10 +599,11 @@ ${CHANNELS}:
 .PHONY: release-tag
 release-tag:
 	git tag ${KOPS_RELEASE_VERSION}
+	git tag v${KOPS_RELEASE_VERSION}
 
 .PHONY: release-github
 release-github:
-	shipbot -tag ${KOPS_RELEASE_VERSION} -config .shipbot.yaml
+	shipbot -tag v${KOPS_RELEASE_VERSION} -config .shipbot.yaml
 
 # --------------------------------------------------
 # API / embedding examples
