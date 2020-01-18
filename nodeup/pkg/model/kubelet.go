@@ -226,12 +226,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
 		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--cni-bin-dir` also
-		if b.IsKubernetesGTE("1.9") {
-			// Flag renamed in #53564
-			flags += " --cni-bin-dir=" + b.CNIBinDir()
-		} else {
-			flags += " --network-plugin-dir=" + b.CNIBinDir()
-		}
+		flags += " --cni-bin-dir=" + b.CNIBinDir()
 	}
 
 	if b.usesContainerizedMounter() {
@@ -415,10 +410,6 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 	{
 		// @TODO Extract to common function?
 		assetName := "mounter"
-		if !b.IsKubernetesGTE("1.9") {
-			// legacy name (and stored in kubernetes-manifests.tar.gz)
-			assetName = "gci-mounter"
-		}
 		assetPath := ""
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
@@ -572,8 +563,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		reflectutils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
-	// Use --register-with-taints for k8s 1.6 and on
-	if b.Cluster.IsKubernetesGTE("1.6") {
+	// Use --register-with-taints
+	{
 		c.Taints = append(c.Taints, b.InstanceGroup.Spec.Taints...)
 
 		if len(c.Taints) == 0 && isMaster {
@@ -582,7 +573,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		}
 
 		// Enable scheduling since it can be controlled via taints.
-		// For pre-1.6.0 clusters, this is handled by tainter.go
 		c.RegisterSchedulable = fi.Bool(true)
 	}
 
@@ -603,6 +593,12 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		default:
 			c.VolumePluginDirectory = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 		}
+	}
+
+	// In certain configurations systemd-resolved will put the loopback address 127.0.0.53 as a nameserver into /etc/resolv.conf
+	// https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
+	if b.Distribution == distros.DistributionBionic && c.ResolverConfig == nil {
+		c.ResolverConfig = s("/run/systemd/resolve/resolv.conf")
 	}
 
 	// As of 1.16 we can no longer set critical labels.

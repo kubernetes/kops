@@ -88,42 +88,13 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.ClusterDNS = ip.String()
 	}
 
-	if b.Context.IsKubernetesLT("1.7") {
-		// babysit-daemons removed in 1.7
-		clusterSpec.Kubelet.BabysitDaemons = fi.Bool(true)
-	}
-
 	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(false)
 	// Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
 	// We _do_ allow debugging handlers, so we can do logs
 	// This does allow more access than we would like though
 	clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.Bool(true)
 
-	// In 1.5 we fixed this, but in 1.4 we need to set the PodCIDR on the master
-	// so that hostNetwork pods can come up
-	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 4 {
-		// We bootstrap with a fake CIDR, but then this will be replaced (unless we're running with _isolated_master)
-		clusterSpec.MasterKubelet.PodCIDR = "10.123.45.0/28"
-	}
-
-	// 1.5 deprecates the reconcile cidr option (and 1.6 removes it)
-	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 4 {
-		clusterSpec.MasterKubelet.ReconcileCIDR = fi.Bool(true)
-
-		if fi.BoolValue(clusterSpec.IsolateMasters) {
-			clusterSpec.MasterKubelet.ReconcileCIDR = fi.Bool(false)
-		}
-
-		usesKubenet, err := UsesKubenet(clusterSpec)
-		if err != nil {
-			return err
-		}
-		if usesKubenet {
-			clusterSpec.Kubelet.ReconcileCIDR = fi.Bool(true)
-		}
-	}
-
-	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor >= 4 {
+	{
 		// For pod eviction in low memory or empty disk situations
 		if clusterSpec.Kubelet.EvictionHard == nil {
 			evictionHard := []string{
@@ -141,22 +112,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	if b.Context.IsKubernetesGTE("1.6") {
-		// for 1.6+ use kubeconfig instead of api-servers
-		const kubeconfigPath = "/var/lib/kubelet/kubeconfig"
-		clusterSpec.Kubelet.KubeconfigPath = kubeconfigPath
-		clusterSpec.MasterKubelet.KubeconfigPath = kubeconfigPath
-
-		// Only pass require-kubeconfig to versions prior to 1.9; deprecated & being removed
-		if b.Context.IsKubernetesLT("1.9") {
-			clusterSpec.Kubelet.RequireKubeconfig = fi.Bool(true)
-			clusterSpec.MasterKubelet.RequireKubeconfig = fi.Bool(true)
-		}
-	} else {
-		// Legacy behaviour for <= 1.5
-		clusterSpec.Kubelet.APIServers = "https://" + clusterSpec.MasterInternalName
-		clusterSpec.MasterKubelet.APIServers = "http://127.0.0.1:8080"
-	}
+	// use kubeconfig instead of api-servers
+	const kubeconfigPath = "/var/lib/kubelet/kubeconfig"
+	clusterSpec.Kubelet.KubeconfigPath = kubeconfigPath
+	clusterSpec.MasterKubelet.KubeconfigPath = kubeconfigPath
 
 	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
 	// In newer versions of kubernetes, most of that functionality has been removed though
@@ -172,13 +131,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	klog.V(1).Infof("Cloud Provider: %s", cloudProvider)
 	if cloudProvider == kops.CloudProviderAWS {
 		clusterSpec.Kubelet.CloudProvider = "aws"
-
-		// For 1.6 we're using much cleaner cgroup hierarchies
-		// but we keep the settings we've tested for k8s 1.5 and lower
-		// (see https://github.com/kubernetes/kubernetes/pull/41349)
-		if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 5 {
-			clusterSpec.Kubelet.CgroupRoot = "docker"
-		}
 
 		// Use the hostname from the AWS metadata service
 		// if hostnameOverride is not set.
@@ -228,10 +180,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	if usesKubenet {
 		clusterSpec.Kubelet.NetworkPluginName = "kubenet"
 
-		if kubernetesVersion.Major == 1 && kubernetesVersion.Minor >= 4 {
-			// AWS MTU is 9001
-			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
-		}
+		// AWS MTU is 9001
+		clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
 	}
 
 	// Specify our pause image
@@ -245,7 +195,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
 	}
 	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
-		if b.Context.IsKubernetesGTE("1.5.2") && b.Context.IsKubernetesLT("1.16") {
+		if b.Context.IsKubernetesLT("1.16") {
 			clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
 		}
 	}

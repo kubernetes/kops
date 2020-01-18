@@ -191,7 +191,7 @@ https://go.k8s.io/bot-commands).
 
 Kops maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
 
-Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) during weeks with odd "numbers". To check this weeks' number, run: `date +%V`. If the response is odd, join us on Friday for office hours!
+Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](https://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) during weeks with odd "numbers". To check this weeks' number, run: `date +%V`. If the response is odd, join us on Friday for office hours!
 
 ### Office Hours Topics
 

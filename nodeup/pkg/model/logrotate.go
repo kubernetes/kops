@@ -56,11 +56,6 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unable to parse KubernetesVersion %q", b.Cluster.Spec.KubernetesVersion)
 	}
 
-	if k8sVersion.Major == 1 && k8sVersion.Minor < 6 {
-		// In version 1.6, we move log rotation to docker, but prior to that we need a logrotate rule
-		b.addLogRotate(c, "docker-containers", "/var/lib/docker/containers/*/*-json.log", logRotateOptions{MaxSize: "10M"})
-	}
-
 	b.addLogRotate(c, "docker", "/var/log/docker.log", logRotateOptions{})
 	b.addLogRotate(c, "kube-addons", "/var/log/kube-addons.log", logRotateOptions{})
 	b.addLogRotate(c, "kube-apiserver", "/var/log/kube-apiserver.log", logRotateOptions{})

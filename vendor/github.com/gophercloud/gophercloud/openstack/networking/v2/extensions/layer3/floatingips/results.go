@@ -1,6 +1,9 @@
 package floatingips
 
 import (
+	"encoding/json"
+	"time"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
 )
@@ -37,6 +40,11 @@ type FloatingIP struct {
 	// specify a project identifier other than its own.
 	TenantID string `json:"tenant_id"`
 
+	// UpdatedAt and CreatedAt contain ISO-8601 timestamps of when the state of
+	// the floating ip last changed, and when it was created.
+	UpdatedAt time.Time `json:"-"`
+	CreatedAt time.Time `json:"-"`
+
 	// ProjectID is the project owner of the floating IP.
 	ProjectID string `json:"project_id"`
 
@@ -50,17 +58,57 @@ type FloatingIP struct {
 	Tags []string `json:"tags"`
 }
 
+func (r *FloatingIP) UnmarshalJSON(b []byte) error {
+	type tmp FloatingIP
+
+	// Support for older neutron time format
+	var s1 struct {
+		tmp
+		CreatedAt gophercloud.JSONRFC3339NoZ `json:"created_at"`
+		UpdatedAt gophercloud.JSONRFC3339NoZ `json:"updated_at"`
+	}
+
+	err := json.Unmarshal(b, &s1)
+	if err == nil {
+		*r = FloatingIP(s1.tmp)
+		r.CreatedAt = time.Time(s1.CreatedAt)
+		r.UpdatedAt = time.Time(s1.UpdatedAt)
+
+		return nil
+	}
+
+	// Support for newer neutron time format
+	var s2 struct {
+		tmp
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	}
+
+	err = json.Unmarshal(b, &s2)
+	if err != nil {
+		return err
+	}
+
+	*r = FloatingIP(s2.tmp)
+	r.CreatedAt = time.Time(s2.CreatedAt)
+	r.UpdatedAt = time.Time(s2.UpdatedAt)
+
+	return nil
+}
+
 type commonResult struct {
 	gophercloud.Result
 }
 
 // Extract will extract a FloatingIP resource from a result.
 func (r commonResult) Extract() (*FloatingIP, error) {
-	var s struct {
-		FloatingIP *FloatingIP `json:"floatingip"`
-	}
+	var s FloatingIP
 	err := r.ExtractInto(&s)
-	return s.FloatingIP, err
+	return &s, err
+}
+
+func (r commonResult) ExtractInto(v interface{}) error {
+	return r.Result.ExtractIntoStructPtr(v, "floatingip")
 }
 
 // CreateResult represents the result of a create operation. Call its Extract
@@ -122,4 +170,8 @@ func ExtractFloatingIPs(r pagination.Page) ([]FloatingIP, error) {
 	}
 	err := (r.(FloatingIPPage)).ExtractInto(&s)
 	return s.FloatingIPs, err
+}
+
+func ExtractFloatingIPsInto(r pagination.Page, v interface{}) error {
+	return r.(FloatingIPPage).Result.ExtractIntoSlicePtr(v, "floatingips")
 }

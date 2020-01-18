@@ -24,6 +24,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/kops/pkg/apis/kops"
+
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -167,7 +169,9 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		Tenancy:                lc.PlacementTenancy,
 	}
 
-	if lc.KeyName != nil {
+	// Only assign keyName if the existing launch config has one
+	// lc.KeyName comes back as an empty string when there is no key assigned
+	if lc.KeyName != nil && *lc.KeyName != "" {
 		actual.SSHKey = &SSHKey{Name: lc.KeyName}
 	}
 
@@ -240,6 +244,10 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 func (e *LaunchConfiguration) Run(c *fi.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
+
+	if e.SSHKey == nil && !useSSHKey(c.Cluster) {
+		e.SSHKey = &SSHKey{}
+	}
 
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -608,7 +616,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 		cf.SpotPrice = aws.String(e.SpotPrice)
 	}
 
-	if e.SSHKey != nil {
+	if e.SSHKey != nil && !e.SSHKey.NoSSHKey() {
 		if e.SSHKey.Name == nil {
 			return fmt.Errorf("SSHKey Name not set")
 		}
@@ -774,4 +782,12 @@ func (e *LaunchConfiguration) FindDeletions(c *fi.Context) ([]fi.Deletion, error
 	klog.V(2).Infof("will delete launch configurations: %v", removals)
 
 	return removals, nil
+}
+
+func useSSHKey(c *kops.Cluster) bool {
+	if c != nil {
+		sshKeyName := c.Spec.SSHKeyName
+		return sshKeyName != nil && *sshKeyName != ""
+	}
+	return true
 }

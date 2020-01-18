@@ -232,7 +232,11 @@ crossbuild-nodeup: ${DIST}/linux/amd64/nodeup
 crossbuild-nodeup-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
 	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild-nodeup
-	docker cp nodeup-build-${UNIQUE}:/go/.build .
+	docker start nodeup-build-${UNIQUE}
+	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
+	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
+	docker kill nodeup-build-${UNIQUE}
+	docker rm nodeup-build-${UNIQUE}
 
 .PHONY: ${DIST}/darwin/amd64/kops
 ${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
@@ -354,15 +358,6 @@ gen-cli-docs: ${KOPS} # Regenerate CLI docs
 	KOPS_STATE_STORE= \
 	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
-
-.PHONY: gen-api-docs
-gen-api-docs:
-	# Follow procedure in docs/apireference/README.md
-	hack/make-gendocs.sh
-	# Update the `pkg/openapi/openapi_generated.go`
-	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
-	go install k8s.io/kops/cmd/kops-server
-	${GOPATH}/bin/apiserver-boot build docs --disable-delegated-auth=false --output-dir docs/apireference --server kops-server
 
 .PHONY: push
 # Will always push a linux-based build up to the server
@@ -504,6 +499,10 @@ govet: ${BINDATA_TARGETS}
 # --------------------------------------------------
 # Continuous integration targets
 
+# verify is ran by the pull-kops-verify prow job
+.PHONY: verify
+verify: travis-ci verify-gofmt
+
 .PHONY: verify-boilerplate
 verify-boilerplate:
 	hack/verify-boilerplate.sh
@@ -545,20 +544,24 @@ verify-bazel:
 verify-staticcheck: ${BINDATA_TARGETS}
 	hack/verify-staticcheck.sh
 
+.PHONY: verify-shellcheck
+verify-shellcheck:
+	${KOPS_ROOT}/hack/verify-shellcheck.sh
+
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
 # we skip tasks that rely on bazel and are covered by other jobs
-#  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
+# verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -631,25 +634,6 @@ verify-apimachinery:
 .PHONY: verify-generate
 verify-generate:
 	hack/verify-generate.sh
-
-# -----------------------------------------------------
-# kops-server
-
-.PHONY: kops-server-docker-compile
-kops-server-docker-compile:
-	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/amd64/kops-server ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
-
-.PHONY: kops-server-build
-kops-server-build:
-	# Compile the API binary in linux, and copy to local filesystem
-	docker pull golang:${GOVERSION}
-	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ kops-server-docker-compile
-	docker cp kops-server-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
-	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
-
-.PHONY: kops-server-push
-kops-server-push: kops-server-build
-	docker push ${DOCKER_REGISTRY}/kops-server:latest
 
 # -----------------------------------------------------
 # bazel targets

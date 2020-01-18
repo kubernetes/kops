@@ -7,7 +7,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 3cd3e32f7301a675a1cf6b99af05f3528007dd9a
+    manifestHash: 026682d4e1e374c6f3e10b015937c8b2ef73b9a6
     name: kops-controller.addons.k8s.io
     selector:
       k8s-addon: kops-controller.addons.k8s.io
@@ -21,7 +21,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: <1.12.0
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: c74ca65f461c764fc9682c6d9ec171b241bec335
+    manifestHash: 555f952a8b955ce7a5dd0bcd06a5be9e72bd2895
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -29,7 +29,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 4da6501bd5ad16fab9e05fbfe7c6d587441a8ec4
+    manifestHash: b4dff071aa340fd71650c96f213fdf4b4f799c71
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -89,7 +89,7 @@ spec:
   - id: k8s-1.8
     kubernetesVersion: <1.12.0
     manifest: networking.weave/k8s-1.8.yaml
-    manifestHash: 75cc6479f36f443600f567e492707efcbb9fbd31
+    manifestHash: 50a20409003956b7c31a479408ca42ec97774854
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
@@ -97,7 +97,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: eb939be2701cdd0c78468358513d74f9eb2d9308
+    manifestHash: d2df87d90f8877a201f5cad93de296697191d4ae
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"

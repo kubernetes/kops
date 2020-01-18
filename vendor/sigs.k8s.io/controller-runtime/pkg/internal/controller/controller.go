@@ -68,6 +68,11 @@ type Controller struct {
 	// specified, or the ~/.kube/Config.
 	Config *rest.Config
 
+	// MakeQueue constructs the queue for this controller once the controller is ready to start.
+	// This exists because the standard Kubernetes workqueues start themselves immediately, which
+	// leads to goroutine leaks if something calls controller.New repeatedly.
+	MakeQueue func() workqueue.RateLimitingInterface
+
 	// Queue is an listeningQueue that listens for events from Informers and adds object keys to
 	// the Queue for processing
 	Queue workqueue.RateLimitingInterface
@@ -93,6 +98,16 @@ type Controller struct {
 	Recorder record.EventRecorder
 
 	// TODO(community): Consider initializing a logger with the Controller Name as the tag
+
+	// watches maintains a list of sources, handlers, and predicates to start when the controller is started.
+	watches []watchDescription
+}
+
+// watchDescription contains all the information necessary to start a watch.
+type watchDescription struct {
+	src        source.Source
+	handler    handler.EventHandler
+	predicates []predicate.Predicate
 }
 
 // Reconcile implements reconcile.Reconciler
@@ -118,47 +133,72 @@ func (c *Controller) Watch(src source.Source, evthdler handler.EventHandler, prc
 		}
 	}
 
-	log.Info("Starting EventSource", "controller", c.Name, "source", src)
-	return src.Start(evthdler, c.Queue, prct...)
+	c.watches = append(c.watches, watchDescription{src: src, handler: evthdler, predicates: prct})
+	if c.Started {
+		log.Info("Starting EventSource", "controller", c.Name, "source", src)
+		return src.Start(evthdler, c.Queue, prct...)
+	}
+
+	return nil
 }
 
 // Start implements controller.Controller
 func (c *Controller) Start(stop <-chan struct{}) error {
+	// use an IIFE to get proper lock handling
+	// but lock outside to get proper handling of the queue shutdown
 	c.mu.Lock()
 
-	// TODO(pwittrock): Reconsider HandleCrash
-	defer utilruntime.HandleCrash()
-	defer c.Queue.ShutDown()
+	c.Queue = c.MakeQueue()
+	defer c.Queue.ShutDown() // needs to be outside the iife so that we shutdown after the stop channel is closed
 
-	// Start the SharedIndexInformer factories to begin populating the SharedIndexInformer caches
-	log.Info("Starting Controller", "controller", c.Name)
+	err := func() error {
+		defer c.mu.Unlock()
 
-	// Wait for the caches to be synced before starting workers
-	if c.WaitForCacheSync == nil {
-		c.WaitForCacheSync = c.Cache.WaitForCacheSync
-	}
-	if ok := c.WaitForCacheSync(stop); !ok {
-		// This code is unreachable right now since WaitForCacheSync will never return an error
-		// Leaving it here because that could happen in the future
-		err := fmt.Errorf("failed to wait for %s caches to sync", c.Name)
-		log.Error(err, "Could not wait for Cache to sync", "controller", c.Name)
-		c.mu.Unlock()
+		// TODO(pwittrock): Reconsider HandleCrash
+		defer utilruntime.HandleCrash()
+
+		// NB(directxman12): launch the sources *before* trying to wait for the
+		// caches to sync so that they have a chance to register their intendeded
+		// caches.
+		for _, watch := range c.watches {
+			log.Info("Starting EventSource", "controller", c.Name, "source", watch.src)
+			if err := watch.src.Start(watch.handler, c.Queue, watch.predicates...); err != nil {
+				return err
+			}
+		}
+
+		// Start the SharedIndexInformer factories to begin populating the SharedIndexInformer caches
+		log.Info("Starting Controller", "controller", c.Name)
+
+		// Wait for the caches to be synced before starting workers
+		if c.WaitForCacheSync == nil {
+			c.WaitForCacheSync = c.Cache.WaitForCacheSync
+		}
+		if ok := c.WaitForCacheSync(stop); !ok {
+			// This code is unreachable right now since WaitForCacheSync will never return an error
+			// Leaving it here because that could happen in the future
+			err := fmt.Errorf("failed to wait for %s caches to sync", c.Name)
+			log.Error(err, "Could not wait for Cache to sync", "controller", c.Name)
+			return err
+		}
+
+		if c.JitterPeriod == 0 {
+			c.JitterPeriod = 1 * time.Second
+		}
+
+		// Launch workers to process resources
+		log.Info("Starting workers", "controller", c.Name, "worker count", c.MaxConcurrentReconciles)
+		for i := 0; i < c.MaxConcurrentReconciles; i++ {
+			// Process work items
+			go wait.Until(c.worker, c.JitterPeriod, stop)
+		}
+
+		c.Started = true
+		return nil
+	}()
+	if err != nil {
 		return err
 	}
-
-	if c.JitterPeriod == 0 {
-		c.JitterPeriod = 1 * time.Second
-	}
-
-	// Launch workers to process resources
-	log.Info("Starting workers", "controller", c.Name, "worker count", c.MaxConcurrentReconciles)
-	for i := 0; i < c.MaxConcurrentReconciles; i++ {
-		// Process work items
-		go wait.Until(c.worker, c.JitterPeriod, stop)
-	}
-
-	c.Started = true
-	c.mu.Unlock()
 
 	<-stop
 	log.Info("Stopping workers", "controller", c.Name)

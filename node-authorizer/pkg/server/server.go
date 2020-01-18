@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/node-authorizer/pkg/utils"
 
 	"github.com/gorilla/mux"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
@@ -107,7 +107,7 @@ func (n *NodeAuthorizer) Run() error {
 	// @step: add the routing
 	r := mux.NewRouter()
 	r.Handle("/authorize/{name}", authorized(n.authorizeHandler, n.config.ClientCommonName, n.useMutualTLS())).Methods(http.MethodPost)
-	r.Handle("/metrics", prometheus.Handler()).Methods(http.MethodGet)
+	r.Handle("/metrics", promhttp.Handler()).Methods(http.MethodGet)
 	r.HandleFunc("/health", n.healthHandler).Methods(http.MethodGet)
 	server.Handler = recovery(r)
 

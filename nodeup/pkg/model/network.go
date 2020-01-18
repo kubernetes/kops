@@ -46,12 +46,8 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
 
 	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil {
-		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp")
+		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp", "portmap")
 		// Do we need tuning?
-
-		if b.IsKubernetesGTE("1.9") {
-			assetNames = append(assetNames, "portmap")
-		}
 
 		// TODO: Only when using flannel ?
 		assetNames = append(assetNames, "flannel")

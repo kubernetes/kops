@@ -194,6 +194,7 @@
             "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
           }
         ],
+        "UserData": "extracted",
         "InstanceMonitoring": false
       }
     },

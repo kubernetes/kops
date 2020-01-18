@@ -63,18 +63,18 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	cluster := obj.(*api.Cluster)
 
 	if err := PerformAssignments(cluster); err != nil {
-		t.Fatalf("error from PerformAssignments: %v", err)
+		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 
 	fullSpec, err := mockedPopulateClusterSpec(cluster)
 	if err != nil {
-		t.Fatalf("error from PopulateClusterSpec: %v", err)
+		t.Fatalf("error from PopulateClusterSpec for %q: %v", key, err)
 	}
 	cluster = fullSpec
 
 	templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
 	if err != nil {
-		t.Fatalf("error building templates: %v", err)
+		t.Fatalf("error building templates for %q: %v", key, err)
 	}
 
 	vfs.Context.ResetMemfsContext(true)

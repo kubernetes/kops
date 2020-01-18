@@ -60,7 +60,7 @@ func Test_InstanceGroupKubeletMerge(t *testing.T) {
 	}
 }
 
-func TestTaintsAppliedAfter160(t *testing.T) {
+func TestTaintsApplied(t *testing.T) {
 	tests := []struct {
 		version           string
 		taints            []string
@@ -69,26 +69,7 @@ func TestTaintsAppliedAfter160(t *testing.T) {
 		expectTaints      []string
 	}{
 		{
-			version: "1.4.9",
-		},
-		{
-			version: "1.5.2",
-			taints:  []string{"foo"},
-		},
-		{
-			version:           "1.6.0-alpha.1",
-			taints:            []string{"foo"},
-			expectTaints:      []string{"foo"},
-			expectSchedulable: true,
-		},
-		{
-			version:           "1.6.0",
-			taints:            []string{"foo", "bar"},
-			expectTaints:      []string{"foo", "bar"},
-			expectSchedulable: true,
-		},
-		{
-			version:           "1.7.0",
+			version:           "1.9.0",
 			taints:            []string{"foo", "bar", "baz"},
 			expectTaints:      []string{"foo", "bar", "baz"},
 			expectSchedulable: true,
