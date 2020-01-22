@@ -40,7 +40,7 @@ case $CUDA_VERSION in
         class_to_driver_file=( \
             ["g3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
             ["g3s"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-            ["g4dn"]="http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-390.46.00.run" \
+            ["g4dn"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
             ["p2"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
             ["p3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
         )
