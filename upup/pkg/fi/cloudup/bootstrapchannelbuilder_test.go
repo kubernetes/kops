@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -119,7 +120,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 		}
 
 		expectedManifestPath := path.Join(basedir, "manifest.yaml")
-		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
+		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 
 	for _, k := range []string{"dns-controller.addons.k8s.io-k8s-1.12" /*, "kops-controller.addons.k8s.io-k8s-1.16"*/} {
@@ -139,6 +140,6 @@ func runChannelBuilderTest(t *testing.T, key string) {
 		}
 
 		expectedManifestPath := path.Join(basedir, k+".yaml")
-		testutils.AssertMatchesFile(t, actualManifest, expectedManifestPath)
+		golden.AssertMatchesFile(t, actualManifest, expectedManifestPath)
 	}
 }
