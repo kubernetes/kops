@@ -534,6 +534,11 @@ func Test_ValidatePodFailure(t *testing.T) {
 			phase:    v1.PodRunning,
 			expected: "not ready (container1,container2)",
 		},
+		{
+			name:     "unknown",
+			phase:    v1.PodUnknown,
+			expected: "unknown phase",
+		},
 	} {
 		for _, priority := range []string{"node", "cluster"} {
 			for _, namespace := range []string{"kube-system", "otherNamespace"} {
