@@ -224,6 +224,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 			klog.Warningf("overloading image in manifest %s with images %s", bundle, etcdCluster.Manager.Image)
 			container.Image = etcdCluster.Manager.Image
 		}
+
 	}
 
 	// Remap image via AssetBuilder
@@ -447,6 +448,18 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 	envMap := env.BuildSystemComponentEnvVars(&b.Cluster.Spec)
 
 	container.Env = envMap.ToEnvVars()
+
+	if etcdCluster.Manager != nil && len(etcdCluster.Manager.EtcdConfigOverwrite) > 0 {
+		for name, value := range etcdCluster.Manager.EtcdConfigOverwrite {
+			klog.Warningf("overloading ENV var in manifest %s with %s=%s", bundle, name, value)
+			configOverwrite := v1.EnvVar{
+				Name:  name,
+				Value: value,
+			}
+
+			container.Env = append(container.Env, configOverwrite)
+		}
+	}
 
 	{
 		foundPKI := false

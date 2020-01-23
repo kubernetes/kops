@@ -2614,6 +2614,7 @@ func Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdClust
 
 func autoConvert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpec, out *kops.EtcdManagerSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	out.EtcdConfigOverwrite = in.EtcdConfigOverwrite
 	return nil
 }
 
@@ -2624,6 +2625,7 @@ func Convert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpe
 
 func autoConvert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec(in *kops.EtcdManagerSpec, out *EtcdManagerSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	out.EtcdConfigOverwrite = in.EtcdConfigOverwrite
 	return nil
 }
 
