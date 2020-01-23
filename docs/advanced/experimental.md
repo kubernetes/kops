@@ -21,3 +21,4 @@ The following experimental features are currently available:
 * `+Spotinst` - Enables the use of the Spotinst cloud provider
 * `+SpotinstOcean` - Enables the use of Spotinst Ocean instance groups
 * `+SkipEtcdVersionCheck` - Bypasses the check that etcd-manager is using a supported etcd version
+* `+TerraformJSON` - Produce kubernetes.ts.json file instead of writing HCL v1 syntax. Can be consumed by terraform 0.12
