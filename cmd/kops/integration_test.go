@@ -52,20 +52,20 @@ const updateClusterTestBase = "../../tests/integration/update_cluster/"
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha0", false, 1, true, false, nil, true)
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha1", false, 1, true, false, nil, true)
-	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha2", false, 1, true, false, nil, true)
+	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha0", false, 1, true, false, nil, true, false)
+	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha1", false, 1, true, false, nil, true, false)
+	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha2", false, 1, true, false, nil, true, false)
 }
 
 // TestRestrictAccess runs the test on a simple SG configuration, similar to kops create cluster minimal.example.com --ssh-access=$(IPS) --admin-access=$(IPS) --master-count=3
 func TestRestrictAccess(t *testing.T) {
-	runTestAWS(t, "restrictaccess.example.com", "restrict_access", "v1alpha2", false, 1, true, false, nil, true)
+	runTestAWS(t, "restrictaccess.example.com", "restrict_access", "v1alpha2", false, 1, true, false, nil, true, false)
 }
 
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
-	runTestAWS(t, "ha.example.com", "ha", "v1alpha1", false, 3, true, false, nil, true)
-	runTestAWS(t, "ha.example.com", "ha", "v1alpha2", false, 3, true, false, nil, true)
+	runTestAWS(t, "ha.example.com", "ha", "v1alpha1", false, 3, true, false, nil, true, false)
+	runTestAWS(t, "ha.example.com", "ha", "v1alpha2", false, 3, true, false, nil, true, false)
 }
 
 // TestHighAvailabilityGCE runs the test on a simple HA GCE configuration, similar to kops create cluster ha-gce.example.com
@@ -76,14 +76,14 @@ func TestHighAvailabilityGCE(t *testing.T) {
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
-	runTestAWS(t, "complex.example.com", "complex", "v1alpha2", false, 1, true, false, nil, true)
-	runTestAWS(t, "complex.example.com", "complex", "legacy-v1alpha2", false, 1, true, false, nil, true)
+	runTestAWS(t, "complex.example.com", "complex", "v1alpha2", false, 1, true, false, nil, true, false)
+	runTestAWS(t, "complex.example.com", "complex", "legacy-v1alpha2", false, 1, true, false, nil, true, false)
 
 	runTestCloudformation(t, "complex.example.com", "complex", "v1alpha2", false, nil, true)
 }
 
 func TestNoSSHKey(t *testing.T) {
-	runTestAWS(t, "nosshkey.example.com", "nosshkey", "v1alpha2", false, 1, true, false, nil, false)
+	runTestAWS(t, "nosshkey.example.com", "nosshkey", "v1alpha2", false, 1, true, false, nil, false, false)
 }
 
 func TestNoSSHKeyCloudformation(t *testing.T) {
@@ -92,7 +92,7 @@ func TestNoSSHKeyCloudformation(t *testing.T) {
 
 // TestCrossZone tests that the cross zone setting on the API ELB is set properly
 func TestCrossZone(t *testing.T) {
-	runTestAWS(t, "crosszone.example.com", "api_elb_cross_zone", "v1alpha2", false, 1, true, false, nil, true)
+	runTestAWS(t, "crosszone.example.com", "api_elb_cross_zone", "v1alpha2", false, 1, true, false, nil, true, false)
 }
 
 // TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -108,7 +108,7 @@ func TestExistingIAMCloudformation(t *testing.T) {
 
 // TestExistingSG runs the test with existing Security Group, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestExistingSG(t *testing.T) {
-	runTestAWS(t, "existingsg.example.com", "existing_sg", "v1alpha2", false, 3, true, false, nil, true)
+	runTestAWS(t, "existingsg.example.com", "existing_sg", "v1alpha2", false, 3, true, false, nil, true, false)
 }
 
 // TestAdditionalUserData runs the test on passing additional user-data to an instance at bootstrap.
@@ -118,83 +118,93 @@ func TestAdditionalUserData(t *testing.T) {
 
 // TestBastionAdditionalUserData runs the test on passing additional user-data to a bastion instance group
 func TestBastionAdditionalUserData(t *testing.T) {
-	runTestAWS(t, "bastionuserdata.example.com", "bastionadditional_user-data", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "bastionuserdata.example.com", "bastionadditional_user-data", "v1alpha2", true, 1, true, false, nil, true, false)
+}
+
+// TestMinimal_JSON runs the test on a minimal data set and outputs JSON
+func TestMinimal_json(t *testing.T) {
+	featureflag.ParseFlags("+TerraformJSON")
+	unsetFeaureFlag := func() {
+		featureflag.ParseFlags("-TerraformJSON")
+	}
+	defer unsetFeaureFlag()
+	runTestAWS(t, "minimal-json.example.com", "minimal-json", "v1alpha0", false, 1, true, false, nil, true, true)
 }
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
-	runTestAWS(t, "minimal-141.example.com", "minimal-141", "v1alpha0", false, 1, true, false, nil, true)
+	runTestAWS(t, "minimal-141.example.com", "minimal-141", "v1alpha0", false, 1, true, false, nil, true, false)
 }
 
 // TestPrivateWeave runs the test on a configuration with private topology, weave networking
 func TestPrivateWeave(t *testing.T) {
-	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha1", true, 1, true, false, nil, true)
-	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha1", true, 1, true, false, nil, true, false)
+	runTestAWS(t, "privateweave.example.com", "privateweave", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
-	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha1", true, 1, true, false, nil, true)
-	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha1", true, 1, true, false, nil, true, false)
+	runTestAWS(t, "privateflannel.example.com", "privateflannel", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
-	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha1", true, 1, true, false, nil, true)
-	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha1", true, 1, true, false, nil, true, false)
+	runTestAWS(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, 1, true, false, nil, true, false)
 	runTestCloudformation(t, "privatecalico.example.com", "privatecalico", "v1alpha2", true, nil, true)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
 func TestPrivateCanal(t *testing.T) {
-	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha1", true, 1, true, false, nil, true)
-	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha1", true, 1, true, false, nil, true, false)
+	runTestAWS(t, "privatecanal.example.com", "privatecanal", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
 func TestPrivateKopeio(t *testing.T) {
-	runTestAWS(t, "privatekopeio.example.com", "privatekopeio", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "privatekopeio.example.com", "privatekopeio", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestUnmanaged is a test where all the subnets opt-out of route management
 func TestUnmanaged(t *testing.T) {
-	runTestAWS(t, "unmanaged.example.com", "unmanaged", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "unmanaged.example.com", "unmanaged", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateSharedSubnet runs the test on a configuration with private topology & shared subnets
 func TestPrivateSharedSubnet(t *testing.T) {
-	runTestAWS(t, "private-shared-subnet.example.com", "private-shared-subnet", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "private-shared-subnet.example.com", "private-shared-subnet", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
-	runTestAWS(t, "privatedns1.example.com", "privatedns1", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "privatedns1.example.com", "privatedns1", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestPrivateDns2 runs the test on a configuration with private topology, private dns, extant vpc
 func TestPrivateDns2(t *testing.T) {
-	runTestAWS(t, "privatedns2.example.com", "privatedns2", "v1alpha2", true, 1, true, false, nil, true)
+	runTestAWS(t, "privatedns2.example.com", "privatedns2", "v1alpha2", true, 1, true, false, nil, true, false)
 }
 
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
-	runTestAWS(t, "sharedsubnet.example.com", "shared_subnet", "v1alpha2", false, 1, true, false, nil, true)
+	runTestAWS(t, "sharedsubnet.example.com", "shared_subnet", "v1alpha2", false, 1, true, false, nil, true, false)
 }
 
 // TestSharedVPC runs the test on a configuration with a shared VPC
 func TestSharedVPC(t *testing.T) {
-	runTestAWS(t, "sharedvpc.example.com", "shared_vpc", "v1alpha2", false, 1, true, false, nil, true)
+	runTestAWS(t, "sharedvpc.example.com", "shared_vpc", "v1alpha2", false, 1, true, false, nil, true, false)
 }
 
 // TestExistingIAM runs the test on a configuration with existing IAM instance profiles
 func TestExistingIAM(t *testing.T) {
 	lifecycleOverrides := []string{"IAMRole=ExistsAndWarnIfChanges", "IAMRolePolicy=ExistsAndWarnIfChanges", "IAMInstanceProfileRole=ExistsAndWarnIfChanges"}
-	runTestAWS(t, "existing-iam.example.com", "existing_iam", "v1alpha2", false, 3, false, false, lifecycleOverrides, true)
+	runTestAWS(t, "existing-iam.example.com", "existing_iam", "v1alpha2", false, 3, false, false, lifecycleOverrides, true, false)
 }
 
 // TestAdditionalCIDR runs the test on a configuration with a shared VPC
 func TestAdditionalCIDR(t *testing.T) {
-	runTestAWS(t, "additionalcidr.example.com", "additional_cidr", "v1alpha3", false, 3, true, false, nil, true)
+	runTestAWS(t, "additionalcidr.example.com", "additional_cidr", "v1alpha3", false, 3, true, false, nil, true, false)
 	runTestCloudformation(t, "additionalcidr.example.com", "additional_cidr", "v1alpha2", false, nil, true)
 }
 
@@ -204,7 +214,7 @@ func TestPhaseNetwork(t *testing.T) {
 }
 
 func TestExternalLoadBalancer(t *testing.T) {
-	runTestAWS(t, "externallb.example.com", "externallb", "v1alpha2", false, 1, true, false, nil, true)
+	runTestAWS(t, "externallb.example.com", "externallb", "v1alpha2", false, 1, true, false, nil, true, false)
 	runTestCloudformation(t, "externallb.example.com", "externallb", "v1alpha2", false, nil, true)
 }
 
@@ -223,13 +233,13 @@ func TestPhaseCluster(t *testing.T) {
 
 // TestMixedInstancesASG tests ASGs using a mixed instance policy
 func TestMixedInstancesASG(t *testing.T) {
-	runTestAWS(t, "mixedinstances.example.com", "mixed_instances", "v1alpha2", false, 3, true, true, nil, true)
+	runTestAWS(t, "mixedinstances.example.com", "mixed_instances", "v1alpha2", false, 3, true, true, nil, true, false)
 	runTestCloudformation(t, "mixedinstances.example.com", "mixed_instances", "v1alpha2", false, nil, true)
 }
 
 // TestMixedInstancesSpotASG tests ASGs using a mixed instance policy and spot instances
 func TestMixedInstancesSpotASG(t *testing.T) {
-	runTestAWS(t, "mixedinstances.example.com", "mixed_instances_spot", "v1alpha2", false, 3, true, true, nil, true)
+	runTestAWS(t, "mixedinstances.example.com", "mixed_instances_spot", "v1alpha2", false, 3, true, true, nil, true, false)
 	runTestCloudformation(t, "mixedinstances.example.com", "mixed_instances_spot", "v1alpha2", false, nil, true)
 }
 
@@ -238,7 +248,7 @@ func TestContainerdCloudformation(t *testing.T) {
 	runTestCloudformation(t, "containerd.example.com", "containerd-cloudformation", "v1alpha2", false, nil, true)
 }
 
-func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedDataFilenames []string, tfFileName string, phase *cloudup.Phase, lifecycleOverrides []string, sshKey bool) {
+func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase, lifecycleOverrides []string, sshKey bool) {
 	var stdout bytes.Buffer
 
 	srcDir = updateClusterTestBase + srcDir
@@ -248,6 +258,10 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 
 	if tfFileName != "" {
 		testDataTFPath = tfFileName
+	}
+
+	if expectedTfFileName != "" {
+		actualTFPath = expectedTfFileName
 	}
 
 	factoryOptions := &util.FactoryOptions{}
@@ -312,10 +326,10 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		sort.Strings(fileNames)
 
 		actualFilenames := strings.Join(fileNames, ",")
-		expectedFilenames := "kubernetes.tf"
+		expectedFilenames := actualTFPath
 
 		if len(expectedDataFilenames) > 0 {
-			expectedFilenames = "data,kubernetes.tf"
+			expectedFilenames = "data," + actualTFPath
 		}
 
 		if actualFilenames != expectedFilenames {
@@ -392,9 +406,14 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 	}
 }
 
-func runTestAWS(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int, expectPolicies bool, launchTemplate bool, lifecycleOverrides []string, sshKey bool) {
+func runTestAWS(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int, expectPolicies bool, launchTemplate bool, lifecycleOverrides []string, sshKey bool, jsonOutput bool) {
+	tfFileName := ""
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
+
+	if jsonOutput {
+		tfFileName = "kubernetes.tf.json"
+	}
 
 	h.MockKopsVersion("1.15.0")
 	h.SetupMockAWS()
@@ -431,7 +450,7 @@ func runTestAWS(t *testing.T, clusterName string, srcDir string, version string,
 			}...)
 		}
 	}
-	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil, lifecycleOverrides, sshKey)
+	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, tfFileName, tfFileName, nil, lifecycleOverrides, sshKey)
 }
 
 func runTestPhase(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int, phase cloudup.Phase, sshKey bool) {
@@ -475,7 +494,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 		}
 	}
 
-	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, tfFileName, &phase, nil, sshKey)
+	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, tfFileName, "", &phase, nil, sshKey)
 }
 
 func runTestGCE(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int, sshKey bool) {
@@ -504,7 +523,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 		expectedFilenames = append(expectedFilenames, prefix+"kops-k8s-io-instance-group-name")
 	}
 
-	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", nil, nil, sshKey)
+	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", "", nil, nil, sshKey)
 }
 
 func runTestCloudformation(t *testing.T, clusterName string, srcDir string, version string, private bool, lifecycleOverrides []string, sshKey bool) {
