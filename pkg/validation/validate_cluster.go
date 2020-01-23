@@ -229,6 +229,14 @@ func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface, node
 			})
 			return nil
 		}
+		if pod.Status.Phase == v1.PodUnknown {
+			v.addError(&ValidationError{
+				Kind:    "Pod",
+				Name:    pod.Namespace + "/" + pod.Name,
+				Message: fmt.Sprintf("%s pod %q is unknown phase", priority, pod.Name),
+			})
+			return nil
+		}
 		var notready []string
 		for _, container := range pod.Status.ContainerStatuses {
 			if !container.Ready {
