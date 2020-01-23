@@ -609,6 +609,12 @@ type KubeSchedulerConfig struct {
 	// which has been supported as far back as Kubernetes 1.7. The default depends on the version and the cloud provider
 	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
 	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
+	// Qps sets the maximum qps to send to apiserver after the burst quota is exhausted
+	Qps *float32 `json:"qps,omitempty" configfile:"ClientConnection.QPS"`
+	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
+	Burst *float32 `json:"qps,omitempty" configfile:"ClientConnection.Burst"`
+	// Overrides the default kubeconfig path.
+	KubeConfig *string `json:"kubeConfig,omitempty" configfile:"ClientConnection.Kubeconfig"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

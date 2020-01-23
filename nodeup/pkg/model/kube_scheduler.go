@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"k8s.io/kops/pkg/configbuilder"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -40,6 +41,8 @@ type KubeSchedulerBuilder struct {
 }
 
 var _ fi.ModelBuilder = &KubeSchedulerBuilder{}
+
+var defaultKubeConfig = "/var/lib/kube-scheduler/kubeconfig"
 
 // Build is responsible for building the manifest for the kube-scheduler
 func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -79,6 +82,23 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
+	if b.Cluster.Spec.KubeScheduler.KubeConfig == nil {
+		b.Cluster.Spec.KubeScheduler.KubeConfig = &defaultKubeConfig
+	}
+	{
+		config, err := configbuilder.BuildConfigYaml(b.Cluster.Spec.KubeScheduler)
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(&nodetasks.File{
+			Path:     "/var/lib/kube-scheduler/config",
+			Contents: fi.NewBytesResource(config),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
+	}
+
 	{
 		c.AddTask(&nodetasks.File{
 			Path:        "/var/log/kube-scheduler.log",
@@ -101,7 +121,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 		return nil, fmt.Errorf("error building kube-scheduler flags: %v", err)
 	}
 	// Add kubeconfig flag
-	flags = append(flags, "--kubeconfig="+"/var/lib/kube-scheduler/kubeconfig")
+	flags = append(flags, "--config="+"/var/lib/kube-scheduler/config")
 
 	if c.UsePolicyConfigMap != nil {
 		flags = append(flags, "--policy-configmap=scheduler-policy", "--policy-configmap-namespace=kube-system")
