@@ -2770,6 +2770,10 @@ spec:
                 weave:
                   description: WeaveNetworkingSpec declares that we want Weave networking
                   properties:
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      type: object
                     connLimit:
                       format: int32
                       type: integer

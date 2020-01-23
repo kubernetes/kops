@@ -4851,6 +4851,7 @@ func Convert_kops_VolumeSpec_To_v1alpha1_VolumeSpec(in *kops.VolumeSpec, out *Vo
 }
 
 func autoConvert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
+	out.Annotations = in.Annotations
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal
@@ -4873,6 +4874,7 @@ func Convert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveN
 }
 
 func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
+	out.Annotations = in.Annotations
 	out.MTU = in.MTU
 	out.ConnLimit = in.ConnLimit
 	out.NoMasqLocal = in.NoMasqLocal

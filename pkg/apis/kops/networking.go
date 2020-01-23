@@ -63,9 +63,10 @@ type KopeioNetworkingSpec struct {
 
 // WeaveNetworkingSpec declares that we want Weave networking
 type WeaveNetworkingSpec struct {
-	MTU         *int32 `json:"mtu,omitempty"`
-	ConnLimit   *int32 `json:"connLimit,omitempty"`
-	NoMasqLocal *int32 `json:"noMasqLocal,omitempty"`
+	MTU         *int32            `json:"mtu,omitempty"`
+	ConnLimit   *int32            `json:"connLimit,omitempty"`
+	NoMasqLocal *int32            `json:"noMasqLocal,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// MemoryRequest memory request of weave container. Default 200Mi
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`

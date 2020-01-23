@@ -131,7 +131,10 @@ spec:
         role.kubernetes.io/networking: "1"
       annotations:
         prometheus.io/scrape: "true"
-        scheduler.alpha.kubernetes.io/critical-pod: ''
+        scheduler.alpha.kubernetes.io/critical-pod: ''     
+{{ range $name, $value := .Networking.Weave.Annotations }}
+        {{ $name }}: {{ $value }}
+{{ end }}
     spec:
       containers:
         - name: weave
