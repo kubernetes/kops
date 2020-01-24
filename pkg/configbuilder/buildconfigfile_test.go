@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -29,9 +30,10 @@ func TestParseBasic(t *testing.T) {
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: null
-  qps: 3
+  qps: 3.1
 `)
-	qps := float32(3.0)
+	qps, _ := resource.ParseQuantity("3.1")
+
 	s := &kops.KubeSchedulerConfig{Qps: &qps}
 
 	yaml, err := BuildConfigYaml(s)
@@ -40,7 +42,7 @@ clientConnection:
 	}
 
 	if !bytes.Equal(yaml, expect) {
-		t.Errorf("unexpected result: %v, expected: %v", expect, yaml)
+		t.Errorf("unexpected result: \n%s, expected: \n%s", expect, yaml)
 	}
 }
 

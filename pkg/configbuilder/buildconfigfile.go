@@ -19,10 +19,11 @@ package configbuilder
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v2"
-
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -31,7 +32,7 @@ import (
 type ClientConnectionConfig struct {
 	Burst      *int32   `yaml:"burst,omitempty"`
 	Kubeconfig *string  `yaml:"kubeconfig"`
-	QPS        *float32 `yaml:"qps,omitempty"`
+	QPS        *float64 `yaml:"qps,omitempty"`
 }
 
 // SchedulerConfig is used to generate the config file
@@ -81,9 +82,19 @@ func BuildConfigYaml(options interface{}) ([]byte, error) {
 				return nil
 			}
 		}
-		targetValue.Set(val)
+		switch v := val.Interface().(type) {
+		case *resource.Quantity:
+			floatVal, err := strconv.ParseFloat(v.AsDec().String(), 64)
+			if err != nil {
+				return fmt.Errorf("unable to convert from Quantity %v to float", v)
+			}
+			targetValue.Set(reflect.ValueOf(&floatVal))
+		default:
+			targetValue.Set(val)
+		}
 
 		return reflectutils.SkipReflection
+
 	}
 
 	err := reflectutils.ReflectRecursive(reflect.ValueOf(options), walker)

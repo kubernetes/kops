@@ -610,9 +610,9 @@ type KubeSchedulerConfig struct {
 	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
 	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
 	// Qps sets the maximum qps to send to apiserver after the burst quota is exhausted
-	Qps *float32 `json:"qps,omitempty" configfile:"ClientConnection.QPS"`
+	Qps *resource.Quantity `json:"qps,omitempty" configfile:"ClientConnection.QPS"`
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
-	Burst *float32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
+	Burst *int32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
 	// KubeConfig overrides the default kubeconfig path.
 	KubeConfig *string `json:"kubeConfig,omitempty" configfile:"ClientConnection.Kubeconfig"`
 }
