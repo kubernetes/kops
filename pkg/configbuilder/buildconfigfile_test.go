@@ -26,7 +26,7 @@ import (
 func TestParseBasic(t *testing.T) {
 	expect := []byte(
 		`apiVersion: kubescheduler.config.k8s.io/v1alpha1
-Kind: KubeSchedulerConfiguration
+kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: null
   qps: 3
