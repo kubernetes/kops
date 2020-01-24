@@ -18,15 +18,10 @@ package configbuilder
 
 import (
 	"bytes"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/kops/pkg/apis/kops"
 	"testing"
-)
 
-func resourceValue(s string) *resource.Quantity {
-	q := resource.MustParse(s)
-	return &q
-}
+	"k8s.io/kops/pkg/apis/kops"
+)
 
 func TestParseBasic(t *testing.T) {
 	expect := []byte(
