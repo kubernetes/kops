@@ -27,17 +27,17 @@ import (
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
-// ClientConnectionConfig for kube-scheduler
+// ClientConnectionConfig is used by kube-scheduler to talk to the api server
 type ClientConnectionConfig struct {
 	Burst      *int32   `yaml:"burst,omitempty"`
 	Kubeconfig *string  `yaml:"kubeconfig"`
 	QPS        *float32 `yaml:"qps,omitempty"`
 }
 
-// SchedulerConfig used to generate the config file
+// SchedulerConfig is used to generate the config file
 type SchedulerConfig struct {
 	APIVersion         string                  `yaml:"apiVersion"`
-	Kind               string                  `yaml:"Kind"`
+	Kind               string                  `yaml:"kind"`
 	BindTimeoutSeconds *int64                  `yaml:"bindTimeoutSeconds,omitempty"`
 	ClientConnection   *ClientConnectionConfig `yaml:"clientConnection,omitempty"`
 }
