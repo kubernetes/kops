@@ -613,7 +613,7 @@ type KubeSchedulerConfig struct {
 	Qps *float32 `json:"qps,omitempty" configfile:"ClientConnection.QPS"`
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
 	Burst *float32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
-	// Overrides the default kubeconfig path.
+	// KubeConfig overrides the default kubeconfig path.
 	KubeConfig *string `json:"kubeConfig,omitempty" configfile:"ClientConnection.Kubeconfig"`
 }
 
