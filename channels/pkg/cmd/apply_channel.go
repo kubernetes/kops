@@ -62,11 +62,6 @@ func RunApplyChannel(f Factory, out io.Writer, options *ApplyChannelOptions, arg
 		return fmt.Errorf("error querying kubernetes version: %v", err)
 	}
 
-	//kubernetesVersion, err := semver.Parse(kubernetesVersionInfo.Major + "." + kubernetesVersionInfo.Minor + ".0")
-	//if err != nil {
-	//	return fmt.Errorf("cannot parse kubernetes version %q", kubernetesVersionInfo.Major+"."+kubernetesVersionInfo.Minor + ".0")
-	//}
-
 	kubernetesVersion, err := semver.ParseTolerant(kubernetesVersionInfo.GitVersion)
 	if err != nil {
 		return fmt.Errorf("cannot parse kubernetes version %q", kubernetesVersionInfo.GitVersion)
