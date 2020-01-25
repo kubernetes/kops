@@ -63,7 +63,7 @@ func BuildConfigYaml(options interface{}) ([]byte, error) {
 			return nil
 		}
 		if tag == "-" {
-			klog.V(4).Infof("skipping field with %q flag tag: %s", tag, path)
+			klog.V(4).Infof("skipping field with %q configfile tag: %s", tag, path)
 			return reflectutils.SkipReflection
 		}
 
