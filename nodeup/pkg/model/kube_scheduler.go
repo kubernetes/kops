@@ -35,6 +35,21 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+// ClientConnectionConfig is used by kube-scheduler to talk to the api server
+type ClientConnectionConfig struct {
+	Burst      int32    `yaml:"burst,omitempty"`
+	Kubeconfig *string  `yaml:"kubeconfig"`
+	QPS        *float64 `yaml:"qps,omitempty"`
+}
+
+// SchedulerConfig is used to generate the config file
+type SchedulerConfig struct {
+	APIVersion         string                  `yaml:"apiVersion"`
+	Kind               string                  `yaml:"kind"`
+	BindTimeoutSeconds *int64                  `yaml:"bindTimeoutSeconds,omitempty"`
+	ClientConnection   *ClientConnectionConfig `yaml:"clientConnection,omitempty"`
+}
+
 // KubeSchedulerBuilder install kube-scheduler
 type KubeSchedulerBuilder struct {
 	*NodeupModelContext
@@ -49,9 +64,9 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
-
+	useConfigFile := b.IsKubernetesGTE("1.11")
 	{
-		pod, err := b.buildPod()
+		pod, err := b.buildPod(useConfigFile)
 		if err != nil {
 			return fmt.Errorf("error building kube-scheduler pod: %v", err)
 		}
@@ -81,18 +96,14 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Mode:     s("0400"),
 		})
 	}
-
-	if b.Cluster.Spec.KubeScheduler.KubeConfig == nil {
-		b.Cluster.Spec.KubeScheduler.KubeConfig = &defaultKubeConfig
-	}
-	{
-		config, err := configbuilder.BuildConfigYaml(b.Cluster.Spec.KubeScheduler)
+	if useConfigFile {
+		config, err := configbuilder.BuildConfigYaml(b.Cluster.Spec.KubeScheduler, NewSchedulerConfig())
 		if err != nil {
 			return err
 		}
 
 		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kube-scheduler/config",
+			Path:     "/var/lib/kube-scheduler/config.yaml",
 			Contents: fi.NewBytesResource(config),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
@@ -112,16 +123,30 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
+// NewSchedulerConfig initializes a new kube-scheduler config file
+func NewSchedulerConfig() *SchedulerConfig {
+	schedConfig := new(SchedulerConfig)
+	schedConfig.APIVersion = "kubescheduler.config.k8s.io/v1alpha1"
+	schedConfig.Kind = "KubeSchedulerConfiguration"
+	schedConfig.ClientConnection = new(ClientConnectionConfig)
+	schedConfig.ClientConnection.Kubeconfig = &defaultKubeConfig
+	return schedConfig
+}
+
 // buildPod is responsible for constructing the pod specification
-func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
+func (b *KubeSchedulerBuilder) buildPod(useConfigFile bool) (*v1.Pod, error) {
 	c := b.Cluster.Spec.KubeScheduler
 
 	flags, err := flagbuilder.BuildFlagsList(c)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-scheduler flags: %v", err)
 	}
-	// Add kubeconfig flag
-	flags = append(flags, "--config="+"/var/lib/kube-scheduler/config")
+	if useConfigFile {
+		flags = append(flags, "--config="+"/var/lib/kube-scheduler/config.yaml")
+	} else {
+		// Add kubeconfig flag
+		flags = append(flags, "--config="+defaultKubeConfig)
+	}
 
 	if c.UsePolicyConfigMap != nil {
 		flags = append(flags, "--policy-configmap=scheduler-policy", "--policy-configmap-namespace=kube-system")

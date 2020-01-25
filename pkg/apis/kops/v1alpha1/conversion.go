@@ -38,6 +38,10 @@ func Convert_v1alpha1_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops
 	return nil
 }
 
+func Convert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *kops.KubeSchedulerConfig, out *KubeSchedulerConfig, s conversion.Scope) error {
+	return autoConvert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in, out, s)
+}
+
 func Convert_kops_BastionSpec_To_v1alpha1_BastionSpec(in *kops.BastionSpec, out *BastionSpec, s conversion.Scope) error {
 	out.PublicName = in.BastionPublicName
 	out.IdleTimeout = in.IdleTimeoutSeconds

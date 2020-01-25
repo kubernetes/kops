@@ -612,9 +612,7 @@ type KubeSchedulerConfig struct {
 	// Qps sets the maximum qps to send to apiserver after the burst quota is exhausted
 	Qps *resource.Quantity `json:"qps,omitempty" configfile:"ClientConnection.QPS"`
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
-	Burst *int32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
-	// KubeConfig overrides the default kubeconfig path.
-	KubeConfig *string `json:"kubeConfig,omitempty" configfile:"ClientConnection.Kubeconfig"`
+	Burst int32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

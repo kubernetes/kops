@@ -18,6 +18,7 @@ package configbuilder
 
 import (
 	"fmt"
+
 	"reflect"
 	"strconv"
 	"strings"
@@ -25,32 +26,12 @@ import (
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
-// ClientConnectionConfig is used by kube-scheduler to talk to the api server
-type ClientConnectionConfig struct {
-	Burst      *int32   `yaml:"burst,omitempty"`
-	Kubeconfig *string  `yaml:"kubeconfig"`
-	QPS        *float64 `yaml:"qps,omitempty"`
-}
-
-// SchedulerConfig is used to generate the config file
-type SchedulerConfig struct {
-	APIVersion         string                  `yaml:"apiVersion"`
-	Kind               string                  `yaml:"kind"`
-	BindTimeoutSeconds *int64                  `yaml:"bindTimeoutSeconds,omitempty"`
-	ClientConnection   *ClientConnectionConfig `yaml:"clientConnection,omitempty"`
-}
-
 // BuildConfigYaml reflects the options interface and extracts the parameters for the config file
-func BuildConfigYaml(options interface{}) ([]byte, error) {
-
-	schedConfig := new(SchedulerConfig)
-	schedConfig.APIVersion = "kubescheduler.config.k8s.io/v1alpha1"
-	schedConfig.Kind = "KubeSchedulerConfiguration"
-	schedConfig.ClientConnection = new(ClientConnectionConfig)
-
+func BuildConfigYaml(options *kops.KubeSchedulerConfig, target interface{}) ([]byte, error) {
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
 		if field == nil {
 			klog.V(8).Infof("ignoring non-field: %s", path)
@@ -71,7 +52,7 @@ func BuildConfigYaml(options interface{}) ([]byte, error) {
 
 		flagName := tokens[0]
 
-		targetValue, error := getValueFromStruct(flagName, schedConfig)
+		targetValue, error := getValueFromStruct(flagName, target)
 		if error != nil {
 			return fmt.Errorf("conversion error for field %s: %s", flagName, error)
 		}
@@ -102,7 +83,7 @@ func BuildConfigYaml(options interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("BuildFlagsList to reflect value: %s", err)
 	}
 
-	configFile, err := yaml.Marshal(schedConfig)
+	configFile, err := yaml.Marshal(target)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +91,7 @@ func BuildConfigYaml(options interface{}) ([]byte, error) {
 	return configFile, nil
 }
 
-func getValueFromStruct(keyWithDots string, object *SchedulerConfig) (*reflect.Value, error) {
+func getValueFromStruct(keyWithDots string, object interface{}) (*reflect.Value, error) {
 	keySlice := strings.Split(keyWithDots, ".")
 	v := reflect.ValueOf(object)
 	// iterate through field names, ignoring the first name as it might be the current instance name

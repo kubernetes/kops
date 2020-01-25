@@ -17,43 +17,28 @@ limitations under the License.
 package configbuilder
 
 import (
-	"bytes"
 	"testing"
-
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/kops/pkg/apis/kops"
 )
 
-func TestParseBasic(t *testing.T) {
-	expect := []byte(
-		`apiVersion: kubescheduler.config.k8s.io/v1alpha1
-kind: KubeSchedulerConfiguration
-clientConnection:
-  kubeconfig: null
-  qps: 3.1
-`)
-	qps, _ := resource.ParseQuantity("3.1")
+// ClientConnectionConfig is used by kube-scheduler to talk to the api server
+type DummyNestedStruct struct {
+	Name *string  `yaml:"name,omitempty"`
+	QPS  *float64 `yaml:"qps,omitempty"`
+}
 
-	s := &kops.KubeSchedulerConfig{Qps: &qps}
-
-	yaml, err := BuildConfigYaml(s)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-	}
-
-	if !bytes.Equal(yaml, expect) {
-		t.Errorf("unexpected result: \n%s, expected: \n%s", expect, yaml)
-	}
+// SchedulerConfig is used to generate the config file
+type DummyStruct struct {
+	ClientConnection *DummyNestedStruct `yaml:"clientConnection,omitempty"`
 }
 
 func TestGetStructVal(t *testing.T) {
 	str := "test"
-	s := &SchedulerConfig{
-		ClientConnection: &ClientConnectionConfig{
-			Kubeconfig: &str,
+	s := &DummyStruct{
+		ClientConnection: &DummyNestedStruct{
+			Name: &str,
 		},
 	}
-	v, err := getValueFromStruct("ClientConnection.Kubeconfig", s)
+	v, err := getValueFromStruct("ClientConnection.Name", s)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
@@ -66,9 +51,9 @@ func TestGetStructVal(t *testing.T) {
 
 func TestWrongStructField(t *testing.T) {
 	str := "test"
-	s := &SchedulerConfig{
-		ClientConnection: &ClientConnectionConfig{
-			Kubeconfig: &str,
+	s := &DummyStruct{
+		ClientConnection: &DummyNestedStruct{
+			Name: &str,
 		},
 	}
 	v, err := getValueFromStruct("ClientConnection.NotExistent", s)
