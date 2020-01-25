@@ -6,6 +6,7 @@ go_library(
     importpath = "k8s.io/kops/pkg/configbuilder",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/apis/kops:go_default_library",
         "//util/pkg/reflectutils:go_default_library",
         "//vendor/gopkg.in/yaml.v2:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
@@ -17,8 +18,4 @@ go_test(
     name = "go_default_test",
     srcs = ["buildconfigfile_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//pkg/apis/kops:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
-    ],
 )
