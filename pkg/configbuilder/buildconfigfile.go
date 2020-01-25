@@ -113,7 +113,7 @@ func BuildConfigYaml(options interface{}) ([]byte, error) {
 func getValueFromStruct(keyWithDots string, object *SchedulerConfig) (*reflect.Value, error) {
 	keySlice := strings.Split(keyWithDots, ".")
 	v := reflect.ValueOf(object)
-	// iterate through field names ,ignore the first name as it might be the current instance name
+	// iterate through field names, ignoring the first name as it might be the current instance name
 	// you can make it recursive also if want to support types like slice,map etc along with struct
 	for _, key := range keySlice {
 		for v.Kind() == reflect.Ptr {
