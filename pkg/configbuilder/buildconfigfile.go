@@ -58,7 +58,7 @@ func BuildConfigYaml(options interface{}) ([]byte, error) {
 		}
 		tag := field.Tag.Get("configfile")
 		if tag == "" {
-			klog.V(4).Infof("not writing field with no flag tag: %s", path)
+			klog.V(4).Infof("not writing field with no configfile tag: %s", path)
 			// We want to descend - it could be a structure containing flags
 			return nil
 		}
