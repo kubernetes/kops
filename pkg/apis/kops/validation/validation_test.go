@@ -19,6 +19,7 @@ package validation
 import (
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -383,4 +384,51 @@ func Test_Validate_Calico(t *testing.T) {
 		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("Calico"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
+}
+
+func Test_Validate_RollingUpdate(t *testing.T) {
+	grid := []struct {
+		Input          kops.RollingUpdate
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.RollingUpdate{},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromInt(0)),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromString("0%")),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromString("nope")),
+			},
+			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromInt(-1)),
+			},
+			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromString("-1%")),
+			},
+			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+		},
+	}
+	for _, g := range grid {
+		errs := validateRollingUpdate(&g.Input, field.NewPath("TestField"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func intStr(i intstr.IntOrString) *intstr.IntOrString {
+	return &i
 }

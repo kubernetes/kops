@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"k8s.io/apimachinery/pkg/api/validation"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
@@ -119,6 +120,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 	// Container Runtime
 	if spec.ContainerRuntime != "" {
 		allErrs = append(allErrs, validateContainerRuntime(&spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
+	}
+
+	if spec.RollingUpdate != nil {
+		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"))...)
 	}
 
 	return allErrs
@@ -428,6 +433,22 @@ func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorL
 
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, IsValidValue(fldPath, runtime, valid)...)
+
+	return allErrs
+}
+
+func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if rollingUpdate.MaxUnavailable != nil {
+		unavailable, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, 1, false)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable,
+				fmt.Sprintf("Unable to parse: %v", err)))
+		}
+		if unavailable < 0 {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
+		}
+	}
 
 	return allErrs
 }
