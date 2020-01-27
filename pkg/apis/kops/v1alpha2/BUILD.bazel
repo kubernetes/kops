@@ -7,7 +7,6 @@ go_library(
         "cluster.go",
         "componentconfig.go",
         "containerdconfig.go",
-        "conversion.go",
         "defaults.go",
         "doc.go",
         "dockerconfig.go",

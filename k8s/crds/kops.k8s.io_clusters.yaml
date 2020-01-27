@@ -1609,6 +1609,11 @@ spec:
             kubeScheduler:
               description: KubeSchedulerConfig is the configuration for the kube-scheduler
               properties:
+                burst:
+                  description: Burst sets the maximum qps to send to apiserver after
+                    the burst quota is exhausted
+                  format: int32
+                  type: integer
                 featureGates:
                   additionalProperties:
                     type: string
@@ -1677,6 +1682,10 @@ spec:
                     and the cloud provider as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/'
                   format: int32
                   type: integer
+                qps:
+                  description: Qps sets the maximum qps to send to apiserver after
+                    the burst quota is exhausted
+                  type: string
                 usePolicyConfigMap:
                   description: UsePolicyConfigMap enable setting the scheduler policy
                     from a configmap
