@@ -47,7 +47,6 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.4-1",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.4-1_amd64.deb",
 		Hash:           "48c6ab0c908316af9a183de5aad64703bc516bdf",
-		Dependencies:   []string{"libseccomp2", "pigz"},
 	},
 
 	// 1.2.10 - Debian Stretch
@@ -59,7 +58,6 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "186f2f2c570f37b363102e6b879073db6dec671d",
-		Dependencies:   []string{"libseccomp2", "pigz"},
 	},
 
 	// 1.2.10 - Debian Buster
@@ -71,7 +69,6 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "365e4a7541ce2cf3c3036ea2a9bf6b40a50893a8",
-		Dependencies:   []string{"libseccomp2", "pigz"},
 	},
 
 	// 1.2.10 - Ubuntu Xenial
@@ -83,7 +80,6 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
-		Dependencies:   []string{"libseccomp2", "pigz"},
 	},
 
 	// 1.2.10 - Ubuntu Bionic
@@ -95,7 +91,6 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "f4c941807310e3fa470dddfb068d599174a3daec",
-		Dependencies:   []string{"libseccomp2", "pigz"},
 	},
 
 	// 1.2.10 - CentOS / Rhel 7
@@ -107,14 +102,6 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "f6447e84479df3a58ce04a3da87ccc384663493b",
-		ExtraPackages: map[string]packageInfo{
-			"container-selinux": {
-				Version: "2.107",
-				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.107-1.el7_6.noarch.rpm",
-				Hash:    "7de4211fa0dfd240d8827b93763e1eb5f0d56411",
-			},
-		},
-		Dependencies: []string{"libseccomp", "policycoreutils-python"},
 	},
 
 	// 1.2.10 - CentOS / Rhel 8
@@ -126,7 +113,26 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "f6447e84479df3a58ce04a3da87ccc384663493b",
-		Dependencies:   []string{"container-selinux", "libseccomp", "pigz"},
+	},
+
+	// 1.2.11 - Linux Generic
+	{
+		PackageVersion: "1.2.11",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Version:        "1.2.11",
+		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.11.linux-amd64.tar.gz",
+		Hash:           "c98c9fdfd0984557e5b1a1f209213d2d8ad8471c",
+	},
+
+	// 1.3.2 - Linux Generic
+	{
+		PackageVersion: "1.3.2",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Version:        "1.3.2",
+		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.2.linux-amd64.tar.gz",
+		Hash:           "f451d46280104588f236bee277bca1da8babc0e8",
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
@@ -220,11 +226,14 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 			var packageTask fi.Task
 			if dv.PlainBinary {
 				packageTask = &nodetasks.Archive{
-					Name:            "containerd",
-					Source:          dv.Source,
-					Hash:            dv.Hash,
-					TargetDir:       "/usr/bin/",
-					StripComponents: 1,
+					Name:      "containerd.io",
+					Source:    dv.Source,
+					Hash:      dv.Hash,
+					TargetDir: "/",
+					MapFiles: map[string]string{
+						"./usr/local/bin":  "/usr",
+						"./usr/local/sbin": "/usr",
+					},
 				}
 				c.AddTask(packageTask)
 			} else {
@@ -283,6 +292,8 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *ContainerdBuilder) buildSystemdService() *nodetasks.Service {
+	// Based on https://github.com/containerd/cri/blob/master/contrib/systemd-units/containerd.service
+
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "containerd container runtime")
 	manifest.Set("Unit", "Documentation", "https://containerd.io")
@@ -293,20 +304,20 @@ func (b *ContainerdBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "ExecStartPre", "-/sbin/modprobe overlay")
 	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c /etc/containerd/config-kops.toml \"$CONTAINERD_OPTS\"")
 
-	// kill only the containerd process, not all processes in the cgroup
-	manifest.Set("Service", "KillMode", "process")
+	manifest.Set("Service", "Restart", "always")
+	manifest.Set("Service", "RestartSec", "5")
+
 	// set delegate yes so that systemd does not reset the cgroups of containerd containers
 	manifest.Set("Service", "Delegate", "yes")
+	// kill only the containerd process, not all processes in the cgroup
+	manifest.Set("Service", "KillMode", "process")
+	// make killing of processes of this unit under memory pressure very unlikely
+	manifest.Set("Service", "OOMScoreAdjust", "-999")
 
 	manifest.Set("Service", "LimitNOFILE", "1048576")
 	manifest.Set("Service", "LimitNPROC", "infinity")
 	manifest.Set("Service", "LimitCORE", "infinity")
 	manifest.Set("Service", "TasksMax", "infinity")
-
-	manifest.Set("Service", "Restart", "always")
-	manifest.Set("Service", "RestartSec", "2s")
-	manifest.Set("Service", "StartLimitInterval", "0")
-	manifest.Set("Service", "TimeoutStartSec", "0")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
