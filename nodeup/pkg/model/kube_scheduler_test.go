@@ -25,17 +25,38 @@ import (
 	"k8s.io/kops/pkg/configbuilder"
 )
 
-func TestParseBasic(t *testing.T) {
+func TestParseDefault(t *testing.T) {
 	expect := []byte(
 		`apiVersion: kubescheduler.config.k8s.io/v1alpha1
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: /var/lib/kube-scheduler/kubeconfig
+`)
+
+	s := &kops.KubeSchedulerConfig{}
+
+	yaml, err := configbuilder.BuildConfigYaml(s, NewSchedulerConfig())
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+
+	if !bytes.Equal(yaml, expect) {
+		t.Errorf("unexpected result: \n%s, expected: \n%s", yaml, expect)
+	}
+}
+
+func TestParse(t *testing.T) {
+	expect := []byte(
+		`apiVersion: kubescheduler.config.k8s.io/v1alpha1
+kind: KubeSchedulerConfiguration
+clientConnection:
+  burst: 100
+  kubeconfig: /var/lib/kube-scheduler/kubeconfig
   qps: 3.1
 `)
 	qps, _ := resource.ParseQuantity("3.1")
 
-	s := &kops.KubeSchedulerConfig{Qps: &qps}
+	s := &kops.KubeSchedulerConfig{Qps: &qps, Burst: 100}
 
 	yaml, err := configbuilder.BuildConfigYaml(s, NewSchedulerConfig())
 	if err != nil {

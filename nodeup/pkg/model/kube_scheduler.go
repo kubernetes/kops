@@ -38,16 +38,15 @@ import (
 // ClientConnectionConfig is used by kube-scheduler to talk to the api server
 type ClientConnectionConfig struct {
 	Burst      int32    `yaml:"burst,omitempty"`
-	Kubeconfig *string  `yaml:"kubeconfig"`
+	Kubeconfig string   `yaml:"kubeconfig"`
 	QPS        *float64 `yaml:"qps,omitempty"`
 }
 
 // SchedulerConfig is used to generate the config file
 type SchedulerConfig struct {
-	APIVersion         string                  `yaml:"apiVersion"`
-	Kind               string                  `yaml:"kind"`
-	BindTimeoutSeconds *int64                  `yaml:"bindTimeoutSeconds,omitempty"`
-	ClientConnection   *ClientConnectionConfig `yaml:"clientConnection,omitempty"`
+	APIVersion       string                 `yaml:"apiVersion"`
+	Kind             string                 `yaml:"kind"`
+	ClientConnection ClientConnectionConfig `yaml:"clientConnection,omitempty"`
 }
 
 // KubeSchedulerBuilder install kube-scheduler
@@ -57,7 +56,7 @@ type KubeSchedulerBuilder struct {
 
 var _ fi.ModelBuilder = &KubeSchedulerBuilder{}
 
-var defaultKubeConfig = "/var/lib/kube-scheduler/kubeconfig"
+const defaultKubeConfig = "/var/lib/kube-scheduler/kubeconfig"
 
 // Build is responsible for building the manifest for the kube-scheduler
 func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -128,8 +127,8 @@ func NewSchedulerConfig() *SchedulerConfig {
 	schedConfig := new(SchedulerConfig)
 	schedConfig.APIVersion = "kubescheduler.config.k8s.io/v1alpha1"
 	schedConfig.Kind = "KubeSchedulerConfiguration"
-	schedConfig.ClientConnection = new(ClientConnectionConfig)
-	schedConfig.ClientConnection.Kubeconfig = &defaultKubeConfig
+	schedConfig.ClientConnection = ClientConnectionConfig{}
+	schedConfig.ClientConnection.Kubeconfig = defaultKubeConfig
 	return schedConfig
 }
 
@@ -145,7 +144,7 @@ func (b *KubeSchedulerBuilder) buildPod(useConfigFile bool) (*v1.Pod, error) {
 		flags = append(flags, "--config="+"/var/lib/kube-scheduler/config.yaml")
 	} else {
 		// Add kubeconfig flag
-		flags = append(flags, "--config="+defaultKubeConfig)
+		flags = append(flags, "--kubeconfig="+defaultKubeConfig)
 	}
 
 	if c.UsePolicyConfigMap != nil {
