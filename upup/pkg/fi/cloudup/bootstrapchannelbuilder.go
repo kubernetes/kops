@@ -44,6 +44,10 @@ var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 // Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	addons := b.buildAddons()
+	if err := addons.Verify(); err != nil {
+		return err
+	}
+
 	tasks := c.Tasks
 
 	for _, a := range addons.Spec.Addons {

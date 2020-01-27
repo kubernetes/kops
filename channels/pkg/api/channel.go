@@ -17,6 +17,9 @@ limitations under the License.
 package api
 
 import (
+	"fmt"
+
+	"github.com/blang/semver"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -59,4 +62,22 @@ type AddonSpec struct {
 	// version of the software we are packaging.  But we always want to reinstall when we
 	// switch kubernetes versions.
 	Id string `json:"id,omitempty"`
+}
+
+func (a *Addons) Verify() error {
+	for _, addon := range a.Spec.Addons {
+		if addon != nil && addon.Version != nil && *addon.Version != "" {
+			name := a.ObjectMeta.Name
+			if addon.Name != nil {
+				name = *addon.Name
+			}
+
+			_, err := semver.ParseTolerant(*addon.Version)
+			if err != nil {
+				return fmt.Errorf("addon %q has unparseable version %q: %v", name, *addon.Version, err)
+			}
+		}
+	}
+
+	return nil
 }
