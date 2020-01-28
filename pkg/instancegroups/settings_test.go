@@ -138,21 +138,6 @@ func TestMaxUnavailable(t *testing.T) {
 			value:        "100%",
 			expected:     10,
 		},
-		{
-			numInstances: 5,
-			value:        "fnord",
-			expected:     1,
-		},
-		{
-			numInstances: 5,
-			value:        "-3",
-			expected:     1,
-		},
-		{
-			numInstances: 5,
-			value:        "-3%",
-			expected:     1,
-		},
 	} {
 		t.Run(fmt.Sprintf("%s %d", tc.value, tc.numInstances), func(t *testing.T) {
 			value := intstr.Parse(tc.value)

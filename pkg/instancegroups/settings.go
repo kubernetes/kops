@@ -51,16 +51,12 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 	if rollingUpdate.MaxSurge.Type == intstr.Int && rollingUpdate.MaxSurge.IntVal == 0 {
 		maxUnavailableDefault = intstr.FromInt(1)
 	}
-	if rollingUpdate.MaxUnavailable == nil || rollingUpdate.MaxUnavailable.IntVal < 0 {
+	if rollingUpdate.MaxUnavailable == nil {
 		rollingUpdate.MaxUnavailable = &maxUnavailableDefault
 	}
 
 	if rollingUpdate.MaxUnavailable.Type == intstr.String {
-		unavailable, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, numInstances, false)
-		if err != nil {
-			// If unparseable use the default value
-			unavailable = maxUnavailableDefault.IntValue()
-		}
+		unavailable, _ := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, numInstances, false)
 		if unavailable <= 0 {
 			// While we round down, percentages should resolve to a minimum of 1
 			unavailable = 1
