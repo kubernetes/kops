@@ -1250,6 +1250,7 @@ func autoConvert_v1alpha1_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.Version = in.Version
 	out.AccessLog = in.AccessLog
 	out.AgentLabels = in.AgentLabels
+	out.AgentPrometheusPort = in.AgentPrometheusPort
 	out.AllowLocalhost = in.AllowLocalhost
 	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
 	out.BPFRoot = in.BPFRoot
@@ -1262,6 +1263,7 @@ func autoConvert_v1alpha1_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.DisableIpv4 = in.DisableIpv4
 	out.DisableK8sServices = in.DisableK8sServices
 	out.EnablePolicy = in.EnablePolicy
+	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableTracing = in.EnableTracing
 	out.EnvoyLog = in.EnvoyLog
 	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
@@ -1326,6 +1328,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha1_CiliumNetworkingSpec(in *
 	out.Version = in.Version
 	out.AccessLog = in.AccessLog
 	out.AgentLabels = in.AgentLabels
+	out.AgentPrometheusPort = in.AgentPrometheusPort
 	out.AllowLocalhost = in.AllowLocalhost
 	out.AutoIpv6NodeRoutes = in.AutoIpv6NodeRoutes
 	out.BPFRoot = in.BPFRoot
@@ -1339,6 +1342,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha1_CiliumNetworkingSpec(in *
 	out.DisableK8sServices = in.DisableK8sServices
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableTracing = in.EnableTracing
+	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnvoyLog = in.EnvoyLog
 	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
 	out.Ipv4Node = in.Ipv4Node
