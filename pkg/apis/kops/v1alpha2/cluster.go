@@ -19,6 +19,7 @@ package v1alpha2
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // +genclient
@@ -184,6 +185,8 @@ type ClusterSpec struct {
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
+	// RollingUpdate defines the default rolling-update settings for instance groups
+	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -550,4 +553,20 @@ type DNSControllerGossipConfig struct {
 	Secret    *string                    `json:"secret,omitempty"`
 	Secondary *DNSControllerGossipConfig `json:"secondary,omitempty"`
 	Seed      *string                    `json:"seed,omitempty"`
+}
+
+type RollingUpdate struct {
+	// MaxUnavailable is the maximum number of nodes that can be unavailable during the update.
+	// The value can be an absolute number (for example 5) or a percentage of desired
+	// nodes (for example 10%).
+	// The absolute number is calculated from a percentage by rounding down.
+	// A value of 0 disables rolling updates.
+	// Defaults to 1.
+	// Example: when this is set to 30%, the InstanceGroup can be scaled
+	// down to 70% of desired nodes immediately when the rolling update
+	// starts. Once new nodes are ready, more old nodes can be drained,
+	// ensuring that the total number of nodes available at all times
+	// during the update is at least 70% of desired nodes.
+	// +optional
+	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty"`
 }
