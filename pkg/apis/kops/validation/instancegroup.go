@@ -222,9 +222,6 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 		clusterSubnets := make(map[string]*kops.ClusterSubnetSpec)
 		for i := range cluster.Spec.Subnets {
 			s := &cluster.Spec.Subnets[i]
-			if clusterSubnets[s.Name] != nil {
-				return fmt.Errorf("subnets contained a duplicate value: %v", s.Name)
-			}
 			clusterSubnets[s.Name] = s
 		}
 
