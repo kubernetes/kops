@@ -200,6 +200,7 @@ type CiliumNetworkingSpec struct {
 
 	AccessLog                string            `json:"accessLog,omitempty"`
 	AgentLabels              []string          `json:"agentLabels,omitempty"`
+	AgentPrometheusPort      int               `json:"agentPrometheusPort,omitempty"`
 	AllowLocalhost           string            `json:"allowLocalhost,omitempty"`
 	AutoIpv6NodeRoutes       bool              `json:"autoIpv6NodeRoutes,omitempty"`
 	BPFRoot                  string            `json:"bpfRoot,omitempty"`
@@ -213,6 +214,7 @@ type CiliumNetworkingSpec struct {
 	DisableK8sServices       bool              `json:"disableK8sServices,omitempty"`
 	EnablePolicy             string            `json:"enablePolicy,omitempty"`
 	EnableTracing            bool              `json:"enableTracing,omitempty"`
+	EnablePrometheusMetrics  bool              `json:"enablePrometheusMetrics,omitempty"`
 	EnvoyLog                 string            `json:"envoyLog,omitempty"`
 	Ipv4ClusterCIDRMaskSize  int               `json:"ipv4ClusterCidrMaskSize,omitempty"`
 	Ipv4Node                 string            `json:"ipv4Node,omitempty"`
