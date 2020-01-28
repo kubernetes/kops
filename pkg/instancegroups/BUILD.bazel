@@ -6,6 +6,7 @@ go_library(
         "delete.go",
         "instancegroups.go",
         "rollingupdate.go",
+        "settings.go",
     ],
     importpath = "k8s.io/kops/pkg/instancegroups",
     visibility = ["//visibility:public"],
@@ -20,6 +21,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/json:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/strategicpatch:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
@@ -29,7 +31,10 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["rollingupdate_test.go"],
+    srcs = [
+        "rollingupdate_test.go",
+        "settings_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//cloudmock/aws/mockautoscaling:go_default_library",
@@ -39,9 +44,11 @@ go_test(
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
         "//vendor/k8s.io/client-go/testing:go_default_library",

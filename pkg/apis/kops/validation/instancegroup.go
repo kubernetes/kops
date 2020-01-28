@@ -132,6 +132,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		return err
 	}
 
+	if g.Spec.RollingUpdate != nil {
+		if errs := validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("rollingUpdate")); len(errs) > 0 {
+			return errs.ToAggregate()
+		}
+	}
+
 	return nil
 }
 
