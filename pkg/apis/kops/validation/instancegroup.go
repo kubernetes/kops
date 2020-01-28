@@ -29,70 +29,58 @@ import (
 )
 
 // ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
-func ValidateInstanceGroup(g *kops.InstanceGroup) error {
+func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
+	allErrs := field.ErrorList{}
+
 	if g.ObjectMeta.Name == "" {
-		return field.Required(field.NewPath("Name"), "")
+		allErrs = append(allErrs, field.Required(field.NewPath("Name"), ""))
 	}
 
 	switch g.Spec.Role {
 	case "":
-		return field.Required(field.NewPath("Role"), "Role must be set")
+		allErrs = append(allErrs, field.Required(field.NewPath("Role"), "Role must be set"))
 	case kops.InstanceGroupRoleMaster:
+		if len(g.Spec.Subnets) == 0 {
+			allErrs = append(allErrs, field.Required(field.NewPath("Subnets"), "master InstanceGroup must specify at least one Subnet"))
+		}
 	case kops.InstanceGroupRoleNode:
 	case kops.InstanceGroupRoleBastion:
 	default:
-		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
+		allErrs = append(allErrs, field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role"))
 	}
 
 	if g.Spec.Tenancy != "" {
 		if g.Spec.Tenancy != "default" && g.Spec.Tenancy != "dedicated" && g.Spec.Tenancy != "host" {
-			return field.Invalid(field.NewPath("Tenancy"), g.Spec.Tenancy, "Unknown tenancy. Must be Default, Dedicated or Host.")
+			allErrs = append(allErrs, field.Invalid(field.NewPath("Tenancy"), g.Spec.Tenancy, "Unknown tenancy. Must be Default, Dedicated or Host."))
 		}
 	}
 
 	if g.Spec.MaxSize != nil && g.Spec.MinSize != nil {
 		if *g.Spec.MaxSize < *g.Spec.MinSize {
-			return field.Invalid(field.NewPath("MaxSize"), *g.Spec.MaxSize, "maxSize must be greater than or equal to minSize.")
+			allErrs = append(allErrs, field.Invalid(field.NewPath("MaxSize"), *g.Spec.MaxSize, "maxSize must be greater than or equal to minSize."))
 		}
 	}
 
 	if fi.Int32Value(g.Spec.RootVolumeIops) < 0 {
-		return field.Invalid(field.NewPath("RootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0")
+		allErrs = append(allErrs, field.Invalid(field.NewPath("RootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0"))
 	}
 
 	// @check all the hooks are valid in this instancegroup
 	for i := range g.Spec.Hooks {
-		if errs := validateHookSpec(&g.Spec.Hooks[i], field.NewPath("hooks").Index(i)); len(errs) > 0 {
-			return errs.ToAggregate()
-		}
+		allErrs = append(allErrs, validateHookSpec(&g.Spec.Hooks[i], field.NewPath("hooks").Index(i))...)
 	}
 
 	// @check the fileAssets for this instancegroup are valid
 	for i := range g.Spec.FileAssets {
-		if errs := validateFileAssetSpec(&g.Spec.FileAssets[i], field.NewPath("fileAssets").Index(i)); len(errs) > 0 {
-			return errs.ToAggregate()
-		}
-	}
-
-	if g.IsMaster() {
-		if len(g.Spec.Subnets) == 0 {
-			return fmt.Errorf("master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
-		}
+		allErrs = append(allErrs, validateFileAssetSpec(&g.Spec.FileAssets[i], field.NewPath("fileAssets").Index(i))...)
 	}
 
 	if g.Spec.MixedInstancesPolicy != nil {
-		if errs := validatedMixedInstancesPolicy(field.NewPath(g.Name), g.Spec.MixedInstancesPolicy, g); len(errs) > 0 {
-			return errs.ToAggregate()
-		}
+		allErrs = append(allErrs, validatedMixedInstancesPolicy(field.NewPath(g.Name), g.Spec.MixedInstancesPolicy, g)...)
 	}
 
-	if len(g.Spec.AdditionalUserData) > 0 {
-		for _, UserDataInfo := range g.Spec.AdditionalUserData {
-			err := validateExtraUserData(&UserDataInfo)
-			if err != nil {
-				return err
-			}
-		}
+	for _, UserDataInfo := range g.Spec.AdditionalUserData {
+		allErrs = append(allErrs, validateExtraUserData(&UserDataInfo)...)
 	}
 
 	// @step: iterate and check the volume specs
@@ -100,13 +88,11 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		devices := make(map[string]bool)
 		path := field.NewPath("volumes").Index(i)
 
-		if err := validateVolumeSpec(path, x); err != nil {
-			return err
-		}
+		allErrs = append(allErrs, validateVolumeSpec(path, x)...)
 
 		// @check the device name has not been used already
 		if _, found := devices[x.Device]; found {
-			return field.Invalid(path.Child("device"), x.Device, "duplicate device name found in volumes")
+			allErrs = append(allErrs, field.Invalid(path.Child("device"), x.Device, "duplicate device name found in volumes"))
 		}
 
 		devices[x.Device] = true
@@ -117,28 +103,22 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		used := make(map[string]bool)
 		path := field.NewPath("volumeMounts").Index(i)
 
-		if err := validateVolumeMountSpec(path, x); err != nil {
-			return err
-		}
+		allErrs = append(allErrs, validateVolumeMountSpec(path, x)...)
 		if _, found := used[x.Device]; found {
-			return field.Invalid(path.Child("device"), x.Device, "duplicate device reference")
+			allErrs = append(allErrs, field.Invalid(path.Child("device"), x.Device, "duplicate device reference"))
 		}
 		if _, found := used[x.Path]; found {
-			return field.Invalid(path.Child("path"), x.Path, "duplicate mount path specified")
+			allErrs = append(allErrs, field.Invalid(path.Child("path"), x.Path, "duplicate mount path specified"))
 		}
 	}
 
-	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
-		return err
-	}
+	allErrs = append(allErrs, validateInstanceProfile(g.Spec.IAM, field.NewPath("iam"))...)
 
 	if g.Spec.RollingUpdate != nil {
-		if errs := validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("rollingUpdate")); len(errs) > 0 {
-			return errs.ToAggregate()
-		}
+		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("rollingUpdate"))...)
 	}
 
-	return nil
+	return allErrs
 }
 
 // validatedMixedInstancesPolicy is responsible for validating the user input of a mixed instance policy
@@ -179,43 +159,44 @@ func validatedMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPo
 }
 
 // validateVolumeSpec is responsible for checking a volume spec is ok
-func validateVolumeSpec(path *field.Path, v *kops.VolumeSpec) error {
+func validateVolumeSpec(path *field.Path, v *kops.VolumeSpec) field.ErrorList {
+	allErrs := field.ErrorList{}
+
 	if v.Device == "" {
-		return field.Required(path.Child("device"), "device name required")
+		allErrs = append(allErrs, field.Required(path.Child("device"), "device name required"))
 	}
 	if v.Size <= 0 {
-		return field.Invalid(path.Child("size"), v.Size, "must be greater than zero")
+		allErrs = append(allErrs, field.Invalid(path.Child("size"), v.Size, "must be greater than zero"))
 	}
 
-	return nil
+	return allErrs
 }
 
 // validateVolumeMountSpec is responsible for checking the volume mount is ok
-func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) error {
+func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) field.ErrorList {
+	allErrs := field.ErrorList{}
+
 	if spec.Device == "" {
-		return field.Required(path.Child("device"), "device name required")
+		allErrs = append(allErrs, field.Required(path.Child("device"), "device name required"))
 	}
 	if spec.Filesystem == "" {
-		return field.Required(path.Child("filesystem"), "filesystem type required")
+		allErrs = append(allErrs, field.Required(path.Child("filesystem"), "filesystem type required"))
 	}
 	if spec.Path == "" {
-		return field.Required(path.Child("path"), "mount path required")
+		allErrs = append(allErrs, field.Required(path.Child("path"), "mount path required"))
 	}
 	if !slice.Contains(kops.SupportedFilesystems, spec.Filesystem) {
-		return field.Invalid(path.Child("filesystem"), spec.Filesystem,
-			fmt.Sprintf("unsupported filesystem, available types: %s", strings.Join(kops.SupportedFilesystems, ",")))
+		allErrs = append(allErrs, field.Invalid(path.Child("filesystem"), spec.Filesystem,
+			fmt.Sprintf("unsupported filesystem, available types: %s", strings.Join(kops.SupportedFilesystems, ","))))
 	}
 
-	return nil
+	return allErrs
 }
 
 // CrossValidateInstanceGroup performs validation of the instance group, including that it is consistent with the Cluster
 // It calls ValidateInstanceGroup, so all that validation is included.
-func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, strict bool) error {
-	err := ValidateInstanceGroup(g)
-	if err != nil {
-		return err
-	}
+func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, strict bool) field.ErrorList {
+	allErrs := ValidateInstanceGroup(g)
 
 	// Check that instance groups are defined in subnets that are defined in the cluster
 	{
@@ -225,25 +206,28 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 			clusterSubnets[s.Name] = s
 		}
 
-		for _, z := range g.Spec.Subnets {
+		for i, z := range g.Spec.Subnets {
 			if clusterSubnets[z] == nil {
-				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)
+				// TODO field.NotFound(field.NewPath("spec.subnets").Index(i), z) ?
+				allErrs = append(allErrs, field.Invalid(field.NewPath("spec.subnets").Index(i), z,
+					fmt.Sprintf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)))
 			}
 		}
 	}
 
-	return nil
+	return allErrs
 }
 
-func validateExtraUserData(userData *kops.UserData) error {
+func validateExtraUserData(userData *kops.UserData) field.ErrorList {
+	allErrs := field.ErrorList{}
 	fieldPath := field.NewPath("AdditionalUserData")
 
 	if userData.Name == "" {
-		return field.Required(fieldPath.Child("Name"), "field must be set")
+		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), "field must be set"))
 	}
 
 	if userData.Content == "" {
-		return field.Required(fieldPath.Child("Content"), "field must be set")
+		allErrs = append(allErrs, field.Required(fieldPath.Child("Content"), "field must be set"))
 	}
 
 	switch userData.Type {
@@ -257,21 +241,23 @@ func validateExtraUserData(userData *kops.UserData) error {
 	case "text/cloud-boothook":
 
 	default:
-		return field.Invalid(fieldPath.Child("Type"), userData.Type, "Invalid user-data content type")
+		allErrs = append(allErrs, field.Invalid(fieldPath.Child("Type"), userData.Type, "Invalid user-data content type"))
 	}
 
-	return nil
+	return allErrs
 }
 
 // validateInstanceProfile checks the String values for the AuthProfile
-func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) *field.Error {
+func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
 	if v != nil && v.Profile != nil {
 		instanceProfileARN := *v.Profile
 		parsedARN, err := arn.Parse(instanceProfileARN)
 		if err != nil || !strings.HasPrefix(parsedARN.Resource, "instance-profile") {
-			return field.Invalid(fldPath.Child("Profile"), instanceProfileARN,
-				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole")
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("Profile"), instanceProfileARN,
+				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole"))
 		}
 	}
-	return nil
+	return allErrs
 }
