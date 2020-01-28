@@ -756,7 +756,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 	}
 
 	for _, g := range groups {
-		err := CrossValidateInstanceGroup(g, c, strict)
+		err := CrossValidateInstanceGroup(g, c, strict).ToAggregate()
 		if err != nil {
 			return err
 		}

@@ -63,7 +63,7 @@ func NewInstanceGroupMirror(cluster *kopsapi.Cluster, configBase vfs.Path) Insta
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
 	r.defaultReadVersion = &defaultReadVersion
 	r.validate = func(o runtime.Object) error {
-		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup))
+		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup)).ToAggregate()
 	}
 	return r
 }
@@ -84,7 +84,7 @@ func newInstanceGroupVFS(c *VFSClientset, cluster *kopsapi.Cluster) *InstanceGro
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
 	r.defaultReadVersion = &defaultReadVersion
 	r.validate = func(o runtime.Object) error {
-		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup))
+		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup)).ToAggregate()
 	}
 	return r
 }
