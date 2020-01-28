@@ -20,6 +20,15 @@ data:
   identity-allocation-mode: crd
   # If you want to run cilium in debug mode change this value to true
   debug: "{{- if .Debug -}}true{{- else -}}false{{- end -}}"
+  {{ if .EnablePrometheusMetrics }}
+  # If you want metrics enabled in all of your Cilium agents, set the port for
+  # which the Cilium agents will have their metrics exposed.
+  # This option deprecates the "prometheus-serve-addr" in the
+  # "cilium-metrics-config" ConfigMap
+  # NOTE that this will open the port on ALL nodes where Cilium pods are
+  # scheduled.
+  prometheus-serve-addr: ":{{- or .AgentPrometheusPort "9090" }}"
+  {{ end }}
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
   enable-ipv4: "{{- if or  (.EnableIpv4) (and (not (.EnableIpv4)) (not (.EnableIpv6))) -}}true{{- else -}}false{{- end -}}"
@@ -385,6 +394,13 @@ spec:
           successThreshold: 1
           timeoutSeconds: 5
         name: cilium-agent
+        {{ if .EnablePrometheusMetrics }}
+        ports:
+        - containerPort: {{ or .AgentPrometheusPort "9090" }}
+          hostPort: {{ or .AgentPrometheusPort "9090" }}
+          name: prometheus
+          protocol: TCP
+        {{ end }}
         readinessProbe:
           exec:
             command:
@@ -543,6 +559,10 @@ spec:
       - args:
         - --debug=$(CILIUM_DEBUG)
         - --identity-allocation-mode=$(CILIUM_IDENTITY_ALLOCATION_MODE)
+{{ with .Networking.Cilium }}
+        {{ if .EnablePrometheusMetrics }}
+        - --enable-metrics
+        {{ end }}
         command:
         - cilium-operator
         env:
@@ -622,12 +642,17 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
-
-{{ with .Networking.Cilium }}
         image: "docker.io/cilium/operator:{{ .Version }}"
-{{ end }}
         imagePullPolicy: IfNotPresent
         name: cilium-operator
+        {{ if .EnablePrometheusMetrics }}
+        ports:
+        - containerPort: 6942
+          hostPort: 6942
+          name: prometheus
+          protocol: TCP
+        {{ end }}
+{{ end }}
         livenessProbe:
           httpGet:
             path: /healthz
