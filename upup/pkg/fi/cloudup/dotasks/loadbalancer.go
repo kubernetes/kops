@@ -60,14 +60,12 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		}
 
 		// do another check to double-sure we are talking to the right load balancer.
-		if loadbalancer.Name == fi.StringValue(lb.Name) {
-			return &LoadBalancer{
-				Name:      fi.String(loadbalancer.Name),
-				ID:        fi.String(loadbalancer.ID),
-				Lifecycle: lb.Lifecycle,
-				Region:    fi.String(loadbalancer.Region.Slug),
-			}, nil
-		}
+		return &LoadBalancer{
+			Name:      fi.String(loadbalancer.Name),
+			ID:        fi.String(loadbalancer.ID),
+			Lifecycle: lb.Lifecycle,
+			Region:    fi.String(loadbalancer.Region.Slug),
+		}, nil
 	}
 
 	// Loadbalancer = nil if not found

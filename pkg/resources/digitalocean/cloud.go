@@ -144,8 +144,7 @@ func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressSta
 		// Note that this must match Digital Ocean's lb name
 		klog.V(2).Infof("Querying DO to find Loadbalancers for API (%q)", cluster.Name)
 
-		loadBalancers, _, err := c.LoadBalancers().List(context.TODO(), nil)
-
+		loadBalancers, err := getAllLoadBalancers(c)
 		if err != nil {
 			return nil, fmt.Errorf("LoadBalancers.List returned error: %v", err)
 		}
