@@ -25,6 +25,7 @@ spec:
       # run on each master node
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      priorityClassName: system-node-critical
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master

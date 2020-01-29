@@ -42,6 +42,7 @@ spec:
       hostNetwork: true
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      priorityClassName: system-cluster-critical
       serviceAccount: dns-controller
       tolerations:
       - operator: Exists

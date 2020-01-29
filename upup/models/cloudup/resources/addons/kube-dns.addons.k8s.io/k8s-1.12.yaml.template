@@ -69,6 +69,7 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
+      priorityClassName: system-cluster-critical
       tolerations:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
@@ -119,6 +120,7 @@ spec:
                         - kube-dns
                 topologyKey: kubernetes.io/hostname
       dnsPolicy: Default  # Don't use cluster DNS.
+      priorityClassName: system-cluster-critical
       serviceAccountName: kube-dns
       volumes:
       - name: kube-dns-config
