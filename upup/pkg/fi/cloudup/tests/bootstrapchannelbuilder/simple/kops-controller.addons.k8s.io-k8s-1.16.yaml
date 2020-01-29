@@ -12,36 +12,6 @@ metadata:
 ---
 
 apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    k8s-addon: kops-controller.addons.k8s.io
-    k8s-app: kops-controller
-    version: v1.15.0-alpha.1
-  name: kops-controller
-  namespace: kube-system
-spec:
-  replicas: 0
-  selector:
-    matchLabels:
-      k8s-app: kops-controller
-  template:
-    metadata:
-      labels:
-        k8s-addon: kops-controller.addons.k8s.io
-        k8s-app: kops-controller
-        version: v1.15.0-alpha.1
-    spec:
-      containers:
-      - command:
-        - /pause
-        image: gcr.io/google_containers/pause-amd64:3.0
-        name: sleep
-      serviceAccountName: default
-
----
-
-apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
@@ -66,6 +36,9 @@ spec:
         - /usr/bin/kops-controller
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config.yaml
+        - --logtostderr=false
+        - --alsologtostderr
+        - --log_file=/var/log/kops-controller.log
         image: kope/kops-controller:1.15.0-alpha.1
         name: kops-controller
         resources:
@@ -75,6 +48,8 @@ spec:
         volumeMounts:
         - mountPath: /etc/kubernetes/kops-controller/
           name: kops-controller-config
+        - mountPath: /var/log/kops-controller.log
+          name: logfile
       dnsPolicy: Default
       hostNetwork: true
       nodeSelector:
@@ -88,6 +63,10 @@ spec:
       - configMap:
           name: kops-controller
         name: kops-controller-config
+      - hostPath:
+          path: /var/log/kops-controller.log
+          type: FileOrCreate
+        name: logfile
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1

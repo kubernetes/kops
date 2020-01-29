@@ -17,14 +17,16 @@ limitations under the License.
 package assets
 
 import (
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/testutils/golden"
 )
 
 func buildAssetBuilder(t *testing.T) *AssetBuilder {
-
 	builder := &AssetBuilder{
 		AssetsLocation:  &kops.Assets{},
 		ContainerAssets: []*ContainerAsset{},
@@ -155,4 +157,27 @@ func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *
 		}
 	}
 
+}
+
+func TestRemapEmptySection(t *testing.T) {
+	builder := buildAssetBuilder(t)
+
+	testdir := filepath.Join("testdata")
+
+	key := "emptysection"
+
+	inputPath := filepath.Join(testdir, key+".input.yaml")
+	expectedPath := filepath.Join(testdir, key+".expected.yaml")
+
+	input, err := ioutil.ReadFile(inputPath)
+	if err != nil {
+		t.Errorf("error reading file %q: %v", inputPath, err)
+	}
+
+	actual, err := builder.RemapManifest(input)
+	if err != nil {
+		t.Errorf("error remapping manifest %q: %v", inputPath, err)
+	}
+
+	golden.AssertMatchesFile(t, string(actual), expectedPath)
 }

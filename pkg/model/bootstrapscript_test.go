@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/pkg/testutils/golden"
 )
 
 func Test_ProxyFunc(t *testing.T) {
@@ -141,7 +141,7 @@ func TestBootstrapUserData(t *testing.T) {
 			continue
 		}
 
-		testutils.AssertMatchesFile(t, actual, x.ExpectedFilePath)
+		golden.AssertMatchesFile(t, actual, x.ExpectedFilePath)
 	}
 }
 
@@ -180,6 +180,10 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 			NetworkCIDR: "10.79.0.0/24",
 			CloudConfig: &kops.CloudConfiguration{
 				NodeTags: s("something"),
+			},
+			ContainerRuntime: "docker",
+			Containerd: &kops.ContainerdConfig{
+				LogLevel: s("info"),
 			},
 			Docker: &kops.DockerConfig{
 				LogLevel: s("INFO"),

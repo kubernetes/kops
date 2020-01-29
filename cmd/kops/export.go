@@ -21,8 +21,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
-	"k8s.io/kubernetes/pkg/kubectl/util/templates"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
@@ -36,9 +36,6 @@ var (
 
 	exportShort = i18n.T(`Export configuration.`)
 )
-
-type ExportOptions struct {
-}
 
 func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
 

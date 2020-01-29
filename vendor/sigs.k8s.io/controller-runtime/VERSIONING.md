@@ -75,10 +75,10 @@ filters and checks for changes tagged as breaking (see below).
 
 ### Tooling
 
-* [release-notes.sh](hack/release-notes.sh): generate release notes
+* [release-notes.sh](hack/release/release-notes.sh): generate release notes
   for a range of commits, and check for next version type (***TODO***)
 
-* [verify-commit-messages.sh](hack/verify-commit-messages.sh): check that
+* [verify-emoji.sh](hack/release/verify-emoji.sh): check that
   your PR and/or commit messages have the right versioning icon
   (***TODO***).
 

@@ -82,6 +82,7 @@ k8s.io/kops/pkg/client/simple/api
 k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/cloudinstances
 k8s.io/kops/pkg/commands
+k8s.io/kops/pkg/configbuilder
 k8s.io/kops/pkg/diff
 k8s.io/kops/pkg/dns
 k8s.io/kops/pkg/drain
@@ -133,6 +134,7 @@ k8s.io/kops/pkg/sshcredentials
 k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/templates
 k8s.io/kops/pkg/testutils
+k8s.io/kops/pkg/testutils/golden
 k8s.io/kops/pkg/tokens
 k8s.io/kops/pkg/try
 k8s.io/kops/pkg/urls
@@ -155,6 +157,7 @@ k8s.io/kops/protokube/pkg/gossip/gce
 k8s.io/kops/protokube/pkg/gossip/memberlist
 k8s.io/kops/protokube/pkg/gossip/mesh
 k8s.io/kops/protokube/pkg/gossip/openstack
+k8s.io/kops/protokube/pkg/hostmount
 k8s.io/kops/protokube/pkg/protokube
 k8s.io/kops/protokube/tests/integration/build_etcd_manifest
 k8s.io/kops/tests

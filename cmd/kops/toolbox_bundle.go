@@ -17,9 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"archive/tar"
 	"bytes"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
@@ -32,11 +30,10 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/bundle"
-	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
-	"k8s.io/kubernetes/pkg/kubectl/util/templates"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
@@ -83,10 +80,10 @@ func NewCmdToolboxBundle(f *util.Factory, out io.Writer) *cobra.Command {
 
 func RunToolboxBundle(context Factory, out io.Writer, options *ToolboxBundleOptions, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("Specify name of instance group for node")
+		return fmt.Errorf("specify name of instance group for node")
 	}
 	if len(args) != 1 {
-		return fmt.Errorf("Can only specify one instance group")
+		return fmt.Errorf("can only specify one instance group")
 	}
 
 	if options.Target == "" {
@@ -182,31 +179,6 @@ func runSshCommand(sshClient *ssh.Client, cmd string) error {
 
 	klog.Infof("stdout: %s", stdout.String())
 	klog.Infof("stderr: %s", stderr.String())
-	return nil
-}
-
-func writeToTar(files []*bundle.DataFile, bundlePath string) error {
-	f, err := os.Create(bundlePath)
-	if err != nil {
-		return fmt.Errorf("error creating output bundle file %q: %v", bundlePath, err)
-	}
-	defer try.CloseFile(f)
-
-	gw := gzip.NewWriter(f)
-	defer gw.Close()
-	tw := tar.NewWriter(gw)
-	defer tw.Close()
-
-	for _, file := range files {
-		if err := tw.WriteHeader(&file.Header); err != nil {
-			return fmt.Errorf("error writing tar file header: %v", err)
-		}
-
-		if _, err := tw.Write(file.Data); err != nil {
-			return fmt.Errorf("error writing tar file data: %v", err)
-		}
-	}
-
 	return nil
 }
 

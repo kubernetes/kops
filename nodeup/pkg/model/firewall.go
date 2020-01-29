@@ -46,7 +46,7 @@ func (b *FirewallBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "Before", "network.target")
 	manifest.Set("Service", "Type", "oneshot")
 	manifest.Set("Service", "RemainAfterExit", "yes")
-	manifest.Set("Service", "ExecStart", "/home/kubernetes/bin/iptables-setup")
+	manifest.Set("Service", "ExecStart", "/opt/kops/bin/iptables-setup")
 	manifest.Set("Install", "WantedBy", "basic.target")
 
 	manifestString := manifest.Render()
@@ -87,7 +87,7 @@ iptables -A FORWARD -w -p ICMP -j ACCEPT
 fi
 `
 	return &nodetasks.File{
-		Path:     "/home/kubernetes/bin/iptables-setup",
+		Path:     "/opt/kops/bin/iptables-setup",
 		Contents: fi.NewStringResource(script),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0755"),

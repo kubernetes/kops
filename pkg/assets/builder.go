@@ -111,6 +111,11 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
 
+		// Don't serialize empty objects - they confuse yaml parsers
+		if manifest.IsEmptyObject() {
+			continue
+		}
+
 		y, err := manifest.ToYAML()
 		if err != nil {
 			return nil, fmt.Errorf("error re-marshaling manifest: %v", err)
@@ -160,7 +165,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
-		containerProxy := strings.TrimRight(*a.AssetsLocation.ContainerProxy, "/")
+		containerProxy := strings.TrimSuffix(*a.AssetsLocation.ContainerProxy, "/")
 		normalized := image
 
 		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL like k8s.gcr.io/<image-name>

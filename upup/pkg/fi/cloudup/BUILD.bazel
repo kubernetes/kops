@@ -123,6 +123,7 @@ go_test(
         "//pkg/model:go_default_library",
         "//pkg/templates:go_default_library",
         "//pkg/testutils:go_default_library",
+        "//pkg/testutils/golden:go_default_library",
         "//upup/models:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",

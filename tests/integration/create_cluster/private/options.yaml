@@ -11,5 +11,5 @@ NodeSecurityGroups:
 MasterSecurityGroups:
 - sg-exampleid3
 - sg-exampleid4
-KubernetesVersion: v1.4.8
+KubernetesVersion: v1.15.6
 cloudLabels: "Owner=John Doe,dn=\"cn=John Doe: dc=example dc=com\", foo/bar=fib+baz"

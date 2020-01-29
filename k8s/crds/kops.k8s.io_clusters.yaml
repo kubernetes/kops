@@ -19,12 +19,12 @@ spec:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
           description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -364,6 +364,37 @@ spec:
               description: ConfigStore is the VFS path to where the configuration
                 (Cluster, InstanceGroups etc) is stored
               type: string
+            containerRuntime:
+              description: Container runtime to use for Kubernetes
+              type: string
+            containerd:
+              description: Component configurations
+              properties:
+                address:
+                  description: Address of containerd's GRPC server (default "/run/containerd/containerd.sock")
+                  type: string
+                configOverride:
+                  description: Complete containerd config file provided by the user
+                  type: string
+                logLevel:
+                  description: Logging level [trace, debug, info, warn, error, fatal,
+                    panic] (default "warn")
+                  type: string
+                root:
+                  description: Directory for persistent data (default "/var/lib/containerd")
+                  type: string
+                skipInstall:
+                  description: Prevents kops from installing and modifying containerd
+                    in any way (default "false")
+                  type: boolean
+                state:
+                  description: Directory for execution state files (default "/run/containerd")
+                  type: string
+                version:
+                  description: Consumed by nodeup and used to pick the containerd
+                    version
+                  type: string
+              type: object
             dnsControllerGossipConfig:
               description: DNSControllerGossipConfig for the cluster assuming the
                 use of gossip DNS
@@ -387,7 +418,7 @@ spec:
                 of the zone (containing dots), or can be an identifier for the zone.
               type: string
             docker:
-              description: Component configurations
+              description: DockerConfig is the configuration for docker
               properties:
                 authorizationPlugins:
                   description: AuthorizationPlugins is a list of authorization plugins
@@ -774,8 +805,8 @@ spec:
                     - use insecure-bind-address and bind-address'
                   type: string
                 admissionControl:
-                  description: 'Deprecated: AdmissionControl is a list of admission
-                    controllers to use'
+                  description: 'AdmissionControl is a list of admission controllers
+                    to use: Deprecated - use enable-admission-plugins instead'
                   items:
                     type: string
                   type: array
@@ -956,6 +987,10 @@ spec:
                     in the 'kube-system' namespace to be used for TLS bootstrapping
                     authentication
                   type: boolean
+                encryptionProviderConfig:
+                  description: EncryptionProviderConfig enables encryption at rest
+                    for secrets.
+                  type: string
                 etcdCaFile:
                   description: EtcdCAFile is the path to a ca certificate
                   type: string
@@ -1574,6 +1609,11 @@ spec:
             kubeScheduler:
               description: KubeSchedulerConfig is the configuration for the kube-scheduler
               properties:
+                burst:
+                  description: Burst sets the maximum qps to send to apiserver after
+                    the burst quota is exhausted
+                  format: int32
+                  type: integer
                 featureGates:
                   additionalProperties:
                     type: string
@@ -1642,6 +1682,10 @@ spec:
                     and the cloud provider as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/'
                   format: int32
                   type: integer
+                qps:
+                  description: Qps sets the maximum qps to send to apiserver after
+                    the burst quota is exhausted
+                  type: string
                 usePolicyConfigMap:
                   description: UsePolicyConfigMap enable setting the scheduler policy
                     from a configmap
@@ -2738,14 +2782,50 @@ spec:
                     connLimit:
                       format: int32
                       type: integer
+                    cpuLimit:
+                      description: CPULimit CPU limit of weave container.
+                      type: string
+                    cpuRequest:
+                      description: CPURequest CPU request of weave container. Default
+                        50m
+                      type: string
+                    memoryLimit:
+                      description: MemoryLimit memory limit of weave container. Default
+                        200Mi
+                      type: string
+                    memoryRequest:
+                      description: MemoryRequest memory request of weave container.
+                        Default 200Mi
+                      type: string
                     mtu:
                       format: int32
                       type: integer
                     netExtraArgs:
+                      description: NetExtraArgs are extra arguments that are passed
+                        to weave-kube.
                       type: string
                     noMasqLocal:
                       format: int32
                       type: integer
+                    npcCPULimit:
+                      description: NPCCPULimit CPU limit of weave npc container
+                      type: string
+                    npcCPURequest:
+                      description: NPCCPURequest CPU request of weave npc container.
+                        Default 50m
+                      type: string
+                    npcExtraArgs:
+                      description: NPCExtraArgs are extra arguments that are passed
+                        to weave-npc.
+                      type: string
+                    npcMemoryLimit:
+                      description: NPCMemoryLimit memory limit of weave npc container.
+                        Default 200Mi
+                      type: string
+                    npcMemoryRequest:
+                      description: NPCMemoryRequest memory request of weave npc container.
+                        Default 200Mi
+                      type: string
                   type: object
               type: object
             nodeAuthorization:
@@ -2805,6 +2885,25 @@ spec:
               description: Project is the cloud project we should use, required on
                 GCE
               type: string
+            rollingUpdate:
+              description: RollingUpdate defines the default rolling-update settings
+                for instance groups
+              properties:
+                maxUnavailable:
+                  anyOf:
+                  - type: string
+                  - type: integer
+                  description: 'MaxUnavailable is the maximum number of nodes that
+                    can be unavailable during the update. The value can be an absolute
+                    number (for example 5) or a percentage of desired nodes (for example
+                    10%). The absolute number is calculated from a percentage by rounding
+                    down. A value of 0 disables rolling updates. Defaults to 1. Example:
+                    when this is set to 30%, the InstanceGroup can be scaled down
+                    to 70% of desired nodes immediately when the rolling update starts.
+                    Once new nodes are ready, more old nodes can be drained, ensuring
+                    that the total number of nodes available at all times during the
+                    update is at least 70% of desired nodes.'
+              type: object
             secretStore:
               description: SecretStore is the VFS path to where secrets are stored
               type: string
@@ -2854,6 +2953,13 @@ spec:
                       that are zonally scoped
                     type: string
                 type: object
+              type: array
+            sysctlParameters:
+              description: SysctlParameters will configure kernel parameters using
+                sysctl(8). When specified, each parameter must follow the form variable=value,
+                the way it would appear in sysctl.conf.
+              items:
+                type: string
               type: array
             target:
               description: Target allows for us to nest extra config for targets such

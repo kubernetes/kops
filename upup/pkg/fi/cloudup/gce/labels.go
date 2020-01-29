@@ -55,7 +55,7 @@ func DecodeGCELabel(s string) (string, error) {
 	uriForm := strings.Replace(s, "-", "%", -1)
 	v, err := url.QueryUnescape(uriForm)
 	if err != nil {
-		return "", fmt.Errorf("Cannot decode GCE label: %q", s)
+		return "", fmt.Errorf("cannot decode GCE label: %q", s)
 	}
 	return v, nil
 }

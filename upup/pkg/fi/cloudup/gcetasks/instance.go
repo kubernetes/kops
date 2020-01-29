@@ -348,7 +348,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 
 		if !changes.isZero() {
 			klog.Errorf("Cannot apply changes to Instance: %v", changes)
-			return fmt.Errorf("Cannot apply changes to Instance: %v", changes)
+			return fmt.Errorf("cannot apply changes to Instance: %v", changes)
 		}
 	}
 

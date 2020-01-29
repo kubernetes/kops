@@ -5,8 +5,8 @@ metadata:
   name: restrictaccess.example.com
 spec:
   kubernetesApiAccess:
-  - 1.1.1.1/0
-  - 2001:0:85a3::/40
+  - 1.1.1.0/24
+  - 2001:0:8500::/40
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/restrictaccess.example.com
@@ -27,8 +27,8 @@ spec:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
-  - 1.1.1.1/0
-  - 2001:0:85a3::/40
+  - 1.1.1.1/32
+  - 2001:0:85a3::/48
   topology:
     masters: public
     nodes: public

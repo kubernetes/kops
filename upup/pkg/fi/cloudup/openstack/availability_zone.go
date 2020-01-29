@@ -31,11 +31,11 @@ func (c *openstackCloud) ListAvailabilityZones(serviceClient *gophercloud.Servic
 		azPage, err := az.List(serviceClient).AllPages()
 
 		if err != nil {
-			return false, fmt.Errorf("Failed to list storage availability zones: %v", err)
+			return false, fmt.Errorf("failed to list storage availability zones: %v", err)
 		}
 		azList, err = az.ExtractAvailabilityZones(azPage)
 		if err != nil {
-			return false, fmt.Errorf("Failed to extract storage availability zones: %v", err)
+			return false, fmt.Errorf("failed to extract storage availability zones: %v", err)
 		}
 		return true, nil
 	})
@@ -65,5 +65,5 @@ func (c *openstackCloud) GetStorageAZFromCompute(computeAZ string) (*az.Availabi
 	if len(azList) == 1 {
 		return &azList[0], nil
 	}
-	return nil, fmt.Errorf("No decernable storage availability zone could be mapped to compute availability zone %s", computeAZ)
+	return nil, fmt.Errorf("no decernable storage availability zone could be mapped to compute availability zone %s", computeAZ)
 }

@@ -45,12 +45,12 @@ spec:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
           description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -624,6 +624,24 @@ spec:
               description: 'Type determines the role of instances in this group: masters
                 or nodes'
               type: string
+            rollingUpdate:
+              description: RollingUpdate defines the rolling-update behavior
+              properties:
+                maxUnavailable:
+                  anyOf:
+                  - type: string
+                  - type: integer
+                  description: 'MaxUnavailable is the maximum number of nodes that
+                    can be unavailable during the update. The value can be an absolute
+                    number (for example 5) or a percentage of desired nodes (for example
+                    10%). The absolute number is calculated from a percentage by rounding
+                    down. A value of 0 disables rolling updates. Defaults to 1. Example:
+                    when this is set to 30%, the InstanceGroup can be scaled down
+                    to 70% of desired nodes immediately when the rolling update starts.
+                    Once new nodes are ready, more old nodes can be drained, ensuring
+                    that the total number of nodes available at all times during the
+                    update is at least 70% of desired nodes.'
+              type: object
             rootVolumeDeleteOnTermination:
               description: 'RootVolumeDeleteOnTermination configures root volume retention
                 policy upon instance termination. The root volume is deleted by default.
@@ -661,6 +679,13 @@ spec:
               type: array
             suspendProcesses:
               description: SuspendProcesses disables the listed Scaling Policies
+              items:
+                type: string
+              type: array
+            sysctlParameters:
+              description: SysctlParameters will configure kernel parameters using
+                sysctl(8). When specified, each parameter must follow the form variable=value,
+                the way it would appear in sysctl.conf.
               items:
                 type: string
               type: array

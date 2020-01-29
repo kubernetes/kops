@@ -53,8 +53,8 @@ type Cloud struct {
 
 	dns dnsprovider.Interface
 
-	Region string
-	tags   map[string]string
+	// RegionName holds the region, renamed to avoid conflict with Region()
+	RegionName string
 }
 
 var _ fi.Cloud = &Cloud{}
@@ -75,9 +75,9 @@ func NewCloud(region string) (*Cloud, error) {
 	client := godo.NewClient(oauthClient)
 
 	return &Cloud{
-		Client: client,
-		dns:    dns.NewProvider(client),
-		Region: region,
+		Client:     client,
+		dns:        dns.NewProvider(client),
+		RegionName: region,
 	}, nil
 }
 
@@ -102,6 +102,11 @@ func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error
 // ProviderID returns the kops api identifier for DigitalOcean cloud provider
 func (c *Cloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderDO
+}
+
+// Region returns the DO region we will target
+func (c *Cloud) Region() string {
+	return c.RegionName
 }
 
 // DNS returns a DO implementation for dnsprovider.Interface

@@ -40,7 +40,7 @@ type MeshGossiper struct {
 	router *mesh.Router
 	peer   *peer
 
-	version uint64
+	//version uint64
 }
 
 func NewMeshGossiper(listen string, channelName string, nodeName string, password []byte, seeds gossip.SeedProvider) (*MeshGossiper, error) {

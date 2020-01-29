@@ -24,7 +24,6 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/etcd"
@@ -51,11 +50,7 @@ var _ Volumes = &GCEVolumes{}
 func NewGCEVolumes() (*GCEVolumes, error) {
 	ctx := context.Background()
 
-	client, err := google.DefaultClient(ctx, compute.ComputeScope)
-	if err != nil {
-		return nil, fmt.Errorf("error building google API client: %v", err)
-	}
-	computeService, err := compute.New(client)
+	computeService, err := compute.NewService(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error building compute API client: %v", err)
 	}

@@ -54,7 +54,7 @@ func NewFactory(options *FactoryOptions) *Factory {
 const (
 	STATE_ERROR = `Please set the --state flag or export KOPS_STATE_STORE.
 For example, a valid value follows the format s3://<bucket>.
-You can find the supported stores in https://github.com/kubernetes/kops/blob/master/docs/state.md.`
+You can find the supported stores in https://kops.sigs.k8s.io/state.`
 
 	INVALID_STATE_ERROR = `Unable to read state store.
 Please use a valid state store when setting --state or KOPS_STATE_STORE env var.
@@ -81,7 +81,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 			} else {
 				u, err := url.Parse(registryPath)
 				if err != nil {
-					return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
+					return nil, fmt.Errorf("invalid kops server url: %q", registryPath)
 				}
 				configOverrides.CurrentContext = u.Host
 			}
@@ -117,6 +117,9 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 			allowVFSList := true
 
 			f.clientset = vfsclientset.NewVFSClientset(basePath, allowVFSList)
+		}
+		if strings.HasPrefix(registryPath, "file://") {
+			klog.Warning("The local filesystem state store is not functional for running clusters")
 		}
 	}
 

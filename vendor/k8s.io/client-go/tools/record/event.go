@@ -129,6 +129,25 @@ type EventBroadcaster interface {
 	NewRecorder(scheme *runtime.Scheme, source v1.EventSource) EventRecorder
 }
 
+// EventRecorderAdapter is a wrapper around EventRecorder implementing the
+// new EventRecorder interface.
+type EventRecorderAdapter struct {
+	recorder EventRecorder
+}
+
+// NewEventRecorderAdapter returns an adapter implementing new EventRecorder
+// interface.
+func NewEventRecorderAdapter(recorder EventRecorder) *EventRecorderAdapter {
+	return &EventRecorderAdapter{
+		recorder: recorder,
+	}
+}
+
+// Eventf is a wrapper around v1 Eventf
+func (a *EventRecorderAdapter) Eventf(regarding, _ runtime.Object, eventtype, reason, action, note string, args ...interface{}) {
+	a.recorder.Eventf(regarding, eventtype, reason, note, args...)
+}
+
 // Creates a new event broadcaster.
 func NewBroadcaster() EventBroadcaster {
 	return &eventBroadcasterImpl{
@@ -162,17 +181,14 @@ type eventBroadcasterImpl struct {
 // The return value can be ignored or used to stop recording, if desired.
 // TODO: make me an object with parameterizable queue length and retry interval
 func (eventBroadcaster *eventBroadcasterImpl) StartRecordingToSink(sink EventSink) watch.Interface {
-	// The default math/rand package functions aren't thread safe, so create a
-	// new Rand object for each StartRecording call.
-	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 	eventCorrelator := NewEventCorrelatorWithOptions(eventBroadcaster.options)
 	return eventBroadcaster.StartEventWatcher(
 		func(event *v1.Event) {
-			recordToSink(sink, event, eventCorrelator, randGen, eventBroadcaster.sleepDuration)
+			recordToSink(sink, event, eventCorrelator, eventBroadcaster.sleepDuration)
 		})
 }
 
-func recordToSink(sink EventSink, event *v1.Event, eventCorrelator *EventCorrelator, randGen *rand.Rand, sleepDuration time.Duration) {
+func recordToSink(sink EventSink, event *v1.Event, eventCorrelator *EventCorrelator, sleepDuration time.Duration) {
 	// Make a copy before modification, because there could be multiple listeners.
 	// Events are safe to copy like this.
 	eventCopy := *event
@@ -197,7 +213,7 @@ func recordToSink(sink EventSink, event *v1.Event, eventCorrelator *EventCorrela
 		// Randomize the first sleep so that various clients won't all be
 		// synced up if the master goes down.
 		if tries == 1 {
-			time.Sleep(time.Duration(float64(sleepDuration) * randGen.Float64()))
+			time.Sleep(time.Duration(float64(sleepDuration) * rand.Float64()))
 		} else {
 			time.Sleep(sleepDuration)
 		}

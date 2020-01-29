@@ -61,7 +61,7 @@ func SplitInto8(parent *net.IPNet) ([]*net.IPNet, error) {
 				Mask: net.CIDRMask(networkLength, 32),
 			})
 		} else {
-			return nil, fmt.Errorf("Unexpected IP address type: %s", parent)
+			return nil, fmt.Errorf("unexpected IP address type: %s", parent)
 		}
 	}
 

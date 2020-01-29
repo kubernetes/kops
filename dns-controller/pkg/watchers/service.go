@@ -203,8 +203,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) string {
 
 			fqdn := dns.EnsureDotSuffix(token)
 			for _, ingress := range ingresses {
-				var r dns.Record
-				r = ingress
+				r := ingress
 				r.FQDN = fqdn
 				records = append(records, r)
 			}

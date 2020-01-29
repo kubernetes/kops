@@ -17,8 +17,6 @@ limitations under the License.
 package aws
 
 import (
-	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -269,7 +267,7 @@ func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*aut
 		return nil, nil
 	}
 	if len(results) != 1 {
-		return nil, fmt.Errorf("Found multiple LaunchConfigurations with name %q", name)
+		return nil, fmt.Errorf("found multiple LaunchConfigurations with name %q", name)
 	}
 	return results[0], nil
 }
@@ -364,7 +362,7 @@ func ListCloudFormationStacks(cloud fi.Cloud, clusterName string) ([]*resources.
 	c := cloud.(awsup.AWSCloud)
 	response, err := c.CloudFormation().ListStacks(request)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to list CloudFormation stacks: %v", err)
+		return nil, fmt.Errorf("unable to list CloudFormation stacks: %v", err)
 	}
 	for _, stack := range response.StackSummaries {
 		if *stack.StackName == clusterName {
@@ -608,6 +606,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			ID:      id,
 			Type:    "volume",
 			Deleter: DeleteVolume,
+			Shared:  HasSharedTag(ec2.ResourceTypeVolume+":"+id, volume.Tags, clusterName),
 		}
 
 		var blocks []string
@@ -1359,54 +1358,6 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 	}
 
 	return resourceTrackers, nil
-}
-
-// extractClusterName performs string-matching / parsing to determine the ClusterName in some instance-data
-// It returns "" if it could not be (uniquely) determined
-func extractClusterName(userData string) string {
-	clusterName := ""
-
-	scanner := bufio.NewScanner(bytes.NewReader([]byte(userData)))
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		line = strings.TrimSpace(line)
-
-		if strings.HasPrefix(line, "INSTANCE_PREFIX:") {
-			// kube-up
-			// Match:
-			// INSTANCE_PREFIX: 'clustername'
-			// INSTANCE_PREFIX: "clustername"
-			// INSTANCE_PREFIX: clustername
-			line = strings.TrimPrefix(line, "INSTANCE_PREFIX:")
-		} else if strings.HasPrefix(line, "ClusterName:") {
-			// kops
-			// Match:
-			// ClusterName: 'clustername'
-			// ClusterName: "clustername"
-			// ClusterName: clustername
-			line = strings.TrimPrefix(line, "ClusterName:")
-		} else {
-			continue
-		}
-
-		line = strings.TrimSpace(line)
-		line = strings.Trim(line, "'\"")
-		if clusterName != "" && clusterName != line {
-			klog.Warningf("cannot uniquely determine cluster-name, found %q and %q", line, clusterName)
-			return ""
-		}
-		clusterName = line
-
-	}
-	if err := scanner.Err(); err != nil {
-		klog.Warningf("error scanning UserData: %v", err)
-		return ""
-	}
-
-	return clusterName
-
 }
 
 // DeleteAutoScalingGroupLaunchTemplate deletes

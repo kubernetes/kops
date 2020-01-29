@@ -22,8 +22,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       tolerations:
-      - key: "node-role.kubernetes.io/master"
-        effect: NoSchedule
+      - operator: Exists
       nodeSelector:
         node-role.kubernetes.io/master: ""
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
@@ -36,15 +35,16 @@ spec:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
 {{ end }}
-{{- if .EgressProxy }}
         env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "127.0.0.1"
+{{- if .EgressProxy }}
 {{ range $name, $value := ProxyEnv }}
         - name: {{ $name }}
           value: {{ $value }}
 {{ end }}
 {{- end }}
 {{- if eq .CloudProvider "digitalocean" }}
-        env:
         - name: DIGITALOCEAN_ACCESS_TOKEN
           valueFrom:
             secretKeyRef:

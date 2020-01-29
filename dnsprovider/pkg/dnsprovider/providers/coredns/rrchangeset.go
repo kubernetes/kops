@@ -97,7 +97,7 @@ func (c *ResourceRecordChangeset) Apply() error {
 				if checkNotExists {
 					response, err := c.zone.zones.intf.etcdKeysAPI.Get(ctx, dnsmsg.Path(recordKey, etcdPathPrefix), getOpts)
 					if err == nil && response != nil {
-						return fmt.Errorf("Key already exist, key: %v", recordKey)
+						return fmt.Errorf("key already exist, key: %v", recordKey)
 					}
 				}
 

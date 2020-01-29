@@ -1,3 +1,4 @@
+Resources.AWSAutoScalingLaunchConfigurationbastionprivatecalicoexamplecom.Properties.UserData: ""
 Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexamplecom.Properties.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
@@ -18,8 +19,8 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
-  NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.15.0/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/nodeup
+  NODEUP_HASH=9604ef18267ad7b5cf4cebbf7ab64423cf5bb0342d169c608ac6376e6af26d81
 
   export AWS_REGION=us-test-1
 
@@ -27,12 +28,13 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
 
 
   function ensure-install-dir() {
-    INSTALL_DIR="/var/cache/kubernetes-install"
-    # On ContainerOS, we install to /var/lib/toolbox install (because of noexec)
+    INSTALL_DIR="/opt/kops"
+    # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
     if [[ -d /var/lib/toolbox ]]; then
-      INSTALL_DIR="/var/lib/toolbox/kubernetes-install"
+      INSTALL_DIR="/var/lib/toolbox/kops"
     fi
-    mkdir -p ${INSTALL_DIR}
+    mkdir -p ${INSTALL_DIR}/bin
+    mkdir -p ${INSTALL_DIR}/conf
     cd ${INSTALL_DIR}
   }
 
@@ -114,6 +116,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
 
   function download-release() {
     # In case of failure checking integrity of release, retry.
+    cd ${INSTALL_DIR}/bin
     until try-download-release; do
       sleep 15
       echo "Couldn't download release. Retrying..."
@@ -121,7 +124,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
 
     echo "Running nodeup"
     # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
-    ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/kube_env.yaml --v=8  )
+    ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
   }
 
   ####################################################################################
@@ -131,8 +134,11 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
   echo "== nodeup node config starting =="
   ensure-install-dir
 
-  cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
+  cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
@@ -249,19 +255,19 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
 
   __EOF_CLUSTER_SPEC
 
-  cat > ig_spec.yaml << '__EOF_IG_SPEC'
+  cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
   taints: null
 
   __EOF_IG_SPEC
 
-  cat > kube_env.yaml << '__EOF_KUBE_ENV'
+  cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
   - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
   - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
   - 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - 71b7bc444ba0a5f7cd7a36e91b594c1c3d13890e160d85e0dfde38c46a24e416@https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.15.0/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/utils.tar.gz
   ClusterName: privatecalico.example.com
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: master-us-test-1a
@@ -274,12 +280,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
   - memfs://clusters.example.com/privatecalico.example.com/manifests/etcd/main.yaml
   - memfs://clusters.example.com/privatecalico.example.com/manifests/etcd/events.yaml
   protokubeImage:
-    hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
-    name: protokube:1.8.1
+    hash: 42a9c4324fe26d63ce11f3dd7836371bc93fa06ca8f479807728f3746e27061b
+    name: protokube:1.15.0
     sources:
-    - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
-    - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
-    - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
+    - https://artifacts.k8s.io/binaries/kops/1.15.0/images/protokube.tar.gz
+    - https://github.com/kubernetes/kops/releases/download/1.15.0/images-protokube.tar.gz
+    - https://kubeupv2.s3.amazonaws.com/kops/1.15.0/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
 
@@ -305,8 +311,8 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
-  NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.15.0/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/nodeup
+  NODEUP_HASH=9604ef18267ad7b5cf4cebbf7ab64423cf5bb0342d169c608ac6376e6af26d81
 
   export AWS_REGION=us-test-1
 
@@ -314,12 +320,13 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
 
 
   function ensure-install-dir() {
-    INSTALL_DIR="/var/cache/kubernetes-install"
-    # On ContainerOS, we install to /var/lib/toolbox install (because of noexec)
+    INSTALL_DIR="/opt/kops"
+    # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
     if [[ -d /var/lib/toolbox ]]; then
-      INSTALL_DIR="/var/lib/toolbox/kubernetes-install"
+      INSTALL_DIR="/var/lib/toolbox/kops"
     fi
-    mkdir -p ${INSTALL_DIR}
+    mkdir -p ${INSTALL_DIR}/bin
+    mkdir -p ${INSTALL_DIR}/conf
     cd ${INSTALL_DIR}
   }
 
@@ -401,6 +408,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
 
   function download-release() {
     # In case of failure checking integrity of release, retry.
+    cd ${INSTALL_DIR}/bin
     until try-download-release; do
       sleep 15
       echo "Couldn't download release. Retrying..."
@@ -408,7 +416,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
 
     echo "Running nodeup"
     # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
-    ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/kube_env.yaml --v=8  )
+    ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
   }
 
   ####################################################################################
@@ -418,8 +426,11 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
   echo "== nodeup node config starting =="
   ensure-install-dir
 
-  cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
+  cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
   cloudConfig: null
+  containerRuntime: docker
+  containerd:
+    skipInstall: true
   docker:
     ipMasq: false
     ipTables: false
@@ -455,19 +466,19 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
 
   __EOF_CLUSTER_SPEC
 
-  cat > ig_spec.yaml << '__EOF_IG_SPEC'
+  cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
   kubelet: null
   nodeLabels: null
   taints: null
 
   __EOF_IG_SPEC
 
-  cat > kube_env.yaml << '__EOF_KUBE_ENV'
+  cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
   - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
   - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
   - 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - 71b7bc444ba0a5f7cd7a36e91b594c1c3d13890e160d85e0dfde38c46a24e416@https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.15.0/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/utils.tar.gz
   ClusterName: privatecalico.example.com
   ConfigBase: memfs://clusters.example.com/privatecalico.example.com
   InstanceGroupName: nodes
@@ -476,13 +487,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properti
   - _aws
   channels:
   - memfs://clusters.example.com/privatecalico.example.com/addons/bootstrap-channel.yaml
-  protokubeImage:
-    hash: 0b1f26208f8f6cc02468368706d0236670fec8a2
-    name: protokube:1.8.1
-    sources:
-    - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
-    - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
-    - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
 

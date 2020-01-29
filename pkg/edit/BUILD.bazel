@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -9,6 +9,18 @@ go_library(
         "//pkg/diff:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["edit_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/apis/kops/v1alpha2:go_default_library",
+        "//vendor/github.com/MakeNowJust/heredoc:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
     ],
 )

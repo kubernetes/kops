@@ -22,6 +22,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -131,7 +132,11 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.Cluster) (*fi.ResourceHolder, error) {
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
-		return nil, nil
+		templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		return fi.WrapResource(templateResource), nil
 	}
 
 	functions := template.FuncMap{
@@ -150,9 +155,17 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			if err != nil {
 				return "", err
 			}
+
+			// Sort keys to have a stable sequence of "export xx=xxx"" statements
+			var keys []string
+			for k := range env {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+
 			var b bytes.Buffer
-			for k, v := range env {
-				b.WriteString(fmt.Sprintf("export %s=%s\n", k, v))
+			for _, k := range keys {
+				b.WriteString(fmt.Sprintf("export %s=%s\n", k, env[k]))
 			}
 			return b.String(), nil
 		},
@@ -166,6 +179,8 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
+			spec["containerRuntime"] = cs.ContainerRuntime
+			spec["containerd"] = cs.Containerd
 			spec["docker"] = cs.Docker
 			spec["kubeProxy"] = cs.KubeProxy
 			spec["kubelet"] = cs.Kubelet
@@ -402,7 +417,7 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
 		buffer.WriteString("*[Uu]buntu*)\n")
 		buffer.WriteString(`  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;` + "\n")
 		buffer.WriteString("*[Rr]ed[Hh]at*)\n")
-		buffer.WriteString(`  echo "http_proxy=${http_proxy}" >> /etc/yum.conf ;;` + "\n")
+		buffer.WriteString(`  echo "proxy=${http_proxy}" >> /etc/yum.conf ;;` + "\n")
 		buffer.WriteString("esac\n")
 
 		// Set env variables for systemd

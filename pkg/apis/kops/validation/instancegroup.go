@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/slice"
 
@@ -77,7 +76,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 
 	if g.IsMaster() {
 		if len(g.Spec.Subnets) == 0 {
-			return fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
+			return fmt.Errorf("master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
 		}
 	}
 
@@ -131,6 +130,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 
 	if err := validateInstanceProfile(g.Spec.IAM, field.NewPath("iam")); err != nil {
 		return err
+	}
+
+	if g.Spec.RollingUpdate != nil {
+		if errs := validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("rollingUpdate")); len(errs) > 0 {
+			return errs.ToAggregate()
+		}
 	}
 
 	return nil
@@ -218,7 +223,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 		for i := range cluster.Spec.Subnets {
 			s := &cluster.Spec.Subnets[i]
 			if clusterSubnets[s.Name] != nil {
-				return fmt.Errorf("Subnets contained a duplicate value: %v", s.Name)
+				return fmt.Errorf("subnets contained a duplicate value: %v", s.Name)
 			}
 			clusterSubnets[s.Name] = s
 		}
@@ -228,26 +233,6 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)
 			}
 		}
-	}
-
-	k8sVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-	if err != nil {
-		return fmt.Errorf("Unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
-	}
-
-	allErrs := field.ErrorList{}
-	fieldPath := field.NewPath("InstanceGroup")
-
-	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
-		if len(g.Spec.Taints) > 0 {
-			if !(g.IsMaster() && g.Spec.Taints[0] == kops.TaintNoScheduleMaster15 && len(g.Spec.Taints) == 1) {
-				allErrs = append(allErrs, field.Invalid(fieldPath.Child("Spec").Child("Taints"), g.Spec.Taints, "User-specified taints are not supported before kubernetes version 1.6.0"))
-			}
-		}
-	}
-
-	if len(allErrs) != 0 {
-		return allErrs[0]
 	}
 
 	return nil

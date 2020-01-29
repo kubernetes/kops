@@ -17,12 +17,11 @@ limitations under the License.
 package model
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
-	"io"
-	"net/http"
+	"fmt"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -30,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 func TestDockerPackageNames(t *testing.T) {
@@ -66,6 +66,8 @@ func sanityCheckPackageName(t *testing.T, u string, version string, name string)
 	// Match known DEB formats
 	for _, a := range []string{"amd64", "armhf"} {
 		expectedNames = append(expectedNames, name+"_"+version+"_"+a+".deb")
+		// Not entirely clear why some (docker) debian packages have this '5:' prefix
+		expectedNames = append(expectedNames, name+"_"+strings.TrimPrefix(version, "5:")+"_"+a+".deb")
 	}
 
 	found := false
@@ -85,33 +87,81 @@ func TestDockerPackageHashes(t *testing.T) {
 	}
 
 	for _, dockerVersion := range dockerVersions {
-		verifyPackageHash(t, dockerVersion.Source, dockerVersion.Hash)
+		t.Run(dockerVersion.Source, func(t *testing.T) {
+			if err := verifyPackageHash(dockerVersion.Source, dockerVersion.Hash, dockerVersion.Version); err != nil {
+				t.Errorf("error verifying package %q: %v", dockerVersion.Source, err)
+			}
 
-		for _, p := range dockerVersion.ExtraPackages {
-			verifyPackageHash(t, p.Source, p.Hash)
-		}
+			for _, p := range dockerVersion.ExtraPackages {
+				if err := verifyPackageHash(p.Source, p.Hash, p.Version); err != nil {
+					t.Errorf("error verifying package %q: %v", p.Source, err)
+				}
+			}
+		})
 	}
 }
 
-func verifyPackageHash(t *testing.T, u string, hash string) {
-	resp, err := http.Get(u)
+func verifyPackageHash(u string, hash string, expectedVersion string) error {
+	name := path.Base(u)
+	p := filepath.Join("/tmp", name)
+
+	expectedHash, err := hashing.FromString(hash)
 	if err != nil {
-		t.Errorf("%s: error fetching: %v", u, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	hasher := sha1.New()
-	if _, err := io.Copy(hasher, resp.Body); err != nil {
-		t.Errorf("%s: error reading: %v", u, err)
-		return
+		return err
 	}
 
-	actualHash := hex.EncodeToString(hasher.Sum(nil))
-	if hash != actualHash {
-		t.Errorf("%s: hash was %q", u, actualHash)
-		return
+	if _, err := fi.DownloadURL(u, p, expectedHash); err != nil {
+		return err
 	}
+
+	actualHash, err := hashing.HashAlgorithmSHA1.HashFile(p)
+	if err != nil {
+		return fmt.Errorf("error hashing file: %v", err)
+	}
+
+	if hash != actualHash.Hex() {
+		return fmt.Errorf("hash was %q, expected %q", actualHash.Hex(), hash)
+	}
+
+	if strings.HasSuffix(u, ".deb") {
+		cmd := exec.Command("dpkg-deb", "-I", p)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("error running 'dpkg-deb -I %s': %v", p, err)
+		}
+
+		version := ""
+		for _, line := range strings.Split(string(out), "\n") {
+			line = strings.TrimSpace(line)
+			if !strings.HasPrefix(line, "Version: ") {
+				continue
+			}
+			version += strings.TrimPrefix(line, "Version: ")
+		}
+		if expectedVersion != version {
+			return fmt.Errorf("unexpected version, actual=%q, expected=%q", version, expectedVersion)
+		}
+
+	} else if strings.HasSuffix(u, ".rpm") {
+		cmd := exec.Command("rpm", "-qp", "--queryformat", "%{VERSION}", "--nosignature", p)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("error running rpm %s: %v", strings.Join(cmd.Args, " "), err)
+		}
+
+		version := strings.TrimSpace(string(out))
+		if expectedVersion != version {
+			return fmt.Errorf("unexpected version, actual=%q, expected=%q", version, expectedVersion)
+		}
+	} else if strings.HasSuffix(u, ".tgz") || strings.HasSuffix(u, ".tar.gz") {
+		if expectedVersion != "" {
+			return fmt.Errorf("did not expect version for tgz / tar.gz package")
+		}
+	} else {
+		return fmt.Errorf("unexpected suffix for file (known: .rpm .deb .tar.gz .tgz)")
+	}
+
+	return nil
 }
 
 func TestDockerBuilder_Simple(t *testing.T) {

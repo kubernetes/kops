@@ -48,13 +48,6 @@ func (s *SecurityGroupRule) CompareWithID() *string {
 	return s.Name
 }
 
-func equalsIgnoreCase(a, b string) bool {
-	if strings.ToLower(a) == strings.ToLower(b) {
-		return true
-	}
-	return false
-}
-
 func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	if s.SecurityGroup == nil || s.SecurityGroup.SecurityGroupId == nil {
 		klog.V(4).Infof("SecurityGroup / SecurityGroupId not found for %s, skipping Find", fi.StringValue(s.Name))
@@ -89,7 +82,7 @@ func (s *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	actual := &SecurityGroupRule{}
 	// Find securityGroupRule with specified ipProtocol, securityGroupId,SourceGroupId
 	for _, securityGroupRule := range describeResponse.Permissions.Permission {
-		if !equalsIgnoreCase(string(securityGroupRule.IpProtocol), fi.StringValue(s.IpProtocol)) {
+		if !strings.EqualFold(string(securityGroupRule.IpProtocol), fi.StringValue(s.IpProtocol)) {
 			continue
 		}
 		if s.SourceGroup != nil && securityGroupRule.SourceGroupId != fi.StringValue(s.SourceGroup.SecurityGroupId) {

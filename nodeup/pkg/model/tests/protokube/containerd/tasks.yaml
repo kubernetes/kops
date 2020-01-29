@@ -1,0 +1,21 @@
+Name: protokube.service
+definition: |
+  [Unit]
+  Description=Kubernetes Protokube Service
+  Documentation=https://github.com/kubernetes/kops
+
+  [Service]
+  ExecStartPre=/bin/true
+  ExecStartPre=-/usr/bin/ctr container rm protokube
+  ExecStartPre=/bin/true
+  ExecStart=/usr/bin/ctr run --net-host --with-ns pid:/proc/1/ns/pid --privileged --mount type=bind,src=/,dst=/rootfs,options=rbind:rslave --mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate --mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate --env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig --mount type=bind,src=/usr/local/bin,dst=/opt/kops/bin,options=rbind:ro:rprivate --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kops/bin docker.io/library/protokube:test protokube /usr/bin/protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=true --dns-internal-suffix=.internal.minimal.example.com --dns=aws-route53 --initialize-rbac=true --manage-etcd=false --master=true --node-name=example-hostname --remove-dns-names=etcd-master-us-test-1a.internal.minimal.example.com,etcd-events-master-us-test-1a.internal.minimal.example.com --v=4
+  Restart=always
+  RestartSec=2s
+  StartLimitInterval=0
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true

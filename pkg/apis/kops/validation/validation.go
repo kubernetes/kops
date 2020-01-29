@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"k8s.io/apimachinery/pkg/api/validation"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
@@ -116,13 +117,22 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		}
 	}
 
+	// Container Runtime
+	if spec.ContainerRuntime != "" {
+		allErrs = append(allErrs, validateContainerRuntime(&spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
+	}
+
+	if spec.RollingUpdate != nil {
+		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"))...)
+	}
+
 	return allErrs
 }
 
 func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	_, _, err := net.ParseCIDR(cidr)
+	ip, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		detail := "Could not be parsed as a CIDR"
 		if !strings.Contains(cidr, "/") {
@@ -131,6 +141,10 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 				detail += fmt.Sprintf(" (did you mean \"%s/32\")", cidr)
 			}
 		}
+		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
+	} else if !ip.Equal(ipNet.IP) {
+		maskSize, _ := ipNet.Mask.Size()
+		detail := fmt.Sprintf("Network contains bits outside prefix (did you mean \"%s/%d\")", ipNet.IP, maskSize)
 		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
 	}
 	return allErrs
@@ -183,6 +197,11 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	// name is required
 	if subnet.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+	}
+
+	// CIDR
+	if subnet.CIDR != "" {
+		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("CIDR"))...)
 	}
 
 	return allErrs
@@ -379,7 +398,7 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 	}
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
-		allErrs = append(allErrs, field.InternalError(fldPath.Child("MajorVersion"), fmt.Errorf("Failed to parse Etcd version to check compatibility: %s", err)))
+		allErrs = append(allErrs, field.InternalError(fldPath.Child("MajorVersion"), fmt.Errorf("failed to parse Etcd version to check compatibility: %s", err)))
 	}
 
 	if sem.Major != 3 {
@@ -413,6 +432,31 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 		allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
 	default:
 		allErrs = append(allErrs, field.NotSupported(fldPath.Child("MajorVersion"), v.MajorVersion, []string{"v3"}))
+	}
+
+	return allErrs
+}
+
+func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {
+	valid := []string{"containerd", "docker"}
+
+	allErrs := field.ErrorList{}
+	allErrs = append(allErrs, IsValidValue(fldPath, runtime, valid)...)
+
+	return allErrs
+}
+
+func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if rollingUpdate.MaxUnavailable != nil {
+		unavailable, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, 1, false)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable,
+				fmt.Sprintf("Unable to parse: %v", err)))
+		}
+		if unavailable < 0 {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
+		}
 	}
 
 	return allErrs

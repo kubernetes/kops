@@ -244,13 +244,11 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 
 		// Kubernetes 1.6 introduced the shared ownership tag; that replaces TagClusterName
 		setLegacyTag := true
-		if m.IsKubernetesGTE("1.6") {
-			// For the moment, we only skip the legacy tag for shared resources
-			// (other people may be using it)
-			if shared {
-				klog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
-				setLegacyTag = false
-			}
+		// For the moment, we only skip the legacy tag for shared resources
+		// (other people may be using it)
+		if shared {
+			klog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
+			setLegacyTag = false
 		}
 		if setLegacyTag {
 			tags[awsup.TagClusterName] = m.Cluster.ObjectMeta.Name
@@ -351,6 +349,13 @@ func (m *KopsModelContext) UseEtcdTLS() bool {
 	return false
 }
 
+// UseSSHKey returns true if SSHKeyName from the cluster spec is not set to an empty string (""). Setting SSHKeyName
+// to an empty string indicates that an SSH key should not be set on instances.
+func (m *KopsModelContext) UseSSHKey() bool {
+	sshKeyName := m.Cluster.Spec.SSHKeyName
+	return sshKeyName == nil || *sshKeyName != ""
+}
+
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
 func (m *KopsModelContext) KubernetesVersion() semver.Version {
 	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
@@ -372,6 +377,11 @@ func (m *KopsModelContext) KubernetesVersion() semver.Version {
 // IsKubernetesGTE checks if the kubernetes version is at least version, ignoring prereleases / patches
 func (m *KopsModelContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, m.KubernetesVersion())
+}
+
+// IsKubernetesLT checks if the kubernetes version is before the specified version, ignoring prereleases / patches
+func (m *KopsModelContext) IsKubernetesLT(version string) bool {
+	return !m.IsKubernetesGTE(version)
 }
 
 // WellKnownServiceIP returns a service ip with the service cidr

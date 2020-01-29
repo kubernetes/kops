@@ -49,8 +49,6 @@ var (
 var (
 	// DNSPreCreate controls whether we pre-create DNS records.
 	DNSPreCreate = New("DNSPreCreate", Bool(true))
-	// DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.
-	DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(true))
 	// EnableLaunchTemplates indicates we wish to switch to using launch templates rather than launchconfigurations
 	EnableLaunchTemplates = New("EnableLaunchTemplates", Bool(false))
 	//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7
@@ -84,6 +82,8 @@ var (
 	VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
 	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
+	// Enable terraform JSON output instead of hcl output. JSON output can be also parsed by terraform 0.12
+	TerraformJSON = New("TerraformJSON", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

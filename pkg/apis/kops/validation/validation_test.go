@@ -19,6 +19,7 @@ package validation
 import (
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -47,6 +48,11 @@ func TestValidateCIDR(t *testing.T) {
 			Input:          "192.168.0.1",
 			ExpectedErrors: []string{"Invalid value::CIDR"},
 			ExpectedDetail: "Could not be parsed as a CIDR (did you mean \"192.168.0.1/32\")",
+		},
+		{
+			Input:          "10.128.0.0/8",
+			ExpectedErrors: []string{"Invalid value::CIDR"},
+			ExpectedDetail: "Network contains bits outside prefix (did you mean \"10.0.0.0/8\")",
 		},
 		{
 			Input:          "",
@@ -112,6 +118,11 @@ func TestValidateSubnets(t *testing.T) {
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", CIDR: "10.0.0.0/8"},
+			},
+		},
+		{
+			Input: []kops.ClusterSubnetSpec{
 				{Name: ""},
 			},
 			ExpectedErrors: []string{"Required value::Subnets[0].Name"},
@@ -135,6 +146,12 @@ func TestValidateSubnets(t *testing.T) {
 				{Name: "b", ProviderID: ""},
 			},
 			ExpectedErrors: []string{"Invalid value::Subnets"},
+		},
+		{
+			Input: []kops.ClusterSubnetSpec{
+				{Name: "a", CIDR: "10.128.0.0/8"},
+			},
+			ExpectedErrors: []string{"Invalid value::Subnets[0].CIDR"},
 		},
 	}
 	for _, g := range grid {
@@ -383,4 +400,51 @@ func Test_Validate_Calico(t *testing.T) {
 		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("Calico"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
+}
+
+func Test_Validate_RollingUpdate(t *testing.T) {
+	grid := []struct {
+		Input          kops.RollingUpdate
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.RollingUpdate{},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromInt(0)),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromString("0%")),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromString("nope")),
+			},
+			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromInt(-1)),
+			},
+			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromString("-1%")),
+			},
+			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+		},
+	}
+	for _, g := range grid {
+		errs := validateRollingUpdate(&g.Input, field.NewPath("TestField"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func intStr(i intstr.IntOrString) *intstr.IntOrString {
+	return &i
 }

@@ -32,8 +32,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
-	"k8s.io/kubernetes/pkg/kubectl/util/templates"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 )
 
 type DeleteClusterOptions struct {
@@ -91,8 +91,6 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Region, "region", options.Region, "region")
 	return cmd
 }
-
-type getter func(o interface{}) interface{}
 
 func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOptions) error {
 	clusterName := options.ClusterName

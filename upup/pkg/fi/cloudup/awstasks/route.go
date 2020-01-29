@@ -246,7 +246,10 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		tf.InstanceID = e.Instance.TerraformLink()
 	}
 
-	return t.RenderResource("aws_route", *e.Name, tf)
+	// Terraform 0.12 doesn't support resource names that start with digits. See #7052
+	// and https://www.terraform.io/upgrade-guides/0-12.html#pre-upgrade-checklist
+	name := fmt.Sprintf("route-%v", *e.Name)
+	return t.RenderResource("aws_route", name, tf)
 }
 
 type cloudformationRoute struct {

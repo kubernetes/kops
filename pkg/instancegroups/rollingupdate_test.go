@@ -18,16 +18,21 @@ package instancegroups
 
 import (
 	"errors"
-	"fmt"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	testingclient "k8s.io/client-go/testing"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -35,12 +40,16 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster) {
+const (
+	cordonPatch = "{\"spec\":{\"unschedulable\":true}}"
+	taintPatch  = "{\"spec\":{\"taints\":[{\"effect\":\"PreferNoSchedule\",\"key\":\"kops.k8s.io/scheduled-for-update\"}]}}"
+)
+
+func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud, *kopsapi.Cluster) {
 	k8sClient := fake.NewSimpleClientset()
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockcloud.MockAutoscaling = &mockautoscaling.MockAutoscaling{}
-	setUpCloud(mockcloud)
 
 	cluster := &kopsapi.Cluster{}
 	cluster.Name = "test.k8s.local"
@@ -59,52 +68,6 @@ func getTestSetup() (*RollingUpdateCluster, awsup.AWSCloud, *kopsapi.Cluster) {
 	}
 
 	return c, mockcloud, cluster
-}
-
-func setUpCloud(cloud awsup.AWSCloud) {
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("node-1"),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("node-1"),
-		InstanceIds:          []*string{aws.String("node-1a"), aws.String("node-1b")},
-	})
-
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("node-2"),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("node-2"),
-		InstanceIds:          []*string{aws.String("node-2a"), aws.String("node-2b")},
-	})
-
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("master-1"),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("master-1"),
-		InstanceIds:          []*string{aws.String("master-1a"), aws.String("master-1b")},
-	})
-
-	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
-		AutoScalingGroupName: aws.String("bastion-1"),
-		MinSize:              aws.Int64(1),
-		MaxSize:              aws.Int64(5),
-	})
-
-	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
-		AutoScalingGroupName: aws.String("bastion-1"),
-		InstanceIds:          []*string{aws.String("bastion-1a")},
-	})
 }
 
 type successfulClusterValidator struct{}
@@ -142,127 +105,111 @@ func (v *assertNotCalledClusterValidator) Validate() (*validation.ValidationClus
 	return nil, errors.New("validator called unexpectedly")
 }
 
-func getGroups() map[string]*cloudinstances.CloudInstanceGroup {
-	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "node-1",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
-			},
-		},
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
-			{
-				ID:   "node-1a",
-				Node: &v1.Node{},
-			},
-			{
-				ID:   "node-1b",
-				Node: &v1.Node{},
-			},
-		},
-	}
-	groups["node-2"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "node-2",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
-			},
-		},
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
-			{
-				ID:   "node-2a",
-				Node: &v1.Node{},
-			},
-			{
-				ID:   "node-2b",
-				Node: &v1.Node{},
-			},
-		},
-	}
-	groups["master-1"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "master-1",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleMaster,
-			},
-		},
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
-			{
-				ID:   "master-1a",
-				Node: &v1.Node{},
-			},
-			{
-				ID:   "master-1b",
-				Node: &v1.Node{},
-			},
-		},
-	}
-	groups["bastion-1"] = &cloudinstances.CloudInstanceGroup{
-		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: v1meta.ObjectMeta{
-				Name: "bastion-1",
-			},
-			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleBastion,
-			},
-		},
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
-			{
-				ID:   "bastion-1a",
-				Node: &v1.Node{},
-			},
-		},
-	}
-	return groups
-}
+func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient kubernetes.Interface, cloud awsup.AWSCloud, name string, role kopsapi.InstanceGroupRole, count int, needUpdate int) {
+	fakeClient := k8sClient.(*fake.Clientset)
 
-func markNeedUpdate(group *cloudinstances.CloudInstanceGroup, nodeIds ...string) {
-	for _, nodeId := range nodeIds {
-		found := false
-		for _, member := range group.Ready {
-			if member.ID == nodeId {
-				group.NeedUpdate = append(group.NeedUpdate, &cloudinstances.CloudInstanceGroupMember{
-					ID:                 member.ID,
-					Node:               member.Node,
-					CloudInstanceGroup: member.CloudInstanceGroup,
-				})
-				found = true
-				break
+	groups[name] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: v1meta.ObjectMeta{
+				Name: name,
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: role,
+			},
+		},
+	}
+	cloud.Autoscaling().CreateAutoScalingGroup(&autoscaling.CreateAutoScalingGroupInput{
+		AutoScalingGroupName: aws.String(name),
+		DesiredCapacity:      aws.Int64(int64(count)),
+		MinSize:              aws.Int64(1),
+		MaxSize:              aws.Int64(5),
+	})
+
+	var instanceIds []*string
+	for i := 0; i < count; i++ {
+		id := name + string('a'+i)
+		var node *v1.Node
+		if role != kopsapi.InstanceGroupRoleBastion {
+			node = &v1.Node{
+				ObjectMeta: v1meta.ObjectMeta{Name: id + ".local"},
 			}
+			_ = fakeClient.Tracker().Add(node)
 		}
-		if !found {
-			panic(fmt.Sprintf("didn't find nodeId %s in ready list", nodeId))
+		member := cloudinstances.CloudInstanceGroupMember{
+			ID:   id,
+			Node: node,
 		}
+		if i < needUpdate {
+			groups[name].NeedUpdate = append(groups[name].NeedUpdate, &member)
+		} else {
+			groups[name].Ready = append(groups[name].Ready, &member)
+		}
+		instanceIds = append(instanceIds, aws.String(id))
 	}
+	cloud.Autoscaling().AttachInstances(&autoscaling.AttachInstancesInput{
+		AutoScalingGroupName: aws.String(name),
+		InstanceIds:          instanceIds,
+	})
 }
 
-func getGroupsNodes1NeedsUpdate() map[string]*cloudinstances.CloudInstanceGroup {
-	groups := getGroups()
-	markNeedUpdate(groups["node-1"], "node-1a", "node-1b")
+func getGroups(k8sClient kubernetes.Interface, cloud awsup.AWSCloud) map[string]*cloudinstances.CloudInstanceGroup {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, k8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 0)
+	makeGroup(groups, k8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 0)
+	makeGroup(groups, k8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 0)
+	makeGroup(groups, k8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 0)
 	return groups
 }
 
-func getGroupsAllNeedUpdate() map[string]*cloudinstances.CloudInstanceGroup {
-	groups := getGroups()
-	markNeedUpdate(groups["node-1"], "node-1a", "node-1b")
-	markNeedUpdate(groups["node-2"], "node-2a", "node-2b")
-	markNeedUpdate(groups["master-1"], "master-1a", "master-1b")
-	markNeedUpdate(groups["bastion-1"], "bastion-1a")
+func getGroupsAllNeedUpdate(k8sClient kubernetes.Interface, cloud awsup.AWSCloud) map[string]*cloudinstances.CloudInstanceGroup {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, k8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
+	makeGroup(groups, k8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 3, 3)
+	makeGroup(groups, k8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 2)
+	makeGroup(groups, k8sClient, cloud, "bastion-1", kopsapi.InstanceGroupRoleBastion, 1, 1)
 	return groups
 }
 
 func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
+
+	cordoned := ""
+	tainted := map[string]bool{}
+	deleted := map[string]bool{}
+	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
+		switch a := action.(type) {
+		case testingclient.PatchAction:
+			if string(a.GetPatch()) == cordonPatch {
+				assertCordon(t, a)
+				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
+				assert.True(t, tainted[a.GetName()], "node", a.GetName(), "tainted")
+				cordoned = a.GetName()
+			} else {
+				assertTaint(t, a)
+				assert.Equal(t, "", cordoned, "not tainting while node cordoned")
+				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
+				tainted[a.GetName()] = true
+			}
+		case testingclient.DeleteAction:
+			assert.Equal(t, "nodes", a.GetResource().Resource)
+			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
+			if !strings.HasPrefix(a.GetName(), "master-") {
+				assert.True(t, deleted["master-1a.local"], "master-1a was deleted before node", a.GetName())
+				assert.True(t, deleted["master-1b.local"], "master-1b was deleted before node", a.GetName())
+			}
+			deleted[a.GetName()] = true
+			cordoned = ""
+		case testingclient.ListAction:
+			// Don't care
+		default:
+			t.Errorf("unexpected action %v", a)
+		}
+	}
 
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
@@ -276,8 +223,11 @@ func TestRollingUpdateAllNeedUpdateCloudonly(t *testing.T) {
 	c.CloudOnly = true
 	c.ClusterValidator = &assertNotCalledClusterValidator{T: t}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
+
+	assert.Empty(t, c.K8sClient.(*fake.Clientset).Actions())
 
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	for _, group := range asgGroups.AutoScalingGroups {
@@ -291,7 +241,8 @@ func TestRollingUpdateAllNeedUpdateNoFailOnValidate(t *testing.T) {
 	c.FailOnValidate = false
 	c.ClusterValidator = &failingClusterValidator{}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
@@ -302,22 +253,26 @@ func TestRollingUpdateAllNeedUpdateNoFailOnValidate(t *testing.T) {
 
 func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
+	groups := getGroups(c.K8sClient, cloud)
 
-	err := c.RollingUpdate(getGroups(), cluster, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
-	assertGroupInstanceCount(t, cloud, "node-2", 2)
+	assert.Empty(t, c.K8sClient.(*fake.Clientset).Actions())
+
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 2)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
 }
 
 func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
+	groups := getGroups(c.K8sClient, cloud)
 
 	c.Force = true
 
-	err := c.RollingUpdate(getGroups(), cluster, &kopsapi.InstanceGroupList{})
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
@@ -334,23 +289,23 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 	err := c.RollingUpdate(groups, &kopsapi.Cluster{}, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
-	assertGroupInstanceCount(t, cloud, "node-2", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 2)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
 }
 
 func TestRollingUpdateUnknownRole(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
+	groups := getGroups(c.K8sClient, cloud)
 
-	groups := getGroups()
 	groups["node-1"].InstanceGroup.Spec.Role = "Unknown"
 
 	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
-	assertGroupInstanceCount(t, cloud, "node-2", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 2)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
 }
@@ -360,11 +315,12 @@ func TestRollingUpdateAllNeedUpdateFailsValidation(t *testing.T) {
 
 	c.ClusterValidator = &failingClusterValidator{}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
-	assertGroupInstanceCount(t, cloud, "node-2", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 2)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
 }
@@ -374,11 +330,12 @@ func TestRollingUpdateAllNeedUpdateErrorsValidation(t *testing.T) {
 
 	c.ClusterValidator = &erroringClusterValidator{}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
-	assertGroupInstanceCount(t, cloud, "node-2", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 2)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
 }
@@ -388,10 +345,12 @@ func TestRollingUpdateNodes1NeedsUpdateFailsValidation(t *testing.T) {
 
 	c.ClusterValidator = &failingClusterValidator{}
 
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
 }
 
 func TestRollingUpdateNodes1NeedsUpdateErrorsValidation(t *testing.T) {
@@ -399,10 +358,12 @@ func TestRollingUpdateNodes1NeedsUpdateErrorsValidation(t *testing.T) {
 
 	c.ClusterValidator = &erroringClusterValidator{}
 
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
 }
 
 type failAfterOneNodeClusterValidator struct {
@@ -416,7 +377,7 @@ func (v *failAfterOneNodeClusterValidator) Validate() (*validation.ValidationClu
 		AutoScalingGroupNames: []*string{aws.String(v.Group)},
 	})
 	for _, group := range asgGroups.AutoScalingGroups {
-		if len(group.Instances) < 2 {
+		if int64(len(group.Instances)) < *group.DesiredCapacity {
 			if v.ReturnError {
 				return nil, errors.New("testing validation error")
 			}
@@ -443,11 +404,12 @@ func TestRollingUpdateClusterFailsValidationAfterOneMaster(t *testing.T) {
 		ReturnError: false,
 	}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
-	assertGroupInstanceCount(t, cloud, "node-2", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 1)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
 }
@@ -461,11 +423,12 @@ func TestRollingUpdateClusterErrorsValidationAfterOneMaster(t *testing.T) {
 		ReturnError: true,
 	}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 2)
-	assertGroupInstanceCount(t, cloud, "node-2", 2)
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 1)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
 }
@@ -479,10 +442,12 @@ func TestRollingUpdateClusterFailsValidationAfterOneNode(t *testing.T) {
 		ReturnError: false,
 	}
 
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 1)
+	assertGroupInstanceCount(t, cloud, "node-1", 2)
 }
 
 func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
@@ -494,10 +459,12 @@ func TestRollingUpdateClusterErrorsValidationAfterOneNode(t *testing.T) {
 		ReturnError: true,
 	}
 
-	err := c.RollingUpdate(getGroupsNodes1NeedsUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 3)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.Error(t, err, "rolling update")
 
-	assertGroupInstanceCount(t, cloud, "node-1", 1)
+	assertGroupInstanceCount(t, cloud, "node-1", 2)
 }
 
 type flappingClusterValidator struct {
@@ -548,7 +515,8 @@ func TestRollingUpdateFlappingValidation(t *testing.T) {
 		Cloud: cloud,
 	}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 0)
@@ -587,13 +555,309 @@ func TestRollingUpdateValidatesAfterBastion(t *testing.T) {
 
 	c.ClusterValidator = &failThreeTimesClusterValidator{}
 
-	err := c.RollingUpdate(getGroupsAllNeedUpdate(), cluster, &kopsapi.InstanceGroupList{})
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
 	assertGroupInstanceCount(t, cloud, "node-1", 0)
 	assertGroupInstanceCount(t, cloud, "node-2", 0)
 	assertGroupInstanceCount(t, cloud, "master-1", 0)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
+}
+
+func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 3, 2)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	cordoned := ""
+	tainted := map[string]bool{}
+	deleted := map[string]bool{}
+	for _, action := range c.K8sClient.(*fake.Clientset).Actions() {
+		switch a := action.(type) {
+		case testingclient.PatchAction:
+			if string(a.GetPatch()) == cordonPatch {
+				assertCordon(t, a)
+				assert.Equal(t, "", cordoned, "at most one node cordoned at a time")
+				cordoned = a.GetName()
+			} else {
+				assertTaint(t, a)
+				assert.False(t, tainted[a.GetName()], "node", a.GetName(), "already tainted")
+				tainted[a.GetName()] = true
+			}
+		case testingclient.DeleteAction:
+			assert.Equal(t, "nodes", a.GetResource().Resource)
+			assert.Equal(t, cordoned, a.GetName(), "node was cordoned before delete")
+			assert.Len(t, tainted, 2, "all nodes tainted before any delete")
+			assert.False(t, deleted[a.GetName()], "node", a.GetName(), "already deleted")
+			deleted[a.GetName()] = true
+			cordoned = ""
+		case testingclient.ListAction:
+			// Don't care
+		default:
+			t.Errorf("unexpected action %v", a)
+		}
+	}
+
+	assertGroupInstanceCount(t, cloud, "node-1", 1)
+}
+
+func TestRollingUpdateDisabled(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	zero := intstr.FromInt(0)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &zero,
+	}
+
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
+	assertGroupInstanceCount(t, cloud, "master-1", 2)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
+}
+
+func TestRollingUpdateDisabledCloudonly(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+	c.CloudOnly = true
+
+	zero := intstr.FromInt(0)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &zero,
+	}
+
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
+	assertGroupInstanceCount(t, cloud, "master-1", 2)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
+}
+
+// The concurrent update tests attempt to induce the following expected update sequence:
+//
+// (Only for "all need update" tests, to verify the toe-dipping behavior)
+// Request validate (7)            -->
+//                                 <-- validated
+// Request terminate 1 node (7)    -->
+//                                 <-- 1 node terminated, 6 left
+// (end only for "all need update" tests)
+// Request validate (6)            -->
+//                                 <-- validated
+// Request terminate 2 nodes (6,5) -->
+//                                 <-- 1 node terminated (5), 5 left
+// Request validate (4)            -->
+//                                 <-- 1 node terminated (6), 4 left
+//                                 <-- validated
+// Request terminate 2 nodes (4,3) -->
+//                                 <-- 1 node terminated (3), 3 left
+// Request validate (2)            -->
+//                                 <-- validated
+// Request terminate 1 node (2)    -->
+//                                 <-- 1 node terminated (2), 2 left
+// Request validate (1)            -->
+//                                 <-- 1 node terminated (4), 1 left
+//                                 <-- validated
+// Request terminate 1 node (1)    -->
+//                                 <-- 1 node terminated, 0 left
+// Request validate (0)            -->
+//                                 <-- validated
+
+type concurrentTest struct {
+	autoscalingiface.AutoScalingAPI
+	t                       *testing.T
+	mutex                   sync.Mutex
+	terminationRequestsLeft int
+	previousValidation      int
+	validationChan          chan bool
+	terminationChan         chan bool
+}
+
+func (c *concurrentTest) Validate() (*validation.ValidationCluster, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	terminationRequestsLeft := c.terminationRequestsLeft
+	switch terminationRequestsLeft {
+	case 7, 6, 0:
+		assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
+	case 5, 3:
+		c.t.Errorf("unexpected call to Validate with %d termination requests left", terminationRequestsLeft)
+	case 4:
+		assert.Equal(c.t, 6, c.previousValidation, "previous validation")
+		select {
+		case c.terminationChan <- true:
+		default:
+			c.t.Error("terminationChan is full")
+		}
+		c.mutex.Unlock()
+		select {
+		case <-c.validationChan:
+		case <-time.After(1 * time.Second):
+			c.t.Error("timed out reading from validationChan")
+		}
+		c.mutex.Lock()
+	case 2:
+		assert.Equal(c.t, 4, c.previousValidation, "previous validation")
+	case 1:
+		assert.Equal(c.t, 2, c.previousValidation, "previous validation")
+		select {
+		case c.terminationChan <- true:
+		default:
+			c.t.Error("terminationChan is full")
+		}
+		c.mutex.Unlock()
+		select {
+		case <-c.validationChan:
+		case <-time.After(1 * time.Second):
+			c.t.Error("timed out reading from validationChan")
+		}
+		c.mutex.Lock()
+	}
+	c.previousValidation = terminationRequestsLeft
+
+	return &validation.ValidationCluster{}, nil
+}
+
+func (c *concurrentTest) TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	terminationRequestsLeft := c.terminationRequestsLeft
+	c.terminationRequestsLeft--
+	switch terminationRequestsLeft {
+	case 7, 2, 1:
+		assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
+	case 6, 4:
+		assert.Equal(c.t, terminationRequestsLeft, c.previousValidation, "previous validation")
+		c.mutex.Unlock()
+		select {
+		case <-c.terminationChan:
+		case <-time.After(1 * time.Second):
+			c.t.Error("timed out reading from terminationChan")
+		}
+		c.mutex.Lock()
+		go c.delayThenWakeValidation()
+	case 5, 3:
+		assert.Equal(c.t, terminationRequestsLeft+1, c.previousValidation, "previous validation")
+	}
+	return c.AutoScalingAPI.TerminateInstanceInAutoScalingGroup(input)
+}
+
+func (c *concurrentTest) delayThenWakeValidation() {
+	time.Sleep(20 * time.Millisecond) // NodeInterval plus some
+	select {
+	case c.validationChan <- true:
+	default:
+		c.t.Error("validationChan is full")
+	}
+}
+
+func (c *concurrentTest) AssertComplete() {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	assert.Equal(c.t, 0, c.previousValidation, "last validation")
+}
+
+func newConcurrentTest(t *testing.T, cloud *awsup.MockAWSCloud, allNeedUpdate bool) *concurrentTest {
+	test := concurrentTest{
+		AutoScalingAPI:          cloud.MockAutoscaling,
+		t:                       t,
+		terminationRequestsLeft: 6,
+		validationChan:          make(chan bool),
+		terminationChan:         make(chan bool),
+	}
+	if allNeedUpdate {
+		test.terminationRequestsLeft = 7
+	}
+	test.previousValidation = test.terminationRequestsLeft + 1
+	return &test
+}
+
+func TestRollingUpdateMaxUnavailableAllNeedUpdate(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	concurrentTest := newConcurrentTest(t, cloud, true)
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = concurrentTest
+	cloud.MockAutoscaling = concurrentTest
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 7, 7)
+
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 0)
+	concurrentTest.AssertComplete()
+}
+
+func TestRollingUpdateMaxUnavailableAllButOneNeedUpdate(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	concurrentTest := newConcurrentTest(t, cloud, false)
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = concurrentTest
+	cloud.MockAutoscaling = concurrentTest
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 7, 6)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 1)
+	concurrentTest.AssertComplete()
+}
+
+func TestRollingUpdateMaxUnavailableAllNeedUpdateMaster(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	concurrentTest := newConcurrentTest(t, cloud, true)
+	c.ValidateSuccessDuration = 0
+	c.ClusterValidator = concurrentTest
+	cloud.MockAutoscaling = concurrentTest
+
+	two := intstr.FromInt(2)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		MaxUnavailable: &two,
+	}
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 7, 7)
+
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "master-1", 0)
+	concurrentTest.AssertComplete()
+}
+
+func assertCordon(t *testing.T, action testingclient.PatchAction) {
+	assert.Equal(t, "nodes", action.GetResource().Resource)
+	assert.Equal(t, cordonPatch, string(action.GetPatch()))
+}
+
+func assertTaint(t *testing.T, action testingclient.PatchAction) {
+	assert.Equal(t, "nodes", action.GetResource().Resource)
+	assert.Equal(t, taintPatch, string(action.GetPatch()))
 }
 
 func assertGroupInstanceCount(t *testing.T, cloud awsup.AWSCloud, groupName string, expected int) {

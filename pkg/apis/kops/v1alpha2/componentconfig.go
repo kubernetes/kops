@@ -266,7 +266,7 @@ type KubeAPIServerConfig struct {
 	EnableBootstrapAuthToken *bool `json:"enableBootstrapTokenAuth,omitempty" flag:"enable-bootstrap-token-auth"`
 	// EnableAggregatorRouting enables aggregator routing requests to endpoints IP rather than cluster IP
 	EnableAggregatorRouting *bool `json:"enableAggregatorRouting,omitempty" flag:"enable-aggregator-routing"`
-	// Deprecated: AdmissionControl is a list of admission controllers to use
+	// AdmissionControl is a list of admission controllers to use: Deprecated - use enable-admission-plugins instead
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// AppendAdmissionPlugins appends list of enabled admission plugins
 	AppendAdmissionPlugins []string `json:"appendAdmissionPlugins,omitempty"`
@@ -396,6 +396,8 @@ type KubeAPIServerConfig struct {
 	AuthorizationWebhookCacheUnauthorizedTTL *metav1.Duration `json:"authorizationWebhookCacheUnauthorizedTtl,omitempty" flag:"authorization-webhook-cache-unauthorized-ttl"`
 	// AuthorizationRBACSuperUser is the name of the superuser for default rbac
 	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
+	// EncryptionProviderConfig enables encryption at rest for secrets.
+	EncryptionProviderConfig *string `json:"encryptionProviderConfig,omitempty" flag:"encryption-provider-config"`
 	// ExperimentalEncryptionProviderConfig enables encryption at rest for secrets.
 	ExperimentalEncryptionProviderConfig *string `json:"experimentalEncryptionProviderConfig,omitempty" flag:"experimental-encryption-provider-config"`
 
@@ -608,6 +610,10 @@ type KubeSchedulerConfig struct {
 	// which has been supported as far back as Kubernetes 1.7. The default depends on the version and the cloud provider
 	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
 	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
+	// Qps sets the maximum qps to send to apiserver after the burst quota is exhausted
+	Qps *resource.Quantity `json:"qps,omitempty"`
+	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
+	Burst int32 `json:"burst,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
