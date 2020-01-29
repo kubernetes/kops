@@ -87,8 +87,8 @@ func PopulateClusterSpec(clientset simple.Clientset, cluster *api.Cluster, asset
 // @kris-nova
 //
 func (c *populateClusterSpec) run(clientset simple.Clientset) error {
-	if err := validation.ValidateCluster(c.InputCluster, false); err != nil {
-		return err
+	if errs := validation.ValidateCluster(c.InputCluster, false); len(errs) != 0 {
+		return errs.ToAggregate()
 	}
 
 	// Copy cluster & instance groups, so we can modify them freely
@@ -327,8 +327,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	fullCluster.Spec = *completed
 	tf.cluster = fullCluster
 
-	if err := validation.ValidateCluster(fullCluster, true); err != nil {
-		return fmt.Errorf("Completed cluster failed validation: %v", err)
+	if errs := validation.ValidateCluster(fullCluster, true); len(errs) != 0 {
+		return fmt.Errorf("Completed cluster failed validation: %v", errs.ToAggregate())
 	}
 
 	c.fullCluster = fullCluster

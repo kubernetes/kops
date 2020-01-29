@@ -104,12 +104,12 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 func TestValidateFull_Default_Validates(t *testing.T) {
 	c := buildDefaultCluster(t)
-	if err := validation.ValidateCluster(c, false); err != nil {
+	if errs := validation.ValidateCluster(c, false); len(errs) != 0 {
 		klog.Infof("Cluster: %v", c)
-		t.Fatalf("Validate gave unexpected error (strict=false): %v", err)
+		t.Fatalf("Validate gave unexpected error (strict=false): %v", errs.ToAggregate())
 	}
-	if err := validation.ValidateCluster(c, true); err != nil {
-		t.Fatalf("Validate gave unexpected error (strict=true): %v", err)
+	if errs := validation.ValidateCluster(c, true); len(errs) != 0 {
+		t.Fatalf("Validate gave unexpected error (strict=true): %v", errs.ToAggregate())
 	}
 }
 
@@ -196,19 +196,19 @@ func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T)
 }
 
 func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
-	err := validation.ValidateCluster(c, false)
-	if err == nil {
+	errs := validation.ValidateCluster(c, false)
+	if len(errs) == 0 {
 		t.Fatalf("Expected error from Validate")
 	}
-	actualMessage := fmt.Sprintf("%v", err)
+	actualMessage := fmt.Sprintf("%v", errs.ToAggregate())
 	if !strings.Contains(actualMessage, message) {
 		t.Fatalf("Expected error %q, got %q", message, actualMessage)
 	}
 }
 
 func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
-	err := validation.ValidateCluster(c, false)
-	if err != nil {
-		t.Fatalf("Unexpected error from Validate: %v", err)
+	errs := validation.ValidateCluster(c, false)
+	if len(errs) != 0 {
+		t.Fatalf("Unexpected error from Validate: %v", errs.ToAggregate())
 	}
 }
