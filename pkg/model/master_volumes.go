@@ -308,6 +308,8 @@ func (b *MasterVolumeBuilder) addALIVolume(c *fi.ModelBuilderContext, name strin
 	tags[aliup.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
 	// This says "only mount on a master"
 	tags[aliup.TagNameRolePrefix+"master"] = "1"
+	// We always add an owned tags (these can't be shared)
+	tags["kubernetes.io/cluster/"+b.Cluster.ObjectMeta.Name] = "owned"
 
 	encrypted := fi.BoolValue(m.EncryptedVolume)
 

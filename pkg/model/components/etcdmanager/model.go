@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -370,6 +371,16 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 				awsup.TagNameRolePrefix + "master=1",
 			}
 			config.VolumeNameTag = awsup.TagNameEtcdClusterPrefix + etcdCluster.Name
+
+		case kops.CloudProviderALI:
+			config.VolumeProvider = "alicloud"
+
+			config.VolumeTag = []string{
+				fmt.Sprintf("kubernetes.io/cluster/%s=owned", b.Cluster.Name),
+				aliup.TagNameEtcdClusterPrefix + etcdCluster.Name,
+				aliup.TagNameRolePrefix + "master=1",
+			}
+			config.VolumeNameTag = aliup.TagNameEtcdClusterPrefix + etcdCluster.Name
 
 		case kops.CloudProviderGCE:
 			config.VolumeProvider = "gce"
