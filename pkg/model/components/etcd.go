@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-const DefaultBackupImage = "kopeio/etcd-backup:3.0.20191025"
+const DefaultBackupImage = "kopeio/etcd-backup:3.0.20200116"
 
 // EtcdOptionsBuilder adds options for etcd to the model
 type EtcdOptionsBuilder struct {
@@ -42,6 +42,8 @@ const (
 	DefaultEtcd3Version_1_13 = "3.2.24"
 
 	DefaultEtcd3Version_1_14 = "3.3.10"
+
+	DefaultEtcd3Version_1_17 = "3.4.3"
 )
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
@@ -62,7 +64,9 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		// Ensure the version is set
 		if c.Version == "" && c.Provider == kops.EtcdProviderTypeLegacy {
 			// Even if in legacy mode, etcd version 2 is unsupported as of k8s 1.13
-			if b.IsKubernetesGTE("1.14") {
+			if b.IsKubernetesGTE("1.17") {
+				c.Version = DefaultEtcd3Version_1_17
+			} else if b.IsKubernetesGTE("1.14") {
 				c.Version = DefaultEtcd3Version_1_14
 			} else if b.IsKubernetesGTE("1.13") {
 				c.Version = DefaultEtcd3Version_1_13
@@ -73,7 +77,9 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 
 		if c.Version == "" && c.Provider == kops.EtcdProviderTypeManager {
 			// From 1.11, we run the k8s-recommended versions of etcd when using the manager
-			if b.IsKubernetesGTE("1.14") {
+			if b.IsKubernetesGTE("1.17") {
+				c.Version = DefaultEtcd3Version_1_17
+			} else if b.IsKubernetesGTE("1.14") {
 				c.Version = DefaultEtcd3Version_1_14
 			} else if b.IsKubernetesGTE("1.13") {
 				c.Version = DefaultEtcd3Version_1_13

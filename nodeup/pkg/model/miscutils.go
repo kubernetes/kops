@@ -50,7 +50,6 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var packages []string
 	if b.Distribution.IsDebianFamily() {
-		packages = append(packages, "socat")
 		packages = append(packages, "curl")
 		packages = append(packages, "wget")
 		packages = append(packages, "nfs-common")

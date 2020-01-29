@@ -113,7 +113,7 @@ func FindDistribution(rootfs string) (Distribution, error) {
 				return DistributionContainerOS, nil
 			}
 			if strings.HasPrefix(line, "PRETTY_NAME=\"Amazon Linux 2") {
-				return DistributionCentos7, nil
+				return DistributionAmazonLinux2, nil
 			}
 		}
 		klog.Warningf("unhandled /etc/os-release info %q", string(osRelease))

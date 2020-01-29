@@ -82,6 +82,8 @@ var (
 	VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
 	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
+	// Enable terraform JSON output instead of hcl output. JSON output can be also parsed by terraform 0.12
+	TerraformJSON = New("TerraformJSON", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
