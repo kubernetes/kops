@@ -139,6 +139,7 @@ spec:
       hostNetwork: true
       nodeSelector:
         kubernetes.io/role: master
+      priorityClassName: system-node-critical
       serviceAccount: {{ $name }}
       securityContext:
         fsGroup: 1000

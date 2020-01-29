@@ -461,6 +461,7 @@ spec:
           name: bpf-maps
         - mountPath: /var/run/cilium
           name: cilium-run
+      priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium
       serviceAccountName: cilium
