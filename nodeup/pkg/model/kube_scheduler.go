@@ -63,7 +63,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
-	useConfigFile := b.IsKubernetesGTE("1.11")
+	useConfigFile := b.IsKubernetesGTE("1.12")
 	{
 		pod, err := b.buildPod(useConfigFile)
 		if err != nil {
