@@ -380,6 +380,8 @@ func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 
 	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config.yaml")
 
+	argv = append(argv, "--logtostderr=false", "--alsologtostderr", "--log_file=/var/log/kops-controller.log")
+
 	return argv, nil
 }
 

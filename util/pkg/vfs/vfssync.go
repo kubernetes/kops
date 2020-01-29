@@ -38,9 +38,9 @@ func NewVFSScan(base Path) *VFSScan {
 type ChangeType string
 
 const (
-	ChangeType_Added    ChangeType = "ADDED"
-	ChangeType_Removed  ChangeType = "REMOVED"
-	ChangeType_Modified ChangeType = "MODIFIED"
+	ChangeTypeAdded    ChangeType = "ADDED"
+	ChangeTypeRemoved  ChangeType = "REMOVED"
+	ChangeTypeModified ChangeType = "MODIFIED"
 )
 
 type Change struct {
@@ -49,7 +49,7 @@ type Change struct {
 	Hash       *hashing.Hash
 }
 
-// Scans for changes files.  On the first call will return all files as ChangeType_Added.
+// Scans for changes files.  On the first call will return all files as ChangeTypeAdded.
 // On subsequent calls will return any changed files (using their hashes)
 func (v *VFSScan) Scan() ([]Change, error) {
 	allFiles, err := v.Base.ReadTree()
@@ -79,7 +79,7 @@ func (v *VFSScan) Scan() ([]Change, error) {
 		var changes []Change
 		for k, f := range files {
 			hash := hashes[k]
-			changes = append(changes, Change{ChangeType: ChangeType_Added, Path: f, Hash: hash})
+			changes = append(changes, Change{ChangeType: ChangeTypeAdded, Path: f, Hash: hash})
 		}
 		return changes, nil
 	}
@@ -90,9 +90,9 @@ func (v *VFSScan) Scan() ([]Change, error) {
 		newHash := hashes[k]
 
 		if oldHash == nil {
-			changes = append(changes, Change{ChangeType: ChangeType_Added, Path: f, Hash: newHash})
+			changes = append(changes, Change{ChangeType: ChangeTypeAdded, Path: f, Hash: newHash})
 		} else if !oldHash.Equal(newHash) {
-			changes = append(changes, Change{ChangeType: ChangeType_Modified, Path: f, Hash: newHash})
+			changes = append(changes, Change{ChangeType: ChangeTypeModified, Path: f, Hash: newHash})
 		}
 	}
 
@@ -100,7 +100,7 @@ func (v *VFSScan) Scan() ([]Change, error) {
 		newHash := hashes[k]
 		f := files[k]
 		if newHash == nil {
-			changes = append(changes, Change{ChangeType: ChangeType_Removed, Path: f, Hash: newHash})
+			changes = append(changes, Change{ChangeType: ChangeTypeRemoved, Path: f, Hash: newHash})
 		}
 	}
 
@@ -125,7 +125,7 @@ func SyncDir(src *VFSScan, destBase Path) error {
 		destFile := destBase.Join(relativePath)
 
 		switch change.ChangeType {
-		case ChangeType_Removed:
+		case ChangeTypeRemoved:
 			err := destFile.Remove()
 			if err != nil {
 				if !os.IsNotExist(err) {
@@ -134,7 +134,7 @@ func SyncDir(src *VFSScan, destBase Path) error {
 			}
 			continue
 
-		case ChangeType_Modified, ChangeType_Added:
+		case ChangeTypeModified, ChangeTypeAdded:
 			hashMatch, err := hashesMatch(f, destFile)
 			if err != nil {
 				return err

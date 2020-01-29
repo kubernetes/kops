@@ -68,7 +68,7 @@ func newCoreDNSProviderInterface(config io.Reader) (*Interface, error) {
 	klog.Infof("Using CoreDNS DNS provider")
 
 	if dnsZones == "" {
-		return nil, fmt.Errorf("Need to provide at least one DNS Zone")
+		return nil, fmt.Errorf("need to provide at least one DNS Zone")
 	}
 
 	etcdCfg := etcdc.Config{
@@ -78,7 +78,7 @@ func newCoreDNSProviderInterface(config io.Reader) (*Interface, error) {
 
 	c, err := etcdc.New(etcdCfg)
 	if err != nil {
-		return nil, fmt.Errorf("Create etcd client from the config failed")
+		return nil, fmt.Errorf("create etcd client from the config failed")
 	}
 	etcdKeysAPI := etcdc.NewKeysAPI(c)
 

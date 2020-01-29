@@ -123,7 +123,7 @@ type terraformStorageBucketAcl struct {
 
 func (_ *StorageBucketAcl) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketAcl) error {
 	var roleEntities []string
-	roleEntities = append(roleEntities, fi.StringValue(e.Role)+":"+fi.StringValue(e.Name))
+	roleEntities = append(roleEntities, fi.StringValue(e.Role)+":"+fi.StringValue(e.Entity))
 	tf := &terraformStorageBucketAcl{
 		Bucket:     fi.StringValue(e.Bucket),
 		RoleEntity: roleEntities,

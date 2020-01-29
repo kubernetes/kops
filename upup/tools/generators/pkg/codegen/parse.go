@@ -36,9 +36,6 @@ type GoParser struct {
 type File struct {
 	pkg  *Package  // Package to which this file belongs.
 	file *ast.File // Parsed AST.
-	// These fields are reset for each type being generated.
-	typeName string // Name of the constant type.
-	//values   []Value // Accumulator for constant values of that type.
 }
 
 type Package struct {
@@ -110,7 +107,7 @@ func (g *GoParser) parsePackage(directory string, names []string, text interface
 // check type-checks the package. The package must be OK to proceed.
 func (pkg *Package) check(fs *token.FileSet, astFiles []*ast.File) {
 	pkg.defs = make(map[*ast.Ident]types.Object)
-	config := types.Config{Importer: importer.For("source", nil), FakeImportC: true}
+	config := types.Config{Importer: importer.ForCompiler(token.NewFileSet(), "source", nil), FakeImportC: true}
 	info := &types.Info{
 		Defs: pkg.defs,
 	}

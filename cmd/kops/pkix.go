@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"crypto/x509/pkix"
 	"fmt"
-	"strings"
 )
 
 func pkixNameToString(name *pkix.Name) string {
@@ -56,28 +55,4 @@ func pkixNameToString(name *pkix.Name) string {
 		}
 	}
 	return s.String()
-}
-
-func parsePkixName(s string) (*pkix.Name, error) {
-	name := new(pkix.Name)
-
-	tokens := strings.Split(s, ",")
-	for _, token := range tokens {
-		token = strings.TrimSpace(token)
-		kv := strings.SplitN(token, "=", 2)
-		if len(kv) != 2 {
-			return nil, fmt.Errorf("unrecognized token (expected k=v): %q", token)
-		}
-		k := strings.ToLower(kv[0])
-		v := kv[1]
-
-		switch k {
-		case "cn":
-			name.CommonName = v
-		default:
-			return nil, fmt.Errorf("unrecognized key %q in token %q", k, token)
-		}
-	}
-
-	return name, nil
 }

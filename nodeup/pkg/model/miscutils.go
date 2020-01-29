@@ -50,14 +50,16 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var packages []string
 	if b.Distribution.IsDebianFamily() {
-		packages = append(packages, "socat")
 		packages = append(packages, "curl")
+		packages = append(packages, "wget")
 		packages = append(packages, "nfs-common")
 		packages = append(packages, "python-apt")
 		packages = append(packages, "apt-transport-https")
 	} else if b.Distribution.IsRHELFamily() {
 		packages = append(packages, "curl")
-		packages = append(packages, "python")
+		packages = append(packages, "wget")
+		packages = append(packages, "nfs-utils")
+		packages = append(packages, "python2")
 		packages = append(packages, "git")
 	} else {
 		klog.Warningf("unknown distribution, skipping misc utils install: %v", b.Distribution)

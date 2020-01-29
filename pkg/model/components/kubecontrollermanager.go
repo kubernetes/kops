@@ -23,7 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -49,28 +49,16 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 	kcm := clusterSpec.KubeControllerManager
 
-	k8sv148, err := util.ParseKubernetesVersion("v1.4.8")
-	if err != nil {
-		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
-	}
-
-	k8sv152, err := util.ParseKubernetesVersion("v1.5.2")
-	if err != nil {
-		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
-	}
-
 	kubernetesVersion, err := KubernetesVersion(clusterSpec)
 	if err != nil {
-		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
+		return fmt.Errorf("unable to parse kubernetesVersion %s", err)
 	}
 
-	// In 1.4.8+ and 1.5.2+ k8s added the capability to tune the duration upon which the volume attach detach
-	// component is called.
+	// Tune the duration upon which the volume attach detach component is called.
 	// See https://github.com/kubernetes/kubernetes/pull/39551
 	// TLDR; set this too low, and have a few EBS Volumes, and you will spam AWS api
 
-	// if 1.4.8+ and 1.5.2+
-	if (kubernetesVersion.GTE(*k8sv148) && kubernetesVersion.Minor == 4) || kubernetesVersion.GTE(*k8sv152) {
+	{
 		klog.V(4).Infof("Kubernetes version %q supports AttachDetachReconcileSyncPeriod; will configure", kubernetesVersion)
 		// If not set ... or set to 0s ... which is stupid
 		if kcm.AttachDetachReconcileSyncPeriod == nil ||
@@ -90,9 +78,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		} else if kcm.AttachDetachReconcileSyncPeriod.Duration < time.Second {
 			return fmt.Errorf("AttachDetachReconcileSyncPeriod cannot be set to less than 1 second")
 		}
-	} else {
-		klog.V(4).Infof("not setting AttachDetachReconcileSyncPeriod, k8s version is too low")
-		kcm.AttachDetachReconcileSyncPeriod = nil
 	}
 
 	kcm.ClusterName = b.Context.ClusterName
@@ -123,15 +108,8 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
 
-	if clusterSpec.ExternalCloudControllerManager != nil {
+	if featureflag.EnableExternalCloudController.Enabled() && clusterSpec.ExternalCloudControllerManager != nil {
 		kcm.CloudProvider = "external"
-	}
-
-	if kcm.Master == "" {
-		if b.Context.IsKubernetesLT("1.6") {
-			// As of 1.6, we find the master using kubeconfig
-			kcm.Master = "127.0.0.1:8080"
-		}
 	}
 
 	kcm.LogLevel = 2
@@ -172,9 +150,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 
 	if kcm.UseServiceAccountCredentials == nil {
-		if b.Context.IsKubernetesGTE("1.6") {
-			kcm.UseServiceAccountCredentials = fi.Bool(true)
-		}
+		kcm.UseServiceAccountCredentials = fi.Bool(true)
 	}
 
 	// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)

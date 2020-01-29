@@ -32,16 +32,16 @@ import (
 //go:generate fitask -type=RAMRole
 
 type RAMRole struct {
+	ID                       *string
 	Lifecycle                *fi.Lifecycle
 	Name                     *string
 	AssumeRolePolicyDocument *string
-	RAMRoleId                *string
 }
 
 var _ fi.CompareWithID = &RAMRole{}
 
 func (r *RAMRole) CompareWithID() *string {
-	return r.Name
+	return r.ID
 }
 
 func compactPolicy(s string) string {
@@ -77,13 +77,13 @@ func (r *RAMRole) Find(c *fi.Context) (*RAMRole, error) {
 	klog.V(2).Infof("found matching RamRole with name: %q", *r.Name)
 	actual := &RAMRole{
 		Name:                     fi.String(role.RoleName),
-		RAMRoleId:                fi.String(role.RoleId),
+		ID:                       fi.String(role.RoleId),
 		AssumeRolePolicyDocument: fi.String(compactPolicy(role.AssumeRolePolicyDocument)),
 	}
 
 	// Ignore "system" fields
 	actual.Lifecycle = r.Lifecycle
-	r.RAMRoleId = actual.RAMRoleId
+	r.ID = actual.ID
 
 	return actual, nil
 }
@@ -118,7 +118,7 @@ func (_ *RAMRole) RenderALI(t *aliup.ALIAPITarget, a, e, changes *RAMRole) error
 			return fmt.Errorf("error creating RAMRole: %v", err)
 		}
 
-		e.RAMRoleId = fi.String(roleResponse.Role.RoleId)
+		e.ID = fi.String(roleResponse.Role.RoleId)
 	}
 
 	return nil

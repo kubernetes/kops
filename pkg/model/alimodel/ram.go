@@ -52,8 +52,6 @@ type AssumeRolePolicyPrincpal struct {
 var _ fi.ModelBuilder = &RAMModelBuilder{}
 
 func (b *RAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	rolePolicyDocument := b.CreateRolePolicyDocument()
-	policyDocument := b.CreatePolicyDocument()
 	// Collect the roles in use
 	var roles []kops.InstanceGroupRole
 	for _, ig := range b.InstanceGroups {
@@ -70,36 +68,53 @@ func (b *RAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate RAM objects etc for each role
 	for _, role := range roles {
-		name := b.GetNameForRAM(role)
-
-		var ramRole *alitasks.RAMRole
-		{
-			ramRole = &alitasks.RAMRole{
-				Name:                     s(name),
-				Lifecycle:                b.Lifecycle,
-				AssumeRolePolicyDocument: s(rolePolicyDocument),
-			}
-			c.AddTask(ramRole)
-		}
-
-		var ramPolicy *alitasks.RAMPolicy
-		{
-			policyType := PolicyType
-			ramPolicy = &alitasks.RAMPolicy{
-				Name:           s(name),
-				Lifecycle:      b.Lifecycle,
-				PolicyDocument: s(policyDocument),
-				RamRole:        ramRole,
-				PolicyType:     s(policyType),
-			}
-			c.AddTask(ramPolicy)
+		ramName := b.GetNameForRAM(role)
+		err := b.buildRAMTasks(role, ramName, c, false)
+		if err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (b *RAMModelBuilder) CreateRolePolicyDocument() string {
+func (b *RAMModelBuilder) buildRAMTasks(igRole kops.InstanceGroupRole, ramName string, c *fi.ModelBuilderContext, shared bool) error {
+	var ramRole *alitasks.RAMRole
+	{
+		assumeRolePolicyDocument := b.CreateAssumeRolePolicyDocument()
+		ramRole = &alitasks.RAMRole{
+			Name:                     s(ramName),
+			Lifecycle:                b.Lifecycle,
+			AssumeRolePolicyDocument: s(assumeRolePolicyDocument),
+		}
+		c.AddTask(ramRole)
+	}
+
+	{
+		policyDocument := &PolicyResource{
+			Builder: &PolicyBuilder{
+				Cluster: b.Cluster,
+				Role:    igRole,
+				Region:  b.Region,
+			},
+		}
+
+		// policyDocument := b.CreatePolicyDocument()
+		policyType := PolicyType
+		ramPolicy := &alitasks.RAMPolicy{
+			Name:           s(ramName),
+			Lifecycle:      b.Lifecycle,
+			PolicyDocument: policyDocument,
+			RamRole:        ramRole,
+			PolicyType:     s(policyType),
+		}
+		c.AddTask(ramPolicy)
+	}
+
+	return nil
+}
+
+func (b *RAMModelBuilder) CreateAssumeRolePolicyDocument() string {
 	princpal := AssumeRolePolicyPrincpal{Service: []string{"ecs.aliyuncs.com"}}
 
 	policydocument := AssumeRolePolicyDocument{

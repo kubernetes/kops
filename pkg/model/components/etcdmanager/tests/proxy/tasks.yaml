@@ -98,7 +98,7 @@ Contents:
           value: http://proxy.example.com
         - name: no_proxy
           value: noproxy.example.com
-        image: kopeio/etcd-manager:3.0.20191025
+        image: kopeio/etcd-manager:3.0.20200116
         name: etcd-manager
         resources:
           requests:
@@ -109,10 +109,10 @@ Contents:
         volumeMounts:
         - mountPath: /rootfs
           name: rootfs
-        - mountPath: /etc/hosts
-          name: hosts
         - mountPath: /etc/kubernetes/pki/etcd-manager
           name: pki
+        - mountPath: /etc/hosts
+          name: hosts
         - mountPath: /var/log/etcd.log
           name: varlogetcd
       hostNetwork: true
@@ -127,13 +127,13 @@ Contents:
           type: Directory
         name: rootfs
       - hostPath:
-          path: /etc/hosts
-          type: File
-        name: hosts
-      - hostPath:
           path: /etc/kubernetes/pki/etcd-manager-events
           type: DirectoryOrCreate
         name: pki
+      - hostPath:
+          path: /etc/hosts
+          type: File
+        name: hosts
       - hostPath:
           path: /var/log/etcd-events.log
           type: FileOrCreate
@@ -178,7 +178,7 @@ Contents:
           value: http://proxy.example.com
         - name: no_proxy
           value: noproxy.example.com
-        image: kopeio/etcd-manager:3.0.20191025
+        image: kopeio/etcd-manager:3.0.20200116
         name: etcd-manager
         resources:
           requests:
@@ -189,10 +189,10 @@ Contents:
         volumeMounts:
         - mountPath: /rootfs
           name: rootfs
-        - mountPath: /etc/hosts
-          name: hosts
         - mountPath: /etc/kubernetes/pki/etcd-manager
           name: pki
+        - mountPath: /etc/hosts
+          name: hosts
         - mountPath: /var/log/etcd.log
           name: varlogetcd
       hostNetwork: true
@@ -207,13 +207,13 @@ Contents:
           type: Directory
         name: rootfs
       - hostPath:
-          path: /etc/hosts
-          type: File
-        name: hosts
-      - hostPath:
           path: /etc/kubernetes/pki/etcd-manager-main
           type: DirectoryOrCreate
         name: pki
+      - hostPath:
+          path: /etc/hosts
+          type: File
+        name: hosts
       - hostPath:
           path: /var/log/etcd.log
           type: FileOrCreate

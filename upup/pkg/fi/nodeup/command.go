@@ -228,6 +228,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.UpdateServiceBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.VolumesBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.ContainerdBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
@@ -253,7 +254,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	} else {
 		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
 	}
-	if c.cluster.Spec.Networking.Calico != nil || c.cluster.Spec.Networking.Cilium != nil {
+	if c.cluster.Spec.Networking.Calico != nil {
 		loader.Builders = append(loader.Builders, &model.EtcdTLSBuilder{NodeupModelContext: modelContext})
 	}
 
@@ -297,14 +298,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
+			Runtime: c.cluster.Spec.ContainerRuntime,
 		}
 	}
-	if c.config.ProtokubeImage != nil {
-		taskMap["LoadImage.protokube"] = &nodetasks.LoadImageTask{
-			Sources: c.config.ProtokubeImage.Sources,
-			Hash:    c.config.ProtokubeImage.Hash,
-		}
-	}
+	// Protokube load image task is in ProtokubeBuilder
 
 	var cloud fi.Cloud
 	var keyStore fi.Keystore

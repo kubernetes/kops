@@ -159,3 +159,16 @@ $ terraform apply
 ```
 
 You should still run `kops delete cluster ${CLUSTER_NAME}`, to remove the kops cluster specification and any dynamically created Kubernetes resources (ELBs or volumes), but under this workaround also to remove the primary ELB volumes from the `proto` phase.
+
+#### Terraform JSON output
+
+With terraform 0.12 JSON is now officially supported as configuration language. To enable JSON output instead of HCLv1 output you need to enable it through a feature flag.
+```
+export KOPS_FEATURE_FLAGS=TerraformJSON
+kops update cluster .....
+```
+
+This is an alternative to of using terraforms own configuration syntax HCL. Be sure to delete the existing kubernetes.tf file. Terraform will otherwise use both and then complain. 
+
+Kops will require terraform 0.12 for JSON configuration. Inofficially (partially) it was also supported with terraform 0.11, so you can try and remove the `required_version` in `kubernetes.tf.json`. 
+

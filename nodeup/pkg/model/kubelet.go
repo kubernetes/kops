@@ -226,17 +226,23 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
 		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--cni-bin-dir` also
-		if b.IsKubernetesGTE("1.9") {
-			// Flag renamed in #53564
-			flags += " --cni-bin-dir=" + b.CNIBinDir()
-		} else {
-			flags += " --network-plugin-dir=" + b.CNIBinDir()
-		}
+		flags += " --cni-bin-dir=" + b.CNIBinDir()
 	}
 
 	if b.usesContainerizedMounter() {
 		// We don't want to expose this in the model while it is experimental, but it is needed on COS
 		flags += " --experimental-mounter-path=" + path.Join(containerizedMounterHome, "mounter")
+	}
+
+	// Add container runtime flags
+	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+		flags += " --container-runtime=remote"
+		flags += " --runtime-request-timeout=15m"
+		if b.Cluster.Spec.Containerd == nil || b.Cluster.Spec.Containerd.Address == nil {
+			flags += " --container-runtime-endpoint=unix:///run/containerd/containerd.sock"
+		} else {
+			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
+		}
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
@@ -259,7 +265,14 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Kubelet Server")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
-	manifest.Set("Unit", "After", "docker.service")
+	switch b.Cluster.Spec.ContainerRuntime {
+	case "docker":
+		manifest.Set("Unit", "After", "docker.service")
+	case "containerd":
+		manifest.Set("Unit", "After", "containerd.service")
+	default:
+		klog.Warningf("unknown container runtime %q", b.Cluster.Spec.ContainerRuntime)
+	}
 
 	if b.Distribution == distros.DistributionCoreOS {
 		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
@@ -397,10 +410,6 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 	{
 		// @TODO Extract to common function?
 		assetName := "mounter"
-		if !b.IsKubernetesGTE("1.9") {
-			// legacy name (and stored in kubernetes-manifests.tar.gz)
-			assetName = "gci-mounter"
-		}
 		assetPath := ""
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
@@ -554,8 +563,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		reflectutils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
-	// Use --register-with-taints for k8s 1.6 and on
-	if b.Cluster.IsKubernetesGTE("1.6") {
+	// Use --register-with-taints
+	{
 		c.Taints = append(c.Taints, b.InstanceGroup.Spec.Taints...)
 
 		if len(c.Taints) == 0 && isMaster {
@@ -564,10 +573,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		}
 
 		// Enable scheduling since it can be controlled via taints.
-		// For pre-1.6.0 clusters, this is handled by tainter.go
 		c.RegisterSchedulable = fi.Bool(true)
-	} else {
-		// For 1.5 and earlier, protokube will taint the master
 	}
 
 	if c.VolumePluginDirectory == "" {
@@ -587,6 +593,12 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		default:
 			c.VolumePluginDirectory = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 		}
+	}
+
+	// In certain configurations systemd-resolved will put the loopback address 127.0.0.53 as a nameserver into /etc/resolv.conf
+	// https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
+	if b.Distribution == distros.DistributionBionic && c.ResolverConfig == nil {
+		c.ResolverConfig = s("/run/systemd/resolve/resolv.conf")
 	}
 
 	// As of 1.16 we can no longer set critical labels.

@@ -218,10 +218,9 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 
 func TestBuildTags_KubernetesVersions(t *testing.T) {
 	grid := map[string]string{
-		"1.3.7":         "_k8s_1_3",
-		"v1.4.0-beta.8": "_k8s_1_4",
-		"1.5.0":         "_k8s_1_5",
-		"https://storage.googleapis.com/kubernetes-release-dev/ci/v1.4.0-alpha.2.677+ea69570f61af8e/": "_k8s_1_4",
+		"v1.14.0-beta.8": "_k8s_1_6",
+		"1.15.0":         "_k8s_1_6",
+		"https://storage.googleapis.com/kubernetes-release-dev/ci/v1.14.0-alpha.2.677+ea69570f61af8e/": "_k8s_1_6",
 	}
 	for version, tag := range grid {
 		c := buildCluster(ClusterParams{KubernetesVersion: version})

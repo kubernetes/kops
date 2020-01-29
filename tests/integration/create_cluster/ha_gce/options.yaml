@@ -8,5 +8,5 @@ MasterZones:
 - us-test1-b
 - us-test1-c
 Cloud: gce
-KubernetesVersion: v1.8.0-beta.1
+KubernetesVersion: v1.15.6-beta.1
 Project: testproject

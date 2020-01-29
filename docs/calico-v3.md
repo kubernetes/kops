@@ -1,8 +1,26 @@
+# Calico
+[Calico](https://docs.projectcalico.org/latest/introduction/) is an open source networking and
+network security solution for containers, virtual machines, and native host-based workloads.
+
+Calico combines flexible networking capabilities with run-anywhere security enforcement to provide
+a solution with native Linux kernel performance and true cloud-native scalability. Calico provides
+developers and cluster operators with a consistent experience and set of capabilities whether
+running in public cloud or on-prem, on a single node or across a multi-thousand node cluster.
+
+See [Calico for networking and network policy](networking.md#calico-example-for-cni-and-network-policy) for help configuring kops with Calico.
+
+For more general information on options available with Calico see the official [Calico docs](https://docs.projectcalico.org/latest/introduction/):
+* See [Calico Network Policy](https://docs.projectcalico.org/latest/security/calico-network-policy)
+  for details on the additional features not available with Kubernetes Network Policy.
+* See [Determining best Calico networking option](https://docs.projectcalico.org/latest/networking/determine-best-networking)
+  for help with the network options available with Calico.
+
 # Calico Version 3
 In early 2018 Version 3 of Calico was released, it included a reworked data
-model and with that a switch from the etcd v2 to v3 API. This document covers
+model and with that a switch from the etcd v2 to v3 API. This section covers
 the requirements, upgrade process, and configuration to install
-Calico Version 3.
+Calico Version 3. By default new Kops installations configured to use Calico
+will install v3.
 
 ## Requirements
 
@@ -45,7 +63,7 @@ a v3 version. Feel free to change to a different v3 version of etcd.
 
 ## Upgrading an existing cluster
 Assuming your cluster meets the requirements it is possible to upgrade
-your Calico Kops cluster.
+your Calico v2 Kops cluster to Calico v3.
 
 A few notes about the upgrade:
 

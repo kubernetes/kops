@@ -88,7 +88,7 @@ func (d Distribution) IsDebianFamily() bool {
 		return true
 	case DistributionXenial, DistributionBionic:
 		return true
-	case DistributionCentos7, DistributionRhel7:
+	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8:
 		return false
 	case DistributionCoreOS, DistributionFlatcar, DistributionContainerOS:
 		return false

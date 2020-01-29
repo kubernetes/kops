@@ -19,6 +19,7 @@ package v1alpha2
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // +genclient
@@ -56,6 +57,8 @@ type ClusterSpec struct {
 	CloudProvider string `json:"cloudProvider,omitempty"`
 	// GossipConfig for the cluster assuming the use of gossip DNS
 	GossipConfig *GossipConfig `json:"gossipConfig,omitempty"`
+	// Container runtime to use for Kubernetes
+	ContainerRuntime string `json:"containerRuntime,omitempty"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
@@ -115,7 +118,7 @@ type ClusterSpec struct {
 	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
 	// SSHKeyName specifies a preexisting SSH key to use
-	SSHKeyName string `json:"sshKeyName,omitempty"`
+	SSHKeyName *string `json:"sshKeyName,omitempty"`
 	// KubernetesAPIAccess determines the permitted access to the API endpoints (master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
@@ -139,6 +142,7 @@ type ClusterSpec struct {
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 	// Component configurations
+	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
 	Docker                         *DockerConfig                 `json:"docker,omitempty"`
 	KubeDNS                        *KubeDNSConfig                `json:"kubeDNS,omitempty"`
 	KubeAPIServer                  *KubeAPIServerConfig          `json:"kubeAPIServer,omitempty"`
@@ -177,6 +181,12 @@ type ClusterSpec struct {
 	// UseHostCertificates will mount /etc/ssl/certs to inside needed containers.
 	// This is needed if some APIs do have self-signed certs
 	UseHostCertificates *bool `json:"useHostCertificates,omitempty"`
+	// SysctlParameters will configure kernel parameters using sysctl(8). When
+	// specified, each parameter must follow the form variable=value, the way
+	// it would appear in sysctl.conf.
+	SysctlParameters []string `json:"sysctlParameters,omitempty"`
+	// RollingUpdate defines the default rolling-update settings for instance groups
+	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -543,4 +553,20 @@ type DNSControllerGossipConfig struct {
 	Secret    *string                    `json:"secret,omitempty"`
 	Secondary *DNSControllerGossipConfig `json:"secondary,omitempty"`
 	Seed      *string                    `json:"seed,omitempty"`
+}
+
+type RollingUpdate struct {
+	// MaxUnavailable is the maximum number of nodes that can be unavailable during the update.
+	// The value can be an absolute number (for example 5) or a percentage of desired
+	// nodes (for example 10%).
+	// The absolute number is calculated from a percentage by rounding down.
+	// A value of 0 disables rolling updates.
+	// Defaults to 1.
+	// Example: when this is set to 30%, the InstanceGroup can be scaled
+	// down to 70% of desired nodes immediately when the rolling update
+	// starts. Once new nodes are ready, more old nodes can be drained,
+	// ensuring that the total number of nodes available at all times
+	// during the update is at least 70% of desired nodes.
+	// +optional
+	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty"`
 }

@@ -9,6 +9,7 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
+  containerRuntime: docker
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a

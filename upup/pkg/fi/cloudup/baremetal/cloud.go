@@ -42,6 +42,10 @@ func (c *Cloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderBareMetal
 }
 
+func (c *Cloud) Region() string {
+	return ""
+}
+
 func (c *Cloud) DNS() (dnsprovider.Interface, error) {
 	return c.dns, nil
 }

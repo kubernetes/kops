@@ -99,9 +99,6 @@ type OpenstackCloud interface {
 	UseOctavia() bool
 	UseZones([]string)
 
-	// Region returns the region which cloud will run on
-	Region() string
-
 	// GetInstance will return a openstack server provided its ID
 	GetInstance(id string) (*servers.Server, error)
 
@@ -437,7 +434,7 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 				Name: fi.StringValue(spec.CloudConfig.Openstack.Loadbalancer.FloatingNetwork),
 			})
 			if err != nil || len(lbNet) != 1 {
-				return c, fmt.Errorf("could not establish floating network id.")
+				return c, fmt.Errorf("could not establish floating network id")
 			}
 			spec.CloudConfig.Openstack.Loadbalancer.FloatingNetworkID = fi.String(lbNet[0].ID)
 		}
@@ -518,7 +515,7 @@ func (c *openstackCloud) ProviderID() kops.CloudProviderID {
 func (c *openstackCloud) DNS() (dnsprovider.Interface, error) {
 	provider, err := dnsprovider.GetDnsProvider(designate.ProviderName, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Error building (Designate) DNS provider: %v", err)
+		return nil, fmt.Errorf("error building (Designate) DNS provider: %v", err)
 	}
 	return provider, nil
 }
@@ -529,7 +526,7 @@ func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	// Find subnets in the network
 	{
 		if len(c.zones) == 0 {
-			return nil, fmt.Errorf("Could not initialize zones")
+			return nil, fmt.Errorf("could not initialize zones")
 		}
 		klog.V(2).Infof("Calling ListSubnets for subnets in Network %q", id)
 		opt := subnets.ListOpts{
@@ -560,7 +557,7 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 	for _, id := range grp.Members {
 		err := c.DeleteInstanceWithID(id)
 		if err != nil {
-			return fmt.Errorf("Could not delete instance %q: %v", id, err)
+			return fmt.Errorf("could not delete instance %q: %v", id, err)
 		}
 	}
 
@@ -573,14 +570,14 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 		if strings.Contains(port.Name, grp.Name) {
 			err := c.DeletePort(port.ID)
 			if err != nil {
-				return fmt.Errorf("Could not delete port %q: %v", port.ID, err)
+				return fmt.Errorf("could not delete port %q: %v", port.ID, err)
 			}
 		}
 	}
 
 	err = c.DeleteServerGroup(grp.ID)
 	if err != nil {
-		return fmt.Errorf("Could not server group %q: %v", grp.ID, err)
+		return fmt.Errorf("could not server group %q: %v", grp.ID, err)
 	}
 
 	return nil

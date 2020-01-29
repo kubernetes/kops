@@ -29,7 +29,7 @@ import (
 	"github.com/denverdino/aliyungo/oss"
 	"github.com/gophercloud/gophercloud"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
@@ -100,22 +100,22 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 				httpURL := "http://169.254.169.254/computeMetadata/v1/instance/attributes/" + u.Path
 				httpHeaders := make(map[string]string)
 				httpHeaders["Metadata-Flavor"] = "Google"
-				return c.readHttpLocation(httpURL, httpHeaders, opts)
+				return c.readHTTPLocation(httpURL, httpHeaders, opts)
 			case "aws":
 				httpURL := "http://169.254.169.254/latest/" + u.Path
-				return c.readHttpLocation(httpURL, nil, opts)
+				return c.readHTTPLocation(httpURL, nil, opts)
 			case "digitalocean":
 				httpURL := "http://169.254.169.254/metadata/v1" + u.Path
-				return c.readHttpLocation(httpURL, nil, opts)
+				return c.readHTTPLocation(httpURL, nil, opts)
 			case "alicloud":
 				httpURL := "http://100.100.100.200/latest/meta-data/" + u.Path
-				return c.readHttpLocation(httpURL, nil, opts)
+				return c.readHTTPLocation(httpURL, nil, opts)
 			default:
 				return nil, fmt.Errorf("unknown metadata type: %q in %q", u.Host, location)
 			}
 
 		case "http", "https":
-			return c.readHttpLocation(location, nil, opts)
+			return c.readHTTPLocation(location, nil, opts)
 		}
 	}
 
@@ -169,10 +169,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
 }
 
-// readHttpLocation reads an http (or https) url.
+// readHTTPLocation reads an http (or https) url.
 // It returns the contents, or an error on any non-200 response.  On a 404, it will return os.ErrNotExist
 // It will retry a few times on a 500 class error
-func (c *VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]string, opts vfsOptions) ([]byte, error) {
+func (c *VFSContext) readHTTPLocation(httpURL string, httpHeaders map[string]string, opts vfsOptions) ([]byte, error) {
 	var body []byte
 
 	done, err := RetryWithBackoff(opts.backoff, func() (bool, error) {
@@ -361,12 +361,8 @@ func (c *VFSContext) getGCSClient() (*storage.Service, error) {
 	// TODO: Should we fall back to read-only?
 	scope := storage.DevstorageReadWriteScope
 
-	httpClient, err := google.DefaultClient(context.Background(), scope)
-	if err != nil {
-		return nil, fmt.Errorf("error building GCS HTTP client: %v", err)
-	}
-
-	gcsClient, err := storage.New(httpClient)
+	ctx := context.Background()
+	gcsClient, err := storage.NewService(ctx, option.WithScopes(scope))
 	if err != nil {
 		return nil, fmt.Errorf("error building GCS client: %v", err)
 	}

@@ -37,8 +37,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
-	"k8s.io/kubernetes/pkg/kubectl/util/templates"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 )
 
 var (
@@ -219,7 +219,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	for _, override := range c.LifecycleOverrides {
 		values := strings.Split(override, "=")
 		if len(values) != 2 {
-			return results, fmt.Errorf("Incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
+			return results, fmt.Errorf("incorrect syntax for lifecyle-overrides, correct syntax is TaskName=lifecycleName, override provided: %q", override)
 		}
 
 		taskName := values[0]
@@ -368,7 +368,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 				}
 			}
 			fmt.Fprintf(sb, " * the admin user is specific to Debian. If not using Debian please use the appropriate user based on your OS.\n")
-			fmt.Fprintf(sb, " * read about installing addons at: https://github.com/kubernetes/kops/blob/master/docs/operations/addons.md.\n")
+			fmt.Fprintf(sb, " * read about installing addons at: https://kops.sigs.k8s.io/operations/addons.\n")
 			fmt.Fprintf(sb, "\n")
 		}
 

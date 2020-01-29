@@ -222,9 +222,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
-	if strings.HasPrefix(versionWithoutV, "v") {
-		versionWithoutV = versionWithoutV[1:]
-	}
+	versionWithoutV = strings.TrimPrefix(versionWithoutV, "v")
 	if cluster.Spec.KubernetesVersion != versionWithoutV {
 		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
@@ -300,6 +298,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &nodeauthorizer.OptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{OptionsContext: optionsContext})
+			codeModels = append(codeModels, &components.ContainerdOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeDnsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})

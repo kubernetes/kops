@@ -20,8 +20,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/user"
-	"path/filepath"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -95,35 +93,40 @@ func GetConfigWithContext(context string) (*rest.Config, error) {
 	return cfg, nil
 }
 
+// loadInClusterConfig is a function used to load the in-cluster
+// Kubernetes client config. This variable makes is possible to
+// test the precedence of loading the config.
+var loadInClusterConfig = rest.InClusterConfig
+
 // loadConfig loads a REST Config as per the rules specified in GetConfig
 func loadConfig(context string) (*rest.Config, error) {
 
 	// If a flag is specified with the config location, use that
 	if len(kubeconfig) > 0 {
-		return loadConfigWithContext(apiServerURL, kubeconfig, context)
+		return loadConfigWithContext(apiServerURL, &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig}, context)
 	}
-	// If an env variable is specified with the config location, use that
-	if len(os.Getenv("KUBECONFIG")) > 0 {
-		return loadConfigWithContext(apiServerURL, os.Getenv("KUBECONFIG"), context)
-	}
-	// If no explicit location, try the in-cluster config
-	if c, err := rest.InClusterConfig(); err == nil {
-		return c, nil
-	}
-	// If no in-cluster config, try the default location in the user's home directory
-	if usr, err := user.Current(); err == nil {
-		if c, err := loadConfigWithContext(apiServerURL, filepath.Join(usr.HomeDir, ".kube", "config"),
-			context); err == nil {
+
+	// If the recommended kubeconfig env variable is not specified,
+	// try the in-cluster config.
+	kubeconfigPath := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
+	if len(kubeconfigPath) == 0 {
+		if c, err := loadInClusterConfig(); err == nil {
 			return c, nil
 		}
+	}
+
+	// If the recommended kubeconfig env variable is set, or there
+	// is no in-cluster config, try the default recommended locations.
+	if c, err := loadConfigWithContext(apiServerURL, clientcmd.NewDefaultClientConfigLoadingRules(), context); err == nil {
+		return c, nil
 	}
 
 	return nil, fmt.Errorf("could not locate a kubeconfig")
 }
 
-func loadConfigWithContext(apiServerURL, kubeconfig, context string) (*rest.Config, error) {
+func loadConfigWithContext(apiServerURL string, loader clientcmd.ClientConfigLoader, context string) (*rest.Config, error) {
 	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
+		loader,
 		&clientcmd.ConfigOverrides{
 			ClusterInfo: clientcmdapi.Cluster{
 				Server: apiServerURL,

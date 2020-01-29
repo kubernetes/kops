@@ -74,8 +74,8 @@ CentOS7 support is still experimental, but should work. Please report any issues
 The following steps are known:
 
 * You must accept the agreement at http://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce
-* Specify the AMI by id (there are no tags): us-east-1: `ami-6d1c2007`
-* You may find images from the [CentOS AWS page](https://wiki.centos.org/Cloud/AWS)
+* Specify the AMI by id (there are no tags): us-east-1: `ami-01ed306a12b7d1c96`
+* You may find public images from the [CentOS AWS page](https://wiki.centos.org/Cloud/AWS) but the table may not be up to date.
 * You can also query by product-code: `aws ec2 describe-images --region=us-west-2 --filters Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce Name=architecture,Values=x86_64 'Name=name,Values=CentOS*' --query 'sort_by(Images,&Name)'`
 
 Be aware of the following limitations:

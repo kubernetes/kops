@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "apiserver.go",
+        "containerd.go",
         "context.go",
         "defaults.go",
         "docker.go",
@@ -21,6 +22,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
         "//pkg/assets:go_default_library",
+        "//pkg/featureflag:go_default_library",
         "//pkg/k8sversion:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
@@ -37,6 +39,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "containerd_test.go",
         "image_test.go",
         "kubecontrollermanager_test.go",
         "kubelet_test.go",

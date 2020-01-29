@@ -16,6 +16,7 @@ kops is Kubernetes ops.
 ### Options
 
 ```
+      --add_dir_header                   If true, adds the file directory to the header
       --alsologtostderr                  log to standard error as well as files
       --config string                    yaml config file (default is $HOME/.kops.yaml)
   -h, --help                             help for kops

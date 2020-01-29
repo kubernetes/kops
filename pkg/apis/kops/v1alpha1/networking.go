@@ -16,6 +16,8 @@ limitations under the License.
 
 package v1alpha1
 
+import "k8s.io/apimachinery/pkg/api/resource"
+
 // NetworkingSpec allows selection and configuration of a networking plugin
 type NetworkingSpec struct {
 	Classic    *ClassicNetworkingSpec    `json:"classic,omitempty"`
@@ -61,10 +63,31 @@ type KopeioNetworkingSpec struct {
 
 // WeaveNetworkingSpec declares that we want Weave networking
 type WeaveNetworkingSpec struct {
-	MTU          *int32 `json:"mtu,omitempty"`
-	ConnLimit    *int32 `json:"connLimit,omitempty"`
-	NoMasqLocal  *int32 `json:"noMasqLocal,omitempty"`
+	MTU         *int32 `json:"mtu,omitempty"`
+	ConnLimit   *int32 `json:"connLimit,omitempty"`
+	NoMasqLocal *int32 `json:"noMasqLocal,omitempty"`
+
+	// MemoryRequest memory request of weave container. Default 200Mi
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest CPU request of weave container. Default 50m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// MemoryLimit memory limit of weave container. Default 200Mi
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
+	// CPULimit CPU limit of weave container.
+	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
+	// NetExtraArgs are extra arguments that are passed to weave-kube.
 	NetExtraArgs string `json:"netExtraArgs,omitempty"`
+
+	// NPCMemoryRequest memory request of weave npc container. Default 200Mi
+	NPCMemoryRequest *resource.Quantity `json:"npcMemoryRequest,omitempty"`
+	// NPCCPURequest CPU request of weave npc container. Default 50m
+	NPCCPURequest *resource.Quantity `json:"npcCPURequest,omitempty"`
+	// NPCMemoryLimit memory limit of weave npc container. Default 200Mi
+	NPCMemoryLimit *resource.Quantity `json:"npcMemoryLimit,omitempty"`
+	// NPCCPULimit CPU limit of weave npc container
+	NPCCPULimit *resource.Quantity `json:"npcCPULimit,omitempty"`
+	// NPCExtraArgs are extra arguments that are passed to weave-npc.
+	NPCExtraArgs string `json:"npcExtraArgs,omitempty"`
 }
 
 // FlannelNetworkingSpec declares that we want Flannel networking

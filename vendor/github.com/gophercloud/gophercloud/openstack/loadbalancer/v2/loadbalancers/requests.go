@@ -28,7 +28,7 @@ type ListOpts struct {
 	ID                 string   `q:"id"`
 	OperatingStatus    string   `q:"operating_status"`
 	Name               string   `q:"name"`
-	Flavor             string   `q:"flavor"`
+	FlavorID           string   `q:"flavor_id"`
 	Provider           string   `q:"provider"`
 	Limit              int      `q:"limit"`
 	Marker             string   `q:"marker"`
@@ -81,10 +81,16 @@ type CreateOpts struct {
 	// Human-readable description for the Loadbalancer.
 	Description string `json:"description,omitempty"`
 
+	// Providing a neutron port ID for the vip_port_id tells Octavia to use this
+	// port for the VIP. If the port has more than one subnet you must specify
+	// either the vip_subnet_id or vip_address to clarify which address should
+	// be used for the VIP.
+	VipPortID string `json:"vip_port_id,omitempty"`
+
 	// The subnet on which to allocate the Loadbalancer's address. A project can
 	// only create Loadbalancers on networks authorized by policy (e.g. networks
 	// that belong to them or networks that are shared).
-	VipSubnetID string `json:"vip_subnet_id" required:"true"`
+	VipSubnetID string `json:"vip_subnet_id,omitempty"`
 
 	// The network on which to allocate the Loadbalancer's address. A tenant can
 	// only create Loadbalancers on networks authorized by policy (e.g. networks
@@ -103,7 +109,7 @@ type CreateOpts struct {
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
 
 	// The UUID of a flavor.
-	Flavor string `json:"flavor,omitempty"`
+	FlavorID string `json:"flavor_id,omitempty"`
 
 	// The name of the provider.
 	Provider string `json:"provider,omitempty"`

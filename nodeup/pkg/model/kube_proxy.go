@@ -38,7 +38,7 @@ type KubeProxyBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
+var _ fi.ModelBuilder = &KubeProxyBuilder{}
 
 // Build is responsible for building the kube-proxy manifest
 // @TODO we should probably change this to a daemonset in the future and follow the kubeadm path
@@ -114,11 +114,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			// As a special case, if this is the master, we point kube-proxy to the local IP
 			// This prevents a circular dependency where kube-proxy can't come up until DNS comes up,
 			// which would mean that DNS can't rely on API to come up
-			if b.IsKubernetesGTE("1.6") {
-				c.Master = "https://127.0.0.1"
-			} else {
-				c.Master = "http://127.0.0.1:8080"
-			}
+			c.Master = "https://127.0.0.1"
 		} else {
 			c.Master = "https://" + b.Cluster.Spec.MasterInternalName
 		}
@@ -129,7 +125,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 
 	cpuRequest, err := resource.ParseQuantity(c.CPURequest)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing CPURequest=%q", c.CPURequest)
+		return nil, fmt.Errorf("error parsing CPURequest=%q", c.CPURequest)
 	}
 
 	resourceRequests["cpu"] = cpuRequest
@@ -137,7 +133,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if c.CPULimit != "" {
 		cpuLimit, err := resource.ParseQuantity(c.CPULimit)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing CPULimit=%q", c.CPULimit)
+			return nil, fmt.Errorf("error parsing CPULimit=%q", c.CPULimit)
 		}
 		resourceLimits["cpu"] = cpuLimit
 	}
@@ -145,7 +141,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if c.MemoryRequest != "" {
 		memoryRequest, err := resource.ParseQuantity(c.MemoryRequest)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing MemoryRequest=%q", c.MemoryRequest)
+			return nil, fmt.Errorf("error parsing MemoryRequest=%q", c.MemoryRequest)
 		}
 		resourceRequests["memory"] = memoryRequest
 	}
@@ -153,7 +149,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if c.MemoryLimit != "" {
 		memoryLimit, err := resource.ParseQuantity(c.MemoryLimit)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing MemoryLimit=%q", c.MemoryLimit)
+			return nil, fmt.Errorf("error parsing MemoryLimit=%q", c.MemoryLimit)
 		}
 		resourceLimits["memory"] = memoryLimit
 	}
@@ -239,7 +235,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	// Mount the iptables lock file
-	if b.IsKubernetesGTE("1.9") {
+	{
 		addHostPathMapping(pod, container, "iptableslock", "/run/xtables.lock").ReadOnly = false
 
 		vol := pod.Spec.Volumes[len(pod.Spec.Volumes)-1]

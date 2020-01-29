@@ -149,11 +149,11 @@ func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 		}
 
 		if acl != nil {
-			gsAcl, ok := acl.(*GSAcl)
+			gsACL, ok := acl.(*GSAcl)
 			if !ok {
 				return true, fmt.Errorf("write to %s with ACL of unexpected type %T", p, acl)
 			}
-			obj.Acl = gsAcl.Acl
+			obj.Acl = gsACL.Acl
 		}
 
 		if _, err := data.Seek(0, 0); err != nil {

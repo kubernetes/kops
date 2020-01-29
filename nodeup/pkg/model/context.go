@@ -32,7 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/mount"
+	"k8s.io/utils/mount"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -173,12 +173,8 @@ func (c *NodeupModelContext) PathSrvSshproxy() string {
 
 // CNIBinDir returns the path for the CNI binaries
 func (c *NodeupModelContext) CNIBinDir() string {
-	switch c.Distribution {
-	case distros.DistributionContainerOS:
-		return "/home/kubernetes/bin/"
-	default:
-		return "/opt/cni/bin/"
-	}
+	// We used to map this on a per-distro basis, but this can require CNI manifests to be distro aware
+	return "/opt/cni/bin/"
 }
 
 // KubeletBootstrapKubeconfig is the path the bootstrap config file
@@ -239,12 +235,8 @@ func (c *NodeupModelContext) BuildKubeConfig(username string, ca, certificate, p
 	}
 
 	if c.IsMaster {
-		if c.IsKubernetesGTE("1.6") {
-			// @note: use https >= 1.6m even for local connections, so we can turn off the insecure port
-			cluster.Server = "https://127.0.0.1"
-		} else {
-			cluster.Server = "http://127.0.0.1:8080"
-		}
+		// @note: use https even for local connections, so we can turn off the insecure port
+		cluster.Server = "https://127.0.0.1"
 	} else {
 		cluster.Server = "https://" + c.Cluster.Spec.MasterInternalName
 	}
@@ -567,11 +559,11 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	}
 
 	if len(result.Reservations) != 1 {
-		return "", fmt.Errorf("Too many reservations returned for the single instance-id")
+		return "", fmt.Errorf("too many reservations returned for the single instance-id")
 	}
 
 	if len(result.Reservations[0].Instances) != 1 {
-		return "", fmt.Errorf("Too many instances returned for the single instance-id")
+		return "", fmt.Errorf("too many instances returned for the single instance-id")
 	}
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }

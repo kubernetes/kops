@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	math_rand "math/rand"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -157,51 +156,4 @@ func pseudoAtomicWrite(p string, b []byte, mode os.FileMode) error {
 
 		klog.Warningf("detected concurrent write to file %q, will retry", p)
 	}
-}
-
-func atomicWriteFile(filename string, data []byte, perm os.FileMode) error {
-	dir := filepath.Dir(filename)
-
-	tempFile, err := ioutil.TempFile(dir, ".tmp"+filepath.Base(filename))
-	if err != nil {
-		return fmt.Errorf("error creating temp file in %q: %v", dir, err)
-	}
-
-	mustClose := true
-	mustRemove := true
-
-	defer func() {
-		if mustClose {
-			if err := tempFile.Close(); err != nil {
-				klog.Warningf("error closing temp file: %v", err)
-			}
-		}
-
-		if mustRemove {
-			if err := os.Remove(tempFile.Name()); err != nil {
-				klog.Warningf("error removing temp file %q: %v", tempFile.Name(), err)
-			}
-		}
-	}()
-
-	if _, err := tempFile.Write(data); err != nil {
-		return fmt.Errorf("error writing temp file: %v", err)
-	}
-
-	if err := tempFile.Close(); err != nil {
-		return fmt.Errorf("error closing temp file: %v", err)
-	}
-
-	mustClose = false
-
-	if err := os.Chmod(tempFile.Name(), perm); err != nil {
-		return fmt.Errorf("error changing mode of temp file: %v", err)
-	}
-
-	if err := os.Rename(tempFile.Name(), filename); err != nil {
-		return fmt.Errorf("error moving temp file %q to %q: %v", tempFile.Name(), filename, err)
-	}
-
-	mustRemove = false
-	return nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"path"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -25,8 +26,16 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func TestProtokubeBuilder(t *testing.T) {
-	basedir := "tests/protokube/docker"
+func TestProtokubeBuilder_Docker(t *testing.T) {
+	runProtokubeBuilderTest(t, "docker")
+}
+
+func TestProtokubeBuilder_containerd(t *testing.T) {
+	runProtokubeBuilderTest(t, "containerd")
+}
+
+func runProtokubeBuilderTest(t *testing.T, key string) {
+	basedir := path.Join("tests/protokube/", key)
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),

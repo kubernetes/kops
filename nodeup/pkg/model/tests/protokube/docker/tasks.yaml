@@ -5,8 +5,10 @@ definition: |
   Documentation=https://github.com/kubernetes/kops
 
   [Service]
+  ExecStartPre=-/usr/bin/docker stop protokube
+  ExecStartPre=-/usr/bin/docker rm protokube
   ExecStartPre=/bin/true
-  ExecStart=/usr/bin/docker run -v /:/rootfs/ -v /var/run/dbus:/var/run/dbus -v /run/systemd:/run/systemd -v /usr/local/bin:/opt/kops/bin:ro --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kops/bin --net=host --pid=host --privileged --env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig  protokube:test /usr/bin/protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=true --dns-internal-suffix=.internal.minimal.example.com --dns=aws-route53 --initialize-rbac=true --manage-etcd=false --master=true --node-name=example-hostname --remove-dns-names=etcd-master-us-test-1a.internal.minimal.example.com,etcd-events-master-us-test-1a.internal.minimal.example.com --v=4
+  ExecStart=/usr/bin/docker run --net=host --pid=host --privileged --volume /:/rootfs/ --volume /var/run/dbus:/var/run/dbus --volume /run/systemd:/run/systemd --env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig --volume /usr/local/bin:/opt/kops/bin:ro --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kops/bin --name protokube protokube:test /usr/bin/protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=true --dns-internal-suffix=.internal.minimal.example.com --dns=aws-route53 --initialize-rbac=true --manage-etcd=false --master=true --node-name=example-hostname --remove-dns-names=etcd-master-us-test-1a.internal.minimal.example.com,etcd-events-master-us-test-1a.internal.minimal.example.com --v=4
   Restart=always
   RestartSec=2s
   StartLimitInterval=0

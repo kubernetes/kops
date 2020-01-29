@@ -35,7 +35,7 @@ Note: this is one of many examples on how to do scheduled snapshots.
 ## Restore using etcd-manager
 
 In case of a disaster situation with etcd (lost data, cluster issues etc.) it's
-possible to do a restore of the etcd cluster using `etcd-manager-ctl`. 
+possible to do a restore of the etcd cluster using `etcd-manager-ctl`.
 You can download the `etcd-manager-ctl` binary from the [etcd-manager repository](https://github.com/kopeio/etcd-manager/releases).
 It is not necessary to run `etcd-manager-ctl` in your cluster, as long as you have access to cluster state storage (like S3).
 
@@ -55,21 +55,44 @@ etcd-manager-ctl --backup-store=s3://my.clusters/test.my.clusters/backups/etcd/e
 Add a restore command for both clusters:
 
 ```
-etcd-manager-ctl --backup-store=s3://my.clusters/test.my.clusters/backups/etcd/main restore-backup [main backup file]
-etcd-manager-ctl --backup-store=s3://my.clusters/test.my.clusters/backups/etcd/events restore-backup [events backup file]
+etcd-manager-ctl --backup-store=s3://my.clusters/test.my.clusters/backups/etcd/main restore-backup [main backup dir]
+etcd-manager-ctl --backup-store=s3://my.clusters/test.my.clusters/backups/etcd/events restore-backup [events backup dir]
 ```
 
 Note that this does not start the restore immediately; you need to restart etcd on all masters.
 You can do this with a `docker stop` or `kill` on the etcd-manager containers on the masters (the container names start with `k8s_etcd-manager_etcd-manager`).
 The etcd-manager containers should restart automatically, and pick up the restore command. You also have the option to roll your masters quickly, but restarting the containers is preferred.
- 
-A new etcd cluster will be created and the backup will be 
-restored onto this new cluster. Please note that this process might take a short while, 
-depending on the size of your cluster. 
+
+A new etcd cluster will be created and the backup will be
+restored onto this new cluster. Please note that this process might take a short while,
+depending on the size of your cluster.
 
 You can follow the progress by reading the etcd logs (`/var/log/etcd(-events).log`)
 on the master that is the leader of the cluster (you can find this out by checking the etcd logs on all masters).
 Note that the leader might be different for the `main` and `events` clusters.
+
+After the restore, you will probably face an intermittent connection to apiserver.
+If you look at your kubernetes endpoint, you should have more address than masters. The restore bring back the address of the old masters and you should clean this up.
+
+To verify this, check the endpoints resource of the kubernetes apiserver, like this:
+```
+kubectl get endpoints/kubernetes -o yaml
+```
+
+If you see more address than masters, you will need to remove it manually inside the etcd.
+
+Check again (this time inside the etcd) if you have more IPs than masters at the `/registry/masterleases/` path, e.g.:
+```
+ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --cert=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --key=/etc/kubernetes/pki/kube-apiserver/etcd-client.key --endpoints=https://127.0.0.1:4001 get --prefix --keys-only /registry/masterleases
+```
+
+To restore the stability within cluster you should delete the old master records and keep only the running ones:
+```
+ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --cert=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --key=/etc/kubernetes/pki/kube-apiserver/etcd-client.key --endpoints=https://127.0.0.1:4001 del /registry/masterleases/<OLD-IP>
+```
+NOTE: You will need to run it multiple times for each old IP, regarding the size of your master pool.
+
+After that, you can check again the endpoint and everything should be fixed.
 
 After the restore is complete, api server should come back up, and you should have a working cluster.
 Note that the api server might be very busy for a while as it changes the cluster back to the state of the backup.

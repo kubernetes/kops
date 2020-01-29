@@ -89,7 +89,7 @@ Contents:
           --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
           --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
           > /tmp/pipe 2>&1
-        image: kopeio/etcd-manager:3.0.20191025
+        image: kopeio/etcd-manager:3.0.20200116
         name: etcd-manager
         resources:
           requests:
@@ -100,8 +100,6 @@ Contents:
         volumeMounts:
         - mountPath: /rootfs
           name: rootfs
-        - mountPath: /etc/hosts
-          name: hosts
         - mountPath: /etc/kubernetes/pki/etcd-manager
           name: pki
         - mountPath: /var/log/etcd.log
@@ -117,10 +115,6 @@ Contents:
           path: /
           type: Directory
         name: rootfs
-      - hostPath:
-          path: /etc/hosts
-          type: File
-        name: hosts
       - hostPath:
           path: /etc/kubernetes/pki/etcd-manager-events
           type: DirectoryOrCreate
@@ -160,7 +154,7 @@ Contents:
           --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
           --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
           > /tmp/pipe 2>&1
-        image: kopeio/etcd-manager:3.0.20191025
+        image: kopeio/etcd-manager:3.0.20200116
         name: etcd-manager
         resources:
           requests:
@@ -171,8 +165,6 @@ Contents:
         volumeMounts:
         - mountPath: /rootfs
           name: rootfs
-        - mountPath: /etc/hosts
-          name: hosts
         - mountPath: /etc/kubernetes/pki/etcd-manager
           name: pki
         - mountPath: /var/log/etcd.log
@@ -188,10 +180,6 @@ Contents:
           path: /
           type: Directory
         name: rootfs
-      - hostPath:
-          path: /etc/hosts
-          type: File
-        name: hosts
       - hostPath:
           path: /etc/kubernetes/pki/etcd-manager-main
           type: DirectoryOrCreate

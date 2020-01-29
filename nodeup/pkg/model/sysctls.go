@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -129,6 +130,30 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		"# Prevent docker from changing iptables: https://github.com/kubernetes/kubernetes/issues/40182",
 		"net.ipv4.ip_forward=1",
 		"")
+
+	if params := b.InstanceGroup.Spec.SysctlParameters; len(params) > 0 {
+		sysctls = append(sysctls,
+			"# Custom sysctl parameters from instance group spec",
+			"")
+		for _, param := range params {
+			if !strings.ContainsRune(param, '=') {
+				return fmt.Errorf("Invalid SysctlParameter: expected %q to contain '='", param)
+			}
+			sysctls = append(sysctls, param)
+		}
+	}
+
+	if params := b.Cluster.Spec.SysctlParameters; len(params) > 0 {
+		sysctls = append(sysctls,
+			"# Custom sysctl parameters from cluster spec",
+			"")
+		for _, param := range params {
+			if !strings.ContainsRune(param, '=') {
+				return fmt.Errorf("Invalid SysctlParameter: expected %q to contain '='", param)
+			}
+			sysctls = append(sysctls, param)
+		}
+	}
 
 	c.AddTask(&nodetasks.File{
 		Path:            "/etc/sysctl.d/99-k8s-general.conf",

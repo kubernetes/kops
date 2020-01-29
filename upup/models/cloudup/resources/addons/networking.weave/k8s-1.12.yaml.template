@@ -168,7 +168,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.5.2'
+          image: 'weaveworks/weave-kube:2.6.0'
           ports:
             - name: metrics
               containerPort: 6782
@@ -179,10 +179,13 @@ spec:
               port: 6784
           resources:
             requests:
-              cpu: 50m
-              memory: 200Mi
+              cpu: {{ or .Networking.Weave.CPURequest "50m" }}
+              memory: {{ or .Networking.Weave.MemoryRequest "200Mi" }}
             limits:
-              memory: 200Mi
+              {{- if .Networking.Weave.CPULimit }}
+              cpu: {{ .Networking.Weave.CPULimit }}
+              {{- end }}
+              memory: {{ or .Networking.Weave.MemoryLimit "200Mi" }}
           securityContext:
             privileged: true
           volumeMounts:
@@ -208,16 +211,23 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.5.2'
+            {{- if .Networking.Weave.NPCExtraArgs }}
+            - name: EXTRA_ARGS
+              value: "{{ .Networking.Weave.NPCExtraArgs }}"
+            {{- end }}
+          image: 'weaveworks/weave-npc:2.6.0'
           ports:
             - name: metrics
               containerPort: 6781
           resources:
             requests:
-              cpu: 50m
-              memory: 200Mi
+              cpu: {{ or .Networking.Weave.NPCCPURequest "50m" }}
+              memory: {{ or .Networking.Weave.NPCMemoryRequest "200Mi" }}
             limits:
-              memory: 200Mi
+              {{- if .Networking.Weave.NPCCPULimit }}
+              cpu: {{ .Networking.Weave.NPCCPULimit }}
+              {{- end }}
+              memory: {{ or .Networking.Weave.NPCMemoryLimit "200Mi" }}
           securityContext:
             privileged: true
           volumeMounts:

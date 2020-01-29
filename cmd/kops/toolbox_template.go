@@ -28,8 +28,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 	"k8s.io/helm/pkg/strvals"
-	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
-	"k8s.io/kubernetes/pkg/kubectl/util/templates"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/try"
@@ -111,7 +111,14 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 	if err != nil {
 		return err
 	}
-	context["clusterName"] = options.clusterName
+
+	// @step: set clusterName from template's values or cli flag
+	value, ok := context["clusterName"].(string)
+	if ok {
+		options.clusterName = value
+	} else {
+		context["clusterName"] = options.clusterName
+	}
 
 	// @check if we are just rendering the config value
 	if options.configValue != "" {
@@ -135,7 +142,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		templates = append(templates, list...)
 	}
 
-	snippets := make(map[string]string, 0)
+	snippets := make(map[string]string)
 	for _, x := range options.snippetsPath {
 		list, err := expandFiles(utils.ExpandPath(x))
 		if err != nil {
@@ -212,7 +219,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 
 // newTemplateContext is responsible for loading the --values and build a context for the template
 func newTemplateContext(files []string, values []string, stringValues []string) (map[string]interface{}, error) {
-	context := make(map[string]interface{}, 0)
+	context := make(map[string]interface{})
 
 	for _, x := range files {
 		list, err := expandFiles(utils.ExpandPath(x))
@@ -225,7 +232,7 @@ func newTemplateContext(files []string, values []string, stringValues []string) 
 				return nil, fmt.Errorf("unable to configuration file: %s, error: %s", j, err)
 			}
 
-			ctx := make(map[string]interface{}, 0)
+			ctx := make(map[string]interface{})
 			if err := utils.YamlUnmarshal(content, &ctx); err != nil {
 				return nil, fmt.Errorf("unable decode the configuration file: %s, error: %v", j, err)
 			}

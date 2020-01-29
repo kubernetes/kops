@@ -232,7 +232,11 @@ crossbuild-nodeup: ${DIST}/linux/amd64/nodeup
 crossbuild-nodeup-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
 	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild-nodeup
-	docker cp nodeup-build-${UNIQUE}:/go/.build .
+	docker start nodeup-build-${UNIQUE}
+	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
+	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
+	docker kill nodeup-build-${UNIQUE}
+	docker rm nodeup-build-${UNIQUE}
 
 .PHONY: ${DIST}/darwin/amd64/kops
 ${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
@@ -355,15 +359,6 @@ gen-cli-docs: ${KOPS} # Regenerate CLI docs
 	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
 
-.PHONY: gen-api-docs
-gen-api-docs:
-	# Follow procedure in docs/apireference/README.md
-	hack/make-gendocs.sh
-	# Update the `pkg/openapi/openapi_generated.go`
-	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
-	go install k8s.io/kops/cmd/kops-server
-	${GOPATH}/bin/apiserver-boot build docs --disable-delegated-auth=false --output-dir docs/apireference --server kops-server
-
 .PHONY: push
 # Will always push a linux-based build up to the server
 push: crossbuild-nodeup
@@ -371,21 +366,21 @@ push: crossbuild-nodeup
 
 .PHONY: push-gce-dry
 push-gce-dry: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=metadata://gce/config --dryrun --v=8
+	ssh ${TARGET} sudo /tmp/nodeup --conf=metadata://gce/config --dryrun --v=8
 
 .PHONY: push-gce-dry
 push-aws-dry: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --dryrun --v=8
+	ssh ${TARGET} sudo /tmp/nodeup --conf=/opt/kops/conf/kube_env.yaml --dryrun --v=8
 
 .PHONY: push-gce-run
 push-gce-run: push
 	ssh ${TARGET} sudo cp /tmp/nodeup /var/lib/toolbox/kubernetes-install/nodeup
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/lib/toolbox/kubernetes-install/nodeup --conf=/var/lib/toolbox/kubernetes-install/kube_env.yaml --v=8
+	ssh ${TARGET} sudo /var/lib/toolbox/kubernetes-install/nodeup --conf=/var/lib/toolbox/kubernetes-install/kube_env.yaml --v=8
 
 # -t is for CentOS http://unix.stackexchange.com/questions/122616/why-do-i-need-a-tty-to-run-sudo-if-i-can-sudo-without-a-password
 .PHONY: push-aws-run
 push-aws-run: push
-	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
+	ssh -t ${TARGET} sudo /tmp/nodeup --conf=/opt/kops/conf/kube_env.yaml --v=8
 
 .PHONY: ${PROTOKUBE}
 ${PROTOKUBE}:
@@ -439,25 +434,14 @@ nodeup-dist:
 	tools/sha1 .build/dist/nodeup .build/dist/nodeup.sha1
 	tools/sha256 .build/dist/nodeup .build/dist/nodeup.sha256
 
-.PHONY: dns-controller-gocode
-dns-controller-gocode:
-	go install ${GCFLAGS} -tags 'peer_name_alternative peer_name_hash' ${LDFLAGS}"${EXTRA_LDFLAGS} -X main.BuildVersion=${DNS_CONTROLLER_TAG}" k8s.io/kops/dns-controller/cmd/dns-controller
+.PHONY: bazel-crossbuild-dns-controller
+bazel-crossbuild-dns-controller:
+	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
 
-.PHONY: dns-controller-builder-image
-dns-controller-builder-image:
-	docker build -t dns-controller-builder images/dns-controller-builder
-
-.PHONY: dns-controller-build-in-docker
-dns-controller-build-in-docker: dns-controller-builder-image
-	docker run -t -e HOST_UID=${UID} -e HOST_GID=${GID} -v `pwd`:/src dns-controller-builder /onbuild.sh
-
-.PHONY: dns-controller-image
-dns-controller-image: dns-controller-build-in-docker
-	docker build -t ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}  -f images/dns-controller/Dockerfile .
 
 .PHONY: dns-controller-push
-dns-controller-push: dns-controller-image
-	docker push ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}
+dns-controller-push:
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image
 
 # --------------------------------------------------
 # static utils
@@ -515,6 +499,10 @@ govet: ${BINDATA_TARGETS}
 # --------------------------------------------------
 # Continuous integration targets
 
+# verify is ran by the pull-kops-verify prow job
+.PHONY: verify
+verify: travis-ci verify-gofmt
+
 .PHONY: verify-boilerplate
 verify-boilerplate:
 	hack/verify-boilerplate.sh
@@ -553,23 +541,27 @@ verify-bazel:
 	hack/verify-bazel.sh
 
 .PHONY: verify-staticcheck
-verify-staticcheck:
+verify-staticcheck: ${BINDATA_TARGETS}
 	hack/verify-staticcheck.sh
+
+.PHONY: verify-shellcheck
+verify-shellcheck:
+	${KOPS_ROOT}/hack/verify-shellcheck.sh
 
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
 # we skip tasks that rely on bazel and are covered by other jobs
-#  verify-gofmt: uses bazel, covered by pull-kops-verify-gofmt
+# verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -593,10 +585,11 @@ ${CHANNELS}:
 .PHONY: release-tag
 release-tag:
 	git tag ${KOPS_RELEASE_VERSION}
+	git tag v${KOPS_RELEASE_VERSION}
 
 .PHONY: release-github
 release-github:
-	shipbot -tag ${KOPS_RELEASE_VERSION} -config .shipbot.yaml
+	shipbot -tag v${KOPS_RELEASE_VERSION} -config .shipbot.yaml
 
 # --------------------------------------------------
 # API / embedding examples
@@ -644,25 +637,6 @@ verify-generate:
 	hack/verify-generate.sh
 
 # -----------------------------------------------------
-# kops-server
-
-.PHONY: kops-server-docker-compile
-kops-server-docker-compile:
-	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/amd64/kops-server ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
-
-.PHONY: kops-server-build
-kops-server-build:
-	# Compile the API binary in linux, and copy to local filesystem
-	docker pull golang:${GOVERSION}
-	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ kops-server-docker-compile
-	docker cp kops-server-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
-	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
-
-.PHONY: kops-server-push
-kops-server-push: kops-server-build
-	docker push ${DOCKER_REGISTRY}/kops-server:latest
-
-# -----------------------------------------------------
 # bazel targets
 
 .PHONY: bazel-test
@@ -690,14 +664,6 @@ bazel-crossbuild-nodeup:
 .PHONY: bazel-crossbuild-protokube
 bazel-crossbuild-protokube:
 	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
-
-.PHONY: bazel-crossbuild-dns-controller
-bazel-crossbuild-dns-controller:
-	bazel build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
-
-.PHONY: bazel-crossbuild-dns-controller-image
-bazel-crossbuild-dns-controller-image:
-	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:dns-controller.tar
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
@@ -727,7 +693,7 @@ bazel-push-gce-run: bazel-push
 .PHONY: bazel-push-aws-run
 bazel-push-aws-run: bazel-push
 	ssh ${TARGET} chmod +x /tmp/nodeup
-	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
+	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/opt/kops/conf/kube_env.yaml --v=8
 
 .PHONY: gazelle
 gazelle:
@@ -765,7 +731,7 @@ push-node-authorizer:
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
 	bazel build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar.gz //images:protokube.tar.gz.sha1  //images:protokube.tar.gz.sha256
-	cp -fp bazel-bin/images/bazel-out/k8-fastbuild/bin/images/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz
+	cp -fp bazel-bin/images/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz
 	cp -fp bazel-bin/images/protokube.tar.gz.sha1 ${BAZELIMAGES}/protokube.tar.gz.sha1
 	cp -fp bazel-bin/images/protokube.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
 
