@@ -138,7 +138,7 @@ func TestMinimal_json(t *testing.T) {
 		featureflag.ParseFlags("-TerraformJSON")
 	}
 	defer unsetFeaureFlag()
-	runTestAWS(t, "minimal-json.example.com", "minimal-json", "v1alpha0", false, 1, true, false, nil, true, true)
+	runTestAWS(t, "minimal-json.example.com", "minimal-json", "v1alpha2", false, 1, true, false, nil, true, true)
 }
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
