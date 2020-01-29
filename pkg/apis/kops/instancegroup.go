@@ -106,6 +106,10 @@ type InstanceGroupSpec struct {
 	RootVolumeIops *int32 `json:"rootVolumeIops,omitempty"`
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
+	// RootVolumeDeleteOnTermination configures root volume retention policy upon instance termination.
+	// The root volume is deleted by default. Cluster deletion does not remove retained root volumes.
+	// NOTE: This setting applies only to the Launch Configuration and does not affect Launch Templates.
+	RootVolumeDeleteOnTermination *bool `json:"rootVolumeDeleteOnTermination,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
 	Volumes []*VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts
@@ -200,6 +204,10 @@ type UserData struct {
 
 // VolumeSpec defined the spec for an additional volume attached to the instance group
 type VolumeSpec struct {
+	// DeleteOnTermination configures volume retention policy upon instance termination.
+	// The volume is deleted by default. Cluster deletion does not remove retained volumes.
+	// NOTE: This setting applies only to the Launch Configuration and does not affect Launch Templates.
+	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
 	// Device is an optional device name of the block device
 	Device string `json:"device,omitempty"`
 	// Encrypted indicates you want to encrypt the volume
