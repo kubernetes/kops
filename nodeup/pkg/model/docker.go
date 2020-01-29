@@ -74,7 +74,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.11.2",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.11.2",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.11.2-1.el7.centos.x86_64.rpm",
@@ -117,7 +117,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.12.1",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.12.1",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.1-1.el7.centos.x86_64.rpm",
@@ -176,7 +176,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.12.3",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.12.3",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.3-1.el7.centos.x86_64.rpm",
@@ -250,7 +250,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.12.6",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.12.6",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.6-1.el7.centos.x86_64.rpm",
@@ -324,7 +324,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.13.1",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.13.1",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.13.1-1.el7.centos.x86_64.rpm",
@@ -409,7 +409,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.03.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
@@ -508,7 +508,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.09.0",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.09.0.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
@@ -598,7 +598,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.1",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.1.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
@@ -628,7 +628,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
@@ -681,7 +681,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
@@ -782,7 +782,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.09.9",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.09.9",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.09.9-3.el7.x86_64.rpm",
@@ -898,7 +898,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "19.03.4",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "19.03.4",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.4-3.el7.x86_64.rpm",
