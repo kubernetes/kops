@@ -113,8 +113,7 @@ func FindDistribution(rootfs string) (Distribution, error) {
 				return DistributionContainerOS, nil
 			}
 			if strings.HasPrefix(line, "PRETTY_NAME=\"Amazon Linux 2") {
-				// TODO: This is a hack. Amazon Linux is "special" and should get its own distro entry
-				return DistributionRhel7, nil
+				return DistributionAmazonLinux2, nil
 			}
 		}
 		klog.Warningf("unhandled /etc/os-release info %q", string(osRelease))
