@@ -30,6 +30,7 @@ spec:
       serviceAccountName: cloud-controller-manager
       dnsPolicy: Default
       hostNetwork: true
+      priorityClassName: system-node-critical
       tolerations:
         - key: "node.cloudprovider.kubernetes.io/uninitialized"
           value: "true"
