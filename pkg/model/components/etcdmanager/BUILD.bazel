@@ -21,6 +21,7 @@ go_library(
         "//pkg/urls:go_default_library",
         "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/aliup:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/do:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
