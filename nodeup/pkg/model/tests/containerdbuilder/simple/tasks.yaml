@@ -208,10 +208,6 @@ preventStart: true
 source: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb
 version: 1.2.10-3
 ---
-Name: libseccomp2
----
-Name: pigz
----
 Name: containerd.service
 definition: |
   [Unit]
@@ -224,16 +220,15 @@ definition: |
   EnvironmentFile=/etc/environment
   ExecStartPre=-/sbin/modprobe overlay
   ExecStart=/usr/bin/containerd -c /etc/containerd/config-kops.toml "$CONTAINERD_OPTS"
-  KillMode=process
+  Restart=always
+  RestartSec=5
   Delegate=yes
+  KillMode=process
+  OOMScoreAdjust=-999
   LimitNOFILE=1048576
   LimitNPROC=infinity
   LimitCORE=infinity
   TasksMax=infinity
-  Restart=always
-  RestartSec=2s
-  StartLimitInterval=0
-  TimeoutStartSec=0
 
   [Install]
   WantedBy=multi-user.target

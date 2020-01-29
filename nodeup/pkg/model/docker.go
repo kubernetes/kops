@@ -74,7 +74,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.11.2",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.11.2",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.11.2-1.el7.centos.x86_64.rpm",
@@ -117,7 +117,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.12.1",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.12.1",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.1-1.el7.centos.x86_64.rpm",
@@ -176,7 +176,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.12.3",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.12.3",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.3-1.el7.centos.x86_64.rpm",
@@ -188,7 +188,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "a6b0243af348140236ed96f2e902b259c590eefa",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 1.12.6 - k8s 1.6
@@ -216,7 +216,7 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.6-0~debian-stretch",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-stretch_amd64.deb",
 		Hash:           "18bb7d024658f27a1221eae4de78d792bf00611b",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "libseccomp2"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
@@ -242,7 +242,7 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.6-0~ubuntu-xenial",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~ubuntu-xenial_amd64.deb",
 		Hash:           "fffc22da4ad5b20715bbb6c485b2d2bb7e84fd33",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 	},
 
@@ -250,7 +250,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.12.6",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.12.6",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.6-1.el7.centos.x86_64.rpm",
@@ -262,7 +262,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "9a6ee0d631ca911b6927450a3c396e9a5be75047",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies: []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 1.13.1 - k8s 1.8
@@ -316,7 +316,7 @@ var dockerVersions = []packageVersion{
 		Version:        "1.13.1-0~ubuntu-xenial",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~ubuntu-xenial_amd64.deb",
 		Hash:           "d12cbd686f44536c679a03cf0137df163f0bba5f",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 	},
 
@@ -324,7 +324,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "1.13.1",
 		Name:           "docker-engine",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.13.1",
 		Source:         "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.13.1-1.el7.centos.x86_64.rpm",
@@ -336,7 +336,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python", "selinux-policy-base", "selinux-policy-targeted"},
+		Dependencies: []string{"libtool-ltdl", "libcgroup", "selinux-policy-base", "selinux-policy-targeted"},
 	},
 
 	// 17.03.2 - k8s 1.8
@@ -389,7 +389,7 @@ var dockerVersions = []packageVersion{
 		Version:        "17.03.2~ce-0~ubuntu-xenial",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
 		Hash:           "4dcee1a05ec592e8a76e53e5b464ea43085a2849",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -401,7 +401,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "http://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz",
 		Hash:           "141716ae046016a1792ce232a0f4c8eed7fe37d1",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -409,7 +409,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.03.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
@@ -421,7 +421,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "4659c937b66519c88ef2a82a906bb156db29d191",
 			},
 		},
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies:  []string{"libtool-ltdl", "libcgroup"},
 		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 	// 17.09.0 - k8s 1.8
@@ -471,7 +471,7 @@ var dockerVersions = []packageVersion{
 		Version:        "17.09.0~ce-0~ubuntu",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb",
 		Hash:           "94f6e89be6d45d9988269a237eb27c7d6a844d7f",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
@@ -485,7 +485,7 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "03e5eaae9c84b144e1140d9b418e43fce0311892",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
@@ -499,7 +499,7 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "c06eda4e934cce6a7941a6af6602d4315b500a22",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libc6, libdevmapper1.02.1, libltdl7, libseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, pigz, xz-utils, apparmor
 	},
@@ -508,19 +508,12 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.09.0",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.09.0.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
 		Hash:           "b4ce72e80ff02926de943082821bbbe73958f87a",
-		ExtraPackages: map[string]packageInfo{
-			"container-selinux": {
-				Version: "2.68",
-				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
-				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 18.03.1 - Bionic
@@ -532,7 +525,7 @@ var dockerVersions = []packageVersion{
 		Version:        "18.03.1~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.03.1~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "b55b32bd0e9176dd32b1e6128ad9fda10a65cc8b",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
@@ -546,7 +539,7 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "9607c67644e3e1ad9661267c99499004f2e84e05",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
@@ -605,19 +598,12 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.1",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.1.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
 		Hash:           "0a1325e570c5e54111a79623c9fd0c0c714d3a11",
-		ExtraPackages: map[string]packageInfo{
-			"container-selinux": {
-				Version: "2.68",
-				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
-				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 18.09.3 - Debian Stretch
@@ -641,23 +627,13 @@ var dockerVersions = []packageVersion{
 	// 18.06.2 - CentOS / Rhel7 (two packages)
 	{
 		PackageVersion: "18.06.2",
-		Name:           "container-selinux",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "2.68",
-		Source:         "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
-		Hash:           "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-		Dependencies:   []string{"policycoreutils-python"},
-	},
-	{
-		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
 		Hash:           "456eb7c5bfb37fac342e9ade21b602c076c5b367",
-		Dependencies:   []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 18.06.3 (contains fix for CVE-2019-5736)
@@ -671,7 +647,7 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "b396678a8b70f0503a7b944fa6e3297ab27b345b",
-		Dependencies:   []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
@@ -705,19 +681,12 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
 		Hash:           "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
-		ExtraPackages: map[string]packageInfo{
-			"container-selinux": {
-				Version: "2.68",
-				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.68-1.el7.noarch.rpm",
-				Hash:    "d9f87f7f4f2e8e611f556d873a17b8c0c580fec0",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 	// 18.06.3 - CentOS / Rhel8 (two packages)
 	{
@@ -728,7 +697,7 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
 		Hash:           "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
-		Dependencies:   []string{"container-selinux", "libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
+		Dependencies:   []string{"libtool-ltdl", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
 	},
 
 	// 18.09.9 - k8s 1.14 - https://github.com/kubernetes/kubernetes/pull/72823
@@ -749,7 +718,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "88f8f3103d2e5011e2f1a73b9e6dbf03d6e6698a",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - Debian Buster
@@ -768,7 +737,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "510eee5b6884867be0d2b360f8ff8cf7f0c0d11a",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - Xenial
@@ -813,7 +782,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.09.9",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.09.9",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.09.9-3.el7.x86_64.rpm",
@@ -825,7 +794,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "0c51b1339a95bd732ca305f07b7bcc95f132b9c8",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "iptables"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 18.09.9 - CentOS / Rhel8
@@ -844,7 +813,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "0c51b1339a95bd732ca305f07b7bcc95f132b9c8",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "iptables"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 19.03.4 - k8s 1.17 - https://github.com/kubernetes/kubernetes/pull/84476
@@ -865,7 +834,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "57f71ee764abb19a0b4c580ff14b1eb3de3a9e08",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Debian Buster
@@ -884,7 +853,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "2549a364f0e5ce489c79b292b78e349751385dd5",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Xenial
@@ -929,7 +898,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "19.03.4",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "19.03.4",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.4-3.el7.x86_64.rpm",
@@ -941,7 +910,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "iptables"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 19.03.4 - CentOS / Rhel8
@@ -960,7 +929,7 @@ var dockerVersions = []packageVersion{
 				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "iptables"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:

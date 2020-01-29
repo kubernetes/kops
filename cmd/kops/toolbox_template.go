@@ -111,7 +111,14 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 	if err != nil {
 		return err
 	}
-	context["clusterName"] = options.clusterName
+
+	// @step: set clusterName from template's values or cli flag
+	value, ok := context["clusterName"].(string)
+	if ok {
+		options.clusterName = value
+	} else {
+		context["clusterName"] = options.clusterName
+	}
 
 	// @check if we are just rendering the config value
 	if options.configValue != "" {
