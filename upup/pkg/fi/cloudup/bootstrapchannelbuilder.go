@@ -375,7 +375,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 	if externalDNS == nil || !externalDNS.Disable {
 		{
 			key := "dns-controller.addons.k8s.io"
-			version := "1.15.0"
+			version := "1.15.1"
 
 			{
 				location := key + "/pre-k8s-1.6.yaml"
@@ -472,7 +472,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 		key := "storage-aws.addons.k8s.io"
-		version := "1.15.0"
+		version := "1.15.1"
 
 		{
 			id := "v1.15.0"
