@@ -542,9 +542,16 @@ spec:
       containers:
       - args:
         - --debug=$(CILIUM_DEBUG)
+        - --identity-allocation-mode=$(CILIUM_IDENTITY_ALLOCATION_MODE)
         command:
         - cilium-operator
         env:
+        - name: CILIUM_IDENTITY_ALLOCATION_MODE
+          valueFrom:
+            configMapKeyRef:
+              key: identity-allocation-mode
+              name: cilium-config
+              optional: true
         - name: CILIUM_K8S_NAMESPACE
           valueFrom:
             fieldRef:
