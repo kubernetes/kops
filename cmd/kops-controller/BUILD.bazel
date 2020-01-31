@@ -41,7 +41,7 @@ container_image(
     name = "image",
     base = "@distroless_base//image",
     cmd = ["/usr/bin/kops-controller"],
-    user = "1000",
+    user = "10011",
     directory = "/usr/bin/",
     files = [
         "//cmd/kops-controller",

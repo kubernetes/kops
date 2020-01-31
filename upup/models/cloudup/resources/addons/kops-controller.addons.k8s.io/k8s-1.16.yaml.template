@@ -44,6 +44,14 @@ spec:
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       serviceAccount: kops-controller
+      initContainers:
+      # init-permissions runs as root and sets up ownership for the non-root container
+      - name: init-permissions
+        image: k8s.gcr.io/debian-hyperkube-base-amd64:0.12.1
+        command: [ 'chown', '10011', '/var/log/kops-controller.log' ]
+        volumeMounts:
+        - mountPath: /var/log/kops-controller.log
+          name: logfile
       containers:
       - name: kops-controller
         image: kope/kops-controller:1.18.0-alpha.1

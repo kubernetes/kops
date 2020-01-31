@@ -52,6 +52,16 @@ spec:
           name: logfile
       dnsPolicy: Default
       hostNetwork: true
+      initContainers:
+      - command:
+        - chown
+        - "10011"
+        - /var/log/kops-controller.log
+        image: gcr.io/google_containers/debian-hyperkube-base-amd64:0.12.1
+        name: init-permissions
+        volumeMounts:
+        - mountPath: /var/log/kops-controller.log
+          name: logfile
       nodeSelector:
         node-role.kubernetes.io/master: ""
       priorityClassName: system-node-critical
