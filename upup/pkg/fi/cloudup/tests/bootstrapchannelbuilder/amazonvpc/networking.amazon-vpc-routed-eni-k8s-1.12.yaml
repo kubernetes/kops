@@ -96,6 +96,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: WARM_IP_TARGET
+          value: "10"
+        - name: AWS_VPC_K8S_CNI_LOGLEVEL
+          value: debug
         image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5
         imagePullPolicy: Always
         name: aws-node
