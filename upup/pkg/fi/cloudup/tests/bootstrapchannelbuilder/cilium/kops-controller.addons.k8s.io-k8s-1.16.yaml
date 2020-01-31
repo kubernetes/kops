@@ -17,7 +17,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.15.0-alpha.1
+    version: v1.18.0-alpha.1
   name: kops-controller
   namespace: kube-system
 spec:
@@ -29,7 +29,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.15.0-alpha.1
+        version: v1.18.0-alpha.1
     spec:
       containers:
       - command:
@@ -39,7 +39,7 @@ spec:
         - --logtostderr=false
         - --alsologtostderr
         - --log_file=/var/log/kops-controller.log
-        image: kope/kops-controller:1.15.0-alpha.1
+        image: kope/kops-controller:1.18.0-alpha.1
         name: kops-controller
         resources:
           requests:
