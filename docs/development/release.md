@@ -47,10 +47,11 @@ make ci
 ```
 
 
-## Push new dns-controller image if needed
+## Push new kops-controller / dns-controller image if needed
 
 ```
-make dns-controller-push DOCKER_REGISTRY=kope
+make dns-controller-push DOCKER_IMAGE_PREFIX=kope/  DOCKER_REGISTRY=index.docker.io
+make kops-controller-push DOCKER_IMAGE_PREFIX=kope/  DOCKER_REGISTRY=index.docker.io
 ```
 
 ## Upload new version
