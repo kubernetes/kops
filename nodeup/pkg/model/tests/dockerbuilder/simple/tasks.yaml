@@ -310,6 +310,40 @@ manageState: true
 running: true
 smartRestart: true
 ---
+Name: docker-healthcheck.service
+definition: |
+  [Unit]
+  Description=Run docker-healthcheck once
+  Documentation=https://kops.sigs.k8s.io
+
+  [Service]
+  Type=oneshot
+  ExecStart=/opt/kops/bin/docker-healthcheck
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
+---
+Name: docker-healthcheck.timer
+definition: |
+  [Unit]
+  Description=Trigger docker-healthcheck periodically
+  Documentation=https://kops.sigs.k8s.io
+
+  [Timer]
+  OnUnitInactiveSec=10s
+  Unit=docker-healthcheck.service
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
+---
 Name: docker.service
 definition: |
   [Unit]
