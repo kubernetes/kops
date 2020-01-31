@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
@@ -218,7 +219,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		{
 			c.AddTask(&nodetasks.UserTask{
 				Name:  "aws-iam-authenticator",
-				UID:   10000,
+				UID:   wellknownusers.AWSAuthenticator,
 				Shell: "/sbin/nologin",
 				Home:  "/srv/kubernetes/aws-iam-authenticator",
 			})

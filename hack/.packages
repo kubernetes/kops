@@ -143,6 +143,7 @@ k8s.io/kops/pkg/util/templater
 k8s.io/kops/pkg/validation
 k8s.io/kops/pkg/values
 k8s.io/kops/pkg/wellknownports
+k8s.io/kops/pkg/wellknownusers
 k8s.io/kops/protokube/cmd/protokube
 k8s.io/kops/protokube/pkg/etcd
 k8s.io/kops/protokube/pkg/gossip
