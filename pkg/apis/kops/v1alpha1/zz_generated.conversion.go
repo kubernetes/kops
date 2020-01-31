@@ -960,6 +960,17 @@ func Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha1_AlwaysAllowAuthorizat
 
 func autoConvert_v1alpha1_AmazonVPCNetworkingSpec_To_kops_AmazonVPCNetworkingSpec(in *AmazonVPCNetworkingSpec, out *kops.AmazonVPCNetworkingSpec, s conversion.Scope) error {
 	out.ImageName = in.ImageName
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]kops.EnvVar, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha1_EnvVar_To_kops_EnvVar(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Env = nil
+	}
 	return nil
 }
 
@@ -970,6 +981,17 @@ func Convert_v1alpha1_AmazonVPCNetworkingSpec_To_kops_AmazonVPCNetworkingSpec(in
 
 func autoConvert_kops_AmazonVPCNetworkingSpec_To_v1alpha1_AmazonVPCNetworkingSpec(in *kops.AmazonVPCNetworkingSpec, out *AmazonVPCNetworkingSpec, s conversion.Scope) error {
 	out.ImageName = in.ImageName
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]EnvVar, len(*in))
+		for i := range *in {
+			if err := Convert_kops_EnvVar_To_v1alpha1_EnvVar(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Env = nil
+	}
 	return nil
 }
 

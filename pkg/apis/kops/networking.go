@@ -190,6 +190,8 @@ type AmazonVPCNetworkingSpec struct {
 	// The container image name to use, which by default is:
 	// 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5
 	ImageName string `json:"imageName,omitempty"`
+	// Env is a list of environment variables to set in the container.
+	Env []EnvVar `json:"env,omitempty"`
 }
 
 const CiliumDefaultVersion = "v1.6.6"
