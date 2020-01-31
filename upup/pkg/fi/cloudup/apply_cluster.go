@@ -380,6 +380,7 @@ func (c *ApplyClusterCmd) Run() error {
 				"InstanceGroupManager": &gcetasks.InstanceGroupManager{},
 				"FirewallRule":         &gcetasks.FirewallRule{},
 				"Address":              &gcetasks.Address{},
+				"NatGateway":           &gcetasks.NatGateway{},
 			})
 		}
 

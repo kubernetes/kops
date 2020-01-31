@@ -19,6 +19,8 @@ package gcemodel
 import (
 	"fmt"
 
+	"k8s.io/klog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
@@ -66,5 +68,30 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 
 	}
+
+	// Create CloudNAT for private topology
+	if b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+		// All private subnets get a CloudNAT in their region.
+		privateRegions := map[string]bool{}
+		for i := range b.Cluster.Spec.Subnets {
+			subnetSpec := &b.Cluster.Spec.Subnets[i]
+			if subnetSpec.Type == kops.SubnetTypePrivate {
+				klog.Infof("adding %s to list of private regions\n", subnetSpec.Region)
+				privateRegions[subnetSpec.Region] = true
+			}
+		}
+
+		for region, _ := range privateRegions {
+			nat := &gcetasks.NatGateway{
+				// Name:      s(region + "-" + gce.SafeClusterName(b.ClusterName())),
+				Name:      s(b.SafeObjectName(region + "-" + b.ClusterName())),
+				Lifecycle: b.Lifecycle,
+				Network:   s(b.LinkToNetwork().URL(b.Cluster.Spec.Project)),
+				Region:    s(region),
+			}
+			c.AddTask(nat)
+		}
+	}
+
 	return nil
 }

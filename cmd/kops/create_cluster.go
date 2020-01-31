@@ -1130,6 +1130,12 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				Zone: s.Zone,
 				Type: api.SubnetTypeUtility,
 			}
+
+			// On GCE, set utility subnet region - subnets are regional resources
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+				subnet.Region = s.Name
+			}
+
 			if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
 				subnet.ProviderID = subnetID
 			}
