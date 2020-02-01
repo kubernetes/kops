@@ -19,7 +19,7 @@ This document also applies to using the `kops` API to customize a Kubernetes clu
 
 Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way that you can use a YAML manifest to deploy a Job, you can deploy and manage a `kops` Kubernetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
 
-> You can see all the options that are currently supported in Kops [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go) or [more prettily here](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec)
+> You can see all the options that are currently supported in Kops [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/componentconfig.go) or [more prettily here](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec)
 
 The following is a list of the benefits of using a file to manage instances.
 
@@ -298,7 +298,7 @@ spec:
   api:
 ```
 
-Full documentation is accessible via [godoc](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec).
+Full documentation is accessible via [godoc](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec).
 
 The `ClusterSpec` allows a user to set configurations for such values as Docker log driver, Kubernetes API server log level, VPC for reusing a VPC (`NetworkID`), and the Kubernetes version.
 
@@ -330,7 +330,7 @@ metadata:
 spec:
 ```
 
-Full documentation is accessible via [godocs](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
+Full documentation is accessible via [godocs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
 
 Instance Groups map to Auto Scaling Groups in AWS, and Instance Groups in GCE. They are an API level description of a group of compute instances used as Masters or Nodes.
 
