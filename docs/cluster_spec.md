@@ -1,6 +1,6 @@
 # Description of Keys in `config` and `cluster.spec`
 
-This list is not complete but aims to document any keys that are less than self-explanatory. Our [godoc](https://godoc.org/k8s.io/kops/pkg/apis/kops) reference provides a more detailed list of API values. [ClusterSpec](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec), defined as `kind: Cluster` in YAML, and [InstanceGroup](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroup), defined as `kind: InstanceGroup` in YAML, are the two top-level API values used to describe a cluster.
+This list is not complete but aims to document any keys that are less than self-explanatory. Our [go.dev](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops) reference provides a more detailed list of API values. [ClusterSpec](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec), defined as `kind: Cluster` in YAML, and [InstanceGroupSpec](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec), defined as `kind: InstanceGroup` in YAML, are the two top-level API values used to describe a cluster.
 
 ## spec
 
@@ -745,7 +745,7 @@ spec:
 
 ### docker
 
-It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://godoc.org/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
+It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
 
 #### registryMirrors
 
