@@ -17,7 +17,7 @@ limitations under the License.
 package stubs
 
 // Implementation of internal/interfaces/* on top of Google Cloud DNS API.
-// See https://godoc.org/google.golang.org/api/dns/v1 for details
+// See https://pkg.go.dev/google.golang.org/api/dns/v1 for details
 // This facilitates stubbing out Google Cloud DNS for unit testing.
 // Only the parts of the API that we use are included.
 // Others can be added as needed.

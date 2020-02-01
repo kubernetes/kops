@@ -33,8 +33,8 @@ import (
 
 func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	// kube proxy spec can be found here.
-	// https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec
-	// https://godoc.org/k8s.io/kops/pkg/apis/kops#KubeProxyConfig
+	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec
+	// https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#KubeProxyConfig
 
 	var cluster = &kops.Cluster{}
 	cluster.Spec.MasterInternalName = "dev-cluster"

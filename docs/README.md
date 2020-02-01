@@ -37,8 +37,8 @@
 ## Advanced / Detailed List of Configurations
 
 ### API / Configuration References
-* [Godocs for Cluster - `ClusterSpec`](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec).
-* [Godocs for Instance Group - `InstanceGroupSpec`](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
+* [Godocs for Cluster - `ClusterSpec`](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec).
+* [Godocs for Instance Group - `InstanceGroupSpec`](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
 
 ### API Usage Guides
 * [`kops` cluster API definitions](cluster_spec.md)
