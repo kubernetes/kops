@@ -49,27 +49,25 @@ func (lb *LoadBalancer) CompareWithID() *string {
 }
 
 func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
-	cloud := c.Cloud.(*digitalocean.Cloud)
-	lbService := cloud.LoadBalancers()
-
-	if fi.StringValue(lb.ID) != "" {
-		loadbalancer, _, err := lbService.Get(context.TODO(), fi.StringValue(lb.ID))
-
-		if err != nil {
-			return nil, fmt.Errorf("load balancer service get request returned error %v", err)
-		}
-
-		// do another check to double-sure we are talking to the right load balancer.
-		return &LoadBalancer{
-			Name:      fi.String(loadbalancer.Name),
-			ID:        fi.String(loadbalancer.ID),
-			Lifecycle: lb.Lifecycle,
-			Region:    fi.String(loadbalancer.Region.Slug),
-		}, nil
+	if fi.StringValue(lb.ID) == "" {
+		// Loadbalancer = nil if not found
+		return nil, nil
 	}
 
-	// Loadbalancer = nil if not found
-	return nil, nil
+	cloud := c.Cloud.(*digitalocean.Cloud)
+	lbService := cloud.LoadBalancers()
+	loadbalancer, _, err := lbService.Get(context.TODO(), fi.StringValue(lb.ID))
+
+	if err != nil {
+		return nil, fmt.Errorf("load balancer service get request returned error %v", err)
+	}
+
+	return &LoadBalancer{
+		Name:      fi.String(loadbalancer.Name),
+		ID:        fi.String(loadbalancer.ID),
+		Lifecycle: lb.Lifecycle,
+		Region:    fi.String(loadbalancer.Region.Slug),
+	}, nil
 }
 
 func (lb *LoadBalancer) Run(c *fi.Context) error {
@@ -166,10 +164,9 @@ func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {
 		return &address, nil
 	}
 
-	klog.Errorf("Error fetching IP Address for lb Name=%s", fi.StringValue(lb.Name))
-	time.Sleep(10 * time.Second)
-
-	klog.V(10).Infof("Sleeping for 10 seconds")
+	const lbWaitTime = 10 * time.Second
+	klog.Warningf("IP address for LB %s not yet available -- sleeping %s", fi.StringValue(lb.Name), lbWaitTime)
+	time.Sleep(lbWaitTime)
 
 	return nil, errors.New("IP Address is still empty.")
 }
@@ -183,6 +180,3 @@ func isIPv4(host string) bool {
 
 	return ip.To4() != nil
 }
-
-// terraformVolume represents the digitalocean_volume resource in terraform
-// Todo: later.
