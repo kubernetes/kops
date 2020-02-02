@@ -108,6 +108,25 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	} else {
 		lc.SecurityGroupIds = securityGroups
 	}
+	// @step: add the tags
+	{
+		var list []*ec2.Tag
+		for k, v := range t.Tags {
+			list = append(list, &ec2.Tag{
+				Key:   aws.String(k),
+				Value: aws.String(v),
+			})
+		}
+		instanceTagSpec := ec2.LaunchTemplateTagSpecificationRequest{
+			ResourceType: aws.String("instance"),
+			Tags:         list,
+		}
+		volumeTagSpec := ec2.LaunchTemplateTagSpecificationRequest{
+			ResourceType: aws.String("volume"),
+			Tags:         list,
+		}
+		lc.TagSpecifications = []*ec2.LaunchTemplateTagSpecificationRequest{&instanceTagSpec, &volumeTagSpec}
+	}
 	// @step: add the userdata
 	if t.UserData != nil {
 		d, err := t.UserData.AsBytes()

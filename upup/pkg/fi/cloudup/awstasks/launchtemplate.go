@@ -62,6 +62,8 @@ type LaunchTemplate struct {
 	SecurityGroups []*SecurityGroup
 	// SpotPrice is set to the spot-price bid if this is a spot pricing request
 	SpotPrice string
+	// Tags are the keypairs to apply to the instance and volume on launch.
+	Tags map[string]string
 	// Tenancy. Can be either default or dedicated.
 	Tenancy *string
 	// UserData is the user data configuration
