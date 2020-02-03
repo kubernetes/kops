@@ -25,11 +25,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 )
 
-type cloudformationLaunchTemplateNetworkInterfaces struct {
+type cloudformationLaunchTemplateNetworkInterface struct {
 	// AssociatePublicIPAddress associates a public ip address with the network interface. Boolean value.
 	AssociatePublicIPAddress *bool `json:"AssociatePublicIpAddress,omitempty"`
 	// DeleteOnTermination indicates whether the network interface should be destroyed on instance termination.
 	DeleteOnTermination *bool `json:"DeleteOnTermination,omitempty"`
+	// DeviceIndex is the device index for the network interface attachment.
+	DeviceIndex *int `json:"DeviceIndex,omitempty"`
+	// SecurityGroups is a list of security group ids.
+	SecurityGroups []*cloudformation.Literal `json:"Groups,omitempty"`
 }
 
 type cloudformationLaunchTemplateMonitoring struct {
@@ -92,7 +96,14 @@ type cloudformationLaunchTemplateBlockDevice struct {
 	// VirtualName is used for the ephemeral devices
 	VirtualName *string `json:"VirtualName,omitempty"`
 	// EBS defines the ebs spec
-	EBS *cloudformationLaunchTemplateBlockDeviceEBS `json:"EBS,omitempty"`
+	EBS *cloudformationLaunchTemplateBlockDeviceEBS `json:"Ebs,omitempty"`
+}
+
+type cloudformationLaunchTemplateTagSpecification struct {
+	// The type of resource to tag
+	ResourceType *string `json:"ResourceType,omitempty"`
+	// The tags to apply to the resource.
+	Tags []cloudformationTag `json:"Tags,omitempty"`
 }
 
 type cloudformationLaunchTemplateData struct {
@@ -113,13 +124,13 @@ type cloudformationLaunchTemplateData struct {
 	// Monitoring are the instance monitoring options
 	Monitoring *cloudformationLaunchTemplateMonitoring `json:"Monitoring,omitempty"`
 	// NetworkInterfaces are the networking options
-	NetworkInterfaces []*cloudformationLaunchTemplateNetworkInterfaces `json:"NetworkInterfaces,omitempty"`
+	NetworkInterfaces []*cloudformationLaunchTemplateNetworkInterface `json:"NetworkInterfaces,omitempty"`
 	// Placement are the tenancy options
 	Placement []*cloudformationLaunchTemplatePlacement `json:"Placement,omitempty"`
+	// TagSpecifications specifies tags to apply to a resource when the resource is created
+	TagSpecifications []*cloudformationLaunchTemplateTagSpecification `json:"TagSpecifications,omitempty"`
 	// UserData is the user data for the instances
 	UserData *string `json:"UserData,omitempty"`
-	// VpcSecurityGroupIDs is a list of security group ids
-	VpcSecurityGroupIDs []*cloudformation.Literal `json:"SecurityGroup,omitempty"`
 }
 
 type cloudformationLaunchTemplate struct {
@@ -132,6 +143,11 @@ type cloudformationLaunchTemplate struct {
 // CloudformationLink returns the cloudformation link for us
 func (t *LaunchTemplate) CloudformationLink() *cloudformation.Literal {
 	return cloudformation.Ref("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name))
+}
+
+// CloudformationLink returns the cloudformation version for us
+func (t *LaunchTemplate) CloudformationVersion() *cloudformation.Literal {
+	return cloudformation.GetAtt("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name), "LatestVersionNumber")
 }
 
 // RenderCloudformation is responsible for rendering the cloudformation json
@@ -155,9 +171,12 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 			EBSOptimized: e.RootVolumeOptimization,
 			ImageID:      image,
 			InstanceType: e.InstanceType,
-			NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterfaces{
-				{AssociatePublicIPAddress: e.AssociatePublicIP,
-					DeleteOnTermination: fi.Bool(true)},
+			NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterface{
+				{
+					AssociatePublicIPAddress: e.AssociatePublicIP,
+					DeleteOnTermination:      fi.Bool(true),
+					DeviceIndex:              fi.Int(0),
+				},
 			},
 		},
 	}
@@ -170,7 +189,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		}
 	}
 	for _, x := range e.SecurityGroups {
-		data.VpcSecurityGroupIDs = append(data.VpcSecurityGroupIDs, x.CloudformationLink())
+		data.NetworkInterfaces[0].SecurityGroups = append(data.NetworkInterfaces[0].SecurityGroups, x.CloudformationLink())
 	}
 	if e.SSHKey != nil {
 		data.KeyName = e.SSHKey.Name
@@ -230,6 +249,18 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		data.BlockDeviceMappings = append(data.BlockDeviceMappings, &cloudformationLaunchTemplateBlockDevice{
 			VirtualName: x.VirtualName,
 			DeviceName:  fi.String(n),
+		})
+	}
+
+	if e.Tags != nil {
+		tags := buildCloudformationTags(t.Tags)
+		data.TagSpecifications = append(data.TagSpecifications, &cloudformationLaunchTemplateTagSpecification{
+			ResourceType: fi.String("instance"),
+			Tags:         tags,
+		})
+		data.TagSpecifications = append(data.TagSpecifications, &cloudformationLaunchTemplateTagSpecification{
+			ResourceType: fi.String("volume"),
+			Tags:         tags,
 		})
 	}
 

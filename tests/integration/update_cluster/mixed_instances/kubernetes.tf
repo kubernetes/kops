@@ -533,6 +533,30 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
     security_groups             = ["${aws_security_group.nodes-mixedinstances-example-com.id}"]
   }
 
+  tag_specifications = {
+    resource_type = "instance"
+
+    tags = {
+      KubernetesCluster                                  = "mixedinstances.example.com"
+      Name                                               = "nodes.mixedinstances.example.com"
+      "k8s.io/role/node"                                 = "1"
+      "kops.k8s.io/instancegroup"                        = "nodes"
+      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+    }
+  }
+
+  tag_specifications = {
+    resource_type = "volume"
+
+    tags = {
+      KubernetesCluster                                  = "mixedinstances.example.com"
+      Name                                               = "nodes.mixedinstances.example.com"
+      "k8s.io/role/node"                                 = "1"
+      "kops.k8s.io/instancegroup"                        = "nodes"
+      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+    }
+  }
+
   user_data = "${file("${path.module}/data/aws_launch_template_nodes.mixedinstances.example.com_user_data")}"
 }
 
