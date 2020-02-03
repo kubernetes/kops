@@ -50,6 +50,10 @@ func (c *ResourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 }
 
 func (c *ResourceRecordChangeset) Apply() error {
+	if c.IsEmpty() {
+		return nil
+	}
+
 	rrsets := c.rrsets
 
 	service := rrsets.zone.zones.interface_.service.Changes()
@@ -115,7 +119,7 @@ func (c *ResourceRecordChangeset) Apply() error {
 }
 
 func (c *ResourceRecordChangeset) IsEmpty() bool {
-	return len(c.additions) == 0 && len(c.removals) == 0
+	return len(c.additions) == 0 && len(c.removals) == 0 && len(c.upserts) == 0
 }
 
 // ResourceRecordSets returns the parent ResourceRecordSets

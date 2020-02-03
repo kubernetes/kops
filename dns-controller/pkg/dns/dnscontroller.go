@@ -302,6 +302,10 @@ func (c *DNSController) runOnce() error {
 	}
 
 	for key, changeset := range op.changesets {
+		if changeset.IsEmpty() {
+			continue
+		}
+
 		klog.V(2).Infof("applying DNS changeset for zone %s", key)
 		if err := changeset.Apply(); err != nil {
 			klog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
