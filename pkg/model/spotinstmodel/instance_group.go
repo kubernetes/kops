@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 )
 
@@ -605,8 +604,6 @@ func (b *InstanceGroupModelBuilder) buildTags(ig *kops.InstanceGroup) (map[strin
 	if err != nil {
 		return nil, err
 	}
-	tags[awsup.TagClusterName] = b.ClusterName()
-	tags["Name"] = b.AutoscalingGroupName(ig)
 	return tags, nil
 }
 
