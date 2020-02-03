@@ -64,20 +64,21 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodes1"
+                },
+                {
+                  "Ref": "AWSEC2SecurityGroupnodes2"
+                }
+              ]
             }
           ],
           "Placement": [
             {
               "Tenancy": "dedicated"
-            }
-          ],
-          "SecurityGroup": [
-            {
-              "Ref": "AWSEC2SecurityGroupnodes1"
-            },
-            {
-              "Ref": "AWSEC2SecurityGroupnodes2"
             }
           ]
         }
@@ -127,7 +128,7 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvdd",
-              "EBS": {
+              "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 100,
                 "DeleteOnTermination": true,
@@ -146,20 +147,21 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodes1"
+                },
+                {
+                  "Ref": "AWSEC2SecurityGroupnodes2"
+                }
+              ]
             }
           ],
           "Placement": [
             {
               "Tenancy": "dedicated"
-            }
-          ],
-          "SecurityGroup": [
-            {
-              "Ref": "AWSEC2SecurityGroupnodes1"
-            },
-            {
-              "Ref": "AWSEC2SecurityGroupnodes2"
             }
           ]
         }
