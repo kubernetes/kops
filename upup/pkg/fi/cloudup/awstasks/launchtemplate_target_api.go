@@ -109,23 +109,22 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 		lc.SecurityGroupIds = securityGroups
 	}
 	// @step: add the tags
-	{
-		var list []*ec2.Tag
+	if len(t.Tags) > 0 {
+		var tags []*ec2.Tag
 		for k, v := range t.Tags {
-			list = append(list, &ec2.Tag{
+			tags = append(tags, &ec2.Tag{
 				Key:   aws.String(k),
 				Value: aws.String(v),
 			})
 		}
-		instanceTagSpec := ec2.LaunchTemplateTagSpecificationRequest{
-			ResourceType: aws.String("instance"),
-			Tags:         list,
-		}
-		volumeTagSpec := ec2.LaunchTemplateTagSpecificationRequest{
-			ResourceType: aws.String("volume"),
-			Tags:         list,
-		}
-		lc.TagSpecifications = []*ec2.LaunchTemplateTagSpecificationRequest{&instanceTagSpec, &volumeTagSpec}
+		lc.TagSpecifications = append(lc.TagSpecifications, &ec2.LaunchTemplateTagSpecificationRequest{
+			ResourceType: aws.String(ec2.ResourceTypeInstance),
+			Tags:         tags,
+		})
+		lc.TagSpecifications = append(lc.TagSpecifications, &ec2.LaunchTemplateTagSpecificationRequest{
+			ResourceType: aws.String(ec2.ResourceTypeVolume),
+			Tags:         tags,
+		})
 	}
 	// @step: add the userdata
 	if t.UserData != nil {
@@ -259,6 +258,15 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			return nil, fmt.Errorf("error decoding userdata: %s", err)
 		}
 		actual.UserData = fi.WrapResource(fi.NewStringResource(string(ud)))
+	}
+
+	// @step: add tags
+	if len(lt.LaunchTemplateData.TagSpecifications) > 0 {
+		ts := lt.LaunchTemplateData.TagSpecifications[0]
+		if ts.Tags != nil {
+			tags := mapEC2TagsToMap(ts.Tags)
+			actual.Tags = tags
+		}
 	}
 
 	// @step: to avoid spurious changes on ImageId
