@@ -208,6 +208,10 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		}
 	}
 
+	// Add cluster and ig names
+	labels[awsup.TagClusterName] = m.ClusterName()
+	labels["Name"] = m.AutoscalingGroupName(ig)
+
 	// The system tags take priority because the cluster likely breaks without them...
 
 	if ig.Spec.Role == kops.InstanceGroupRoleMaster {
