@@ -390,7 +390,15 @@ func TestAutoscalingGroupCloudformationRender(t *testing.T) {
         "MixedInstancesPolicy": {
           "LaunchTemplate": {
             "LaunchTemplateSpecification": {
-              "LaunchTemplateName": "test_lt"
+              "LaunchTemplateId": {
+                "Ref": "AWSEC2LaunchTemplatetest_lt"
+              },
+              "Version": {
+                "Fn::GetAtt": [
+                  "AWSEC2LaunchTemplatetest_lt",
+                  "LatestVersionNumber"
+                ]
+              }
             },
             "Overrides": [
               {
