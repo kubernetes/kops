@@ -51,16 +51,23 @@ spec:
     anonymousAuth: false
 ```
 
+Clusters created with `kops create cluster` using Kubernetes 1.11 or later will have this setting in the generated cluster spec and thus have AnonymousAuth disabled.
+
 **Note** on an existing cluster with 'anonymousAuth' unset you would need to first roll out the masters and then update the node instance groups.
 
 ### API Bearer Token
 
+Static bearer tokens are disabled by default as of Kubernetes 1.18.
+In order to enable them:
+
+```YAML
+# In the cluster spec
+spec:
+  kubeAPIServer:
+    tokenAuthFile: "/srv/kubernetes/known_tokens.csv"
+```
+
 The API bearer token is a secret named 'admin'.
 
-`kops get secrets --type secret admin -oplaintext` will show it
+`kops get secrets --type secret admin -oplaintext` will show it.
 
-### Admin Access
-
-Access to the administrative API is stored in a secret named 'kube':
-
-`kops get secrets kube -oplaintext` or `kubectl config view --minify` to reveal
