@@ -42,7 +42,6 @@ contents: |
       - --storage-backend=etcd3
       - --tls-cert-file=/srv/kubernetes/server.cert
       - --tls-private-key-file=/srv/kubernetes/server.key
-      - --token-auth-file=/srv/kubernetes/known_tokens.csv
       - --v=2
       - --logtostderr=false
       - --alsologtostderr
