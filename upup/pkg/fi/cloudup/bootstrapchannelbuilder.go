@@ -909,7 +909,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	if b.cluster.Spec.Networking.Cilium != nil {
 		key := "networking.cilium.io"
-		version := "1.6.4-kops.3"
+		version := "1.6.4-kops.4"
 
 		{
 			id := "k8s-1.7"
