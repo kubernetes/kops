@@ -55,8 +55,6 @@ spec:
 {{ end }}
         - mountPath: /etc/kubernetes/kops-controller/
           name: kops-controller-config
-        - mountPath: /var/log/kops-controller.log
-          name: logfile
         command:
 {{ range $arg := KopsControllerArgv }}
         - "{{ $arg }}"
@@ -82,10 +80,7 @@ spec:
       - name: kops-controller-config
         configMap:
           name: kops-controller
-      - name: logfile
-        hostPath:
-          path: /var/log/kops-controller.log
-          type: FileOrCreate
+
 ---
 
 apiVersion: v1
