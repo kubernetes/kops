@@ -186,10 +186,10 @@ pools of nodes with L2 connectivity are connected via a router.
 Note that Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh.
 Each node automatically sets up a BGP peering with every other node within the same L2 network.
 This full node-to-node mesh per L2 network has its scaling challenges for larger scale deployments.
-BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. BGP route reflectors are recommended once the number of nodes goes above ~50-100.
+BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. [BGP route reflectors are recommended once the number of nodes goes above ~50-100.](https://docs.projectcalico.org/networking/bgp#topologies-for-public-cloud)
 The setup of BGP route reflectors is currently out of the scope of kops.
 
-Read more here: [BGP route reflectors](https://docs.projectcalico.org/latest/networking/routereflector)
+Read more here: [BGP route reflectors](https://docs.projectcalico.org/reference/architecture/overview#bgp-route-reflector-bird)
 
 To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
 
