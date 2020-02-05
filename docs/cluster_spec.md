@@ -488,7 +488,7 @@ This will install [CoreDNS](https://coredns.io/) instead of kube-dns.
 
 If you are using CoreDNS and want to use an entirely custom CoreFile you can do this by specifying the file. This will not work with any other options which interact with the default CoreFile. You can also override the version of the CoreDNS image used to use a different registry or version by specifying `CoreDNSImage`.
 
-**Note:** If you are using this functionality you will need to be extra vigiliant on version changes of CoreDNS for changes in functionality of the plugins being used etc.
+**Note:** If you are using this functionality you will need to be extra vigilant on version changes of CoreDNS for changes in functionality of the plugins being used etc.
 
 ```yaml
 spec:
@@ -846,7 +846,7 @@ spec:
 
 ### assets
 
-Assets define alernative locations from where to retrieve static files and containers
+Assets define alternative locations from where to retrieve static files and containers
 
 #### containerRegistry
 
