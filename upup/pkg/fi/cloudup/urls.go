@@ -49,7 +49,7 @@ type mirror struct {
 // Note that we download in order
 var defaultKopsMirrors = []mirror{
 	{URL: "https://artifacts.k8s.io/binaries/kops/%s/"},
-	{URL: "https://github.com/kubernetes/kops/releases/download/%s/", Replace: map[string]string{"/": "-"}},
+	{URL: "https://github.com/kubernetes/kops/releases/download/v%s/", Replace: map[string]string{"/": "-"}},
 	// We do need to include defaultKopsMirrorBase - the list replaces the base url
 	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},
 }
