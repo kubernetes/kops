@@ -57,7 +57,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a
 spec:
-  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2019-09-26
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2020-01-17
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -77,7 +77,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: nodes
 spec:
-  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2019-09-26
+  image: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2020-01-17
   machineType: t2.medium
   maxSize: 2
   minSize: 2
