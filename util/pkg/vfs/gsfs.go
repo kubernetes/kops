@@ -135,14 +135,12 @@ func (p *GSPath) Join(relativePath ...string) Path {
 }
 
 func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
+	md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
+	if err != nil {
+		return err
+	}
+
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
-		klog.V(4).Infof("Writing file %q", p)
-
-		md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
-		if err != nil {
-			return false, err
-		}
-
 		obj := &storage.Object{
 			Name:    p.key,
 			Md5Hash: base64.StdEncoding.EncodeToString(md5Hash.HashValue),
