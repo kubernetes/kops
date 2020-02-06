@@ -192,7 +192,7 @@ type AmazonVPCNetworkingSpec struct {
 	ImageName string `json:"imageName,omitempty"`
 }
 
-const CiliumDefaultVersion = "v1.6.4"
+const CiliumDefaultVersion = "v1.6.6"
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
