@@ -18,7 +18,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -252,7 +252,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
   - c4871c7315817ee114f5c554a58da8ebc54f08c3@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubelet
   - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
   - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/v1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: additionalcidr.example.com
   ConfigBase: memfs://clusters.example.com/additionalcidr.example.com
   InstanceGroupName: master-us-test-1b
@@ -266,7 +266,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
     name: protokube:1.8.1
     sources:
     - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
-    - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
+    - https://github.com/kubernetes/kops/releases/download/v1.8.1/images-protokube.tar.gz
     - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
@@ -293,7 +293,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.8.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/nodeup
   NODEUP_HASH=bb41724c37d15ab7e039e06230e742b9b38d0808
 
   export AWS_REGION=us-test-1
@@ -458,7 +458,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
   - c4871c7315817ee114f5c554a58da8ebc54f08c3@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubelet
   - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
   - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
-  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
+  - 42b15a0a0a56531750bde3c7b08d0cf27c170c48@https://artifacts.k8s.io/binaries/kops/1.8.1/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/v1.8.1/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.8.1/linux/amd64/utils.tar.gz
   ClusterName: additionalcidr.example.com
   ConfigBase: memfs://clusters.example.com/additionalcidr.example.com
   InstanceGroupName: nodes
@@ -472,7 +472,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Propert
     name: protokube:1.8.1
     sources:
     - https://artifacts.k8s.io/binaries/kops/1.8.1/images/protokube.tar.gz
-    - https://github.com/kubernetes/kops/releases/download/1.8.1/images-protokube.tar.gz
+    - https://github.com/kubernetes/kops/releases/download/v1.8.1/images-protokube.tar.gz
     - https://kubeupv2.s3.amazonaws.com/kops/1.8.1/images/protokube.tar.gz
 
   __EOF_KUBE_ENV
