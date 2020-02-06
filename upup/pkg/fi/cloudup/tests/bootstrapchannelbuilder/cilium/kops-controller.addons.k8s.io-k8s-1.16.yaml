@@ -17,7 +17,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.18.0-alpha.1
+    version: v1.18.0-alpha.2
   name: kops-controller
   namespace: kube-system
 spec:
@@ -29,14 +29,14 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.18.0-alpha.1
+        version: v1.18.0-alpha.2
     spec:
       containers:
       - command:
         - /usr/bin/kops-controller
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config.yaml
-        image: kope/kops-controller:1.18.0-alpha.1
+        image: kope/kops-controller:1.18.0-alpha.2
         name: kops-controller
         resources:
           requests:
