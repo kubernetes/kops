@@ -89,7 +89,7 @@ spec:
   - id: k8s-1.7
     kubernetesVersion: <1.12.0
     manifest: networking.cilium.io/k8s-1.7.yaml
-    manifestHash: 2d40b9ab7453b4a0a413196fae4c8bdcd62c69ce
+    manifestHash: 6928e95ec4b8359075e3dfb069f74e290e2e6eb2
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
@@ -97,7 +97,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.cilium.io/k8s-1.12.yaml
-    manifestHash: 47d2613d2d7380172350417e1cd282ea7cf893c3
+    manifestHash: 84295d293c8a461f7d510721c48b969cd1d99e54
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
