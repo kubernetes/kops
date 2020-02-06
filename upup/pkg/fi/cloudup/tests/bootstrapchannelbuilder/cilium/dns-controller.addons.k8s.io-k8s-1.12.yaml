@@ -35,6 +35,8 @@ spec:
           requests:
             cpu: 50m
             memory: 50Mi
+        securityContext:
+          runAsNonRoot: true
       dnsPolicy: Default
       hostNetwork: true
       nodeSelector:
