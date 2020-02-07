@@ -59,27 +59,27 @@ spec:
   - id: pre-k8s-1.6
     kubernetesVersion: <1.6.0
     manifest: dns-controller.addons.k8s.io/pre-k8s-1.6.yaml
-    manifestHash: 53004c335fce4824fdcc0d57f5138ebd22a23ca2
+    manifestHash: 11bc83839bfb5cfe9cdc347da638ed149816b1a5
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.1
+    version: 1.15.2
   - id: k8s-1.6
     kubernetesVersion: '>=1.6.0 <1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: 3ce358002686decc40e6c4c1f022240a0ceaf61a
+    manifestHash: 73d9aaad71c39dec4247716755622d0e5eabd9cc
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.1
+    version: 1.15.2
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 6f7992bdde16a32787136e6e28b163d8c747d249
+    manifestHash: 5301f3013d87c529da2367e2321bdb97d62b64a9
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.15.1
+    version: 1.15.2
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
@@ -87,7 +87,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.1
+    version: 1.15.2
   - id: v1.7.0
     kubernetesVersion: '>=1.7.0 <1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
@@ -95,7 +95,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.1
+    version: 1.15.2
   - id: v1.6.0
     kubernetesVersion: <1.7.0
     manifest: storage-aws.addons.k8s.io/v1.6.0.yaml
@@ -103,7 +103,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.1
+    version: 1.15.2
   - id: k8s-1.7
     kubernetesVersion: '>=1.7.0 <1.12.0'
     manifest: networking.cilium.io/k8s-1.7.yaml

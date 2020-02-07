@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.15.1
+    version: v1.15.2
   name: dns-controller
   namespace: kube-system
 spec:
@@ -19,7 +19,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.15.1
+        version: v1.15.2
     spec:
       containers:
       - command:
@@ -38,7 +38,7 @@ spec:
           value: http://proxy.example.com
         - name: no_proxy
           value: noproxy.example.com,127.0.0.1,localhost,api.minimal.example.com,minimal.example.com,100.64.0.1,100.64.0.0/10,169.254.169.254,172.20.0.0/16
-        image: kope/dns-controller:1.15.1
+        image: kope/dns-controller:1.15.2
         name: dns-controller
         resources:
           requests:
