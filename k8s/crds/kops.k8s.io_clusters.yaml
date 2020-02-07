@@ -2359,6 +2359,8 @@ spec:
                       items:
                         type: string
                       type: array
+                    agentPrometheusPort:
+                      type: integer
                     allowLocalhost:
                       type: string
                     autoDirectNodeRoutes:
@@ -2405,6 +2407,8 @@ spec:
                       type: boolean
                     enablePolicy:
                       type: string
+                    enablePrometheusMetrics:
+                      type: boolean
                     enableTracing:
                       type: boolean
                     enableipv4:
