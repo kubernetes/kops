@@ -40,11 +40,12 @@ func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
 			Path: dirname,
 			Type: nodetasks.FileType_Directory,
 			Mode: s("0755"),
+		})
 
-			OnChangeExecute: [][]string{
-				{"/bin/mount", "--bind", dirname, dirname},
-				{"/bin/mount", "-o", "remount,exec", dirname},
-			},
+		c.AddTask(&nodetasks.BindMount{
+			Source:     dirname,
+			Mountpoint: dirname,
+			Options:    []string{"exec"},
 		})
 	}
 
