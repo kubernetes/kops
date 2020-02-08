@@ -25,15 +25,11 @@
 # and the output will be discarded.
 
 # The code below presents an implementation that works for git repository
-git_rev=$(git rev-parse HEAD)
-if [[ $? != 0 ]];
-then
-    exit 1
-fi
+git_rev=$(git rev-parse HEAD 2>/dev/null)
 echo "BUILD_SCM_REVISION ${git_rev}"
 
 # Check whether there are any uncommited changes
-git diff-index --quiet HEAD --
+git diff-index --quiet HEAD -- 2>/dev/null
 if [[ $? == 0 ]];
 then
     tree_status="Clean"
@@ -43,7 +39,7 @@ fi
 echo "BUILD_SCM_STATUS ${tree_status}"
 
 # Compute KOPS_VERSION.  Keep in sync with logic in Makefile
-GITSHA=$(git describe --always)
+GITSHA=$(git describe --always 2>/dev/null)
 
 # These variables need to match the values in our Makefile
 # When we cut a new release we need to increment these accordingly
