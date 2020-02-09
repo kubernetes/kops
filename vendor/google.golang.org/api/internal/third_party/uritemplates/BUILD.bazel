@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "uritemplates.go",
+        "utils.go",
+    ],
+    importmap = "k8s.io/kops/vendor/google.golang.org/api/internal/third_party/uritemplates",
+    importpath = "google.golang.org/api/internal/third_party/uritemplates",
+    visibility = ["//vendor/google.golang.org/api:__subpackages__"],
+)
