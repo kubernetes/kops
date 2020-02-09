@@ -24,7 +24,7 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	"golang.org/x/net/context"
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"

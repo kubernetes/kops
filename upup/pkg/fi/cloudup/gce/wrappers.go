@@ -19,8 +19,7 @@ package gce
 import (
 	"fmt"
 
-	context "golang.org/x/net/context"
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog"
 )
 
@@ -86,7 +85,6 @@ func DeleteInstance(c GCECloud, instanceSelfLink string) error {
 
 // ListManagedInstances lists the specified InstanceGroupManagers in GCE
 func ListManagedInstances(c GCECloud, igm *compute.InstanceGroupManager) ([]*compute.ManagedInstance, error) {
-	ctx := context.Background()
 	project := c.Project()
 
 	zoneName := LastComponent(igm.Zone)
@@ -98,15 +96,10 @@ func ListManagedInstances(c GCECloud, igm *compute.InstanceGroupManager) ([]*com
 	//		googleapi.Field("items/metadata/items[key='instance-template']"),
 	//	)
 
-	var instances []*compute.ManagedInstance
-	err := c.Compute().InstanceGroupManagers.ListManagedInstances(project, zoneName, igm.Name).Pages(ctx,
-		func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
-			instances = append(instances, page.ManagedInstances...)
-			return nil
-		})
+	req := c.Compute().InstanceGroupManagers.ListManagedInstances(project, zoneName, igm.Name)
+	resp, err := req.Do()
 	if err != nil {
 		return nil, fmt.Errorf("error listing ManagedInstances in %s: %v", igm.Name, err)
 	}
-
-	return instances, nil
+	return resp.ManagedInstances, nil
 }

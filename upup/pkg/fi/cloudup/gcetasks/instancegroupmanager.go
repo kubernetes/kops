@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"reflect"
 
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -151,21 +151,15 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 		}
 
 		if changes.TargetSize != nil {
-			request := &compute.InstanceGroupManagersResizeAdvancedRequest{
-				TargetSize: i.TargetSize,
-			}
-			if i.TargetSize == 0 {
-				request.ForceSendFields = append(request.ForceSendFields, "TargetSize")
-			}
-			op, err := t.Cloud.Compute().InstanceGroupManagers.ResizeAdvanced(t.Cloud.Project(), *e.Zone, i.Name, request).Do()
+
+			req := t.Cloud.Compute().InstanceGroupManagers.Resize(t.Cloud.Project(), *e.Zone, i.Name, i.TargetSize)
+			resp, err := req.Do()
 			if err != nil {
-				return fmt.Errorf("error resizing InstanceGroupManager: %v", err)
+				return fmt.Errorf("error resizing ManagedInstances in %s: %v", i.Name, err)
 			}
-
-			if err := t.Cloud.WaitForOp(op); err != nil {
-				return fmt.Errorf("error resizing InstanceGroupManager: %v", err)
+			if err := t.Cloud.WaitForOp(resp); err != nil {
+				return fmt.Errorf("error resizing ManagedInstances in %s: %v", i.Name, err)
 			}
-
 			changes.TargetSize = nil
 		}
 

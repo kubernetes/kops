@@ -19,7 +19,7 @@ package gce
 import (
 	"fmt"
 
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	v1 "k8s.io/api/core/v1"

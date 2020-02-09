@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources"
