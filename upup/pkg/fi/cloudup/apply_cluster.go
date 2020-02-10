@@ -396,8 +396,9 @@ func (c *ApplyClusterCmd) Run() error {
 			modelContext.SSHPublicKeys = sshPublicKeys
 
 			l.AddTypes(map[string]interface{}{
-				"volume":  &dotasks.Volume{},
-				"droplet": &dotasks.Droplet{},
+				"volume":       &dotasks.Volume{},
+				"droplet":      &dotasks.Droplet{},
+				"loadbalancer": &dotasks.LoadBalancer{},
 			})
 		}
 	case kops.CloudProviderAWS:
@@ -643,8 +644,12 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				)
 			case kops.CloudProviderDO:
+				doModelContext := &domodel.DOModelContext{
+					KopsModelContext: modelContext,
+				}
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					&domodel.APILoadBalancerModelBuilder{DOModelContext: doModelContext, Lifecycle: &securityLifecycle},
 				)
 
 			case kops.CloudProviderGCE:

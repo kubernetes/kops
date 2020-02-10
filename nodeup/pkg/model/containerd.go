@@ -97,7 +97,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
@@ -133,6 +133,16 @@ var containerdVersions = []packageVersion{
 		Version:        "1.3.2",
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.2.linux-amd64.tar.gz",
 		Hash:           "f451d46280104588f236bee277bca1da8babc0e8",
+	},
+
+	// 1.3.3 - Linux Generic
+	{
+		PackageVersion: "1.3.3",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Version:        "1.3.3",
+		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.3.linux-amd64.tar.gz",
+		Hash:           "921b74e84da366ec3eaa72ff97fa8d6ae56834c6",
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
