@@ -70,11 +70,7 @@ func TestValidateInstanceProfile(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		err := validateInstanceProfile(g.Input, field.NewPath("IAMProfile"))
-		allErrs := field.ErrorList{}
-		if err != nil {
-			allErrs = append(allErrs, err)
-		}
+		allErrs := validateInstanceProfile(g.Input, field.NewPath("IAMProfile"))
 		testErrors(t, g.Input, allErrs, g.ExpectedErrors)
 
 		if g.ExpectedDetail != "" {

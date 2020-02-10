@@ -23,11 +23,7 @@ import (
 )
 
 func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *kops.Cluster) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	if err := ValidateCluster(obj, false); err != nil {
-		allErrs = append(allErrs, err)
-	}
+	allErrs := ValidateCluster(obj, false)
 
 	// Validate etcd cluster changes
 	{
