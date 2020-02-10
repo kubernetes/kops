@@ -41,6 +41,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// kubernetesRelease is the version with only major & minor fields
+	// We initialize to an arbitrary value, preferably in the supported range,
+	// in case the value in c.Spec.KubernetesVersion is blank or unparseable.
 	kubernetesRelease := semver.Version{Major: 1, Minor: 15}
 
 	// KubernetesVersion
