@@ -453,9 +453,11 @@ type EtcdBackupSpec struct {
 type EtcdManagerSpec struct {
 	// Image is the etcd manager image to use.
 	Image string `json:"image,omitempty"`
-	// EtcdConfigOverwrite allows etcd setting to be overwritten with ENV variables. The setting are not validated.
-	// A list of config ENV vars can be found at https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/configuration.md
-	EtcdConfigOverwrite map[string]string `json:"etcdConfigOverwrite,omitempty"`
+	// Env allows users to pass in env variables to the etcd-manager container.
+	// Variables starting with ETCD_ will be further passed down to the etcd process.
+	// This allows etcd setting to be overwriten. No config validation is done.
+	// A list of etcd config ENV vars can be found at https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/configuration.md
+	Env []EnvVar `json:"env,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member
