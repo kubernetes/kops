@@ -2,6 +2,7 @@
 timeout: 1200s
 options:
   substitution_option: ALLOW_LOOSE
+  machineType: 'N1_HIGHCPU_8'
 steps:
 # Start by just pushing the image
 - name: 'gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1'
