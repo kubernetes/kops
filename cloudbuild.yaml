@@ -1,0 +1,33 @@
+# See https://cloud.google.com/cloud-build/docs/build-config
+timeout: 1200s
+options:
+  substitution_option: ALLOW_LOOSE
+steps:
+# Start by just pushing the image
+- name: 'gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1'
+  entrypoint: make
+  env:
+  - VERSION=$_GIT_TAG
+  - PULL_BASE_REF=$_PULL_BASE_REF
+  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+  args:
+  - kops-controller-push
+- name: 'gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1'
+  entrypoint: make
+  env:
+  - VERSION=$_GIT_TAG
+  - PULL_BASE_REF=$_PULL_BASE_REF
+  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+  - GCS_LOCATION=$_GCS_LOCATION
+  args:
+  - gcs-upload
+substitutions:
+  # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
+  # can be used as a substitution
+  _GIT_TAG: '12345'
+  _PULL_BASE_REF: 'dev'
+  _DOCKER_REGISTRY: 'gcr.io'
+  _DOCKER_IMAGE_PREFIX: 'k8s-staging-kops/'
+  _GCS_LOCATION: 'gs://k8s-staging-kops/kops/releases/'

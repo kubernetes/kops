@@ -60,6 +60,15 @@ type GSAcl struct {
 	Acl []*storage.ObjectAccessControl
 }
 
+func (a *GSAcl) String() string {
+	var s []string
+	for _, acl := range a.Acl {
+		s = append(s, fmt.Sprintf("%+v", acl))
+	}
+
+	return "{" + strings.Join(s, ", ") + "}"
+}
+
 var _ ACL = &GSAcl{}
 
 // gcsWriteBackoff is the backoff strategy for GCS write retries
@@ -135,14 +144,12 @@ func (p *GSPath) Join(relativePath ...string) Path {
 }
 
 func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
+	md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
+	if err != nil {
+		return err
+	}
+
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
-		klog.V(4).Infof("Writing file %q", p)
-
-		md5Hash, err := hashing.HashAlgorithmMD5.Hash(data)
-		if err != nil {
-			return false, err
-		}
-
 		obj := &storage.Object{
 			Name:    p.key,
 			Md5Hash: base64.StdEncoding.EncodeToString(md5Hash.HashValue),
@@ -154,6 +161,9 @@ func (p *GSPath) WriteFile(data io.ReadSeeker, acl ACL) error {
 				return true, fmt.Errorf("write to %s with ACL of unexpected type %T", p, acl)
 			}
 			obj.Acl = gsACL.Acl
+			klog.V(4).Infof("Writing file %q with ACL %v", p, gsACL)
+		} else {
+			klog.V(4).Infof("Writing file %q", p)
 		}
 
 		if _, err := data.Seek(0, 0); err != nil {

@@ -18,6 +18,7 @@ go_library(
         "//pkg/assets:go_default_library",
         "//pkg/client/simple:go_default_library",
         "//pkg/featureflag:go_default_library",
+        "//pkg/resources/digitalocean:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/cloudup/aliup:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",

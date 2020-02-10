@@ -21,6 +21,7 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      priorityClassName: system-cluster-critical
       serviceAccount: external-dns
       tolerations:
       - key: "node-role.kubernetes.io/master"
