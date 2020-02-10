@@ -152,7 +152,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}
 
-	err = validation.ValidateInstanceGroup(newGroup)
+	err = validation.ValidateInstanceGroup(newGroup).ToAggregate()
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return err
 	}
 
-	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, true)
+	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, true).ToAggregate()
 	if err != nil {
 		return err
 	}

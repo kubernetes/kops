@@ -99,8 +99,8 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 }
 
 func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
-	if err := validation.ValidateCluster(c, false); err != nil {
-		return nil, err
+	if errs := validation.ValidateCluster(c, false); len(errs) != 0 {
+		return nil, errs.ToAggregate()
 	}
 
 	if c.ObjectMeta.CreationTimestamp.IsZero() {

@@ -221,7 +221,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 			return fmt.Errorf("unexpected object type: %T", obj)
 		}
 
-		err = validation.ValidateInstanceGroup(group)
+		err = validation.ValidateInstanceGroup(group).ToAggregate()
 		if err != nil {
 			return err
 		}
