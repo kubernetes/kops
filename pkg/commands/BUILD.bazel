@@ -4,7 +4,9 @@ go_library(
     name = "go_default_library",
     srcs = [
         "helpers_readwrite.go",
+        "set.go",
         "set_cluster.go",
+        "set_instancegroup.go",
         "status_discovery.go",
         "version.go",
     ],
@@ -26,6 +28,7 @@ go_library(
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
@@ -34,10 +37,15 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["set_cluster_test.go"],
+    srcs = [
+        "set_cluster_test.go",
+        "set_instancegroup_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/github.com/stretchr/testify/require:go_default_library",
     ],
 )

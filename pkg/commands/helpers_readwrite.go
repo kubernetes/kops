@@ -17,8 +17,7 @@ limitations under the License.
 package commands
 
 import (
-	"fmt"
-
+	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -31,7 +30,7 @@ import (
 func UpdateCluster(clientset simple.Clientset, cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) error {
 	err := cloudup.PerformAssignments(cluster)
 	if err != nil {
-		return fmt.Errorf("error populating configuration: %v", err)
+		return errors.Wrap(err, "error populating configuration: %v")
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
@@ -54,6 +53,34 @@ func UpdateCluster(clientset simple.Clientset, cluster *kops.Cluster, instanceGr
 
 	// Note we perform as much validation as we can, before writing a bad config
 	_, err = clientset.UpdateCluster(cluster, status)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateInstanceGroup writes the updated instance group to the state store after
+// performing validation
+func UpdateInstanceGroup(clientset simple.Clientset, cluster *kops.Cluster, allInstanceGroups []*kops.InstanceGroup, instanceGroupToUpdate *kops.InstanceGroup) error {
+	err := cloudup.PerformAssignments(cluster)
+	if err != nil {
+		return errors.Wrap(err, "error populating configuration: %v")
+	}
+
+	assetBuilder := assets.NewAssetBuilder(cluster, "")
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
+	if err != nil {
+		return err
+	}
+
+	err = validation.DeepValidate(fullCluster, allInstanceGroups, true)
+	if err != nil {
+		return err
+	}
+
+	// Validation was successful so commit the changed instance group.
+	_, err = clientset.InstanceGroupsFor(cluster).Update(instanceGroupToUpdate)
 	if err != nil {
 		return err
 	}

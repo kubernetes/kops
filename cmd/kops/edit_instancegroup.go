@@ -88,6 +88,9 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 	}
 
 	groupName := args[0]
+	if groupName == "" {
+		return fmt.Errorf("name is required")
+	}
 
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
@@ -102,10 +105,6 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
-	}
-
-	if groupName == "" {
-		return fmt.Errorf("name is required")
 	}
 
 	oldGroup, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})

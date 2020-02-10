@@ -30,15 +30,10 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 )
 
-type SetClusterOptions struct {
-	Fields      []string
-	ClusterName string
-}
-
 // RunSetCluster implements the set cluster command logic
-func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetClusterOptions) error {
+func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetOptions) error {
 	if !featureflag.SpecOverrideFlag.Enabled() {
-		return fmt.Errorf("set cluster command is current feature gated; set `export KOPS_FEATURE_FLAGS=SpecOverrideFlag`")
+		return fmt.Errorf("set cluster command is currently feature gated; set `export KOPS_FEATURE_FLAGS=SpecOverrideFlag`")
 	}
 
 	if options.ClusterName == "" {

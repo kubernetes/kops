@@ -47,6 +47,7 @@ func NewCmdSet(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdSetCluster(f, out))
+	cmd.AddCommand(NewCmdSetInstancegroup(f, out))
 
 	return cmd
 }
