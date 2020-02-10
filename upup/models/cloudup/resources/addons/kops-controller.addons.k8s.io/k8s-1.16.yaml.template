@@ -19,7 +19,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.15.0-alpha.1
+    version: v1.16.0-beta.2
 spec:
   selector:
     matchLabels:
@@ -33,7 +33,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.15.0-alpha.1
+        version: v1.16.0-beta.2
     spec:
       priorityClassName: system-node-critical
       tolerations:
@@ -46,7 +46,7 @@ spec:
       serviceAccount: kops-controller
       containers:
       - name: kops-controller
-        image: kope/kops-controller:1.15.0-alpha.1
+        image: kope/kops-controller:1.16.0-beta.2
         volumeMounts:
 {{ if .UseHostCertificates }}
         - mountPath: /etc/ssl/certs

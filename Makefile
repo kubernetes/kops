@@ -56,9 +56,9 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.16.0-beta.1
+DNS_CONTROLLER_TAG=1.16.0-beta.2
 # Keep in sync with upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
-KOPS_CONTROLLER_TAG=1.16.0-beta.1
+KOPS_CONTROLLER_TAG=1.16.0-beta.2
 
 # Keep in sync with logic in get_workspace_status
 # TODO: just invoke tools/get_workspace_status.sh?
