@@ -39,11 +39,14 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 	//   ethtool - kops #1830
 	if b.Distribution.IsDebianFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
+		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
 		c.AddTask(&nodetasks.Package{Name: "conntrack"})
 		c.AddTask(&nodetasks.Package{Name: "ebtables"})
 		c.AddTask(&nodetasks.Package{Name: "ethtool"})
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
+		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
 		c.AddTask(&nodetasks.Package{Name: "libseccomp2"})
+		c.AddTask(&nodetasks.Package{Name: "libltdl7"})
 		c.AddTask(&nodetasks.Package{Name: "pigz"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
@@ -54,6 +57,7 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "ethtool"})
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
 		c.AddTask(&nodetasks.Package{Name: "libseccomp"})
+		c.AddTask(&nodetasks.Package{Name: "libtool-ltdl"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
 		// Handle some packages differently for each distro

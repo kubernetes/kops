@@ -53,6 +53,7 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 		packages = append(packages, "curl")
 		packages = append(packages, "wget")
 		packages = append(packages, "nfs-common")
+		packages = append(packages, "perl")
 		packages = append(packages, "python-apt")
 		packages = append(packages, "apt-transport-https")
 	} else if b.Distribution.IsRHELFamily() {
