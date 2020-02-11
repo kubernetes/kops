@@ -120,9 +120,26 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.11",
 		PlainBinary:    true,
 		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "1.2.11",
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.11.linux-amd64.tar.gz",
 		Hash:           "c98c9fdfd0984557e5b1a1f209213d2d8ad8471c",
+	},
+
+	// 1.2.12 - Linux Generic
+	{
+		PackageVersion: "1.2.12",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.12.linux-amd64.tar.gz",
+		Hash:           "9455ca2508ad57438cb02a986ba763033bcb05f7",
+	},
+
+	// 1.2.13 - Linux Generic
+	{
+		PackageVersion: "1.2.13",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.13.linux-amd64.tar.gz",
+		Hash:           "70ee2821e26116b0cddc679d14806fd20d25d65c",
 	},
 
 	// 1.3.2 - Linux Generic
@@ -130,7 +147,6 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.3.2",
 		PlainBinary:    true,
 		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "1.3.2",
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.2.linux-amd64.tar.gz",
 		Hash:           "f451d46280104588f236bee277bca1da8babc0e8",
 	},
@@ -140,13 +156,12 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.3.3",
 		PlainBinary:    true,
 		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "1.3.3",
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.3.linux-amd64.tar.gz",
 		Hash:           "921b74e84da366ec3eaa72ff97fa8d6ae56834c6",
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
-	//   VERIFY_HASHES=1 go test ./nodeup/pkg/model -run TestContainerdPackageHashes
+	//   VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run TestContainerdPackageHashes
 	// (you might want to temporarily comment out older versions on a slower connection and then validate)
 }
 
