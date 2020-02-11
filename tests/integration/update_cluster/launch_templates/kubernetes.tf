@@ -611,6 +611,15 @@ resource "aws_launch_template" "nodes-launchtemplates-example-com" {
   instance_type = "t3.medium"
   key_name      = "${aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
 
+  instance_market_options = {
+    market_type = "spot"
+
+    spot_options = {
+      block_duration_minutes = 120
+      max_price              = "0.1"
+    }
+  }
+
   network_interfaces = {
     associate_public_ip_address = true
     delete_on_termination       = true

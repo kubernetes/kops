@@ -131,6 +131,9 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	if ig.Spec.MixedInstancesPolicy == nil {
 		lt.SpotPrice = lc.SpotPrice
 	}
+	if ig.Spec.SpotDurationInMinutes != nil {
+		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
+	}
 	return lt, nil
 }
 

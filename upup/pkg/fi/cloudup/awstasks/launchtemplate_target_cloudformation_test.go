@@ -37,6 +37,8 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
 				RootVolumeOptimization: fi.Bool(true),
 				RootVolumeIops:         fi.Int64(100),
 				RootVolumeSize:         fi.Int64(64),
+				SpotPrice:              "10",
+				SpotDurationInMinutes:  fi.Int64(120),
 				SSHKey: &SSHKey{
 					Name: fi.String("mykey"),
 				},
@@ -61,6 +63,13 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           },
           "InstanceType": "t2.medium",
           "KeyName": "mykey",
+          "InstanceMarketOptions": {
+            "MarketType": "spot",
+            "SpotOptions": {
+              "BlockDurationMinutes": 120,
+              "MaxPrice": "10"
+            }
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
