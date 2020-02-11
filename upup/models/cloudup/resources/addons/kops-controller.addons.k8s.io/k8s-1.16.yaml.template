@@ -70,6 +70,8 @@ spec:
           requests:
             cpu: 50m
             memory: 50Mi
+        securityContext:
+          runAsNonRoot: true
       volumes:
 {{ if .UseHostCertificates }}
       - hostPath:
