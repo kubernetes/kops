@@ -224,7 +224,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Name:              "c3.8xlarge",
 		MemoryGB:          60,
 		ECU:               108,
-		Cores:             36,
+		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
 		EphemeralDisks:    []int{320, 320},
@@ -810,7 +810,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Name:              "hs1.8xlarge",
 		MemoryGB:          117,
 		ECU:               35,
-		Cores:             17,
+		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
 		EphemeralDisks:    []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
@@ -891,7 +891,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.4xlarge",
 		MemoryGB:          122,
-		ECU:               53,
+		ECU:               58,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1228,7 +1228,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.large",
 		MemoryGB:          8,
-		ECU:               8,
+		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1926,7 +1926,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.large",
 		MemoryGB:          15.25,
-		ECU:               7,
+		ECU:               8,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1976,7 +1976,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.16xlarge",
 		MemoryGB:          488,
-		ECU:               195,
+		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2831,7 +2831,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.3xlarge",
 		MemoryGB:          96,
-		ECU:               75,
+		ECU:               64,
 		Cores:             12,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
