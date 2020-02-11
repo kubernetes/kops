@@ -35,6 +35,7 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				InstanceMonitoring:     fi.Bool(true),
 				InstanceType:           fi.String("t2.medium"),
 				SpotPrice:              "0.1",
+				SpotDurationInMinutes:	fi.Int64(60),
 				RootVolumeOptimization: fi.Bool(true),
 				RootVolumeIops:         fi.Int64(100),
 				RootVolumeSize:         fi.Int64(64),
@@ -72,7 +73,8 @@ resource "aws_launch_template" "test" {
     market_type = "spot"
 
     spot_options = {
-      max_price = "0.1"
+      block_duration_minutes = 60
+      max_price              = "0.1"
     }
   }
 
