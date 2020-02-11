@@ -3225,6 +3225,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 		out.Hooks = nil
 	}
 	out.MaxPrice = in.MaxPrice
+	out.SpotDurationInMinutes = in.SpotDurationInMinutes
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.CloudLabels = in.CloudLabels
@@ -3362,6 +3363,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 		out.Hooks = nil
 	}
 	out.MaxPrice = in.MaxPrice
+	out.SpotDurationInMinutes = in.SpotDurationInMinutes
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.CloudLabels = in.CloudLabels
