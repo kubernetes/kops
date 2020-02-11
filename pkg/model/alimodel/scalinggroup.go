@@ -118,7 +118,7 @@ func (b *ScalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroup: b.LinkToSecurityGroup(ig.Spec.Role),
 				RAMRole:       b.LinkToRAMRole(ig.Spec.Role),
 
-				ImageId:            s(ig.Spec.Image),
+				ImageID:            s(ig.Spec.Image),
 				InstanceType:       s(instanceType),
 				SystemDiskSize:     i(int(volumeSize)),
 				SystemDiskCategory: s(volumeType),
