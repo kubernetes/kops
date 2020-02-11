@@ -42,6 +42,8 @@ spec:
           requests:
             cpu: 50m
             memory: 50Mi
+        securityContext:
+          runAsNonRoot: true
         volumeMounts:
         - mountPath: /etc/kubernetes/kops-controller/
           name: kops-controller-config
