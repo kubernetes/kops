@@ -671,6 +671,11 @@ spec:
               description: SecurityGroupOverride overrides the default security group
                 created by Kops for this IG (AWS only).
               type: string
+            spotDurationInMinutes:
+              description: SpotDurationInMinutes indicates this is a spot-block group,
+                with the specified value as the spot reservation time
+              format: int64
+              type: integer
             subnets:
               description: Subnets is the names of the Subnets (as specified in the
                 Cluster) where machines in this instance group should be placed

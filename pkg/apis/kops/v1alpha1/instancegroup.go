@@ -106,6 +106,8 @@ type InstanceGroupSpec struct {
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
 	MaxPrice *string `json:"maxPrice,omitempty"`
+	// SpotDurationInMinutes indicates this is a spot-block group, with the specified value as the spot reservation time
+	SpotDurationInMinutes *int64 `json:"spotDurationInMinutes,omitempty"`
 	// AssociatePublicIP is true if we want instances to have a public IP
 	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)

@@ -1800,6 +1800,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SpotDurationInMinutes != nil {
+		in, out := &in.SpotDurationInMinutes, &out.SpotDurationInMinutes
+		*out = new(int64)
+		**out = **in
+	}
 	if in.AssociatePublicIP != nil {
 		in, out := &in.AssociatePublicIP, &out.AssociatePublicIP
 		*out = new(bool)
