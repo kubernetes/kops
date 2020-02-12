@@ -34,7 +34,7 @@ var (
 
 		This command changes the desired instance group configuration in the registry.
 
-        kops set does not update the cloud resources, to apply the changes use "kops update cluster".
+        kops set does not update the cloud resources; to apply the changes use "kops update cluster".
 		
 		Valid Instance Group Settings:
 
@@ -48,7 +48,7 @@ var (
 	setInstancegroupShort = i18n.T("Set instancegroup fields.")
 )
 
-// NewCmdSetInstancegroup builds a cobra command for the kops set instancegroup command
+// NewCmdSetInstancegroup builds a cobra command for the kops set instancegroup command.
 func NewCmdSetInstancegroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &commands.SetOptions{}
 	kts := commands.ValidInstanceGroupKeysToSetters()

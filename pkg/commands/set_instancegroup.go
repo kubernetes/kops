@@ -23,10 +23,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
@@ -99,7 +97,7 @@ func RunSetInstancegroup(f *util.Factory, cmd *cobra.Command, out io.Writer, opt
 
 	err = SetInstancegroupFields(options.Fields, instanceGroupToUpdate)
 	if err != nil {
-		return errors.Wrap(err, "unable to set instance group")
+		return err
 	}
 
 	err = UpdateInstanceGroup(clientset, cluster, instanceGroups, instanceGroupToUpdate)

@@ -30,7 +30,7 @@ import (
 func UpdateCluster(clientset simple.Clientset, cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) error {
 	err := cloudup.PerformAssignments(cluster)
 	if err != nil {
-		return errors.Wrap(err, "error populating configuration: %v")
+		return errors.Wrap(err, "populating configuration")
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
@@ -65,7 +65,7 @@ func UpdateCluster(clientset simple.Clientset, cluster *kops.Cluster, instanceGr
 func UpdateInstanceGroup(clientset simple.Clientset, cluster *kops.Cluster, allInstanceGroups []*kops.InstanceGroup, instanceGroupToUpdate *kops.InstanceGroup) error {
 	err := cloudup.PerformAssignments(cluster)
 	if err != nil {
-		return errors.Wrap(err, "error populating configuration: %v")
+		return errors.Wrap(err, "populating configuration")
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")

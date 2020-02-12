@@ -11,7 +11,7 @@ Set an instance group field value.
 
  This command changes the desired instance group configuration in the registry.
 
-    kops set does not update the cloud resources, to apply the changes use "kops update cluster".
+    kops set does not update the cloud resources; to apply the changes use "kops update cluster".
   
  Valid Instance Group Settings:
 
