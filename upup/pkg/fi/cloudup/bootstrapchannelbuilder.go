@@ -1056,6 +1056,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 			"k8s-1.8":  "1.5.0-kops.1",
 			"k8s-1.10": "1.5.0-kops.2",
 			"k8s-1.12": "1.5.5-kops.1",
+			"k8s-1.16": "1.6.0-kops.1",
 		}
 
 		{
@@ -1109,7 +1110,21 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.12.0",
+				KubernetesVersion: ">=1.12.0 <1.16.0",
+				Id:                id,
+			})
+		}
+
+		{
+			id := "k8s-1.16"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(versions[id]),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.16.0",
 				Id:                id,
 			})
 		}

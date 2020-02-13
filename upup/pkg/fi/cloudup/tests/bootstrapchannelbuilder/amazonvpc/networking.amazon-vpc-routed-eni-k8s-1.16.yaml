@@ -1,0 +1,179 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aws-node
+rules:
+- apiGroups:
+  - crd.k8s.amazonaws.com
+  resources:
+  - '*'
+  - namespaces
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  - namespaces
+  verbs:
+  - list
+  - watch
+  - get
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  verbs:
+  - list
+  - watch
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-node
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: aws-node
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-node
+subjects:
+- kind: ServiceAccount
+  name: aws-node
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: aws-node
+  name: aws-node
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: aws-node
+  template:
+    metadata:
+      labels:
+        k8s-app: aws-node
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/os
+                operator: In
+                values:
+                - linux
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+              - key: eks.amazonaws.com/compute-type
+                operator: NotIn
+                values:
+                - fargate
+      containers:
+      - env:
+        - name: CLUSTER_NAME
+          value: minimal.example.com
+        - name: AWS_VPC_K8S_CNI_LOGLEVEL
+          value: DEBUG
+        - name: AWS_VPC_K8S_CNI_VETHPREFIX
+          value: eni
+        - name: AWS_VPC_ENI_MTU
+          value: "9001"
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.0
+        imagePullPolicy: Always
+        livenessProbe:
+          exec:
+            command:
+            - /app/grpc-health-probe
+            - -addr=:50051
+          initialDelaySeconds: 35
+        name: aws-node
+        ports:
+        - containerPort: 61678
+          name: metrics
+        readinessProbe:
+          exec:
+            command:
+            - /app/grpc-health-probe
+            - -addr=:50051
+          initialDelaySeconds: 35
+        resources:
+          requests:
+            cpu: 10m
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
+        - mountPath: /host/etc/cni/net.d
+          name: cni-net-dir
+        - mountPath: /host/var/log
+          name: log-dir
+        - mountPath: /var/run/docker.sock
+          name: dockersock
+        - mountPath: /var/run/dockershim.sock
+          name: dockershim
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      serviceAccountName: aws-node
+      tolerations:
+      - operator: Exists
+      volumes:
+      - hostPath:
+          path: /opt/cni/bin
+        name: cni-bin-dir
+      - hostPath:
+          path: /etc/cni/net.d
+        name: cni-net-dir
+      - hostPath:
+          path: /var/log
+        name: log-dir
+      - hostPath:
+          path: /var/run/docker.sock
+        name: dockersock
+      - hostPath:
+          path: /var/run/dockershim.sock
+        name: dockershim
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 10%
+    type: RollingUpdate
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: eniconfigs.crd.k8s.amazonaws.com
+spec:
+  group: crd.k8s.amazonaws.com
+  names:
+    kind: ENIConfig
+    plural: eniconfigs
+    singular: eniconfig
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
