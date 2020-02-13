@@ -123,6 +123,15 @@ metadata:
 rules:
 - apiGroups:
   - ""
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+- apiGroups:
+  - ""
   resourceNames:
   - kops-controller-leader
   resources:
