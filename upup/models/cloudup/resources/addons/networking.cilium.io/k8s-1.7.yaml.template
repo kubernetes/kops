@@ -363,6 +363,10 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ .MasterInternalName }}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
         {{ with .Networking.Cilium.EnablePolicy }}
         - name: CILIUM_ENABLE_POLICY
           value: {{ . }}
@@ -561,6 +565,7 @@ spec:
         {{ if .EnablePrometheusMetrics }}
         - --enable-metrics
         {{ end }}
+{{ end }}
         command:
         - cilium-operator
         env:
@@ -634,6 +639,11 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ .MasterInternalName }}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+{{ with .Networking.Cilium }}
         image: "docker.io/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
