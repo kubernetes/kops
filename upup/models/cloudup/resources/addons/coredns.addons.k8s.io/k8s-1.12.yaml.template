@@ -182,10 +182,10 @@ spec:
           mountPath: /etc/coredns
           readOnly: true
         ports:
-        - containerPort: 53
+        - containerPort: 5353
           name: dns
           protocol: UDP
-        - containerPort: 53
+        - containerPort: 5353
           name: dns-tcp
           protocol: TCP
         - containerPort: 9153
@@ -194,10 +194,9 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
-            add:
-            - NET_BIND_SERVICE
             drop:
             - all
+          runAsUser: 1000
           readOnlyRootFilesystem: true
         livenessProbe:
           httpGet:
@@ -246,12 +245,15 @@ spec:
   - name: dns
     port: 53
     protocol: UDP
+    targetPort: dns
   - name: dns-tcp
     port: 53
     protocol: TCP
+    targetPort: dns-tcp
   - name: metrics
     port: 9153
     protocol: TCP
+    targetPort: metrics
 
 ---
 
