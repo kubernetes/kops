@@ -584,7 +584,6 @@ ${CHANNELS}:
 
 .PHONY: release-tag
 release-tag:
-	git tag ${KOPS_RELEASE_VERSION}
 	git tag v${KOPS_RELEASE_VERSION}
 
 .PHONY: release-github
