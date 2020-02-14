@@ -26,12 +26,12 @@ const (
 	LabelOSStable   = "kubernetes.io/os"
 	LabelArchStable = "kubernetes.io/arch"
 
-	// LabelNamespaceSuffixKubelet is an allowed label namespace suffix kubelets can self-set ([*.]kubelet.kubernetes.io/*)
+	// LabelNamespaceSuffixKubelet is an allowed label namespace suffix kubelet can self-set ([*.]kubelet.kubernetes.io/*)
 	LabelNamespaceSuffixKubelet = "kubelet.kubernetes.io"
-	// LabelNamespaceSuffixNode is an allowed label namespace suffix kubelets can self-set ([*.]node.kubernetes.io/*)
+	// LabelNamespaceSuffixNode is an allowed label namespace suffix kubelet can self-set ([*.]node.kubernetes.io/*)
 	LabelNamespaceSuffixNode = "node.kubernetes.io"
 
-	// LabelNamespaceNodeRestriction is a forbidden label namespace that kubelets may not self-set when the NodeRestriction admission plugin is enabled
+	// LabelNamespaceNodeRestriction is a forbidden label namespace that kubelet may not self-set when the NodeRestriction admission plugin is enabled
 	LabelNamespaceNodeRestriction = "node-restriction.kubernetes.io"
 
 	// IsHeadlessService is added by Controller to an Endpoint denoting if its parent

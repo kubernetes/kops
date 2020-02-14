@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-// KubeletOptionsBuilder adds options for kubelets
+// KubeletOptionsBuilder adds options for kubelet
 type KubeletOptionsBuilder struct {
 	Context *OptionsContext
 }

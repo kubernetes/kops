@@ -12,7 +12,7 @@ Controllers in kops-controller:
 
 The NodeController watches Node objects, and applies labels to them from a
 controller.  Previously this was done by the kubelet, but the fear was that this
-was insecure and so [this functionality was removed](https://github.com/kubernetes/enhancements/blob/master/keps/sig-auth/0000-20170814-bounding-self-labeling-kubelets.md).
+was insecure and so [this functionality was removed](https://github.com/kubernetes/enhancements/blob/master/keps/sig-auth/0000-20170814-bounding-self-labeling-kubelet.md).
 
 The main difficulty here is mapping from a Node to an InstanceGroup in a way
 that does not render the system just as vulnerable to spoofing as it was

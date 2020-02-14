@@ -1,5 +1,5 @@
 # Source: https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/rbac/kubelet-binding.yaml
-# The GKE environments don't have kubelets with certificates that
+# The GKE environments don't have kubelet with certificates that
 # identify the system:nodes group.  They use the kubelet identity
 # TODO: remove this once new nodes are granted individual identities and the
 # NodeAuthorizer is enabled.

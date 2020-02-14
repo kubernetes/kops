@@ -2339,7 +2339,7 @@ message NodeSpec {
   // +optional
   optional NodeConfigSource configSource = 6;
 
-  // Deprecated. Not all kubelets will set this field. Remove field after 1.13.
+  // Deprecated. Not all kubelet will set this field. Remove field after 1.13.
   // see: https://issues.k8s.io/61966
   // +optional
   optional string externalID = 2;
@@ -2715,7 +2715,7 @@ message PersistentVolumeSource {
   // +optional
   optional ISCSIPersistentVolumeSource iscsi = 7;
 
-  // Cinder represents a cinder volume attached and mounted on kubelets host machine.
+  // Cinder represents a cinder volume attached and mounted on kubelet host machine.
   // More info: https://examples.k8s.io/mysql-cinder-pd/README.md
   // +optional
   optional CinderPersistentVolumeSource cinder = 8;
@@ -2741,7 +2741,7 @@ message PersistentVolumeSource {
   // +optional
   optional AzureFilePersistentVolumeSource azureFile = 13;
 
-  // VsphereVolume represents a vSphere volume attached and mounted on kubelets host machine
+  // VsphereVolume represents a vSphere volume attached and mounted on kubelet host machine
   // +optional
   optional VsphereVirtualDiskVolumeSource vsphereVolume = 14;
 
@@ -2753,10 +2753,10 @@ message PersistentVolumeSource {
   // +optional
   optional AzureDiskVolumeSource azureDisk = 16;
 
-  // PhotonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine
+  // PhotonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelet host machine
   optional PhotonPersistentDiskVolumeSource photonPersistentDisk = 17;
 
-  // PortworxVolume represents a portworx volume attached and mounted on kubelets host machine
+  // PortworxVolume represents a portworx volume attached and mounted on kubelet host machine
   // +optional
   optional PortworxVolumeSource portworxVolume = 18;
 
@@ -5137,7 +5137,7 @@ message VolumeSource {
   // +optional
   optional FlexVolumeSource flexVolume = 12;
 
-  // Cinder represents a cinder volume attached and mounted on kubelets host machine.
+  // Cinder represents a cinder volume attached and mounted on kubelet host machine.
   // More info: https://examples.k8s.io/mysql-cinder-pd/README.md
   // +optional
   optional CinderVolumeSource cinder = 13;
@@ -5166,7 +5166,7 @@ message VolumeSource {
   // +optional
   optional ConfigMapVolumeSource configMap = 19;
 
-  // VsphereVolume represents a vSphere volume attached and mounted on kubelets host machine
+  // VsphereVolume represents a vSphere volume attached and mounted on kubelet host machine
   // +optional
   optional VsphereVirtualDiskVolumeSource vsphereVolume = 20;
 
@@ -5178,13 +5178,13 @@ message VolumeSource {
   // +optional
   optional AzureDiskVolumeSource azureDisk = 22;
 
-  // PhotonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine
+  // PhotonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelet host machine
   optional PhotonPersistentDiskVolumeSource photonPersistentDisk = 23;
 
   // Items for all in one resources secrets, configmaps, and downward API
   optional ProjectedVolumeSource projected = 26;
 
-  // PortworxVolume represents a portworx volume attached and mounted on kubelets host machine
+  // PortworxVolume represents a portworx volume attached and mounted on kubelet host machine
   // +optional
   optional PortworxVolumeSource portworxVolume = 24;
 

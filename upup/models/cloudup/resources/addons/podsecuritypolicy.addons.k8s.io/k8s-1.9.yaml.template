@@ -51,7 +51,7 @@ subjects:
 - kind: Group
   name: system:masters
   apiGroup: rbac.authorization.k8s.io
-# permit the kubelets to access this policy (used for manifests)
+# permit the kubelet to access this policy (used for manifests)
 - kind: User
   name: kubelet
   apiGroup: rbac.authorization.k8s.io

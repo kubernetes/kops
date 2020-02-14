@@ -73,7 +73,7 @@ is how components like kube-scheduler and kube-controller-manager can reach the 
 requiring a token.
 
 APIServer also listens on the HTTPS port (443) on all interfaces.  This is a secured endpoint,
-and requires valid authentication/authorization to use it.  This is the endpoint that node kubelets
+and requires valid authentication/authorization to use it.  This is the endpoint that node kubelet
 will reach, and also that end-users will reach.
 
 kops uses DNS to allow nodes and end-users to discover the api-server.  The apiserver pod manifest (in

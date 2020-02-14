@@ -231,17 +231,17 @@ type Zones interface {
 	// GetZone returns the Zone containing the current failure zone and locality region that the program is running in
 	// In most cases, this method is called from the kubelet querying a local metadata service to acquire its zone.
 	// For the case of external cloud providers, use GetZoneByProviderID or GetZoneByNodeName since GetZone
-	// can no longer be called from the kubelets.
+	// can no longer be called from the kubelet.
 	GetZone(ctx context.Context) (Zone, error)
 
 	// GetZoneByProviderID returns the Zone containing the current zone and locality region of the node specified by providerID
 	// This method is particularly used in the context of external cloud providers where node initialization must be done
-	// outside the kubelets.
+	// outside the kubelet.
 	GetZoneByProviderID(ctx context.Context, providerID string) (Zone, error)
 
 	// GetZoneByNodeName returns the Zone containing the current zone and locality region of the node specified by node name
 	// This method is particularly used in the context of external cloud providers where node initialization must be done
-	// outside the kubelets.
+	// outside the kubelet.
 	GetZoneByNodeName(ctx context.Context, nodeName types.NodeName) (Zone, error)
 }
 

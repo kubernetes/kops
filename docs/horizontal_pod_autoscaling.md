@@ -119,7 +119,7 @@ These are the PRs that enable the required configuration:
   autoscaler-use-rest-clients` kube-controller-manager flag required to enable
   custom metrics
 * [kubernetes/kops#1574][pr-4] - add config options to set `--enable-custom-
-  metrics` flag on master and node kubelets required to enable custom metrics
+  metrics` flag on master and node kubelet required to enable custom metrics
 
 [k8s-aggregation-layer]: https://v1-9.docs.kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
 [k8s-extend-api]: https://v1-9.docs.kubernetes.io/docs/concepts/api-extension/apiserver-aggregation/
