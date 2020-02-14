@@ -194,6 +194,9 @@ github.com/fsnotify/fsnotify
 github.com/fullsailor/pkcs7
 # github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 github.com/ghodss/yaml
+# github.com/go-bindata/go-bindata v3.1.2+incompatible
+github.com/go-bindata/go-bindata
+github.com/go-bindata/go-bindata/go-bindata
 # github.com/go-ini/ini v1.51.0
 github.com/go-ini/ini
 # github.com/go-logr/logr v0.1.0
@@ -327,9 +330,6 @@ github.com/jmespath/go-jmespath
 github.com/jpillora/backoff
 # github.com/json-iterator/go v1.1.7
 github.com/json-iterator/go
-# github.com/jteeuwen/go-bindata v0.0.0-20151023091102-a0ff2567cfb7
-github.com/jteeuwen/go-bindata
-github.com/jteeuwen/go-bindata/go-bindata
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/kr/fs v0.1.0
