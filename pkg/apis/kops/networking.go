@@ -195,80 +195,224 @@ const CiliumIpamEni = "eni"
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
+	// Version is the version of the Cilium agent and the Cilium Operator.
 	Version string `json:"version,omitempty"`
 
-	AccessLog                string            `json:"accessLog,omitempty"`
-	AgentLabels              []string          `json:"agentLabels,omitempty"`
-	AgentPrometheusPort      int               `json:"agentPrometheusPort,omitempty"`
-	AllowLocalhost           string            `json:"allowLocalhost,omitempty"`
-	AutoIpv6NodeRoutes       bool              `json:"autoIpv6NodeRoutes,omitempty"`
-	BPFRoot                  string            `json:"bpfRoot,omitempty"`
-	ContainerRuntime         []string          `json:"containerRuntime,omitempty"`
+	// AccessLog has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	AccessLog string `json:"accessLog,omitempty"`
+	// AgentLabels has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	AgentLabels []string `json:"agentLabels,omitempty"`
+	// AgentPrometheusPort is the port to listen to for Prometheus metrics.
+	// Defaults to 9090.
+	AgentPrometheusPort int `json:"agentPrometheusPort,omitempty"`
+	// AllowLocalhost has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	AllowLocalhost string `json:"allowLocalhost,omitempty"`
+	// AutoIpv6NodeRoutes has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	AutoIpv6NodeRoutes bool `json:"autoIpv6NodeRoutes,omitempty"`
+	// BPFRoot has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	BPFRoot string `json:"bpfRoot,omitempty"`
+	// ContainerRuntime has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	ContainerRuntime []string `json:"containerRuntime,omitempty"`
+	// ContainerRuntimeEndpoint has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
 	ContainerRuntimeEndpoint map[string]string `json:"containerRuntimeEndpoint,omitempty"`
-	Debug                    bool              `json:"debug,omitempty"`
-	DebugVerbose             []string          `json:"debugVerbose,omitempty"`
-	Device                   string            `json:"device,omitempty"`
-	DisableConntrack         bool              `json:"disableConntrack,omitempty"`
-	DisableIpv4              bool              `json:"disableIpv4,omitempty"`
-	DisableK8sServices       bool              `json:"disableK8sServices,omitempty"`
-	EnablePolicy             string            `json:"enablePolicy,omitempty"`
-	EnableTracing            bool              `json:"enableTracing,omitempty"`
-	EnablePrometheusMetrics  bool              `json:"enablePrometheusMetrics,omitempty"`
-	EnvoyLog                 string            `json:"envoyLog,omitempty"`
-	Ipv4ClusterCIDRMaskSize  int               `json:"ipv4ClusterCidrMaskSize,omitempty"`
-	Ipv4Node                 string            `json:"ipv4Node,omitempty"`
-	Ipv4Range                string            `json:"ipv4Range,omitempty"`
-	Ipv4ServiceRange         string            `json:"ipv4ServiceRange,omitempty"`
-	Ipv6ClusterAllocCidr     string            `json:"ipv6ClusterAllocCidr,omitempty"`
-	Ipv6Node                 string            `json:"ipv6Node,omitempty"`
-	Ipv6Range                string            `json:"ipv6Range,omitempty"`
-	Ipv6ServiceRange         string            `json:"ipv6ServiceRange,omitempty"`
-	K8sAPIServer             string            `json:"k8sApiServer,omitempty"`
-	K8sKubeconfigPath        string            `json:"k8sKubeconfigPath,omitempty"`
-	KeepBPFTemplates         bool              `json:"keepBpfTemplates,omitempty"`
-	KeepConfig               bool              `json:"keepConfig,omitempty"`
-	LabelPrefixFile          string            `json:"labelPrefixFile,omitempty"`
-	Labels                   []string          `json:"labels,omitempty"`
-	LB                       string            `json:"lb,omitempty"`
-	LibDir                   string            `json:"libDir,omitempty"`
-	LogDrivers               []string          `json:"logDriver,omitempty"`
-	LogOpt                   map[string]string `json:"logOpt,omitempty"`
-	Logstash                 bool              `json:"logstash,omitempty"`
-	LogstashAgent            string            `json:"logstashAgent,omitempty"`
-	LogstashProbeTimer       uint32            `json:"logstashProbeTimer,omitempty"`
-	DisableMasquerade        bool              `json:"disableMasquerade,omitempty"`
-	Nat46Range               string            `json:"nat46Range,omitempty"`
-	Pprof                    bool              `json:"pprof,omitempty"`
-	PrefilterDevice          string            `json:"prefilterDevice,omitempty"`
-	PrometheusServeAddr      string            `json:"prometheusServeAddr,omitempty"`
-	Restore                  bool              `json:"restore,omitempty"`
-	SingleClusterRoute       bool              `json:"singleClusterRoute,omitempty"`
-	SocketPath               string            `json:"socketPath,omitempty"`
-	StateDir                 string            `json:"stateDir,omitempty"`
-	TracePayloadLen          int               `json:"tracePayloadlen,omitempty"`
-	Tunnel                   string            `json:"tunnel,omitempty"`
-
-	EnableIpv6             bool   `json:"enableipv6"`
-	EnableIpv4             bool   `json:"enableipv4"`
-	MonitorAggregation     string `json:"monitorAggregation"`
-	BPFCTGlobalTCPMax      int    `json:"bpfCTGlobalTCPMax"`
-	BPFCTGlobalAnyMax      int    `json:"bpfCTGlobalAnyMax"`
-	PreallocateBPFMaps     bool   `json:"preallocateBPFMaps"`
+	// Debug runs Cilium in debug mode.
+	Debug bool `json:"debug,omitempty"`
+	// DebugVerbose has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	DebugVerbose []string `json:"debugVerbose,omitempty"`
+	// Device has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Device string `json:"device,omitempty"`
+	// DisableConntrack has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	DisableConntrack bool `json:"disableConntrack,omitempty"`
+	// DisableIpv4 is deprecated: Use EnableIpv4 instead.
+	// Setting this flag has no effect.
+	DisableIpv4 bool `json:"disableIpv4,omitempty"`
+	// DisableK8sServices has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	DisableK8sServices bool `json:"disableK8sServices,omitempty"`
+	// EnablePolicy determines the policy enforcement mode.
+	// "default": Follows Kubernetes policy enforcement.
+	// "always": Cilium restricts all traffic if no policy is in place.
+	// "never": Cilium allows all traffic regardless of policies in place.
+	EnablePolicy string `json:"enablePolicy,omitempty"`
+	// EnableTracing has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	EnableTracing bool `json:"enableTracing,omitempty"`
+	// EnablePrometheusMetrics enables the Cilium /metrics endpoint for both the agent and the operator.
+	EnablePrometheusMetrics bool `json:"enablePrometheusMetrics,omitempty"`
+	// EnvoyLog has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	EnvoyLog string `json:"envoyLog,omitempty"`
+	// Ipv4ClusterCIDRMaskSize has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv4ClusterCIDRMaskSize int `json:"ipv4ClusterCidrMaskSize,omitempty"`
+	// Ipv4Node has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv4Node string `json:"ipv4Node,omitempty"`
+	// Ipv4Range has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv4Range string `json:"ipv4Range,omitempty"`
+	// Ipv4ServiceRange has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv4ServiceRange string `json:"ipv4ServiceRange,omitempty"`
+	// Ipv6ClusterAllocCidr has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv6ClusterAllocCidr string `json:"ipv6ClusterAllocCidr,omitempty"`
+	// Ipv6Node has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv6Node string `json:"ipv6Node,omitempty"`
+	// Ipv6Range has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv6Range string `json:"ipv6Range,omitempty"`
+	// Ipv6ServiceRange has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Ipv6ServiceRange string `json:"ipv6ServiceRange,omitempty"`
+	// K8sAPIServer has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	K8sAPIServer string `json:"k8sApiServer,omitempty"`
+	// K8sKubeconfigPath has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	K8sKubeconfigPath string `json:"k8sKubeconfigPath,omitempty"`
+	// KeepBPFTemplates has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	KeepBPFTemplates bool `json:"keepBpfTemplates,omitempty"`
+	// KeepConfig has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	KeepConfig bool `json:"keepConfig,omitempty"`
+	// LabelPrefixFile has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect
+	LabelPrefixFile string `json:"labelPrefixFile,omitempty"`
+	// Labels has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Labels []string `json:"labels,omitempty"`
+	// LB has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	LB string `json:"lb,omitempty"`
+	// LibDir has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	LibDir string `json:"libDir,omitempty"`
+	// LogDrivers has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	LogDrivers []string `json:"logDriver,omitempty"`
+	// LogOpt has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	LogOpt map[string]string `json:"logOpt,omitempty"`
+	// Logstash has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Logstash bool `json:"logstash,omitempty"`
+	// LogstashAgent has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	LogstashAgent string `json:"logstashAgent,omitempty"`
+	// LogstashProbeTimer has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	LogstashProbeTimer uint32 `json:"logstashProbeTimer,omitempty"`
+	// DisableMasquerade determines if external traffic should be masqued behind the node IP.
+	DisableMasquerade bool `json:"disableMasquerade,omitempty"`
+	// Nat6Range has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Nat46Range string `json:"nat46Range,omitempty"`
+	// Pprof has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Pprof bool `json:"pprof,omitempty"`
+	// PrefilterDevice has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	PrefilterDevice string `json:"prefilterDevice,omitempty"`
+	// PrometheusServeAddr is deprecated. Use EnablePrometheusMetrics and AgentPrometheusPort instead.
+	// Setting this has currently no effect.
+	PrometheusServeAddr string `json:"prometheusServeAddr,omitempty"`
+	// Restore has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	Restore bool `json:"restore,omitempty"`
+	// SingleClusterRoute has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	SingleClusterRoute bool `json:"singleClusterRoute,omitempty"`
+	// SocketPath has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	SocketPath string `json:"socketPath,omitempty"`
+	// StateDir has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	StateDir string `json:"stateDir,omitempty"`
+	// TracePayloadLen has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	TracePayloadLen int `json:"tracePayloadlen,omitempty"`
+	// Tunnel determines the cilium tunelling mode. Possible values are "vxlan", "geneve", or "disabled".
+	// Default: vxlan
+	Tunnel string `json:"tunnel,omitempty"`
+	// EnableIpv6 enables cluster ipv6 traffic. Note that if both EnableIpv6 and EnableIpv4 are set to false.
+	// Ipv4 will be enabled.
+	// Default: false
+	EnableIpv6 bool `json:"enableipv6"`
+	// EnableIpv4 enables cluster ipv4 traffic. Note that if both EnableIpv6 and EnableIpv4 are set to false.
+	// Ipv4 will be enabled.
+	// Default: false
+	EnableIpv4 bool `json:"enableipv4"`
+	// MonitorAggregation sets the level of packet monitoring. Can be set to either "low", "medium", or "maximum".
+	// Default: medium
+	MonitorAggregation string `json:"monitorAggregation"`
+	// BPFCTGlobalTCPMax is the maximum number of entries in TCP CT table.
+	// Default: 524288
+	BPFCTGlobalTCPMax int `json:"bpfCTGlobalTCPMax"`
+	// BPFCTGlobalAnyMax is the maximum number of entries in non-TCP CT table.
+	// Default: 262144
+	BPFCTGlobalAnyMax int `json:"bpfCTGlobalAnyMax"`
+	// PreallocateBPFMaps reduce the per-packet latency at the expense of up-front memory allocation.
+	// Default: true
+	PreallocateBPFMaps bool `json:"preallocateBPFMaps"`
+	// SidecarIstioProxyImage is the regular expression matching compatible Istio sidecar istio-proxy.
+	// container image names.
+	// Default: cilium/istio_proxy
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
-	ClusterName            string `json:"clusterName"`
-	ToFqdnsEnablePoller    bool   `json:"toFqdnsEnablePoller"`
+	// ClusterName is the of the cluster and is only relevant when building a mesh of clusters.
+	ClusterName string `json:"clusterName"`
+	// ToFqdnsEnablePoller is disabled by default starting from version 1.4.x in favor
+	// of a more powerful DNS proxy-based implementation.
+	// Enable this option if you want to use FQDN policies but do not want to use
+	// the DNS proxy.
+	// To ease upgrade, users may opt to set this option to "true".
+	// Default: true
+	ToFqdnsEnablePoller bool `json:"toFqdnsEnablePoller"`
+	// ContainerRuntimeLabels determines the container runtime(s) used by Cilium
+	// Supported values are: "none", "containerd", "crio", "docker", "auto"
+	// Default: none
 	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
-	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
-	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
-	EnableNodePort         bool   `json:"enableNodePort"`
-	Ipam                   string `json:"ipam,omitempty"`
+	// Ipam determines which IP address allocation mode to use.
+	// "eni" will use AWS native networking for pods
+	Ipam string `json:"ipam,omitempty"`
+	// IPTablesRulesNoinstall determins if the base iptables rules for cilium to mainly interact with kube-proxy (and masquerading)
+	// Default: false
+	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall"`
+	// AutoDirectNodeRoutes adds automatic L2 routing between nodes
+	// Default: false
+	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes"`
+	// EnableNodePort replaces kube-proxy with Cilium's BPF implementation
+	// Requires masquerading to be disabled
+	// Default: false
+	EnableNodePort bool `json:"enableNodePort"`
 
-	//node init options
-	RemoveCbrBridge       bool   `json:"removeCbrBridge"`
-	RestartPods           bool   `json:"restartPods"`
-	ReconfigureKubelet    bool   `json:"reconfigureKubelet"`
+	// RemoveCbrBridge has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	RemoveCbrBridge bool `json:"removeCbrBridge"`
+	// RestartPods has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	RestartPods bool `json:"restartPods"`
+	// ReconfigureKubelet has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	ReconfigureKubelet bool `json:"reconfigureKubelet"`
+	// NodeInitBootstrapFile has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
 	NodeInitBootstrapFile string `json:"nodeInitBootstrapFile"`
-	CniBinPath            string `json:"cniBinPath"`
+	// CniBinPath has not been implemented in the new templates and may be removed in the future.
+	// Setting this has currently no effect.
+	CniBinPath string `json:"cniBinPath"`
 }
 
 // LyftVPCNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking.
