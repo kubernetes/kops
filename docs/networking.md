@@ -477,16 +477,6 @@ The following command will launch your cluster with desired Cilium configuration
 $ kops update cluster myclustername.mydns.io --yes
 ```
 
-##### Enabling logstash
-
-E.g enabling logstash integration would require you to change above block to
-
-```
-  networking:
-    cilium:
-      logstash: true
-```
-
 ##### Enabling BPF NodePort
 
 As of Kops 1.18 you can safely enable Cilium NodePort.
