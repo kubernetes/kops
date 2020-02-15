@@ -99,7 +99,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(spec, spec.Networking, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
-			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking").Child("Calico"))...)
+			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking").Child("calico"))...)
 		}
 	}
 
@@ -196,12 +196,12 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 
 	// name is required
 	if subnet.Name == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), ""))
 	}
 
 	// CIDR
 	if subnet.CIDR != "" {
-		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("CIDR"))...)
+		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("cidr"))...)
 	}
 
 	return allErrs
@@ -212,10 +212,10 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 	allErrs := field.ErrorList{}
 
 	if v.Name == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), ""))
 	}
 	if v.Content == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("Content"), ""))
+		allErrs = append(allErrs, field.Required(fieldPath.Child("content"), ""))
 	}
 
 	return allErrs
@@ -250,7 +250,7 @@ func validateHookSpec(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
 	}
 
 	if v.ExecContainer != nil {
-		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fieldPath.Child("ExecContainer"))...)
+		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fieldPath.Child("execContainer"))...)
 	}
 
 	return allErrs
@@ -260,7 +260,7 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 	allErrs := field.ErrorList{}
 
 	if v.Image == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("Image"), "Image must be specified"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("image"), "image must be specified"))
 	}
 
 	return allErrs
@@ -299,7 +299,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 	allErrs := field.ErrorList{}
 
 	if v.Flannel != nil {
-		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("Flannel"))...)
+		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("flannel"))...)
 	}
 
 	if v.GCE != nil {
@@ -314,11 +314,11 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 
 	switch v.Backend {
 	case "":
-		allErrs = append(allErrs, field.Required(fldPath.Child("Backend"), "Flannel backend must be specified"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("backend"), "Flannel backend must be specified"))
 	case "udp", "vxlan":
 		// OK
 	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("Backend"), v.Backend, []string{"udp", "vxlan"}))
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("backend"), v.Backend, []string{"udp", "vxlan"}))
 	}
 
 	return allErrs
@@ -398,18 +398,18 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 	}
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
-		allErrs = append(allErrs, field.InternalError(fldPath.Child("MajorVersion"), fmt.Errorf("failed to parse Etcd version to check compatibility: %s", err)))
+		allErrs = append(allErrs, field.InternalError(fldPath.Child("majorVersion"), fmt.Errorf("failed to parse Etcd version to check compatibility: %s", err)))
 	}
 
 	if sem.Major != 3 {
 		if e.Version == "" {
 			allErrs = append(allErrs,
-				field.Invalid(fldPath.Child("MajorVersion"), majorVersion,
+				field.Forbidden(fldPath.Child("majorVersion"),
 					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is default(%s)",
 						e.Name, components.DefaultEtcd2Version)))
 		} else {
 			allErrs = append(allErrs,
-				field.Invalid(fldPath.Child("MajorVersion"), majorVersion,
+				field.Forbidden(fldPath.Child("majorVersion"),
 					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is %s", e.Name, e.Version)))
 		}
 	}
@@ -422,7 +422,7 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 
 	} else {
 		allErrs = append(allErrs,
-			field.Invalid(fldPath.Child("TyphaReplicas"), v.TyphaReplicas,
+			field.Invalid(fldPath.Child("typhaReplicas"), v.TyphaReplicas,
 				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
 	}
 	switch v.MajorVersion {
@@ -431,7 +431,7 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 	case "v3":
 		allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
 	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("MajorVersion"), v.MajorVersion, []string{"v3"}))
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("majorVersion"), v.MajorVersion, []string{"v3"}))
 	}
 
 	return allErrs
@@ -451,11 +451,11 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 	if rollingUpdate.MaxUnavailable != nil {
 		unavailable, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, 1, false)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable,
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxUnavailable"), rollingUpdate.MaxUnavailable,
 				fmt.Sprintf("Unable to parse: %v", err)))
 		}
 		if unavailable < 0 {
-			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
 		}
 	}
 

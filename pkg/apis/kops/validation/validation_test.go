@@ -125,14 +125,14 @@ func TestValidateSubnets(t *testing.T) {
 			Input: []kops.ClusterSubnetSpec{
 				{Name: ""},
 			},
-			ExpectedErrors: []string{"Required value::Subnets[0].Name"},
+			ExpectedErrors: []string{"Required value::subnets[0].name"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
 				{Name: "a"},
 				{Name: "a"},
 			},
-			ExpectedErrors: []string{"Invalid value::Subnets"},
+			ExpectedErrors: []string{"Invalid value::subnets"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
@@ -145,17 +145,17 @@ func TestValidateSubnets(t *testing.T) {
 				{Name: "a", ProviderID: "a"},
 				{Name: "b", ProviderID: ""},
 			},
-			ExpectedErrors: []string{"Invalid value::Subnets"},
+			ExpectedErrors: []string{"Invalid value::subnets"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
 				{Name: "a", CIDR: "10.128.0.0/8"},
 			},
-			ExpectedErrors: []string{"Invalid value::Subnets[0].CIDR"},
+			ExpectedErrors: []string{"Invalid value::subnets[0].cidr"},
 		},
 	}
 	for _, g := range grid {
-		errs := validateSubnets(g.Input, field.NewPath("Subnets"))
+		errs := validateSubnets(g.Input, field.NewPath("subnets"))
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
@@ -270,13 +270,13 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 			Input: kops.FlannelNetworkingSpec{
 				Backend: "",
 			},
-			ExpectedErrors: []string{"Required value::Networking.Flannel.Backend"},
+			ExpectedErrors: []string{"Required value::networking.flannel.backend"},
 		},
 		{
 			Input: kops.FlannelNetworkingSpec{
 				Backend: "nope",
 			},
-			ExpectedErrors: []string{"Unsupported value::Networking.Flannel.Backend"},
+			ExpectedErrors: []string{"Unsupported value::networking.flannel.backend"},
 		},
 	}
 	for _, g := range grid {
@@ -286,7 +286,7 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		cluster := &kops.Cluster{}
 		cluster.Spec.Networking = networking
 
-		errs := validateNetworking(&cluster.Spec, networking, field.NewPath("Networking"))
+		errs := validateNetworking(&cluster.Spec, networking, field.NewPath("networking"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -372,7 +372,7 @@ func Test_Validate_Calico(t *testing.T) {
 				},
 				Etcd: &kops.EtcdClusterSpec{},
 			},
-			ExpectedErrors: []string{"Invalid value::Calico.TyphaReplicas"},
+			ExpectedErrors: []string{"Invalid value::calico.typhaReplicas"},
 		},
 		{
 			Input: caliInput{
@@ -393,11 +393,11 @@ func Test_Validate_Calico(t *testing.T) {
 					Version: "2.2.18",
 				},
 			},
-			ExpectedErrors: []string{"Invalid value::Calico.MajorVersion"},
+			ExpectedErrors: []string{"Forbidden::calico.majorVersion"},
 		},
 	}
 	for _, g := range grid {
-		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("Calico"))
+		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("calico"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -424,23 +424,23 @@ func Test_Validate_RollingUpdate(t *testing.T) {
 			Input: kops.RollingUpdate{
 				MaxUnavailable: intStr(intstr.FromString("nope")),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
 		},
 		{
 			Input: kops.RollingUpdate{
 				MaxUnavailable: intStr(intstr.FromInt(-1)),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
 		},
 		{
 			Input: kops.RollingUpdate{
 				MaxUnavailable: intStr(intstr.FromString("-1%")),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
 		},
 	}
 	for _, g := range grid {
-		errs := validateRollingUpdate(&g.Input, field.NewPath("TestField"))
+		errs := validateRollingUpdate(&g.Input, field.NewPath("testField"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }

@@ -314,42 +314,42 @@ func TestPopulateCluster_Zone_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Subnets = nil
 
-	expectErrorFromPopulateCluster(t, c, "Subnet")
+	expectErrorFromPopulateCluster(t, c, "subnet")
 }
 
 func TestPopulateCluster_NetworkCIDR_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = ""
 
-	expectErrorFromPopulateCluster(t, c, "NetworkCIDR")
+	expectErrorFromPopulateCluster(t, c, "networkCIDR")
 }
 
 func TestPopulateCluster_NonMasqueradeCIDR_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NonMasqueradeCIDR = ""
 
-	expectErrorFromPopulateCluster(t, c, "NonMasqueradeCIDR")
+	expectErrorFromPopulateCluster(t, c, "nonMasqueradeCIDR")
 }
 
 func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.CloudProvider = ""
 
-	expectErrorFromPopulateCluster(t, c, "CloudProvider")
+	expectErrorFromPopulateCluster(t, c, "cloudProvider")
 }
 
 func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = ""
 	c.Spec.Topology.Nodes = ""
-	expectErrorFromPopulateCluster(t, c, "Topology")
+	expectErrorFromPopulateCluster(t, c, "topology")
 }
 
 func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = "123"
 	c.Spec.Topology.Nodes = "abc"
-	expectErrorFromPopulateCluster(t, c, "Topology")
+	expectErrorFromPopulateCluster(t, c, "topology")
 }
 
 //func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
@@ -367,7 +367,7 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	c.Spec.Topology.Masters = api.TopologyPublic
 	c.Spec.Topology.Nodes = api.TopologyPublic
 	c.Spec.Topology.Bastion = &api.BastionSpec{}
-	expectErrorFromPopulateCluster(t, c, "Bastion")
+	expectErrorFromPopulateCluster(t, c, "bastion")
 }
 
 func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T) {
@@ -378,7 +378,7 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T
 	c.Spec.Topology.Nodes = api.TopologyPrivate
 	c.Spec.Topology.Bastion = &api.BastionSpec{}
 	c.Spec.Topology.Bastion.IdleTimeoutSeconds = fi.Int64(-1)
-	expectErrorFromPopulateCluster(t, c, "Bastion")
+	expectErrorFromPopulateCluster(t, c, "bastion")
 }
 
 func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {
