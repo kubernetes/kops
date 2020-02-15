@@ -405,7 +405,7 @@ protokube-image: protokube-build-in-docker
 .PHONY: protokube-export
 protokube-export: protokube-image
 	docker save protokube:${PROTOKUBE_TAG} > ${IMAGES}/protokube.tar
-	gzip --force --best ${IMAGES}/protokube.tar
+	gzip --no-name --force --best ${IMAGES}/protokube.tar
 	tools/sha1 ${IMAGES}/protokube.tar.gz ${IMAGES}/protokube.tar.gz.sha1
 	tools/sha256 ${IMAGES}/protokube.tar.gz ${IMAGES}/protokube.tar.gz.sha256
 
@@ -739,7 +739,7 @@ bazel-kops-controller-export:
 	mkdir -p ${BAZELIMAGES}
 	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle.tar
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle.tar ${BAZELIMAGES}/kops-controller.tar
-	gzip --force --fast ${BAZELIMAGES}/kops-controller.tar
+	gzip --no-name --force --fast ${BAZELIMAGES}/kops-controller.tar
 	tools/sha1 ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELIMAGES}/kops-controller.tar.gz.sha1
 	tools/sha256 ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELIMAGES}/kops-controller.tar.gz.sha256
 
@@ -748,7 +748,7 @@ bazel-dns-controller-export:
 	mkdir -p ${BAZELIMAGES}
 	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle.tar
 	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle.tar ${BAZELIMAGES}/dns-controller.tar
-	gzip --force --fast ${BAZELIMAGES}/dns-controller.tar
+	gzip --no-name --force --fast ${BAZELIMAGES}/dns-controller.tar
 	tools/sha1 ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELIMAGES}/dns-controller.tar.gz.sha1
 	tools/sha256 ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELIMAGES}/dns-controller.tar.gz.sha256
 
