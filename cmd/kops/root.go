@@ -285,7 +285,7 @@ func (c *RootCmd) Cluster() (*kopsapi.Cluster, error) {
 
 func GetCluster(factory Factory, clusterName string) (*kopsapi.Cluster, error) {
 	if clusterName == "" {
-		return nil, field.Required(field.NewPath("ClusterName"), "Cluster name is required")
+		return nil, field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}
 
 	clientset, err := factory.Clientset()
