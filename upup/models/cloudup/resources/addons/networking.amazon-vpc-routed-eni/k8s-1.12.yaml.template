@@ -89,6 +89,10 @@ spec:
             value: {{ ClusterName }}
           - name: AWS_VPC_K8S_CNI_LOGLEVEL
             value: DEBUG
+          {{- if .Networking.AmazonVPC.WarmIpTarget }}
+          - name: WARM_IP_TARGET
+            value: "{{ .Networking.AmazonVPC.WarmIpTarget }}"
+          {{- end }}
           - name: MY_NODE_NAME
             valueFrom:
               fieldRef:
