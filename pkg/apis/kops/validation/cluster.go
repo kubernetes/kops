@@ -60,7 +60,7 @@ func validateEtcdClusterUpdate(fp *field.Path, obj *kops.EtcdClusterSpec, status
 	allErrs := field.ErrorList{}
 
 	if obj.Name != old.Name {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("Name"), "Name cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("name"), "name cannot be changed"))
 	}
 
 	var etcdClusterStatus *kops.EtcdClusterStatus
@@ -85,7 +85,7 @@ func validateEtcdClusterUpdate(fp *field.Path, obj *kops.EtcdClusterSpec, status
 		}
 
 		for k, newMember := range newMembers {
-			fp := fp.Child("Members").Key(k)
+			fp := fp.Child("etcdMembers").Key(k)
 
 			oldMember := oldMembers[k]
 			if oldMember == nil {
@@ -97,7 +97,7 @@ func validateEtcdClusterUpdate(fp *field.Path, obj *kops.EtcdClusterSpec, status
 		for k := range oldMembers {
 			newCluster := newMembers[k]
 			if newCluster == nil {
-				fp := fp.Child("Members").Key(k)
+				fp := fp.Child("etcdMembers").Key(k)
 				allErrs = append(allErrs, field.Forbidden(fp, "EtcdCluster members cannot be removed"))
 			}
 		}
@@ -110,31 +110,31 @@ func validateEtcdMemberUpdate(fp *field.Path, obj *kops.EtcdMemberSpec, status *
 	allErrs := field.ErrorList{}
 
 	if obj.Name != old.Name {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("Name"), "Name cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("name"), "name cannot be changed"))
 	}
 
 	if fi.StringValue(obj.InstanceGroup) != fi.StringValue(old.InstanceGroup) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("InstanceGroup"), "InstanceGroup cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("instanceGroup"), "instanceGroup cannot be changed"))
 	}
 
 	if fi.StringValue(obj.VolumeType) != fi.StringValue(old.VolumeType) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("VolumeType"), "VolumeType cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("volumeType"), "volumeType cannot be changed"))
 	}
 
 	if fi.Int32Value(obj.VolumeIops) != fi.Int32Value(old.VolumeIops) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("VolumeIops"), "VolumeIops cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("volumeIops"), "volumeIops cannot be changed"))
 	}
 
 	if fi.Int32Value(obj.VolumeSize) != fi.Int32Value(old.VolumeSize) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("VolumeSize"), "VolumeSize cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("volumeSize"), "volumeSize cannot be changed"))
 	}
 
 	if fi.StringValue(obj.KmsKeyId) != fi.StringValue(old.KmsKeyId) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("KmsKeyId"), "KmsKeyId cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("kmsKeyId"), "kmsKeyId cannot be changed"))
 	}
 
 	if fi.BoolValue(obj.EncryptedVolume) != fi.BoolValue(old.EncryptedVolume) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("EncryptedVolume"), "EncryptedVolume cannot be changed"))
+		allErrs = append(allErrs, field.Forbidden(fp.Child("encryptedVolume"), "encryptedVolume cannot be changed"))
 	}
 
 	return allErrs
