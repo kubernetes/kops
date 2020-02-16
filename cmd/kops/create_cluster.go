@@ -1144,10 +1144,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			bastionGroup.Spec.Image = c.Image
 			instanceGroups = append(instanceGroups, bastionGroup)
 
-			cluster.Spec.Topology.Bastion = &api.BastionSpec{
-				BastionPublicName: "bastion." + clusterName,
+			if !dns.IsGossipHostname(clusterName) {
+				cluster.Spec.Topology.Bastion = &api.BastionSpec{
+					BastionPublicName: "bastion." + clusterName,
+				}
 			}
-
 		}
 
 	default:
