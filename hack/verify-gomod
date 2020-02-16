@@ -18,8 +18,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
-cd "${REPO_ROOT}"
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
+cd "${KOPS_ROOT}"
 
 changes=$(git status --porcelain || true)
 if [ -n "${changes}" ]; then

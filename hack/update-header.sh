@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. $(dirname "${BASH_SOURCE}")/common.sh
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-BAD_HEADERS=$((${KUBE_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $7}')
+BAD_HEADERS=$((${KOPS_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $7}')
 FORMATS="sh go Makefile Dockerfile"
 
 YEAR=`date +%Y`
@@ -27,7 +27,7 @@ do
 	for j in ${BAD_HEADERS}
 	do
 		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed "s/YEAR/${YEAR}/")
+	        HEADER=$(cat ${KOPS_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed "s/YEAR/${YEAR}/")
 			value=$(<${j})
 			if [[ "$j" != *$i ]]
             then

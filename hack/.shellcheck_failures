@@ -5,17 +5,12 @@
 ./hack/dev-build.sh
 ./hack/make-apimachinery.sh
 ./hack/new-iam-user.sh
-./hack/publish-docs.sh
 ./hack/update-bazel.sh
-./hack/update-expected.sh
 ./hack/update-header.sh
-./hack/verify-apimachinery.sh
 ./hack/verify-bazel.sh
 ./hack/verify-boilerplate.sh
 ./hack/verify-gofmt.sh
-./hack/verify-packages.sh
 ./hack/verify-spelling.sh
-./hack/verify-staticcheck.sh
 ./hooks/nvidia-bootstrap/image/run.sh
 ./hooks/nvidia-device-plugin/image/files/01-aws-nvidia-driver.sh
 ./hooks/nvidia-device-plugin/image/files/02-nvidia-docker.sh

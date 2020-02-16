@@ -52,7 +52,7 @@
 #
 ###############################################################################
 
-KOPS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 #
 # Check that required binaries are installed
@@ -85,7 +85,7 @@ NETWORKING=${NETWORKING:-weave}
 # How verbose go logging is
 VERBOSITY=${VERBOSITY:-10}
 
-cd $KOPS_DIRECTORY/..
+cd "${KOPS_ROOT}"
 
 GIT_VER=git-$(git describe --always)
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
