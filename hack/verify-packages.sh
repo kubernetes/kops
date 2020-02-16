@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. $(dirname "${BASH_SOURCE}")/common.sh
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 # Check that the .packages file contains all packages
-packages_file="${KUBE_ROOT}/hack/.packages"
+packages_file="${KOPS_ROOT}/hack/.packages"
 if ! diff -u "${packages_file}" <(go list k8s.io/kops/... | grep -v vendor); then
 	{
 		echo

@@ -18,7 +18,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KOPS_ROOT=$(git rev-parse --show-toplevel)
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
 cd "${KOPS_ROOT}"
 
 make crds

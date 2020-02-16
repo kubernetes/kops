@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-KOPS_ROOT=$(git rev-parse --show-toplevel)
-cd ${KOPS_ROOT}
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-export GOPATH=${KOPS_ROOT}/../../../
+cd "${KOPS_ROOT}"
 
 TMP_OUT=$(mktemp -d)
 trap "{ rm -rf ${TMP_OUT}; }" EXIT
