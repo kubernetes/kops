@@ -18,10 +18,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-REPO_ROOT=$(git rev-parse --show-toplevel)
-cd "${REPO_ROOT}"
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-OUTPUT_GOBIN="${REPO_ROOT}/_output/bin"
+cd "${KOPS_ROOT}"
+
+OUTPUT_GOBIN="${KOPS_ROOT}/_output/bin"
 
 # Install tools we need, but from vendor/
 GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/client9/misspell/cmd/misspell
