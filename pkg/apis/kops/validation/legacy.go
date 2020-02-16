@@ -204,7 +204,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("nonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid nonMasqueradeCIDR"))
 			}
 
-			if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.LyftVPC == nil {
+			if networkCIDR != nil && subnet.Overlap(nonMasqueradeCIDR, networkCIDR) && c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC == nil && c.Spec.Networking.LyftVPC == nil && (c.Spec.Networking.Cilium == nil || c.Spec.Networking.Cilium.Ipam != kops.CiliumIpamEni) {
 				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("nonMasqueradeCIDR"), nonMasqueradeCIDRString, fmt.Sprintf("nonMasqueradeCIDR %q cannot overlap with networkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR)))
 			}
 
@@ -602,8 +602,22 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	allErrs = append(allErrs, newValidateCluster(c)...)
 
-	if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil && c.Spec.Networking.Cilium.EnableNodePort && c.Spec.KubeProxy != nil && *c.Spec.KubeProxy.Enabled {
-		allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeProxy").Child("enabled"), "When kilium NodePort is enabled, kubeProxy must be disabled"))
+	if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil {
+		ciliumSpec := c.Spec.Networking.Cilium
+
+		if ciliumSpec.EnableNodePort && c.Spec.KubeProxy != nil && *c.Spec.KubeProxy.Enabled {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeProxy").Child("enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))
+		}
+
+		if ciliumSpec.Ipam == kops.CiliumIpamEni {
+			if c.Spec.CloudProvider != string(kops.CloudProviderAWS) {
+				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("cilium").Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
+			}
+			if !ciliumSpec.DisableMasquerade {
+				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("cilium").Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+			}
+
+		}
 	}
 
 	return allErrs
