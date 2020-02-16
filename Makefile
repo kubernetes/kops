@@ -23,7 +23,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.13.4
+GOVERSION=1.13.8
 BUILD=$(KOPS_ROOT)/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
