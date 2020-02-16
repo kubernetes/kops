@@ -21,10 +21,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dump"
 	"k8s.io/kops/pkg/resources"
 	resourceops "k8s.io/kops/pkg/resources/ops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -48,6 +56,8 @@ type ToolboxDumpOptions struct {
 	Output string
 
 	ClusterName string
+
+	Dir string
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
@@ -83,10 +93,13 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 	// Yes please! (@kris-nova)
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "output format.  One of: yaml, json")
 
+	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "target directory; if specified will collect logs and other information.")
+
 	return cmd
 }
 
 func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options *ToolboxDumpOptions) error {
+
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -115,14 +128,60 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 	if err != nil {
 		return err
 	}
-	dump, err := resources.BuildDump(context.TODO(), cloud, resourceMap)
+	d, err := resources.BuildDump(ctx, cloud, resourceMap)
 	if err != nil {
 		return err
 	}
 
+	if options.Dir != "" {
+		// TODO: Flag?
+		privateKeyPath := "~/.ssh/id_rsa"
+		if strings.HasPrefix(privateKeyPath, "~/") {
+			privateKeyPath = filepath.Join(os.Getenv("HOME"), privateKeyPath[2:])
+		}
+		key, err := ioutil.ReadFile(privateKeyPath)
+		if err != nil {
+			return fmt.Errorf("error reading private key %q: %v", privateKeyPath, err)
+		}
+
+		signer, err := ssh.ParsePrivateKey(key)
+		if err != nil {
+			return fmt.Errorf("error parsing private key %q: %v", privateKeyPath, err)
+		}
+
+		// TODO: We need to find the correct SSH user, ideally per IP
+		sshUser := "admin"
+		sshConfig := &ssh.ClientConfig{
+			User: sshUser,
+			Auth: []ssh.AuthMethod{
+				ssh.PublicKeys(signer),
+			},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		}
+
+		dumper := dump.NewLogDumper(sshConfig, options.Dir)
+
+		// TODO: Should we try to get nodes?
+		var nodes corev1.NodeList
+
+		var additionalIPs []string
+		for _, instance := range d.Instances {
+			if len(instance.PublicAddresses) != 0 {
+				additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
+				continue
+			}
+
+			klog.Warningf("no public IP for node %q", instance.Name)
+		}
+
+		if err := dumper.DumpAllNodes(ctx, nodes, additionalIPs); err != nil {
+			return fmt.Errorf("error dumping nodes: %v", err)
+		}
+	}
+
 	switch options.Output {
 	case OutputYaml:
-		b, err := kops.ToRawYaml(dump)
+		b, err := kops.ToRawYaml(d)
 		if err != nil {
 			return fmt.Errorf("error marshaling yaml: %v", err)
 		}
@@ -133,7 +192,7 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 		return nil
 
 	case OutputJSON:
-		b, err := json.MarshalIndent(dump, "", "  ")
+		b, err := json.MarshalIndent(d, "", "  ")
 		if err != nil {
 			return fmt.Errorf("error marshaling json: %v", err)
 		}
