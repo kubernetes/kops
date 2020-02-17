@@ -634,6 +634,25 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExternalPolicies != nil {
+		in, out := &in.ExternalPolicies, &out.ExternalPolicies
+		*out = new(map[string][]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make(map[string][]string, len(*in))
+			for key, val := range *in {
+				var outVal []string
+				if val == nil {
+					(*out)[key] = nil
+				} else {
+					in, out := &val, &outVal
+					*out = make([]string, len(*in))
+					copy(*out, *in)
+				}
+				(*out)[key] = outVal
+			}
+		}
+	}
 	if in.AdditionalPolicies != nil {
 		in, out := &in.AdditionalPolicies, &out.AdditionalPolicies
 		*out = new(map[string]string)

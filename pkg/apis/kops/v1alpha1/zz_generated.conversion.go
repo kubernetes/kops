@@ -1674,6 +1674,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	// WARNING: in.AdminAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.ExternalPolicies = in.ExternalPolicies
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.FileAssets != nil {
 		in, out := &in.FileAssets, &out.FileAssets
@@ -1991,6 +1992,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	// WARNING: in.KubernetesAPIAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.ExternalPolicies = in.ExternalPolicies
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.FileAssets != nil {
 		in, out := &in.FileAssets, &out.FileAssets
