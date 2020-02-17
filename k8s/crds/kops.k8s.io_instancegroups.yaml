@@ -492,6 +492,9 @@ spec:
                   description: RootDir is the directory path for managing kubelet
                     files (volume mounts,etc)
                   type: string
+                rotateCertificates:
+                  description: rotateCertificates enables client certificate rotation.
+                  type: boolean
                 runtimeCgroups:
                   description: Cgroups that container runtime is expected to be isolated
                     in.
