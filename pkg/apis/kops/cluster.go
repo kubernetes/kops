@@ -418,6 +418,11 @@ const (
 	EtcdProviderTypeLegacy  EtcdProviderType = "Legacy"
 )
 
+var SupportedEtcdProviderTypes = []string{
+	string(EtcdProviderTypeManager),
+	string(EtcdProviderTypeLegacy),
+}
+
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)

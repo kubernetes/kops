@@ -132,7 +132,7 @@ func TestValidateSubnets(t *testing.T) {
 				{Name: "a"},
 				{Name: "a"},
 			},
-			ExpectedErrors: []string{"Invalid value::subnets"},
+			ExpectedErrors: []string{"Duplicate value::subnets[1].name"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
@@ -145,7 +145,7 @@ func TestValidateSubnets(t *testing.T) {
 				{Name: "a", ProviderID: "a"},
 				{Name: "b", ProviderID: ""},
 			},
-			ExpectedErrors: []string{"Invalid value::subnets"},
+			ExpectedErrors: []string{"Forbidden::subnets[1].id"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
@@ -175,25 +175,25 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				ProxyClientCertFile: &str,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Forbidden::KubeAPIServer",
 			},
-			ExpectedDetail: "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)",
+			ExpectedDetail: "proxyClientCertFile and proxyClientKeyFile must both be specified (or neither)",
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
 				ProxyClientKeyFile: &str,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Forbidden::KubeAPIServer",
 			},
-			ExpectedDetail: "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)",
+			ExpectedDetail: "proxyClientCertFile and proxyClientKeyFile must both be specified (or neither)",
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
 				ServiceNodePortRange: str,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Invalid value::KubeAPIServer.serviceNodePortRange",
 			},
 		},
 		{
@@ -201,9 +201,9 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				AuthorizationMode: &authzMode,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Required value::KubeAPIServer.authorizationWebhookConfigFile",
 			},
-			ExpectedDetail: "Authorization mode Webhook requires AuthorizationWebhookConfigFile to be specified",
+			ExpectedDetail: "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified",
 		},
 	}
 	for _, g := range grid {
@@ -308,7 +308,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			Input: map[string]string{
 				"notarole": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow" } ]`,
 			},
-			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies"},
+			ExpectedErrors: []string{"Unsupported value::spec.additionalPolicies"},
 		},
 		{
 			Input: map[string]string{
@@ -326,7 +326,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			Input: map[string]string{
 				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "allow" } ]`,
 			},
-			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies[master][0].Effect"},
+			ExpectedErrors: []string{"Unsupported value::spec.additionalPolicies[master][0].Effect"},
 		},
 	}
 	for _, g := range grid {

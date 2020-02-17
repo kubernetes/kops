@@ -17,9 +17,6 @@ limitations under the License.
 package validation
 
 import (
-	"strings"
-
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -29,7 +26,7 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 
 	fieldSpec := field.NewPath("spec")
 
-	regions := sets.NewString()
+	region := ""
 	for i, subnet := range c.Spec.Subnets {
 		f := fieldSpec.Child("subnets").Index(i)
 		if subnet.Zone != "" {
@@ -38,12 +35,12 @@ func gceValidateCluster(c *kops.Cluster) field.ErrorList {
 		if subnet.Region == "" {
 			allErrs = append(allErrs, field.Required(f.Child("region"), "region must be specified for GCE subnets"))
 		} else {
-			regions.Insert(subnet.Region)
+			if region == "" {
+				region = subnet.Region
+			} else if region != subnet.Region {
+				allErrs = append(allErrs, field.Forbidden(f.Child("region"), "clusters cannot span GCE regions"))
+			}
 		}
-	}
-
-	if len(regions) > 1 {
-		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("subnets"), strings.Join(regions.List(), ","), "clusters cannot span GCE regions"))
 	}
 
 	return allErrs

@@ -21,6 +21,11 @@ const (
 	TopologyPrivate = "private"
 )
 
+var SupportedTopologies = []string{
+	TopologyPublic,
+	TopologyPrivate,
+}
+
 type TopologySpec struct {
 	// The environment to launch the Kubernetes masters in public|private
 	Masters string `json:"masters,omitempty"`
