@@ -8,7 +8,9 @@ steps:
 - name: 'gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1'
   entrypoint: make
   env:
-  - VERSION=$_GIT_TAG
+  # _GIT_TAG is not a valid semver, we use CI=1 instead
+  # - VERSION=$_GIT_TAG
+  - CI=1
   - PULL_BASE_REF=$_PULL_BASE_REF
   - DOCKER_REGISTRY=$_DOCKER_REGISTRY
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
@@ -17,7 +19,9 @@ steps:
 - name: 'gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1'
   entrypoint: make
   env:
-  - VERSION=$_GIT_TAG
+  # _GIT_TAG is not a valid semver, we use CI=1 instead
+  # - VERSION=$_GIT_TAG
+  - CI=1
   - PULL_BASE_REF=$_PULL_BASE_REF
   - DOCKER_REGISTRY=$_DOCKER_REGISTRY
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
