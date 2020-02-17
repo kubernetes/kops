@@ -545,7 +545,7 @@ You can specify which subnets to use for allocating Pod IPs by specifying
   networking:
     lyftvpc:
       subnetTags:
-        kubernetes_kubelet: true
+        KubernetesCluster: myclustername.mydns.io
 ```
 
 In this example, new interfaces will be attached to subnets tagged with `kubernetes_kubelet = true`.
