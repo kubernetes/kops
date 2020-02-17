@@ -196,6 +196,9 @@ type KubeletConfigSpec struct {
 	RegistryPullQPS *int32 `json:"registryPullQPS,omitempty" flag:"registry-qps"`
 	//RegistryBurst Maximum size of a bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registry-qps. Only used if --registry-qps > 0 (default 10)
 	RegistryBurst *int32 `json:"registryBurst,omitempty" flag:"registry-burst"`
+
+	// rotateCertificates enables client certificate rotation.
+	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy

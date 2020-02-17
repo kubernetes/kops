@@ -2934,6 +2934,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.RotateCertificates != nil {
+		in, out := &in.RotateCertificates, &out.RotateCertificates
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
