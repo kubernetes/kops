@@ -670,6 +670,14 @@ spec:
                     (use to control whom can creates dns entries)
                   type: string
               type: object
+            externalPolicies:
+              additionalProperties:
+                items:
+                  type: string
+                type: array
+              description: ExternalPolicies allows the insertion of pre-existing managed
+                policies on IG Roles
+              type: object
             fileAssets:
               description: A collection of files assets for deployed cluster wide
               items:

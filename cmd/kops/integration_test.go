@@ -82,6 +82,11 @@ func TestComplex(t *testing.T) {
 	runTestCloudformation(t, "complex.example.com", "complex", "v1alpha2", false, nil, true)
 }
 
+// TestExternalPolicies tests external policies output
+func TestExternalPolicies(t *testing.T) {
+	runTestAWS(t, "externalpolicies.example.com", "externalpolicies", "v1alpha2", false, 1, true, false, nil, true, false)
+}
+
 func TestNoSSHKey(t *testing.T) {
 	runTestAWS(t, "nosshkey.example.com", "nosshkey", "v1alpha2", false, 1, true, false, nil, false, false)
 }
