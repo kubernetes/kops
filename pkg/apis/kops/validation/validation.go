@@ -169,22 +169,19 @@ func validateSubnets(subnets []kops.ClusterSubnetSpec, fieldPath *field.Path) fi
 		for i := range subnets {
 			name := subnets[i].Name
 			if names.Has(name) {
-				allErrs = append(allErrs, field.Invalid(fieldPath, subnets, fmt.Sprintf("subnets with duplicate name %q found", name)))
+				allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i).Child("name"), name))
 			}
 			names.Insert(name)
 		}
 	}
 
 	// cannot mix subnets with specified ID and without specified id
-	{
-		hasID := 0
+	if len(subnets) > 0 {
+		hasID := subnets[0].ProviderID != ""
 		for i := range subnets {
-			if subnets[i].ProviderID != "" {
-				hasID++
+			if (subnets[i].ProviderID != "") != hasID {
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("id"), "cannot mix subnets with specified ID and unspecified ID"))
 			}
-		}
-		if hasID != 0 && hasID != len(subnets) {
-			allErrs = append(allErrs, field.Invalid(fieldPath, subnets, "cannot mix subnets with specified ID and unspecified ID"))
 		}
 	}
 
@@ -273,22 +270,20 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 	proxyClientKeyIsNil := v.ProxyClientKeyFile == nil
 
 	if (proxyClientCertIsNil && !proxyClientKeyIsNil) || (!proxyClientCertIsNil && proxyClientKeyIsNil) {
-		flds := [2]*string{v.ProxyClientCertFile, v.ProxyClientKeyFile}
-		allErrs = append(allErrs, field.Invalid(fldPath, flds, "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "proxyClientCertFile and proxyClientKeyFile must both be specified (or neither)"))
 	}
 
 	if v.ServiceNodePortRange != "" {
 		pr := &utilnet.PortRange{}
 		err := pr.Set(v.ServiceNodePortRange)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath, v.ServiceNodePortRange, err.Error()))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("serviceNodePortRange"), v.ServiceNodePortRange, err.Error()))
 		}
 	}
 
 	if v.AuthorizationMode != nil && strings.Contains(*v.AuthorizationMode, "Webhook") {
 		if v.AuthorizationWebhookConfigFile == nil {
-			flds := [2]*string{v.AuthorizationMode, v.AuthorizationWebhookConfigFile}
-			allErrs = append(allErrs, field.Invalid(fldPath, flds, "Authorization mode Webhook requires AuthorizationWebhookConfigFile to be specified"))
+			allErrs = append(allErrs, field.Required(fldPath.Child("authorizationWebhookConfigFile"), "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified"))
 		}
 	}
 
@@ -328,7 +323,7 @@ func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPa
 	allErrs := field.ErrorList{}
 
 	if c.CloudProvider != "gce" {
-		allErrs = append(allErrs, field.Invalid(fldPath, "gce", "gce networking is supported only when on GCP"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "gce networking is supported only when on GCP"))
 	}
 
 	return allErrs
@@ -343,8 +338,7 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 		valid.Insert(k)
 	}
 	if !valid.Has(role) {
-		message := fmt.Sprintf("role is not known (valid values: %s)", strings.Join(valid.List(), ","))
-		errs = append(errs, field.Invalid(fldPath, role, message))
+		errs = append(errs, field.NotSupported(fldPath, role, valid.List()))
 	}
 
 	statements, err := iam.ParseStatements(policy)
@@ -363,7 +357,7 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 			errs = append(errs, field.Required(fldEffect, "Effect must be specified for IAM policy"))
 
 		default:
-			errs = append(errs, field.Invalid(fldEffect, statement.Effect, "Effect must be 'Allow' or 'Deny'"))
+			errs = append(errs, field.NotSupported(fldEffect, statement.Effect, []string{"Allow", "Deny"}))
 		}
 	}
 
@@ -383,7 +377,7 @@ func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) 
 		// blank means that the user accepts the recommendation
 
 	default:
-		errs = append(errs, field.Invalid(fieldPath.Child("provider"), spec.Provider, "Provider must be Manager or Legacy"))
+		errs = append(errs, field.NotSupported(fieldPath.Child("provider"), spec.Provider, kops.SupportedEtcdProviderTypes))
 	}
 
 	return errs
@@ -418,9 +412,7 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 
 func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
-	if v.TyphaReplicas >= 0 {
-
-	} else {
+	if v.TyphaReplicas < 0 {
 		allErrs = append(allErrs,
 			field.Invalid(fldPath.Child("typhaReplicas"), v.TyphaReplicas,
 				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
