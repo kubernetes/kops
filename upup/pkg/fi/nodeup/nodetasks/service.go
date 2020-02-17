@@ -78,8 +78,8 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 
 		default:
 			switch fmt.Sprintf("%T", v) {
-				// Workaround for what would otherwise be a circular reference in our tasks
-				// TODO: can we find a better way?  Maybe we should have a similar method on tasks that works "the other way round" e.g. GetReverseDependencies
+			// Workaround for what would otherwise be a circular reference in our tasks
+			// TODO: can we find a better way?  Maybe we should have a similar method on tasks that works "the other way round" e.g. GetReverseDependencies
 			case "*model.KubeletBootstrapKubeconfigTask":
 				// ignore .... except for kubelet
 				if p.Name == "kubelet.service" {
