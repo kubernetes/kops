@@ -24,6 +24,7 @@ genrule(
 $(location //vendor/github.com/go-bindata/go-bindata/go-bindata:go-bindata) \
   -o "$(OUTS)" -pkg models \
   -nometadata \
+  -nocompress \
   -prefix $$(pwd) \
   -prefix upup/models $(SRCS)
 """,
