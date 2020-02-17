@@ -452,19 +452,19 @@ func Test_Validate_RollingUpdate(t *testing.T) {
 			Input: kops.RollingUpdate{
 				MaxSurge: intStr(intstr.FromString("nope")),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxSurge"},
+			ExpectedErrors: []string{"Invalid value::testField.maxSurge"},
 		},
 		{
 			Input: kops.RollingUpdate{
 				MaxSurge: intStr(intstr.FromInt(-1)),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxSurge"},
+			ExpectedErrors: []string{"Invalid value::testField.maxSurge"},
 		},
 		{
 			Input: kops.RollingUpdate{
 				MaxSurge: intStr(intstr.FromString("-1%")),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxSurge"},
+			ExpectedErrors: []string{"Invalid value::testField.maxSurge"},
 		},
 	}
 	for _, g := range grid {
