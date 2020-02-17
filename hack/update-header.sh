@@ -19,7 +19,7 @@
 BAD_HEADERS=$((${KOPS_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $7}')
 FORMATS="sh go Makefile Dockerfile"
 
-YEAR=`date +%Y`
+YEAR=`date -u +%Y`
 
 for i in ${FORMATS}
 do
