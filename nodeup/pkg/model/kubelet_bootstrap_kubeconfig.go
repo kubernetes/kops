@@ -62,7 +62,7 @@ func (b *KubeletBootstrapKubeconfigBuilder) Build(c *fi.ModelBuilderContext) err
 	if err != nil {
 		return err
 	}
-	config.CACertificate = caCert
+	config.CACertificates = caCert
 
 	apiserverURL := fmt.Sprintf("https://%s", b.Cluster.Spec.MasterInternalName)
 

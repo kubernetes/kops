@@ -33,8 +33,9 @@ type Options struct {
 	// Server is the GRPC server we should connect to
 	Server string `json:"server"`
 
-	// CACertificate is the CA certificate for the GRPC server
-	CACertificate []byte `json:"caCertificate"`
+	// CACertificates holds the CA certificate(s) for the GRPC server
+	// Multiple certificates can be present, to permit rotation.
+	CACertificates []byte `json:"caCertificates"`
 }
 
 // PopulateDefaults sets the default configuration values
@@ -53,10 +54,10 @@ func New(ctx context.Context, options *Options) (*nodeBootstrapClient, error) {
 
 	{
 		tlsConfig := &tls.Config{}
-		if options.CACertificate != nil {
+		if options.CACertificates != nil {
 			certPool := x509.NewCertPool()
-			if !certPool.AppendCertsFromPEM(options.CACertificate) {
-				return nil, fmt.Errorf("could not parse CA certificate")
+			if !certPool.AppendCertsFromPEM(options.CACertificates) {
+				return nil, fmt.Errorf("could not parse CA certificates")
 			}
 			tlsConfig.RootCAs = certPool
 		}

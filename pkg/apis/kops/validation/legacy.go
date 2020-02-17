@@ -415,6 +415,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					allErrs = append(allErrs, field.Invalid(path.Child("tokenTTL"), c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
 				}
 
+				// kops-controller auto-enables bootstrap tokens, the separate node-authorizer requires it explicitly
 				if nodeAuthorizer.Authorizer != "kops-controller" {
 					// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
 					if c.Spec.KubeAPIServer == nil {
@@ -422,8 +423,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					} else if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
 						allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "kubeAPIServer").Child("enableBootstrapAuthToken"), nil, "kube-apiserver has not been configured to use bootstrap tokens"))
 					}
-				} else {
-					// kops-controller mode auto-enables bootstrap tokens
 				}
 
 				// Even with auto-enable, it's an error if bootstrap tokens are explicitly disabled; that won't work.

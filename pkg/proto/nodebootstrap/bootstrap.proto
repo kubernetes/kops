@@ -8,11 +8,11 @@ service NodeBootstrapService {
 }
 
 message CreateKubeletBootstrapTokenRequest {
-  NodeInfo node_info = 1;
+  NodeCredentials node_credentials = 1;
 }
 
-// NodeInfo allows a node to provide any secrets etc that can help verify its identity
-message NodeInfo {
+// NodeCredentials allows a node to provide any secrets etc that can help verify its identity
+message NodeCredentials {
 }
 
 message CreateKubeletBootstrapTokenResponse {
