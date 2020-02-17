@@ -57,24 +57,20 @@ func TestValidateInstanceProfile(t *testing.T) {
 			Input: &kops.IAMProfileSpec{
 				Profile: s("42"),
 			},
-			ExpectedErrors: []string{"Invalid value::IAMProfile.Profile"},
+			ExpectedErrors: []string{"Invalid value::iam.profile"},
 			ExpectedDetail: "Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole",
 		},
 		{
 			Input: &kops.IAMProfileSpec{
 				Profile: s("arn:aws:iam::123456789012:group/division_abc/subdivision_xyz/product_A/Developers"),
 			},
-			ExpectedErrors: []string{"Invalid value::IAMProfile.Profile"},
+			ExpectedErrors: []string{"Invalid value::iam.profile"},
 			ExpectedDetail: "Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole",
 		},
 	}
 
 	for _, g := range grid {
-		err := validateInstanceProfile(g.Input, field.NewPath("IAMProfile"))
-		allErrs := field.ErrorList{}
-		if err != nil {
-			allErrs = append(allErrs, err)
-		}
+		allErrs := validateInstanceProfile(g.Input, field.NewPath("iam"))
 		testErrors(t, g.Input, allErrs, g.ExpectedErrors)
 
 		if g.ExpectedDetail != "" {

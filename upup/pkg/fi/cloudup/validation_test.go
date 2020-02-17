@@ -104,12 +104,12 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 func TestValidateFull_Default_Validates(t *testing.T) {
 	c := buildDefaultCluster(t)
-	if err := validation.ValidateCluster(c, false); err != nil {
+	if errs := validation.ValidateCluster(c, false); len(errs) != 0 {
 		klog.Infof("Cluster: %v", c)
-		t.Fatalf("Validate gave unexpected error (strict=false): %v", err)
+		t.Fatalf("Validate gave unexpected error (strict=false): %v", errs.ToAggregate())
 	}
-	if err := validation.ValidateCluster(c, true); err != nil {
-		t.Fatalf("Validate gave unexpected error (strict=true): %v", err)
+	if errs := validation.ValidateCluster(c, true); len(errs) != 0 {
+		t.Fatalf("Validate gave unexpected error (strict=true): %v", errs.ToAggregate())
 	}
 }
 
@@ -140,7 +140,7 @@ func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
 func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.UpdatePolicy = fi.String("not-a-real-value")
-	expectErrorFromValidate(t, c, "UpdatePolicy")
+	expectErrorFromValidate(t, c, "spec.updatePolicy")
 }
 
 func Test_Validate_No_Classic_With_14(t *testing.T) {
@@ -150,7 +150,7 @@ func Test_Validate_No_Classic_With_14(t *testing.T) {
 		Classic: &api.ClassicNetworkingSpec{},
 	}
 
-	expectErrorFromValidate(t, c, "spec.Networking")
+	expectErrorFromValidate(t, c, "spec.networking")
 }
 
 func Test_Validate_Kubenet_With_14(t *testing.T) {
@@ -196,19 +196,19 @@ func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T)
 }
 
 func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
-	err := validation.ValidateCluster(c, false)
-	if err == nil {
+	errs := validation.ValidateCluster(c, false)
+	if len(errs) == 0 {
 		t.Fatalf("Expected error from Validate")
 	}
-	actualMessage := fmt.Sprintf("%v", err)
+	actualMessage := fmt.Sprintf("%v", errs.ToAggregate())
 	if !strings.Contains(actualMessage, message) {
 		t.Fatalf("Expected error %q, got %q", message, actualMessage)
 	}
 }
 
 func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
-	err := validation.ValidateCluster(c, false)
-	if err != nil {
-		t.Fatalf("Unexpected error from Validate: %v", err)
+	errs := validation.ValidateCluster(c, false)
+	if len(errs) != 0 {
+		t.Fatalf("Unexpected error from Validate: %v", errs.ToAggregate())
 	}
 }

@@ -1033,7 +1033,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			MajorVersion: "v3",
 		}
 		// Validate to check if etcd clusters have an acceptable version
-		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("Calico")); len(errList) != 0 {
+		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("spec", "networking", "calico")); len(errList) != 0 {
 
 			// This is not a special version but simply of the 3 series
 			for _, etcd := range cluster.Spec.EtcdClusters {

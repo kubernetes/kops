@@ -146,7 +146,7 @@ Be aware of the following limitations:
 
 ## Flatcar
 
-Flatcar is a friendly fork of CoreOS and as such, compatible with it. If some issues occurs with it, it is likely that also CoreOS miight be affected. If you encounter any problem please report it to us.
+Flatcar is a friendly fork of CoreOS and as such, compatible with it. If some issues occurs with it, it is likely that also CoreOS might be affected. If you encounter any problem please report it to us.
 
 The following steps are known:
 

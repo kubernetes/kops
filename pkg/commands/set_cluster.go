@@ -42,7 +42,7 @@ func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *
 	}
 
 	if options.ClusterName == "" {
-		return field.Required(field.NewPath("ClusterName"), "Cluster name is required")
+		return field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}
 
 	clientset, err := f.Clientset()

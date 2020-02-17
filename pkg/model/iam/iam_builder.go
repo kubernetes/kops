@@ -192,6 +192,10 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
+		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+	}
+
 	return p, nil
 }
 
@@ -861,6 +865,34 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 	)
 }
 
+func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
+	if legacyIAM {
+		// Legacy IAM provides ec2:*, so no additional permissions required
+		return
+	}
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:DescribeSubnets",
+				"ec2:AttachNetworkInterface",
+				"ec2:AssignPrivateIpAddresses",
+				"ec2:UnassignPrivateIpAddresses",
+				"ec2:CreateNetworkInterface",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeVpcPeeringConnections",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DetachNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:ModifyNetworkInterfaceAttribute",
+				"ec2:DescribeVpcs",
+			}),
+			Resource: resource,
+		},
+	)
+}
+
 func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string, iamPrefix string) {
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
@@ -871,16 +903,17 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
-				"ec2:CreateNetworkInterface",
-				"ec2:AttachNetworkInterface",
-				"ec2:DeleteNetworkInterface",
-				"ec2:DetachNetworkInterface",
-				"ec2:DescribeNetworkInterfaces",
-				"ec2:DescribeInstances",
-				"ec2:ModifyNetworkInterfaceAttribute",
 				"ec2:AssignPrivateIpAddresses",
+				"ec2:AttachNetworkInterface",
+				"ec2:CreateNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:DescribeInstances",
+				"ec2:DescribeInstanceTypes",
+				"ec2:DescribeTags",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DetachNetworkInterface",
+				"ec2:ModifyNetworkInterfaceAttribute",
 				"ec2:UnassignPrivateIpAddresses",
-				"tag:TagResources",
 			}),
 			Resource: resource,
 		},

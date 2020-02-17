@@ -33,28 +33,38 @@ func EnsureFileOwner(destPath string, owner string, groupName string) (bool, err
 		return changed, fmt.Errorf("error getting file stat for %q: %v", destPath, err)
 	}
 
-	user, err := LookupUser(owner) //user.Lookup(owner)
-	if err != nil {
-		return changed, fmt.Errorf("error looking up user %q: %v", owner, err)
-	}
-	if user == nil {
-		return changed, fmt.Errorf("user %q not found", owner)
-	}
-
-	group, err := LookupGroup(groupName)
-	if err != nil {
-		return changed, fmt.Errorf("error looking up group %q: %v", groupName, err)
-	}
-	if group == nil {
-		return changed, fmt.Errorf("group %q not found", owner)
+	actualUserID := int(stat.Sys().(*syscall.Stat_t).Uid)
+	userID := actualUserID
+	if owner != "" {
+		user, err := LookupUser(owner) //user.Lookup(owner)
+		if err != nil {
+			return changed, fmt.Errorf("error looking up user %q: %v", owner, err)
+		}
+		if user == nil {
+			return changed, fmt.Errorf("user %q not found", owner)
+		}
+		userID = user.Uid
 	}
 
-	if int(stat.Sys().(*syscall.Stat_t).Uid) == user.Uid && int(stat.Sys().(*syscall.Stat_t).Gid) == group.Gid {
+	actualGroupID := int(stat.Sys().(*syscall.Stat_t).Gid)
+	groupID := actualGroupID
+	if groupName != "" {
+		group, err := LookupGroup(groupName)
+		if err != nil {
+			return changed, fmt.Errorf("error looking up group %q: %v", groupName, err)
+		}
+		if group == nil {
+			return changed, fmt.Errorf("group %q not found", groupName)
+		}
+		groupID = group.Gid
+	}
+
+	if actualUserID == userID && actualGroupID == groupID {
 		return changed, nil
 	}
 
-	klog.Infof("Changing file owner/group for %q to %s:%+v", destPath, owner, group)
-	err = os.Lchown(destPath, user.Uid, group.Gid)
+	klog.Infof("Changing file owner/group for %q to %s:%s", destPath, owner, groupName)
+	err = os.Lchown(destPath, userID, groupID)
 	if err != nil {
 		return changed, fmt.Errorf("error setting file owner/group for %q: %v", destPath, err)
 	}

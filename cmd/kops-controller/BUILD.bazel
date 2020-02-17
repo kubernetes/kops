@@ -41,7 +41,7 @@ container_image(
     name = "image",
     base = "@distroless_base//image",
     cmd = ["/usr/bin/kops-controller"],
-    user = "1000",
+    user = "10001",
     directory = "/usr/bin/",
     files = [
         "//cmd/kops-controller",
@@ -62,4 +62,18 @@ container_bundle(
     images = {
         "{STABLE_DOCKER_IMAGE_PREFIX}kops-controller:{STABLE_KOPS_CONTROLLER_TAG}": "image",
     },
+)
+
+load("//tools:gzip.bzl", "gzip")
+
+gzip(
+    name = "image-bundle.tar.gz",
+    src = "image-bundle.tar",
+)
+
+load("//tools:hashes.bzl", "hashes")
+
+hashes(
+    name = "image-bundle.tar.gz.hashes",
+    src = "image-bundle.tar.gz",
 )

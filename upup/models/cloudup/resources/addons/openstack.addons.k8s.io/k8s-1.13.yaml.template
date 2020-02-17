@@ -180,6 +180,7 @@ spec:
       # run on each master node
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      priorityClassName: system-node-critical
       securityContext:
         runAsUser: 1001
       serviceAccountName: cloud-controller-manager

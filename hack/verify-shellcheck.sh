@@ -18,45 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
-
-kube::util::array_contains() {
-  local search="$1"
-  local element
-  shift
-  for element; do
-    if [[ "${element}" == "${search}" ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-kube::util::trap_add() {
-  local trap_add_cmd
-  trap_add_cmd=$1
-  shift
-
-  for trap_add_name in "$@"; do
-    local existing_cmd
-    local new_cmd
-
-    # Grab the currently defined trap commands for this trap
-    existing_cmd=$(trap -p "${trap_add_name}" |  awk -F"'" '{print $2}')
-
-    if [[ -z "${existing_cmd}" ]]; then
-      new_cmd="${trap_add_cmd}"
-    else
-      new_cmd="${trap_add_cmd};${existing_cmd}"
-    fi
-
-    # Assign the test. Disable the shellcheck warning telling that trap
-    # commands should be single quoted to avoid evaluating them at this
-    # point instead evaluating them at run time. The logic of adding new
-    # commands to a single trap requires them to be evaluated right away.
-    # shellcheck disable=SC2064
-    trap "${new_cmd}" "${trap_add_name}"
-  done
-}
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 # required version for this script, if not installed on the host we will
 # use the official docker image instead. keep this in sync with SHELLCHECK_IMAGE
@@ -92,7 +54,7 @@ create_container () {
   # we're done.
   # This is incredibly much faster than creating a container for each shellcheck
   # call ...
-  docker run --name "${SHELLCHECK_CONTAINER}" -d --rm -v "${KUBE_ROOT}:${KUBE_ROOT}" -w "${KUBE_ROOT}" --entrypoint="sleep" "${SHELLCHECK_IMAGE}" 2147483647
+  docker run --name "${SHELLCHECK_CONTAINER}" -d --rm -v "${KOPS_ROOT}:/go/src/k8s.io/kops" -w "/go/src/k8s.io/kops" --entrypoint="sleep" "${SHELLCHECK_IMAGE}" 2147483647
 }
 # removes the shellcheck container
 remove_container () {
@@ -100,7 +62,7 @@ remove_container () {
 }
 
 # ensure we're linting the k8s source tree
-cd "${KUBE_ROOT}"
+cd "${KOPS_ROOT}"
 
 # Find all shell scripts excluding:
 # - Anything git-ignored - No need to lint untracked files.
@@ -121,7 +83,7 @@ done < <(find . -name "*.sh" \
   \))
 
 # make sure known failures are sorted
-failure_file="${KUBE_ROOT}/hack/.shellcheck_failures"
+failure_file="${KOPS_ROOT}/hack/.shellcheck_failures"
 if ! diff -u "${failure_file}" <(LC_ALL=C sort "${failure_file}"); then
   {
     echo
@@ -178,7 +140,7 @@ fi
 # common arguments we'll pass to shellcheck
 SHELLCHECK_OPTIONS=(
   # allow following sourced files that are not specified in the command,
-  # we need this because we specify one file at at time in order to trivially
+  # we need this because we specify one file at a time in order to trivially
   # detect which files are failing
   "--external-sources"
   # include our disabled lints

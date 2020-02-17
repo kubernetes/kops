@@ -63,7 +63,8 @@ var awsDedicatedInstanceExceptions = map[string]bool{
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, channel *kops.Channel) (*kops.InstanceGroup, error) {
-	err := validation.ValidateInstanceGroup(input)
+	var err error
+	err = validation.ValidateInstanceGroup(input).ToAggregate()
 	if err != nil {
 		return nil, err
 	}

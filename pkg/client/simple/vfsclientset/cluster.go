@@ -99,8 +99,8 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 }
 
 func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
-	if err := validation.ValidateCluster(c, false); err != nil {
-		return nil, err
+	if errs := validation.ValidateCluster(c, false); len(errs) != 0 {
+		return nil, errs.ToAggregate()
 	}
 
 	if c.ObjectMeta.CreationTimestamp.IsZero() {
@@ -125,7 +125,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Cluster, error) {
 	clusterName := c.ObjectMeta.Name
 	if clusterName == "" {
-		return nil, field.Required(field.NewPath("Name"), "clusterName is required")
+		return nil, field.Required(field.NewPath("objectMeta", "name"), "clusterName is required")
 	}
 
 	old, err := r.Get(clusterName, metav1.GetOptions{})

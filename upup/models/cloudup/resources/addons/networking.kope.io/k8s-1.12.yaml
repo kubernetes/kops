@@ -44,6 +44,7 @@ spec:
               fieldRef:
                 fieldPath: spec.nodeName
       serviceAccountName: kopeio-networking-agent
+      priorityClassName: system-node-critical
       tolerations:
       - effect: NoSchedule
         operator: Exists

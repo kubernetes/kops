@@ -9,7 +9,7 @@ The [node authorization service] is an experimental service which in the absence
 - the client certificate by default is added into the system:nodes rbac group _(note, if you are using PSP this is automatically bound by kops on your behalf)_.
 - the kubelet at this point has a server certificate and the client api certificate and good to go.
 
-#### **Integretion with Kops**
+#### **Integration with Kops**
 
 The node authorization service is run on the master as a daemonset, by default dns is _node-authorizer-internal.dns_zone_:10443 and added via same mechanism at the internal kube-apiserver i.e. annotations on the kube-apiserver pods which is picked up the dns-controller and added to the dns zone.
 

@@ -20,6 +20,15 @@ data:
   identity-allocation-mode: crd
   # If you want to run cilium in debug mode change this value to true
   debug: "{{- if .Debug -}}true{{- else -}}false{{- end -}}"
+  {{ if .EnablePrometheusMetrics }}
+  # If you want metrics enabled in all of your Cilium agents, set the port for
+  # which the Cilium agents will have their metrics exposed.
+  # This option deprecates the "prometheus-serve-addr" in the
+  # "cilium-metrics-config" ConfigMap
+  # NOTE that this will open the port on ALL nodes where Cilium pods are
+  # scheduled.
+  prometheus-serve-addr: ":{{- or .AgentPrometheusPort "9090" }}"
+  {{ end }}
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
   enable-ipv4: "{{- if or  (.EnableIpv4) (and (not (.EnableIpv4)) (not (.EnableIpv6))) -}}true{{- else -}}false{{- end -}}"
@@ -112,6 +121,14 @@ data:
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
   enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  {{ with .Ipam }}
+  ipam: {{ . }}
+  {{ if eq . "eni" }}
+  enable-endpoint-routes: "true"
+  auto-create-cilium-node-resource: "true"
+  blacklist-conflicting-routes: "false"
+  {{ end }}
+  {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1
@@ -354,6 +371,10 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{.MasterInternalName}}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
         {{ with .Networking.Cilium.EnablePolicy }}
         - name: CILIUM_ENABLE_POLICY
           value: {{ . }}
@@ -385,6 +406,13 @@ spec:
           successThreshold: 1
           timeoutSeconds: 5
         name: cilium-agent
+        {{ if .EnablePrometheusMetrics }}
+        ports:
+        - containerPort: {{ or .AgentPrometheusPort "9090" }}
+          hostPort: {{ or .AgentPrometheusPort "9090" }}
+          name: prometheus
+          protocol: TCP
+        {{ end }}
         readinessProbe:
           exec:
             command:
@@ -461,6 +489,7 @@ spec:
           name: bpf-maps
         - mountPath: /var/run/cilium
           name: cilium-run
+      priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium
       serviceAccountName: cilium
@@ -541,9 +570,21 @@ spec:
       containers:
       - args:
         - --debug=$(CILIUM_DEBUG)
+        - --identity-allocation-mode=$(CILIUM_IDENTITY_ALLOCATION_MODE)
+{{ with .Networking.Cilium }}
+        {{ if .EnablePrometheusMetrics }}
+        - --enable-metrics
+        {{ end }}
+{{ end }}
         command:
         - cilium-operator
         env:
+        - name: CILIUM_IDENTITY_ALLOCATION_MODE
+          valueFrom:
+            configMapKeyRef:
+              key: identity-allocation-mode
+              name: cilium-config
+              optional: true
         - name: CILIUM_K8S_NAMESPACE
           valueFrom:
             fieldRef:
@@ -614,12 +655,21 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
-
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{.MasterInternalName}}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
 {{ with .Networking.Cilium }}
         image: "docker.io/cilium/operator:{{ .Version }}"
-{{ end }}
         imagePullPolicy: IfNotPresent
         name: cilium-operator
+        {{ if .EnablePrometheusMetrics }}
+        ports:
+        - containerPort: 6942
+          hostPort: 6942
+          name: prometheus
+          protocol: TCP
+        {{ end }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -632,3 +682,19 @@ spec:
       restartPolicy: Always
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
+      {{ if eq .Ipam "eni" }}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+      {{ end }}
+{{ end }}
