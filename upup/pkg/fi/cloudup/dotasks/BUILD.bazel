@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "droplet.go",
         "droplet_fitask.go",
+        "loadbalancer.go",
+        "loadbalancer_fitask.go",
         "volume.go",
         "volume_fitask.go",
     ],

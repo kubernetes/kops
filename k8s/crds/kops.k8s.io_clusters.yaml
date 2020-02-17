@@ -670,6 +670,14 @@ spec:
                     (use to control whom can creates dns entries)
                   type: string
               type: object
+            externalPolicies:
+              additionalProperties:
+                items:
+                  type: string
+                type: array
+              description: ExternalPolicies allows the insertion of pre-existing managed
+                policies on IG Roles
+              type: object
             fileAssets:
               description: A collection of files assets for deployed cluster wide
               items:
@@ -2408,8 +2416,7 @@ spec:
                     VPC CNI networking
                   properties:
                     imageName:
-                      description: 'The container image name to use, which by default
-                        is: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5'
+                      description: The container image name to use
                       type: string
                   type: object
                 calico:
@@ -2547,6 +2554,8 @@ spec:
                       items:
                         type: string
                       type: array
+                    agentPrometheusPort:
+                      type: integer
                     allowLocalhost:
                       type: string
                     autoDirectNodeRoutes:
@@ -2593,6 +2602,8 @@ spec:
                       type: boolean
                     enablePolicy:
                       type: string
+                    enablePrometheusMetrics:
+                      type: boolean
                     enableTracing:
                       type: boolean
                     enableipv4:
@@ -2600,6 +2611,8 @@ spec:
                     enableipv6:
                       type: boolean
                     envoyLog:
+                      type: string
+                    ipam:
                       type: string
                     ipv4ClusterCidrMaskSize:
                       type: integer

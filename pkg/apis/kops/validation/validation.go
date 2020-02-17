@@ -99,7 +99,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(spec, spec.Networking, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
-			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking").Child("Calico"))...)
+			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking", "calico"))...)
 		}
 	}
 
@@ -169,22 +169,19 @@ func validateSubnets(subnets []kops.ClusterSubnetSpec, fieldPath *field.Path) fi
 		for i := range subnets {
 			name := subnets[i].Name
 			if names.Has(name) {
-				allErrs = append(allErrs, field.Invalid(fieldPath, subnets, fmt.Sprintf("subnets with duplicate name %q found", name)))
+				allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i).Child("name"), name))
 			}
 			names.Insert(name)
 		}
 	}
 
 	// cannot mix subnets with specified ID and without specified id
-	{
-		hasID := 0
+	if len(subnets) > 0 {
+		hasID := subnets[0].ProviderID != ""
 		for i := range subnets {
-			if subnets[i].ProviderID != "" {
-				hasID++
+			if (subnets[i].ProviderID != "") != hasID {
+				allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("id"), "cannot mix subnets with specified ID and unspecified ID"))
 			}
-		}
-		if hasID != 0 && hasID != len(subnets) {
-			allErrs = append(allErrs, field.Invalid(fieldPath, subnets, "cannot mix subnets with specified ID and unspecified ID"))
 		}
 	}
 
@@ -196,12 +193,12 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 
 	// name is required
 	if subnet.Name == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), ""))
 	}
 
 	// CIDR
 	if subnet.CIDR != "" {
-		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("CIDR"))...)
+		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("cidr"))...)
 	}
 
 	return allErrs
@@ -212,10 +209,10 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 	allErrs := field.ErrorList{}
 
 	if v.Name == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), ""))
 	}
 	if v.Content == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("Content"), ""))
+		allErrs = append(allErrs, field.Required(fieldPath.Child("content"), ""))
 	}
 
 	return allErrs
@@ -250,7 +247,7 @@ func validateHookSpec(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
 	}
 
 	if v.ExecContainer != nil {
-		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fieldPath.Child("ExecContainer"))...)
+		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fieldPath.Child("execContainer"))...)
 	}
 
 	return allErrs
@@ -260,7 +257,7 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 	allErrs := field.ErrorList{}
 
 	if v.Image == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("Image"), "Image must be specified"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("image"), "image must be specified"))
 	}
 
 	return allErrs
@@ -273,22 +270,20 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 	proxyClientKeyIsNil := v.ProxyClientKeyFile == nil
 
 	if (proxyClientCertIsNil && !proxyClientKeyIsNil) || (!proxyClientCertIsNil && proxyClientKeyIsNil) {
-		flds := [2]*string{v.ProxyClientCertFile, v.ProxyClientKeyFile}
-		allErrs = append(allErrs, field.Invalid(fldPath, flds, "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "proxyClientCertFile and proxyClientKeyFile must both be specified (or neither)"))
 	}
 
 	if v.ServiceNodePortRange != "" {
 		pr := &utilnet.PortRange{}
 		err := pr.Set(v.ServiceNodePortRange)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath, v.ServiceNodePortRange, err.Error()))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("serviceNodePortRange"), v.ServiceNodePortRange, err.Error()))
 		}
 	}
 
 	if v.AuthorizationMode != nil && strings.Contains(*v.AuthorizationMode, "Webhook") {
 		if v.AuthorizationWebhookConfigFile == nil {
-			flds := [2]*string{v.AuthorizationMode, v.AuthorizationWebhookConfigFile}
-			allErrs = append(allErrs, field.Invalid(fldPath, flds, "Authorization mode Webhook requires AuthorizationWebhookConfigFile to be specified"))
+			allErrs = append(allErrs, field.Required(fldPath.Child("authorizationWebhookConfigFile"), "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified"))
 		}
 	}
 
@@ -299,7 +294,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 	allErrs := field.ErrorList{}
 
 	if v.Flannel != nil {
-		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("Flannel"))...)
+		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("flannel"))...)
 	}
 
 	if v.GCE != nil {
@@ -314,11 +309,11 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 
 	switch v.Backend {
 	case "":
-		allErrs = append(allErrs, field.Required(fldPath.Child("Backend"), "Flannel backend must be specified"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("backend"), "Flannel backend must be specified"))
 	case "udp", "vxlan":
 		// OK
 	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("Backend"), v.Backend, []string{"udp", "vxlan"}))
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("backend"), v.Backend, []string{"udp", "vxlan"}))
 	}
 
 	return allErrs
@@ -328,7 +323,7 @@ func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPa
 	allErrs := field.ErrorList{}
 
 	if c.CloudProvider != "gce" {
-		allErrs = append(allErrs, field.Invalid(fldPath, "gce", "gce networking is supported only when on GCP"))
+		allErrs = append(allErrs, field.Forbidden(fldPath, "gce networking is supported only when on GCP"))
 	}
 
 	return allErrs
@@ -343,8 +338,7 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 		valid.Insert(k)
 	}
 	if !valid.Has(role) {
-		message := fmt.Sprintf("role is not known (valid values: %s)", strings.Join(valid.List(), ","))
-		errs = append(errs, field.Invalid(fldPath, role, message))
+		errs = append(errs, field.NotSupported(fldPath, role, valid.List()))
 	}
 
 	statements, err := iam.ParseStatements(policy)
@@ -363,7 +357,7 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 			errs = append(errs, field.Required(fldEffect, "Effect must be specified for IAM policy"))
 
 		default:
-			errs = append(errs, field.Invalid(fldEffect, statement.Effect, "Effect must be 'Allow' or 'Deny'"))
+			errs = append(errs, field.NotSupported(fldEffect, statement.Effect, []string{"Allow", "Deny"}))
 		}
 	}
 
@@ -383,7 +377,7 @@ func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) 
 		// blank means that the user accepts the recommendation
 
 	default:
-		errs = append(errs, field.Invalid(fieldPath.Child("provider"), spec.Provider, "Provider must be Manager or Legacy"))
+		errs = append(errs, field.NotSupported(fieldPath.Child("provider"), spec.Provider, kops.SupportedEtcdProviderTypes))
 	}
 
 	return errs
@@ -398,18 +392,18 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 	}
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
 	if err != nil {
-		allErrs = append(allErrs, field.InternalError(fldPath.Child("MajorVersion"), fmt.Errorf("failed to parse Etcd version to check compatibility: %s", err)))
+		allErrs = append(allErrs, field.InternalError(fldPath.Child("majorVersion"), fmt.Errorf("failed to parse Etcd version to check compatibility: %s", err)))
 	}
 
 	if sem.Major != 3 {
 		if e.Version == "" {
 			allErrs = append(allErrs,
-				field.Invalid(fldPath.Child("MajorVersion"), majorVersion,
+				field.Forbidden(fldPath.Child("majorVersion"),
 					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is default(%s)",
 						e.Name, components.DefaultEtcd2Version)))
 		} else {
 			allErrs = append(allErrs,
-				field.Invalid(fldPath.Child("MajorVersion"), majorVersion,
+				field.Forbidden(fldPath.Child("majorVersion"),
 					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is %s", e.Name, e.Version)))
 		}
 	}
@@ -418,11 +412,9 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 
 func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
-	if v.TyphaReplicas >= 0 {
-
-	} else {
+	if v.TyphaReplicas < 0 {
 		allErrs = append(allErrs,
-			field.Invalid(fldPath.Child("TyphaReplicas"), v.TyphaReplicas,
+			field.Invalid(fldPath.Child("typhaReplicas"), v.TyphaReplicas,
 				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
 	}
 	switch v.MajorVersion {
@@ -431,7 +423,7 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 	case "v3":
 		allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
 	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("MajorVersion"), v.MajorVersion, []string{"v3"}))
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("majorVersion"), v.MajorVersion, []string{"v3"}))
 	}
 
 	return allErrs
@@ -451,11 +443,11 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 	if rollingUpdate.MaxUnavailable != nil {
 		unavailable, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, 1, false)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable,
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxUnavailable"), rollingUpdate.MaxUnavailable,
 				fmt.Sprintf("Unable to parse: %v", err)))
 		}
 		if unavailable < 0 {
-			allErrs = append(allErrs, field.Invalid(fldpath.Child("MaxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
 		}
 	}
 	if rollingUpdate.MaxSurge != nil {

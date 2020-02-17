@@ -49,7 +49,7 @@ func TestPopulateInstanceGroup_Name_Required(t *testing.T) {
 
 	channel := &api.Channel{}
 
-	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "Name")
+	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "objectMeta.name")
 }
 
 func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
@@ -59,7 +59,7 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 
 	channel := &api.Channel{}
 
-	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "Role")
+	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "spec.role")
 }
 
 func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *api.Cluster, g *api.InstanceGroup, channel *api.Channel, message string) {

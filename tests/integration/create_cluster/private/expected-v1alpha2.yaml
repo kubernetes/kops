@@ -72,7 +72,7 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: bastions
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -95,7 +95,7 @@ spec:
   additionalSecurityGroups:
   - sg-exampleid3
   - sg-exampleid4
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -118,7 +118,7 @@ spec:
   additionalSecurityGroups:
   - sg-exampleid
   - sg-exampleid2
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
   machineType: t2.medium
   maxSize: 2
   minSize: 2

@@ -162,7 +162,7 @@ The swift store can be configured by providing your OpenStack credentials and co
 - `OS_APPLICATION_CREDENTIAL_NAME`: application credential name
 - `OS_APPLICATION_CREDENTIAL_SECRET`: application secret
 
-The mechanism used to retrieve the credentials is derived from the [gophercloud OpenStack SDK](https://godoc.org/github.com/gophercloud/gophercloud).
+The mechanism used to retrieve the credentials is derived from the [gophercloud OpenStack SDK](https://pkg.go.dev/github.com/gophercloud/gophercloud).
 
 A credentials file with `OPENSTACK_CREDENTIAL_FILE` or a config derived from your personal credentials living in `$HOME/.openstack/config` can also be used to configure your store.
 

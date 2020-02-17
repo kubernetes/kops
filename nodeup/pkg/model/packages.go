@@ -56,17 +56,20 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "libseccomp"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
-
-		// Handle RHEL 7 and Amazon Linux 2 differently when installing "extras"
-		if b.Distribution != distros.DistributionRhel7 {
-			c.AddTask(&nodetasks.Package{Name: "container-selinux"})
-			c.AddTask(&nodetasks.Package{Name: "pigz"})
-		} else {
+		// Handle some packages differently for each distro
+		switch b.Distribution {
+		case distros.DistributionRhel7:
+			// Easier to install container-selinux from CentOS than extras
 			c.AddTask(&nodetasks.Package{
 				Name:   "container-selinux",
 				Source: s("http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.107-1.el7_6.noarch.rpm"),
 				Hash:   s("7de4211fa0dfd240d8827b93763e1eb5f0d56411"),
 			})
+		case distros.DistributionAmazonLinux2:
+			// Amazon Linux 2 doesn't have SELinux enabled by default
+		default:
+			c.AddTask(&nodetasks.Package{Name: "container-selinux"})
+			c.AddTask(&nodetasks.Package{Name: "pigz"})
 		}
 	} else {
 		// Hopefully they are already installed

@@ -135,6 +135,8 @@ type ClusterSpec struct {
 	//   'external' do not apply updates automatically - they are applied manually or by an external system
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+	// ExternalPolicies allows the insertion of pre-existing managed policies on IG Roles
+	ExternalPolicies *map[string][]string `json:"externalPolicies,omitempty"`
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 	// A collection of files assets for deployed cluster wide
@@ -538,6 +540,23 @@ type TerraformSpec struct {
 
 func (t *TerraformSpec) IsEmpty() bool {
 	return t.ProviderExtraConfig == nil
+}
+
+// EnvVar represents an environment variable present in a Container.
+type EnvVar struct {
+	// Name of the environment variable. Must be a C_IDENTIFIER.
+	Name string `json:"name"`
+
+	// Variable references $(VAR_NAME) are expanded
+	// using the previous defined environment variables in the container and
+	// any service environment variables. If a variable cannot be resolved,
+	// the reference in the input string will be unchanged. The $(VAR_NAME)
+	// syntax can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
+	// references will never be expanded, regardless of whether the variable
+	// exists or not.
+	// Defaults to "".
+	// +optional
+	Value string `json:"value,omitempty"`
 }
 
 type GossipConfig struct {

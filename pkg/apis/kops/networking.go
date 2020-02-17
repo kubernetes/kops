@@ -187,12 +187,12 @@ type RomanaNetworkingSpec struct {
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {
-	// The container image name to use, which by default is:
-	// 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5
+	// The container image name to use
 	ImageName string `json:"imageName,omitempty"`
 }
 
-const CiliumDefaultVersion = "v1.6.4"
+const CiliumDefaultVersion = "v1.6.6"
+const CiliumIpamEni = "eni"
 
 // CiliumNetworkingSpec declares that we want Cilium networking
 type CiliumNetworkingSpec struct {
@@ -200,6 +200,7 @@ type CiliumNetworkingSpec struct {
 
 	AccessLog                string            `json:"accessLog,omitempty"`
 	AgentLabels              []string          `json:"agentLabels,omitempty"`
+	AgentPrometheusPort      int               `json:"agentPrometheusPort,omitempty"`
 	AllowLocalhost           string            `json:"allowLocalhost,omitempty"`
 	AutoIpv6NodeRoutes       bool              `json:"autoIpv6NodeRoutes,omitempty"`
 	BPFRoot                  string            `json:"bpfRoot,omitempty"`
@@ -213,6 +214,7 @@ type CiliumNetworkingSpec struct {
 	DisableK8sServices       bool              `json:"disableK8sServices,omitempty"`
 	EnablePolicy             string            `json:"enablePolicy,omitempty"`
 	EnableTracing            bool              `json:"enableTracing,omitempty"`
+	EnablePrometheusMetrics  bool              `json:"enablePrometheusMetrics,omitempty"`
 	EnvoyLog                 string            `json:"envoyLog,omitempty"`
 	Ipv4ClusterCIDRMaskSize  int               `json:"ipv4ClusterCidrMaskSize,omitempty"`
 	Ipv4Node                 string            `json:"ipv4Node,omitempty"`
@@ -260,6 +262,7 @@ type CiliumNetworkingSpec struct {
 	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
 	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
 	EnableNodePort         bool   `json:"enableNodePort"`
+	Ipam                   string `json:"ipam,omitempty"`
 
 	//node init options
 	RemoveCbrBridge       bool   `json:"removeCbrBridge"`

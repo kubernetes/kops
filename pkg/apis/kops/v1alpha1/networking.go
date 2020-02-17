@@ -187,8 +187,7 @@ type RomanaNetworkingSpec struct {
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {
-	// The container image name to use, which by default is:
-	// 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.5.5
+	// The container image name to use
 	ImageName string `json:"imageName,omitempty"`
 }
 
@@ -197,6 +196,7 @@ type CiliumNetworkingSpec struct {
 
 	AccessLog                string            `json:"accessLog,omitempty"`
 	AgentLabels              []string          `json:"agentLabels,omitempty"`
+	AgentPrometheusPort      int               `json:"agentPrometheusPort,omitempty"`
 	AllowLocalhost           string            `json:"allowLocalhost,omitempty"`
 	AutoIpv6NodeRoutes       bool              `json:"autoIpv6NodeRoutes,omitempty"`
 	BPFRoot                  string            `json:"bpfRoot,omitempty"`
@@ -209,6 +209,7 @@ type CiliumNetworkingSpec struct {
 	DisableIpv4              bool              `json:"disableIpv4,omitempty"`
 	DisableK8sServices       bool              `json:"disableK8sServices,omitempty"`
 	EnablePolicy             string            `json:"enablePolicy,omitempty"`
+	EnablePrometheusMetrics  bool              `json:"enablePrometheusMetrics,omitempty"`
 	EnableTracing            bool              `json:"enableTracing,omitempty"`
 	EnvoyLog                 string            `json:"envoyLog,omitempty"`
 	Ipv4ClusterCIDRMaskSize  int               `json:"ipv4ClusterCidrMaskSize,omitempty"`
@@ -257,6 +258,7 @@ type CiliumNetworkingSpec struct {
 	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
 	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
 	EnableNodePort         bool   `json:"enableNodePort"`
+	Ipam                   string `json:"ipam,omitempty"`
 
 	//node init options
 	RemoveCbrBridge       bool   `json:"removeCbrBridge"`
