@@ -17,7 +17,6 @@ limitations under the License.
 package validation
 
 import (
-	"fmt"
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -46,18 +45,22 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 	case kops.InstanceGroupRoleNode:
 	case kops.InstanceGroupRoleBastion:
 	default:
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "role"), g.Spec.Role, "Unknown role"))
+		var supported []string
+		for _, role := range kops.AllInstanceGroupRoles {
+			supported = append(supported, string(role))
+		}
+		allErrs = append(allErrs, field.NotSupported(field.NewPath("spec", "role"), g.Spec.Role, supported))
 	}
 
 	if g.Spec.Tenancy != "" {
 		if g.Spec.Tenancy != "default" && g.Spec.Tenancy != "dedicated" && g.Spec.Tenancy != "host" {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "tenancy"), g.Spec.Tenancy, "Unknown tenancy. Must be Default, Dedicated or Host."))
+			allErrs = append(allErrs, field.NotSupported(field.NewPath("spec", "tenancy"), g.Spec.Tenancy, []string{"default", "dedicated", "host"}))
 		}
 	}
 
 	if g.Spec.MaxSize != nil && g.Spec.MinSize != nil {
 		if *g.Spec.MaxSize < *g.Spec.MinSize {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "maxSize"), *g.Spec.MaxSize, "maxSize must be greater than or equal to minSize."))
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "maxSize"), "maxSize must be greater than or equal to minSize."))
 		}
 	}
 
@@ -92,7 +95,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 
 		// @check the device name has not been used already
 		if _, found := devices[x.Device]; found {
-			allErrs = append(allErrs, field.Invalid(path.Child("device"), x.Device, "duplicate device name found in volumes"))
+			allErrs = append(allErrs, field.Duplicate(path.Child("device"), x.Device))
 		}
 
 		devices[x.Device] = true
@@ -105,10 +108,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 
 		allErrs = append(allErrs, validateVolumeMountSpec(path, x)...)
 		if _, found := used[x.Device]; found {
-			allErrs = append(allErrs, field.Invalid(path.Child("device"), x.Device, "duplicate device reference"))
+			allErrs = append(allErrs, field.Duplicate(path.Child("device"), x.Device))
 		}
 		if _, found := used[x.Path]; found {
-			allErrs = append(allErrs, field.Invalid(path.Child("path"), x.Path, "duplicate mount path specified"))
+			allErrs = append(allErrs, field.Duplicate(path.Child("path"), x.Path))
 		}
 	}
 
@@ -152,7 +155,7 @@ func validatedMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPo
 	}
 
 	if spec.SpotAllocationStrategy != nil && !slice.Contains(kops.SpotAllocationStrategies, fi.StringValue(spec.SpotAllocationStrategy)) {
-		errs = append(errs, field.Invalid(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, "unsupported spot allocation strategy"))
+		errs = append(errs, field.NotSupported(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, kops.SpotAllocationStrategies))
 	}
 
 	return errs
@@ -186,8 +189,7 @@ func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) field
 		allErrs = append(allErrs, field.Required(path.Child("path"), "mount path required"))
 	}
 	if !slice.Contains(kops.SupportedFilesystems, spec.Filesystem) {
-		allErrs = append(allErrs, field.Invalid(path.Child("filesystem"), spec.Filesystem,
-			fmt.Sprintf("unsupported filesystem, available types: %s", strings.Join(kops.SupportedFilesystems, ","))))
+		allErrs = append(allErrs, field.NotSupported(path.Child("filesystem"), spec.Filesystem, kops.SupportedFilesystems))
 	}
 
 	return allErrs
@@ -208,14 +210,23 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 
 		for i, z := range g.Spec.Subnets {
 			if clusterSubnets[z] == nil {
-				// TODO field.NotFound(field.NewPath("spec", "subnets").Index(i), z) ?
-				allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "subnets").Index(i), z,
-					fmt.Sprintf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)))
+				allErrs = append(allErrs, field.NotFound(field.NewPath("spec", "subnets").Index(i), z))
 			}
 		}
 	}
 
 	return allErrs
+}
+
+var validUserDataTypes = []string{
+	"text/x-include-once-url",
+	"text/x-include-url",
+	"text/cloud-config-archive",
+	"text/upstart-job",
+	"text/cloud-config",
+	"text/part-handler",
+	"text/x-shellscript",
+	"text/cloud-boothook",
 }
 
 func validateExtraUserData(userData *kops.UserData) field.ErrorList {
@@ -230,18 +241,8 @@ func validateExtraUserData(userData *kops.UserData) field.ErrorList {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("content"), "field must be set"))
 	}
 
-	switch userData.Type {
-	case "text/x-include-once-url":
-	case "text/x-include-url":
-	case "text/cloud-config-archive":
-	case "text/upstart-job":
-	case "text/cloud-config":
-	case "text/part-handler":
-	case "text/x-shellscript":
-	case "text/cloud-boothook":
-
-	default:
-		allErrs = append(allErrs, field.Invalid(fieldPath.Child("type"), userData.Type, "Invalid user-data content type"))
+	if !slice.Contains(validUserDataTypes, userData.Type) {
+		allErrs = append(allErrs, field.NotSupported(fieldPath.Child("type"), userData.Type, validUserDataTypes))
 	}
 
 	return allErrs

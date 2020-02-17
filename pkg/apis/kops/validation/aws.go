@@ -57,7 +57,7 @@ func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string)
 	names := sets.NewString()
 	for i, s := range groups {
 		if names.Has(s) {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Index(i), s, "security groups with duplicate name found"))
+			allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i), s))
 		}
 		names.Insert(s)
 		if strings.TrimSpace(s) == "" {
