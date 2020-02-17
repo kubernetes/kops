@@ -88,19 +88,24 @@ func (c *nodeBootstrapClient) Close() error {
 	return nil
 }
 
-func (c *nodeBootstrapClient) CreateKubeletBootstrapToken(ctx context.Context) (pb.Token, error) {
-	request := &pb.CreateKubeletBootstrapTokenRequest{}
+func (c *nodeBootstrapClient) CreateKubeletBootstrapToken(ctx context.Context, nodeName string, publicKeyPEM []byte) (pb.Certificate, error) {
+	request := &pb.CreateKubeletBootstrapTokenRequest{
+		NodeName: nodeName,
+		PublicKey: &pb.PublicKey{
+			PemData: publicKeyPEM,
+		},
+	}
 
 	klog.V(2).Infof("sending CreateKubeletBootstrapRequest %v", request)
 
 	response, err := c.client.CreateKubeletBootstrapToken(ctx, request)
 	if err != nil {
-		return pb.Token{}, fmt.Errorf("error creating bootstrap token: %v", err)
+		return pb.Certificate{}, fmt.Errorf("error creating bootstrap token: %v", err)
 	}
 
-	if response.Token == nil || response.Token.BearerToken == "" {
-		return pb.Token{}, fmt.Errorf("created bootstrap token, but response was empty")
+	if response.Certificate == nil || response.Certificate.PemData == nil {
+		return pb.Certificate{}, fmt.Errorf("created bootstrap token, but response was empty")
 	}
 
-	return *response.Token, nil
+	return *response.Certificate, nil
 }

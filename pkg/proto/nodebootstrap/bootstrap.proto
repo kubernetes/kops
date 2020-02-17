@@ -8,7 +8,9 @@ service NodeBootstrapService {
 }
 
 message CreateKubeletBootstrapTokenRequest {
-  NodeCredentials node_credentials = 1;
+  string node_name = 1;
+  PublicKey public_key = 2;
+  NodeCredentials node_credentials = 3;
 }
 
 // NodeCredentials allows a node to provide any secrets etc that can help verify its identity
@@ -16,9 +18,19 @@ message NodeCredentials {
 }
 
 message CreateKubeletBootstrapTokenResponse {
-  Token token = 1;
+//  Token token = 1;
+  Certificate certificate = 2;
 }
 
-message Token {
-  string bearer_token = 1;
+//message Token {
+//  string bearer_token = 1;
+//}
+
+
+message PublicKey {
+  bytes pem_data = 1;
+}
+
+message Certificate {
+  bytes pem_data = 1;
 }

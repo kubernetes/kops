@@ -18,7 +18,10 @@ package model
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -27,6 +30,7 @@ import (
 	kubeconfigv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/pkg/nodebootstrap/client"
+	"k8s.io/kops/pkg/pkiutil"
 	pb "k8s.io/kops/pkg/proto/nodebootstrap"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -57,6 +61,11 @@ func (b *KubeletBootstrapKubeconfigBuilder) Build(c *fi.ModelBuilderContext) err
 	config := client.Options{}
 	config.PopulateDefaults()
 
+	nodeName, err := b.NodeName()
+	if err != nil {
+		return err
+	}
+
 	config.Server = fmt.Sprintf("%s:%d", b.Cluster.Spec.MasterInternalName, wellknownports.KopsControllerGRPCPort)
 	caCert, err := b.CACertificate()
 	if err != nil {
@@ -68,6 +77,7 @@ func (b *KubeletBootstrapKubeconfigBuilder) Build(c *fi.ModelBuilderContext) err
 
 	c.AddTask(&KubeletBootstrapKubeconfigTask{
 		Name:                    "kubelet-bootstrap",
+		NodeName:                nodeName,
 		Path:                    b.KubeletBootstrapKubeconfig(),
 		ClientConfig:            config,
 		KubeconfigAPIServer:     apiserverURL,
@@ -78,7 +88,9 @@ func (b *KubeletBootstrapKubeconfigBuilder) Build(c *fi.ModelBuilderContext) err
 }
 
 // makeKubeconfig is responsible for generating a bootstrap kubeconfig
-func makeKubeconfig(apiserverURL string, apiserverCACertificate []byte, token pb.Token) ([]byte, error) {
+func makeKubeconfig(apiserverURL string, apiserverCACertificate []byte, privateKey *rsa.PrivateKey, clientCertificate pb.Certificate) ([]byte, error) {
+	privateKeyPEM := pkiutil.EncodePrivateKeyPEM(privateKey)
+
 	name := "bootstrap-context"
 	clusterName := "cluster"
 
@@ -89,7 +101,8 @@ func makeKubeconfig(apiserverURL string, apiserverCACertificate []byte, token pb
 			{
 				Name: name,
 				AuthInfo: kubeconfigv1.AuthInfo{
-					Token: token.BearerToken,
+					ClientKeyData:         privateKeyPEM,
+					ClientCertificateData: clientCertificate.PemData,
 				},
 			},
 		},
@@ -119,6 +132,8 @@ func makeKubeconfig(apiserverURL string, apiserverCACertificate []byte, token pb
 
 type KubeletBootstrapKubeconfigTask struct {
 	Name string
+
+	NodeName string
 
 	Path string
 
@@ -188,12 +203,33 @@ func (_ *KubeletBootstrapKubeconfigTask) RenderLocal(t *local.LocalTarget, a, e,
 		return fmt.Errorf("error to build node bootstrap client: %v", err)
 	}
 
-	token, err := client.CreateKubeletBootstrapToken(ctx)
+	privateKey, err := pkiutil.NewPrivateKey()
+	if err != nil {
+		return fmt.Errorf("error generating kubelet private key: %v", err)
+	}
+
+	var publicKeyPEM []byte
+	{
+		publicKey := &privateKey.PublicKey
+		b, err := x509.MarshalPKIXPublicKey(publicKey)
+		if err != nil {
+			return fmt.Errorf("error marshalling public key %T: %v", publicKey, err)
+		}
+		block := pem.Block{
+			Type:  "PUBLIC KEY",
+			Bytes: b,
+		}
+		publicKeyPEM = pem.EncodeToMemory(&block)
+	}
+
+	nodeName := e.NodeName
+
+	token, err := client.CreateKubeletBootstrapToken(ctx, nodeName, publicKeyPEM)
 	if err != nil {
 		return fmt.Errorf("unable to get kubelet bootstrap token: %v", err)
 	}
 
-	kubeconfig, err := makeKubeconfig(e.KubeconfigAPIServer, e.KubeconfigCACertificate, token)
+	kubeconfig, err := makeKubeconfig(e.KubeconfigAPIServer, e.KubeconfigCACertificate, privateKey, token)
 	if err != nil {
 		return fmt.Errorf("error building bootstrap kubeconfig: %v", err)
 	}

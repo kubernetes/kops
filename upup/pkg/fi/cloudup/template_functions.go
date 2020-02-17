@@ -35,12 +35,14 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/Masterminds/sprig"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/cmd/kops-controller/pkg/nodebootstrap"
 	"k8s.io/kops/pkg/apis/kops"
 	apimodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -377,6 +379,12 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		}
 
 		config.GRPC = grpcOptions
+
+		config.NodeBootstrapService = &nodebootstrap.Options{
+			CertificateTTL:        15 * time.Minute,
+			SignerCertificatePath: path.Join(pkiDir, "ca.crt"),
+			SignerKeyPath:         path.Join(pkiDir, "ca.key"),
+		}
 	}
 
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml

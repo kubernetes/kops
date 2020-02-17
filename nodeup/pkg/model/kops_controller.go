@@ -84,6 +84,14 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Owner:    s(wellknownusers.KopsControllerName),
 	})
 
+	// Include the CA Keypair
+	if err := b.AddPrivateKeyTask(c, fi.CertificateId_CA, filepath.Join(pkiDir, "ca.key"), wellknownusers.KopsControllerName); err != nil {
+		return err
+	}
+	if err := b.AddCertificateTask(c, fi.CertificateId_CA, filepath.Join(pkiDir, "ca.crt"), wellknownusers.KopsControllerName); err != nil {
+		return err
+	}
+
 	return nil
 }
 

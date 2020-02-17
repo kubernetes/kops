@@ -427,8 +427,15 @@ func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContex
 	return c.BuildPrivateKeyTask(ctx, key, keyName)
 }
 
-// BuildCertificateTask is responsible for build a certificate request task
+// BuildCertificateTask creates and registers a task that writes a certificate to a file
+// Deprecated: prefer AddCertificateTask, which takes an owner
 func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+	owner := ""
+	return c.AddCertificateTask(ctx, name, filename, owner)
+}
+
+// AddCertificateTask creates and registers a task that writes a certificate to a file
+func (c *NodeupModelContext) AddCertificateTask(ctx *fi.ModelBuilderContext, name, filename string, owner string) error {
 	cert, err := c.KeyStore.FindCert(name)
 	if err != nil {
 		return err
@@ -448,18 +455,29 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 		p = filepath.Join(c.PathSrvKubernetes(), filename)
 	}
 
-	ctx.AddTask(&nodetasks.File{
+	t := &nodetasks.File{
 		Path:     p,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
-	})
+	}
+	if owner != "" {
+		t.Owner = s(owner)
+	}
+	ctx.AddTask(t)
 
 	return nil
 }
 
-// BuildPrivateKeyTask is responsible for build a certificate request task
+// BuildPrivateKeyTask creates and registers a task that writes a private key to a file
+// Deprecated: prefer AddPrivateKeyTask, which takes an owner
 func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+	owner := ""
+	return c.AddPrivateKeyTask(ctx, name, filename, owner)
+}
+
+// AddPrivateKeyTask creates and registers a task that writes a private key to a file
+func (c *NodeupModelContext) AddPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner string) error {
 	cert, err := c.KeyStore.FindPrivateKey(name)
 	if err != nil {
 		return err
@@ -479,12 +497,16 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 		p = filepath.Join(c.PathSrvKubernetes(), filename)
 	}
 
-	ctx.AddTask(&nodetasks.File{
+	t := &nodetasks.File{
 		Path:     p,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
-	})
+	}
+	if owner != "" {
+		t.Owner = s(owner)
+	}
+	ctx.AddTask(t)
 
 	return nil
 }

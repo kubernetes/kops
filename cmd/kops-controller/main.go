@@ -18,6 +18,9 @@ package main
 
 import (
 	"context"
+	"crypto"
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -203,18 +206,28 @@ func runGRPCServices(ctx context.Context, restConfig *rest.Config, opt *config.O
 			opts = append(opts, tlsOptions)
 		}
 
-		authorizer, err := alwaysallow.NewAuthorizer()
-		if err != nil {
-			return fmt.Errorf("error building authorizer: %v", err)
-		}
-		nodeBootstrapService, err := nodebootstrap.NewNodeBootstrapService(restConfig, authorizer, opt.NodeBootstrapService)
-		if err != nil {
-			return fmt.Errorf("error building node bootstrap service: %v", err)
-		}
-
 		// TODO: Bind lifetime to ctx
 		grpcServer := grpc.NewServer(opts...)
-		pb.RegisterNodeBootstrapServiceServer(grpcServer, nodeBootstrapService)
+
+		if opt.NodeBootstrapService != nil {
+			signerCertificate, signerPrivateKey, err := loadSigner(*opt.NodeBootstrapService)
+			if err != nil {
+				return err
+			}
+
+			authorizer, err := alwaysallow.NewAuthorizer()
+			if err != nil {
+				return fmt.Errorf("error building authorizer: %v", err)
+			}
+
+			nodeBootstrapService, err := nodebootstrap.NewNodeBootstrapService(signerCertificate, signerPrivateKey, authorizer, opt.NodeBootstrapService)
+			if err != nil {
+				return fmt.Errorf("error building node bootstrap service: %v", err)
+			}
+
+			pb.RegisterNodeBootstrapServiceServer(grpcServer, nodeBootstrapService)
+		}
+
 		if err := grpcServer.Serve(lis); err != nil {
 			return fmt.Errorf("error from grpc service: %v", err)
 		}
@@ -230,4 +243,23 @@ func buildTLSForGRPC(options config.GRPCOptions) (grpc.ServerOption, error) {
 		return nil, fmt.Errorf("failed to load grpc credentials: %v", err)
 	}
 	return grpc.Creds(creds), nil
+}
+
+func loadSigner(options nodebootstrap.Options) (*x509.Certificate, crypto.Signer, error) {
+	keypair, err := tls.LoadX509KeyPair(options.SignerCertificatePath, options.SignerKeyPath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to load signing keypair: %v", err)
+	}
+
+	cert, err := x509.ParseCertificate(keypair.Certificate[0])
+	if err != nil {
+		return nil, nil, fmt.Errorf("error parsing certificate: %v", err)
+	}
+
+	signer, ok := keypair.PrivateKey.(crypto.Signer)
+	if !ok {
+		return nil, nil, fmt.Errorf("unexpected type %T for private key", keypair.PrivateKey)
+	}
+
+	return cert, signer, nil
 }

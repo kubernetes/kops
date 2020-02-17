@@ -18,17 +18,21 @@ package nodebootstrap
 
 import (
 	"context"
+	"crypto"
+	crypto_rand "crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"fmt"
 	"time"
 
 	"google.golang.org/grpc/peer"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
-	rest "k8s.io/client-go/rest"
+	"k8s.io/client-go/util/keyutil"
 	"k8s.io/klog"
 	"k8s.io/kops/node-authorizer/pkg/server"
+	"k8s.io/kops/pkg/pki"
 	pb "k8s.io/kops/pkg/proto/nodebootstrap"
+	"k8s.io/kops/pkg/rbac"
 )
 
 const (
@@ -39,31 +43,32 @@ const (
 type nodeBootstrapService struct {
 	authorizer server.Authorizer
 
-	corev1Client corev1client.CoreV1Interface
+	signerCert       *x509.Certificate
+	signerPrivateKey crypto.Signer
 
 	options Options
 }
 
 // Options is the configuration for the NodeBootstrap server
 type Options struct {
-	TokenTTL time.Duration `json:"tokenTTL,omitempty"`
+	CertificateTTL time.Duration `json:"certificateTTL,omitempty"`
+
+	SignerCertificatePath string `json:"signerCertificatePath,omitempty"`
+	SignerKeyPath         string `json:"signerKeyPath,omitempty"`
 }
 
 // PopulateDefaults sets the default configuration values
 func (o *Options) PopulateDefaults() {
-	o.TokenTTL = 5 * time.Minute
+	o.CertificateTTL = 15 * time.Minute
 }
 
-func NewNodeBootstrapService(restConfig *rest.Config, authorizer server.Authorizer, options *Options) (*nodeBootstrapService, error) {
+func NewNodeBootstrapService(signerCert *x509.Certificate, signerPrivateKey crypto.Signer, authorizer server.Authorizer, options *Options) (*nodeBootstrapService, error) {
 	s := &nodeBootstrapService{}
 
-	s.authorizer = authorizer
+	s.signerCert = signerCert
+	s.signerPrivateKey = signerPrivateKey
 
-	c, err := corev1client.NewForConfig(restConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error connecting to kubernetes: %v", err)
-	}
-	s.corev1Client = c
+	s.authorizer = authorizer
 
 	s.options = *options
 
@@ -78,30 +83,55 @@ func (s *nodeBootstrapService) CreateKubeletBootstrapToken(ctx context.Context, 
 		return nil, fmt.Errorf("failed to get peer context")
 	}
 
-	nodeRegistration := &server.NodeRegistration{}
-	nodeRegistration.Spec.RemoteAddr = peer.Addr.String()
-
-	if err := s.authorizer.Authorize(ctx, nodeRegistration); err != nil {
-		// In general we prefer to log error details here, and only return minimal information to the client, because it may be an attacker
-		klog.Warningf("internal error during authorization: %v", err)
-		return nil, fmt.Errorf("internal error during authorization")
+	if request.NodeName == "" {
+		return nil, fmt.Errorf("node_name not supplied")
 	}
 
-	if !nodeRegistration.Status.Allowed {
-		// TODO: Use grpc Status errors?
-		return nil, fmt.Errorf("node registration not allowed")
+	var publicKey interface{}
+	if request.PublicKey != nil && request.PublicKey.PemData != nil {
+		publicKeys, err := keyutil.ParsePublicKeysPEM(request.PublicKey.PemData)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing public key: %v", err)
+		}
+
+		if len(publicKeys) == 0 {
+			return nil, fmt.Errorf("no public key was parsed")
+		}
+		if len(publicKeys) != 1 {
+			return nil, fmt.Errorf("multiple public keys were parsed")
+		}
+
+		publicKey = publicKeys[0]
+	} else {
+		return nil, fmt.Errorf("no public key data supplied")
 	}
 
-	token, err := s.createBootstrapToken(ctx, nodeRegistration)
+	{
+		nodeRegistration := &server.NodeRegistration{}
+		nodeRegistration.Spec.RemoteAddr = peer.Addr.String()
+
+		if err := s.authorizer.Authorize(ctx, nodeRegistration); err != nil {
+			// In general we prefer to log error details here, and only return minimal information to the client, because it may be an attacker
+			klog.Warningf("internal error during authorization: %v", err)
+			return nil, fmt.Errorf("internal error during authorization")
+		}
+
+		if !nodeRegistration.Status.Allowed {
+			// TODO: Use grpc Status errors?
+			return nil, fmt.Errorf("node registration not allowed")
+		}
+	}
+
+	pemData, err := s.createBootstrapToken(ctx, request.NodeName, publicKey)
 	if err != nil {
 		klog.Warningf("error creating bootstrap token: %v", err)
 		return nil, fmt.Errorf("error creating bootstrap token")
 	}
 
 	response := &pb.CreateKubeletBootstrapTokenResponse{}
-	if token != nil {
-		response.Token = &pb.Token{
-			BearerToken: token.ID + "." + token.Secret,
+	if pemData != nil {
+		response.Certificate = &pb.Certificate{
+			PemData: pemData,
 		}
 	}
 
@@ -109,29 +139,48 @@ func (s *nodeBootstrapService) CreateKubeletBootstrapToken(ctx context.Context, 
 }
 
 // createBootstrapToken generates a bootstrap token for the node, inserting it into k8s
-func (s *nodeBootstrapService) createBootstrapToken(ctx context.Context, request *server.NodeRegistration) (*server.Token, error) {
-	usages := []string{"authentication", "signing"}
+func (s *nodeBootstrapService) createBootstrapToken(ctx context.Context, nodeName string, publicKey interface{}) ([]byte, error) {
 
-	// @step: generate a random token for them
-	token, err := server.NewToken()
+	// Build a Certificate template; note that for security reasons we don't allow the client to build it
+	now := time.Now()
+
+	template := &x509.Certificate{
+		BasicConstraintsValid: true,
+		IsCA:                  false,
+	}
+
+	// Allow for a small amount of clock-skew
+	template.NotBefore = now.Add(time.Hour * -1)
+
+	// Rotate the cert fairly quickly
+	template.NotAfter = now.Add(s.options.CertificateTTL)
+
+	template.Subject = pkix.Name{
+		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
+		Organization: []string{rbac.NodesGroup},
+	}
+
+	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+	//
+	// Digital signature allows the certificate to be used to verify
+	// digital signatures used during TLS negotiation.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageDigitalSignature
+	// KeyEncipherment allows the cert/key pair to be used to encrypt
+	// keys, including the symmetric keys negotiated during TLS setup
+	// and used for data transfer.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageKeyEncipherment
+	// ClientAuth allows the cert to be used by a TLS client to
+	// authenticate itself to the TLS server.
+	template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+
+	template.SerialNumber = pki.BuildPKISerial(now.UnixNano())
+
+	certificateData, err := x509.CreateCertificate(crypto_rand.Reader, template, s.signerCert, publicKey, s.signerPrivateKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating certificate: %v", err)
 	}
 
-	// @step: add the secret to the namespace
-	secret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: token.Name(),
-		},
-		Type: corev1.SecretType(corev1.SecretTypeBootstrapToken),
-		Data: token.EncodeTokenSecretData(usages, s.options.TokenTTL),
-	}
+	b := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certificateData})
 
-	if _, err := s.corev1Client.Secrets(tokenNamespace).Create(secret); err != nil {
-		// A token collision is very unlikely, so we'll return an error and let the caller retry
-		klog.Warningf("failed to create secret: %v", err)
-		return nil, fmt.Errorf("failed to create secret")
-	}
-
-	return token, nil
+	return b, nil
 }
