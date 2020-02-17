@@ -96,7 +96,7 @@ func TestDeepValidate_NotIncludedZone(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1d"))
 
-	expectErrorFromDeepValidate(t, c, groups, "not configured as a Subnet in the cluster")
+	expectErrorFromDeepValidate(t, c, groups, "spec.subnets[0]: Not found: \"subnet-us-mock-1d\"")
 }
 
 func TestDeepValidate_DuplicateZones(t *testing.T) {
@@ -108,7 +108,7 @@ func TestDeepValidate_DuplicateZones(t *testing.T) {
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("dup1"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("dup1"))
-	expectErrorFromDeepValidate(t, c, groups, "subnets with duplicate name \"dup1\" found")
+	expectErrorFromDeepValidate(t, c, groups, "spec.subnets[1].name: Duplicate value: \"dup1\"")
 }
 
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {
@@ -121,7 +121,7 @@ func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b", "subnet-us-mock-1c"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b"))
 
-	expectErrorFromDeepValidate(t, c, groups, "is not configured as a Subnet in the cluster")
+	expectErrorFromDeepValidate(t, c, groups, "[spec.subnets[0]: Not found: \"subnet-us-mock-1a\", spec.subnets[1]: Not found: \"subnet-us-mock-1b\", spec.subnets[2]: Not found: \"subnet-us-mock-1c\"]")
 }
 
 func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
