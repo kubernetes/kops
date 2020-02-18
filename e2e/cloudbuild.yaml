@@ -1,0 +1,31 @@
+timeout: 3600s
+options:
+  substitution_option: ALLOW_LOOSE
+  machineType: 'N1_HIGHCPU_8'
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+          'build',
+          '-t', 'gcr.io/$PROJECT_ID/jupyter-test:latest',
+          '-f', 'images/Dockerfile',
+          '.'
+        ]
+- name: 'gcr.io/$PROJECT_ID/jupyter-test:latest'
+  env:
+  - KOPS_STATE_STORE=$_KOPS_STATE_STORE
+  - PROJECT_ID=$PROJECT_ID
+  - WORKSPACE=/workspace
+artifacts:
+  objects:
+    location: $_ARTIFACT_LOCATION
+    paths: [
+             '/workspace/artifacts/*',
+           ]
+#substitutions:
+#  _KOPS_STATE_STORE: 'gs://your-kops-state-store'
+#  _ARTIFACT_LOCATION: 'gs://artifact-results-location'
+
+# Notes: iam.serviceAccountUser on <projectnumber>-compute@developer.gserviceaccount.com
+# need network admin (?) to create firewall rules
+# need storage admin (?) for buckets
+# compute engine admin (to create machines etc)
