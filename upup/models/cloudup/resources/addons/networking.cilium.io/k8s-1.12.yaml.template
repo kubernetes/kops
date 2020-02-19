@@ -155,6 +155,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - ""
   resources:
   - namespaces
@@ -207,6 +215,8 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
+  - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints
   - ciliumendpoints/status
   - ciliumnodes
@@ -235,6 +245,14 @@ rules:
   - watch
   - delete
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - ""
   resources:
   # to automatically read from k8s and import the node's pod CIDR to cilium's
@@ -255,6 +273,8 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
+  - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints
   - ciliumendpoints/status
   - ciliumnodes
@@ -316,7 +336,6 @@ spec:
         # gets priority scheduling.
         # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
         scheduler.alpha.kubernetes.io/critical-pod: ""
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated","operator":"Equal","value":"master","effect":"NoSchedule"}]'
       labels:
         k8s-app: cilium
         kubernetes.io/cluster-service: "true"
@@ -368,7 +387,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v.1.7.0" }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -421,6 +440,7 @@ spec:
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+          mountPropagation: HostToContainer
         - mountPath: /var/run/cilium
           name: cilium-run
         - mountPath: /host/opt/cni/bin
@@ -462,7 +482,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.0" }}"
 ## end of `with .Networking.Cilium`
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -642,7 +662,7 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
-        image: "docker.io/cilium/operator:{{ .Version }}"
+        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.0{{- else -}}{{ .Version }}{{- end -}}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
