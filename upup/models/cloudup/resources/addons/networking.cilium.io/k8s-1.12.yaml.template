@@ -399,7 +399,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{- or .Version "v.1.7.0" }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.0" }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
