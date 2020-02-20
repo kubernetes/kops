@@ -42,6 +42,7 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	}
 
 	// Custom S3 endpoint
+	vars.addEnvVariableIfExist("S3_REGION")
 	vars.addEnvVariableIfExist("S3_ENDPOINT")
 	vars.addEnvVariableIfExist("S3_ACCESS_KEY_ID")
 	vars.addEnvVariableIfExist("S3_SECRET_ACCESS_KEY")
