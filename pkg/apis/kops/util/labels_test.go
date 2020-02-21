@@ -44,8 +44,7 @@ func TestGetNodeRole(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "node-2",
 					Labels: map[string]string{
-						"node-role.kubernetes.io/master": "node-role",
-						"node-role.kubernetes.io/node":   "node-role",
+						"node-role.kubernetes.io/node": "node-role",
 					},
 				},
 			},
