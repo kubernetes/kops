@@ -3854,6 +3854,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.CpuManagerPolicy = in.CpuManagerPolicy
 	out.RegistryPullQPS = in.RegistryPullQPS
 	out.RegistryBurst = in.RegistryBurst
+	out.RotateCertificates = in.RotateCertificates
 	return nil
 }
 
@@ -3938,6 +3939,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.CpuManagerPolicy = in.CpuManagerPolicy
 	out.RegistryPullQPS = in.RegistryPullQPS
 	out.RegistryBurst = in.RegistryBurst
+	out.RotateCertificates = in.RotateCertificates
 	return nil
 }
 
