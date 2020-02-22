@@ -76,7 +76,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		err := unix.Statfs("/sys/fs/bpf", &fsdata)
 
 		if err != nil {
-			alreadyMounted = false
+			return fmt.Errorf("error checking for /sys/fs/bpf: %v", err)
 		} else {
 			alreadyMounted = int32(magic) == int32(fsdata.Type)
 		}
