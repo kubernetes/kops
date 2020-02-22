@@ -328,8 +328,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	// APIServer aggregation options
-	// TODO fix Test_KubeAPIServer_Builder so we can remove the conditional
-	if b.IsKubernetesGTE("1.7") {
+	{
 		cert, err := b.KeyStore.FindCert("apiserver-aggregator-ca")
 		if err != nil {
 			return nil, fmt.Errorf("apiserver aggregator CA cert lookup failed: %v", err.Error())
