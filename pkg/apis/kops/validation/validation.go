@@ -35,7 +35,7 @@ import (
 
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, false, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
-	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, field.NewPath("spec"))...)
+	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, cluster, field.NewPath("spec"))...)
 
 	// Additional cloud-specific validation rules
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -48,7 +48,7 @@ func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	return allErrs
 }
 
-func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.ErrorList {
+func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	allErrs = append(allErrs, validateSubnets(spec.Subnets, fieldPath.Child("subnets"))...)
@@ -89,7 +89,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 	}
 
 	if spec.Networking != nil {
-		allErrs = append(allErrs, validateNetworking(spec, spec.Networking, fieldPath.Child("networking"))...)
+		allErrs = append(allErrs, validateNetworking(spec.Networking, c, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
 			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking", "calico"))...)
 		}
@@ -285,7 +285,7 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 	return allErrs
 }
 
-func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworking(v *kops.NetworkingSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	optionTaken := false
 
@@ -331,7 +331,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("flannel"))...)
+		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, c, fldPath.Child("flannel"))...)
 	}
 
 	if v.Calico != nil {
@@ -347,7 +347,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingCanal(v.Canal, fldPath.Child("canal"))...)
+		allErrs = append(allErrs, validateNetworkingCanal(v.Canal, c, fldPath.Child("canal"))...)
 	}
 
 	if v.Kuberouter != nil {
@@ -370,7 +370,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		}
 		optionTaken = true
 
-		if c.CloudProvider != "aws" {
+		if c.Spec.CloudProvider != "aws" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
 		}
 	}
@@ -381,7 +381,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingCilium(c, v.Cilium, fldPath.Child("cilium"))...)
+		allErrs = append(allErrs, validateNetworkingCilium(v.Cilium, c, fldPath.Child("cilium"))...)
 	}
 
 	if v.LyftVPC != nil {
@@ -390,7 +390,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		}
 		optionTaken = true
 
-		if c.CloudProvider != "aws" {
+		if c.Spec.CloudProvider != "aws" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
 		}
 	}
@@ -401,26 +401,35 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingGCE(c, v.GCE, fldPath.Child("gce"))...)
+		allErrs = append(allErrs, validateNetworkingGCE(v.GCE, c, fldPath.Child("gce"))...)
 	}
 
 	return allErrs
 }
 
-func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	supported := []string{"udp"}
+	if !c.IsKubernetesGTE("1.17") {
+		supported = append(supported, "vxlan")
+	}
 
 	if v.Backend == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("backend"), "Flannel backend must be specified"))
 	} else {
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("backend"), &v.Backend, []string{"udp", "vxlan"})...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("backend"), &v.Backend, supported)...)
 	}
 
 	return allErrs
 }
 
-func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingCanal(v *kops.CanalNetworkingSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	if c.IsKubernetesGTE("1.17") {
+		return append(allErrs, field.Forbidden(fldPath.Child("canal"), "Canal CNI is not supported as of Kubernetes 1.17"))
+	}
 
 	if v.DefaultEndpointToHostAction != "" {
 		valid := []string{"ACCEPT", "DROP", "RETURN"}
@@ -445,10 +454,10 @@ func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) f
 	return allErrs
 }
 
-func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingCilium(v *kops.CiliumNetworkingSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if v.EnableNodePort && c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
+	if v.EnableNodePort && c.Spec.KubeProxy != nil && (c.Spec.KubeProxy.Enabled == nil || *c.Spec.KubeProxy.Enabled) {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))
 	}
 
@@ -473,7 +482,7 @@ func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec,
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni"})...)
 
 		if v.Ipam == kops.CiliumIpamEni {
-			if c.CloudProvider != string(kops.CloudProviderAWS) {
+			if c.Spec.CloudProvider != string(kops.CloudProviderAWS) {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
 			}
 			if !v.DisableMasquerade {
@@ -485,10 +494,10 @@ func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec,
 	return allErrs
 }
 
-func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingGCE(v *kops.GCENetworkingSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if c.CloudProvider != "gce" {
+	if c.Spec.CloudProvider != "gce" {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "gce networking is supported only when on GCP"))
 	}
 

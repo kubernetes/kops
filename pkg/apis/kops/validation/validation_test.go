@@ -284,9 +284,10 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		networking.Flannel = &g.Input
 
 		cluster := &kops.Cluster{}
+		cluster.Spec.KubernetesVersion = "1.16.0"
 		cluster.Spec.Networking = networking
 
-		errs := validateNetworking(&cluster.Spec, networking, field.NewPath("networking"))
+		errs := validateNetworking(networking, cluster, field.NewPath("networking"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -330,13 +331,16 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		clusterSpec := &kops.ClusterSpec{
-			AdditionalPolicies: &g.Input,
-			Subnets: []kops.ClusterSubnetSpec{
-				{Name: "subnet1"},
+		cluster := &kops.Cluster{
+			Spec: kops.ClusterSpec{
+				KubernetesVersion:  "1.16.0",
+				AdditionalPolicies: &g.Input,
+				Subnets: []kops.ClusterSubnetSpec{
+					{Name: "subnet1"},
+				},
 			},
 		}
-		errs := validateClusterSpec(clusterSpec, field.NewPath("spec"))
+		errs := validateClusterSpec(&cluster.Spec, cluster, field.NewPath("spec"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
