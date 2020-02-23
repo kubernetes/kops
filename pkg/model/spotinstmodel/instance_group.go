@@ -61,6 +61,12 @@ const (
 	// Launch Spec for the Ocean cluster.
 	InstanceGroupLabelOceanDefaultLaunchSpec = "spotinst.io/ocean-default-launchspec"
 
+	// InstanceGroupLabelOceanInstanceTypes[White|Black]list are the metadata labels
+	// used on the instance group to specify whether to whitelist or blacklist
+	// specific instance types.
+	InstanceGroupLabelOceanInstanceTypesWhitelist = "spotinst.io/ocean-instance-types-whitelist"
+	InstanceGroupLabelOceanInstanceTypesBlacklist = "spotinst.io/ocean-instance-types-blacklist"
+
 	// InstanceGroupLabelAutoScalerDisabled is the metadata label used on the
 	// instance group to specify whether the auto scaler should be enabled.
 	InstanceGroupLabelAutoScalerDisabled = "spotinst.io/autoscaler-disabled"
@@ -320,7 +326,7 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 	// Image.
 	ocean.ImageID = fi.String(ig.Spec.Image)
 
-	// Strategy.
+	// Strategy and instance types.
 	for k, v := range ig.ObjectMeta.Labels {
 		switch k {
 		case InstanceGroupLabelSpotPercentage:
@@ -337,6 +343,18 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 
 		case InstanceGroupLabelFallbackToOnDemand:
 			ocean.FallbackToOnDemand, err = parseBool(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelOceanInstanceTypesWhitelist:
+			ocean.InstanceTypesWhitelist, err = parseStringSlice(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelOceanInstanceTypesBlacklist:
+			ocean.InstanceTypesBlacklist, err = parseStringSlice(v)
 			if err != nil {
 				return err
 			}
@@ -758,6 +776,14 @@ func parseInt(str string) (*int64, error) {
 		return nil, fmt.Errorf("unexpected integer value: %q", str)
 	}
 	return &v, nil
+}
+
+func parseStringSlice(str string) ([]string, error) {
+	v := strings.Split(str, ",")
+	for i, s := range v {
+		v[i] = strings.TrimSpace(s)
+	}
+	return v, nil
 }
 
 func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {
