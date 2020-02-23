@@ -22,6 +22,7 @@ type ECSCluster struct {
 	Compute     *ECSCompute    `json:"compute,omitempty"`
 	AutoScaler  *ECSAutoScaler `json:"autoScaler,omitempty"`
 	Strategy    *ECSStrategy   `json:"strategy,omitempty"`
+	Scheduling  *ECSScheduling `json:"scheduling,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -47,6 +48,31 @@ type ECSCluster struct {
 type ECSStrategy struct {
 	DrainingTimeout          *int  `json:"drainingTimeout,omitempty"`
 	UtilizeReservedInstances *bool `json:"utilizeReservedInstances,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSScheduling struct {
+	Tasks         []*ECSTask        `json:"tasks,omitempty"`
+	ShutdownHours *ECSShutdownHours `json:"shutdownHours,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSShutdownHours struct {
+	IsEnabled   *bool    `json:"isEnabled,omitempty"`
+	TimeWindows []string `json:"timeWindows,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSTask struct {
+	IsEnabled      *bool   `json:"isEnabled,omitempty"`
+	Type           *string `json:"taskType,omitempty"`
+	CronExpression *string `json:"cronExpression,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -238,19 +264,37 @@ func ecsClustersFromHttpResponse(resp *http.Response) ([]*ECSCluster, error) {
 
 func ecsRollStatusFromJSON(in []byte) (*ECSRollClusterStatus, error) {
 	b := new(ECSRollClusterStatus)
-
 	if err := json.Unmarshal(in, b); err != nil {
 		return nil, err
 	}
 	return b, nil
 }
 
-func ecsRollStatusFromHttpResponse(resp *http.Response) (*ECSRollClusterStatus, error) {
+func ecsRollStatusesFromJSON(in []byte) ([]*ECSRollClusterStatus, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*ECSRollClusterStatus, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := ecsRollStatusFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func ecsRollStatusesFromHttpResponse(resp *http.Response) ([]*ECSRollClusterStatus, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return ecsRollStatusFromJSON(body)
+	return ecsRollStatusesFromJSON(body)
 }
 
 func (s *ServiceOp) ListECSClusters(ctx context.Context, input *ListECSClustersInput) (*ListECSClustersOutput, error) {
@@ -392,12 +436,17 @@ func (s *ServiceOp) RollECS(ctx context.Context, input *ECSRollClusterInput) (*E
 	}
 	defer resp.Body.Close()
 
-	_, err = ecsRollStatusFromHttpResponse(resp)
+	rs, err := ecsRollStatusesFromHttpResponse(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ECSRollClusterOutput{}, nil
+	output := new(ECSRollClusterOutput)
+	if len(rs) > 0 {
+		output.RollClusterStatus = rs[0]
+	}
+
+	return output, nil
 }
 
 // region Cluster
@@ -487,6 +536,92 @@ func (o *ECSCluster) SetCompute(v *ECSCompute) *ECSCluster {
 func (o *ECSCluster) SetAutoScaler(v *ECSAutoScaler) *ECSCluster {
 	if o.AutoScaler = v; o.AutoScaler == nil {
 		o.nullFields = append(o.nullFields, "AutoScaler")
+	}
+	return o
+}
+
+func (o *ECSCluster) SetScheduling(v *ECSScheduling) *ECSCluster {
+	if o.Scheduling = v; o.Scheduling == nil {
+		o.nullFields = append(o.nullFields, "Scheduling")
+	}
+	return o
+}
+
+// endregion
+
+// region Scheduling
+
+func (o ECSScheduling) MarshalJSON() ([]byte, error) {
+	type noMethod ECSScheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSScheduling) SetTasks(v []*ECSTask) *ECSScheduling {
+	if o.Tasks = v; o.Tasks == nil {
+		o.nullFields = append(o.nullFields, "Tasks")
+	}
+	return o
+}
+
+func (o *ECSScheduling) SetShutdownHours(v *ECSShutdownHours) *ECSScheduling {
+	if o.ShutdownHours = v; o.ShutdownHours == nil {
+		o.nullFields = append(o.nullFields, "ShutdownHours")
+	}
+	return o
+}
+
+// endregion
+
+// region ShutdownHours
+
+func (o ECSShutdownHours) MarshalJSON() ([]byte, error) {
+	type noMethod ECSShutdownHours
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSShutdownHours) SetIsEnabled(v *bool) *ECSShutdownHours {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *ECSShutdownHours) SetTimeWindows(v []string) *ECSShutdownHours {
+	if o.TimeWindows = v; o.TimeWindows == nil {
+		o.nullFields = append(o.nullFields, "TimeWindows")
+	}
+	return o
+}
+
+// endregion
+
+// region Tasks
+
+func (o ECSTask) MarshalJSON() ([]byte, error) {
+	type noMethod ECSTask
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSTask) SetIsEnabled(v *bool) *ECSTask {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *ECSTask) SetType(v *string) *ECSTask {
+	if o.Type = v; o.Type == nil {
+		o.nullFields = append(o.nullFields, "Type")
+	}
+	return o
+}
+
+func (o *ECSTask) SetCronExpression(v *string) *ECSTask {
+	if o.CronExpression = v; o.CronExpression == nil {
+		o.nullFields = append(o.nullFields, "CronExpression")
 	}
 	return o
 }
