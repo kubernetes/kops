@@ -18,6 +18,7 @@ package drain
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -88,10 +89,14 @@ func (l *podDeleteList) errors() []error {
 }
 
 type podDeleteStatus struct {
-	delete  bool
-	reason  string
-	message string
+	delete   bool
+	reason   string
+	message  string
+	priority podDeletePriorty
 }
+
+// Alias for pod deletion priority
+type podDeletePriorty int
 
 // Takes a pod and returns a PodDeleteStatus
 type podFilter func(corev1.Pod) podDeleteStatus
@@ -101,12 +106,15 @@ const (
 	podDeleteStatusTypeSkip    = "Skip"
 	podDeleteStatusTypeWarning = "Warning"
 	podDeleteStatusTypeError   = "Error"
+	podDeletionPriorityHighest = math.MaxInt32
+	podDeletionPriorityLowest  = math.MinInt32
 )
 
-func makePodDeleteStatusOkay() podDeleteStatus {
+func makePodDeleteStatusOkay(priority podDeletePriorty) podDeleteStatus {
 	return podDeleteStatus{
-		delete: true,
-		reason: podDeleteStatusTypeOkay,
+		delete:   true,
+		reason:   podDeleteStatusTypeOkay,
+		priority: priority,
 	}
 }
 
@@ -117,11 +125,12 @@ func makePodDeleteStatusSkip() podDeleteStatus {
 	}
 }
 
-func makePodDeleteStatusWithWarning(delete bool, message string) podDeleteStatus {
+func makePodDeleteStatusWithWarning(delete bool, message string, priority podDeletePriorty) podDeleteStatus {
 	return podDeleteStatus{
-		delete:  delete,
-		reason:  podDeleteStatusTypeWarning,
-		message: message,
+		delete:   delete,
+		reason:   podDeleteStatusTypeWarning,
+		message:  message,
+		priority: priority,
 	}
 }
 
@@ -161,63 +170,64 @@ func (d *Helper) daemonSetFilter(pod corev1.Pod) podDeleteStatus {
 	// Such pods will be deleted if --force is used.
 	controllerRef := metav1.GetControllerOf(&pod)
 	if controllerRef == nil || controllerRef.Kind != appsv1.SchemeGroupVersion.WithKind("DaemonSet").Kind {
-		return makePodDeleteStatusOkay()
+		return makePodDeleteStatusOkay(podDeletionPriorityHighest)
 	}
 	// Any finished pod can be removed.
 	if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
-		return makePodDeleteStatusOkay()
+		return makePodDeleteStatusOkay(podDeletionPriorityHighest)
 	}
 
 	if _, err := d.Client.AppsV1().DaemonSets(pod.Namespace).Get(controllerRef.Name, metav1.GetOptions{}); err != nil {
 		// remove orphaned pods with a warning if --force is used
 		if apierrors.IsNotFound(err) && d.Force {
-			return makePodDeleteStatusWithWarning(true, err.Error())
+			return makePodDeleteStatusWithWarning(true, err.Error(), podDeletionPriorityHighest)
 		}
 
 		return makePodDeleteStatusWithError(err.Error())
 	}
 
 	if !d.IgnoreAllDaemonSets {
-		return makePodDeleteStatusWithError(daemonSetFatal)
+		//updating this to set the status as OK if we intend to delete daemon sets
+		return makePodDeleteStatusOkay(podDeletionPriorityLowest)
 	}
 
-	return makePodDeleteStatusWithWarning(false, daemonSetWarning)
+	return makePodDeleteStatusWithWarning(false, daemonSetWarning, podDeletionPriorityLowest)
 }
 
 func (d *Helper) mirrorPodFilter(pod corev1.Pod) podDeleteStatus {
 	if _, found := pod.ObjectMeta.Annotations[corev1.MirrorPodAnnotationKey]; found {
 		return makePodDeleteStatusSkip()
 	}
-	return makePodDeleteStatusOkay()
+	return makePodDeleteStatusOkay(podDeletionPriorityHighest)
 }
 
 func (d *Helper) localStorageFilter(pod corev1.Pod) podDeleteStatus {
 	if !hasLocalStorage(pod) {
-		return makePodDeleteStatusOkay()
+		return makePodDeleteStatusOkay(podDeletionPriorityHighest)
 	}
 	// Any finished pod can be removed.
 	if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
-		return makePodDeleteStatusOkay()
+		return makePodDeleteStatusOkay(podDeletionPriorityHighest)
 	}
 	if !d.DeleteLocalData {
 		return makePodDeleteStatusWithError(localStorageFatal)
 	}
 
-	return makePodDeleteStatusWithWarning(true, localStorageWarning)
+	return makePodDeleteStatusWithWarning(true, localStorageWarning, podDeletionPriorityHighest)
 }
 
 func (d *Helper) unreplicatedFilter(pod corev1.Pod) podDeleteStatus {
 	// any finished pod can be removed
 	if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
-		return makePodDeleteStatusOkay()
+		return makePodDeleteStatusOkay(podDeletionPriorityHighest)
 	}
 
 	controllerRef := metav1.GetControllerOf(&pod)
 	if controllerRef != nil {
-		return makePodDeleteStatusOkay()
+		return makePodDeleteStatusOkay(podDeletionPriorityHighest)
 	}
 	if d.Force {
-		return makePodDeleteStatusWithWarning(true, unmanagedWarning)
+		return makePodDeleteStatusWithWarning(true, unmanagedWarning, podDeletionPriorityHighest)
 	}
 	return makePodDeleteStatusWithError(unmanagedFatal)
 }

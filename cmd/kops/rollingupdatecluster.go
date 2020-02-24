@@ -93,6 +93,16 @@ var (
 		  --fail-on-validate-error="false" \
 		  --node-interval 8m \
 		  --instance-group nodes
+
+		# Roll the k8s-cluster.example.com kops cluster,
+		# only roll the node instancegroup,
+		# use the new drain and validate functionality,
+		# do not ignore daemon sets
+		kops rolling-update cluster k8s-cluster.example.com --yes \
+		  --fail-on-validate-error="false" \
+		  --node-interval 8m \
+		  --instance-group nodes \
+		  --ignore-daemonsets="false"
 		`))
 
 	rollingupdateShort = i18n.T(`Rolling update a cluster.`)
@@ -141,6 +151,9 @@ type RollingUpdateOptions struct {
 	// InstanceGroupRoles is the list of roles we should rolling-update
 	// if not specified, all instance groups will be updated
 	InstanceGroupRoles []string
+
+	// IgnoreDaemonsets when a node is drained, daemon set pods will also be drained if false.  Default is true.
+	IgnoreDaemonsets bool
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -157,6 +170,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 
 	o.PostDrainDelay = 5 * time.Second
 	o.ValidationTimeout = 15 * time.Minute
+
+	o.IgnoreDaemonsets = true
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -186,6 +201,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
+	cmd.Flags().BoolVar(&options.IgnoreDaemonsets, "ignore-daemonsets", true, "Whether to ignore draining daemon set pods on the node.  Default is true.")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
@@ -409,6 +425,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		// TODO should we expose this to the UI?
 		ValidateTickDuration:    30 * time.Second,
 		ValidateSuccessDuration: 10 * time.Second,
+		IgnoreDaemonsets:        options.IgnoreDaemonsets,
 	}
 	return d.RollingUpdate(groups, cluster, list)
 }

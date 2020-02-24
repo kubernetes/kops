@@ -493,7 +493,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		Client:              rollingUpdateData.K8sClient,
 		Force:               true,
 		GracePeriodSeconds:  -1,
-		IgnoreAllDaemonSets: true,
+		IgnoreAllDaemonSets: rollingUpdateData.IgnoreDaemonsets,
 		Out:                 os.Stdout,
 		ErrOut:              os.Stderr,
 

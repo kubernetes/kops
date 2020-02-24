@@ -67,6 +67,9 @@ type RollingUpdateCluster struct {
 	// ValidateSuccessDuration is the amount of time a cluster must continue to validate successfully
 	// before updating the next node
 	ValidateSuccessDuration time.Duration
+
+	// IgnoreDaemonsets when a node is drained, daemon set pods will also be drained if false.  Default is true.
+	IgnoreDaemonsets bool
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.

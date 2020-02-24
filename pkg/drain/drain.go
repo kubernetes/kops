@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"sort"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -145,6 +146,7 @@ func (d *Helper) GetPodsForDeletion(nodeName string) (*podDeleteList, []error) {
 
 	for _, pod := range podList.Items {
 		var status podDeleteStatus
+		var priority podDeletePriorty = podDeletionPriorityHighest
 		for _, filter := range d.makeFilters() {
 			status = filter(pod)
 			if !status.delete {
@@ -153,12 +155,26 @@ func (d *Helper) GetPodsForDeletion(nodeName string) (*podDeleteList, []error) {
 				// through any additional filters
 				break
 			}
+			if status.priority < priority {
+				//a previous filter had determined that this pod should be deleted at a lower priority
+				// use that priority
+				priority = status.priority
+			}
 		}
+		status.priority = priority
 		pods = append(pods, podDelete{
 			pod:    pod,
 			status: status,
 		})
 	}
+
+	//sort the list to come up with a sensible order for deleting pods
+	//for backwards compatibility, the default priority is highest.  If a daemon-set is found
+	//and ignore-daemonsets is set to false, the priority will be the lowest.
+	//This sort will return the order of pods to delete, with the highest priority first.
+	sort.SliceStable(pods, func(i, j int) bool {
+		return pods[i].status.priority > pods[j].status.priority
+	})
 
 	list := &podDeleteList{items: pods}
 

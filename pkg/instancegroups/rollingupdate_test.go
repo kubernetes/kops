@@ -850,6 +850,15 @@ func TestRollingUpdateMaxUnavailableAllNeedUpdateMaster(t *testing.T) {
 	concurrentTest.AssertComplete()
 }
 
+func TestRollingUpdateAllNeedUpdateDoNotIgnoreDaemonsets(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+	c.IgnoreDaemonsets = false
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 1, 1)
+	err := c.RollingUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+}
+
 func assertCordon(t *testing.T, action testingclient.PatchAction) {
 	assert.Equal(t, "nodes", action.GetResource().Resource)
 	assert.Equal(t, cordonPatch, string(action.GetPatch()))
