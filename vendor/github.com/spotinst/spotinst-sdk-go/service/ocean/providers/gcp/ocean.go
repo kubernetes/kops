@@ -3,24 +3,26 @@ package gcp
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"time"
+
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates"
-	"io/ioutil"
-	"net/http"
-	"time"
 )
 
 type Cluster struct {
+	ID                  *string     `json:"id,omitempty"`
+	ControllerClusterID *string     `json:"controllerClusterId,omitempty"`
+	Name                *string     `json:"name,omitempty"`
+	Scheduling          *Scheduling `json:"scheduling,omitempty"`
 	AutoScaler          *AutoScaler `json:"autoScaler,omitempty"`
 	Capacity            *Capacity   `json:"capacity,omitempty"`
 	Compute             *Compute    `json:"compute,omitempty"`
 	Strategy            *Strategy   `json:"strategy,omitempty"`
-	ControllerClusterID *string     `json:"controllerClusterId,omitempty"`
 	GKE                 *GKE        `json:"gke,omitempty"`
-	ID                  *string     `json:"id,omitempty"`
-	Name                *string     `json:"name,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -51,12 +53,13 @@ type Strategy struct {
 }
 
 type AutoScaler struct {
-	IsEnabled      *bool                     `json:"isEnabled,omitempty"`
-	IsAutoConfig   *bool                     `json:"isAutoConfig,omitempty"`
-	Cooldown       *int                      `json:"cooldown,omitempty"`
-	Headroom       *AutoScalerHeadroom       `json:"headroom,omitempty"`
-	ResourceLimits *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
-	Down           *AutoScalerDown           `json:"down,omitempty"`
+	IsEnabled              *bool                     `json:"isEnabled,omitempty"`
+	IsAutoConfig           *bool                     `json:"isAutoConfig,omitempty"`
+	Cooldown               *int                      `json:"cooldown,omitempty"`
+	AutoHeadroomPercentage *int                      `json:"autoHeadroomPercentage,omitempty"`
+	Headroom               *AutoScalerHeadroom       `json:"headroom,omitempty"`
+	ResourceLimits         *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
+	Down                   *AutoScalerDown           `json:"down,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -114,6 +117,32 @@ type Compute struct {
 	BackendServices     []*BackendService    `json:"backendServices,omitempty"`
 	NetworkInterfaces   []*NetworkInterface  `json:"networkInterfaces,omitempty"`
 	SubnetName          *string              `json:"subnetName,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Scheduling struct {
+	ShutdownHours *ShutdownHours `json:"shutdownHours,omitempty"`
+	Tasks         []*Task        `json:"tasks,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ShutdownHours struct {
+	IsEnabled   *bool    `json:"isEnabled,omitempty"`
+	TimeWindows []string `json:"timeWindows,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Task struct {
+	IsEnabled           *bool   `json:"isEnabled,omitempty"`
+	Type                *string `json:"taskType,omitempty"`
+	CronExpression      *string `json:"cronExpression,omitempty"`
+	BatchSizePercentage *int    `json:"batchSizePercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -506,6 +535,13 @@ func (o *Cluster) SetGKE(v *GKE) *Cluster {
 	return o
 }
 
+func (o *Cluster) SetScheduling(v *Scheduling) *Cluster {
+	if o.Scheduling = v; o.Scheduling == nil {
+		o.nullFields = append(o.nullFields, "Scheduling")
+	}
+	return o
+}
+
 // endregion
 
 // region GKE
@@ -581,6 +617,92 @@ func (o *Capacity) SetMaximum(v *int) *Capacity {
 func (o *Capacity) SetTarget(v *int) *Capacity {
 	if o.Target = v; o.Target == nil {
 		o.nullFields = append(o.nullFields, "Target")
+	}
+	return o
+}
+
+// endregion
+
+// region Scheduling
+
+func (o Scheduling) MarshalJSON() ([]byte, error) {
+	type noMethod Scheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Scheduling) SetShutdownHours(v *ShutdownHours) *Scheduling {
+	if o.ShutdownHours = v; o.ShutdownHours == nil {
+		o.nullFields = append(o.nullFields, "ShutdownHours")
+	}
+	return o
+}
+
+func (o *Scheduling) SetTasks(v []*Task) *Scheduling {
+	if o.Tasks = v; o.Tasks == nil {
+		o.nullFields = append(o.nullFields, "Tasks")
+	}
+	return o
+}
+
+// endregion
+
+// region Tasks
+
+func (o Task) MarshalJSON() ([]byte, error) {
+	type noMethod Task
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Task) SetIsEnabled(v *bool) *Task {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *Task) SetType(v *string) *Task {
+	if o.Type = v; o.Type == nil {
+		o.nullFields = append(o.nullFields, "Type")
+	}
+	return o
+}
+
+func (o *Task) SetCronExpression(v *string) *Task {
+	if o.CronExpression = v; o.CronExpression == nil {
+		o.nullFields = append(o.nullFields, "CronExpression")
+	}
+	return o
+}
+
+func (o *Task) SetBatchSizePercentage(v *int) *Task {
+	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+// endregion
+
+// region ShutdownHours
+
+func (o ShutdownHours) MarshalJSON() ([]byte, error) {
+	type noMethod ShutdownHours
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ShutdownHours) SetIsEnabled(v *bool) *ShutdownHours {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *ShutdownHours) SetTimeWindows(v []string) *ShutdownHours {
+	if o.TimeWindows = v; o.TimeWindows == nil {
+		o.nullFields = append(o.nullFields, "TimeWindows")
 	}
 	return o
 }
@@ -923,6 +1045,13 @@ func (o *AutoScaler) SetIsAutoConfig(v *bool) *AutoScaler {
 func (o *AutoScaler) SetCooldown(v *int) *AutoScaler {
 	if o.Cooldown = v; o.Cooldown == nil {
 		o.nullFields = append(o.nullFields, "Cooldown")
+	}
+	return o
+}
+
+func (o *AutoScaler) SetAutoHeadroomPercentage(v *int) *AutoScaler {
+	if o.AutoHeadroomPercentage = v; o.AutoHeadroomPercentage == nil {
+		o.nullFields = append(o.nullFields, "AutoHeadroomPercentage")
 	}
 	return o
 }

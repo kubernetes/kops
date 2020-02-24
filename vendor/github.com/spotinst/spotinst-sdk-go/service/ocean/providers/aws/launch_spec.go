@@ -19,12 +19,14 @@ type LaunchSpec struct {
 	OceanID            *string             `json:"oceanId,omitempty"`
 	ImageID            *string             `json:"imageId,omitempty"`
 	UserData           *string             `json:"userData,omitempty"`
+	RootVolumeSize     *int                `json:"rootVolumeSize,omitempty"`
 	SecurityGroupIDs   []string            `json:"securityGroupIds,omitempty"`
 	SubnetIDs          []string            `json:"subnetIds,omitempty"`
 	IAMInstanceProfile *IAMInstanceProfile `json:"iamInstanceProfile,omitempty"`
 	Labels             []*Label            `json:"labels,omitempty"`
 	Taints             []*Taint            `json:"taints,omitempty"`
 	AutoScale          *AutoScale          `json:"autoScale,omitempty"`
+	Tags               []*Tag              `json:"tags,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -337,6 +339,13 @@ func (o *LaunchSpec) SetSubnetIDs(v []string) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetRootVolumeSize(v *int) *LaunchSpec {
+	if o.RootVolumeSize = v; o.RootVolumeSize == nil {
+		o.nullFields = append(o.nullFields, "RootVolumeSize")
+	}
+	return o
+}
+
 func (o *LaunchSpec) SetIAMInstanceProfile(v *IAMInstanceProfile) *LaunchSpec {
 	if o.IAMInstanceProfile = v; o.IAMInstanceProfile == nil {
 		o.nullFields = append(o.nullFields, "IAMInstanceProfile")
@@ -471,6 +480,13 @@ func (o *AutoScaleHeadroom) SetMemoryPerUnit(v *int) *AutoScaleHeadroom {
 func (o *AutoScaleHeadroom) SetNumOfUnits(v *int) *AutoScaleHeadroom {
 	if o.NumOfUnits = v; o.NumOfUnits == nil {
 		o.nullFields = append(o.nullFields, "NumOfUnits")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
 	}
 	return o
 }

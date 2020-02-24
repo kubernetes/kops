@@ -43,6 +43,7 @@ type LaunchSpec struct {
 	SecurityGroups     []*awstasks.SecurityGroup
 	IAMInstanceProfile *awstasks.IAMInstanceProfile
 	ImageID            *string
+	Tags               map[string]string
 	Labels             map[string]string
 
 	Ocean *Ocean
@@ -167,6 +168,16 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		}
 	}
 
+	// Tags.
+	{
+		if len(spec.Tags) > 0 {
+			actual.Tags = make(map[string]string)
+			for _, tag := range spec.Tags {
+				actual.Tags[fi.StringValue(tag.Key)] = fi.StringValue(tag.Value)
+			}
+		}
+	}
+
 	// Labels.
 	if spec.Labels != nil {
 		actual.Labels = make(map[string]string)
@@ -262,6 +273,13 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				securityGroupIDs[i] = *sg.ID
 			}
 			spec.SetSecurityGroupIDs(securityGroupIDs)
+		}
+	}
+
+	// Tags.
+	{
+		if e.Tags != nil {
+			spec.SetTags(e.buildTags())
 		}
 	}
 
@@ -362,6 +380,15 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 			spec.SetSecurityGroupIDs(securityGroupIDs)
 			changes.SecurityGroups = nil
+			changed = true
+		}
+	}
+
+	// Tags.
+	{
+		if changes.Tags != nil {
+			spec.SetTags(e.buildTags())
+			changes.Tags = nil
 			changed = true
 		}
 	}
@@ -474,6 +501,18 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 		tf.IAMInstanceProfile = e.IAMInstanceProfile.TerraformLink()
 	}
 
+	// Tags.
+	{
+		if e.Tags != nil {
+			for _, tag := range e.buildTags() {
+				tf.Tags = append(tf.Tags, &terraformKV{
+					Key:   tag.Key,
+					Value: tag.Value,
+				})
+			}
+		}
+	}
+
 	// Labels.
 	{
 		if e.Labels != nil {
@@ -492,4 +531,17 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 func (o *LaunchSpec) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("spotinst_ocean_aws_launch_spec", *o.Name, "id")
+}
+
+func (o *LaunchSpec) buildTags() []*aws.Tag {
+	tags := make([]*aws.Tag, 0, len(o.Tags))
+
+	for key, value := range o.Tags {
+		tags = append(tags, &aws.Tag{
+			Key:   fi.String(key),
+			Value: fi.String(value),
+		})
+	}
+
+	return tags
 }
