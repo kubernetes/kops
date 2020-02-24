@@ -951,6 +951,7 @@ type terraformOceanLaunchSpec struct {
 	KeyName                  *terraform.Literal   `json:"key_name,omitempty"`
 	SecurityGroups           []*terraform.Literal `json:"security_groups,omitempty"`
 	Labels                   []*terraformKV       `json:"labels,omitempty"`
+	Tags                     []*terraformKV       `json:"tags,omitempty"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {

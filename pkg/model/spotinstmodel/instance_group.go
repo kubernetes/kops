@@ -476,6 +476,12 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 		return fmt.Errorf("error building security groups: %v", err)
 	}
 
+	// Tags.
+	launchSpec.Tags, err = b.buildTags(ig)
+	if err != nil {
+		return fmt.Errorf("error building cloud tags: %v", err)
+	}
+
 	// Labels.
 	autoScalerOpts, err := b.buildAutoScalerOpts(b.ClusterName(), ig)
 	if err != nil {
