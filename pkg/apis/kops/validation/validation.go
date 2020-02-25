@@ -430,25 +430,24 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	action := v.DefaultEndpointToHostAction
-	switch action {
-	case "", "ACCEPT", "DROP", "RETURN":
-	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("defaultEndpointToHostAction"), action, []string{"ACCEPT", "DROP", "RETURN"}))
+	if v.DefaultEndpointToHostAction != "" {
+		valid := []string{"ACCEPT", "DROP", "RETURN"}
+		allErrs = append(allErrs, IsValidValue(fldPath, &v.DefaultEndpointToHostAction, valid)...)
 	}
 
-	chainInsertMode := v.ChainInsertMode
-	switch chainInsertMode {
-	case "", "insert", "append":
-	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("chainInsertMode"), chainInsertMode, []string{"insert", "append"}))
+	if v.ChainInsertMode != "" {
+		valid := []string{"insert", "append"}
+		allErrs = append(allErrs, IsValidValue(fldPath, &v.ChainInsertMode, valid)...)
 	}
 
-	logSeveritySys := v.LogSeveritySys
-	switch logSeveritySys {
-	case "", "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE":
-	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("logSeveritySys"), logSeveritySys, []string{"INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE"}))
+	if v.LogSeveritySys != "" {
+		valid := []string{"INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE"}
+		allErrs = append(allErrs, IsValidValue(fldPath, &v.LogSeveritySys, valid)...)
+	}
+
+	if v.IptablesBackend != "" {
+		valid := []string{"Auto", "Legacy", "NFT"}
+		allErrs = append(allErrs, IsValidValue(fldPath, &v.IptablesBackend, valid)...)
 	}
 
 	return allErrs
@@ -566,18 +565,22 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 
 func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
 	if v.TyphaReplicas < 0 {
 		allErrs = append(allErrs,
 			field.Invalid(fldPath.Child("typhaReplicas"), v.TyphaReplicas,
 				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
 	}
-	switch v.MajorVersion {
-	case "":
-		// OK:
-	case "v3":
+
+	if v.MajorVersion != "" {
+		valid := []string{"v3"}
+		allErrs = append(allErrs, IsValidValue(fldPath, &v.MajorVersion, valid)...)
 		allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
-	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("majorVersion"), v.MajorVersion, []string{"v3"}))
+	}
+
+	if v.IptablesBackend != "" {
+		valid := []string{"Auto", "Legacy", "NFT"}
+		allErrs = append(allErrs, IsValidValue(fldPath, &v.IptablesBackend, valid)...)
 	}
 
 	return allErrs
