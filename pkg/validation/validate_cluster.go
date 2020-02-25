@@ -22,16 +22,16 @@ import (
 	"net/url"
 	"strings"
 
+	"k8s.io/kops/upup/pkg/fi"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/dns"
-	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
 // ValidationCluster uses a cluster to validate.
@@ -54,9 +54,10 @@ type ClusterValidator interface {
 }
 
 type clusterValidatorImpl struct {
-	cluster           *kops.Cluster
-	instanceGroupList *kops.InstanceGroupList
-	k8sClient         kubernetes.Interface
+	cluster        *kops.Cluster
+	cloud          fi.Cloud
+	instanceGroups []*kops.InstanceGroup
+	k8sClient      kubernetes.Interface
 }
 
 func (v *ValidationCluster) addError(failure *ValidationError) {
@@ -100,23 +101,30 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	return false, nil
 }
 
-func NewClusterValidator(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+	var instanceGroups []*kops.InstanceGroup
+
+	for i := range instanceGroupList.Items {
+		ig := &instanceGroupList.Items[i]
+		instanceGroups = append(instanceGroups, ig)
+	}
+
+	if len(instanceGroups) == 0 {
+		return nil, fmt.Errorf("no InstanceGroup objects found")
+	}
+
 	return &clusterValidatorImpl{
-		cluster:           cluster,
-		instanceGroupList: instanceGroupList,
-		k8sClient:         k8sClient,
+		cluster:        cluster,
+		cloud:          cloud,
+		instanceGroups: instanceGroups,
+		k8sClient:      k8sClient,
 	}, nil
 }
 
 func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
-	return validateCluster(v.cluster, v.instanceGroupList, v.k8sClient)
-}
+	clusterName := v.cluster.Name
 
-// validateCluster validates a k8s cluster with a provided instance group list
-func validateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (*ValidationCluster, error) {
-	clusterName := cluster.Name
-
-	v := &ValidationCluster{}
+	validation := &ValidationCluster{}
 
 	// Do not use if we are running gossip
 	if !dns.IsGossipHostname(clusterName) {
@@ -134,52 +142,36 @@ func validateCluster(cluster *kops.Cluster, instanceGroupList *kops.InstanceGrou
 				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
 				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
 				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
-			v.addError(&ValidationError{
+			validation.addError(&ValidationError{
 				Kind:    "dns",
 				Name:    "apiserver",
 				Message: message,
 			})
-			return v, nil
+			return validation, nil
 		}
 	}
 
-	var instanceGroups []*kops.InstanceGroup
-
-	for i := range instanceGroupList.Items {
-		ig := &instanceGroupList.Items[i]
-		instanceGroups = append(instanceGroups, ig)
-	}
-
-	if len(instanceGroups) == 0 {
-		return nil, fmt.Errorf("no InstanceGroup objects found")
-	}
-
-	cloud, err := cloudup.BuildCloud(cluster)
-	if err != nil {
-		return nil, err
-	}
-
-	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := v.k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error listing nodes: %v", err)
 	}
 
 	warnUnmatched := false
-	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, warnUnmatched, nodeList.Items)
+	cloudGroups, err := v.cloud.GetCloudGroups(v.cluster, v.instanceGroups, warnUnmatched, nodeList.Items)
 	if err != nil {
 		return nil, err
 	}
-	v.validateNodes(cloudGroups)
+	validation.validateNodes(cloudGroups)
 
-	if err := v.collectComponentFailures(k8sClient); err != nil {
+	if err := validation.collectComponentFailures(v.k8sClient); err != nil {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
-	if err = v.collectPodFailures(k8sClient); err != nil {
+	if err := validation.collectPodFailures(v.k8sClient, nodeList.Items); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
-	return v, nil
+	return validation, nil
 }
 
 func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface) error {
@@ -202,10 +194,22 @@ func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface
 	return nil
 }
 
-func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) error {
+func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface, nodes []v1.Node) error {
 	pods, err := client.CoreV1().Pods("kube-system").List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("error listing Pods: %v", err)
+	}
+
+	masterWithoutManager := map[string]bool{}
+	nodeByAddress := map[string]string{}
+	for _, node := range nodes {
+		labels := node.GetLabels()
+		if labels != nil && labels["kubernetes.io/role"] == "master" {
+			masterWithoutManager[node.Name] = true
+		}
+		for _, nodeAddress := range node.Status.Addresses {
+			nodeByAddress[nodeAddress.Address] = node.Name
+		}
 	}
 
 	for _, pod := range pods.Items {
@@ -234,7 +238,21 @@ func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) erro
 			})
 
 		}
+
+		labels := pod.GetLabels()
+		if pod.Namespace == "kube-system" && labels != nil && labels["k8s-app"] == "kube-controller-manager" {
+			delete(masterWithoutManager, nodeByAddress[pod.Status.HostIP])
+		}
 	}
+
+	for node := range masterWithoutManager {
+		v.addError(&ValidationError{
+			Kind:    "Node",
+			Name:    node,
+			Message: fmt.Sprintf("master %q is missing kube-controller-manager pod", node),
+		})
+	}
+
 	return nil
 }
 
@@ -274,7 +292,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 				continue
 			}
 
-			role := util.GetNodeRole(node)
+			role := strings.ToLower(string(cloudGroup.InstanceGroup.Spec.Role))
 			if role == "" {
 				role = "node"
 			}
@@ -289,7 +307,6 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 			ready := isNodeReady(node)
 
-			// TODO: Use instance group role instead...
 			if n.Role == "master" {
 				if !ready {
 					v.addError(&ValidationError{
