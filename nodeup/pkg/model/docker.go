@@ -849,7 +849,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - Bionic
@@ -873,7 +873,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "f4c941807310e3fa470dddfb068d599174a3daec",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - CentOS / Rhel7
@@ -902,7 +902,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "7de4211fa0dfd240d8827b93763e1eb5f0d56411",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 18.09.9 - CentOS / Rhel8
@@ -926,7 +926,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "f6447e84479df3a58ce04a3da87ccc384663493b",
 			},
 		},
-		Dependencies: []string{"container-selinux", "libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 19.03.4 - k8s 1.17 - https://github.com/kubernetes/kubernetes/pull/84476
@@ -1000,7 +1000,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Bionic
@@ -1024,7 +1024,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "f4c941807310e3fa470dddfb068d599174a3daec",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - CentOS / Rhel7
@@ -1053,7 +1053,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "7de4211fa0dfd240d8827b93763e1eb5f0d56411",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 19.03.4 - CentOS / Rhel8
@@ -1077,7 +1077,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "f6447e84479df3a58ce04a3da87ccc384663493b",
 			},
 		},
-		Dependencies: []string{"container-selinux", "libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
+		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// TIP: When adding the next version, copy the previous
