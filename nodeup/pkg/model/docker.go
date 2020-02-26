@@ -849,7 +849,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - Bionic
@@ -1000,7 +1000,7 @@ var dockerVersions = []dockerVersion{
 				Hash:    "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Bionic
