@@ -292,12 +292,120 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 
 func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+	optionTaken := false
+
+	if v.Classic != nil {
+		allErrs = append(allErrs, field.Invalid(fldPath, "classic", "classic networking is not supported"))
+	}
+
+	if v.Kubenet != nil {
+		optionTaken = true
+	}
+
+	if v.External != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("external"), "only one networking option permitted"))
+		}
+		optionTaken = true
+	}
+
+	if v.CNI != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("cni"), "only one networking option permitted"))
+		}
+		optionTaken = true
+	}
+
+	if v.Kopeio != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kopeio"), "only one networking option permitted"))
+		}
+		optionTaken = true
+	}
+
+	if v.Weave != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("weave"), "only one networking option permitted"))
+		}
+		optionTaken = true
+	}
 
 	if v.Flannel != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("flannel"), "only one networking option permitted"))
+		}
+		optionTaken = true
+
 		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("flannel"))...)
 	}
 
+	if v.Calico != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("calico"), "only one networking option permitted"))
+		}
+		optionTaken = true
+	}
+
+	if v.Canal != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("canal"), "only one networking option permitted"))
+		}
+		optionTaken = true
+
+		allErrs = append(allErrs, validateNetworkingCanal(v.Canal, fldPath.Child("canal"))...)
+	}
+
+	if v.Kuberouter != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberouter"), "only one networking option permitted"))
+		}
+		optionTaken = true
+	}
+
+	if v.Romana != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("romana"), "only one networking option permitted"))
+		}
+		optionTaken = true
+	}
+
+	if v.AmazonVPC != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "only one networking option permitted"))
+		}
+		optionTaken = true
+
+		if c.CloudProvider != "aws" {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("amazonvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
+		}
+	}
+
+	if v.Cilium != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("cilium"), "only one networking option permitted"))
+		}
+		optionTaken = true
+
+		allErrs = append(allErrs, validateNetworkingCilium(c, v.Cilium, fldPath.Child("cilium"))...)
+	}
+
+	if v.LyftVPC != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvpc"), "only one networking option permitted"))
+		}
+		optionTaken = true
+
+		if c.CloudProvider != "aws" {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("lyftvpc"), "amazon-vpc-routed-eni networking is supported only in AWS"))
+		}
+	}
+
 	if v.GCE != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("gce"), "only one networking option permitted"))
+		}
+		optionTaken = true
+
 		allErrs = append(allErrs, validateNetworkingGCE(c, v.GCE, fldPath.Child("gce"))...)
 	}
 
@@ -314,6 +422,52 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 		// OK
 	default:
 		allErrs = append(allErrs, field.NotSupported(fldPath.Child("backend"), v.Backend, []string{"udp", "vxlan"}))
+	}
+
+	return allErrs
+}
+
+func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	action := v.DefaultEndpointToHostAction
+	switch action {
+	case "", "ACCEPT", "DROP", "RETURN":
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("defaultEndpointToHostAction"), action, []string{"ACCEPT", "DROP", "RETURN"}))
+	}
+
+	chainInsertMode := v.ChainInsertMode
+	switch chainInsertMode {
+	case "", "insert", "append":
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("chainInsertMode"), chainInsertMode, []string{"insert", "append"}))
+	}
+
+	logSeveritySys := v.LogSeveritySys
+	switch logSeveritySys {
+	case "", "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE":
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("logSeveritySys"), logSeveritySys, []string{"INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE"}))
+	}
+
+	return allErrs
+}
+
+func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.EnableNodePort && c.KubeProxy != nil && *c.KubeProxy.Enabled {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))
+	}
+
+	if v.Ipam == kops.CiliumIpamEni {
+		if c.CloudProvider != string(kops.CloudProviderAWS) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
+		}
+		if !v.DisableMasquerade {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+		}
 	}
 
 	return allErrs
