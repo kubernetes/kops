@@ -57,6 +57,20 @@ func ParseAddons(name string, location *url.URL, data []byte) (*Addons, error) {
 		}
 	}
 
+	for _, addon := range apiObject.Spec.Addons {
+		if addon != nil && addon.Version != nil && *addon.Version != "" {
+			name := apiObject.ObjectMeta.Name
+			if addon.Name != nil {
+				name = *addon.Name
+			}
+
+			_, err := semver.ParseTolerant(*addon.Version)
+			if err != nil {
+				return nil, fmt.Errorf("addon %q has unparseable version %q: %v", name, *addon.Version, err)
+			}
+		}
+	}
+
 	return &Addons{ChannelName: name, ChannelLocation: *location, APIObject: apiObject}, nil
 }
 

@@ -17,10 +17,15 @@ limitations under the License.
 package channels
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/blang/semver"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 func Test_Filtering(t *testing.T) {
@@ -164,6 +169,32 @@ func Test_Replacement(t *testing.T) {
 			t.Errorf("unexpected result from %v -> %v, expect %t.  actual %v", g.Old, g.New, g.Replaces, actual)
 		}
 	}
+}
+
+func Test_UnparseableVersion(t *testing.T) {
+	addons := api.Addons{
+		TypeMeta: v1.TypeMeta{
+			Kind: "Addons",
+		},
+		ObjectMeta: v1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: api.AddonsSpec{
+			Addons: []*api.AddonSpec{
+				{
+					Name:    s("testaddon"),
+					Version: s("1.0-kops"),
+				},
+			},
+		},
+	}
+	bytes, err := utils.YamlMarshal(addons)
+	require.NoError(t, err, "marshalling test addons struct")
+	location, err := url.Parse("file://testfile")
+	require.NoError(t, err, "parsing file url")
+
+	_, err = ParseAddons("test", location, bytes)
+	assert.EqualError(t, err, "addon \"testaddon\" has unparseable version \"1.0-kops\": Short version cannot contain PreRelease/Build meta data", "detected invalid version")
 }
 
 func s(v string) *string {
