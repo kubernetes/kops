@@ -86,6 +86,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          {{- range .Networking.AmazonVPC.Env }}
+          - name: {{ .Name }}
+            value: "{{ .Value }}"
+          {{- end }}
         resources:
           requests:
             cpu: 10m
