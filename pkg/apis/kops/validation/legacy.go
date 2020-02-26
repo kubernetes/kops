@@ -257,30 +257,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		}
 	}
 
-	// Check Canal Networking Spec if used
-	if c.Spec.Networking != nil && c.Spec.Networking.Canal != nil {
-		action := c.Spec.Networking.Canal.DefaultEndpointToHostAction
-		switch action {
-		case "", "ACCEPT", "DROP", "RETURN":
-		default:
-			allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("networking", "canal", "defaultEndpointToHostAction"), action, []string{"ACCEPT", "DROP", "RETURN"}))
-		}
-
-		chainInsertMode := c.Spec.Networking.Canal.ChainInsertMode
-		switch chainInsertMode {
-		case "", "insert", "append":
-		default:
-			allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("networking", "canal", "chainInsertMode"), chainInsertMode, []string{"insert", "append"}))
-		}
-
-		logSeveritySys := c.Spec.Networking.Canal.LogSeveritySys
-		switch logSeveritySys {
-		case "", "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE":
-		default:
-			allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("networking", "canal", "logSeveritySys"), logSeveritySys, []string{"INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE"}))
-		}
-	}
-
 	// Check ClusterCIDR
 	if c.Spec.KubeControllerManager != nil {
 		var clusterCIDR *net.IPNet
@@ -596,36 +572,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		}
 	}
 
-	{
-		if c.Spec.Networking != nil && c.Spec.Networking.Classic != nil {
-			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networking"), "classic", "classic networking is not supported"))
-		}
-	}
-
-	if c.Spec.Networking != nil && (c.Spec.Networking.AmazonVPC != nil || c.Spec.Networking.LyftVPC != nil) &&
-		c.Spec.CloudProvider != "aws" {
-		allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networking"), "amazon-vpc-routed-eni networking is supported only in AWS"))
-	}
-
 	allErrs = append(allErrs, newValidateCluster(c)...)
-
-	if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil {
-		ciliumSpec := c.Spec.Networking.Cilium
-
-		if ciliumSpec.EnableNodePort && c.Spec.KubeProxy != nil && *c.Spec.KubeProxy.Enabled {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeProxy", "enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))
-		}
-
-		if ciliumSpec.Ipam == kops.CiliumIpamEni {
-			if c.Spec.CloudProvider != string(kops.CloudProviderAWS) {
-				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("cilium", "ipam"), "Cilum ENI IPAM is supported only in AWS"))
-			}
-			if !ciliumSpec.DisableMasquerade {
-				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("cilium", "disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
-			}
-
-		}
-	}
 
 	return allErrs
 }
