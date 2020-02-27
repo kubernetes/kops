@@ -35,6 +35,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
@@ -77,6 +78,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["join"] = func(a []string, sep string) string {
 		return strings.Join(a, sep)
 	}
+
+	sprigTxtFuncMap := sprig.TxtFuncMap()
+	dest["indent"] = sprigTxtFuncMap["indent"]
 
 	dest["ClusterName"] = tf.modelContext.ClusterName
 	dest["HasTag"] = tf.HasTag
