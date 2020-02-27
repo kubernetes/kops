@@ -1,0 +1,10 @@
+kind: Addons
+metadata:
+  name: metadata-concealment
+spec:
+  addons:
+  - version: 0.1
+    selector:
+      k8s-addon: metadata-concealment.addons.k8s.io
+    manifest: v0.1.yaml
+
