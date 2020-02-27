@@ -432,22 +432,22 @@ func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) f
 
 	if v.DefaultEndpointToHostAction != "" {
 		valid := []string{"ACCEPT", "DROP", "RETURN"}
-		allErrs = append(allErrs, IsValidValue(fldPath, &v.DefaultEndpointToHostAction, valid)...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("defaultEndpointToHostAction"), &v.DefaultEndpointToHostAction, valid)...)
 	}
 
 	if v.ChainInsertMode != "" {
 		valid := []string{"insert", "append"}
-		allErrs = append(allErrs, IsValidValue(fldPath, &v.ChainInsertMode, valid)...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("chainInsertMode"), &v.ChainInsertMode, valid)...)
 	}
 
 	if v.LogSeveritySys != "" {
 		valid := []string{"INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE"}
-		allErrs = append(allErrs, IsValidValue(fldPath, &v.LogSeveritySys, valid)...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("logSeveritySys"), &v.LogSeveritySys, valid)...)
 	}
 
 	if v.IptablesBackend != "" {
 		valid := []string{"Auto", "Legacy", "NFT"}
-		allErrs = append(allErrs, IsValidValue(fldPath, &v.IptablesBackend, valid)...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
 	}
 
 	return allErrs
@@ -574,13 +574,15 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 
 	if v.MajorVersion != "" {
 		valid := []string{"v3"}
-		allErrs = append(allErrs, IsValidValue(fldPath, &v.MajorVersion, valid)...)
-		allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("majorVersion"), &v.MajorVersion, valid)...)
+		if v.MajorVersion == "v3" {
+			allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
+		}
 	}
 
 	if v.IptablesBackend != "" {
 		valid := []string{"Auto", "Legacy", "NFT"}
-		allErrs = append(allErrs, IsValidValue(fldPath, &v.IptablesBackend, valid)...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
 	}
 
 	return allErrs
