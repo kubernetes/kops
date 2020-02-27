@@ -6,7 +6,7 @@ metadata:
   labels:
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.16.0-beta.2
+    version: v1.16.0
 spec:
   replicas: 1
   selector:
@@ -17,7 +17,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.16.0-beta.2
+        version: v1.16.0
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -32,7 +32,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.16.0-beta.2
+        image: kope/dns-controller:1.16.0
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
