@@ -520,6 +520,24 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
+		key := "metadata-concealment.addons.k8s.io"
+		version := "0.1"
+
+		{
+			id := "v0.1"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+			})
+		}
+	}
+
 	if featureflag.Spotinst.Enabled() {
 		key := "spotinst-kubernetes-cluster-controller.addons.k8s.io"
 

@@ -45,9 +45,9 @@ type InstanceTemplate struct {
 
 	Lifecycle *fi.Lifecycle
 
-	Network *Network
-	Tags    []string
-	//Labels      map[string]string
+	Network     *Network
+	Tags        []string
+	Labels      map[string]string
 	Preemptible *bool
 
 	BootDiskImage  *string
@@ -103,6 +103,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		p := r.Properties
 
 		actual.Tags = append(actual.Tags, p.Tags.Items...)
+		actual.Labels = p.Labels
 		actual.MachineType = fi.String(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 
@@ -245,6 +246,17 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		}
 	}
 
+	// Question: do we want to make metadata-concealment configurable?
+	// Ordering the task like this _should_ make it possible to override
+	labels := map[string]string{
+		"cloud.google.com/metadata-proxy-ready": "true",
+	}
+	if e.Labels != nil {
+		for k, v := range e.Labels {
+			labels[k] = v
+		}
+	}
+
 	var networkInterfaces []*compute.NetworkInterface
 	ni := &compute.NetworkInterface{
 		Kind: "compute#networkInterface",
@@ -315,7 +327,8 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 			ServiceAccounts: serviceAccounts,
 
-			Tags: tags,
+			Tags:   tags,
+			Labels: labels,
 		},
 	}
 
