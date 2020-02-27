@@ -405,6 +405,18 @@ $ kops create cluster \
 
 In case of any issues the directory `/var/log/aws-routed-eni` contains the log files of the CNI plugin. This directory is located in all the nodes in the cluster.
 
+[Configuration options for the Amazon VPC CNI plugin](https://github.com/aws/amazon-vpc-cni-k8s/tree/master#cni-configuration-variables) can be set through env vars defined in the cluster spec:
+
+```yaml
+  networking:
+    amazonvpc:
+      env:
+      - name: WARM_IP_TARGET
+        value: "10"
+      - name: AWS_VPC_K8S_CNI_LOGLEVEL
+        value: debug
+```
+
 ### Cilium Example for CNI and Network Policy
 
 Cilium is open source software for transparently securing the network connectivity between application services deployed using Linux container management platforms like Docker and Kubernetes.

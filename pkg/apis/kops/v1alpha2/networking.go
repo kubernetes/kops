@@ -166,6 +166,8 @@ type RomanaNetworkingSpec struct {
 type AmazonVPCNetworkingSpec struct {
 	// The container image name to use
 	ImageName string `json:"imageName,omitempty"`
+	// Env is a list of environment variables to set in the container.
+	Env []EnvVar `json:"env,omitempty"`
 }
 
 // CiliumNetworkingSpec declares that we want Cilium networking
