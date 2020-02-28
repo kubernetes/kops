@@ -505,10 +505,6 @@ verify-gofmt:
 verify-gomod:
 	hack/verify-gomod
 
-.PHONY: verify-packages
-verify-packages: ${BINDATA_TARGETS}
-	hack/verify-packages.sh
-
 # find release notes, remove PR titles and output the rest to .build, then run misspell on all files
 .PHONY: verify-misspelling
 verify-misspelling:
@@ -543,7 +539,7 @@ verify-shellcheck:
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck nodeup examples test | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
@@ -551,7 +547,7 @@ ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boil
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
