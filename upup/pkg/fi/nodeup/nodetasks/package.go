@@ -216,7 +216,9 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 		}
 	}
 
-	if !installed {
+	target := c.Target.(*local.LocalTarget)
+	updates := target.HasTag(tags.TagUpdatePolicyAuto)
+	if !updates && !installed {
 		return nil, nil
 	}
 
@@ -264,7 +266,9 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 		healthy = fi.Bool(true)
 	}
 
-	if !installed {
+	target := c.Target.(*local.LocalTarget)
+	updates := target.HasTag(tags.TagUpdatePolicyAuto)
+	if !updates && !installed {
 		return nil, nil
 	}
 
