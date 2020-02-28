@@ -75,12 +75,11 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error checking for /sys/fs/bpf: %v", err)
 		}
 
-		// systemd v238 includes the bpffs mount by default; and gives an error "has a bad unit file setting" if we try to mount it again (see mount_point_is_api)
-		var alreadyMounted bool
-		// bpffs magic number. See https://github.com/torvalds/linux/blob/v4.8/include/uapi/linux/magic.h#L80
-		magic := uint32(0xCAFE4A11)
+		// equivalent to unix.BPF_FS_MAGIC in golang.org/x/sys/unix
+		BPF_FS_MAGIC := uint32(0xcafe4a11)
 
-		alreadyMounted = int32(magic) == int32(fsdata.Type)
+		// systemd v238 includes the bpffs mount by default; and gives an error "has a bad unit file setting" if we try to mount it again (see mount_point_is_api)
+		alreadyMounted := uint32(fsdata.Type) == BPF_FS_MAGIC
 
 		if !alreadyMounted {
 			unit := s(`
