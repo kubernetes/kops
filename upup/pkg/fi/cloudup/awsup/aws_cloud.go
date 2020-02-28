@@ -1368,17 +1368,13 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	var candidates []string
 
 	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleMaster:
-		// Some regions do not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
-		// (us-east-2, ca-central-1, eu-west-2, ap-northeast-2).
-		// Also some accounts are no longer supporting m3 in us-east-1 zones
-		candidates = []string{"m3.medium", "c4.large"}
-
-	case kops.InstanceGroupRoleNode:
-		candidates = []string{"t2.medium"}
+	case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode:
+		// t3.medium is the cheapest instance with 4GB of mem, unlimited by default, fast and has decent network
+		// c5.large and c4.large are a good second option in case t3.medium is not available in the AZ
+		candidates = []string{"t3.medium", "c5.large", "c4.large"}
 
 	case kops.InstanceGroupRoleBastion:
-		candidates = []string{"t2.micro"}
+		candidates = []string{"t3.micro", "t2.micro"}
 
 	default:
 		return "", fmt.Errorf("unhandled role %q", ig.Spec.Role)
