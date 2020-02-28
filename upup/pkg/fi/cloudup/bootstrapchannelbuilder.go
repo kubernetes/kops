@@ -828,8 +828,8 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 			"k8s-1.6":     "2.6.9-kops.1",
 			"k8s-1.7":     "2.6.12-kops.1",
 			"k8s-1.7-v3":  "3.8.0-kops.2",
-			"k8s-1.12":    "3.9.3-kops.2",
-			"k8s-1.16":    "3.10.2-kops.1",
+			"k8s-1.12":    "3.9.5-kops.1",
+			"k8s-1.16":    "3.12.0-kops.1",
 		}
 
 		{
@@ -926,8 +926,8 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 			"k8s-1.6":     "2.4.2-kops.2",
 			"k8s-1.8":     "2.6.7-kops.3",
 			"k8s-1.9":     "3.2.3-kops.1",
-			"k8s-1.12":    "3.7.4-kops.1",
-			"k8s-1.15":    "3.10.2-kops.1",
+			"k8s-1.12":    "3.7.5-kops.1",
+			"k8s-1.15":    "3.12.0-kops.1",
 		}
 		{
 			id := "pre-k8s-1.6"
