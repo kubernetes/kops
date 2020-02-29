@@ -29,6 +29,17 @@ on the release branches.
 We do currently maintain a `release` branch which should point to the same tag as
 the current `release-1.X` tag.
 
+## New Kubernetes versions and release branches
+
+Typically Kops alpha releases are created off the master branch and beta and stable releases are created off of release branches.
+In order to create a new release branch off of master prior to a beta release, perform the following steps:
+
+1. Create a new periodic E2E prow job for the "next" kubernetes minor version.
+   * All Kops prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
+2. Create a new presubmit E2E prow job for the new release branch.
+3. Create a new milestone in the GitHub repo.
+4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.
+5. Create the new release branch in git and push it to the GitHub repo.
 
 ## Update versions
 
@@ -129,6 +140,11 @@ relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 * Validate it
 * Add notes
 * Publish it
+
+## Release kops to homebrew
+
+* Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
+* This should be done at the same time as the release, and we will iterate on how to improve timing of this.
 
 ## Update the alpha channel and/or stable channel
 
