@@ -189,7 +189,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 				}
 
 				// If noneReady, wait until after one node is detached and its replacement validates
-				// before the detaching more in case the current spec does not result in usable nodes.
+				// before detaching more in case the current spec does not result in usable nodes.
 				if numSurge == maxSurge || noneReady {
 					// Wait for the minimum interval
 					klog.Infof("waiting for %v after detaching instance", sleepAfterTerminate)
