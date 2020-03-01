@@ -121,6 +121,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-mixedinstances-examp
     propagate_at_launch = true
   }
 
+  tag = {
+    key                 = "kubernetes.io/cluster/mixedinstances.example.com"
+    value               = "owned"
+    propagate_at_launch = true
+  }
+
   metrics_granularity = "1Minute"
   enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
@@ -156,6 +162,12 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-mixedinstances-examp
     propagate_at_launch = true
   }
 
+  tag = {
+    key                 = "kubernetes.io/cluster/mixedinstances.example.com"
+    value               = "owned"
+    propagate_at_launch = true
+  }
+
   metrics_granularity = "1Minute"
   enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
 }
@@ -188,6 +200,12 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-mixedinstances-examp
   tag = {
     key                 = "kops.k8s.io/instancegroup"
     value               = "master-us-test-1c"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "kubernetes.io/cluster/mixedinstances.example.com"
+    value               = "owned"
     propagate_at_launch = true
   }
 
@@ -250,6 +268,12 @@ resource "aws_autoscaling_group" "nodes-mixedinstances-example-com" {
   tag = {
     key                 = "kops.k8s.io/instancegroup"
     value               = "nodes"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "kubernetes.io/cluster/mixedinstances.example.com"
+    value               = "owned"
     propagate_at_launch = true
   }
 
