@@ -93,7 +93,7 @@ spec:
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.7.0-kops.1
+    version: 1.7.0-kops.2
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.cilium.io/k8s-1.12.yaml
@@ -101,4 +101,4 @@ spec:
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.7.0-kops.1
+    version: 1.7.0-kops.2
