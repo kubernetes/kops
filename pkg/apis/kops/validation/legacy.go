@@ -517,13 +517,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	// Topology support
 	if c.Spec.Topology != nil {
 		if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
-			if c.Spec.Topology.Masters != kops.TopologyPublic && c.Spec.Topology.Masters != kops.TopologyPrivate {
-				allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("topology", "masters"), c.Spec.Topology.Masters, kops.SupportedTopologies))
-			}
-			if c.Spec.Topology.Nodes != kops.TopologyPublic && c.Spec.Topology.Nodes != kops.TopologyPrivate {
-				allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("topology", "nodes"), c.Spec.Topology.Nodes, kops.SupportedTopologies))
-			}
-
+			allErrs = append(allErrs, IsValidValue(fieldSpec.Child("topology", "masters"), &c.Spec.Topology.Masters, kops.SupportedTopologies)...)
+			allErrs = append(allErrs, IsValidValue(fieldSpec.Child("topology", "nodes"), &c.Spec.Topology.Nodes, kops.SupportedTopologies)...)
 		} else {
 			allErrs = append(allErrs, field.Required(fieldSpec.Child("masters"), "topology requires non-nil values for masters and nodes"))
 		}
