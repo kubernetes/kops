@@ -118,6 +118,11 @@
             "key": "kops.k8s.io/instancegroup",
             "value": "master-us-test-1a",
             "propagate_at_launch": true
+          },
+          {
+            "key": "kubernetes.io/cluster/minimal-json.example.com",
+            "value": "owned",
+            "propagate_at_launch": true
           }
         ],
         "metrics_granularity": "1Minute",
@@ -159,6 +164,11 @@
           {
             "key": "kops.k8s.io/instancegroup",
             "value": "nodes",
+            "propagate_at_launch": true
+          },
+          {
+            "key": "kubernetes.io/cluster/minimal-json.example.com",
+            "value": "owned",
             "propagate_at_launch": true
           }
         ],
