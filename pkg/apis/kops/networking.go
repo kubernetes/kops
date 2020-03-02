@@ -243,6 +243,7 @@ type CiliumNetworkingSpec struct {
 	// "default": Follows Kubernetes policy enforcement.
 	// "always": Cilium restricts all traffic if no policy is in place.
 	// "never": Cilium allows all traffic regardless of policies in place.
+	// If unspecified, "default" policy mode will be used.
 	EnablePolicy string `json:"enablePolicy,omitempty"`
 	// EnableTracing has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
@@ -373,21 +374,22 @@ type CiliumNetworkingSpec struct {
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName"`
-	// ToFqdnsEnablePoller is disabled by default starting from version 1.4.x in favor
-	// of a more powerful DNS proxy-based implementation.
+	// ToFqdnsEnablePoller determines the implementation of FQDN policies.
+	// if this is set to false, the more powerful DNS proxy-based implementation is used.
 	// Enable this option if you want to use FQDN policies but do not want to use
-	// the DNS proxy.
-	// To ease upgrade, users may opt to set this option to "true".
-	// Default: true
+	// the DNS proxy. To ease upgrade, users may opt to set this option to "true".
+	// Default: false
 	ToFqdnsEnablePoller bool `json:"toFqdnsEnablePoller"`
 	// ContainerRuntimeLabels determines the container runtime(s) used by Cilium
 	// Supported values are: "none", "containerd", "crio", "docker", "auto"
+	// As of Cilium 1.7.0, Cilium no longer fetches information from the
+	// container runtime and this field is ignored.
 	// Default: none
 	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
 	// Ipam determines the IP address allocation mode to use.
 	// "eni" will use AWS native networking for pods
 	Ipam string `json:"ipam,omitempty"`
-	// IPTablesRulesNoinstall determins if the base iptables rules for cilium to mainly interact with kube-proxy (and masquerading)
+	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
 	// Default: false
 	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall"`
 	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
