@@ -198,8 +198,8 @@ type CiliumNetworkingSpec struct {
 	// Version is the version of the Cilium agent and the Cilium Operator.
 	Version string `json:"version,omitempty"`
 
-	// AccessLog has not been implemented in the new templates and may be removed in the future.
-	// Setting this has currently no effect.
+	// AccessLog is not implemented and may be removed in the future.
+	// Setting this has no effect.
 	AccessLog string `json:"accessLog,omitempty"`
 	// AgentLabels has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
@@ -247,7 +247,7 @@ type CiliumNetworkingSpec struct {
 	// EnableTracing has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
 	EnableTracing bool `json:"enableTracing,omitempty"`
-	// EnablePrometheusMetrics enables the Cilium /metrics endpoint for both the agent and the operator.
+	// EnablePrometheusMetrics enables the Cilium "/metrics" endpoint for both the agent and the operator.
 	EnablePrometheusMetrics bool `json:"enablePrometheusMetrics,omitempty"`
 	// EnvoyLog has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
@@ -315,7 +315,7 @@ type CiliumNetworkingSpec struct {
 	// LogstashProbeTimer has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
 	LogstashProbeTimer uint32 `json:"logstashProbeTimer,omitempty"`
-	// DisableMasquerade determines if external traffic should be masqued behind the node IP.
+	// DisableMasquerade disables masquerading traffic to external destinations behind the node IP.
 	DisableMasquerade bool `json:"disableMasquerade,omitempty"`
 	// Nat6Range has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
@@ -344,34 +344,34 @@ type CiliumNetworkingSpec struct {
 	// TracePayloadLen has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
 	TracePayloadLen int `json:"tracePayloadlen,omitempty"`
-	// Tunnel determines the cilium tunelling mode. Possible values are "vxlan", "geneve", or "disabled".
+	// Tunnel specifies the Cilium tunelling mode. Possible values are "vxlan", "geneve", or "disabled".
 	// Default: vxlan
 	Tunnel string `json:"tunnel,omitempty"`
-	// EnableIpv6 enables cluster ipv6 traffic. Note that if both EnableIpv6 and EnableIpv4 are set to false.
-	// Ipv4 will be enabled.
+	// EnableIpv6 enables cluster IPv6 traffic. If both EnableIpv6 and EnableIpv4 are set to false
+	// then IPv4 will be enabled.
 	// Default: false
 	EnableIpv6 bool `json:"enableipv6"`
-	// EnableIpv4 enables cluster ipv4 traffic. Note that if both EnableIpv6 and EnableIpv4 are set to false.
-	// Ipv4 will be enabled.
+	// EnableIpv4 enables cluster IPv4 traffic. If both EnableIpv6 and EnableIpv4 are set to false
+	// then IPv4 will be enabled.
 	// Default: false
 	EnableIpv4 bool `json:"enableipv4"`
-	// MonitorAggregation sets the level of packet monitoring. Can be set to either "low", "medium", or "maximum".
+	// MonitorAggregation sets the level of packet monitoring. Possible values are "low", "medium", or "maximum".
 	// Default: medium
 	MonitorAggregation string `json:"monitorAggregation"`
-	// BPFCTGlobalTCPMax is the maximum number of entries in TCP CT table.
+	// BPFCTGlobalTCPMax is the maximum number of entries in the TCP CT table.
 	// Default: 524288
 	BPFCTGlobalTCPMax int `json:"bpfCTGlobalTCPMax"`
-	// BPFCTGlobalAnyMax is the maximum number of entries in non-TCP CT table.
+	// BPFCTGlobalAnyMax is the maximum number of entries in the non-TCP CT table.
 	// Default: 262144
 	BPFCTGlobalAnyMax int `json:"bpfCTGlobalAnyMax"`
-	// PreallocateBPFMaps reduce the per-packet latency at the expense of up-front memory allocation.
+	// PreallocateBPFMaps reduces the per-packet latency at the expense of up-front memory allocation.
 	// Default: true
 	PreallocateBPFMaps bool `json:"preallocateBPFMaps"`
-	// SidecarIstioProxyImage is the regular expression matching compatible Istio sidecar istio-proxy.
+	// SidecarIstioProxyImage is the regular expression matching compatible Istio sidecar istio-proxy
 	// container image names.
 	// Default: cilium/istio_proxy
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
-	// ClusterName is the of the cluster and is only relevant when building a mesh of clusters.
+	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName"`
 	// ToFqdnsEnablePoller is disabled by default starting from version 1.4.x in favor
 	// of a more powerful DNS proxy-based implementation.
@@ -384,17 +384,17 @@ type CiliumNetworkingSpec struct {
 	// Supported values are: "none", "containerd", "crio", "docker", "auto"
 	// Default: none
 	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
-	// Ipam determines which IP address allocation mode to use.
+	// Ipam determines the IP address allocation mode to use.
 	// "eni" will use AWS native networking for pods
 	Ipam string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall determins if the base iptables rules for cilium to mainly interact with kube-proxy (and masquerading)
 	// Default: false
 	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall"`
-	// AutoDirectNodeRoutes adds automatic L2 routing between nodes
+	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
 	// Default: false
 	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes"`
-	// EnableNodePort replaces kube-proxy with Cilium's BPF implementation
-	// Requires masquerading to be disabled
+	// EnableNodePort replaces kube-proxy with Cilium's BPF implementation.
+	// Requires masquerading to be disabled.
 	// Default: false
 	EnableNodePort bool `json:"enableNodePort"`
 
