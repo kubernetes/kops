@@ -748,11 +748,6 @@ spec:
           readOnly: true
 {{- end }}
       hostNetwork: true
-{{- if .EtcdManaged }}
-      # In managed etcd mode, Cilium must be able to resolve the DNS name of
-      # the etcd service
-{{- end }}
-
       restartPolicy: Always
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
