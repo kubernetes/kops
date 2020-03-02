@@ -457,12 +457,32 @@ func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec,
 		allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))
 	}
 
-	if v.Ipam == kops.CiliumIpamEni {
-		if c.CloudProvider != string(kops.CloudProviderAWS) {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
-		}
-		if !v.DisableMasquerade {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+	if v.EnablePolicy != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("enablePolicy"), &v.EnablePolicy, []string{"default", "always", "never"})...)
+	}
+
+	if v.Tunnel != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("tunnel"), &v.Tunnel, []string{"vxlan", "geneve", "disabled"})...)
+	}
+
+	if v.MonitorAggregation != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("monitorAggregation"), &v.MonitorAggregation, []string{"low", "medium", "maximum"})...)
+	}
+
+	if v.ContainerRuntimeLabels != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("containerRuntimeLabels"), &v.ContainerRuntimeLabels, []string{"none", "containerd", "crio", "docker", "auto"})...)
+	}
+
+	if v.Ipam != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni", "azure"})...)
+
+		if v.Ipam == kops.CiliumIpamEni {
+			if c.CloudProvider != string(kops.CloudProviderAWS) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
+			}
+			if !v.DisableMasquerade {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+			}
 		}
 	}
 
