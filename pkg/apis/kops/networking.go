@@ -387,7 +387,7 @@ type CiliumNetworkingSpec struct {
 	// Default: none
 	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
 	// Ipam determines the IP address allocation mode to use.
-	// "eni" will use AWS native networking for pods
+	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
 	Ipam string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
 	// Default: false
@@ -396,7 +396,7 @@ type CiliumNetworkingSpec struct {
 	// Default: false
 	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes"`
 	// EnableNodePort replaces kube-proxy with Cilium's BPF implementation.
-	// Requires masquerading to be disabled.
+	// Requires spec.kubeProxy.enabled be set to false.
 	// Default: false
 	EnableNodePort bool `json:"enableNodePort"`
 
