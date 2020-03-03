@@ -474,7 +474,8 @@ func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec,
 	}
 
 	if v.Ipam != "" {
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni", "azure"})...)
+		// "azure" not supported by kops
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni"})...)
 
 		if v.Ipam == kops.CiliumIpamEni {
 			if c.CloudProvider != string(kops.CloudProviderAWS) {
