@@ -315,6 +315,8 @@ type KubeAPIServerConfig struct {
 	RuntimeConfig map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
 	// KubeletClientCertificate is the path of a certificate for secure communication between api and kubelet
 	KubeletClientCertificate string `json:"kubeletClientCertificate,omitempty" flag:"kubelet-client-certificate"`
+	// KubeletCertificateAuthority is the path of a certificate authority for secure communication between api and kubelet.
+	KubeletCertificateAuthority string `json:"kubeletCertificateAuthority,omitempty" flag:"kubelet-certificate-authority"`
 	// KubeletClientKey is the path of a private to secure communication between api and kubelet
 	KubeletClientKey string `json:"kubeletClientKey,omitempty" flag:"kubelet-client-key"`
 	// AnonymousAuth indicates if anonymous authentication is permitted
