@@ -239,7 +239,7 @@ type CiliumNetworkingSpec struct {
 	// DisableK8sServices has not been implemented in the new templates and may be removed in the future.
 	// Setting this has currently no effect.
 	DisableK8sServices bool `json:"disableK8sServices,omitempty"`
-	// EnablePolicy determines the policy enforcement mode.
+	// EnablePolicy specifies the policy enforcement mode.
 	// "default": Follows Kubernetes policy enforcement.
 	// "always": Cilium restricts all traffic if no policy is in place.
 	// "never": Cilium allows all traffic regardless of policies in place.
@@ -374,19 +374,17 @@ type CiliumNetworkingSpec struct {
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName"`
-	// ToFqdnsEnablePoller determines the implementation of FQDN policies.
-	// if this is set to false, the more powerful DNS proxy-based implementation is used.
-	// Enable this option if you want to use FQDN policies but do not want to use
-	// the DNS proxy. To ease upgrade, users may opt to set this option to "true".
+	// ToFqdnsEnablePoller replaces the DNS proxy-based implementation of FQDN policies
+	// with the less powerful legacy implementation.
 	// Default: false
 	ToFqdnsEnablePoller bool `json:"toFqdnsEnablePoller"`
-	// ContainerRuntimeLabels determines the container runtime(s) used by Cilium
+	// ContainerRuntimeLabels enables fetching of container-runtime labels from the specified container runtime and associating them with endpoints.
 	// Supported values are: "none", "containerd", "crio", "docker", "auto"
 	// As of Cilium 1.7.0, Cilium no longer fetches information from the
 	// container runtime and this field is ignored.
 	// Default: none
 	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
-	// Ipam determines the IP address allocation mode to use.
+	// Ipam specifies the IP address allocation mode to use.
 	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
 	Ipam string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
