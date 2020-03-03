@@ -3363,6 +3363,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.APIServerCount = in.APIServerCount
 	out.RuntimeConfig = in.RuntimeConfig
 	out.KubeletClientCertificate = in.KubeletClientCertificate
+	out.KubeletCertificateAuthority = in.KubeletCertificateAuthority
 	out.KubeletClientKey = in.KubeletClientKey
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
@@ -3463,6 +3464,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.APIServerCount = in.APIServerCount
 	out.RuntimeConfig = in.RuntimeConfig
 	out.KubeletClientCertificate = in.KubeletClientCertificate
+	out.KubeletCertificateAuthority = in.KubeletCertificateAuthority
 	out.KubeletClientKey = in.KubeletClientKey
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
