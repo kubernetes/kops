@@ -1,7 +1,7 @@
 # Architecture: kops-controller
 
 kops-controller runs as a DaemonSet on the master node(s).  It is a kubebuilder
-controller, that performs runtime reconciliation for kops.
+controller that performs runtime reconciliation for kops.
 
 Controllers in kops-controller:
 
