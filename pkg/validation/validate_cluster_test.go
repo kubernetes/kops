@@ -373,6 +373,92 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 	}
 }
 
+func Test_ValidateMasterNoKubeControllerManager(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "master-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleMaster,
+			},
+		},
+		MinSize: 1,
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "master-1a",
+						Labels: map[string]string{"kubernetes.io/role": "master"},
+					},
+					Status: v1.NodeStatus{
+						Addresses: []v1.NodeAddress{
+							{
+								Address: "1.2.3.4",
+							},
+						},
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+			{
+				ID: "i-00002",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "master-1b",
+						Labels: map[string]string{"kubernetes.io/role": "master"},
+					},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+						Addresses: []v1.NodeAddress{
+							{
+								Address: "5.6.7.8",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	v, err := testValidate(t, groups, makePodList(
+		[]map[string]string{
+			{
+				"name":    "pod1",
+				"ready":   "true",
+				"k8s-app": "kube-controller-manager",
+				"phase":   string(v1.PodRunning),
+				"hostip":  "1.2.3.4",
+			},
+			{
+				"name":      "pod2",
+				"namespace": "other",
+				"ready":     "true",
+				"k8s-app":   "kube-controller-manager",
+				"phase":     string(v1.PodRunning),
+				"hostip":    "5.6.7.8",
+			},
+		},
+	))
+	require.NoError(t, err)
+	if !assert.Len(t, v.Failures, 1) ||
+		!assert.Equal(t, &ValidationError{
+			Kind:    "Node",
+			Name:    "master-1b",
+			Message: "master \"master-1b\" is missing kube-controller-manager pod",
+		}, v.Failures[0]) {
+		printDebug(t, v)
+	}
+}
+
 func Test_ValidateNoComponentFailures(t *testing.T) {
 	v, err := testValidate(t, nil, []runtime.Object{
 		&v1.ComponentStatus{
@@ -496,10 +582,19 @@ func printDebug(t *testing.T, v *ValidationCluster) {
 }
 
 func dummyPod(podMap map[string]string) v1.Pod {
+	var labels map[string]string
+	if podMap["k8s-app"] != "" {
+		labels = map[string]string{"k8s-app": podMap["k8s-app"]}
+	}
+	namespace := podMap["namespace"]
+	if namespace == "" {
+		namespace = "kube-system"
+	}
 	return v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podMap["name"],
-			Namespace: "kube-system",
+			Namespace: namespace,
+			Labels:    labels,
 		},
 		Spec: v1.PodSpec{},
 		Status: v1.PodStatus{
@@ -514,6 +609,7 @@ func dummyPod(podMap map[string]string) v1.Pod {
 					Ready: podMap["ready"] == "true",
 				},
 			},
+			HostIP: podMap["hostip"],
 		},
 	}
 }

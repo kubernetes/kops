@@ -118,7 +118,7 @@ func (n *NodeAuthorizer) Run() error {
 	}()
 
 	go func() {
-		c := make(chan os.Signal)
+		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGINT)
 		errs <- fmt.Errorf("received termination signal: %s", <-c)
 	}()

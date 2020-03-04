@@ -27,7 +27,12 @@ spec:
   - proxy.api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    amazonvpc: {}
+    amazonvpc:
+      env:
+      - name: WARM_IP_TARGET
+        value: "10"
+      - name: AWS_VPC_K8S_CNI_LOGLEVEL
+        value: debug
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
     - 0.0.0.0/0

@@ -41,6 +41,8 @@ type Service interface {
 	DeleteECSLaunchSpec(context.Context, *DeleteECSLaunchSpecInput) (*DeleteECSLaunchSpecOutput, error)
 
 	RollECS(context.Context, *ECSRollClusterInput) (*ECSRollClusterOutput, error)
+
+	ListResourceSuggestions(context.Context, *ListResourceSuggestionsInput) (*ListResourceSuggestionsOutput, error)
 }
 
 type ServiceOp struct {

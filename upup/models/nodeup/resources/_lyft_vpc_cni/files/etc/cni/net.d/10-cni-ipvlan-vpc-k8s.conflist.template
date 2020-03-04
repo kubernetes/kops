@@ -1,26 +1,26 @@
 {
+  "cniVersion": "0.3.1",
+  "name": "cni-ipvlan-vpc-k8s",
+  "plugins": [
+  {
     "cniVersion": "0.3.1",
-    "name": "cni-ipvlan-vpc-k8s",
-    "plugins": [
-	{
-	    "cniVersion": "0.3.1",
-	    "type": "cni-ipvlan-vpc-k8s-ipam",
-	    "interfaceIndex": 1,
-		"skipDeallocation" : true,
-	    "subnetTags":  {{ SubnetTags }},
-	    "secGroupIds": {{ NodeSecurityGroups }}
-	},
-	{
-	    "cniVersion": "0.3.1",
-	    "type": "cni-ipvlan-vpc-k8s-ipvlan",
-	    "mode": "l2"
-	},
-	{
-	    "cniVersion": "0.3.1",
-	    "type": "cni-ipvlan-vpc-k8s-unnumbered-ptp",
-	    "hostInterface": "eth0",
-	    "containerInterface": "veth0",
-	    "ipMasq": true
-	}
-    ]
+    "type": "cni-ipvlan-vpc-k8s-ipam",
+    "interfaceIndex": 1,
+    "skipDeallocation": true,
+    "subnetTags":  {{ SubnetTags }},
+    "secGroupIds": {{ NodeSecurityGroups }}
+  },
+  {
+    "cniVersion": "0.3.1",
+    "type": "cni-ipvlan-vpc-k8s-ipvlan",
+    "mode": "l2"
+  },
+  {
+    "cniVersion": "0.3.1",
+    "type": "cni-ipvlan-vpc-k8s-unnumbered-ptp",
+    "hostInterface": "eth0",
+    "containerInterface": "veth0",
+    "ipMasq": true
+  }
+  ]
 }

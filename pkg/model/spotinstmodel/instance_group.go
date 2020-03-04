@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 )
 
@@ -61,6 +60,12 @@ const (
 	// instance group to specify whether to use the InstanceGroup's spec as the default
 	// Launch Spec for the Ocean cluster.
 	InstanceGroupLabelOceanDefaultLaunchSpec = "spotinst.io/ocean-default-launchspec"
+
+	// InstanceGroupLabelOceanInstanceTypes[White|Black]list are the metadata labels
+	// used on the instance group to specify whether to whitelist or blacklist
+	// specific instance types.
+	InstanceGroupLabelOceanInstanceTypesWhitelist = "spotinst.io/ocean-instance-types-whitelist"
+	InstanceGroupLabelOceanInstanceTypesBlacklist = "spotinst.io/ocean-instance-types-blacklist"
 
 	// InstanceGroupLabelAutoScalerDisabled is the metadata label used on the
 	// instance group to specify whether the auto scaler should be enabled.
@@ -321,7 +326,7 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 	// Image.
 	ocean.ImageID = fi.String(ig.Spec.Image)
 
-	// Strategy.
+	// Strategy and instance types.
 	for k, v := range ig.ObjectMeta.Labels {
 		switch k {
 		case InstanceGroupLabelSpotPercentage:
@@ -338,6 +343,18 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 
 		case InstanceGroupLabelFallbackToOnDemand:
 			ocean.FallbackToOnDemand, err = parseBool(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelOceanInstanceTypesWhitelist:
+			ocean.InstanceTypesWhitelist, err = parseStringSlice(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelOceanInstanceTypesBlacklist:
+			ocean.InstanceTypesBlacklist, err = parseStringSlice(v)
 			if err != nil {
 				return err
 			}
@@ -457,6 +474,12 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 	launchSpec.SecurityGroups, err = b.buildSecurityGroups(c, ig)
 	if err != nil {
 		return fmt.Errorf("error building security groups: %v", err)
+	}
+
+	// Tags.
+	launchSpec.Tags, err = b.buildTags(ig)
+	if err != nil {
+		return fmt.Errorf("error building cloud tags: %v", err)
 	}
 
 	// Labels.
@@ -605,8 +628,6 @@ func (b *InstanceGroupModelBuilder) buildTags(ig *kops.InstanceGroup) (map[strin
 	if err != nil {
 		return nil, err
 	}
-	tags[awsup.TagClusterName] = b.ClusterName()
-	tags["Name"] = b.AutoscalingGroupName(ig)
 	return tags, nil
 }
 
@@ -761,6 +782,14 @@ func parseInt(str string) (*int64, error) {
 		return nil, fmt.Errorf("unexpected integer value: %q", str)
 	}
 	return &v, nil
+}
+
+func parseStringSlice(str string) ([]string, error) {
+	v := strings.Split(str, ",")
+	for i, s := range v {
+		v[i] = strings.TrimSpace(s)
+	}
+	return v, nil
 }
 
 func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {

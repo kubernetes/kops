@@ -261,8 +261,15 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.cluster.Spec.Networking.LyftVPC != nil {
 
 		loader.TemplateFunctions["SubnetTags"] = func() (string, error) {
-			tags := map[string]string{
-				"Type": "pod",
+			var tags map[string]string
+			if c.cluster.IsKubernetesGTE("1.18") {
+				tags = map[string]string{
+					"KubernetesCluster": c.cluster.Name,
+				}
+			} else {
+				tags = map[string]string{
+					"Type": "pod",
+				}
 			}
 			if len(c.cluster.Spec.Networking.LyftVPC.SubnetTags) > 0 {
 				tags = c.cluster.Spec.Networking.LyftVPC.SubnetTags

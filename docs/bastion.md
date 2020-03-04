@@ -73,6 +73,19 @@ spec:
       bastionPublicName: bastion.mycluster.example.com
 ```
 
+### Access when using gossip (k8s.local)
+
+When using gossip mode, there is no DNS zone where we can configure a
+CNAME for the bastion.  Because bastions are fronted with a load
+balancer, you can instead use the endpoint of the load balancer to
+reach your bastion.
+
+On AWS, an easy way to find this DNS name is with kops toolbox:
+
+```
+kops toolbox dump -ojson | grep 'bastion.*elb.amazonaws.com'
+```
+
 ### Using SSH agent to access your bastion
 
 Verify your local agent is configured correctly

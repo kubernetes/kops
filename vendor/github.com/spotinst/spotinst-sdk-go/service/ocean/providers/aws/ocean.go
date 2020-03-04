@@ -21,6 +21,7 @@ type Cluster struct {
 	Strategy            *Strategy   `json:"strategy,omitempty"`
 	Capacity            *Capacity   `json:"capacity,omitempty"`
 	Compute             *Compute    `json:"compute,omitempty"`
+	Scheduling          *Scheduling `json:"scheduling,omitempty"`
 	AutoScaler          *AutoScaler `json:"autoScaler,omitempty"`
 
 	// Read-only fields.
@@ -72,6 +73,31 @@ type Compute struct {
 	nullFields      []string
 }
 
+type Scheduling struct {
+	ShutdownHours *ShutdownHours `json:"shutdownHours,omitempty"`
+	Tasks         []*Task        `json:"tasks,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ShutdownHours struct {
+	IsEnabled   *bool    `json:"isEnabled,omitempty"`
+	TimeWindows []string `json:"timeWindows,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Task struct {
+	IsEnabled      *bool   `json:"isEnabled,omitempty"`
+	Type           *string `json:"taskType,omitempty"`
+	CronExpression *string `json:"cronExpression,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
 type InstanceTypes struct {
 	Whitelist []string `json:"whitelist,omitempty"`
 	Blacklist []string `json:"blacklist,omitempty"`
@@ -115,12 +141,13 @@ type LoadBalancer struct {
 }
 
 type AutoScaler struct {
-	IsEnabled      *bool                     `json:"isEnabled,omitempty"`
-	IsAutoConfig   *bool                     `json:"isAutoConfig,omitempty"`
-	Cooldown       *int                      `json:"cooldown,omitempty"`
-	Headroom       *AutoScalerHeadroom       `json:"headroom,omitempty"`
-	ResourceLimits *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
-	Down           *AutoScalerDown           `json:"down,omitempty"`
+	IsEnabled              *bool                     `json:"isEnabled,omitempty"`
+	IsAutoConfig           *bool                     `json:"isAutoConfig,omitempty"`
+	Cooldown               *int                      `json:"cooldown,omitempty"`
+	AutoHeadroomPercentage *int                      `json:"autoHeadroomPercentage,omitempty"`
+	Headroom               *AutoScalerHeadroom       `json:"headroom,omitempty"`
+	ResourceLimits         *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
+	Down                   *AutoScalerDown           `json:"down,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -145,7 +172,8 @@ type AutoScalerResourceLimits struct {
 }
 
 type AutoScalerDown struct {
-	EvaluationPeriods *int `json:"evaluationPeriods,omitempty"`
+	EvaluationPeriods      *int `json:"evaluationPeriods,omitempty"`
+	MaxScaleDownPercentage *int `json:"maxScaleDownPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -253,19 +281,37 @@ func clustersFromHttpResponse(resp *http.Response) ([]*Cluster, error) {
 
 func rollStatusFromJSON(in []byte) (*RollClusterStatus, error) {
 	b := new(RollClusterStatus)
-
 	if err := json.Unmarshal(in, b); err != nil {
 		return nil, err
 	}
 	return b, nil
 }
 
-func rollStatusFromHttpResponse(resp *http.Response) (*RollClusterStatus, error) {
+func rollStatusesFromJSON(in []byte) ([]*RollClusterStatus, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*RollClusterStatus, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := rollStatusFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func rollStatusesFromHttpResponse(resp *http.Response) ([]*RollClusterStatus, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return rollStatusFromJSON(body)
+	return rollStatusesFromJSON(body)
 }
 
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
@@ -407,12 +453,17 @@ func (s *ServiceOp) Roll(ctx context.Context, input *RollClusterInput) (*RollClu
 	}
 	defer resp.Body.Close()
 
-	_, err = rollStatusFromHttpResponse(resp)
+	rs, err := rollStatusesFromHttpResponse(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return &RollClusterOutput{}, nil
+	output := new(RollClusterOutput)
+	if len(rs) > 0 {
+		output.RollClusterStatus = rs[0]
+	}
+
+	return output, nil
 }
 
 // region Cluster
@@ -468,6 +519,13 @@ func (o *Cluster) SetCapacity(v *Capacity) *Cluster {
 func (o *Cluster) SetCompute(v *Compute) *Cluster {
 	if o.Compute = v; o.Compute == nil {
 		o.nullFields = append(o.nullFields, "Compute")
+	}
+	return o
+}
+
+func (o *Cluster) SetScheduling(v *Scheduling) *Cluster {
+	if o.Scheduling = v; o.Scheduling == nil {
+		o.nullFields = append(o.nullFields, "Scheduling")
 	}
 	return o
 }
@@ -575,6 +633,85 @@ func (o *Compute) SetLaunchSpecification(v *LaunchSpecification) *Compute {
 func (o *Compute) SetSubnetIDs(v []string) *Compute {
 	if o.SubnetIDs = v; o.SubnetIDs == nil {
 		o.nullFields = append(o.nullFields, "SubnetIDs")
+	}
+	return o
+}
+
+// endregion
+
+// region Scheduling
+
+func (o Scheduling) MarshalJSON() ([]byte, error) {
+	type noMethod Scheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Scheduling) SetShutdownHours(v *ShutdownHours) *Scheduling {
+	if o.ShutdownHours = v; o.ShutdownHours == nil {
+		o.nullFields = append(o.nullFields, "ShutdownHours")
+	}
+	return o
+}
+
+func (o *Scheduling) SetTasks(v []*Task) *Scheduling {
+	if o.Tasks = v; o.Tasks == nil {
+		o.nullFields = append(o.nullFields, "Tasks")
+	}
+	return o
+}
+
+// endregion
+
+// region Tasks
+
+func (o Task) MarshalJSON() ([]byte, error) {
+	type noMethod Task
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Task) SetIsEnabled(v *bool) *Task {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *Task) SetType(v *string) *Task {
+	if o.Type = v; o.Type == nil {
+		o.nullFields = append(o.nullFields, "Type")
+	}
+	return o
+}
+
+func (o *Task) SetCronExpression(v *string) *Task {
+	if o.CronExpression = v; o.CronExpression == nil {
+		o.nullFields = append(o.nullFields, "CronExpression")
+	}
+	return o
+}
+
+// endregion
+
+// region ShutdownHours
+
+func (o ShutdownHours) MarshalJSON() ([]byte, error) {
+	type noMethod ShutdownHours
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ShutdownHours) SetIsEnabled(v *bool) *ShutdownHours {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *ShutdownHours) SetTimeWindows(v []string) *ShutdownHours {
+	if o.TimeWindows = v; o.TimeWindows == nil {
+		o.nullFields = append(o.nullFields, "TimeWindows")
 	}
 	return o
 }
@@ -770,6 +907,13 @@ func (o *AutoScaler) SetCooldown(v *int) *AutoScaler {
 	return o
 }
 
+func (o *AutoScaler) SetAutoHeadroomPercentage(v *int) *AutoScaler {
+	if o.AutoHeadroomPercentage = v; o.AutoHeadroomPercentage == nil {
+		o.nullFields = append(o.nullFields, "AutoHeadroomPercentage")
+	}
+	return o
+}
+
 func (o *AutoScaler) SetHeadroom(v *AutoScalerHeadroom) *AutoScaler {
 	if o.Headroom = v; o.Headroom == nil {
 		o.nullFields = append(o.nullFields, "Headroom")
@@ -866,6 +1010,13 @@ func (o AutoScalerDown) MarshalJSON() ([]byte, error) {
 func (o *AutoScalerDown) SetEvaluationPeriods(v *int) *AutoScalerDown {
 	if o.EvaluationPeriods = v; o.EvaluationPeriods == nil {
 		o.nullFields = append(o.nullFields, "EvaluationPeriods")
+	}
+	return o
+}
+
+func (o *AutoScalerDown) SetMaxScaleDownPercentage(v *int) *AutoScalerDown {
+	if o.MaxScaleDownPercentage = v; o.MaxScaleDownPercentage == nil {
+		o.nullFields = append(o.nullFields, "MaxScaleDownPercentage")
 	}
 	return o
 }

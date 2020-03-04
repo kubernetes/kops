@@ -743,6 +743,28 @@ spec:
     elbSecurityGroup: sg-123445678
 ```
 
+### containerRuntime
+*WARNING: this works only for Kubernetes version above 1.11.0.*
+
+Alternative [container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/) can be used to run Kubernetes. Docker is still the default container runtime, but [containerd](https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/) can also be selected.
+
+```yaml
+spec:
+  containerRuntime: containerd
+```
+
+### containerd
+
+It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ContainerdConfig) for the full list of options.
+
+```yaml
+spec:
+  containerd:
+    version: 1.3.3   
+    logLevel: info
+    configOverride: ""
+```
+
 ### docker
 
 It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.

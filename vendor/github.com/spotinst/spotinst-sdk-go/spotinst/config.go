@@ -1,14 +1,16 @@
 package spotinst
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"net/url"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/log"
+	"github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent"
 )
 
 const (
@@ -18,9 +20,6 @@ const (
 
 	// defaultContentType is the default content type to use when making HTTP calls.
 	defaultContentType = "application/json"
-
-	// defaultUserAgent is the default user agent to use when making HTTP calls.
-	defaultUserAgent = SDKName + "/" + SDKVersion
 )
 
 // A Config provides Configuration to a service client instance.
@@ -29,33 +28,52 @@ type Config struct {
 	BaseURL *url.URL
 
 	// The HTTP Client the SDK's API clients will use to invoke HTTP requests.
-	// The SDK defaults to a DefaultHTTPClient allowing API clients to create
-	// copies of the HTTP client for service specific customizations.
+	//
+	// Defaults to a DefaultHTTPClient allowing API clients to create copies of
+	// the HTTP client for service specific customizations.
 	HTTPClient *http.Client
 
-	// The credentials object to use when signing requests. Defaults to a
-	// chain of credential providers to search for credentials in environment
-	// variables and shared credential file.
+	// The credentials object to use when signing requests.
+	//
+	// Defaults to a chain of credential providers to search for credentials in
+	// environment variables and shared credential file.
 	Credentials *credentials.Credentials
 
-	// The logger writer interface to write logging messages to. Defaults to
-	// standard out.
+	// The logger writer interface to write logging messages to.
+	//
+	// Defaults to standard out.
 	Logger log.Logger
 
-	// The User-Agent and Content-Type HTTP headers to set when invoking
-	// HTTP requests.
+	// The User-Agent and Content-Type HTTP headers to set when invoking HTTP
+	// requests.
 	UserAgent, ContentType string
 }
 
+// DefaultBaseURL returns the default base URL.
 func DefaultBaseURL() *url.URL {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	return baseURL
 }
 
-// DefaultTransport returns a new http.Transport with similar default
-// values to http.DefaultTransport. Do not use this for transient transports as
-// it can leak file descriptors over time. Only use this for transports that
-// will be re-used for the same host(s).
+// DefaultUserAgent returns the default User-Agent header.
+func DefaultUserAgent() string {
+	return useragent.New(
+		SDKName,
+		SDKVersion,
+		runtime.Version(),
+		runtime.GOOS,
+		runtime.GOARCH).String()
+}
+
+// DefaultContentType returns the default Content-Type header.
+func DefaultContentType() string {
+	return defaultContentType
+}
+
+// DefaultTransport returns a new http.Transport with similar default values to
+// http.DefaultTransport. Do not use this for transient transports as it can
+// leak file descriptors over time. Only use this for transports that will be
+// re-used for the same host(s).
 func DefaultTransport() *http.Transport {
 	return &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -79,15 +97,15 @@ func DefaultHTTPClient() *http.Client {
 }
 
 // DefaultConfig returns a default configuration for the client. By default this
-// will pool and reuse idle connections to API. If you have a long-lived
-// client object, this is the desired behavior and should make the most efficient
-// use of the connections to API.
+// will pool and reuse idle connections to API. If you have a long-lived client
+// object, this is the desired behavior and should make the most efficient use
+// of the connections to API.
 func DefaultConfig() *Config {
 	return &Config{
 		BaseURL:     DefaultBaseURL(),
 		HTTPClient:  DefaultHTTPClient(),
-		UserAgent:   defaultUserAgent,
-		ContentType: defaultContentType,
+		UserAgent:   DefaultUserAgent(),
+		ContentType: DefaultContentType(),
 		Credentials: credentials.NewChainCredentials(
 			new(credentials.EnvProvider),
 			new(credentials.FileProvider),
@@ -116,7 +134,7 @@ func (c *Config) WithCredentials(creds *credentials.Credentials) *Config {
 
 // WithUserAgent defines the user agent.
 func (c *Config) WithUserAgent(ua string) *Config {
-	c.UserAgent = fmt.Sprintf("%s,%s", ua, c.UserAgent)
+	c.UserAgent = strings.TrimSpace(strings.Join([]string{ua, c.UserAgent}, " "))
 	return c
 }
 
@@ -135,31 +153,31 @@ func (c *Config) WithLogger(logger log.Logger) *Config {
 
 // Merge merges the passed in configs into the existing config object.
 func (c *Config) Merge(cfgs ...*Config) {
-	for _, other := range cfgs {
-		mergeConfig(c, other)
+	for _, cfg := range cfgs {
+		mergeConfig(c, cfg)
 	}
 }
 
-func mergeConfig(dst *Config, other *Config) {
-	if other == nil {
+func mergeConfig(c1, c2 *Config) {
+	if c2 == nil {
 		return
 	}
-	if other.BaseURL != nil {
-		dst.BaseURL = other.BaseURL
+	if c2.BaseURL != nil {
+		c1.BaseURL = c2.BaseURL
 	}
-	if other.Credentials != nil {
-		dst.Credentials = other.Credentials
+	if c2.Credentials != nil {
+		c1.Credentials = c2.Credentials
 	}
-	if other.HTTPClient != nil {
-		dst.HTTPClient = other.HTTPClient
+	if c2.HTTPClient != nil {
+		c1.HTTPClient = c2.HTTPClient
 	}
-	if other.UserAgent != "" {
-		dst.UserAgent = other.UserAgent
+	if c2.UserAgent != "" {
+		c1.UserAgent = c2.UserAgent
 	}
-	if other.ContentType != "" {
-		dst.ContentType = other.ContentType
+	if c2.ContentType != "" {
+		c1.ContentType = c2.ContentType
 	}
-	if other.Logger != nil {
-		dst.Logger = other.Logger
+	if c2.Logger != nil {
+		c1.Logger = c2.Logger
 	}
 }

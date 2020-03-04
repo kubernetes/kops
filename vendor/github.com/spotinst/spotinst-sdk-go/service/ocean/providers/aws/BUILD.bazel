@@ -8,6 +8,7 @@ go_library(
         "launch_spec_ecs.go",
         "ocean.go",
         "ocean_ecs.go",
+        "right_sizing.go",
         "service.go",
         "tag.go",
     ],

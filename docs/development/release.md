@@ -10,7 +10,7 @@ The kops project is released on an as-needed basis. The process is as follows:
 
 ## Branches
 
-We maintain a `release-1.4` branch for kops 1.4.X, `release-1.5` for kops 1.5.X
+We maintain a `release-1.16` branch for kops 1.16.X, `release-1.17` for kops 1.17.X
 etc.
 
 `master` is where development happens.  We create new branches from master as a
@@ -29,15 +29,42 @@ on the release branches.
 We do currently maintain a `release` branch which should point to the same tag as
 the current `release-1.X` tag.
 
+## New Kubernetes versions and release branches
+
+Typically Kops alpha releases are created off the master branch and beta and stable releases are created off of release branches.
+In order to create a new release branch off of master prior to a beta release, perform the following steps:
+
+1. Create a new periodic E2E prow job for the "next" kubernetes minor version.
+   * All Kops prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
+2. Create a new presubmit E2E prow job for the new release branch.
+3. Create a new milestone in the GitHub repo.
+4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.
+5. Create the new release branch in git and push it to the GitHub repo.
 
 ## Update versions
 
 See [1.5.0-alpha4 commit](https://github.com/kubernetes/kops/commit/a60d7982e04c273139674edebcb03c9608ba26a0) for example
 
-* Edit makefile
-* If updating dns-controller: bump version in Makefile, code, manifests, and tests
+* Use the hack/set-version script to update versions:  `hack/set-version 1.20.0 1.20.1`
 
-`git commit -m "Release 1.X.Y`
+The syntax is `hack/set-version <new-release-version> <new-ci-version>`
+
+`new-release-version` is the version you are releasing.
+
+`new-ci-version` is the version you are releasing "plus one"; this is used to avoid CI jobs being out of semver order.
+
+Examples:
+
+| new-release-version  | new-ci-version
+| ---------------------| ---------------
+| 1.20.1               | 1.20.2
+| 1.21.0-alpha.1       | 1.21.0-alpha.2
+| 1.21.0-beta.1        | 1.21.0-beta.2
+
+
+* Update the golden tests: `hack/update-expected.sh`
+
+* Commit the changes (without pushing yet): `git commit -m "Release 1.X.Y"`
 
 ## Check builds OK
 
@@ -47,10 +74,13 @@ make ci
 ```
 
 
-## Push new dns-controller image if needed
+## Push new kops-controller / dns-controller images
 
 ```
-make dns-controller-push DOCKER_REGISTRY=kope
+# For versions prior to 1.18: make dns-controller-push DOCKER_REGISTRY=kope
+make dns-controller-push DOCKER_IMAGE_PREFIX=kope/  DOCKER_REGISTRY=index.docker.io
+
+make kops-controller-push DOCKER_IMAGE_PREFIX=kope/  DOCKER_REGISTRY=index.docker.io
 ```
 
 ## Upload new version
@@ -68,6 +98,9 @@ Make sure you are on the release branch `git checkout release-1.X`
 make release-tag
 git push git@github.com:kubernetes/kops
 git push --tags git@github.com:kubernetes/kops
+
+# Sync the origin alias back up
+git fetch origin
 ```
 
 ## Update release branch
@@ -75,7 +108,7 @@ git push --tags git@github.com:kubernetes/kops
 For the time being, we are also maintaining a release branch.  We push released
 versions to that.
 
-`git push origin release-1.8:release`
+`git push git@github.com:kubernetes/kops release-1.17:release`
 
 ## Pull request to master branch (for release commit)
 
@@ -107,6 +140,11 @@ relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 * Validate it
 * Add notes
 * Publish it
+
+## Release kops to homebrew
+
+* Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
+* This should be done at the same time as the release, and we will iterate on how to improve timing of this.
 
 ## Update the alpha channel and/or stable channel
 
