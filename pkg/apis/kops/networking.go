@@ -385,6 +385,7 @@ type CiliumNetworkingSpec struct {
 	// Default: none
 	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
 	// Ipam specifies the IP address allocation mode to use.
+      // Possible values are "crd" and "eni".
 	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
 	// "crd" will use CRDs for controlling IP address management.
 	// Empty value will use host-scope address management.
