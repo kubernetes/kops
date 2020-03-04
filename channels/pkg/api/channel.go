@@ -70,6 +70,13 @@ type AddonSpec struct {
 
 	// NeedsPKI determines if channels should provision a CA and a cert-manager issuer for the addon.
 	NeedsPKI bool `json:"needsPKI,omitempty"`
+
+	// ReplaceBeforeVersion is the version before which upgrades should replace instead of apply the
+	// manifest. For example, we made a change on an immutable field in version "1.1.0-kops.2" of an
+	// addon spec which cannot be successfully updated with kubectl apply. Setting ReplaceBeforeVersion
+	// to "1.1.0-kops.2" makes sure when updating from any version below "1.1.0-kops.2" the channel should
+	// update the addon using kubectl replace instead of kubectl apply.
+	ReplaceBeforeVersion *string `json:"replaceBeforeVersion,omitempty"`
 }
 
 func (a *Addons) Verify() error {
