@@ -38,10 +38,11 @@ type Channel struct {
 }
 
 type ChannelVersion struct {
-	Version      *string `json:"version,omitempty"`
-	Channel      *string `json:"channel,omitempty"`
-	Id           string  `json:"id,omitempty"`
-	ManifestHash string  `json:"manifestHash,omitempty"`
+	Version              *string `json:"version,omitempty"`
+	Channel              *string `json:"channel,omitempty"`
+	Id                   string  `json:"id,omitempty"`
+	ManifestHash         string  `json:"manifestHash,omitempty"`
+	ReplaceBeforeVersion *string `json:"replaceBeforeVersion,omitempty"`
 }
 
 func stringValue(s *string) string {
@@ -58,6 +59,9 @@ func (c *ChannelVersion) String() string {
 	}
 	if c.ManifestHash != "" {
 		s += " ManifestHash=" + c.ManifestHash
+	}
+	if stringValue(c.ReplaceBeforeVersion) != "" {
+		s += " ReplaceBeforeVersion=" + stringValue(c.ReplaceBeforeVersion)
 	}
 	return s
 }
@@ -102,40 +106,55 @@ func (c *Channel) AnnotationName() string {
 	return AnnotationPrefix + c.Name
 }
 
-func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
+// replaces returns two bool values. First bool is true if the new ChannelVersion if higher than the existing ChannelVersion.
+// Second bool is true if upgrading should use replace instead of apply.
+func (c *ChannelVersion) updates(existing *ChannelVersion) (bool, bool) {
 	klog.V(4).Infof("Checking existing channel: %v compared to new channel: %v", existing, c)
 	if existing.Version != nil {
 		if c.Version == nil {
 			klog.V(4).Infof("New Version info missing")
-			return false
+			return false, false
 		}
 		cVersion, err := semver.ParseTolerant(*c.Version)
 		if err != nil {
 			klog.Warningf("error parsing version %q; will ignore this version", *c.Version)
-			return false
+			return false, false
 		}
 		existingVersion, err := semver.ParseTolerant(*existing.Version)
 		if err != nil {
 			klog.Warningf("error parsing existing version %q", *existing.Version)
-			return true
+			return true, false
 		}
 		if cVersion.LT(existingVersion) {
 			klog.V(4).Infof("New Version is less then old")
-			return false
+			return false, false
 		} else if cVersion.GT(existingVersion) {
 			klog.V(4).Infof("New Version is greater then old")
-			return true
+			if c.ReplaceBeforeVersion != nil {
+				rbVersion, err := semver.ParseTolerant(*c.ReplaceBeforeVersion)
+				if err != nil {
+					klog.Warningf("error parsing ReplaceBeforeVersion %q", *c.ReplaceBeforeVersion)
+					return true, false
+				}
+				if existingVersion.LT(rbVersion) {
+					klog.V(4).Infof("ReplaceBeforeVersion is greater then old version")
+					return true, true
+				}
+			}
+			return true, false
 		} else {
 			// Same version; check ids
 			if c.Id == existing.Id {
 				// Same id; check manifests
 				if c.ManifestHash == existing.ManifestHash {
 					klog.V(4).Infof("Manifest Match")
-					return false
+					return false, false
+				} else {
+					klog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will update", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
 				}
-				klog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will replace", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
+				klog.V(4).Infof("Channels had same version and ids %q, %q but different ManifestHash (%q vs %q); will update", *c.Version, c.Id, c.ManifestHash, existing.ManifestHash)
 			} else {
-				klog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
+				klog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will update", *c.Version, c.Id, existing.Id)
 			}
 		}
 	} else {
@@ -144,10 +163,10 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 
 	if c.Version == nil {
 		klog.Warningf("New ChannelVersion did not have a version; can't perform real version check")
-		return false
+		return false, false
 	}
 
-	return true
+	return true, false
 }
 
 func (c *Channel) GetInstalledVersion(ctx context.Context, k8sClient kubernetes.Interface) (*ChannelVersion, error) {

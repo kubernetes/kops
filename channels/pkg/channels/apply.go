@@ -31,30 +31,57 @@ import (
 // Apply calls kubectl apply to apply the manifest.
 // We will likely in future change this to create things directly (or more likely embed this logic into kubectl itself)
 func Apply(manifest string) error {
-	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
-	data, err := vfs.Context.ReadFile(manifest)
-	if err != nil {
-		return fmt.Errorf("error reading manifest: %v", err)
-	}
-
-	tmpDir, err := ioutil.TempDir("", "channel")
-	if err != nil {
-		return fmt.Errorf("error creating temp dir: %v", err)
-	}
-
+	localManifestFile, tmpDir, err := writeLocalManifestFile(manifest)
 	defer func() {
 		if err := os.RemoveAll(tmpDir); err != nil {
 			klog.Warningf("error deleting temp dir %q: %v", tmpDir, err)
 		}
 	}()
-
-	localManifestFile := path.Join(tmpDir, "manifest.yaml")
-	if err := ioutil.WriteFile(localManifestFile, data, 0600); err != nil {
-		return fmt.Errorf("error writing temp file: %v", err)
+	if err != nil {
+		return err
 	}
 
 	_, err = execKubectl("apply", "-f", localManifestFile)
 	return err
+}
+
+// Replace calls kubectl replace to replace the manifest.
+// This can be a disruptive call because all resources will be deleted and recreated.
+// If a resource does not previously exist, returns an error.
+// TODO: change this to create things directly (or more likely embed this logic into kubectl itself)
+func Replace(manifest string) error {
+	localManifestFile, tmpDir, err := writeLocalManifestFile(manifest)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			klog.Warningf("error deleting temp dir %q: %v", tmpDir, err)
+		}
+	}()
+	if err != nil {
+		return err
+	}
+
+	_, err = execKubectl("replace", "-f", localManifestFile)
+	return err
+}
+
+func writeLocalManifestFile(manifest string) (string, string, error) {
+	// We copy the manifest to a temp file because it is likely e.g. an s3 URL, which kubectl can't read
+	data, err := vfs.Context.ReadFile(manifest)
+	if err != nil {
+		return "", "", fmt.Errorf("error reading manifest: %v", err)
+	}
+
+	tmpDir, err := ioutil.TempDir("", "channel")
+	if err != nil {
+		return "", "", fmt.Errorf("error creating temp dir: %v", err)
+	}
+
+	localManifestFile := path.Join(tmpDir, "manifest.yaml")
+	if err := ioutil.WriteFile(localManifestFile, data, 0600); err != nil {
+		return "", tmpDir, fmt.Errorf("error writing temp file: %v", err)
+	}
+
+	return localManifestFile, tmpDir, nil
 }
 
 func execKubectl(args ...string) (string, error) {

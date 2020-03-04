@@ -88,7 +88,9 @@ func (a *Addons) GetCurrent(kubernetesVersion semver.Version) (*AddonMenu, error
 		name := addon.Name
 
 		existing := menu.Addons[name]
-		if existing == nil || addon.ChannelVersion().replaces(existing.ChannelVersion()) {
+		if existing == nil {
+			menu.Addons[name] = addon
+		} else if update, _ := addon.ChannelVersion().updates(existing.ChannelVersion()); update {
 			menu.Addons[name] = addon
 		}
 	}

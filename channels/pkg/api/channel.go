@@ -62,6 +62,13 @@ type AddonSpec struct {
 	// version of the software we are packaging.  But we always want to reinstall when we
 	// switch kubernetes versions.
 	Id string `json:"id,omitempty"`
+
+	// ReplaceBeforeVersion is the version before which upgrades should replace instead of apply the
+	// manifest. For example, we made a change on an immutable field in version "1.1.0-kops.2" of an
+	// addon spec which cannot be successfully updated with kubectl apply. Setting ReplaceBeforeVersion
+	// to "1.1.0-kops.2" makes sure when updating from any version below "1.1.0-kops.2" the channel should
+	// update the addon using kubectl replace instead of kubectl apply.
+	ReplaceBeforeVersion *string `json:"replaceBeforeVersion,omitempty"`
 }
 
 func (a *Addons) Verify() error {
