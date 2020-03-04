@@ -100,6 +100,12 @@ func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud instances at this time")
 }
 
+// DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
+func (c *Cloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	klog.V(8).Info("digitalocean cloud provider DetachInstance not implemented yet")
+	return fmt.Errorf("digital ocean cloud provider does not support surging")
+}
+
 // ProviderID returns the kops api identifier for DigitalOcean cloud provider
 func (c *Cloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderDO
