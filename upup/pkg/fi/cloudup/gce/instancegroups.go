@@ -61,6 +61,18 @@ func (c *mockGCECloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember
 	return recreateCloudInstanceGroupMember(c, i)
 }
 
+// DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
+func (c *gceCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	klog.V(8).Info("gce cloud provider DetachInstance not implemented yet")
+	return fmt.Errorf("gce cloud provider does not support surging")
+}
+
+// DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
+func (c *mockGCECloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	klog.V(8).Info("gce cloud provider DetachInstance not implemented yet")
+	return fmt.Errorf("gce cloud provider does not support surging")
+}
+
 // recreateCloudInstanceGroupMember recreates the specified instances, managed by an InstanceGroupManager
 func recreateCloudInstanceGroupMember(c GCECloud, i *cloudinstances.CloudInstanceGroupMember) error {
 	mig := i.CloudInstanceGroup.Raw.(*compute.InstanceGroupManager)

@@ -579,8 +579,8 @@ type RollingUpdate struct {
 	// The value can be an absolute number (for example 5) or a percentage of desired
 	// nodes (for example 10%).
 	// The absolute number is calculated from a percentage by rounding down.
-	// A value of 0 disables rolling updates.
-	// Defaults to 1.
+	// A value of 0 for both this and MaxSurge disables rolling updates.
+	// Defaults to 1 if MaxSurge is 0, otherwise defaults to 0.
 	// Example: when this is set to 30%, the InstanceGroup can be scaled
 	// down to 70% of desired nodes immediately when the rolling update
 	// starts. Once new nodes are ready, more old nodes can be drained,
@@ -588,4 +588,18 @@ type RollingUpdate struct {
 	// during the update is at least 70% of desired nodes.
 	// +optional
 	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty"`
+	// MaxSurge is the maximum number of extra nodes that can be created
+	// during the update.
+	// The value can be an absolute number (for example 5) or a percentage of
+	// desired machines (for example 10%).
+	// The absolute number is calculated from a percentage by rounding up.
+	// A value of 0 for both this and MaxUnavailable disables rolling updates.
+	// Has no effect on instance groups with role "Master".
+	// Defaults to 0.
+	// Example: when this is set to 30%, the InstanceGroup can be scaled
+	// up immediately when the rolling update starts, such that the total
+	// number of old and new nodes do not exceed 130% of desired
+	// nodes.
+	// +optional
+	MaxSurge *intstr.IntOrString `json:"maxSurge,omitempty"`
 }

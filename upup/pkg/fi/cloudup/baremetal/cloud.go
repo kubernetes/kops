@@ -68,6 +68,13 @@ func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	return fmt.Errorf("baremetal cloud provider does not support deleting cloud groups at this time")
 }
 
+// DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
+// Baremetal may not support this.
+func (c *Cloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	klog.V(8).Infof("baremetal cloud provider DetachInstance not implemented")
+	return fmt.Errorf("baremetal cloud provider does not support surging")
+}
+
 //DeleteInstance is not implemented yet, is func needs to delete a DO instance.
 //Baremetal may not support this.
 func (c *Cloud) DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error {
