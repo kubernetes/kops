@@ -131,6 +131,12 @@ func (c *VSphereCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember
 	return fmt.Errorf("vSphere cloud provider does not support deleting cloud instances at this time.")
 }
 
+// DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
+func (c *VSphereCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	klog.V(8).Info("vSphere cloud provider DetachInstance not implemented yet")
+	return fmt.Errorf("vSphere cloud provider does not support surging")
+}
+
 // DNS returns dnsprovider interface for this vSphere cloud.
 func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
 	var provider dnsprovider.Interface

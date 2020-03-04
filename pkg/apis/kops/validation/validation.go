@@ -123,7 +123,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 	}
 
 	if spec.RollingUpdate != nil {
-		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"))...)
+		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
 
 	return allErrs
@@ -597,7 +597,7 @@ func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorL
 	return allErrs
 }
 
-func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Path) field.ErrorList {
+func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Path, onMasterInstanceGroup bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if rollingUpdate.MaxUnavailable != nil {
 		unavailable, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, 1, false)
@@ -607,6 +607,18 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 		}
 		if unavailable < 0 {
 			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxUnavailable"), rollingUpdate.MaxUnavailable, "Cannot be negative"))
+		}
+	}
+	if rollingUpdate.MaxSurge != nil {
+		surge, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxSurge, 1000, true)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxSurge"), rollingUpdate.MaxSurge,
+				fmt.Sprintf("Unable to parse: %v", err)))
+		}
+		if onMasterInstanceGroup && surge != 0 {
+			allErrs = append(allErrs, field.Forbidden(fldpath.Child("maxSurge"), "Cannot surge instance groups with role \"Master\""))
+		} else if surge < 0 {
+			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxSurge"), rollingUpdate.MaxSurge, "Cannot be negative"))
 		}
 	}
 
