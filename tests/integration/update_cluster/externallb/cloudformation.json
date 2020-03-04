@@ -34,6 +34,11 @@
             "Key": "kops.k8s.io/instancegroup",
             "Value": "master-us-test-1a",
             "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
           }
         ],
         "MetricsCollection": [
@@ -92,6 +97,11 @@
           {
             "Key": "kops.k8s.io/instancegroup",
             "Value": "nodes",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned",
             "PropagateAtLaunch": true
           }
         ],

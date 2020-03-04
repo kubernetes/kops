@@ -167,7 +167,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
-	if err = validation.collectPodFailures(v.k8sClient); err != nil {
+	if err := validation.collectPodFailures(v.k8sClient, nodeList.Items); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
@@ -194,10 +194,22 @@ func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface
 	return nil
 }
 
-func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) error {
+func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface, nodes []v1.Node) error {
 	pods, err := client.CoreV1().Pods("kube-system").List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("error listing Pods: %v", err)
+	}
+
+	masterWithoutManager := map[string]bool{}
+	nodeByAddress := map[string]string{}
+	for _, node := range nodes {
+		labels := node.GetLabels()
+		if labels != nil && labels["kubernetes.io/role"] == "master" {
+			masterWithoutManager[node.Name] = true
+		}
+		for _, nodeAddress := range node.Status.Addresses {
+			nodeByAddress[nodeAddress.Address] = node.Name
+		}
 	}
 
 	for _, pod := range pods.Items {
@@ -226,7 +238,21 @@ func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) erro
 			})
 
 		}
+
+		labels := pod.GetLabels()
+		if pod.Namespace == "kube-system" && labels != nil && labels["k8s-app"] == "kube-controller-manager" {
+			delete(masterWithoutManager, nodeByAddress[pod.Status.HostIP])
+		}
 	}
+
+	for node := range masterWithoutManager {
+		v.addError(&ValidationError{
+			Kind:    "Node",
+			Name:    node,
+			Message: fmt.Sprintf("master %q is missing kube-controller-manager pod", node),
+		})
+	}
+
 	return nil
 }
 

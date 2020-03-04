@@ -11,7 +11,7 @@ Set a cluster field value.
 
  This command changes the desired cluster configuration in the registry.
 
- kops set does not update the cloud resources, to apply the changes use "kops update cluster".
+ kops set does not update the cloud resources; to apply the changes use "kops update cluster".
 
 ```
 kops set cluster [flags]

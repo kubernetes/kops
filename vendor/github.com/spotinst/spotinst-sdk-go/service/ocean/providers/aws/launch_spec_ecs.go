@@ -23,6 +23,7 @@ type ECSLaunchSpec struct {
 	IAMInstanceProfile *ECSIAMInstanceProfile `json:"iamInstanceProfile,omitempty"`
 	Attributes         []*ECSAttribute        `json:"attributes,omitempty"`
 	AutoScale          *ECSAutoScale          `json:"autoScale,omitempty"`
+	Tags               []*Tag                 `json:"tags,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -335,6 +336,13 @@ func (o *ECSLaunchSpec) SetAttributes(v []*ECSAttribute) *ECSLaunchSpec {
 func (o *ECSLaunchSpec) SetAutoScale(v *ECSAutoScale) *ECSLaunchSpec {
 	if o.AutoScale = v; o.AutoScale == nil {
 		o.nullFields = append(o.nullFields, "AutoScale")
+	}
+	return o
+}
+
+func (o *ECSLaunchSpec) SetTags(v []*Tag) *ECSLaunchSpec {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
 	}
 	return o
 }

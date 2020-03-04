@@ -651,7 +651,7 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 				//See what version the ASG is set to use
 				mixedVersion := aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
 				//Correctly Handle Default and Latest Versions
-				if mixedVersion == "$Default" || mixedVersion == "$Latest" {
+				if mixedVersion == "" || mixedVersion == "$Default" || mixedVersion == "$Latest" {
 					request := &ec2.DescribeLaunchTemplatesInput{
 						LaunchTemplateNames: []*string{&name},
 					}
@@ -660,7 +660,7 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 						return "", fmt.Errorf("error describing launch templates: %v", err)
 					}
 					launchTemplate := dltResponse.LaunchTemplates[0]
-					if mixedVersion == "$Default" {
+					if mixedVersion == "" || mixedVersion == "$Default" {
 						version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
 					} else {
 						version = strconv.FormatInt(*launchTemplate.LatestVersionNumber, 10)

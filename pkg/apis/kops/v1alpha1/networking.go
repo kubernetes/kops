@@ -118,7 +118,7 @@ type CalicoNetworkingSpec struct {
 	// MajorVersion is the version of Calico to use
 	MajorVersion string `json:"majorVersion,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
-	// Default: Legacy (other options: NFT)
+	// Default: Auto (other options: Legacy, NFT)
 	IptablesBackend string `json:"iptablesBackend,omitempty"`
 	// IPIPMode is mode for CALICO_IPV4POOL_IPIP
 	IPIPMode string `json:"ipipMode,omitempty"`
@@ -146,7 +146,7 @@ type CanalNetworkingSpec struct {
 	// default ACCEPT traffic rules to the iptables FORWARD chain
 	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
-	// Default: Legacy (other options: NFT)
+	// Default: Auto (other options: Legacy, NFT)
 	IptablesBackend string `json:"iptablesBackend,omitempty"`
 	// LogSeveritySys the severity to set for logs which are sent to syslog
 	// Default: INFO (other options: DEBUG, WARNING, ERROR, CRITICAL, NONE)
@@ -189,6 +189,8 @@ type RomanaNetworkingSpec struct {
 type AmazonVPCNetworkingSpec struct {
 	// The container image name to use
 	ImageName string `json:"imageName,omitempty"`
+	// Env is a list of environment variables to set in the container.
+	Env []EnvVar `json:"env,omitempty"`
 }
 
 type CiliumNetworkingSpec struct {

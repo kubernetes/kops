@@ -21,7 +21,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: <1.12.0
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: c74ca65f461c764fc9682c6d9ec171b241bec335
+    manifestHash: 555f952a8b955ce7a5dd0bcd06a5be9e72bd2895
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -29,7 +29,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 1af655a2947a56b55f67bff73a06cfe9e7b12c35
+    manifestHash: 15ade04df128488a534141bd5b8593d078f4953f
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -89,16 +89,16 @@ spec:
   - id: k8s-1.7
     kubernetesVersion: <1.12.0
     manifest: networking.cilium.io/k8s-1.7.yaml
-    manifestHash: 48b2e968039622b7dd5941497d0cda203334b508
+    manifestHash: e6670d455bcd03c5b85ccb6ff6bbe6e068aa7674
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.6.6-kops.0
+    version: 1.7.0-kops.1
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.cilium.io/k8s-1.12.yaml
-    manifestHash: f52e9593af72a8caa8b8230f120594344f8418f1
+    manifestHash: 07613aadf69ab9bc6fa2174879254738152efd49
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.6.6-kops.0
+    version: 1.7.0-kops.1

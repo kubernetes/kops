@@ -13,5 +13,6 @@ go_library(
     deps = [
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/credentials:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/log:go_default_library",
+        "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent:go_default_library",
     ],
 )

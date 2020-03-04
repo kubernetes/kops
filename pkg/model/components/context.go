@@ -139,11 +139,6 @@ func Image(component string, architecture string, clusterSpec *kops.ClusterSpec,
 	if assetsBuilder == nil {
 		return "", fmt.Errorf("unable to parse assets as assetBuilder is not defined")
 	}
-	// TODO remove this, as it is an addon now
-	if component == "kube-dns" {
-		// TODO: Once we are shipping different versions, start to use them
-		return "k8s.gcr.io/kubedns-amd64:1.3", nil
-	}
 
 	kubernetesVersion, err := k8sversion.Parse(clusterSpec.KubernetesVersion)
 	if err != nil {

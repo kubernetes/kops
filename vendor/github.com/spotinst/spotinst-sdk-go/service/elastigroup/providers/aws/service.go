@@ -19,6 +19,7 @@ type Service interface {
 	Delete(context.Context, *DeleteGroupInput) (*DeleteGroupOutput, error)
 	Status(context.Context, *StatusGroupInput) (*StatusGroupOutput, error)
 	DeploymentStatus(context.Context, *DeploymentStatusInput) (*RollGroupOutput, error)
+	DeploymentStatusECS(context.Context, *DeploymentStatusInput) (*RollGroupOutput, error)
 	StopDeployment(context.Context, *StopDeploymentInput) (*StopDeploymentOutput, error)
 	Detach(context.Context, *DetachGroupInput) (*DetachGroupOutput, error)
 	Roll(context.Context, *RollGroupInput) (*RollGroupOutput, error)

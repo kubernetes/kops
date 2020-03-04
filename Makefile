@@ -782,7 +782,7 @@ bazel-upload: bazel-version-dist # Upload kops to S3
 # It uploads a build to a staging directory, which in theory we can publish as a release
 .PHONY: prow-postsubmit
 prow-postsubmit: bazel-version-dist
-	${UPLOAD_CMD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${KOPS_RELEASE_VERSION}-${GITSHA}/
+	${UPLOAD_CMD} ${BAZELUPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/${VERSION}/
 
 #-----------------------------------------------------------
 # static html documentation
