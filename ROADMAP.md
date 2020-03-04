@@ -32,18 +32,15 @@ Oct 21: kops 1.W+1.0
 
 ## UPCOMING RELEASES
 
-### kops 1.11
+### kops 1.17
 
-* Full support for Kubernetes 1.11
-* Alpha support for bundles (etcd-manager is the test case)
-* etcd3 will be the default for newly created clusters. 
-  - Existing clusters will continue to run etcd2 but will be prompted to upgrade to 3. The upgrade will become mandatory in 1.12.
-* Default to Debian stretch images which increase support for newer instance types
-* Improvements to the release process that will make it easier for community members to cut releases.
+* Full support for Kubernetes 1.17
 
-### kops 1.12
-* Full support for Kubernetes 1.12
-* Improvements to etcd3 support
+### kops 1.18
+
+* Full support for Kubernetes 1.18
+* Support for Containerd as an alternate container runtime
+* Surging and greater parallelism in rolling updates
 
 ## UPCOMING FEATURES
 NB: These are features that are in process and may be introduced behind flags or in alpha capacity but are not explicitly targeting specific releases. 
@@ -51,4 +48,4 @@ NB: These are features that are in process and may be introduced behind flags or
 * Documentation revamp that is closer to k8s.io: Stories and walkthroughs of common scenarios, restructure and update information
 * Additional cloud provider support: spotinst, aliyun, azure...?
 * Revisit recommended base cluster configurations to get them modernized. Update recommendations and defaults for instances, disks, etc, 
-
+* Improved node bootstrapping
