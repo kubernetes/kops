@@ -89,16 +89,16 @@ Kubernetes version.
 
 #### Compatibility Matrix
 
-| kops version  | k8s 1.11.x | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x | k8s 1.15.x |
+| kops version  | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x | k8s 1.15.x | k8s 1.16.x |
 |---------------|------------|------------|------------|------------|------------|
-| 1.15.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
-| 1.14.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
-| 1.13.x        | ✔          | ✔          | ✔          | ⚫         | ⚫         |
-| ~~1.12.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
-| ~~1.11.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
+| 1.16.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.15.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
+| 1.14.x        | ✔          | ✔          | ✔          | ⚫         | ⚫         |
+| ~~1.13.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
+| ~~1.12.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
-that higher versions of Kubernetes are not _officially_ supported by kops. Releases who are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.
+that higher versions of Kubernetes are not _officially_ supported by kops. Releases which are ~~crossed out~~ _should_ work but we suggest should be upgraded soon.
 
 ### kops Release Schedule
 
