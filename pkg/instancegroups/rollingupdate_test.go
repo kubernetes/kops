@@ -1091,10 +1091,10 @@ func (t *alreadyDetachedTest) Validate() (*validation.ValidationCluster, error) 
 	case 1, 2, 3:
 		assert.Equal(t.t, t.numValidations, len(t.detached), "numnber of detached instances")
 	case 4:
-		assert.Equal(t.t, 1, t.terminationRequestsLeft, "terminations left")
 		t.mutex.Unlock()
-		time.Sleep(2 * time.Millisecond) // NodeInterval plus some
+		time.Sleep(20 * time.Millisecond) // NodeInterval plus some
 		t.mutex.Lock()
+		assert.Equal(t.t, 1, t.terminationRequestsLeft, "terminations left")
 	case 5:
 		assert.Equal(t.t, 0, t.terminationRequestsLeft, "terminations left")
 	case 6:
