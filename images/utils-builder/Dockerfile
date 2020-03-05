@@ -22,7 +22,7 @@ deb http://security.debian.org jessie/updates main\n \
 deb-src http://security.debian.org jessie/updates main\n \
 deb-src http://ftp.us.debian.org/debian/ jessie main" > /etc/apt/sources.list
 
-RUN apt-get update && apt-get --no-install-recommends install --yes dpkg-dev bash \
+RUN apt-get update && apt-get --no-install-recommends install --yes apt-utils ca-certificates apt-transport-https dpkg-dev bash \
   && apt-get build-dep --yes socat conntrack \
   && apt-get clean
 
