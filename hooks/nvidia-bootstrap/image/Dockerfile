@@ -16,7 +16,7 @@ FROM debian:jessie
 # ^ Cannot be Alpine since it does not support systemctl
 # ^ Systemctl is used to restart kubelet upon successful run of run.sh
 
-RUN apt-get update && apt-get -yq install curl jq
+RUN apt-get update && apt-get --no-install-recommends -yq install curl jq
 
 ADD run.sh /run.sh
 
