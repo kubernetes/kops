@@ -582,7 +582,7 @@ type RollingUpdate struct {
 	// The absolute number is calculated from a percentage by rounding up.
 	// A value of 0 for both this and MaxUnavailable disables rolling updates.
 	// Has no effect on instance groups with role "Master".
-	// Defaults to 0.
+	// Defaults to 1 on AWS, 0 otherwise.
 	// Example: when this is set to 30%, the InstanceGroup can be scaled
 	// up immediately when the rolling update starts, such that the total
 	// number of old and new nodes do not exceed 130% of desired
