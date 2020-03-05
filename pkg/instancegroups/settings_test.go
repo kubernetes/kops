@@ -204,3 +204,15 @@ func TestMaxSurge(t *testing.T) {
 		})
 	}
 }
+
+func TestAWSDefault(t *testing.T) {
+	resolved := resolveSettings(&kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: "aws",
+		},
+	}, &kops.InstanceGroup{}, 1000)
+	assert.Equal(t, intstr.Int, resolved.MaxSurge.Type)
+	assert.Equal(t, int32(1), resolved.MaxSurge.IntVal)
+	assert.Equal(t, intstr.Int, resolved.MaxUnavailable.Type)
+	assert.Equal(t, int32(0), resolved.MaxUnavailable.IntVal)
+}
