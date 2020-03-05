@@ -576,6 +576,9 @@ func (c *Cluster) FillDefaults() error {
 	} else if c.Spec.Networking.AmazonVPC != nil {
 		// OK
 	} else if c.Spec.Networking.Cilium != nil {
+		if c.Spec.Networking.Cilium.Version == "" {
+			c.Spec.Networking.Cilium.Version = CiliumDefaultVersion
+		}
 		// OK
 	} else if c.Spec.Networking.LyftVPC != nil {
 		// OK
