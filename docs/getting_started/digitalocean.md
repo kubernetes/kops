@@ -55,12 +55,13 @@ kops delete cluster my-cluster.example.com --yes
 In the below example, `dev5.k8s.local` should be replaced with any cluster name that ends with `.k8s.local` such that a gossip based cluster is created.
 Ensure the master-count is odd-numbered. A load balancer is created dynamically front-facing the master instances.
 
+```bash
 # coreos (the default) + flannel overlay cluster in tor1 with 3 master setup and a public load balancer.
 kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cilium --api-loadbalancer-type=public --master-count=3 --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub --yes
 
 # to delete a cluster - this will also delete the load balancer associated with the cluster.
 kops delete cluster dev5.k8s.local --yes
-
+```
 
 ## Features Still in Development
 
