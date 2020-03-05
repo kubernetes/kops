@@ -889,7 +889,7 @@ spec:
 #### containerProxy
 
 The container proxy is designed to acts as a [pull through cache](https://docs.docker.com/registry/recipes/mirror/) for docker container assets.
-Basically, what it does is it remaps the Kubernetes image URL to point to you cache so that the docker daemon will pull the image from that location.
+Basically, what it does is it remaps the Kubernetes image URL to point to your cache so that the docker daemon will pull the image from that location.
 If, for example, the containerProxy is set to `proxy.example.com`, the image `k8s.gcr.io/kube-apiserver` will be pulled from `proxy.example.com/kube-apiserver` instead.
 Note that the proxy you use has to support this feature for private registries.
 
