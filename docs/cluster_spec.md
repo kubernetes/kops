@@ -246,6 +246,24 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
+#### dynamic audit configuration
+
+Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#dynamic-backend
+
+```yaml
+spec:
+  kubeAPIServer:
+    auditDynamicConfiguration: true
+```
+
+By enabling this feature you are allowing for auditsinks to be registered with the API server.  For information on audit sinks please read [Audit Sink](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#auditsink-v1alpha1-auditregistration).  This feature is only supported in kubernetes versions greater than 1.13.  Currently, this feature is alpha and requires enabling the feature gate and a runtime config.
+
+**Note** For kubernetes versions greater than 1.13, this is an alpha feature that requires the API auditregistration.k8s.io/v1alpha1 to be enabled as a runtime-config option, and the feature gate DynamicAuditing to be also enabled.  The options --feature-gates=DynamicAuditing=true and --runtime-config=auditregistration.k8s.io/v1alpha1=true must be enabled on the API server in addition to this flag.  See the sections for how to enable feature gates [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#feature-gates).  See the section on how to enable alphas APIs in the runtime config [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#runtimeconfig).  
+Also, an audit policy should be provided in the file assets section.  If the flag is omitted, no events are logged.
+You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
+
+Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
+
 #### bootstrap tokens
 
 Read more about this here: https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
