@@ -18,8 +18,8 @@ FROM k8s.gcr.io/debian-base-amd64:0.3
 #  curl (to download golang)
 #  git (for getting the current head)
 #  gcc make (for compilation)
-RUN apt-get update && apt-get install --yes --reinstall lsb-base \
-  && apt-get install --yes curl git gcc make bash \
+RUN apt-get update && apt-get --no-install-recommends install --yes --reinstall lsb-base \
+  && apt-get --no-install-recommends install --yes curl git gcc make bash \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
