@@ -3,6 +3,7 @@ Some services, such as istio and Envoy's Secrect Discovery Service (SDS), take a
 
 1. In order to enable this feaute for kubernetes 1.12+, add the following config to your cluster spec:
 
+```
     kubeAPIServer:
         apiAudiences:
         - api
@@ -11,4 +12,4 @@ Some services, such as istio and Envoy's Secrect Discovery Service (SDS), take a
         serviceAccountKeyFile:
         - /srv/kubernetes/server.key
         serviceAccountSigningKeyFile: /srv/kubernetes/server.key
-
+```
