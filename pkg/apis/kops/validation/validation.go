@@ -415,13 +415,10 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	switch v.Backend {
-	case "":
+	if v.Backend == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("backend"), "Flannel backend must be specified"))
-	case "udp", "vxlan":
-		// OK
-	default:
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("backend"), v.Backend, []string{"udp", "vxlan"}))
+	} else {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("backend"), &v.Backend, []string{"udp", "vxlan"})...)
 	}
 
 	return allErrs
@@ -460,12 +457,33 @@ func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec,
 		allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))
 	}
 
-	if v.Ipam == kops.CiliumIpamEni {
-		if c.CloudProvider != string(kops.CloudProviderAWS) {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
-		}
-		if !v.DisableMasquerade {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+	if v.EnablePolicy != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("enablePolicy"), &v.EnablePolicy, []string{"default", "always", "never"})...)
+	}
+
+	if v.Tunnel != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("tunnel"), &v.Tunnel, []string{"vxlan", "geneve", "disabled"})...)
+	}
+
+	if v.MonitorAggregation != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("monitorAggregation"), &v.MonitorAggregation, []string{"low", "medium", "maximum"})...)
+	}
+
+	if v.ContainerRuntimeLabels != "" {
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("containerRuntimeLabels"), &v.ContainerRuntimeLabels, []string{"none", "containerd", "crio", "docker", "auto"})...)
+	}
+
+	if v.Ipam != "" {
+		// "azure" not supported by kops
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni"})...)
+
+		if v.Ipam == kops.CiliumIpamEni {
+			if c.CloudProvider != string(kops.CloudProviderAWS) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
+			}
+			if !v.DisableMasquerade {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+			}
 		}
 	}
 
@@ -485,14 +503,11 @@ func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPa
 func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) field.ErrorList {
 	errs := field.ErrorList{}
 
-	valid := sets.NewString()
+	var valid []string
 	for _, r := range kops.AllInstanceGroupRoles {
-		k := strings.ToLower(string(r))
-		valid.Insert(k)
+		valid = append(valid, strings.ToLower(string(r)))
 	}
-	if !valid.Has(role) {
-		errs = append(errs, field.NotSupported(fldPath, role, valid.List()))
-	}
+	errs = append(errs, IsValidValue(fldPath, &role, valid)...)
 
 	statements, err := iam.ParseStatements(policy)
 	if err != nil {
@@ -502,15 +517,11 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 	// Trivial validation of policy, mostly to make sure it isn't some other random object
 	for i, statement := range statements {
 		fldEffect := fldPath.Key(role).Index(i).Child("Effect")
-		switch statement.Effect {
-		case "Allow", "Deny":
-			//valid
-
-		case "":
+		if statement.Effect == "" {
 			errs = append(errs, field.Required(fldEffect, "Effect must be specified for IAM policy"))
-
-		default:
-			errs = append(errs, field.NotSupported(fldEffect, statement.Effect, []string{"Allow", "Deny"}))
+		} else {
+			value := string(statement.Effect)
+			errs = append(errs, IsValidValue(fldEffect, &value, []string{"Allow", "Deny"})...)
 		}
 	}
 
@@ -520,17 +531,9 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
 	errs := field.ErrorList{}
 
-	switch spec.Provider {
-	case kops.EtcdProviderTypeManager:
-		// ok
-	case kops.EtcdProviderTypeLegacy:
-		// ok
-
-	case "":
-		// blank means that the user accepts the recommendation
-
-	default:
-		errs = append(errs, field.NotSupported(fieldPath.Child("provider"), spec.Provider, kops.SupportedEtcdProviderTypes))
+	if spec.Provider != "" {
+		value := string(spec.Provider)
+		errs = append(errs, IsValidValue(fieldPath.Child("provider"), &value, kops.SupportedEtcdProviderTypes)...)
 	}
 
 	return errs

@@ -19,12 +19,10 @@ package validation
 import (
 	"strings"
 
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/slice"
-
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
@@ -53,9 +51,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 	}
 
 	if g.Spec.Tenancy != "" {
-		if g.Spec.Tenancy != "default" && g.Spec.Tenancy != "dedicated" && g.Spec.Tenancy != "host" {
-			allErrs = append(allErrs, field.NotSupported(field.NewPath("spec", "tenancy"), g.Spec.Tenancy, []string{"default", "dedicated", "host"}))
-		}
+		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "tenancy"), &g.Spec.Tenancy, []string{"default", "dedicated", "host"})...)
 	}
 
 	if g.Spec.MaxSize != nil && g.Spec.MinSize != nil {
@@ -154,9 +150,7 @@ func validatedMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPo
 		}
 	}
 
-	if spec.SpotAllocationStrategy != nil && !slice.Contains(kops.SpotAllocationStrategies, fi.StringValue(spec.SpotAllocationStrategy)) {
-		errs = append(errs, field.NotSupported(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, kops.SpotAllocationStrategies))
-	}
+	errs = append(errs, IsValidValue(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, kops.SpotAllocationStrategies)...)
 
 	return errs
 }
@@ -188,9 +182,7 @@ func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) field
 	if spec.Path == "" {
 		allErrs = append(allErrs, field.Required(path.Child("path"), "mount path required"))
 	}
-	if !slice.Contains(kops.SupportedFilesystems, spec.Filesystem) {
-		allErrs = append(allErrs, field.NotSupported(path.Child("filesystem"), spec.Filesystem, kops.SupportedFilesystems))
-	}
+	allErrs = append(allErrs, IsValidValue(path.Child("filesystem"), &spec.Filesystem, kops.SupportedFilesystems)...)
 
 	return allErrs
 }
@@ -241,9 +233,7 @@ func validateExtraUserData(userData *kops.UserData) field.ErrorList {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("content"), "field must be set"))
 	}
 
-	if !slice.Contains(validUserDataTypes, userData.Type) {
-		allErrs = append(allErrs, field.NotSupported(fieldPath.Child("type"), userData.Type, validUserDataTypes))
-	}
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("type"), &userData.Type, validUserDataTypes)...)
 
 	return allErrs
 }
