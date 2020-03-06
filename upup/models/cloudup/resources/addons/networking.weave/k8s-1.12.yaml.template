@@ -168,7 +168,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.0'
+          image: 'weaveworks/weave-kube:2.6.1'
           ports:
             - name: metrics
               containerPort: 6782
@@ -203,6 +203,7 @@ spec:
               mountPath: /lib/modules
             - name: xtables-lock
               mountPath: /run/xtables.lock
+              readOnly: false
         - name: weave-npc
           args: []
           env:
@@ -211,7 +212,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.6.0'
+          image: 'weaveworks/weave-npc:2.6.1'
           ports:
             - name: metrics
               containerPort: 6781
@@ -229,7 +230,9 @@ spec:
           volumeMounts:
             - name: xtables-lock
               mountPath: /run/xtables.lock
+              readOnly: false
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       hostPID: true
       restartPolicy: Always
       securityContext:
