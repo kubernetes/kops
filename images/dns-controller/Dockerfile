@@ -15,7 +15,7 @@
 FROM k8s.gcr.io/debian-base-amd64:0.3
 
 # ca-certificates: Needed to talk to EC2 API
-RUN apt-get update && apt-get --no-install-recommends install --yes ca-certificates \
+RUN apt-get update && apt-get --no-install-recommends install --yes apt-utils ca-certificates apt-transport-https \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

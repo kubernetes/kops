@@ -19,7 +19,7 @@ FROM k8s.gcr.io/debian-base-amd64:0.3
 #  git (for getting the current head)
 #  gcc make (for compilation)
 RUN apt-get update && apt-get --no-install-recommends install --yes --reinstall lsb-base \
-  && apt-get --no-install-recommends install --yes curl git gcc make bash \
+  && apt-get --no-install-recommends install --yes curl git gcc make bash apt-utils ca-certificates apt-transport-https \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

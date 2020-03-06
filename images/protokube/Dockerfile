@@ -17,7 +17,7 @@ FROM k8s.gcr.io/debian-base-amd64:0.3
 # ca-certificates: Needed to talk to EC2 API
 # e2fsprogs: Needed to mount / format ext4 filesytems
 RUN apt-get update && apt-get --no-install-recommends install --yes \
-  bash ca-certificates e2fsprogs systemd \
+  bash apt-utils ca-certificates apt-transport-https e2fsprogs systemd \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
