@@ -80,6 +80,7 @@ nav:
     - kube-up to kops upgrade: "upgrade_from_kubeup.md"
     - Label management: "labels.md"
     - Secret management: "secrets.md"
+    - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
     - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Running kops in a CI environment: "continuous_integration.md"
