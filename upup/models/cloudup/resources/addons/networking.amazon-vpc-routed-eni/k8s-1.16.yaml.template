@@ -116,6 +116,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        {{- range .Networking.AmazonVPC.Env }}
+        - name: {{ .Name }}
+          value: "{{ .Value }}"
+        {{- end }}
         resources:
           requests:
             cpu: 10m
