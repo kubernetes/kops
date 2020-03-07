@@ -1,3 +1,6 @@
+# Pulled and modified from https://github.com/cloudnativelabs/kube-router/blob/v0.3.1/daemonset/generic-kuberouter-all-features.yaml
+
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,13 +12,19 @@ metadata:
 data:
   cni-conf.json: |
     {
-      "name":"kubernetes",
-      "type":"bridge",
-      "bridge":"kube-bridge",
-      "isDefaultGateway":true,
-      "ipam": {
-        "type":"host-local"
-      }
+      "cniVersion":"0.3.0",
+      "name":"mynet",
+      "plugins":[
+        {
+          "name":"kubernetes",
+          "type":"bridge",
+          "bridge":"kube-bridge",
+          "isDefaultGateway":true,
+          "ipam":{
+              "type":"host-local"
+            }
+        }
+      ]
     }
 ---
 apiVersion: apps/v1
@@ -53,6 +62,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: KUBE_ROUTER_CNI_CONF_FILE
+          value: /etc/cni/net.d/10-kuberouter.conflist
         livenessProbe:
           httpGet:
             path: /healthz
@@ -81,10 +92,13 @@ spec:
         - /bin/sh
         - -c
         - set -e -x;
-          if [ ! -f /etc/cni/net.d/10-kuberouter.conf ]; then
+          if [ ! -f /etc/cni/net.d/10-kuberouter.conflist ]; then
+            if [ -f /etc/cni/net.d/*.conf ]; then
+              rm -f /etc/cni/net.d/*.conf;
+            fi;
             TMP=/etc/cni/net.d/.tmp-kuberouter-cfg;
             cp /etc/kube-router/cni-conf.json ${TMP};
-            mv ${TMP} /etc/cni/net.d/10-kuberouter.conf;
+            mv ${TMP} /etc/cni/net.d/10-kuberouter.conflist;
           fi
         volumeMounts:
         - name: cni-conf-dir

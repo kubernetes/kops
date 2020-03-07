@@ -984,7 +984,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	if b.cluster.Spec.Networking.Kuberouter != nil {
 		key := "networking.kuberouter"
-		version := "0.3.1-kops.2"
+		version := "0.3.1-kops.3"
 
 		{
 			location := key + "/k8s-1.6.yaml"
