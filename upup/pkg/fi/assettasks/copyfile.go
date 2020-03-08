@@ -173,15 +173,15 @@ func transferFile(c *fi.Context, source string, target string, sha string) error
 		return fmt.Errorf("error building path %q: %v", shaTarget, err)
 	}
 
-	in := bytes.NewReader(data)
-	dataHash, err := hashing.HashAlgorithmSHA1.Hash(in)
-	if err != nil {
-		return fmt.Errorf("unable to parse sha from file %q downloaded: %v", sha, err)
-	}
-
 	shaHash, err := hashing.FromString(strings.TrimSpace(sha))
 	if err != nil {
-		return fmt.Errorf("unable to hash sha: %q, %v", sha, err)
+		return fmt.Errorf("unable to parse sha: %q, %v", sha, err)
+	}
+
+	in := bytes.NewReader(data)
+	dataHash, err := shaHash.Algorithm.Hash(in)
+	if err != nil {
+		return fmt.Errorf("unable to hash file %q downloaded: %v", source, err)
 	}
 
 	if !shaHash.Equal(dataHash) {
