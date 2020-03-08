@@ -1917,6 +1917,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(RollingUpdate)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.UseLaunchTemplate != nil {
+		in, out := &in.UseLaunchTemplate, &out.UseLaunchTemplate
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

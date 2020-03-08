@@ -717,6 +717,10 @@ spec:
               description: Describes the tenancy of the instance group. Can be either
                 default or dedicated. Currently only applies to AWS.
               type: string
+            useLaunchTemplate:
+              description: UseLaunchTemplate configures the autoscaling group to use
+                a launch template (AWS only)
+              type: boolean
             volumeMounts:
               description: VolumeMounts a collection of volume mounts
               items:

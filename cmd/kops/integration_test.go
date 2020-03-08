@@ -253,6 +253,12 @@ func TestContainerdCloudformation(t *testing.T) {
 	runTestCloudformation(t, "containerd.example.com", "containerd-cloudformation", "v1alpha2", false, nil, true)
 }
 
+// TestLaunchTemplatesASG tests ASGs using launch templates instead of launch configurations
+func TestLaunchTemplatesASG(t *testing.T) {
+	runTestAWS(t, "launchtemplates.example.com", "launch_templates", "v1alpha2", false, 3, true, true, nil, true, false)
+	runTestCloudformation(t, "launchtemplates.example.com", "launch_templates", "v1alpha2", false, nil, true)
+}
+
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase, lifecycleOverrides []string, sshKey bool) {
 	var stdout bytes.Buffer
 

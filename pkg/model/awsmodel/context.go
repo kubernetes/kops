@@ -38,5 +38,9 @@ func UseLaunchTemplate(ig *kops.InstanceGroup) bool {
 		return true
 	}
 
+	if ig.Spec.UseLaunchTemplate != nil && *ig.Spec.UseLaunchTemplate {
+		return true
+	}
+
 	return UseMixedInstancePolicies(ig)
 }

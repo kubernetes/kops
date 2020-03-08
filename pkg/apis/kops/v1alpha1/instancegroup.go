@@ -148,6 +148,8 @@ type InstanceGroupSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the rolling-update behavior
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	// UseLaunchTemplate configures the autoscaling group to use a launch template (AWS only)
+	UseLaunchTemplate *bool `json:"useLaunchTemplate,omitempty"`
 }
 
 const (
