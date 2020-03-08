@@ -1,8 +1,8 @@
-# Canal Version v3.7.4
+# Canal Version v3.7.5
 # https://docs.projectcalico.org/v3.7/release-notes/#v374
 # This manifest includes the following component versions:
-#   calico/node:v3.7.4
-#   calico/cni:v3.7.4
+#   calico/node:v3.7.5
+#   calico/cni:v3.7.5
 #   coreos/flannel:v0.11.0
 
 # Source: calico/templates/calico-config.yaml
@@ -411,7 +411,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.7.4
+          image: calico/cni:v3.7.5
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -447,7 +447,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.7.4
+          image: calico/node:v3.7.5
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
