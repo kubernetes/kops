@@ -1,3 +1,5 @@
+# Borrowed from https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/metadata-proxy
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -11,18 +13,18 @@ metadata:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: metadata-proxy-v0.1
+  name: metadata-proxy-v0.12
   namespace: kube-system
   labels:
     k8s-app: metadata-proxy
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
-    version: v0.1
+    version: v0.12
 spec:
   selector:
     matchLabels:
       k8s-app: metadata-proxy
-      version: v0.1
+      version: v0.12
   updateStrategy:
     type: RollingUpdate
   template:
@@ -30,7 +32,7 @@ spec:
       labels:
         k8s-app: metadata-proxy
         kubernetes.io/cluster-service: "true"
-        version: v0.1
+        version: v0.12
     spec:
       priorityClassName: system-node-critical
       serviceAccountName: metadata-proxy
@@ -41,6 +43,22 @@ spec:
         effect: "NoExecute"
       - operator: "Exists"
         effect: "NoSchedule"
+      hostNetwork: true
+      initContainers:
+      - name: update-ipdtables
+        securityContext:
+          privileged: true
+        image: gcr.io/google_containers/k8s-custom-iptables:1.0
+        imagePullPolicy: Always
+        command: [ "/bin/sh", "-c", "/sbin/iptables -t nat -I PREROUTING -p tcp --dport 80 -d 169.254.169.254 -j DNAT --to-destination 127.0.0.1:988" ]
+        volumeMounts:
+        - name: host
+          mountPath: /host
+      volumes:
+      - name: host
+        hostPath:
+          path: /
+          type: Directory
       containers:
       - name: metadata-proxy
         image: k8s.gcr.io/metadata-proxy:v0.1.12

@@ -163,6 +163,10 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	}
 
 	ig.AddInstanceGroupNodeLabel()
+	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		fmt.Println("detected a GCE cluster; labeling nodes to receive metadata-proxy.")
+		ig.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
+	}
 
 	if options.DryRun {
 

@@ -520,24 +520,6 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
-	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
-		key := "metadata-concealment.addons.k8s.io"
-		version := "0.1"
-
-		{
-			id := "v0.1"
-			location := key + "/" + id + ".yaml"
-
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:     fi.String(key),
-				Version:  fi.String(version),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.String(location),
-				Id:       id,
-			})
-		}
-	}
-
 	if featureflag.Spotinst.Enabled() {
 		key := "spotinst-kubernetes-cluster-controller.addons.k8s.io"
 
@@ -567,6 +549,26 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.14.0",
 				Id:                id,
+			})
+		}
+	}
+
+	// The metadata-proxy daemonset conceals node metadata endpoints in GCE.
+	// It will land on nodes labeled cloud.google.com/metadata-proxy-ready=true
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
+		key := "metadata-proxy.addons.k8s.io"
+		version := "0.1.12"
+
+		{
+			id := "v0.1.12"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
 			})
 		}
 	}
