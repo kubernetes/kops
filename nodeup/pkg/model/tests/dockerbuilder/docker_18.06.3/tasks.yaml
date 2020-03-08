@@ -269,7 +269,7 @@ path: /usr/share/doc/docker/apache.txt
 type: file
 ---
 Name: docker-ce
-hash: c06eda4e934cce6a7941a6af6602d4315b500a22
+hash: 6e9da7303cfa7ef7d4d8035bdc205229dd84e572f29957a9fb36e1351fe88a24
 preventStart: true
 source: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb
 version: 18.06.3~ce~3-0~ubuntu
