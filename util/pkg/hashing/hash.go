@@ -138,30 +138,6 @@ func (ha HashAlgorithm) HashFile(p string) (*Hash, error) {
 	return ha.Hash(f)
 }
 
-func HashesForResource(r io.Reader, hashAlgorithms []HashAlgorithm) ([]*Hash, error) {
-	var hashers []hash.Hash
-	var writers []io.Writer
-	for _, hashAlgorithm := range hashAlgorithms {
-		hasher := hashAlgorithm.NewHasher()
-		hashers = append(hashers, hasher)
-		writers = append(writers, hasher)
-	}
-
-	w := io.MultiWriter(writers...)
-
-	_, err := copyToHasher(w, r)
-	if err != nil {
-		return nil, fmt.Errorf("error while hashing resource: %v", err)
-	}
-
-	var hashes []*Hash
-	for i, hasher := range hashers {
-		hashes = append(hashes, &Hash{Algorithm: hashAlgorithms[i], HashValue: hasher.Sum(nil)})
-	}
-
-	return hashes, nil
-}
-
 func copyToHasher(dest io.Writer, src io.Reader) (int64, error) {
 	n, err := io.Copy(dest, src)
 	if err != nil {
