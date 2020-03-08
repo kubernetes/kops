@@ -6,5 +6,5 @@ spec:
   - version: 0.1.12
     selector:
       k8s-addon: metadata-proxy.addons.k8s.io
-    manifest: v0.1.yaml
+    manifest: v0.12.yaml
 
