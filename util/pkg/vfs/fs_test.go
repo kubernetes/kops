@@ -21,7 +21,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"reflect"
 	"testing"
 )
 
@@ -42,7 +41,7 @@ func TestCreateFile(t *testing.T) {
 		// Create file
 		err := fspath.CreateFile(bytes.NewReader(test.data), nil)
 		if err != nil {
-			t.Errorf("Error writing file %s, error: %v", test.path, err)
+			t.Fatalf("Error writing file %s, error: %v", test.path, err)
 		}
 
 		// Create file again should result in error
@@ -56,7 +55,7 @@ func TestCreateFile(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error reading file %s, error: %v", test.path, err)
 		}
-		if !reflect.DeepEqual(data, test.data) {
+		if !bytes.Equal(data, test.data) {
 			t.Errorf("Expected file content %v, got %v", test.data, data)
 		}
 	}
