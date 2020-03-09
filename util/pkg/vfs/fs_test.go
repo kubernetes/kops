@@ -25,20 +25,18 @@ import (
 	"testing"
 )
 
-var TempDir, _ = ioutil.TempDir("", "test")
-
 func TestCreateFile(t *testing.T) {
+	var TempDir, _ = ioutil.TempDir("", "test")
+	defer os.Remove(TempDir)
 	tests := []struct {
-		path       string
-		fileExists bool
-		data       []byte
+		path string
+		data []byte
 	}{
 		{
 			path: path.Join(TempDir, "SubDir", "test1.tmp"),
 			data: []byte("test data\nline 1\r\nline 2"),
 		},
 	}
-	defer os.Remove(TempDir)
 	for _, test := range tests {
 		fspath := &FSPath{test.path}
 		// Create file
@@ -59,7 +57,7 @@ func TestCreateFile(t *testing.T) {
 			t.Errorf("Error reading file %s, error: %v", test.path, err)
 		}
 		if !reflect.DeepEqual(data, test.data) {
-			t.Errorf("Expected file content %v, got %v", data, test.data)
+			t.Errorf("Expected file content %v, got %v", test.data, data)
 		}
 	}
 }
