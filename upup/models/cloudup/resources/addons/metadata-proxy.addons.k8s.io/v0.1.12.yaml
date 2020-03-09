@@ -85,8 +85,7 @@ spec:
             cpu: "2m"
         command:
           - /monitor
-          - --stackdriver-prefix={{ prometheus_to_sd_prefix }}/addons
-          - --api-override={{ prometheus_to_sd_endpoint }}
+          - --stackdriver-prefix=custom.googleapis.com/addons
           - --source=metadata_proxy:http://127.0.0.1:989?whitelisted=request_count
           - --pod-id=$(POD_NAME)
           - --namespace-id=$(POD_NAMESPACE)
