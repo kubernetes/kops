@@ -121,6 +121,7 @@ data:
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
   enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}disabled{{- end -}}"
   {{ with .Ipam }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
