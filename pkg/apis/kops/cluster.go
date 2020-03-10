@@ -567,7 +567,29 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.Networking = &NetworkingSpec{}
 	}
 
-	// TODO move this into networking.go :(
+	c.fillClusterSpecNetworkingSpec()
+
+	if c.Spec.Channel == "" {
+		c.Spec.Channel = DefaultChannel
+	}
+
+	if c.ObjectMeta.Name == "" {
+		return fmt.Errorf("cluster Name not set in FillDefaults")
+	}
+
+	if c.Spec.MasterInternalName == "" {
+		c.Spec.MasterInternalName = "api.internal." + c.ObjectMeta.Name
+	}
+
+	if c.Spec.MasterPublicName == "" {
+		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
+	}
+
+	return nil
+}
+
+// fillClusterSpecNetworking provides default value if c.Spec.NetworkingSpec is nil
+func (c *Cluster) fillClusterSpecNetworkingSpec() {
 	if c.Spec.Networking.Classic != nil {
 		// OK
 	} else if c.Spec.Networking.Kubenet != nil {
@@ -602,24 +624,6 @@ func (c *Cluster) FillDefaults() error {
 		// No networking model selected; choose Kubenet
 		c.Spec.Networking.Kubenet = &KubenetNetworkingSpec{}
 	}
-
-	if c.Spec.Channel == "" {
-		c.Spec.Channel = DefaultChannel
-	}
-
-	if c.ObjectMeta.Name == "" {
-		return fmt.Errorf("cluster Name not set in FillDefaults")
-	}
-
-	if c.Spec.MasterInternalName == "" {
-		c.Spec.MasterInternalName = "api.internal." + c.ObjectMeta.Name
-	}
-
-	if c.Spec.MasterPublicName == "" {
-		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
-	}
-
-	return nil
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
