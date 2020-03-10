@@ -69,6 +69,31 @@ type RollingUpdateCluster struct {
 	ValidateSuccessDuration time.Duration
 }
 
+// AdjustNeedUpdate adjusts the set of instances that need updating, using factors outside those known by the cloud implementation
+func (c *RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
+	for _, group := range groups {
+		if group.Ready != nil {
+			var newReady []*cloudinstances.CloudInstanceGroupMember
+			for _, member := range group.Ready {
+				makeNotReady := false
+				if member.Node != nil && member.Node.Annotations != nil {
+					if _, ok := member.Node.Annotations["kops.k8s.io/needs-update"]; ok {
+						makeNotReady = true
+					}
+				}
+
+				if makeNotReady {
+					group.NeedUpdate = append(group.NeedUpdate, member)
+				} else {
+					newReady = append(newReady, member)
+				}
+			}
+			group.Ready = newReady
+		}
+	}
+	return nil
+}
+
 // RollingUpdate performs a rolling update on a K8s Cluster.
 func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
