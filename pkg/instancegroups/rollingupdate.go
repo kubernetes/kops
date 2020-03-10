@@ -108,10 +108,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 				defer wg.Done()
 
-				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
-				if err == nil {
-					err = g.RollingUpdate(c, cluster, true, c.BastionInterval, c.ValidationTimeout)
-				}
+				err := c.rollingUpdateInstanceGroup(cluster, group, true, c.BastionInterval, c.ValidationTimeout)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -136,10 +133,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		// and we don't want to roll all the masters at the same time.  See issue #284
 
 		for _, group := range masterGroups {
-			g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
-			if err == nil {
-				err = g.RollingUpdate(c, cluster, false, c.MasterInterval, c.ValidationTimeout)
-			}
+			err := c.rollingUpdateInstanceGroup(cluster, group, false, c.MasterInterval, c.ValidationTimeout)
 
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 			if err != nil {
@@ -161,10 +155,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		}
 
 		for k, group := range nodeGroups {
-			g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
-			if err == nil {
-				err = g.RollingUpdate(c, cluster, false, c.NodeInterval, c.ValidationTimeout)
-			}
+			err := c.rollingUpdateInstanceGroup(cluster, group, false, c.NodeInterval, c.ValidationTimeout)
 
 			results[k] = err
 
