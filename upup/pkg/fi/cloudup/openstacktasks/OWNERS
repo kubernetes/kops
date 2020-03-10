@@ -1,6 +1,9 @@
+# See the OWNERS docs at https://go.k8s.io/owners
 approvers:
 - dims # just for bootstrapping the provider
 - zetaab
 reviewers:
 - drekle
 - zetaab
+labels:
+  area/provider/openstack
