@@ -80,8 +80,10 @@ func NewClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegio
 			// use a shorter timeout than default because the metadata
 			// service is local if it is running, and to fail faster
 			// if not running on an ec2 instance.
-			Timeout: 5 * time.Second,
+			Timeout: 1 * time.Second,
 		}
+		// max number of retries on the client operation
+		cfg.MaxRetries = aws.Int(2)
 	}
 
 	svc := &EC2Metadata{
@@ -158,6 +160,7 @@ type tokenOutput struct {
 var unmarshalTokenHandler = request.NamedHandler{
 	Name: unmarshalTokenHandlerName,
 	Fn: func(r *request.Request) {
+		defer r.HTTPResponse.Body.Close()
 		var b bytes.Buffer
 		if _, err := io.Copy(&b, r.HTTPResponse.Body); err != nil {
 			r.Error = awserr.NewRequestFailure(awserr.New(request.ErrCodeSerialization,
