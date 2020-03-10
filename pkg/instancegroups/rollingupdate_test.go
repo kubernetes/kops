@@ -572,6 +572,103 @@ func TestRollingUpdateValidatesAfterBastion(t *testing.T) {
 	assertGroupInstanceCount(t, cloud, "bastion-1", 0)
 }
 
+func addNeedsUpdateAnnotation(group *cloudinstances.CloudInstanceGroup, node string) {
+	for _, igm := range group.Ready {
+		if igm.ID == node {
+			if igm.Node.Annotations == nil {
+				igm.Node.Annotations = map[string]string{}
+			}
+			igm.Node.Annotations["kops.k8s.io/needs-update"] = "somevalue"
+			return
+		}
+	}
+	for _, igm := range group.NeedUpdate {
+		if igm.ID == node {
+			if igm.Node.Annotations == nil {
+				igm.Node.Annotations = map[string]string{}
+			}
+			igm.Node.Annotations["kops.k8s.io/needs-update"] = "somevalue"
+			return
+		}
+	}
+	panic("did not find node " + node)
+}
+
+func TestAddAnnotatedNodesToNeedsUpdate(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 1)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 2, 1)
+	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 2, 1)
+
+	addNeedsUpdateAnnotation(groups["node-1"], "node-1b")
+	addNeedsUpdateAnnotation(groups["node-2"], "node-2a")
+	addNeedsUpdateAnnotation(groups["master-1"], "master-1b")
+
+	err := c.AdjustNeedUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "AddAnnotatedNodesToGroups")
+
+	assertGroupNeedUpdate(t, groups, "node-1", "node-1a", "node-1b")
+	assertGroupNeedUpdate(t, groups, "node-2", "node-2a")
+	assertGroupNeedUpdate(t, groups, "master-1", "master-1a", "master-1b")
+}
+
+func TestAddAnnotatedNodesToNeedsUpdateCloudonly(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "master-1", kopsapi.InstanceGroupRoleMaster, 2, 1)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 2, 1)
+	makeGroup(groups, c.K8sClient, cloud, "node-2", kopsapi.InstanceGroupRoleNode, 2, 1)
+
+	addNeedsUpdateAnnotation(groups["node-1"], "node-1b")
+	addNeedsUpdateAnnotation(groups["node-2"], "node-2a")
+	addNeedsUpdateAnnotation(groups["master-1"], "master-1b")
+
+	c.CloudOnly = true
+	c.ClusterValidator = &assertNotCalledClusterValidator{T: t}
+
+	err := c.AdjustNeedUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "AddAnnotatedNodesToGroups")
+
+	assertGroupNeedUpdate(t, groups, "node-1", "node-1a", "node-1b")
+	assertGroupNeedUpdate(t, groups, "node-2", "node-2a")
+	assertGroupNeedUpdate(t, groups, "master-1", "master-1a", "master-1b")
+}
+
+func TestAddAnnotatedNodesToNeedsUpdateNodesMissing(t *testing.T) {
+	c, cloud, cluster := getTestSetup()
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 2, 1)
+
+	groups["node-1"].Ready[0].Node = nil
+	groups["node-1"].NeedUpdate[0].Node = nil
+
+	err := c.AdjustNeedUpdate(groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "AddAnnotatedNodesToGroups")
+}
+
+func assertGroupNeedUpdate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, groupName string, nodes ...string) {
+	notFound := map[string]bool{}
+	for _, node := range nodes {
+		notFound[node] = true
+	}
+	for _, node := range groups[groupName].NeedUpdate {
+		if notFound[node.ID] {
+			notFound[node.ID] = false
+		} else {
+			t.Errorf("node %s of group %s is unexpectedly in NeedUpdate", node.ID, groupName)
+		}
+	}
+	for nodeID, v := range notFound {
+		if v {
+			t.Errorf("node %s of group %s is missing from NeedUpdate", nodeID, groupName)
+		}
+	}
+}
+
 func TestRollingUpdateTaintAllButOneNeedUpdate(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
