@@ -2,6 +2,10 @@
 
 package pricing
 
+import (
+	"github.com/aws/aws-sdk-go/private/protocol"
+)
+
 const (
 
 	// ErrCodeExpiredNextTokenException for service response error code
@@ -35,3 +39,11 @@ const (
 	// The requested resource can't be found.
 	ErrCodeNotFoundException = "NotFoundException"
 )
+
+var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
+	"ExpiredNextTokenException": newErrorExpiredNextTokenException,
+	"InternalErrorException":    newErrorInternalErrorException,
+	"InvalidNextTokenException": newErrorInvalidNextTokenException,
+	"InvalidParameterException": newErrorInvalidParameterException,
+	"NotFoundException":         newErrorNotFoundException,
+}

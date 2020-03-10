@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "accesspoint_arn.go",
+        "arn.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aws/aws-sdk-go/service/s3/internal/arn",
+    importpath = "github.com/aws/aws-sdk-go/service/s3/internal/arn",
+    visibility = ["//vendor/github.com/aws/aws-sdk-go/service/s3:__subpackages__"],
+    deps = ["//vendor/github.com/aws/aws-sdk-go/aws/arn:go_default_library"],
+)

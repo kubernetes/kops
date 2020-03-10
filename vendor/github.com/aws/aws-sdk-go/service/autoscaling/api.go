@@ -623,8 +623,8 @@ func (c *AutoScaling) CreateAutoScalingGroupRequest(input *CreateAutoScalingGrou
 //
 // If you exceed your maximum limit of Auto Scaling groups, the call fails.
 // For information about viewing this limit, see DescribeAccountLimits. For
-// information about updating this limit, see Amazon EC2 Auto Scaling Limits
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html)
+// information about updating this limit, see Amazon EC2 Auto Scaling Service
+// Quotas (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -722,8 +722,8 @@ func (c *AutoScaling) CreateLaunchConfigurationRequest(input *CreateLaunchConfig
 //
 // If you exceed your maximum limit of launch configurations, the call fails.
 // For information about viewing this limit, see DescribeAccountLimits. For
-// information about updating this limit, see Amazon EC2 Auto Scaling Limits
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html)
+// information about updating this limit, see Amazon EC2 Auto Scaling Service
+// Quotas (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // For more information, see Launch Configurations (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchConfiguration.html)
@@ -1527,11 +1527,11 @@ func (c *AutoScaling) DescribeAccountLimitsRequest(input *DescribeAccountLimitsI
 
 // DescribeAccountLimits API operation for Auto Scaling.
 //
-// Describes the current Amazon EC2 Auto Scaling resource limits for your AWS
+// Describes the current Amazon EC2 Auto Scaling resource quotas for your AWS
 // account.
 //
-// For information about requesting an increase in these limits, see Amazon
-// EC2 Auto Scaling Limits (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html)
+// For information about requesting an increase, see Amazon EC2 Auto Scaling
+// Service Quotas (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -4403,10 +4403,7 @@ func (c *AutoScaling) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req
 
 // PutScalingPolicy API operation for Auto Scaling.
 //
-// Creates or updates a scaling policy for an Auto Scaling group. To update
-// an existing scaling policy, use the existing policy name and set the parameters
-// to change. Any existing parameter not changed in an update to an existing
-// policy is not changed in this update request.
+// Creates or updates a scaling policy for an Auto Scaling group.
 //
 // For more information about using scaling policies to scale your Auto Scaling
 // group automatically, see Dynamic Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scale-based-on-demand.html)
@@ -5143,10 +5140,20 @@ func (c *AutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *Terminat
 // TerminateInstanceInAutoScalingGroup API operation for Auto Scaling.
 //
 // Terminates the specified instance and optionally adjusts the desired group
-// size.
+// size. This call simply makes a termination request. The instance is not terminated
+// immediately. When an instance is terminated, the instance status changes
+// to terminated. You can't connect to or start an instance after you've terminated
+// it.
 //
-// This call simply makes a termination request. The instance is not terminated
-// immediately.
+// If you do not specify the option to decrement the desired capacity, Amazon
+// EC2 Auto Scaling launches instances to replace the ones that are terminated.
+//
+// By default, Amazon EC2 Auto Scaling balances instances across all Availability
+// Zones. If you decrement the desired capacity, your Auto Scaling group can
+// become unbalanced between Availability Zones. Amazon EC2 Auto Scaling tries
+// to rebalance the group, and rebalancing might terminate instances in other
+// zones. For more information, see Rebalancing Activities (https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html#AutoScalingBehavior.InstanceUsage)
+// in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6147,6 +6154,10 @@ type CreateAutoScalingGroupInput struct {
 	LoadBalancerNames []*string `type:"list"`
 
 	// The maximum amount of time, in seconds, that an instance can be in service.
+	//
+	// For more information, see Replacing Auto Scaling Instances Based on Maximum
+	// Instance Lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid Range: Minimum value of 604800.
 	MaxInstanceLifetime *int64 `type:"integer"`
@@ -7482,12 +7493,12 @@ func (s DescribeAccountLimitsInput) GoString() string {
 type DescribeAccountLimitsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of groups allowed for your AWS account. The default limit
-	// is 200 per AWS Region.
+	// The maximum number of groups allowed for your AWS account. The default is
+	// 200 groups per AWS Region.
 	MaxNumberOfAutoScalingGroups *int64 `type:"integer"`
 
 	// The maximum number of launch configurations allowed for your AWS account.
-	// The default limit is 200 per AWS Region.
+	// The default is 200 launch configurations per AWS Region.
 	MaxNumberOfLaunchConfigurations *int64 `type:"integer"`
 
 	// The current number of groups for your AWS account.
@@ -10735,6 +10746,10 @@ type LaunchTemplateOverrides struct {
 	// you chose to set the desired capacity in terms of instances, or a performance
 	// attribute such as vCPUs, memory, or I/O.
 	//
+	// For more information, see Instance Weighting for Amazon EC2 Auto Scaling
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-weighting.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	//
 	// Valid Range: Minimum value of 1. Maximum value of 999.
 	WeightedCapacity *string `min:"1" type:"string"`
 }
@@ -11865,6 +11880,12 @@ type PutScalingPolicyInput struct {
 	// in the Amazon EC2 Auto Scaling User Guide.
 	Cooldown *int64 `type:"integer"`
 
+	// Indicates whether the scaling policy is enabled or disabled. The default
+	// is enabled. For more information, see Disabling a Scaling Policy for an Auto
+	// Scaling Group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enable-disable-scaling-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	Enabled *bool `type:"boolean"`
+
 	// The estimated time, in seconds, until a newly launched instance can contribute
 	// to the CloudWatch metrics. The default is to use the value specified for
 	// the default cooldown period for the group.
@@ -12006,6 +12027,12 @@ func (s *PutScalingPolicyInput) SetAutoScalingGroupName(v string) *PutScalingPol
 // SetCooldown sets the Cooldown field's value.
 func (s *PutScalingPolicyInput) SetCooldown(v int64) *PutScalingPolicyInput {
 	s.Cooldown = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *PutScalingPolicyInput) SetEnabled(v bool) *PutScalingPolicyInput {
+	s.Enabled = &v
 	return s
 }
 
@@ -12380,6 +12407,9 @@ type ScalingPolicy struct {
 	// any further dynamic scaling activities can start.
 	Cooldown *int64 `type:"integer"`
 
+	// Indicates whether the policy is enabled (true) or disabled (false).
+	Enabled *bool `type:"boolean"`
+
 	// The estimated time, in seconds, until a newly launched instance can contribute
 	// to the CloudWatch metrics.
 	EstimatedInstanceWarmup *int64 `type:"integer"`
@@ -12450,6 +12480,12 @@ func (s *ScalingPolicy) SetAutoScalingGroupName(v string) *ScalingPolicy {
 // SetCooldown sets the Cooldown field's value.
 func (s *ScalingPolicy) SetCooldown(v int64) *ScalingPolicy {
 	s.Cooldown = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *ScalingPolicy) SetEnabled(v bool) *ScalingPolicy {
+	s.Enabled = &v
 	return s
 }
 
@@ -13561,6 +13597,10 @@ type UpdateAutoScalingGroupInput struct {
 	LaunchTemplate *LaunchTemplateSpecification `type:"structure"`
 
 	// The maximum amount of time, in seconds, that an instance can be in service.
+	//
+	// For more information, see Replacing Auto Scaling Instances Based on Maximum
+	// Instance Lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid Range: Minimum value of 604800.
 	MaxInstanceLifetime *int64 `type:"integer"`

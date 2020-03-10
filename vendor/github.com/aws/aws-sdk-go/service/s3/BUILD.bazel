@@ -9,6 +9,8 @@ go_library(
         "customizations.go",
         "doc.go",
         "doc_custom.go",
+        "endpoint.go",
+        "endpoint_errors.go",
         "errors.go",
         "host_style_bucket.go",
         "platform_handlers.go",
@@ -24,10 +26,12 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/arn:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awsutil:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/client:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/client/metadata:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/endpoints:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/signer/v4:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/internal/s3err:go_default_library",
@@ -38,5 +42,6 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/rest:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/restxml:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/s3/internal/arn:go_default_library",
     ],
 )
