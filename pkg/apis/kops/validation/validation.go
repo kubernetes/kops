@@ -453,7 +453,7 @@ func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) f
 func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if v.EnableNodePort && c.KubeProxy != nil && *c.KubeProxy.Enabled {
+	if v.EnableNodePort && c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))
 	}
 
