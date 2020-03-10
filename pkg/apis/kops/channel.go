@@ -31,7 +31,6 @@ var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/mast
 
 const (
 	DefaultChannel = "stable"
-	AlphaChannel   = "alpha"
 )
 
 type Channel struct {
