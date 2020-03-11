@@ -37,9 +37,9 @@ func FindDistribution(rootfs string) (Distribution, error) {
 			if line == "DISTRIB_CODENAME=xenial" {
 				return DistributionXenial, nil
 			} else if line == "DISTRIB_CODENAME=bionic" {
-				klog.Warningf("bionic is not fully supported nor tested for Kops and Kubernetes")
-				klog.Warningf("this should only be used for testing purposes.")
 				return DistributionBionic, nil
+			} else if line == "DISTRIB_CODENAME=focal" {
+				return DistributionFocal, nil
 			}
 		}
 	} else if !os.IsNotExist(err) {
