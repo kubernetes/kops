@@ -6,4 +6,4 @@ reviewers:
 - drekle
 - zetaab
 labels:
-  area/provider/openstack
+- area/provider/openstack

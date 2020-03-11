@@ -4,4 +4,4 @@ approvers:
 reviewers:
 - liranp
 labels:
-  area/provider/spotinst
+- area/provider/spotinst
