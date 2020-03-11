@@ -4,3 +4,5 @@ approvers:
 reviewers:
 - drekle
 - zetaab
+labels:
+- area/provider/openstack
