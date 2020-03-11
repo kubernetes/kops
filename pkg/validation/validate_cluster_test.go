@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -432,19 +433,21 @@ func Test_ValidateMasterNoKubeControllerManager(t *testing.T) {
 	v, err := testValidate(t, groups, makePodList(
 		[]map[string]string{
 			{
-				"name":    "pod1",
-				"ready":   "true",
-				"k8s-app": "kube-controller-manager",
-				"phase":   string(v1.PodRunning),
-				"hostip":  "1.2.3.4",
+				"name":              "pod1",
+				"ready":             "true",
+				"k8s-app":           "kube-controller-manager",
+				"phase":             string(v1.PodRunning),
+				"priorityClassName": "system-cluster-critical",
+				"hostip":            "1.2.3.4",
 			},
 			{
-				"name":      "pod2",
-				"namespace": "other",
-				"ready":     "true",
-				"k8s-app":   "kube-controller-manager",
-				"phase":     string(v1.PodRunning),
-				"hostip":    "5.6.7.8",
+				"name":              "pod2",
+				"namespace":         "other",
+				"ready":             "true",
+				"k8s-app":           "kube-controller-manager",
+				"phase":             string(v1.PodRunning),
+				"priorityClassName": "system-cluster-critical",
+				"hostip":            "5.6.7.8",
 			},
 		},
 	))
@@ -510,67 +513,114 @@ func Test_ValidateComponentFailure(t *testing.T) {
 }
 
 func Test_ValidateNoPodFailures(t *testing.T) {
-	v, err := testValidate(t, nil, makePodList(
-		[]map[string]string{
-			{
-				"name":  "pod1",
-				"ready": "true",
-				"phase": string(v1.PodRunning),
-			},
-			{
-				"name":  "job1",
-				"ready": "false",
-				"phase": string(v1.PodSucceeded),
-			},
-		},
-	))
+	testpods := []map[string]string{}
+
+	for _, phase := range []v1.PodPhase{
+		v1.PodPending,
+		v1.PodRunning,
+		v1.PodSucceeded,
+		v1.PodFailed,
+		v1.PodUnknown,
+	} {
+		for _, priority := range []string{"", "otherPriority"} {
+			testpods = append(testpods, []map[string]string{
+				{
+					"name":              fmt.Sprintf("ready-%s-%s", priority, string(phase)),
+					"namespace":         "kube-system",
+					"priorityClassName": priority,
+					"ready":             "true",
+					"phase":             string(phase),
+				},
+				{
+					"name":              fmt.Sprintf("notready-%s-%s", priority, string(phase)),
+					"namespace":         "kube-system",
+					"priorityClassName": priority,
+					"ready":             "false",
+					"phase":             string(phase),
+				},
+			}...)
+		}
+	}
+
+	for _, namespace := range []string{"kube-system", "otherNamespace"} {
+		for _, priority := range []string{"node", "cluster"} {
+			testpods = append(testpods, []map[string]string{
+				{
+					"name":              fmt.Sprintf("ready-%s-%s", priority, namespace),
+					"namespace":         namespace,
+					"priorityClassName": fmt.Sprintf("system-%s-critical", priority),
+					"ready":             "true",
+					"phase":             string(v1.PodRunning),
+				},
+				{
+					"name":              fmt.Sprintf("notready-%s-%s", priority, namespace),
+					"namespace":         namespace,
+					"priorityClassName": fmt.Sprintf("system-%s-critical", priority),
+					"ready":             "false",
+					"phase":             string(v1.PodSucceeded),
+				},
+			}...)
+		}
+	}
+
+	v, err := testValidate(t, nil, makePodList(testpods))
 
 	require.NoError(t, err)
-	assert.Empty(t, v.Failures)
+	if !assert.Empty(t, v.Failures) {
+		printDebug(t, v)
+	}
 }
 
 func Test_ValidatePodFailure(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
 		phase    v1.PodPhase
-		expected ValidationError
+		expected string
 	}{
 		{
-			name:  "pending",
-			phase: v1.PodPending,
-			expected: ValidationError{
-				Kind:    "Pod",
-				Name:    "kube-system/pod1",
-				Message: "kube-system pod \"pod1\" is pending",
-			},
+			name:     "pending",
+			phase:    v1.PodPending,
+			expected: "pending",
 		},
 		{
-			name:  "notready",
-			phase: v1.PodRunning,
-			expected: ValidationError{
-				Kind:    "Pod",
-				Name:    "kube-system/pod1",
-				Message: "kube-system pod \"pod1\" is not ready (container1,container2)",
-			},
+			name:     "notready",
+			phase:    v1.PodRunning,
+			expected: "not ready (container1,container2)",
+		},
+		{
+			name:     "unknown",
+			phase:    v1.PodUnknown,
+			expected: "unknown phase",
 		},
 	} {
-		t.Run(tc.name, func(t *testing.T) {
-			v, err := testValidate(t, nil, makePodList(
-				[]map[string]string{
-					{
-						"name":  "pod1",
-						"ready": "false",
-						"phase": string(tc.phase),
-					},
-				},
-			))
+		for _, priority := range []string{"node", "cluster"} {
+			for _, namespace := range []string{"kube-system", "otherNamespace"} {
+				t.Run(fmt.Sprintf("%s-%s-%s", tc.name, priority, namespace), func(t *testing.T) {
+					v, err := testValidate(t, nil, makePodList(
+						[]map[string]string{
+							{
+								"name":              "pod1",
+								"namespace":         namespace,
+								"priorityClassName": fmt.Sprintf("system-%s-critical", priority),
+								"ready":             "false",
+								"phase":             string(tc.phase),
+							},
+						},
+					))
+					expected := ValidationError{
+						Kind:    "Pod",
+						Name:    fmt.Sprintf("%s/pod1", namespace),
+						Message: fmt.Sprintf("system-%s-critical pod \"pod1\" is %s", priority, tc.expected),
+					}
 
-			require.NoError(t, err)
-			if !assert.Len(t, v.Failures, 1) ||
-				!assert.Equal(t, &tc.expected, v.Failures[0]) {
-				printDebug(t, v)
+					require.NoError(t, err)
+					if !assert.Len(t, v.Failures, 1) ||
+						!assert.Equal(t, &expected, v.Failures[0]) {
+						printDebug(t, v)
+					}
+				})
 			}
-		})
+		}
 	}
 }
 
@@ -596,7 +646,9 @@ func dummyPod(podMap map[string]string) v1.Pod {
 			Namespace: namespace,
 			Labels:    labels,
 		},
-		Spec: v1.PodSpec{},
+		Spec: v1.PodSpec{
+			PriorityClassName: podMap["priorityClassName"],
+		},
 		Status: v1.PodStatus{
 			Phase: v1.PodPhase(podMap["phase"]),
 			ContainerStatuses: []v1.ContainerStatus{
