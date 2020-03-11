@@ -223,6 +223,8 @@ Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execut
 The Calico MTU is configurable by editing the cluster and setting `mtu` option in the calico configuration.
 AWS VPCs support jumbo frames, so on cluster creation kops sets the calico MTU to 8912 bytes (9001 minus overhead).
 
+For more details on Calico MTU please see the [Calico Docs](https://docs.projectcalico.org/networking/mtu#determine-mtu-size).
+
 ```
 spec:
   networking:
