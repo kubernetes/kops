@@ -3,8 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "api.go",
         "error.go",
+        "reader.go",
+        "shared.go",
+        "signer.go",
+        "stream_writer.go",
+        "writer.go",
     ],
     importmap = "k8s.io/kops/vendor/github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi",
     importpath = "github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi",

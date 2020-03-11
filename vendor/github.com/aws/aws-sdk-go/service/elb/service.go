@@ -31,7 +31,7 @@ var initRequest func(*request.Request)
 const (
 	ServiceName = "elasticloadbalancing"   // Name of service.
 	EndpointsID = ServiceName              // ID to lookup a service endpoint with.
-	ServiceID   = "Elastic Load Balancing" // ServiceID is a unique identifer of a specific service.
+	ServiceID   = "Elastic Load Balancing" // ServiceID is a unique identifier of a specific service.
 )
 
 // New creates a new instance of the ELB client with a session.
