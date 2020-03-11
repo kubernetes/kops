@@ -29,6 +29,7 @@ var (
 	DistributionDebian10     Distribution = "buster"
 	DistributionXenial       Distribution = "xenial"
 	DistributionBionic       Distribution = "bionic"
+	DistributionFocal        Distribution = "focal"
 	DistributionAmazonLinux2 Distribution = "amazonlinux2"
 	DistributionRhel7        Distribution = "rhel7"
 	DistributionCentos7      Distribution = "centos7"
@@ -51,6 +52,8 @@ func (d Distribution) BuildTags() []string {
 		t = []string{"_xenial"}
 	case DistributionBionic:
 		t = []string{"_bionic"}
+	case DistributionFocal:
+		t = []string{"_focal"}
 	case DistributionAmazonLinux2:
 		t = []string{"_amazonlinux2"}
 	case DistributionCentos7:
@@ -89,7 +92,7 @@ func (d Distribution) IsDebianFamily() bool {
 	switch d {
 	case DistributionJessie, DistributionDebian9, DistributionDebian10:
 		return true
-	case DistributionXenial, DistributionBionic:
+	case DistributionXenial, DistributionBionic, DistributionFocal:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return false
@@ -105,7 +108,7 @@ func (d Distribution) IsUbuntu() bool {
 	switch d {
 	case DistributionJessie, DistributionDebian9, DistributionDebian10:
 		return false
-	case DistributionXenial, DistributionBionic:
+	case DistributionXenial, DistributionBionic, DistributionFocal:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return false
@@ -121,7 +124,7 @@ func (d Distribution) IsRHELFamily() bool {
 	switch d {
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return true
-	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionDebian9, DistributionDebian10:
+	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionFocal, DistributionDebian9, DistributionDebian10:
 		return false
 	case DistributionCoreOS, DistributionFlatcar, DistributionContainerOS:
 		return false
@@ -133,7 +136,7 @@ func (d Distribution) IsRHELFamily() bool {
 
 func (d Distribution) IsSystemd() bool {
 	switch d {
-	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionDebian9, DistributionDebian10:
+	case DistributionJessie, DistributionXenial, DistributionBionic, DistributionFocal, DistributionDebian9, DistributionDebian10:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return true
