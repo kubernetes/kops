@@ -438,8 +438,8 @@ func (c *CloudFormation) CreateStackInstancesRequest(input *CreateStackInstances
 //
 // Creates stack instances for the specified accounts, within the specified
 // regions. A stack instance refers to a stack in a specific account and region.
-// Accounts and Regions are required parameters—you must specify at least
-// one account and one region.
+// You must specify at least one value for either Accounts or DeploymentTargets,
+// and you must specify at least one value for Regions.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3996,7 +3996,7 @@ func (c *CloudFormation) ListTypeRegistrationsRequest(input *ListTypeRegistratio
 
 // ListTypeRegistrations API operation for AWS CloudFormation.
 //
-// Returns a list of registration tokens for the specified type.
+// Returns a list of registration tokens for the specified type(s).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4500,7 +4500,7 @@ func (c *CloudFormation) RegisterTypeRequest(input *RegisterTypeInput) (req *req
 //    * Making the resource type available for use in your account
 //
 // For more information on how to develop types and ready them for registeration,
-// see Creating Resource Providers (cloudformation-cli/latest/userguide/resource-types.html)
+// see Creating Resource Providers (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-types.html)
 // in the CloudFormation CLI User Guide.
 //
 // Once you have initiated a registration request using RegisterType , you can
@@ -5441,6 +5441,47 @@ func (s *AccountLimit) SetName(v string) *AccountLimit {
 // SetValue sets the Value field's value.
 func (s *AccountLimit) SetValue(v int64) *AccountLimit {
 	s.Value = &v
+	return s
+}
+
+// [Service-managed permissions] Describes whether StackSets automatically deploys
+// to AWS Organizations accounts that are added to a target organization or
+// organizational unit (OU).
+type AutoDeployment struct {
+	_ struct{} `type:"structure"`
+
+	// If set to true, StackSets automatically deploys additional stack instances
+	// to AWS Organizations accounts that are added to a target organization or
+	// organizational unit (OU) in the specified Regions. If an account is removed
+	// from a target organization or OU, StackSets deletes stack instances from
+	// the account in the specified Regions.
+	Enabled *bool `type:"boolean"`
+
+	// If set to true, stack resources are retained when an account is removed from
+	// a target organization or OU. If set to false, stack resources are deleted.
+	// Specify only if Enabled is set to True.
+	RetainStacksOnAccountRemoval *bool `type:"boolean"`
+}
+
+// String returns the string representation
+func (s AutoDeployment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AutoDeployment) GoString() string {
+	return s.String()
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *AutoDeployment) SetEnabled(v bool) *AutoDeployment {
+	s.Enabled = &v
+	return s
+}
+
+// SetRetainStacksOnAccountRemoval sets the RetainStacksOnAccountRemoval field's value.
+func (s *AutoDeployment) SetRetainStacksOnAccountRemoval(v bool) *AutoDeployment {
+	s.RetainStacksOnAccountRemoval = &v
 	return s
 }
 
@@ -6500,11 +6541,17 @@ func (s *CreateStackInput) SetTimeoutInMinutes(v int64) *CreateStackInput {
 type CreateStackInstancesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The names of one or more AWS accounts that you want to create stack instances
-	// in the specified region(s) for.
+	// [Self-managed permissions] The names of one or more AWS accounts that you
+	// want to create stack instances in the specified region(s) for.
 	//
-	// Accounts is a required field
-	Accounts []*string `type:"list" required:"true"`
+	// You can specify Accounts or DeploymentTargets, but not both.
+	Accounts []*string `type:"list"`
+
+	// [Service-managed permissions] The AWS Organizations accounts for which to
+	// create stack instances in the specified Regions.
+	//
+	// You can specify Accounts or DeploymentTargets, but not both.
+	DeploymentTargets *DeploymentTargets `type:"structure"`
 
 	// The unique identifier for this stack set operation.
 	//
@@ -6578,9 +6625,6 @@ func (s CreateStackInstancesInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateStackInstancesInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateStackInstancesInput"}
-	if s.Accounts == nil {
-		invalidParams.Add(request.NewErrParamRequired("Accounts"))
-	}
 	if s.OperationId != nil && len(*s.OperationId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("OperationId", 1))
 	}
@@ -6605,6 +6649,12 @@ func (s *CreateStackInstancesInput) Validate() error {
 // SetAccounts sets the Accounts field's value.
 func (s *CreateStackInstancesInput) SetAccounts(v []*string) *CreateStackInstancesInput {
 	s.Accounts = v
+	return s
+}
+
+// SetDeploymentTargets sets the DeploymentTargets field's value.
+func (s *CreateStackInstancesInput) SetDeploymentTargets(v *DeploymentTargets) *CreateStackInstancesInput {
+	s.DeploymentTargets = v
 	return s
 }
 
@@ -6698,6 +6748,13 @@ type CreateStackSetInput struct {
 	// in the AWS CloudFormation User Guide.
 	AdministrationRoleARN *string `min:"20" type:"string"`
 
+	// Describes whether StackSets automatically deploys to AWS Organizations accounts
+	// that are added to the target organization or organizational unit (OU). Specify
+	// only if PermissionModel is SERVICE_MANAGED.
+	//
+	// If you specify AutoDeployment, do not specify DeploymentTargets or Regions.
+	AutoDeployment *AutoDeployment `type:"structure"`
+
 	// In some cases, you must explicitly acknowledge that your stack set template
 	// contains certain capabilities in order for AWS CloudFormation to create the
 	// stack set and related stack instances.
@@ -6760,6 +6817,19 @@ type CreateStackSetInput struct {
 
 	// The input parameters for the stack set template.
 	Parameters []*Parameter `type:"list"`
+
+	// Describes how the IAM roles required for stack set operations are created.
+	// By default, SELF-MANAGED is specified.
+	//
+	//    * With self-managed permissions, you must create the administrator and
+	//    execution roles required to deploy to target accounts. For more information,
+	//    see Grant Self-Managed Stack Set Permissions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html).
+	//
+	//    * With service-managed permissions, StackSets automatically creates the
+	//    IAM roles required to deploy to accounts managed by AWS Organizations.
+	//    For more information, see Grant Service-Managed Stack Set Permissions
+	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html).
+	PermissionModel *string `type:"string" enum:"PermissionModels"`
 
 	// The name to associate with the stack set. The name must be unique in the
 	// region where you create your stack set.
@@ -6857,6 +6927,12 @@ func (s *CreateStackSetInput) SetAdministrationRoleARN(v string) *CreateStackSet
 	return s
 }
 
+// SetAutoDeployment sets the AutoDeployment field's value.
+func (s *CreateStackSetInput) SetAutoDeployment(v *AutoDeployment) *CreateStackSetInput {
+	s.AutoDeployment = v
+	return s
+}
+
 // SetCapabilities sets the Capabilities field's value.
 func (s *CreateStackSetInput) SetCapabilities(v []*string) *CreateStackSetInput {
 	s.Capabilities = v
@@ -6884,6 +6960,12 @@ func (s *CreateStackSetInput) SetExecutionRoleName(v string) *CreateStackSetInpu
 // SetParameters sets the Parameters field's value.
 func (s *CreateStackSetInput) SetParameters(v []*Parameter) *CreateStackSetInput {
 	s.Parameters = v
+	return s
+}
+
+// SetPermissionModel sets the PermissionModel field's value.
+func (s *CreateStackSetInput) SetPermissionModel(v string) *CreateStackSetInput {
+	s.PermissionModel = &v
 	return s
 }
 
@@ -7105,10 +7187,17 @@ func (s *DeleteStackInput) SetStackName(v string) *DeleteStackInput {
 type DeleteStackInstancesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The names of the AWS accounts that you want to delete stack instances for.
+	// [Self-managed permissions] The names of the AWS accounts that you want to
+	// delete stack instances for.
 	//
-	// Accounts is a required field
-	Accounts []*string `type:"list" required:"true"`
+	// You can specify Accounts or DeploymentTargets, but not both.
+	Accounts []*string `type:"list"`
+
+	// [Service-managed permissions] The AWS Organizations accounts from which to
+	// delete stack instances.
+	//
+	// You can specify Accounts or DeploymentTargets, but not both.
+	DeploymentTargets *DeploymentTargets `type:"structure"`
 
 	// The unique identifier for this stack set operation.
 	//
@@ -7160,9 +7249,6 @@ func (s DeleteStackInstancesInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *DeleteStackInstancesInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DeleteStackInstancesInput"}
-	if s.Accounts == nil {
-		invalidParams.Add(request.NewErrParamRequired("Accounts"))
-	}
 	if s.OperationId != nil && len(*s.OperationId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("OperationId", 1))
 	}
@@ -7190,6 +7276,12 @@ func (s *DeleteStackInstancesInput) Validate() error {
 // SetAccounts sets the Accounts field's value.
 func (s *DeleteStackInstancesInput) SetAccounts(v []*string) *DeleteStackInstancesInput {
 	s.Accounts = v
+	return s
+}
+
+// SetDeploymentTargets sets the DeploymentTargets field's value.
+func (s *DeleteStackInstancesInput) SetDeploymentTargets(v *DeploymentTargets) *DeleteStackInstancesInput {
+	s.DeploymentTargets = v
 	return s
 }
 
@@ -7313,22 +7405,63 @@ func (s DeleteStackSetOutput) GoString() string {
 	return s.String()
 }
 
+// [Service-managed permissions] The AWS Organizations accounts to which StackSets
+// deploys.
+//
+// For update operations, you can specify either Accounts or OrganizationalUnitIds.
+// For create and delete operations, specify OrganizationalUnitIds.
+type DeploymentTargets struct {
+	_ struct{} `type:"structure"`
+
+	// The names of one or more AWS accounts for which you want to deploy stack
+	// set updates.
+	Accounts []*string `type:"list"`
+
+	// The organization root ID or organizational unit (OUs) IDs to which StackSets
+	// deploys.
+	OrganizationalUnitIds []*string `type:"list"`
+}
+
+// String returns the string representation
+func (s DeploymentTargets) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeploymentTargets) GoString() string {
+	return s.String()
+}
+
+// SetAccounts sets the Accounts field's value.
+func (s *DeploymentTargets) SetAccounts(v []*string) *DeploymentTargets {
+	s.Accounts = v
+	return s
+}
+
+// SetOrganizationalUnitIds sets the OrganizationalUnitIds field's value.
+func (s *DeploymentTargets) SetOrganizationalUnitIds(v []*string) *DeploymentTargets {
+	s.OrganizationalUnitIds = v
+	return s
+}
+
 type DeregisterTypeInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the type.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Arn *string `type:"string"`
 
 	// The kind of type.
 	//
 	// Currently the only valid value is RESOURCE.
+	//
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Type *string `type:"string" enum:"RegistryType"`
 
 	// The name of the type.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	TypeName *string `min:"10" type:"string"`
 
 	// The ID of a specific version of the type. The version ID is the value at
@@ -8603,17 +8736,19 @@ type DescribeTypeInput struct {
 
 	// The Amazon Resource Name (ARN) of the type.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Arn *string `type:"string"`
 
 	// The kind of type.
 	//
 	// Currently the only valid value is RESOURCE.
+	//
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Type *string `type:"string" enum:"RegistryType"`
 
 	// The name of the type.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	TypeName *string `min:"10" type:"string"`
 
 	// The ID of a specific version of the type. The version ID is the value at
@@ -10726,21 +10861,25 @@ type ListTypeRegistrationsInput struct {
 	NextToken *string `min:"1" type:"string"`
 
 	// The current status of the type registration request.
+	//
+	// The default is IN_PROGRESS.
 	RegistrationStatusFilter *string `type:"string" enum:"RegistrationStatus"`
 
 	// The kind of type.
 	//
 	// Currently the only valid value is RESOURCE.
+	//
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Type *string `type:"string" enum:"RegistryType"`
 
 	// The Amazon Resource Name (ARN) of the type.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	TypeArn *string `type:"string"`
 
 	// The name of the type.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	TypeName *string `min:"10" type:"string"`
 }
 
@@ -10853,7 +10992,7 @@ type ListTypeVersionsInput struct {
 	// The Amazon Resource Name (ARN) of the type for which you want version summary
 	// information.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Arn *string `type:"string"`
 
 	// The deprecation status of the type versions that you want to get summary
@@ -10866,6 +11005,8 @@ type ListTypeVersionsInput struct {
 	//
 	//    * DEPRECATED: The type version has been deregistered and can no longer
 	//    be used in CloudFormation operations.
+	//
+	// The default is LIVE.
 	DeprecatedStatus *string `type:"string" enum:"DeprecatedStatus"`
 
 	// The maximum number of results to be returned with a single call. If the number
@@ -10884,11 +11025,13 @@ type ListTypeVersionsInput struct {
 	// The kind of the type.
 	//
 	// Currently the only valid value is RESOURCE.
+	//
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Type *string `type:"string" enum:"RegistryType"`
 
 	// The name of the type for which you want version summary information.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	TypeName *string `min:"10" type:"string"`
 }
 
@@ -11046,6 +11189,8 @@ type ListTypesInput struct {
 	//
 	//    * PUBLIC: The type is publically visible and usable within any Amazon
 	//    account.
+	//
+	// The default is PRIVATE.
 	Visibility *string `type:"string" enum:"Visibility"`
 }
 
@@ -11667,6 +11812,12 @@ type RegisterTypeInput struct {
 	// For information on generating a schema handler package for the type you want
 	// to register, see submit (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-cli-submit.html)
 	// in the CloudFormation CLI User Guide.
+	//
+	// As part of registering a resource provider type, CloudFormation must be able
+	// to access the S3 bucket which contains the schema handler package for that
+	// resource provider. For more information, see IAM Permissions for Registering
+	// a Resource Provider (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry.html#registry-register-permissions)
+	// in the AWS CloudFormation User Guide.
 	//
 	// SchemaHandlerPackage is a required field
 	SchemaHandlerPackage *string `min:"1" type:"string" required:"true"`
@@ -12410,15 +12561,17 @@ type SetTypeDefaultVersionInput struct {
 	// The Amazon Resource Name (ARN) of the type for which you want version summary
 	// information.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Arn *string `type:"string"`
 
 	// The kind of type.
+	//
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	Type *string `type:"string" enum:"RegistryType"`
 
 	// The name of the type.
 	//
-	// Conditional: You must specify TypeName or Arn.
+	// Conditional: You must specify either TypeName and Type, or Arn.
 	TypeName *string `min:"10" type:"string"`
 
 	// The ID of a specific version of the type. The version ID is the value at
@@ -13093,7 +13246,8 @@ func (s *StackEvent) SetTimestamp(v time.Time) *StackEvent {
 type StackInstance struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the AWS account that the stack instance is associated with.
+	// [Self-managed permissions] The name of the AWS account that the stack instance
+	// is associated with.
 	Account *string `type:"string"`
 
 	// Status of the stack instance's actual configuration compared to the expected
@@ -13117,6 +13271,10 @@ type StackInstance struct {
 	// on the stack instance. This value will be NULL for any stack instance on
 	// which drift detection has not yet been performed.
 	LastDriftCheckTimestamp *time.Time `type:"timestamp"`
+
+	// [Service-managed permissions] The organization root ID or organizational
+	// unit (OU) ID that the stack instance is associated with.
+	OrganizationalUnitId *string `type:"string"`
 
 	// A list of parameters from the stack set template whose values have been overridden
 	// in this stack instance.
@@ -13182,6 +13340,12 @@ func (s *StackInstance) SetLastDriftCheckTimestamp(v time.Time) *StackInstance {
 	return s
 }
 
+// SetOrganizationalUnitId sets the OrganizationalUnitId field's value.
+func (s *StackInstance) SetOrganizationalUnitId(v string) *StackInstance {
+	s.OrganizationalUnitId = &v
+	return s
+}
+
 // SetParameterOverrides sets the ParameterOverrides field's value.
 func (s *StackInstance) SetParameterOverrides(v []*Parameter) *StackInstance {
 	s.ParameterOverrides = v
@@ -13222,7 +13386,8 @@ func (s *StackInstance) SetStatusReason(v string) *StackInstance {
 type StackInstanceSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the AWS account that the stack instance is associated with.
+	// [Self-managed permissions] The name of the AWS account that the stack instance
+	// is associated with.
 	Account *string `type:"string"`
 
 	// Status of the stack instance's actual configuration compared to the expected
@@ -13246,6 +13411,10 @@ type StackInstanceSummary struct {
 	// on the stack instance. This value will be NULL for any stack instance on
 	// which drift detection has not yet been performed.
 	LastDriftCheckTimestamp *time.Time `type:"timestamp"`
+
+	// [Service-managed permissions] The organization root ID or organizational
+	// unit (OU) ID that the stack instance is associated with.
+	OrganizationalUnitId *string `type:"string"`
 
 	// The name of the AWS region that the stack instance is associated with.
 	Region *string `type:"string"`
@@ -13303,6 +13472,12 @@ func (s *StackInstanceSummary) SetDriftStatus(v string) *StackInstanceSummary {
 // SetLastDriftCheckTimestamp sets the LastDriftCheckTimestamp field's value.
 func (s *StackInstanceSummary) SetLastDriftCheckTimestamp(v time.Time) *StackInstanceSummary {
 	s.LastDriftCheckTimestamp = &v
+	return s
+}
+
+// SetOrganizationalUnitId sets the OrganizationalUnitId field's value.
+func (s *StackInstanceSummary) SetOrganizationalUnitId(v string) *StackInstanceSummary {
+	s.OrganizationalUnitId = &v
 	return s
 }
 
@@ -13949,6 +14124,11 @@ type StackSet struct {
 	// in the AWS CloudFormation User Guide.
 	AdministrationRoleARN *string `min:"20" type:"string"`
 
+	// [Service-managed permissions] Describes whether StackSets automatically deploys
+	// to AWS Organizations accounts that are added to a target organization or
+	// organizational unit (OU).
+	AutoDeployment *AutoDeployment `type:"structure"`
+
 	// The capabilities that are allowed in the stack set. Some stack set templates
 	// might include resources that can affect permissions in your AWS account—for
 	// example, by creating new AWS Identity and Access Management (IAM) users.
@@ -13966,8 +14146,24 @@ type StackSet struct {
 	// groups can include in their stack sets.
 	ExecutionRoleName *string `min:"1" type:"string"`
 
+	// [Service-managed permissions] The organization root ID or organizational
+	// unit (OUs) IDs to which stacks in your stack set have been deployed.
+	OrganizationalUnitIds []*string `type:"list"`
+
 	// A list of input parameters for a stack set.
 	Parameters []*Parameter `type:"list"`
+
+	// Describes how the IAM roles required for stack set operations are created.
+	//
+	//    * With self-managed permissions, you must create the administrator and
+	//    execution roles required to deploy to target accounts. For more information,
+	//    see Grant Self-Managed Stack Set Permissions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html).
+	//
+	//    * With service-managed permissions, StackSets automatically creates the
+	//    IAM roles required to deploy to accounts managed by AWS Organizations.
+	//    For more information, see Grant Service-Managed Stack Set Permissions
+	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html).
+	PermissionModel *string `type:"string" enum:"PermissionModels"`
 
 	// The Amazon Resource Number (ARN) of the stack set.
 	StackSetARN *string `type:"string"`
@@ -14013,6 +14209,12 @@ func (s *StackSet) SetAdministrationRoleARN(v string) *StackSet {
 	return s
 }
 
+// SetAutoDeployment sets the AutoDeployment field's value.
+func (s *StackSet) SetAutoDeployment(v *AutoDeployment) *StackSet {
+	s.AutoDeployment = v
+	return s
+}
+
 // SetCapabilities sets the Capabilities field's value.
 func (s *StackSet) SetCapabilities(v []*string) *StackSet {
 	s.Capabilities = v
@@ -14031,9 +14233,21 @@ func (s *StackSet) SetExecutionRoleName(v string) *StackSet {
 	return s
 }
 
+// SetOrganizationalUnitIds sets the OrganizationalUnitIds field's value.
+func (s *StackSet) SetOrganizationalUnitIds(v []*string) *StackSet {
+	s.OrganizationalUnitIds = v
+	return s
+}
+
 // SetParameters sets the Parameters field's value.
 func (s *StackSet) SetParameters(v []*Parameter) *StackSet {
 	s.Parameters = v
+	return s
+}
+
+// SetPermissionModel sets the PermissionModel field's value.
+func (s *StackSet) SetPermissionModel(v string) *StackSet {
+	s.PermissionModel = &v
 	return s
 }
 
@@ -14244,6 +14458,10 @@ type StackSetOperation struct {
 	// before actually creating the first stacks.
 	CreationTimestamp *time.Time `type:"timestamp"`
 
+	// [Service-managed permissions] The AWS Organizations accounts affected by
+	// the stack operation.
+	DeploymentTargets *DeploymentTargets `type:"structure"`
+
 	// The time at which the stack set operation ended, across all accounts and
 	// regions specified. Note that this doesn't necessarily mean that the stack
 	// set operation was successful, or even attempted, in each account or region.
@@ -14291,6 +14509,11 @@ type StackSetOperation struct {
 	//    status of the operation as a whole to FAILED, and AWS CloudFormation cancels
 	//    the operation in any remaining regions.
 	//
+	//    * QUEUED: [Service-managed permissions] For automatic deployments that
+	//    require a sequence of operations. The operation is queued to be performed.
+	//    For more information, see the stack set operation status codes (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-status-codes)
+	//    in the AWS CloudFormation User Guide.
+	//
 	//    * RUNNING: The operation is currently being performed.
 	//
 	//    * STOPPED: The user has cancelled the operation.
@@ -14327,6 +14550,12 @@ func (s *StackSetOperation) SetAdministrationRoleARN(v string) *StackSetOperatio
 // SetCreationTimestamp sets the CreationTimestamp field's value.
 func (s *StackSetOperation) SetCreationTimestamp(v time.Time) *StackSetOperation {
 	s.CreationTimestamp = &v
+	return s
+}
+
+// SetDeploymentTargets sets the DeploymentTargets field's value.
+func (s *StackSetOperation) SetDeploymentTargets(v *DeploymentTargets) *StackSetOperation {
+	s.DeploymentTargets = v
 	return s
 }
 
@@ -14500,12 +14729,17 @@ func (s *StackSetOperationPreferences) SetRegionOrder(v []*string) *StackSetOper
 type StackSetOperationResultSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the AWS account for this operation result.
+	// [Self-managed permissions] The name of the AWS account for this operation
+	// result.
 	Account *string `type:"string"`
 
 	// The results of the account gate function AWS CloudFormation invokes, if present,
 	// before proceeding with stack set operations in an account
 	AccountGateResult *AccountGateResult `type:"structure"`
+
+	// [Service-managed permissions] The organization root ID or organizational
+	// unit (OU) ID for this operation result.
+	OrganizationalUnitId *string `type:"string"`
 
 	// The name of the AWS region for this operation result.
 	Region *string `type:"string"`
@@ -14554,6 +14788,12 @@ func (s *StackSetOperationResultSummary) SetAccount(v string) *StackSetOperation
 // SetAccountGateResult sets the AccountGateResult field's value.
 func (s *StackSetOperationResultSummary) SetAccountGateResult(v *AccountGateResult) *StackSetOperationResultSummary {
 	s.AccountGateResult = v
+	return s
+}
+
+// SetOrganizationalUnitId sets the OrganizationalUnitId field's value.
+func (s *StackSetOperationResultSummary) SetOrganizationalUnitId(v string) *StackSetOperationResultSummary {
+	s.OrganizationalUnitId = &v
 	return s
 }
 
@@ -14609,6 +14849,11 @@ type StackSetOperationSummary struct {
 	//    of the operation in the region is set to FAILED. This in turn sets the
 	//    status of the operation as a whole to FAILED, and AWS CloudFormation cancels
 	//    the operation in any remaining regions.
+	//
+	//    * QUEUED: [Service-managed permissions] For automatic deployments that
+	//    require a sequence of operations. The operation is queued to be performed.
+	//    For more information, see the stack set operation status codes (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-status-codes)
+	//    in the AWS CloudFormation User Guide.
 	//
 	//    * RUNNING: The operation is currently being performed.
 	//
@@ -14666,6 +14911,11 @@ func (s *StackSetOperationSummary) SetStatus(v string) *StackSetOperationSummary
 type StackSetSummary struct {
 	_ struct{} `type:"structure"`
 
+	// [Service-managed permissions] Describes whether StackSets automatically deploys
+	// to AWS Organizations accounts that are added to a target organizational unit
+	// (OU).
+	AutoDeployment *AutoDeployment `type:"structure"`
+
 	// A description of the stack set that you specify when the stack set is created
 	// or updated.
 	Description *string `min:"1" type:"string"`
@@ -14693,6 +14943,18 @@ type StackSetSummary struct {
 	// detection has not yet been performed.
 	LastDriftCheckTimestamp *time.Time `type:"timestamp"`
 
+	// Describes how the IAM roles required for stack set operations are created.
+	//
+	//    * With self-managed permissions, you must create the administrator and
+	//    execution roles required to deploy to target accounts. For more information,
+	//    see Grant Self-Managed Stack Set Permissions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html).
+	//
+	//    * With service-managed permissions, StackSets automatically creates the
+	//    IAM roles required to deploy to accounts managed by AWS Organizations.
+	//    For more information, see Grant Service-Managed Stack Set Permissions
+	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html).
+	PermissionModel *string `type:"string" enum:"PermissionModels"`
+
 	// The ID of the stack set.
 	StackSetId *string `type:"string"`
 
@@ -14713,6 +14975,12 @@ func (s StackSetSummary) GoString() string {
 	return s.String()
 }
 
+// SetAutoDeployment sets the AutoDeployment field's value.
+func (s *StackSetSummary) SetAutoDeployment(v *AutoDeployment) *StackSetSummary {
+	s.AutoDeployment = v
+	return s
+}
+
 // SetDescription sets the Description field's value.
 func (s *StackSetSummary) SetDescription(v string) *StackSetSummary {
 	s.Description = &v
@@ -14728,6 +14996,12 @@ func (s *StackSetSummary) SetDriftStatus(v string) *StackSetSummary {
 // SetLastDriftCheckTimestamp sets the LastDriftCheckTimestamp field's value.
 func (s *StackSetSummary) SetLastDriftCheckTimestamp(v time.Time) *StackSetSummary {
 	s.LastDriftCheckTimestamp = &v
+	return s
+}
+
+// SetPermissionModel sets the PermissionModel field's value.
+func (s *StackSetSummary) SetPermissionModel(v string) *StackSetSummary {
+	s.PermissionModel = &v
 	return s
 }
 
@@ -15554,12 +15828,22 @@ func (s *UpdateStackInput) SetUsePreviousTemplate(v bool) *UpdateStackInput {
 type UpdateStackInstancesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The names of one or more AWS accounts for which you want to update parameter
-	// values for stack instances. The overridden parameter values will be applied
-	// to all stack instances in the specified accounts and regions.
+	// [Self-managed permissions] The names of one or more AWS accounts for which
+	// you want to update parameter values for stack instances. The overridden parameter
+	// values will be applied to all stack instances in the specified accounts and
+	// regions.
 	//
-	// Accounts is a required field
-	Accounts []*string `type:"list" required:"true"`
+	// You can specify Accounts or DeploymentTargets, but not both.
+	Accounts []*string `type:"list"`
+
+	// [Service-managed permissions] The AWS Organizations accounts for which you
+	// want to update parameter values for stack instances. If your update targets
+	// OUs, the overridden parameter values only apply to the accounts that are
+	// currently in the target OUs and their child OUs. Accounts added to the target
+	// OUs and their child OUs in the future won't use the overridden values.
+	//
+	// You can specify Accounts or DeploymentTargets, but not both.
+	DeploymentTargets *DeploymentTargets `type:"structure"`
 
 	// The unique identifier for this stack set operation.
 	//
@@ -15635,9 +15919,6 @@ func (s UpdateStackInstancesInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *UpdateStackInstancesInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UpdateStackInstancesInput"}
-	if s.Accounts == nil {
-		invalidParams.Add(request.NewErrParamRequired("Accounts"))
-	}
 	if s.OperationId != nil && len(*s.OperationId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("OperationId", 1))
 	}
@@ -15662,6 +15943,12 @@ func (s *UpdateStackInstancesInput) Validate() error {
 // SetAccounts sets the Accounts field's value.
 func (s *UpdateStackInstancesInput) SetAccounts(v []*string) *UpdateStackInstancesInput {
 	s.Accounts = v
+	return s
+}
+
+// SetDeploymentTargets sets the DeploymentTargets field's value.
+func (s *UpdateStackInstancesInput) SetDeploymentTargets(v *DeploymentTargets) *UpdateStackInstancesInput {
+	s.DeploymentTargets = v
 	return s
 }
 
@@ -15745,9 +16032,9 @@ func (s *UpdateStackOutput) SetStackId(v string) *UpdateStackOutput {
 type UpdateStackSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The accounts in which to update associated stack instances. If you specify
-	// accounts, you must also specify the regions in which to update stack set
-	// instances.
+	// [Self-managed permissions] The accounts in which to update associated stack
+	// instances. If you specify accounts, you must also specify the regions in
+	// which to update stack set instances.
 	//
 	// To update all the stack instances associated with this stack set, do not
 	// specify the Accounts or Regions properties.
@@ -15775,6 +16062,13 @@ type UpdateStackSetInput struct {
 	// set, you must specify a customized administrator role, even if it is the
 	// same customized administrator role used with this stack set previously.
 	AdministrationRoleARN *string `min:"20" type:"string"`
+
+	// [Service-managed permissions] Describes whether StackSets automatically deploys
+	// to AWS Organizations accounts that are added to a target organization or
+	// organizational unit (OU).
+	//
+	// If you specify AutoDeployment, do not specify DeploymentTargets or Regions.
+	AutoDeployment *AutoDeployment `type:"structure"`
 
 	// In some cases, you must explicitly acknowledge that your stack template contains
 	// certain capabilities in order for AWS CloudFormation to update the stack
@@ -15815,6 +16109,21 @@ type UpdateStackSetInput struct {
 	//    set operation will fail.
 	Capabilities []*string `type:"list"`
 
+	// [Service-managed permissions] The AWS Organizations accounts in which to
+	// update associated stack instances.
+	//
+	// To update all the stack instances associated with this stack set, do not
+	// specify DeploymentTargets or Regions.
+	//
+	// If the stack set update includes changes to the template (that is, if TemplateBody
+	// or TemplateURL is specified), or the Parameters, AWS CloudFormation marks
+	// all stack instances with a status of OUTDATED prior to updating the stack
+	// instances in the specified accounts and Regions. If the stack set update
+	// does not include changes to the template or parameters, AWS CloudFormation
+	// updates the stack instances in the specified accounts and Regions, while
+	// leaving all other stack instances with their existing stack instance status.
+	DeploymentTargets *DeploymentTargets `type:"structure"`
+
 	// A brief description of updates that you are making.
 	Description *string `min:"1" type:"string"`
 
@@ -15850,6 +16159,20 @@ type UpdateStackSetInput struct {
 
 	// A list of input parameters for the stack set template.
 	Parameters []*Parameter `type:"list"`
+
+	// Describes how the IAM roles required for stack set operations are created.
+	// You cannot modify PermissionModel if there are stack instances associated
+	// with your stack set.
+	//
+	//    * With self-managed permissions, you must create the administrator and
+	//    execution roles required to deploy to target accounts. For more information,
+	//    see Grant Self-Managed Stack Set Permissions (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html).
+	//
+	//    * With service-managed permissions, StackSets automatically creates the
+	//    IAM roles required to deploy to accounts managed by AWS Organizations.
+	//    For more information, see Grant Service-Managed Stack Set Permissions
+	//    (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html).
+	PermissionModel *string `type:"string" enum:"PermissionModels"`
 
 	// The regions in which to update associated stack instances. If you specify
 	// regions, you must also specify accounts in which to update stack set instances.
@@ -15995,9 +16318,21 @@ func (s *UpdateStackSetInput) SetAdministrationRoleARN(v string) *UpdateStackSet
 	return s
 }
 
+// SetAutoDeployment sets the AutoDeployment field's value.
+func (s *UpdateStackSetInput) SetAutoDeployment(v *AutoDeployment) *UpdateStackSetInput {
+	s.AutoDeployment = v
+	return s
+}
+
 // SetCapabilities sets the Capabilities field's value.
 func (s *UpdateStackSetInput) SetCapabilities(v []*string) *UpdateStackSetInput {
 	s.Capabilities = v
+	return s
+}
+
+// SetDeploymentTargets sets the DeploymentTargets field's value.
+func (s *UpdateStackSetInput) SetDeploymentTargets(v *DeploymentTargets) *UpdateStackSetInput {
+	s.DeploymentTargets = v
 	return s
 }
 
@@ -16028,6 +16363,12 @@ func (s *UpdateStackSetInput) SetOperationPreferences(v *StackSetOperationPrefer
 // SetParameters sets the Parameters field's value.
 func (s *UpdateStackSetInput) SetParameters(v []*Parameter) *UpdateStackSetInput {
 	s.Parameters = v
+	return s
+}
+
+// SetPermissionModel sets the PermissionModel field's value.
+func (s *UpdateStackSetInput) SetPermissionModel(v string) *UpdateStackSetInput {
+	s.PermissionModel = &v
 	return s
 }
 
@@ -16501,6 +16842,14 @@ const (
 )
 
 const (
+	// PermissionModelsServiceManaged is a PermissionModels enum value
+	PermissionModelsServiceManaged = "SERVICE_MANAGED"
+
+	// PermissionModelsSelfManaged is a PermissionModels enum value
+	PermissionModelsSelfManaged = "SELF_MANAGED"
+)
+
+const (
 	// ProvisioningTypeNonProvisionable is a ProvisioningType enum value
 	ProvisioningTypeNonProvisionable = "NON_PROVISIONABLE"
 
@@ -16751,6 +17100,9 @@ const (
 
 	// StackSetOperationStatusStopped is a StackSetOperationStatus enum value
 	StackSetOperationStatusStopped = "STOPPED"
+
+	// StackSetOperationStatusQueued is a StackSetOperationStatus enum value
+	StackSetOperationStatusQueued = "QUEUED"
 )
 
 const (
