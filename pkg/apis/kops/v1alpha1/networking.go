@@ -224,19 +224,20 @@ type CiliumNetworkingSpec struct {
 	TracePayloadLen          int               `json:"tracePayloadlen,omitempty"`
 	Tunnel                   string            `json:"tunnel,omitempty"`
 
-	EnableIpv6             bool   `json:"enableipv6"`
-	EnableIpv4             bool   `json:"enableipv4"`
-	MonitorAggregation     string `json:"monitorAggregation"`
-	BPFCTGlobalTCPMax      int    `json:"bpfCTGlobalTCPMax"`
-	BPFCTGlobalAnyMax      int    `json:"bpfCTGlobalAnyMax"`
-	PreallocateBPFMaps     bool   `json:"preallocateBPFMaps"`
-	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
-	ClusterName            string `json:"clusterName"`
-	ToFqdnsEnablePoller    bool   `json:"toFqdnsEnablePoller"`
-	ContainerRuntimeLabels string `json:"containerRuntimeLabels,omitempty"`
-	IPTablesRulesNoinstall bool   `json:"IPTablesRulesNoinstall"`
-	AutoDirectNodeRoutes   bool   `json:"autoDirectNodeRoutes"`
-	EnableNodePort         bool   `json:"enableNodePort"`
+	EnableIpv6               bool   `json:"enableipv6"`
+	EnableIpv4               bool   `json:"enableipv4"`
+	MonitorAggregation       string `json:"monitorAggregation"`
+	BPFCTGlobalTCPMax        int    `json:"bpfCTGlobalTCPMax"`
+	BPFCTGlobalAnyMax        int    `json:"bpfCTGlobalAnyMax"`
+	PreallocateBPFMaps       bool   `json:"preallocateBPFMaps"`
+	SidecarIstioProxyImage   string `json:"sidecarIstioProxyImage"`
+	ClusterName              string `json:"clusterName"`
+	ToFqdnsEnablePoller      bool   `json:"toFqdnsEnablePoller"`
+	ContainerRuntimeLabels   string `json:"containerRuntimeLabels,omitempty"`
+	IPTablesRulesNoinstall   bool   `json:"IPTablesRulesNoinstall"`
+	AutoDirectNodeRoutes     bool   `json:"autoDirectNodeRoutes"`
+	EnableNodePort           bool   `json:"enableNodePort"`
+	EnableRemoteNodeIdentity bool   `json:"enableRemoteNodeIdentity"`
 
 	//node init options
 	RemoveCbrBridge       bool   `json:"removeCbrBridge"`

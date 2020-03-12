@@ -122,6 +122,7 @@ data:
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
   enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  enable-remote-node-identity: "{{- if .EnableRemoteNodeIdentity -}}true{{- else -}}false{{- end -}}"
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1
