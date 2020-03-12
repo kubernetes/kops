@@ -154,6 +154,7 @@ help: # Show this help
 clean: # Remove build directory and bindata-generated files
 	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
+	rm -rf tests/integration/update_cluster/*/.terraform
 
 .PHONY: kops
 kops: ${KOPS}
@@ -209,11 +210,6 @@ hooks: # Install Git hooks
 .PHONY: test
 test: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v ./...
-
-.PHONY: terraform-validate
-terraform-validate:
-	# TODO: loop over all update_cluster directories
-	docker run --rm -it -v ${KOPS_ROOT}/tests/integration/update_cluster/complex:/tf -w /tf --entrypoint=sh hashicorp/terraform:0.11.14 -c '/bin/terraform init && /bin/terraform validate'
 
 .PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
@@ -543,12 +539,16 @@ verify-staticcheck: ${BINDATA_TARGETS}
 verify-shellcheck:
 	${KOPS_ROOT}/hack/verify-shellcheck.sh
 
+.PHONY: verify-terraform
+verify-terraform:
+	./hack/verify-terraform.sh
+
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
