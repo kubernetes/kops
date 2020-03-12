@@ -448,35 +448,14 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		// are actually produced), validate that the provided expected data file
 		// contents match actual data file content
 		expectedDataPath := path.Join(i.srcDir, "data")
-		if _, err := os.Stat(expectedDataPath); err == nil {
-			expectedDataFiles, err := ioutil.ReadDir(expectedDataPath)
-			if err != nil {
-				t.Fatalf("failed to read expected data dir: %v", err)
-			}
-			for _, expectedDataFile := range expectedDataFiles {
-				dataFileName := expectedDataFile.Name()
-				expectedDataContent, err :=
-					ioutil.ReadFile(path.Join(expectedDataPath, dataFileName))
-				if err != nil {
-					t.Fatalf("failed to read expected data file: %v", err)
-				}
+		{
+			for _, dataFileName := range expectedDataFilenames {
 				actualDataContent, err :=
 					ioutil.ReadFile(path.Join(actualDataPath, dataFileName))
 				if err != nil {
 					t.Fatalf("failed to read actual data file: %v", err)
 				}
-				if string(expectedDataContent) != string(actualDataContent) {
-					t.Fatalf(
-						"actual data file (%s) did not match the content of expected data file (%s). "+
-							"NOTE: If outputs seem identical, check for end-of-line differences, "+
-							"especially if the file is in multipart MIME format!"+
-							"\nBEGIN_ACTUAL:\n%s\nEND_ACTUAL\nBEGIN_EXPECTED:\n%s\nEND_EXPECTED",
-						path.Join(actualDataPath, dataFileName),
-						path.Join(expectedDataPath, dataFileName),
-						actualDataContent,
-						expectedDataContent,
-					)
-				}
+				golden.AssertMatchesFile(t, string(actualDataContent), path.Join(expectedDataPath, dataFileName))
 			}
 		}
 	}
