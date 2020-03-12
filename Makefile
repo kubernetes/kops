@@ -210,6 +210,11 @@ hooks: # Install Git hooks
 test: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v ./...
 
+.PHONY: terraform-validate
+terraform-validate:
+	# TODO: loop over all update_cluster directories
+	docker run --rm -it -v ${KOPS_ROOT}/tests/integration/update_cluster/complex:/tf -w /tf --entrypoint=sh hashicorp/terraform:0.11.14 -c '/bin/terraform init && /bin/terraform validate'
+
 .PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
