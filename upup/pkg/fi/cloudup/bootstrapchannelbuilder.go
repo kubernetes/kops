@@ -984,7 +984,10 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	if b.cluster.Spec.Networking.Kuberouter != nil {
 		key := "networking.kuberouter"
-		version := "0.3.1-kops.3"
+		versions := map[string]string{
+			"k8s-1.6":  "3.1.0-kops.3",
+			"k8s-1.12": "0.4.0-kops.1",
+		}
 
 		{
 			location := key + "/k8s-1.6.yaml"
@@ -992,7 +995,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.6.0 <1.12.0",
@@ -1006,7 +1009,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.12.0",
