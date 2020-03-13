@@ -1285,8 +1285,8 @@ func autoConvert_v1alpha1_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.DisableIpv4 = in.DisableIpv4
 	out.DisableK8sServices = in.DisableK8sServices
 	out.EnablePolicy = in.EnablePolicy
-	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableTracing = in.EnableTracing
+	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnvoyLog = in.EnvoyLog
 	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
 	out.Ipv4Node = in.Ipv4Node
@@ -1330,10 +1330,10 @@ func autoConvert_v1alpha1_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.ClusterName = in.ClusterName
 	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
 	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
+	out.Ipam = in.Ipam
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableNodePort = in.EnableNodePort
-	out.Ipam = in.Ipam
 	out.RemoveCbrBridge = in.RemoveCbrBridge
 	out.RestartPods = in.RestartPods
 	out.ReconfigureKubelet = in.ReconfigureKubelet
@@ -1409,10 +1409,10 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha1_CiliumNetworkingSpec(in *
 	out.ClusterName = in.ClusterName
 	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
 	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
+	out.Ipam = in.Ipam
 	out.IPTablesRulesNoinstall = in.IPTablesRulesNoinstall
 	out.AutoDirectNodeRoutes = in.AutoDirectNodeRoutes
 	out.EnableNodePort = in.EnableNodePort
-	out.Ipam = in.Ipam
 	out.RemoveCbrBridge = in.RemoveCbrBridge
 	out.RestartPods = in.RestartPods
 	out.ReconfigureKubelet = in.ReconfigureKubelet
