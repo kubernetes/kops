@@ -445,7 +445,7 @@ In case of any issues the directory `/var/log/aws-routed-eni` contains the log f
 
 ### Cilium Example for CNI and Network Policy
 
-Cilium is open source software for transparently securing the network connectivity between application services deployed using Linux container management platforms like Docker and Kubernetes.
+The Cilium CNI uses a Linux kernel technology called BPF, which enables the dynamic insertion of powerful security visibility and control logic within the Linux kernel.
 
 #### Installing Cilium on a new Cluster
 
@@ -485,19 +485,45 @@ $ kops create cluster \
 
 You can adjust Cilium agent configuration with most options that are available in [cilium-agent command reference](http://cilium.readthedocs.io/en/stable/cmdref/cilium-agent/).
 
-E.g enabling logstash integration would require you to change above block to
-
-```
-  networking:
-    cilium:
-      logstash: true
-```
-
-The following command will create your cluster with desired Cilium configuration
+The following command will launch your cluster with desired Cilium configuration
 
 ```console
 $ kops update cluster myclustername.mydns.io --yes
 ```
+
+##### Enabling BPF NodePort
+
+As of Kops 1.18 you can safely enable Cilium NodePort.
+
+In this mode, the cluster is fully functional without kube-proxy, with Cilium replacing kube-proxy's NodePort implementation using BPF.
+Read more about this in the [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/nodeport/)
+
+Be aware that you need to use an AMI with at least Linux 4.19.57 for this feature to work.
+
+```
+  kubeProxy:
+    enabled: false
+  networking:
+    cilium:
+      enableNodePort: true
+```
+
+##### Enabling Cilium ENI IPAM
+
+As of Kops 1.18, you can have Cilium provision AWS managed adresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+
+When using ENI IPAM you need to disable masquerading in Cilium as well.
+
+```
+  networking:
+    cilium:
+      disableMasquerade: true
+      ipam: eni
+```
+
+Note that since Cilium Operator is the entity that interacts with the EC2 API to provision and attaching ENIs, we force it to run on the master nodes when this IPAM is used.
+
+Also note that this feature has only been tested on the default kops AMIs.
 
 #### Getting help with Cilium
 
