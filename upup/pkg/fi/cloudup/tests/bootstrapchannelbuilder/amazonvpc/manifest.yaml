@@ -91,7 +91,7 @@ spec:
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 23459f7be52d7c818dc060a8bcf5e3565bd87a7b
+    manifestHash: 5e829e8981470696bef2ed5e96839ea83cb36d24
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
