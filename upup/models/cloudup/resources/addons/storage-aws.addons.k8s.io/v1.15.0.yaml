@@ -14,6 +14,18 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: gp2
+  labels:
+    k8s-addon: storage-aws.addons.k8s.io
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: kops-ssd-1-17
   annotations:
     storageclass.beta.kubernetes.io/is-default-class: "true"
   labels:
@@ -21,6 +33,9 @@ metadata:
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: gp2
+  encrypted: "true"
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
 
 ---
 
