@@ -206,11 +206,13 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			return err
 		}
 		b64d := base64.StdEncoding.EncodeToString(d)
-		b64UserDataResource := fi.WrapResource(fi.NewStringResource(b64d))
+		if b64d != "" {
+			b64UserDataResource := fi.WrapResource(fi.NewStringResource(b64d))
 
-		tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", b64UserDataResource)
-		if err != nil {
-			return err
+			tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", b64UserDataResource)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	devices, err := e.buildRootDevice(cloud)
