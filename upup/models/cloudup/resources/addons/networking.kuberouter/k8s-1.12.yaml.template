@@ -1,4 +1,4 @@
-# Pulled and modified from https://github.com/cloudnativelabs/kube-router/blob/v0.4.0/daemonset/generic-kuberouter-all-features.yaml
+# Pulled and modified from https://github.com/cloudnativelabs/kube-router/blob/v0.4.0/daemonset/generic-kuberouter.yaml
 
 apiVersion: v1
 kind: ConfigMap
@@ -25,6 +25,7 @@ data:
           }
        ]
     }
+
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -51,11 +52,10 @@ spec:
       - name: kube-router
         image: docker.io/cloudnativelabs/kube-router:v0.4.0
         args:
-        - --run-router=true
-        - --run-firewall=true
-        - --run-service-proxy=true
-        - --metrics-port=12013
-        - --kubeconfig=/var/lib/kube-router/kubeconfig
+        - "--run-router=true"
+        - "--run-firewall=true"
+        - "--run-service-proxy=true"
+        - "--metrics-port=12013"
         env:
         - name: NODE_NAME
           valueFrom:
@@ -89,12 +89,12 @@ spec:
         - -c
         - set -e -x;
           if [ ! -f /etc/cni/net.d/10-kuberouter.conflist ]; then
-          if [ -f /etc/cni/net.d/*.conf ]; then
-          rm -f /etc/cni/net.d/*.conf;
-          fi;
-          TMP=/etc/cni/net.d/.tmp-kuberouter-cfg;
-          cp /etc/kube-router/cni-conf.json ${TMP};
-          mv ${TMP} /etc/cni/net.d/10-kuberouter.conflist;
+            if [ -f /etc/cni/net.d/*.conf ]; then
+              rm -f /etc/cni/net.d/*.conf;
+            fi;
+            TMP=/etc/cni/net.d/.tmp-kuberouter-cfg;
+            cp /etc/kube-router/cni-conf.json ${TMP};
+            mv ${TMP} /etc/cni/net.d/10-kuberouter.conflist;
           fi
         volumeMounts:
         - mountPath: /etc/cni/net.d
@@ -121,12 +121,14 @@ spec:
       - name: kube-router-cfg
         configMap:
           name: kube-router-cfg
+
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kube-router
   namespace: kube-system
+
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -134,34 +136,35 @@ metadata:
   name: kube-router
   namespace: kube-system
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  - pods
-  - services
-  - nodes
-  - endpoints
-  verbs:
-  - list
-  - get
-  - watch
-- apiGroups:
-  - "networking.k8s.io"
-  resources:
-  - networkpolicies
-  verbs:
-  - list
-  - get
-  - watch
-- apiGroups:
-  - extensions
-  resources:
-  - networkpolicies
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+    - ""
+    resources:
+      - namespaces
+      - pods
+      - services
+      - nodes
+      - endpoints
+    verbs:
+      - list
+      - get
+      - watch
+  - apiGroups:
+    - "networking.k8s.io"
+    resources:
+      - networkpolicies
+    verbs:
+      - list
+      - get
+      - watch
+  - apiGroups:
+    - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
