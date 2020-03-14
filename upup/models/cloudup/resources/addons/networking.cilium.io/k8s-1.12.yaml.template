@@ -580,7 +580,7 @@ spec:
             path: etcd.config
           name: cilium-config
         name: etcd-config-path
-        # To read the k8s etcd secrets in case the user might want to use TLS
+        # To read the Cilium etcd secrets in case the user might want to use TLS
       - name: etcd-secrets
         secret:
           defaultMode: 420
