@@ -231,9 +231,9 @@ var (
 		--master-zones $ZONES \
 		--node-count 3 \
 		--yes
-		  
-	# Generate a cluster spec to apply later. 
-	# Run the following, then: kops create -f filename.yamlh 
+
+	# Generate a cluster spec to apply later.
+	# Run the following, then: kops create -f filename.yamlh
 	kops create cluster --name=kubernetes-cluster.example.com \
 		--state=s3://kops-state-1234 \
 		--zones=eu-west-1a \
@@ -1293,6 +1293,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			return err
 		}
 		fullGroup.AddInstanceGroupNodeLabel()
+		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+			fullGroup.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
+		}
 		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 	}
 
