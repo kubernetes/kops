@@ -211,19 +211,11 @@ contents: |2
 path: /usr/share/doc/docker/apache.txt
 type: file
 ---
-Name: bridge-utils
----
 Name: docker-engine
 hash: 30f7840704361673db2b62f25b6038628184b056
 preventStart: true
 source: http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~xenial_amd64.deb
 version: 1.12.1-0~xenial
----
-Name: libapparmor1
----
-Name: libltdl7
----
-Name: perl
 ---
 Name: docker.service
 definition: |

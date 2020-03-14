@@ -55,7 +55,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.11.2-0~jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~jessie_amd64.deb",
 		Hash:           "c312f1f6fa0b34df4589bb812e4f7af8e28fd51d",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.11.2 - Xenial
@@ -67,7 +66,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.11.2-0~xenial",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~xenial_amd64.deb",
 		Hash:           "194bfa864f0424d1bbdc7d499ccfa0445ce09b9f",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.11.2 - Centos / Rhel7 (two packages)
@@ -86,7 +84,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "f6da608fa8eeb2be8071489086ed9ff035f6daba",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 1.12.1 - Jessie
@@ -98,7 +95,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.1-0~jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~jessie_amd64.deb",
 		Hash:           "0401866231749abaabe8e09ee24432132839fe53",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.12.1 - Xenial
@@ -110,7 +106,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.1-0~xenial",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~xenial_amd64.deb",
 		Hash:           "30f7840704361673db2b62f25b6038628184b056",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.12.1 - Centos / Rhel7 (two packages)
@@ -129,7 +124,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "52ec22128e70acc2f76b3a8e87ff96785995116a",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 1.12.3 - k8s 1.5
@@ -143,9 +137,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.3-0~jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~jessie_amd64.deb",
 		Hash:           "7c7eb45542b67a9cfb33c292ba245710efb5d773",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
 
 	// 1.12.3 - Jessie on ARM
@@ -157,7 +148,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.3-0~jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~jessie_armhf.deb",
 		Hash:           "aa2f2f710360268dc5fd3eb066868c5883d95698",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.12.3 - Xenial
@@ -169,7 +159,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.3-0~xenial",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~xenial_amd64.deb",
 		Hash:           "b758fc88346a1e5eebf7408b0d0c99f4f134166c",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.12.3 - Centos / Rhel7 (two packages)
@@ -188,7 +177,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "a6b0243af348140236ed96f2e902b259c590eefa",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 1.12.6 - k8s 1.6
@@ -202,9 +190,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.6-0~debian-jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-jessie_amd64.deb",
 		Hash:           "1a8b0c4e3386e12964676a126d284cebf599cc8e",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
 
 	// 1.12.6 - Debian9 (stretch)
@@ -216,9 +201,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.6-0~debian-stretch",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-stretch_amd64.deb",
 		Hash:           "18bb7d024658f27a1221eae4de78d792bf00611b",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
 
 	// 1.12.6 - Jessie on ARM
@@ -230,7 +212,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.6-0~debian-jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-jessie_armhf.deb",
 		Hash:           "ac148e1f7381e4201e139584dd3c102372ad96fb",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.12.6 - Xenial
@@ -242,8 +223,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.12.6-0~ubuntu-xenial",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~ubuntu-xenial_amd64.deb",
 		Hash:           "fffc22da4ad5b20715bbb6c485b2d2bb7e84fd33",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 	},
 
 	// 1.12.6 - Centos / Rhel7 (two packages)
@@ -262,7 +241,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "9a6ee0d631ca911b6927450a3c396e9a5be75047",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 1.13.1 - k8s 1.8
@@ -276,9 +254,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.13.1-0~debian-stretch",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-stretch_amd64.deb",
 		Hash:           "19296514610aa2e5efddade5222cafae7894a689",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
 
 	// 1.13.1 - Jessie
@@ -290,9 +265,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.13.1-0~debian-jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_amd64.deb",
 		Hash:           "1d3370549e32ea13b2755b2db8dbc82b2b787ece",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
 
 	// 1.13.1 - Jessie on ARM
@@ -304,7 +276,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.13.1-0~debian-jessie",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_armhf.deb",
 		Hash:           "a3f252c5fbb2d3266be611bee50e1f331ff8d05f",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 1.13.1 - Xenial
@@ -316,8 +287,6 @@ var dockerVersions = []packageVersion{
 		Version:        "1.13.1-0~ubuntu-xenial",
 		Source:         "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~ubuntu-xenial_amd64.deb",
 		Hash:           "d12cbd686f44536c679a03cf0137df163f0bba5f",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 	},
 
 	// 1.13.1 - Centos / Rhel7 (two packages)
@@ -336,7 +305,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl", "libcgroup", "selinux-policy-base", "selinux-policy-targeted"},
 	},
 
 	// 17.03.2 - k8s 1.8
@@ -350,7 +318,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.03.2~ce-0~debian-stretch",
 		Source:         "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-stretch_amd64.deb",
 		Hash:           "36773361cf44817371770cb4e6e6823590d10297",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -363,7 +330,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.03.2~ce-0~debian-jessie",
 		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-jessie_amd64.deb",
 		Hash:           "a7ac54aaa7d33122ca5f7a2df817cbefb5cdbfc7",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -376,7 +342,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.03.2~ce-0~debian-jessie",
 		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.03.2~ce-0~debian-jessie_armhf.deb",
 		Hash:           "71e425b83ce0ef49d6298d61e61c4efbc76b9c65",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -389,7 +354,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.03.2~ce-0~ubuntu-xenial",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
 		Hash:           "4dcee1a05ec592e8a76e53e5b464ea43085a2849",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -401,7 +365,6 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "http://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz",
 		Hash:           "141716ae046016a1792ce232a0f4c8eed7fe37d1",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -421,7 +384,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "4659c937b66519c88ef2a82a906bb156db29d191",
 			},
 		},
-		Dependencies:  []string{"libtool-ltdl", "libcgroup"},
 		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 	// 17.09.0 - k8s 1.8
@@ -435,7 +397,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.09.0~ce-0~debian",
 		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
 		Hash:           "430ba87f8aa36fedcac1a48e909cbe1830b53845",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 17.09.0 - Jessie on ARM
@@ -447,7 +408,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.09.0~ce-0~debian",
 		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.09.0~ce-0~debian_armhf.deb",
 		Hash:           "5001a1defec7c33aa58ddebbd3eae6ebb5f36479",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 17.09.0 - Debian9 (stretch)
@@ -459,7 +419,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.09.0~ce-0~debian",
 		Source:         "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
 		Hash:           "70aa5f96cf00f11374b6593ccf4ed120a65375d2",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 17.09.0 - Xenial
@@ -471,9 +430,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.09.0~ce-0~ubuntu",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb",
 		Hash:           "94f6e89be6d45d9988269a237eb27c7d6a844d7f",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
 	// 18.06.2 - Xenial
@@ -485,9 +441,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "03e5eaae9c84b144e1140d9b418e43fce0311892",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
 	// 18.06.3 - Xenial
@@ -499,9 +452,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "c06eda4e934cce6a7941a6af6602d4315b500a22",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers, lsb-base, libc6, libdevmapper1.02.1, libltdl7, libseccomp2, libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, pigz, xz-utils, apparmor
 	},
 
 	// 17.09.0 - Centos / Rhel7 (two packages)
@@ -513,7 +463,6 @@ var dockerVersions = []packageVersion{
 		Version:        "17.09.0.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
 		Hash:           "b4ce72e80ff02926de943082821bbbe73958f87a",
-		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 18.03.1 - Bionic
@@ -525,9 +474,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.03.1~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.03.1~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "b55b32bd0e9176dd32b1e6128ad9fda10a65cc8b",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
 	// 18.06.2 - Bionic
@@ -539,9 +485,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "9607c67644e3e1ad9661267c99499004f2e84e05",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
 	// 18.06.1 - Debian Stretch
@@ -553,7 +496,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.1~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
 		Hash:           "18473b80e61b6d4eb8b52d87313abd71261287e5",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.06.2 - Debian Stretch
@@ -566,7 +508,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.2~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
 		Hash:           "aad1efd2c90725034e996c6a368ccc2bf41ca5b8",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.06.3 - Debian Buster
@@ -579,7 +520,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
 		Hash:           "05c9b098437bcf1b489c2a3a9764c3b779af7bc4",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.06.2 - Jessie
@@ -591,7 +531,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.2~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
 		Hash:           "1a2500311230aff37aa81dd1292a88302fb0a2e1",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.06.1 - CentOS / Rhel7 (two packages)
@@ -603,7 +542,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.1.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
 		Hash:           "0a1325e570c5e54111a79623c9fd0c0c714d3a11",
-		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 18.09.3 - Debian Stretch
@@ -633,7 +571,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
 		Hash:           "456eb7c5bfb37fac342e9ade21b602c076c5b367",
-		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 
 	// 18.06.3 (contains fix for CVE-2019-5736)
@@ -647,9 +584,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
 		Hash:           "b396678a8b70f0503a7b944fa6e3297ab27b345b",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
 	},
 
 	// 18.06.3 - Debian Stretch
@@ -662,7 +596,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
 		Hash:           "93b5a055a39462867d79109b00db1367e3d9e32f",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.06.3 - Jessie
@@ -674,7 +607,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
 		Hash:           "058bcd4b055560866b8cad978c7aa224694602da",
-		Dependencies:   []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.06.3 - CentOS / Rhel7 (two packages)
@@ -686,7 +618,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
 		Hash:           "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
-		Dependencies:   []string{"libtool-ltdl", "libcgroup"},
 	},
 	// 18.06.3 - CentOS / Rhel8 (two packages)
 	{
@@ -697,7 +628,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
 		Hash:           "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
-		Dependencies:   []string{"libtool-ltdl", "libcgroup", "policycoreutils-python-utils", "python3-policycoreutils"},
 	},
 
 	// 18.09.9 - k8s 1.14 - https://github.com/kubernetes/kubernetes/pull/72823
@@ -718,7 +648,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "88f8f3103d2e5011e2f1a73b9e6dbf03d6e6698a",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - Debian Buster
@@ -737,7 +666,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "510eee5b6884867be0d2b360f8ff8cf7f0c0d11a",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - Xenial
@@ -756,7 +684,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "b79b8958f041249bbff0afbfeded794a9e42463f",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - Bionic
@@ -775,7 +702,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "bca089a50ea22f02abe88f68d7ca35c26be9967b",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 18.09.9 - CentOS / Rhel7
@@ -794,7 +720,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "0c51b1339a95bd732ca305f07b7bcc95f132b9c8",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 18.09.9 - CentOS / Rhel8
@@ -813,7 +738,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "0c51b1339a95bd732ca305f07b7bcc95f132b9c8",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 19.03.4 - k8s 1.17 - https://github.com/kubernetes/kubernetes/pull/84476
@@ -834,7 +758,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "57f71ee764abb19a0b4c580ff14b1eb3de3a9e08",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Debian Buster
@@ -853,7 +776,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "2549a364f0e5ce489c79b292b78e349751385dd5",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Xenial
@@ -872,7 +794,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "3e0164dfef612b533c12dec6cd39da93bedd7e8c",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - Bionic
@@ -891,7 +812,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "09402bf5dac40f0c50f1071b17f38f6584a42ad1",
 			},
 		},
-		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
 
 	// 19.03.4 - CentOS / Rhel7
@@ -910,7 +830,6 @@ var dockerVersions = []packageVersion{
 				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl"},
 	},
 
 	// 19.03.4 - CentOS / Rhel8
@@ -929,11 +848,19 @@ var dockerVersions = []packageVersion{
 				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
 			},
 		},
-		Dependencies: []string{"libtool-ltdl"},
+	},
+
+	// 19.03.7 - Linux Generic
+	{
+		PackageVersion: "19.03.7",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.7.tgz",
+		Hash:           "5f7199aa237cc8fa10b95ee0c06c5e9ca9ad4296",
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
-	//   VERIFY_HASHES=1 go test ./nodeup/pkg/model -run TestDockerPackageHashes
+	//   VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run TestDockerPackageHashes
 	// (you might want to temporarily comment out older versions on a slower connection and then validate)
 }
 
@@ -1006,16 +933,20 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 			var packageTask fi.Task
 			if dv.PlainBinary {
 				packageTask = &nodetasks.Archive{
-					Name:            "docker",
-					Source:          dv.Source,
-					Hash:            dv.Hash,
-					TargetDir:       "/usr/bin/",
-					StripComponents: 1,
+					Name:      "docker-ce",
+					Source:    dv.Source,
+					Hash:      dv.Hash,
+					TargetDir: "/",
+					MapFiles: map[string]string{
+						"docker/docker*": "/usr/bin",
+					},
 				}
 				c.AddTask(packageTask)
 
 				c.AddTask(b.buildDockerGroup())
-				c.AddTask(b.buildSystemdSocket())
+				if b.Distribution.IsDebianFamily() {
+					c.AddTask(b.buildSystemdSocket())
+				}
 			} else {
 				var extraPkgs []*nodetasks.Package
 				for name, pkg := range dv.ExtraPackages {
