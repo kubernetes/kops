@@ -400,7 +400,6 @@ resource "aws_launch_configuration" "bastion-privatedns2-example-com" {
   iam_instance_profile        = "${aws_iam_instance_profile.bastions-privatedns2-example-com.id}"
   security_groups             = ["${aws_security_group.bastion-privatedns2-example-com.id}"]
   associate_public_ip_address = true
-  user_data                   = "${file("${path.module}/data/aws_launch_configuration_bastion.privatedns2.example.com_user_data")}"
 
   root_block_device = {
     volume_type           = "gp2"
