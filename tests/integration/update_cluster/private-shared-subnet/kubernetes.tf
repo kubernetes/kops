@@ -385,7 +385,6 @@ resource "aws_launch_configuration" "bastion-private-shared-subnet-example-com" 
   iam_instance_profile        = "${aws_iam_instance_profile.bastions-private-shared-subnet-example-com.id}"
   security_groups             = ["${aws_security_group.bastion-private-shared-subnet-example-com.id}"]
   associate_public_ip_address = true
-  user_data                   = "${file("${path.module}/data/aws_launch_configuration_bastion.private-shared-subnet.example.com_user_data")}"
 
   root_block_device = {
     volume_type           = "gp2"
