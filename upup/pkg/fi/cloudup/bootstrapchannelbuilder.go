@@ -553,6 +553,26 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
+	// The metadata-proxy daemonset conceals node metadata endpoints in GCE.
+	// It will land on nodes labeled cloud.google.com/metadata-proxy-ready=true
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
+		key := "metadata-proxy.addons.k8s.io"
+		version := "0.1.12"
+
+		{
+			id := "v0.1.12"
+			location := key + "/" + id + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+				Id:       id,
+			})
+		}
+	}
+
 	// The role.kubernetes.io/networking is used to label anything related to a networking addin,
 	// so that if we switch networking plugins (e.g. calico -> weave or vice-versa), we'll replace the
 	// old networking plugin, and there won't be old pods "floating around".
