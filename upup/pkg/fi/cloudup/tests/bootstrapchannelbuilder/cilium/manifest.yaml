@@ -123,7 +123,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.cilium.io/k8s-1.12.yaml
-    manifestHash: c241b96c74983edbe6a7b51f0fb2c7dfe2fb5659
+    manifestHash: 4803f1392f0ec3abf3dc73b240897d4a9464f627
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"

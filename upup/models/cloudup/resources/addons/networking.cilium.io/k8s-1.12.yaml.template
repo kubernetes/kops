@@ -116,6 +116,7 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
+  kube-proxy-replacement: partial
   container-runtime: "{{- if eq .ContainerRuntimeLabels "" -}}none{{- else -}}{{ .ContainerRuntimeLabels }}{{- end -}}"
   masquerade: "{{- if .DisableMasquerade -}}false{{- else -}}true{{- end -}}"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
