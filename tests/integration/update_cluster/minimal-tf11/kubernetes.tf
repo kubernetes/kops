@@ -399,11 +399,11 @@ resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
   protocol                 = "tcp"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2382-4000" {
+resource "aws_security_group_rule" "node-to-master-tcp-2383-4000" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-minimal-tf11-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-minimal-tf11-example-com.id}"
-  from_port                = 2382
+  from_port                = 2383
   to_port                  = 4000
   protocol                 = "tcp"
 }
