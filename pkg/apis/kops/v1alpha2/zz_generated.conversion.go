@@ -2710,6 +2710,17 @@ func Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdClust
 
 func autoConvert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpec, out *kops.EtcdManagerSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]kops.EnvVar, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha2_EnvVar_To_kops_EnvVar(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Env = nil
+	}
 	return nil
 }
 
@@ -2720,6 +2731,17 @@ func Convert_v1alpha2_EtcdManagerSpec_To_kops_EtcdManagerSpec(in *EtcdManagerSpe
 
 func autoConvert_kops_EtcdManagerSpec_To_v1alpha2_EtcdManagerSpec(in *kops.EtcdManagerSpec, out *EtcdManagerSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	if in.Env != nil {
+		in, out := &in.Env, &out.Env
+		*out = make([]EnvVar, len(*in))
+		for i := range *in {
+			if err := Convert_kops_EnvVar_To_v1alpha2_EnvVar(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Env = nil
+	}
 	return nil
 }
 
