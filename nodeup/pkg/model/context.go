@@ -284,6 +284,14 @@ func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, c.kubernetesVersion)
 }
 
+// IsKubernetesLT checks if the version is less-than
+func (c *NodeupModelContext) IsKubernetesLT(version string) bool {
+	if c.kubernetesVersion.Major == 0 {
+		klog.Fatalf("kubernetesVersion not set (%s); Init not called", c.kubernetesVersion)
+	}
+	return !c.IsKubernetesGTE(version)
+}
+
 // UseEtcdManager checks if the etcd cluster has etcd-manager enabled
 func (c *NodeupModelContext) UseEtcdManager() bool {
 	for _, x := range c.Cluster.Spec.EtcdClusters {

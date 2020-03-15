@@ -4,12 +4,80 @@ contents: |-
 path: /etc/sysconfig/docker
 type: file
 ---
+contents: |
+  #!/bin/bash
+
+  # Copyright 2019 The Kubernetes Authors All rights reserved.
+  #
+  # Licensed under the Apache License, Version 2.0 (the "License");
+  # you may not use this file except in compliance with the License.
+  # You may obtain a copy of the License at
+  #
+  #     http://www.apache.org/licenses/LICENSE-2.0
+  #
+  # Unless required by applicable law or agreed to in writing, software
+  # distributed under the License is distributed on an "AS IS" BASIS,
+  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  # See the License for the specific language governing permissions and
+  # limitations under the License.
+
+  # This script is intended to be run periodically, to check the health
+  # of docker.  If it detects a failure, it will restart docker using systemctl.
+
+  healthcheck() {
+     if output=`timeout 60 docker network ls`; then
+         echo "$output" | fgrep -qw host || {
+            echo "docker 'host' network missing"
+            return 1
+         }
+     else
+         echo "docker returned $?"
+         return 1
+     fi
+  }
+
+  if healthcheck; then
+    echo "docker healthy"
+    exit 0
+  fi
+
+  echo "docker failed"
+  echo "Giving docker 30 seconds grace before restarting"
+  sleep 30
+
+  if healthcheck; then
+    echo "docker recovered"
+    exit 0
+  fi
+
+  echo "docker still unresponsive; triggering docker restart"
+  systemctl stop docker
+
+  echo "wait all tcp sockets to close"
+  sleep `cat /proc/sys/net/ipv4/tcp_fin_timeout`
+
+  sleep 10
+  systemctl start docker
+
+  echo "Waiting 120 seconds to give docker time to start"
+  sleep 60
+
+  if healthcheck; then
+    echo "docker recovered"
+    exit 0
+  fi
+
+  echo "docker still failing"
+mode: "0755"
+path: /opt/kops/bin/docker-healthcheck
+type: file
+---
 contents: |2
 
 
                                    Apache License
                              Version 2.0, January 2004
-                          http://www.apache.org/licenses/
+                          https://www.apache.org/licenses/
 
      TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -184,24 +252,13 @@ contents: |2
 
      END OF TERMS AND CONDITIONS
 
-     APPENDIX: How to apply the Apache License to your work.
-
-        To apply the Apache License to your work, attach the following
-        boilerplate notice, with the fields enclosed by brackets "[]"
-        replaced with your own identifying information. (Don't include
-        the brackets!)  The text should be enclosed in the appropriate
-        comment syntax for the file format. We also recommend that a
-        file or class name and description of purpose be included on the
-        same "printed page" as the copyright notice for easier
-        identification within third-party archives.
-
-     Copyright [yyyy] [name of copyright owner]
+     Copyright 2013-2018 Docker, Inc.
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
 
-         http://www.apache.org/licenses/LICENSE-2.0
+         https://www.apache.org/licenses/LICENSE-2.0
 
      Unless required by applicable law or agreed to in writing, software
      distributed under the License is distributed on an "AS IS" BASIS,
@@ -216,6 +273,40 @@ hash: b758fc88346a1e5eebf7408b0d0c99f4f134166c
 preventStart: true
 source: http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~xenial_amd64.deb
 version: 1.12.3-0~xenial
+---
+Name: docker-healthcheck.service
+definition: |
+  [Unit]
+  Description=Run docker-healthcheck once
+  Documentation=https://kops.sigs.k8s.io
+
+  [Service]
+  Type=oneshot
+  ExecStart=/opt/kops/bin/docker-healthcheck
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
+---
+Name: docker-healthcheck.timer
+definition: |
+  [Unit]
+  Description=Trigger docker-healthcheck periodically
+  Documentation=https://kops.sigs.k8s.io
+
+  [Timer]
+  OnUnitInactiveSec=10s
+  Unit=docker-healthcheck.service
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
 ---
 Name: docker.service
 definition: |
