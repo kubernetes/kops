@@ -1,4 +1,4 @@
-# Pulled and modified from https://github.com/cloudnativelabs/kube-router/blob/v0.4.0/daemonset/generic-kuberouter.yaml
+# Pulled and modified from https://github.com/cloudnativelabs/kube-router/blob/v0.4.0/daemonset/kubeadm-kuberouter.yaml
 
 apiVersion: v1
 kind: ConfigMap
@@ -25,7 +25,6 @@ data:
           }
        ]
     }
-
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -52,10 +51,11 @@ spec:
       - name: kube-router
         image: docker.io/cloudnativelabs/kube-router:v0.4.0
         args:
-        - "--run-router=true"
-        - "--run-firewall=true"
-        - "--run-service-proxy=true"
-        - "--metrics-port=12013"
+        - --run-router=true
+        - --run-firewall=true
+        - --run-service-proxy=true
+        - --kubeconfig=/var/lib/kube-router/kubeconfig
+        - --metrics-port=12013
         env:
         - name: NODE_NAME
           valueFrom:
@@ -81,6 +81,9 @@ spec:
           readOnly: true
         - name: cni-conf-dir
           mountPath: /etc/cni/net.d
+        - name: kubeconfig
+          mountPath: /var/lib/kube-router/kubeconfig
+          readOnly: true
       initContainers:
       - name: install-cni
         image: busybox
@@ -121,14 +124,15 @@ spec:
       - name: kube-router-cfg
         configMap:
           name: kube-router-cfg
-
+      - name: kubeconfig
+        hostPath:
+          path: /var/lib/kube-router/kubeconfig
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kube-router
   namespace: kube-system
-
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -164,7 +168,6 @@ rules:
       - get
       - list
       - watch
-
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -178,3 +181,5 @@ subjects:
 - kind: ServiceAccount
   name: kube-router
   namespace: kube-system
+- kind: User
+  name: system:kube-router
