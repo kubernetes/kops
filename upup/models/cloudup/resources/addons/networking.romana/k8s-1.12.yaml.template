@@ -137,6 +137,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       hostNetwork: true
+      priorityClassName: system-cluster-critical
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -172,6 +173,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       hostNetwork: true
+      priorityClassName: system-cluster-critical
       serviceAccountName: romana-listener
       tolerations:
       - key: node-role.kubernetes.io/master
@@ -206,6 +208,7 @@ spec:
         romana-app: agent
     spec:
       hostNetwork: true
+      priorityClassName: system-node-critical
       securityContext:
         seLinuxOptions:
           type: spc_t
@@ -319,6 +322,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       hostNetwork: true
+      priorityClassName: system-cluster-critical
       serviceAccountName: romana-aws
       tolerations:
       - key: node-role.kubernetes.io/master
@@ -354,6 +358,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       hostNetwork: true
+      priorityClassName: system-cluster-critical
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
