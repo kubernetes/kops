@@ -191,6 +191,8 @@ type ClusterSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the default rolling-update settings for instance groups
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	// GCEServiceAccount specifies the service account with which the GCE VM runs
+	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

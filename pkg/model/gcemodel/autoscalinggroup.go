@@ -35,6 +35,7 @@ const (
 	DefaultVolumeType = "pd-standard"
 )
 
+// TODO: rework these parts to be more GCE native. ie: Managed Instance Groups > ASGs
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
 type AutoscalingGroupModelBuilder struct {
 	*GCEModelContext
@@ -70,7 +71,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
-
 			t := &gcetasks.InstanceTemplate{
 				Name:           s(name),
 				NamePrefix:     s(namePrefix),
@@ -89,7 +89,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					"monitoring",
 					"logging-write",
 				},
-
 				Metadata: map[string]*fi.ResourceHolder{
 					"startup-script": startupScript,
 					//"config": resources/config.yaml $nodeset.Name
@@ -121,6 +120,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			switch ig.Spec.Role {
 			case kops.InstanceGroupRoleMaster:
 				// Grant DNS permissions
+				// TODO: migrate to IAM permissions instead of oldschool scopes?
 				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
 				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
 
@@ -139,6 +139,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				t.CanIPForward = fi.Bool(true)
 			}
 
+			t.ServiceAccount = b.Cluster.Spec.GCEServiceAccount
 			//labels, err := b.CloudTagsForInstanceGroup(ig)
 			//if err != nil {
 			//	return fmt.Errorf("error building cloud tags: %v", err)

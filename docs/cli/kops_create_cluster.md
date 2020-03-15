@@ -81,6 +81,7 @@ kops create cluster [flags]
       --dry-run                          If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage             Generate key in aws kms and use it for encrypt etcd volumes
       --etcd-storage-type string         The default storage type for etc members
+      --gce-service-account string       Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
   -h, --help                             help for cluster
       --image string                     Image to use for all instances.
       --kubernetes-version string        Version of kubernetes to run (defaults to version in channel)

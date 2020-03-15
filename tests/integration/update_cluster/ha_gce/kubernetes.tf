@@ -397,10 +397,6 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   can_ip_forward = true
   machine_type   = "n1-standard-1"
 
-  service_account = {
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
-  }
-
   scheduling = {
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
@@ -437,10 +433,6 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
 resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-com" {
   can_ip_forward = true
   machine_type   = "n1-standard-1"
-
-  service_account = {
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
-  }
 
   scheduling = {
     automatic_restart   = true
@@ -479,10 +471,6 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   can_ip_forward = true
   machine_type   = "n1-standard-1"
 
-  service_account = {
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
-  }
-
   scheduling = {
     automatic_restart   = true
     on_host_maintenance = "MIGRATE"
@@ -519,10 +507,6 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
 resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   can_ip_forward = true
   machine_type   = "n1-standard-2"
-
-  service_account = {
-    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
-  }
 
   scheduling = {
     automatic_restart   = true

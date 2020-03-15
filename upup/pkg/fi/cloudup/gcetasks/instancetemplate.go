@@ -58,7 +58,8 @@ type InstanceTemplate struct {
 	Subnet        *Subnet
 	AliasIPRanges map[string]string
 
-	Scopes []string
+	Scopes         []string
+	ServiceAccount *string
 
 	Metadata    map[string]*fi.ResourceHolder
 	MachineType *string
@@ -270,15 +271,16 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 	networkInterfaces = append(networkInterfaces, ni)
 
 	var serviceAccounts []*compute.ServiceAccount
-	if e.Scopes != nil {
-		var scopes []string
-		for _, s := range e.Scopes {
-			s = scopeToLongForm(s)
-
-			scopes = append(scopes, s)
+	if e.ServiceAccount != nil {
+		scopes := make([]string, 0)
+		if e.Scopes != nil {
+			for _, s := range e.Scopes {
+				s = scopeToLongForm(s)
+				scopes = append(scopes, s)
+			}
 		}
 		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-			Email:  "default",
+			Email:  fi.StringValue(e.ServiceAccount),
 			Scopes: scopes,
 		})
 	}
