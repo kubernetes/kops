@@ -637,7 +637,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp23824001": {
+    "AWSEC2SecurityGroupIngressnodetomastertcp23834001": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -646,7 +646,7 @@
         "SourceSecurityGroupId": {
           "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
         },
-        "FromPort": 2382,
+        "FromPort": 2383,
         "ToPort": 4001,
         "IpProtocol": "tcp"
       }
