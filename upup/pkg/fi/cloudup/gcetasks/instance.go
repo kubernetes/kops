@@ -35,11 +35,12 @@ type Instance struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	Network     *Network
-	Tags        []string
-	Preemptible *bool
-	Image       *string
-	Disks       map[string]*Disk
+	Network        *Network
+	Tags           []string
+	Preemptible    *bool
+	Image          *string
+	Disks          map[string]*Disk
+	ServiceAccount *string
 
 	CanIPForward *bool
 	IPAddress    *Address
@@ -253,17 +254,18 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 	}
 
 	var serviceAccounts []*compute.ServiceAccount
-	if e.Scopes != nil {
-		var scopes []string
-		for _, s := range e.Scopes {
-			s = scopeToLongForm(s)
-
-			scopes = append(scopes, s)
+	if e.ServiceAccount != nil {
+		if e.Scopes != nil {
+			var scopes []string
+			for _, s := range e.Scopes {
+				s = scopeToLongForm(s)
+				scopes = append(scopes, s)
+			}
+			serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+				Email:  fi.StringValue(e.ServiceAccount),
+				Scopes: scopes,
+			})
 		}
-		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-			Email:  "default",
-			Scopes: scopes,
-		})
 	}
 
 	var metadataItems []*compute.MetadataItems

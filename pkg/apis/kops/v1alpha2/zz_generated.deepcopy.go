@@ -821,6 +821,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = new(RollingUpdate)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.GCEServiceAccount != nil {
+		in, out := &in.GCEServiceAccount, &out.GCEServiceAccount
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
