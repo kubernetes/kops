@@ -859,6 +859,15 @@ var dockerVersions = []packageVersion{
 		Hash:           "5f7199aa237cc8fa10b95ee0c06c5e9ca9ad4296",
 	},
 
+	// 19.03.8 - Linux Generic
+	{
+		PackageVersion: "19.03.8",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.8.tgz",
+		Hash:           "b1e783804b3436f6153bce9ed7465f4aebe0b8de",
+	},
+
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
 	//   VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run TestDockerPackageHashes
 	// (you might want to temporarily comment out older versions on a slower connection and then validate)
