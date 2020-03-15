@@ -29,6 +29,9 @@ const (
 	// EtcdEventsGRPC is the GRPC port used by etcd-manager, for the events etcd
 	EtcdEventsGRPC = 3997
 
+	EtcdCiliumQuarantinedClientPort = 3992
+	EtcdCiliumGRPC                  = 3993
+
 	// DNSControllerGossipWeaveMesh is the port where dns-controller listens for the weave-mesh backend gossip
 	DNSControllerGossipWeaveMesh = 3998
 
