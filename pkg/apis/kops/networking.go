@@ -402,6 +402,10 @@ type CiliumNetworkingSpec struct {
 	// Requires spec.kubeProxy.enabled be set to false.
 	// Default: false
 	EnableNodePort bool `json:"enableNodePort"`
+	// EtcdManagd installs an additional etcd cluster that is used for Cilium state change.
+	// The cluster is operated by cilium-etcd-operator.
+	// Default: false
+	EtcdManaged bool `json:"etcdManaged,omitempty"`
 
 	// RemoveCbrBridge is not implemented and may be removed in the future.
 	// Setting this has no effect.
