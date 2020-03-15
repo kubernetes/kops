@@ -851,7 +851,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 	if b.cluster.Spec.Networking.Romana != nil {
 		key := "networking.romana"
-		version := "v2.0.2-kops.2"
+		version := "v2.0.2-kops.3"
 
 		{
 			location := key + "/k8s-1.7.yaml"
@@ -1106,7 +1106,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 			{
 				key := "core.addons.k8s.io"
-				version := "1.12.0"
+				version := "1.12.1-kops.1"
 
 				location := key + "/k8s-1.12.yaml"
 				id := "k8s-1.12-ccm"
