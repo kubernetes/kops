@@ -2715,6 +2715,11 @@ spec:
                       description: EnvoyLog is not implemented and may be removed
                         in the future. Setting this has no effect.
                       type: string
+                    etcdManaged:
+                      description: 'EtcdManagd installs an additional etcd cluster
+                        that is used for Cilium state change. The cluster is operated
+                        by cilium-etcd-operator. Default: false'
+                      type: boolean
                     ipam:
                       description: Ipam specifies the IP address allocation mode to
                         use. Possible values are "crd" and "eni". "eni" will use AWS
