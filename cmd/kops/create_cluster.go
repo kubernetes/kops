@@ -161,6 +161,9 @@ type CreateClusterOptions struct {
 	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
 	OpenstackLBOctavia bool
 
+	// GCEServiceAccount specifies the service account with which the GCE VM runs
+	GCEServiceAccount string
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -298,7 +301,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
 
-	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 
 	cmd.Flags().StringVar(&options.ContainerRuntime, "container-runtime", options.ContainerRuntime, "Container runtime to use: containerd, docker")
@@ -372,6 +374,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if featureflag.SpecOverrideFlag.Enabled() {
 		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
 	}
+
+	// GCE flags
+	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
+	cmd.Flags().StringVar(&options.GCEServiceAccount, "gce-service-account", options.GCEServiceAccount, "Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.")
 
 	if featureflag.VSphereCloudProvider.Enabled() {
 		// vSphere flags
@@ -987,6 +993,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				klog.Infof("using google cloud project: %s", project)
 			}
 			cluster.Spec.Project = project
+		}
+		if c.GCEServiceAccount != "" {
+			klog.Infof("using GCE service account: %v", c.GCEServiceAccount)
+			cluster.Spec.GCEServiceAccount = fi.String(c.GCEServiceAccount)
+		} else {
+			klog.Warning("using GCE default service account")
+			cluster.Spec.GCEServiceAccount = fi.String("default")
 		}
 	}
 
