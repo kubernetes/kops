@@ -455,6 +455,9 @@ spec:
                   description: Experimental features permits enabling new features
                     such as dockerd metrics
                   type: boolean
+                healthCheck:
+                  description: HealthCheck enables the periodic health-check service
+                  type: boolean
                 hosts:
                   description: Hosts enables you to configure the endpoints the docker
                     daemon listens on i.e. tcp://0.0.0.0.2375 or unix:///var/run/docker.sock
