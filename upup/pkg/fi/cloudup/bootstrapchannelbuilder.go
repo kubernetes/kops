@@ -1015,7 +1015,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		key := "networking.kuberouter"
 		versions := map[string]string{
 			"k8s-1.6":  "0.3.1-kops.3",
-			"k8s-1.12": "0.4.0-kops.2",
+			"k8s-1.12": "0.4.0-kops.3",
 		}
 
 		{
