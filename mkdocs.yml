@@ -84,6 +84,7 @@ nav:
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
     - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Running kops in a CI environment: "continuous_integration.md"
+    - etcd administration: "operations/etcd_administration.md"
   - Networking:
     - Networking Overview including CNI: "networking.md"
     - Run kops in an existing VPC: "run_in_existing_vpc.md"
