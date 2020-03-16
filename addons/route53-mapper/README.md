@@ -1,5 +1,7 @@
 # Route53 Mapping Service
 
+*This addon is deprecated. Please use [external-dns](https://github.com/kubernetes-sigs/external-dns) instead.*
+
 This is a Kubernetes controller that polls services (in all namespaces) that are
 configured with the label `dns=route53` and adds the appropriate alias to the
 domain specified by the annotation `domainName=sub.mydomain.io`. Multiple
