@@ -48,6 +48,13 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 			EbsOptimized:          t.RootVolumeOptimization,
 			ImageId:               image.ImageId,
 			InstanceType:          t.InstanceType,
+			NetworkInterfaces: []*ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
+				{
+					AssociatePublicIpAddress: t.AssociatePublicIP,
+					DeleteOnTermination:      aws.Bool(true),
+					DeviceIndex:              fi.Int64(0),
+				},
+			},
 		},
 		LaunchTemplateName: aws.String(name),
 	}
@@ -76,10 +83,9 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	if t.SSHKey != nil {
 		lc.KeyName = t.SSHKey.Name
 	}
-	var securityGroups []*string
 	// @step: add the security groups
 	for _, sg := range t.SecurityGroups {
-		securityGroups = append(securityGroups, sg.ID)
+		lc.NetworkInterfaces[0].Groups = append(lc.NetworkInterfaces[0].Groups, sg.ID)
 	}
 	// @step: add any tenacy details
 	if t.Tenancy != nil {
@@ -95,18 +101,6 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 		lc.IamInstanceProfile = &ec2.LaunchTemplateIamInstanceProfileSpecificationRequest{
 			Name: t.IAMInstanceProfile.Name,
 		}
-	}
-	// @step: are the node publicly facing
-	if fi.BoolValue(t.AssociatePublicIP) {
-		lc.NetworkInterfaces = append(lc.NetworkInterfaces,
-			&ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
-				AssociatePublicIpAddress: t.AssociatePublicIP,
-				DeleteOnTermination:      aws.Bool(true),
-				DeviceIndex:              fi.Int64(0),
-				Groups:                   securityGroups,
-			})
-	} else {
-		lc.SecurityGroupIds = securityGroups
 	}
 	// @step: add the tags
 	if len(t.Tags) > 0 {

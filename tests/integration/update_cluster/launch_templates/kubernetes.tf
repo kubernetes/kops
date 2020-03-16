@@ -91,7 +91,13 @@ provider "aws" {
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-example-com" {
-  name                = "master-us-test-1a.masters.launchtemplates.example.com"
+  name = "master-us-test-1a.masters.launchtemplates.example.com"
+
+  launch_template = {
+    id      = "${aws_launch_template.master-us-test-1a-masters-launchtemplates-example-com.id}"
+    version = "${aws_launch_template.master-us-test-1a-masters-launchtemplates-example-com.latest_version}"
+  }
+
   max_size            = 1
   min_size            = 1
   vpc_zone_identifier = ["${aws_subnet.us-test-1a-launchtemplates-example-com.id}"]
@@ -131,7 +137,13 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-example-com" {
-  name                = "master-us-test-1b.masters.launchtemplates.example.com"
+  name = "master-us-test-1b.masters.launchtemplates.example.com"
+
+  launch_template = {
+    id      = "${aws_launch_template.master-us-test-1b-masters-launchtemplates-example-com.id}"
+    version = "${aws_launch_template.master-us-test-1b-masters-launchtemplates-example-com.latest_version}"
+  }
+
   max_size            = 1
   min_size            = 1
   vpc_zone_identifier = ["${aws_subnet.us-test-1b-launchtemplates-example-com.id}"]
@@ -171,7 +183,13 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-example-com" {
-  name                = "master-us-test-1c.masters.launchtemplates.example.com"
+  name = "master-us-test-1c.masters.launchtemplates.example.com"
+
+  launch_template = {
+    id      = "${aws_launch_template.master-us-test-1c-masters-launchtemplates-example-com.id}"
+    version = "${aws_launch_template.master-us-test-1c-masters-launchtemplates-example-com.latest_version}"
+  }
+
   max_size            = 1
   min_size            = 1
   vpc_zone_identifier = ["${aws_subnet.us-test-1c-launchtemplates-example-com.id}"]
@@ -211,7 +229,13 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "nodes-launchtemplates-example-com" {
-  name                = "nodes.launchtemplates.example.com"
+  name = "nodes.launchtemplates.example.com"
+
+  launch_template = {
+    id      = "${aws_launch_template.nodes-launchtemplates-example-com.id}"
+    version = "${aws_launch_template.nodes-launchtemplates-example-com.latest_version}"
+  }
+
   max_size            = 2
   min_size            = 2
   vpc_zone_identifier = ["${aws_subnet.us-test-1b-launchtemplates-example-com.id}"]
@@ -419,6 +443,30 @@ resource "aws_launch_template" "master-us-test-1a-masters-launchtemplates-exampl
     security_groups             = ["${aws_security_group.masters-launchtemplates-example-com.id}"]
   }
 
+  tag_specifications = {
+    resource_type = "instance"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "master-us-test-1a.masters.launchtemplates.example.com"
+      "k8s.io/role/master"                                = "1"
+      "kops.k8s.io/instancegroup"                         = "master-us-test-1a"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
+  }
+
+  tag_specifications = {
+    resource_type = "volume"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "master-us-test-1a.masters.launchtemplates.example.com"
+      "k8s.io/role/master"                                = "1"
+      "kops.k8s.io/instancegroup"                         = "master-us-test-1a"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
+  }
+
   user_data = "${file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.launchtemplates.example.com_user_data")}"
 }
 
@@ -451,6 +499,30 @@ resource "aws_launch_template" "master-us-test-1b-masters-launchtemplates-exampl
     associate_public_ip_address = true
     delete_on_termination       = true
     security_groups             = ["${aws_security_group.masters-launchtemplates-example-com.id}"]
+  }
+
+  tag_specifications = {
+    resource_type = "instance"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "master-us-test-1b.masters.launchtemplates.example.com"
+      "k8s.io/role/master"                                = "1"
+      "kops.k8s.io/instancegroup"                         = "master-us-test-1b"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
+  }
+
+  tag_specifications = {
+    resource_type = "volume"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "master-us-test-1b.masters.launchtemplates.example.com"
+      "k8s.io/role/master"                                = "1"
+      "kops.k8s.io/instancegroup"                         = "master-us-test-1b"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
   }
 
   user_data = "${file("${path.module}/data/aws_launch_template_master-us-test-1b.masters.launchtemplates.example.com_user_data")}"
@@ -487,6 +559,30 @@ resource "aws_launch_template" "master-us-test-1c-masters-launchtemplates-exampl
     security_groups             = ["${aws_security_group.masters-launchtemplates-example-com.id}"]
   }
 
+  tag_specifications = {
+    resource_type = "instance"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "master-us-test-1c.masters.launchtemplates.example.com"
+      "k8s.io/role/master"                                = "1"
+      "kops.k8s.io/instancegroup"                         = "master-us-test-1c"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
+  }
+
+  tag_specifications = {
+    resource_type = "volume"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "master-us-test-1c.masters.launchtemplates.example.com"
+      "k8s.io/role/master"                                = "1"
+      "kops.k8s.io/instancegroup"                         = "master-us-test-1c"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
+  }
+
   user_data = "${file("${path.module}/data/aws_launch_template_master-us-test-1c.masters.launchtemplates.example.com_user_data")}"
 }
 
@@ -519,6 +615,30 @@ resource "aws_launch_template" "nodes-launchtemplates-example-com" {
     associate_public_ip_address = true
     delete_on_termination       = true
     security_groups             = ["${aws_security_group.nodes-launchtemplates-example-com.id}"]
+  }
+
+  tag_specifications = {
+    resource_type = "instance"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "nodes.launchtemplates.example.com"
+      "k8s.io/role/node"                                  = "1"
+      "kops.k8s.io/instancegroup"                         = "nodes"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
+  }
+
+  tag_specifications = {
+    resource_type = "volume"
+
+    tags = {
+      KubernetesCluster                                   = "launchtemplates.example.com"
+      Name                                                = "nodes.launchtemplates.example.com"
+      "k8s.io/role/node"                                  = "1"
+      "kops.k8s.io/instancegroup"                         = "nodes"
+      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+    }
   }
 
   user_data = "${file("${path.module}/data/aws_launch_template_nodes.launchtemplates.example.com_user_data")}"
