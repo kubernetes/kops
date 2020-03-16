@@ -1205,8 +1205,8 @@ func FindAutoScalingLaunchTemplateConfigurations(cloud fi.Cloud, securityGroups 
 		for _, j := range req.LaunchTemplateVersions {
 			// @check if the security group references the security group above
 			var s []*string
-			if len(j.LaunchTemplateData.NetworkInterfaces) > 0 {
-				s = append(s, j.LaunchTemplateData.NetworkInterfaces[0].Groups...)
+			for _, ni := range j.LaunchTemplateData.NetworkInterfaces {
+				s = append(s, ni.Groups...)
 			}
 			s = append(s, j.LaunchTemplateData.SecurityGroupIds...)
 			for _, y := range s {

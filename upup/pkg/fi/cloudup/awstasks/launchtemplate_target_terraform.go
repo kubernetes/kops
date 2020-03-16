@@ -24,12 +24,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-type terraformLaunchTemplateNetworkInterfaces struct {
+type terraformLaunchTemplateNetworkInterface struct {
 	// AssociatePublicIPAddress associates a public ip address with the network interface. Boolean value.
 	AssociatePublicIPAddress *bool `json:"associate_public_ip_address,omitempty"`
 	// DeleteOnTermination indicates whether the network interface should be destroyed on instance termination.
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
-	// SecurityGroups is a list of security group ids
+	// SecurityGroups is a list of security group ids.
 	SecurityGroups []*terraform.Literal `json:"security_groups,omitempty"`
 }
 
@@ -100,6 +100,13 @@ type terraformLaunchTemplateBlockDevice struct {
 	EBS []*terraformLaunchTemplateBlockDeviceEBS `json:"ebs,omitempty"`
 }
 
+type terraformLaunchTemplateTagSpecification struct {
+	// ResourceType is the type of resource to tag.
+	ResourceType *string `json:"resource_type,omitempty"`
+	// Tags are the tags to apply to the resource.
+	Tags map[string]string `json:"tags,omitempty"`
+}
+
 type terraformLaunchTemplate struct {
 	// NamePrefix is the name of the launch template
 	NamePrefix *string `json:"name_prefix,omitempty"`
@@ -123,9 +130,11 @@ type terraformLaunchTemplate struct {
 	// Monitoring are the instance monitoring options
 	Monitoring []*terraformLaunchTemplateMonitoring `json:"monitoring,omitempty"`
 	// NetworkInterfaces are the networking options
-	NetworkInterfaces []*terraformLaunchTemplateNetworkInterfaces `json:"network_interfaces,omitempty"`
+	NetworkInterfaces []*terraformLaunchTemplateNetworkInterface `json:"network_interfaces,omitempty"`
 	// Placement are the tenancy options
 	Placement []*terraformLaunchTemplatePlacement `json:"placement,omitempty"`
+	// TagSpecifications are the tags to apply to a resource when it is created.
+	TagSpecifications []*terraformLaunchTemplateTagSpecification `json:"tag_specifications,omitempty"`
 	// UserData is the user data for the instances
 	UserData *terraform.Literal `json:"user_data,omitempty"`
 }
@@ -161,9 +170,11 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		ImageID:      image,
 		InstanceType: e.InstanceType,
 		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)},
-		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterfaces{
-			{AssociatePublicIPAddress: e.AssociatePublicIP,
-				DeleteOnTermination: fi.Bool(true)},
+		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterface{
+			{
+				AssociatePublicIPAddress: e.AssociatePublicIP,
+				DeleteOnTermination:      fi.Bool(true),
+			},
 		},
 	}
 
@@ -246,6 +257,17 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
 			VirtualName: x.VirtualName,
 			DeviceName:  fi.String(n),
+		})
+	}
+
+	if e.Tags != nil {
+		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
+			ResourceType: fi.String("instance"),
+			Tags:         e.Tags,
+		})
+		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
+			ResourceType: fi.String("volume"),
+			Tags:         e.Tags,
 		})
 	}
 
