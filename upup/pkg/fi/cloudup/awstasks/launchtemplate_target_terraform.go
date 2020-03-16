@@ -101,9 +101,9 @@ type terraformLaunchTemplateBlockDevice struct {
 }
 
 type terraformLaunchTemplateTagSpecification struct {
-	// The type of resource to tag
+	// ResourceType is the type of resource to tag.
 	ResourceType *string `json:"resource_type,omitempty"`
-	// The tags to apply to the resource.
+	// Tags are the tags to apply to the resource.
 	Tags map[string]string `json:"tags,omitempty"`
 }
 
@@ -133,7 +133,7 @@ type terraformLaunchTemplate struct {
 	NetworkInterfaces []*terraformLaunchTemplateNetworkInterface `json:"network_interfaces,omitempty"`
 	// Placement are the tenancy options
 	Placement []*terraformLaunchTemplatePlacement `json:"placement,omitempty"`
-	// TagSpecifications specifies tags to apply to a resource when the resource is created
+	// TagSpecifications are the tags to apply to a resource when it is created.
 	TagSpecifications []*terraformLaunchTemplateTagSpecification `json:"tag_specifications,omitempty"`
 	// UserData is the user data for the instances
 	UserData *terraform.Literal `json:"user_data,omitempty"`
