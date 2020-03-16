@@ -4,6 +4,17 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1a.masters.launchtemplates.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amasterslaunchtemplatesexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amasterslaunchtemplatesexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
         "MaxSize": 1,
         "MinSize": 1,
         "VPCZoneIdentifier": [
@@ -59,6 +70,17 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1b.masters.launchtemplates.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1bmasterslaunchtemplatesexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1bmasterslaunchtemplatesexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
         "MaxSize": 1,
         "MinSize": 1,
         "VPCZoneIdentifier": [
@@ -114,6 +136,17 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1c.masters.launchtemplates.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1cmasterslaunchtemplatesexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1cmasterslaunchtemplatesexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
         "MaxSize": 1,
         "MinSize": 1,
         "VPCZoneIdentifier": [
@@ -169,6 +202,17 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "nodes.launchtemplates.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodeslaunchtemplatesexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodeslaunchtemplatesexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
         "MaxSize": 2,
         "MinSize": 2,
         "VPCZoneIdentifier": [
@@ -270,7 +314,7 @@
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvda",
-              "EBS": {
+              "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 64,
                 "DeleteOnTermination": true
@@ -288,15 +332,68 @@
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmasterslaunchtemplatesexamplecom"
+                }
+              ]
             }
           ],
-          "UserData": "extracted",
-          "SecurityGroup": [
+          "TagSpecifications": [
             {
-              "Ref": "AWSEC2SecurityGroupmasterslaunchtemplatesexamplecom"
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
             }
-          ]
+          ],
+          "UserData": "extracted"
         }
       }
     },
@@ -308,7 +405,7 @@
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvda",
-              "EBS": {
+              "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 64,
                 "DeleteOnTermination": true
@@ -326,15 +423,68 @@
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmasterslaunchtemplatesexamplecom"
+                }
+              ]
             }
           ],
-          "UserData": "extracted",
-          "SecurityGroup": [
+          "TagSpecifications": [
             {
-              "Ref": "AWSEC2SecurityGroupmasterslaunchtemplatesexamplecom"
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1b.masters.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1b"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1b.masters.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1b"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
             }
-          ]
+          ],
+          "UserData": "extracted"
         }
       }
     },
@@ -346,7 +496,7 @@
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvda",
-              "EBS": {
+              "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 64,
                 "DeleteOnTermination": true
@@ -364,15 +514,68 @@
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmasterslaunchtemplatesexamplecom"
+                }
+              ]
             }
           ],
-          "UserData": "extracted",
-          "SecurityGroup": [
+          "TagSpecifications": [
             {
-              "Ref": "AWSEC2SecurityGroupmasterslaunchtemplatesexamplecom"
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1c.masters.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1c"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1c.masters.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1c"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
             }
-          ]
+          ],
+          "UserData": "extracted"
         }
       }
     },
@@ -384,7 +587,7 @@
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvda",
-              "EBS": {
+              "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 128,
                 "DeleteOnTermination": true
@@ -402,15 +605,68 @@
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodeslaunchtemplatesexamplecom"
+                }
+              ]
             }
           ],
-          "UserData": "extracted",
-          "SecurityGroup": [
+          "TagSpecifications": [
             {
-              "Ref": "AWSEC2SecurityGroupnodeslaunchtemplatesexamplecom"
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "launchtemplates.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.launchtemplates.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/launchtemplates.example.com",
+                  "Value": "owned"
+                }
+              ]
             }
-          ]
+          ],
+          "UserData": "extracted"
         }
       }
     },
