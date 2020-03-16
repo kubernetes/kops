@@ -100,9 +100,9 @@ type cloudformationLaunchTemplateBlockDevice struct {
 }
 
 type cloudformationLaunchTemplateTagSpecification struct {
-	// The type of resource to tag
+	// ResourceType is the type of resource to tag.
 	ResourceType *string `json:"ResourceType,omitempty"`
-	// The tags to apply to the resource.
+	// Tags are the tags to apply to the resource.
 	Tags []cloudformationTag `json:"Tags,omitempty"`
 }
 
@@ -127,7 +127,7 @@ type cloudformationLaunchTemplateData struct {
 	NetworkInterfaces []*cloudformationLaunchTemplateNetworkInterface `json:"NetworkInterfaces,omitempty"`
 	// Placement are the tenancy options
 	Placement []*cloudformationLaunchTemplatePlacement `json:"Placement,omitempty"`
-	// TagSpecifications specifies tags to apply to a resource when the resource is created
+	// TagSpecifications are the tags to apply to a resource when it is created.
 	TagSpecifications []*cloudformationLaunchTemplateTagSpecification `json:"TagSpecifications,omitempty"`
 	// UserData is the user data for the instances
 	UserData *string `json:"UserData,omitempty"`
@@ -145,7 +145,7 @@ func (t *LaunchTemplate) CloudformationLink() *cloudformation.Literal {
 	return cloudformation.Ref("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name))
 }
 
-// CloudformationLink returns the cloudformation version for us
+// CloudformationLink returns the cloudformation version.
 func (t *LaunchTemplate) CloudformationVersion() *cloudformation.Literal {
 	return cloudformation.GetAtt("AWS::EC2::LaunchTemplate", fi.StringValue(t.Name), "LatestVersionNumber")
 }
