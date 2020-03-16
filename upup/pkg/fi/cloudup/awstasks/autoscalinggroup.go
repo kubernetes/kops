@@ -263,7 +263,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			VPCZoneIdentifier:    fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
-		// @check are we using a launch configuation or mixed instance policies or launch template
+		// @check are we using a launch configuration, mixed instances policy, or launch template
 		if e.LaunchConfiguration != nil {
 			request.LaunchConfigurationName = e.LaunchConfiguration.ID
 		} else if e.UseMixedInstancesPolicy() {
@@ -294,7 +294,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				Version:            aws.String("1"),
 			}
 		} else {
-			return fmt.Errorf("could not find on of launch configuation, mixed instance policies or launch template")
+			return fmt.Errorf("could not find one of launch configuration, mixed instances policy, or launch template")
 		}
 
 		// @step: attempt to create the autoscaling group for us
@@ -611,9 +611,9 @@ type terraformASGTag struct {
 }
 
 type terraformAutoscalingLaunchTemplateSpecification struct {
-	// LaunchTemplateID is the ID of the template to use
+	// LaunchTemplateID is the ID of the template to use.
 	LaunchTemplateID *terraform.Literal `json:"id,omitempty"`
-	// Version is the version of the Launch Template to use
+	// Version is the version of the Launch Template to use.
 	Version *terraform.Literal `json:"version,omitempty"`
 }
 
@@ -739,7 +739,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 			Version:          e.LaunchTemplate.VersionLink(),
 		}
 	} else {
-		return fmt.Errorf("could not find on of launch configuation, mixed instance policies or launch template")
+		return fmt.Errorf("could not find one of launch configuration, mixed instances policy, or launch template")
 	}
 
 	role := ""
@@ -811,9 +811,9 @@ type cloudformationASGMetricsCollection struct {
 }
 
 type cloudformationAutoscalingLaunchTemplateSpecification struct {
-	// LaunchTemplateId is the IDx of the template to use
+	// LaunchTemplateId is the IDx of the template to use.
 	LaunchTemplateId *cloudformation.Literal `json:"LaunchTemplateId,omitempty"`
-	// Version is the version number of the template to use
+	// Version is the version number of the template to use.
 	Version *cloudformation.Literal `json:"Version,omitempty"`
 }
 
@@ -908,7 +908,7 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 			Version:          e.LaunchTemplate.CloudformationVersion(),
 		}
 	} else {
-		return fmt.Errorf("could not find on of launch configuation, mixed instance policies or launch template")
+		return fmt.Errorf("could not find one of launch configuration, mixed instances policy, or launch template")
 	}
 
 	for _, s := range e.Subnets {
