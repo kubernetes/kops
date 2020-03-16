@@ -96,9 +96,9 @@ The login credentials are:
 
 #### RBAC
 
-For k8s version > 1.6 and [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) enabled it's necessary to add your own permission to the dashboard. Please read the [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) docs before applying permissions.
+It's necessary to add your own RBAC permission to the dashboard. Please read the [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) docs before applying permissions.
 
-Below you see an example giving **full access** to the dashboard.
+Below you see an example giving **cluster-admin access** to the dashboard.
 
 ```
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -138,6 +138,8 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 ```
 
 ### Route53 Mapper
+
+*This addon is deprecated. Please use [external-dns](https://github.com/kubernetes-sigs/external-dns) instead.*
 
 Please note that kops installs a Route53 DNS controller automatically (it is required for cluster discovery).
 The functionality of the route53-mapper overlaps with the dns-controller, but some users will prefer to
