@@ -1,4 +1,4 @@
-// +build !peer_name_mac
+// +build peer_name_hash
 
 package mesh
 
