@@ -1,4 +1,31 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load(":def.bzl", "std_package_list")
+
+# gazelle:exclude testdata
+
+# TODO(jayconrod): test that the checked-in static file matches the generated
+# file. The generated code is checked in so that Gazelle can still be built
+# with "go get".
+std_package_list(
+    name = "std_package_list",
+    out = "std_package_list.go",
+)
+
+genrule(
+    name = "known_proto_imports",
+    srcs = ["//language/proto:proto.csv"],
+    outs = ["known_proto_imports.go"],
+    cmd = "$(location //language/proto/gen:gen_known_imports) -proto_csv $< -known_imports $@ -package golang -var knownProtoImports -key 0 -value 3",
+    tools = ["//language/proto/gen:gen_known_imports"],
+)
+
+genrule(
+    name = "known_go_imports",
+    srcs = ["//language/proto:proto.csv"],
+    outs = ["known_go_imports.go"],
+    cmd = "$(location //language/proto/gen:gen_known_imports) -proto_csv $< -known_imports $@ -package golang -var knownGoProtoImports -key 2 -value 3",
+    tools = ["//language/proto/gen:gen_known_imports"],
+)
 
 go_library(
     name = "go_default_library",
@@ -37,4 +64,39 @@ go_library(
         "//vendor/github.com/pelletier/go-toml:go_default_library",
         "//vendor/golang.org/x/sync/errgroup:go_default_library",
     ],
+)
+
+filegroup(
+    name = "all_files",
+    testonly = True,
+    srcs = [
+        "BUILD.bazel",
+        "config.go",
+        "config_test.go",
+        "constants.go",
+        "def.bzl",
+        "dep.go",
+        "fileinfo.go",
+        "fileinfo_go_test.go",
+        "fileinfo_test.go",
+        "fix.go",
+        "fix_test.go",
+        "generate.go",
+        "generate_test.go",
+        "godep.go",
+        "kinds.go",
+        "known_go_imports.go",
+        "known_proto_imports.go",
+        "lang.go",
+        "modules.go",
+        "package.go",
+        "resolve.go",
+        "resolve_test.go",
+        "std_package_list.go",
+        "stubs_test.go",
+        "update.go",
+        "update_import_test.go",
+        "//language/go/gen_std_package_list:all_files",
+    ],
+    visibility = ["//visibility:public"],
 )
