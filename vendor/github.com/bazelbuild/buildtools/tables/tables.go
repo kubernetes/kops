@@ -258,6 +258,17 @@ var JavaNativeRules = []string{
 // JavaLoadPath is the load path for the Starlark Java Rules.
 var JavaLoadPath = "@rules_java//java:defs.bzl"
 
+// PyNativeRules lists all Python rules that are being migrated from Native to Starlark.
+var PyNativeRules = []string{
+	"py_library",
+	"py_binary",
+	"py_test",
+	"py_runtime",
+}
+
+// PyLoadPath is the load path for the Starlark Python Rules.
+var PyLoadPath = "@rules_python//python:defs.bzl"
+
 // ProtoNativeRules lists all Proto rules that are being migrated from Native to Starlark.
 var ProtoNativeRules = []string{
 	"proto_lang_toolchain",
