@@ -57,6 +57,11 @@ func TestMinimal(t *testing.T) {
 	runTestAWS(t, "minimal.example.com", "minimal", "v1alpha2", false, 1, true, false, nil, true, false)
 }
 
+// TestMinimalGCE runs tests on a minimal GCE configuration
+func TestMinimalGCE(t *testing.T) {
+	runTestGCE(t, "minimal-gce.example.com", "minimal_gce", nil, "v1alpha2", false, 1, true)
+}
+
 // TestRestrictAccess runs the test on a simple SG configuration, similar to kops create cluster minimal.example.com --ssh-access=$(IPS) --admin-access=$(IPS) --master-count=3
 func TestRestrictAccess(t *testing.T) {
 	runTestAWS(t, "restrictaccess.example.com", "restrict_access", "v1alpha2", false, 1, true, false, nil, true, false)
