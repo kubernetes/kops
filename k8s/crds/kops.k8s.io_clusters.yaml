@@ -739,7 +739,7 @@ spec:
                 type: object
               type: array
             gceServiceAccount:
-              description: gceServiceAccount specifies the service account with which
+              description: GCEServiceAccount specifies the service account with which
                 the GCE VM runs
               type: string
             gossipConfig:

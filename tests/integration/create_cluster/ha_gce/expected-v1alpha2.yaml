@@ -4,7 +4,6 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: ha-gce.example.com
 spec:
-  GCEServiceAccount: default
   api:
     dns: {}
   authorization:
@@ -34,6 +33,7 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: events
+  gceServiceAccount: default
   iam:
     allowContainerRegistry: true
     legacy: false
