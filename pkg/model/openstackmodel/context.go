@@ -19,6 +19,7 @@ package openstackmodel
 import (
 	"fmt"
 
+	openstackutil "k8s.io/cloud-provider-openstack/pkg/util/openstack"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -28,6 +29,17 @@ import (
 
 type OpenstackModelContext struct {
 	*model.KopsModelContext
+}
+
+func (c *OpenstackModelContext) UseVIPACL() bool {
+	tags := make(map[string]string)
+	tags[openstack.TagClusterName] = c.ClusterName()
+	osCloud, err := openstack.NewOpenstackCloud(tags, &c.Cluster.Spec)
+	if err != nil {
+		klog.Errorf("Failed with error %v", err)
+		return false
+	}
+	return openstackutil.IsOctaviaFeatureSupported(osCloud.LoadBalancerClient(), openstackutil.OctaviaFeatureVIPACL)
 }
 
 func (c *OpenstackModelContext) GetNetworkName() (string, error) {
