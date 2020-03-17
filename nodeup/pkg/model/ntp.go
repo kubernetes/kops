@@ -17,10 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
-	"io/ioutil"
-	"regexp"
-
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
@@ -36,13 +32,6 @@ type NTPBuilder struct {
 
 var _ fi.ModelBuilder = &NTPBuilder{}
 
-type ntpDaemon string
-
-var (
-	chronyd ntpDaemon = "chronyd"
-	ntpd    ntpDaemon = "ntpd"
-)
-
 // Build is responsible for configuring NTP
 func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 	switch b.Distribution {
@@ -57,103 +46,51 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	var ntpIP string
+	var ntpHost string
 	switch b.Cluster.Spec.CloudProvider {
 	case "aws":
-		ntpIP = "169.254.169.123"
+		ntpHost = "169.254.169.123"
 	case "gce":
-		ntpIP = "time.google.com"
+		ntpHost = "time.google.com"
 	default:
-		ntpIP = ""
+		ntpHost = ""
 	}
 
 	if b.Distribution.IsDebianFamily() {
-		c.AddTask(&nodetasks.Package{Name: "ntp"})
-
-		if ntpIP != "" {
-			bytes, err := updateNtpIP(ntpIP, ntpd)
-			if err != nil {
-				return err
-			}
-			c.AddTask(&nodetasks.File{
-				Path:     "/etc/ntp.conf",
-				Contents: fi.NewBytesResource(bytes),
-				Type:     nodetasks.FileType_File,
-				Mode:     s("0644"),
-			})
+		c.AddTask(&nodetasks.Package{Name: "chrony"})
+		if ntpHost != "" {
+			c.AddTask(b.buildChronydConf("/etc/chrony/chrony.conf", ntpHost))
 		}
-
-		c.AddTask((&nodetasks.Service{Name: "ntp"}).InitDefaults())
+		c.AddTask((&nodetasks.Service{Name: "chrony"}).InitDefaults())
 	} else if b.Distribution.IsRHELFamily() {
-		switch b.Distribution {
-		case distros.DistributionCentos8, distros.DistributionRhel8:
-			c.AddTask(&nodetasks.Package{Name: "chrony"})
-
-			if ntpIP != "" {
-				bytes, err := updateNtpIP(ntpIP, chronyd)
-				if err != nil {
-					return err
-				}
-				c.AddTask(&nodetasks.File{
-					Path:     "/etc/chrony.conf",
-					Contents: fi.NewBytesResource(bytes),
-					Type:     nodetasks.FileType_File,
-					Mode:     s("0644"),
-				})
-			}
-			c.AddTask((&nodetasks.Service{Name: "chronyd"}).InitDefaults())
-
-		default:
-			c.AddTask(&nodetasks.Package{Name: "ntp"})
-
-			if ntpIP != "" {
-				bytes, err := updateNtpIP(ntpIP, ntpd)
-				if err != nil {
-					return err
-				}
-				c.AddTask(&nodetasks.File{
-					Path:     "/etc/ntp.conf",
-					Contents: fi.NewBytesResource(bytes),
-					Type:     nodetasks.FileType_File,
-					Mode:     s("0644"),
-				})
-			}
-
-			c.AddTask((&nodetasks.Service{Name: "ntpd"}).InitDefaults())
+		c.AddTask(&nodetasks.Package{Name: "chrony"})
+		if ntpHost != "" {
+			c.AddTask(b.buildChronydConf("/etc/chrony.conf", ntpHost))
 		}
+		c.AddTask((&nodetasks.Service{Name: "chronyd"}).InitDefaults())
 	} else {
 		klog.Warningf("unknown distribution, skipping ntp install: %v", b.Distribution)
 		return nil
 	}
+
 	return nil
 }
 
-// updateNtpIP takes a ip and a ntpDaemon and will comment out
-// the default server or pool values and append the correct cloud
-// ip to the ntp config file.
-func updateNtpIP(ip string, daemon ntpDaemon) ([]byte, error) {
-	var address string
-	var path string
-	r := regexp.MustCompile(`(?m)^(?:pool|server)\s.*`)
-	switch daemon {
-	case ntpd:
-		address = fmt.Sprintf("server %s prefer iburst\n", ip)
-		path = "/etc/ntp.conf"
-	case chronyd:
-		address = fmt.Sprintf("server %s prefer iburst minpoll 4 maxpoll 4\n", ip)
-		path = "/etc/chrony.conf"
-	default:
-		return nil, fmt.Errorf("%s is not a supported ntp application", daemon)
-	}
+func (b *NTPBuilder) buildChronydConf(path string, host string) *nodetasks.File {
+	conf := `# Built by Kops - do NOT edit
 
-	f, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
+pool ` + host + ` prefer iburst
+driftfile /var/lib/chrony/drift
+leapsectz right/UTC
+logdir /var/log/chrony
+makestep 1.0 3
+maxupdateskew 100.0
+rtcsync
+`
+	return &nodetasks.File{
+		Path:     path,
+		Contents: fi.NewStringResource(conf),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0644"),
 	}
-
-	new := r.ReplaceAllFunc(f, func(b []byte) []byte {
-		return []byte(fmt.Sprintf("#commented out by kops %s", string(b)))
-	})
-	new = append(new, []byte(address)...)
-	return new, nil
 }
