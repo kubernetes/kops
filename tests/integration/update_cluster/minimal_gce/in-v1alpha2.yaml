@@ -20,6 +20,7 @@ spec:
     - instanceGroup: master-us-test1-a
       name: "1"
     name: events
+  gceServiceAccount: default
   iam:
     legacy: false
   kubelet:

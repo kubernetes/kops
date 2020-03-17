@@ -298,6 +298,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
   machine_type   = "n1-standard-1"
 
   service_account = {
+    email  = "default"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
 
@@ -339,6 +340,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
   machine_type   = "n1-standard-2"
 
   service_account = {
+    email  = "default"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
   }
 
