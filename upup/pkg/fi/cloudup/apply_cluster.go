@@ -1180,8 +1180,8 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 
 		urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
 		if urlString == "" {
-			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.5.3/cni-ipvlan-vpc-k8s-amd64-v0.5.3.tar.gz"
-			hash, err = hashing.FromString("5e42bb70b48a9c5b4bd0d95e13a2352860575c9ba87fe58342d3d19b14f36d72")
+			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
+			hash, err = hashing.FromString("871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566")
 			if err != nil {
 				// Should be impossible
 				return fmt.Errorf("invalid hard-coded hash for lyft url")
