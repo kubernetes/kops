@@ -71,7 +71,7 @@ func TestHA(t *testing.T) {
 // TestHighAvailabilityGCE runs the test on a simple HA GCE configuration, similar to kops create cluster ha-gce.example.com
 // --zones us-test1-a,us-test1-b,us-test1-c --master-count=3
 func TestHighAvailabilityGCE(t *testing.T) {
-	runTestGCE(t, "ha-gce.example.com", "ha_gce", "v1alpha2", false, 3, true)
+	runTestGCE(t, "ha-gce.example.com", "ha_gce", nil, "v1alpha2", false, 3, true)
 }
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
@@ -517,7 +517,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, tfFileName, "", &phase, nil, sshKey)
 }
 
-func runTestGCE(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int, sshKey bool) {
+func runTestGCE(t *testing.T, clusterName string, srcDir string, lifecycleOverrides []string, version string, private bool, zones int, sshKey bool) {
 	featureflag.ParseFlags("+AlphaAllowGCE")
 
 	h := testutils.NewIntegrationTestHarness(t)
@@ -543,7 +543,7 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 		expectedFilenames = append(expectedFilenames, prefix+"kops-k8s-io-instance-group-name")
 	}
 
-	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", "", nil, nil, sshKey)
+	runTest(t, h, clusterName, srcDir, version, private, zones, expectedFilenames, "", "", nil, lifecycleOverrides, sshKey)
 }
 
 func runTestCloudformation(t *testing.T, clusterName string, srcDir string, version string, private bool, lifecycleOverrides []string, sshKey bool) {
