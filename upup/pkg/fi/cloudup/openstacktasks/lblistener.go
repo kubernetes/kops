@@ -22,16 +22,18 @@ import (
 	"k8s.io/klog"
 	// "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
+	openstackutil "k8s.io/cloud-provider-openstack/pkg/util/openstack"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 //go:generate fitask -type=LBListener
 type LBListener struct {
-	ID        *string
-	Name      *string
-	Pool      *LBPool
-	Lifecycle *fi.Lifecycle
+	ID           *string
+	Name         *string
+	Pool         *LBPool
+	Lifecycle    *fi.Lifecycle
+	AllowedCIDRs []string
 }
 
 // GetDependencies returns the dependencies of the Instance task
@@ -55,11 +57,11 @@ func (s *LBListener) CompareWithID() *string {
 }
 
 func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, lb *listeners.Listener, find *LBListener) (*LBListener, error) {
-
 	listenerTask := &LBListener{
-		ID:        fi.String(lb.ID),
-		Name:      fi.String(lb.Name),
-		Lifecycle: lifecycle,
+		ID:           fi.String(lb.ID),
+		Name:         fi.String(lb.Name),
+		AllowedCIDRs: lb.AllowedCIDRs,
+		Lifecycle:    lifecycle,
 	}
 
 	for _, pool := range lb.Pools {
@@ -134,14 +136,31 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			Protocol:       listeners.ProtocolTCP,
 			ProtocolPort:   443,
 		}
+
+		if openstackutil.IsOctaviaFeatureSupported(t.Cloud.LoadBalancerClient(), openstackutil.OctaviaFeatureVIPACL) {
+			listeneropts.AllowedCIDRs = e.AllowedCIDRs
+		}
+
 		listener, err := t.Cloud.CreateListener(listeneropts)
 		if err != nil {
 			return fmt.Errorf("error creating LB listener: %v", err)
 		}
 		e.ID = fi.String(listener.ID)
 		return nil
+	} else if len(changes.AllowedCIDRs) > 0 {
+		if openstackutil.IsOctaviaFeatureSupported(t.Cloud.LoadBalancerClient(), openstackutil.OctaviaFeatureVIPACL) {
+			opts := listeners.UpdateOpts{
+				AllowedCIDRs: &changes.AllowedCIDRs,
+			}
+			_, err := listeners.Update(t.Cloud.LoadBalancerClient(), fi.StringValue(a.ID), opts).Extract()
+			if err != nil {
+				return fmt.Errorf("error updating LB listener: %v", err)
+			}
+		} else {
+			klog.V(2).Infof("Openstack Octavia VIPACLs not supported")
+		}
+		return nil
 	}
-
 	klog.V(2).Infof("Openstack task LB::RenderOpenstack did nothing")
 	return nil
 }

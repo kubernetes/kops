@@ -22,6 +22,7 @@ go_library(
         "//upup/pkg/fi/cloudup/openstacktasks:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules:go_default_library",
+        "//vendor/k8s.io/cloud-provider-openstack/pkg/util/openstack:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],
 )
