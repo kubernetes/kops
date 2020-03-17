@@ -1,0 +1,97 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal-gce.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: gce
+  configBase: memfs://tests/ha-gce.example.com
+  containerRuntime: docker
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: a
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: a
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: v1.16.0
+  masterPublicName: api.minimal-gce.example.com
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  project: testproject
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - name: us-test1
+    region: us-test1
+    type: Public
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce.example.com
+  name: master-us-test1-a
+spec:
+  image: cos-cloud/cos-stable-65-10323-99-0
+  machineType: n1-standard-1
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
+    kops.k8s.io/instancegroup: master-us-test1-a
+  role: Master
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce.example.com
+  name: nodes
+spec:
+  image: cos-cloud/cos-stable-65-10323-99-0
+  machineType: n1-standard-2
+  maxSize: 2
+  minSize: 2
+  nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a
