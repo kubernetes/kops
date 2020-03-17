@@ -563,6 +563,7 @@ In this example, new interfaces will be attached to subnets tagged with `kuberne
       "ec2:DetachNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DescribeInstances",
+      "ec2:DescribeInstanceTypes",
       "ec2:ModifyNetworkInterfaceAttribute",
       "ec2:AssignPrivateIpAddresses",
       "ec2:UnassignPrivateIpAddresses",
