@@ -1,0 +1,5 @@
+ClusterName: minimal-gce.example.com
+Zones:
+- us-test1-a
+Cloud: gce
+KubernetesVersion: v1.16.0
