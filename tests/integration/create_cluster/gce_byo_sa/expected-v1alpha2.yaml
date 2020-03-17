@@ -2,7 +2,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
-  name: ha-gce.example.com
+  name: gce.example.com
 spec:
   api:
     dns: {}
@@ -10,29 +10,22 @@ spec:
     rbac: {}
   channel: stable
   cloudProvider: gce
-  configBase: memfs://tests/ha-gce.example.com
+  configBase: memfs://tests/gce.example.com
   containerRuntime: docker
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
     - instanceGroup: master-us-test1-a
       name: a
-    - instanceGroup: master-us-test1-b
-      name: b
-    - instanceGroup: master-us-test1-c
-      name: c
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
     - instanceGroup: master-us-test1-a
       name: a
-    - instanceGroup: master-us-test1-b
-      name: b
-    - instanceGroup: master-us-test1-c
-      name: c
     memoryRequest: 100Mi
     name: events
+  gceServiceAccount: test-account@testproject.iam.gserviceaccount.com
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -41,7 +34,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.15.6-beta.1
-  masterPublicName: api.ha-gce.example.com
+  masterPublicName: api.gce.example.com
   networking:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
@@ -65,7 +58,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: ha-gce.example.com
+    kops.k8s.io/cluster: gce.example.com
   name: master-us-test1-a
 spec:
   image: cos-cloud/cos-stable-65-10323-99-0
@@ -88,53 +81,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: ha-gce.example.com
-  name: master-us-test1-b
-spec:
-  image: cos-cloud/cos-stable-65-10323-99-0
-  machineType: n1-standard-1
-  maxSize: 1
-  minSize: 1
-  nodeLabels:
-    cloud.google.com/metadata-proxy-ready: "true"
-    kops.k8s.io/instancegroup: master-us-test1-b
-  role: Master
-  subnets:
-  - us-test1
-  zones:
-  - us-test1-b
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
-  labels:
-    kops.k8s.io/cluster: ha-gce.example.com
-  name: master-us-test1-c
-spec:
-  image: cos-cloud/cos-stable-65-10323-99-0
-  machineType: n1-standard-1
-  maxSize: 1
-  minSize: 1
-  nodeLabels:
-    cloud.google.com/metadata-proxy-ready: "true"
-    kops.k8s.io/instancegroup: master-us-test1-c
-  role: Master
-  subnets:
-  - us-test1
-  zones:
-  - us-test1-c
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
-  labels:
-    kops.k8s.io/cluster: ha-gce.example.com
+    kops.k8s.io/cluster: gce.example.com
   name: nodes
 spec:
   image: cos-cloud/cos-stable-65-10323-99-0
@@ -149,5 +96,3 @@ spec:
   - us-test1
   zones:
   - us-test1-a
-  - us-test1-b
-  - us-test1-c

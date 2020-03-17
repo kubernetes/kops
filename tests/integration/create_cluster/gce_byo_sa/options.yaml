@@ -1,4 +1,4 @@
-ClusterName: ha-gce.example.com
+ClusterName: gce.example.com
 Zones:
 - us-test1-a
 MasterZones:
