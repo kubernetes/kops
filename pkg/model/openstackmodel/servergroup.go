@@ -274,11 +274,16 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("could not find subnet for master loadbalancer")
 		}
 		lbTask := &openstacktasks.LB{
-			Name:          fi.String(b.Cluster.Spec.MasterPublicName),
-			Subnet:        fi.String(lbSubnetName),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName),
+			Name:      fi.String(b.Cluster.Spec.MasterPublicName),
+			Subnet:    fi.String(lbSubnetName),
+			Lifecycle: b.Lifecycle,
 		}
+
+		useVIPACL := b.UseVIPACL()
+		if !useVIPACL {
+			lbTask.SecurityGroup = b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName)
+		}
+
 		c.AddTask(lbTask)
 
 		lbfipTask := &openstacktasks.FloatingIP{
@@ -303,6 +308,9 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:      lbTask.Name,
 			Lifecycle: b.Lifecycle,
 			Pool:      poolTask,
+		}
+		if useVIPACL {
+			listenerTask.AllowedCIDRs = b.Cluster.Spec.KubernetesAPIAccess
 		}
 		c.AddTask(listenerTask)
 
