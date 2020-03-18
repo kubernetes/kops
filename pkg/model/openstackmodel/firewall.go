@@ -211,7 +211,7 @@ func (b *FirewallModelBuilder) addNodePortRules(c *fi.ModelBuilderContext, sgMap
 }
 
 // addHTTPSRules - Add rules to 443 access given the presence of a loadbalancer or not
-func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
+func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup, useVIPACL bool) error {
 
 	masterName := b.SecurityGroupName(kops.InstanceGroupRoleMaster)
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
@@ -234,20 +234,22 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.ModelBuilderContext, sgMap ma
 	addDirectionalGroupRule(c, masterSG, masterSG, httpsIngress)
 
 	if b.UseLoadBalancerForAPI() {
-		//Allow API Access to the lb sg
-		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
-			addDirectionalGroupRule(c, lbSG, nil, &openstacktasks.SecurityGroupRule{
-				Lifecycle:      b.Lifecycle,
-				Direction:      s(string(rules.DirIngress)),
-				Protocol:       s(IPProtocolTCP),
-				EtherType:      s(IPV4),
-				PortRangeMin:   i(443),
-				PortRangeMax:   i(443),
-				RemoteIPPrefix: s(apiAccess),
-			})
+		if !useVIPACL {
+			//Allow API Access to the lb sg
+			for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+				addDirectionalGroupRule(c, lbSG, nil, &openstacktasks.SecurityGroupRule{
+					Lifecycle:      b.Lifecycle,
+					Direction:      s(string(rules.DirIngress)),
+					Protocol:       s(IPProtocolTCP),
+					EtherType:      s(IPV4),
+					PortRangeMin:   i(443),
+					PortRangeMax:   i(443),
+					RemoteIPPrefix: s(apiAccess),
+				})
+			}
+			//Allow masters ingress from the sg
+			addDirectionalGroupRule(c, masterSG, lbSG, httpsIngress)
 		}
-		//Allow masters ingress from the sg
-		addDirectionalGroupRule(c, masterSG, lbSG, httpsIngress)
 
 		//FIXME: Octavia port traffic appears to be denied though its port is in lbSG
 		if b.usesOctavia() {
@@ -478,11 +480,18 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	sgMap := make(map[string]*openstacktasks.SecurityGroup)
 
+	useVIPACL := false
+	if b.UseLoadBalancerForAPI() && b.UseVIPACL() {
+		useVIPACL = true
+	}
 	if b.UseLoadBalancerForAPI() {
 		sg := &openstacktasks.SecurityGroup{
 			Name:             s(b.Cluster.Spec.MasterPublicName),
 			Lifecycle:        b.Lifecycle,
 			RemoveExtraRules: []string{"port=443"},
+		}
+		if useVIPACL {
+			sg.RemoveGroup = true
 		}
 		c.AddTask(sg)
 		sgMap[b.Cluster.Spec.MasterPublicName] = sg
@@ -492,8 +501,9 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Create Security Group for Role
 		groupName := b.SecurityGroupName(role)
 		sg := &openstacktasks.SecurityGroup{
-			Name:      s(groupName),
-			Lifecycle: b.Lifecycle,
+			Name:        s(groupName),
+			Lifecycle:   b.Lifecycle,
+			RemoveGroup: false,
 		}
 		if role == kops.InstanceGroupRoleBastion {
 			sg.RemoveExtraRules = []string{"port=22"}
@@ -507,7 +517,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	//Add API Server Rules
-	b.addHTTPSRules(c, sgMap)
+	b.addHTTPSRules(c, sgMap, useVIPACL)
+
 	//Add SSH
 	b.addSSHRules(c, sgMap)
 	//Allow overlay DNS

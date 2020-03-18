@@ -91,43 +91,43 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
-	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/go-ini/ini v1.51.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
 	github.com/golang/protobuf v1.3.2
 	github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a
-	github.com/gorilla/mux v1.7.0
+	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl v1.0.0
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
-	github.com/miekg/dns v1.1.4
+	github.com/miekg/dns v1.1.16
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v1.0.0
-	github.com/sergi/go-diff v0.0.0-20161102184045-552b4e9bbdca
+	github.com/sergi/go-diff v1.0.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.3.2
+	github.com/spf13/viper v1.4.0
 	github.com/spotinst/spotinst-sdk-go v1.43.0
 	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli v1.20.0
-	github.com/vmware/govmomi v0.20.1
+	github.com/vmware/govmomi v0.20.3
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
-	go.uber.org/zap v1.9.1
+	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 	golang.org/x/tools v0.0.0-20191203134012-c197fd4bf371
 	google.golang.org/api v0.17.0
-	gopkg.in/gcfg.v1 v1.2.0
+	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/yaml.v2 v2.2.7
 	honnef.co/go/tools v0.0.1-2019.2.3
@@ -135,6 +135,7 @@ require (
 	k8s.io/apimachinery v0.0.0
 	k8s.io/cli-runtime v0.0.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	k8s.io/cloud-provider-openstack v1.17.0
 	k8s.io/component-base v0.0.0
 	k8s.io/helm v2.9.0+incompatible
 	k8s.io/klog v1.0.0
