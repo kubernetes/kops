@@ -62,6 +62,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/ports:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/subnets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/cloud-provider-openstack/pkg/util/openstack:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],
 )
