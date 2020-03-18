@@ -27,7 +27,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: spotinst-kubernetes-cluster-controller
-  namespace: kube-system
 rules:
   # ----------------------------------------------------------------------------
   # Required for functional operation (read-only).
@@ -36,7 +35,7 @@ rules:
   resources: ["pods", "nodes", "services", "namespaces", "replicationcontrollers", "limitranges", "events", "persistentvolumes", "persistentvolumeclaims"]
   verbs: ["get", "list"]
 - apiGroups: ["apps"]
-  resources: ["deployments", "daemonsets", "statefulsets"]
+  resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
   verbs: ["get","list"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
@@ -71,6 +70,21 @@ rules:
   resources: ["pods/eviction"]
   verbs: ["create"]
   # ----------------------------------------------------------------------------
+  # Required by the Spotinst Cleanup feature.
+  # ----------------------------------------------------------------------------
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["delete"]
+  # ----------------------------------------------------------------------------
+  # Required by the Spotinst CSR Approval feature.
+  # ----------------------------------------------------------------------------
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests"]
+  verbs: ["get", "list"]
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests/approval"]
+  verbs: ["patch", "update"]
+  # ----------------------------------------------------------------------------
   # Required by the Spotinst Auto Update feature.
   # ----------------------------------------------------------------------------
 - apiGroups: ["rbac.authorization.k8s.io"]
@@ -94,14 +108,13 @@ rules:
   resources: ["pods"]
   verbs: ["get", "list", "patch", "update", "create", "delete"]
 ---
-# ------------------------------------------
+# ------------------------------------------------------------------------------
 # Cluster Role Binding
-# ------------------------------------------
+# ------------------------------------------------------------------------------
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: spotinst-kubernetes-cluster-controller
-  namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -141,10 +154,21 @@ spec:
               matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 50
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-addon
+                  operator: In
+                  values:
+                  - spotinst-kubernetes-cluster-controller.addons.k8s.io
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.50
+        image: spotinst/kubernetes-cluster-controller:1.0.57
         livenessProbe:
           httpGet:
             path: /healthcheck
@@ -170,6 +194,30 @@ spec:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: spotinst.cluster-identifier
+        - name: DISABLE_AUTO_UPDATE
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: disable-auto-update
+              optional: true
+        - name: ENABLE_CSR_APPROVAL
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: enable-csr-approval
+              optional: true
+        - name: PROXY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: proxy-url
+              optional: true
+        - name: BASE_SPOTINST_URL
+          valueFrom:
+            configMapKeyRef:
+              name: spotinst-kubernetes-cluster-controller-config
+              key: base-url
+              optional: true
         - name: POD_ID
           valueFrom:
             fieldRef:
