@@ -113,6 +113,7 @@ spec:
     spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
+      priorityClassName: system-node-critical
       serviceAccountName: cloud-controller-manager
       containers:
       - name: cloud-controller-manager
