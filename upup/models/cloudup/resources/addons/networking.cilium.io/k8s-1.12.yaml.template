@@ -533,7 +533,7 @@ spec:
           name: bpf-maps
         - mountPath: /var/run/cilium
           name: cilium-run
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       restartPolicy: Always
       serviceAccount: cilium
       serviceAccountName: cilium
@@ -748,6 +748,7 @@ spec:
           readOnly: true
 {{- end }}
       hostNetwork: true
+      priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
@@ -931,6 +932,7 @@ spec:
         name: cilium-etcd-operator
       dnsPolicy: ClusterFirst
       hostNetwork: true
+      priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium-etcd-operator
       serviceAccountName: cilium-etcd-operator
