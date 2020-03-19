@@ -404,6 +404,9 @@ type CiliumNetworkingSpec struct {
 	// The cluster is operated by cilium-etcd-operator.
 	// Default: false
 	EtcdManaged bool `json:"etcdManaged,omitempty"`
+	// EnableRemoteNodeIdentity enables the remote-node-identity added in Cilium 1.7.0.
+	// Default: false
+	EnableRemoteNodeIdentity bool `json:"enableRemoteNodeIdentity"`
 
 	// RemoveCbrBridge is not implemented and may be removed in the future.
 	// Setting this has no effect.
