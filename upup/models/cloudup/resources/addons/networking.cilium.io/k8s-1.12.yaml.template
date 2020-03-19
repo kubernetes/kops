@@ -137,6 +137,7 @@ data:
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
   enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
   kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
+  enable-remote-node-identity: "{{- if .EnableRemoteNodeIdentity -}}true{{- else -}}false{{- end -}}"
   {{ with .Ipam }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
