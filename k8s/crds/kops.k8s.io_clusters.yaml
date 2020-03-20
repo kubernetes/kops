@@ -2437,6 +2437,8 @@ spec:
                       type: string
                     enablePrometheusMetrics:
                       type: boolean
+                    enableRemoteNodeIdentity:
+                      type: boolean
                     enableTracing:
                       type: boolean
                     enableipv4:
@@ -2541,6 +2543,7 @@ spec:
                   - clusterName
                   - cniBinPath
                   - enableNodePort
+                  - enableRemoteNodeIdentity
                   - enableipv4
                   - enableipv6
                   - monitorAggregation
