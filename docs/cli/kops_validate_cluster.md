@@ -30,6 +30,7 @@ kops validate cluster [flags]
 ### Options
 
 ```
+      --count int           If set, will validate the cluster consecutive times
   -h, --help                help for cluster
       --kubeconfig string   Path to the kubeconfig file
   -o, --output string       Output format. One of json|yaml|table. (default "table")
