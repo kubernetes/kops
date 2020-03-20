@@ -42,6 +42,7 @@ import (
 type ValidateClusterOptions struct {
 	output     string
 	wait       time.Duration
+	count      int
 	kubeconfig string
 }
 
@@ -61,7 +62,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			result, err := RunValidateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {
-				exitWithError(err)
+				exitWithError(fmt.Errorf("Validation failed: %v", err))
 			}
 			// We want the validate command to exit non-zero if validation found a problem,
 			// even if we didn't really hit an error during validation.
@@ -73,6 +74,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Output format. One of json|yaml|table.")
 	cmd.Flags().DurationVar(&options.wait, "wait", options.wait, "If set, will wait for cluster to be ready")
+	cmd.Flags().IntVar(&options.count, "count", options.count, "If set, will validate the cluster consecutive times")
 	cmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "", "Path to the kubeconfig file")
 
 	return cmd
@@ -144,15 +146,22 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return nil, fmt.Errorf("unexpected error creating validatior: %v", err)
 	}
 
+	consecutive := 0
 	for {
+		if options.wait > 0 && time.Now().After(timeout) {
+			return nil, fmt.Errorf("wait time exceeded during validation")
+		}
+
 		result, err := validator.Validate()
 		if err != nil {
-			if time.Now().After(timeout) {
+			consecutive = 0
+			if options.wait > 0 {
+				klog.Warningf("(will retry): unexpected error during validation: %v", err)
+				time.Sleep(pollInterval)
+				continue
+			} else {
 				return nil, fmt.Errorf("unexpected error during validation: %v", err)
 			}
-			klog.Warningf("(will retry): unexpected error during validation: %v", err)
-			time.Sleep(pollInterval)
-			continue
 		}
 
 		switch options.output {
@@ -160,7 +169,6 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			if err := validateClusterOutputTable(result, cluster, instanceGroups, out); err != nil {
 				return nil, err
 			}
-
 		case OutputYaml:
 			y, err := yaml.Marshal(result)
 			if err != nil {
@@ -169,7 +177,6 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			if _, err := out.Write(y); err != nil {
 				return nil, fmt.Errorf("error writing to output: %v", err)
 			}
-
 		case OutputJSON:
 			j, err := json.Marshal(result)
 			if err != nil {
@@ -178,19 +185,33 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 			if _, err := out.Write(j); err != nil {
 				return nil, fmt.Errorf("error writing to output: %v", err)
 			}
-
 		default:
 			return nil, fmt.Errorf("unknown output format: %q", options.output)
 		}
 
-		if options.wait == 0 || len(result.Failures) == 0 {
-			return result, nil
+		if len(result.Failures) == 0 {
+			consecutive++
+			if consecutive < options.count {
+				klog.Infof("(will retry): cluster passed validation %d consecutive times", consecutive)
+				if options.wait > 0 {
+					time.Sleep(pollInterval)
+					continue
+				} else {
+					return nil, fmt.Errorf("cluster passed validation %d consecutive times", consecutive)
+				}
+			} else {
+				return result, nil
+			}
+		} else {
+			if options.wait > 0 && consecutive == 0 {
+				klog.Warningf("(will retry): cluster not yet healthy")
+				time.Sleep(pollInterval)
+				continue
+			} else {
+				return nil, fmt.Errorf("cluster not yet healthy")
+			}
 		}
-
-		klog.Warningf("(will retry): cluster not yet healthy")
-		time.Sleep(pollInterval)
 	}
-
 }
 
 func validateClusterOutputTable(result *validation.ValidationCluster, cluster *api.Cluster, instanceGroups []api.InstanceGroup, out io.Writer) error {
