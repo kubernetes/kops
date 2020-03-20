@@ -68,6 +68,7 @@ go_test(
     size = "small",
     srcs = [
         "dryruntarget_test.go",
+        "files_test.go",
         "vfs_castore_test.go",
     ],
     embed = [":go_default_library"],
