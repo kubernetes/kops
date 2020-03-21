@@ -2917,6 +2917,11 @@ spec:
                       description: StateDir is not implemented and may be removed
                         in the future. Setting this has no effect.
                       type: string
+                    toFqdnsDnsRejectResponseCode:
+                      description: 'ToFqdnsDNSRejectResponseCode sets the DNS response
+                        code for rejecting DNS requests. Possible values are "nameError"
+                        or "refused". Default: refused'
+                      type: string
                     toFqdnsEnablePoller:
                       description: 'ToFqdnsEnablePoller replaces the DNS proxy-based
                         implementation of FQDN policies with the less powerful legacy
