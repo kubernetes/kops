@@ -374,6 +374,10 @@ type CiliumNetworkingSpec struct {
 	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
 	ClusterName string `json:"clusterName"`
+	// ToFqdnsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
+	// Possible values are "nameError" or "refused".
+	// Default: refused
+	ToFqdnsDNSRejectResponseCode string `json:"toFqdnsDnsRejectResponseCode,omitempty"`
 	// ToFqdnsEnablePoller replaces the DNS proxy-based implementation of FQDN policies
 	// with the less powerful legacy implementation.
 	// Default: false
