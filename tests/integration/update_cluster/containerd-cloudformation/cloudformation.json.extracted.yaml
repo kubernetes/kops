@@ -138,7 +138,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
   containerRuntime: containerd
   containerd:
     configOverride: ""
-    logLevel: warn
+    logLevel: info
     version: 1.2.10
   docker:
     skipInstall: true
@@ -426,7 +426,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
   containerRuntime: containerd
   containerd:
     configOverride: ""
-    logLevel: warn
+    logLevel: info
     version: 1.2.10
   docker:
     skipInstall: true
