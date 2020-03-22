@@ -378,7 +378,7 @@ spec:
                   type: string
                 logLevel:
                   description: Logging level [trace, debug, info, warn, error, fatal,
-                    panic] (default "warn")
+                    panic] (default "info")
                   type: string
                 root:
                   description: Directory for persistent data (default "/var/lib/containerd")

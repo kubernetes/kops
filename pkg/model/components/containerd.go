@@ -61,7 +61,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		// Apply defaults for containerd running in container runtime mode
-		containerd.LogLevel = fi.String("warn")
+		containerd.LogLevel = fi.String("info")
 		containerd.ConfigOverride = fi.String("")
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
@@ -89,7 +89,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		// Apply defaults for containerd running in Docker mode
-		containerd.LogLevel = fi.String("warn")
+		containerd.LogLevel = fi.String("info")
 		containerd.ConfigOverride = fi.String("disabled_plugins = [\"cri\"]\n")
 
 	} else {
