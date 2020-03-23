@@ -250,7 +250,7 @@ type KubeAPIServerConfig struct {
 	// Image is the docker container used
 	Image string `json:"image,omitempty"`
 	// DisableBasicAuth removes the --basic-auth-file flag
-	DisableBasicAuth bool `json:"disableBasicAuth,omitempty"`
+	DisableBasicAuth *bool `json:"disableBasicAuth,omitempty"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// CloudProvider is the name of the cloudProvider we are using, aws, gce etcd
