@@ -42,7 +42,7 @@ var (
 	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 	// TODO: perhaps make region regex more specific, i.e. (us|eu|ap|cn|ca|sa), to prevent matching bucket names that match region format?
 	//       but that will mean updating this list when AWS introduces new regions
-	s3UrlRegexp = regexp.MustCompile(`s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?.amazonaws.com(.cn)?(?P<path>.*)?`)
+	s3UrlRegexp = regexp.MustCompile(`(s3([-.](?P<region>\w{2}-\w+-\d{1})|[-.](?P<bucket>[\w.\-\_]+)|)?|(?P<bucket>[\w.\-\_]+).s3.(?P<region>\w{2}-\w+-\d{1})).amazonaws.com(.cn)?(?P<path>.*)?`)
 )
 
 type S3BucketDetails struct {
@@ -385,7 +385,9 @@ func VFSPath(url string) (string, error) {
 
 	captured := map[string]string{}
 	for i, value := range result {
-		captured[groupNames[i]] = value
+		if value != "" {
+			captured[groupNames[i]] = value
+		}
 	}
 	bucket := captured["bucket"]
 	path := captured["path"]
