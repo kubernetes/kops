@@ -104,7 +104,9 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.SecretStore != nil {
+	// Support for basic auth was deprecated 1.16 and removed in 1.19
+	// https://github.com/kubernetes/kubernetes/pull/89069
+	if b.IsKubernetesLT("1.19") && b.SecretStore != nil {
 		key := "kube"
 		token, err := b.SecretStore.FindSecret(key)
 		if err != nil {
