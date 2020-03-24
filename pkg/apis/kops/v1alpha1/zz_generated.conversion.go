@@ -1328,6 +1328,7 @@ func autoConvert_v1alpha1_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
 	out.ClusterName = in.ClusterName
+	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
 	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
 	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
 	out.Ipam = in.Ipam
@@ -1409,6 +1410,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha1_CiliumNetworkingSpec(in *
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
 	out.ClusterName = in.ClusterName
+	out.ToFqdnsDNSRejectResponseCode = in.ToFqdnsDNSRejectResponseCode
 	out.ToFqdnsEnablePoller = in.ToFqdnsEnablePoller
 	out.ContainerRuntimeLabels = in.ContainerRuntimeLabels
 	out.Ipam = in.Ipam
