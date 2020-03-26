@@ -112,6 +112,8 @@ func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 		users = []string{"centos"}
 	case distros.DistributionAmazonLinux2, distros.DistributionRhel7, distros.DistributionRhel8:
 		users = []string{"ec2-user"}
+	case distros.DistributionCoreOS, distros.DistributionFlatcar:
+		users = []string{"core"}
 	default:
 		klog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
 		return nil, nil, nil
