@@ -4,13 +4,6 @@ import json
 import os
 import e2e
 
-# k is the channel to get; e.g. "stable", "latest", "stable-1.16", "latest-1.16"
-# List at `gsutil ls gs://kubernetes-release/release | grep txt`
-def get_kubernetes_version(k):
-    latest_url = (
-        "https://storage.googleapis.com/kubernetes-release/release/" + k + ".txt"
-    )
-    return downloads.read_url(latest_url).strip()
 
 
 def download_kubectl(k8s_version):

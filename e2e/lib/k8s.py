@@ -2,6 +2,14 @@ from kubernetes import client, config
 
 from os import path
 
+import downloads
+
+# k is the channel to get; e.g. "stable", "latest", "stable-1.16", "latest-1.16"
+# List at `gsutil ls gs://kubernetes-release/release | grep txt`
+def get_kubernetes_version(k):
+  latest_url = "https://storage.googleapis.com/kubernetes-release/release/" + k + ".txt"
+  return downloads.read_url(latest_url).strip()
+
 class KubernetesClient(object):
   def __init__(self, api_client=None):
     if not api_client:

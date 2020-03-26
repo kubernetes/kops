@@ -52,7 +52,7 @@ def download_kubetest(k8s_version):
 
     url = "https://storage.googleapis.com/kubernetes-release/release/" + k8s_version + "/bin/linux/amd64/kubectl"
     kubectl = downloads.download_hashed_url(url)
-    downloads.exec(["chmod", "+x", kubectl])
+    downloads.exec(["chmod", "+x", kubectl], print_running=False, print_stdout=False)
     os.symlink(kubectl, os.path.join(bin_dir, "kubectl"))
     #os.symlink(kubectl, "/bin/kubectl")
 

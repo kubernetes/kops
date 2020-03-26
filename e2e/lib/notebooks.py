@@ -6,16 +6,22 @@ import nbconvert
 
 import downloads
 import e2e
+import teststate
 
 if not 'workbook_dir' in globals():
   workbook_dir = os.getcwd()
 
-def run_notebook(src, destdir=None, timeout=3600, parameters=None):
-  src = src + ".ipynb"
+def run(src, destdir=None, timeout=3600, parameters=None):
+  result = {
+    "src": src,
+    "parameters": parameters,
+  }
 
   if not destdir:
     ad = e2e.artifacts_dir()
     destdir = os.path.join(ad, src)
+
+  src = src + ".ipynb"
 
   os.makedirs(destdir, exist_ok=True)
   dest = os.path.join(destdir, "output.ipynb")
@@ -38,6 +44,8 @@ def run_notebook(src, destdir=None, timeout=3600, parameters=None):
 
   print("executing notebook %s to %s" % (src, dest))
 
+  clear_output = nbconvert.preprocessors.ClearOutputPreprocessor()
+
   ep = nbconvert.preprocessors.ExecutePreprocessor(timeout=timeout, kernel_name='python3')
 
   prior_env_artifacts = os.environ.get("ARTIFACTS")
@@ -45,6 +53,7 @@ def run_notebook(src, destdir=None, timeout=3600, parameters=None):
 
   ok = False
   try:
+    clear_output.preprocess(nb, {'metadata': {'path': src_dir}})
     ep.preprocess(nb, {'metadata': {'path': src_dir}})
     ok = True
   except nbconvert.preprocessors.CellExecutionError as e:
@@ -60,12 +69,19 @@ def run_notebook(src, destdir=None, timeout=3600, parameters=None):
   with open(dest, 'w', encoding='utf-8') as f:
     nbformat.write(nb, f)
 
-  #args = ["jupyter", "nbconvert", "--to", "notebook"]
-  #args += ["--execute",os.path.abspath(dest)]
-  #args += ["--output", os.path.abspath(dest)]
-  #args += ["--ExecutePreprocessor.timeout=%s" % timeout]
+  state_file = os.path.join(destdir, "state.json")
+  if os.path.exists(state_file):
+    with open(state_file) as f:
+      child_state = json.load(f)
+    result["state"] = child_state
 
-  #downloads.exec(args, env=env)
+  result["success"] = ok
+
+  teststate.append_state("status.subtasks", result)
+
+  # Convert output to HTML for easier reading
+  args = ["jupyter", "nbconvert", "--to", "html", dest]
+  downloads.exec(args)
   
   return dest
 

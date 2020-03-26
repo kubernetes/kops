@@ -1,19 +1,22 @@
 timeout: 3600s
 options:
   substitution_option: ALLOW_LOOSE
-  machineType: 'N1_HIGHCPU_8'
+#  machineType: 'N1_HIGHCPU_8'
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [
           'build',
-          '-t', 'gcr.io/$PROJECT_ID/jupyter-test:latest',
-          '-f', 'images/Dockerfile',
+          '--build-arg', 'BASE_IMAGE=gcr.io/$PROJECT_ID/jupyter-base:latest',
+          '-t', 'gcr.io/$PROJECT_ID/jupyter-run:latest',
+          '-f', 'images/jupyter-run/Dockerfile',
           '.'
         ]
-- name: 'gcr.io/$PROJECT_ID/jupyter-test:latest'
+- name: 'gcr.io/$PROJECT_ID/jupyter-run:latest'
+  args: [ '$_WORKBOOK', '$_CLEANUP_WORKBOOK' ]
   env:
   - KOPS_STATE_STORE=$_KOPS_STATE_STORE
   - PROJECT_ID=$PROJECT_ID
+  - PARAMETERS=$_PARAMETERS
   - WORKSPACE=/workspace
 artifacts:
   objects:
@@ -21,9 +24,11 @@ artifacts:
     paths: [
              '/workspace/artifacts/*',
            ]
-#substitutions:
+substitutions:
+  _CLEANUP_WORKBOOK: tests/cleanup
 #  _KOPS_STATE_STORE: 'gs://your-kops-state-store'
 #  _ARTIFACT_LOCATION: 'gs://artifact-results-location'
+#  _PARAMETERS: '{ "state": { "kops_create_cluster_spec": { "zones": [ "us-central1-f" ] } } }'
 
 # Notes: iam.serviceAccountUser on <projectnumber>-compute@developer.gserviceaccount.com
 # need network admin (?) to create firewall rules

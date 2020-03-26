@@ -4,10 +4,11 @@ import requests
 import subprocess
 import pathlib
 
-def exec(args, env = None, print_stdout=True):
+def exec(args, env = None, print_stdout=True, print_running=True):
     if env is None:
         env = os.environ.copy()
-    print("running %s" % (args))
+    if print_running:
+        print("running %s" % (args))
     r = subprocess.run(args, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if print_stdout:
       print(r.stdout.decode())
@@ -25,7 +26,7 @@ def read_url(u):
 archive = os.path.join(pathlib.Path.home(), ".cache", "kops-test", "assets")
 
 def sha256_of_file(f):
-    stdout = exec(["sha256sum", f])
+    stdout = exec(["sha256sum", f], print_stdout=False, print_running=False)
     return stdout.split()[0]
     
 def download_hashed_url(url):
