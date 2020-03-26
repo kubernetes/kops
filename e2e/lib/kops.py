@@ -133,6 +133,14 @@ class KopsCluster(object):
         stdout = self.kops.exec(["update", "cluster", self.name(), "--yes"])
         print(stdout)
 
+    def preview_upgrade(self):
+        stdout = self.kops.exec(["upgrade", "cluster", self.name()])
+        print(stdout)
+
+    def upgrade(self):
+        stdout = self.kops.exec(["upgrade", "cluster", self.name(), "--yes"])
+        print(stdout)
+
     def validate(self):
         stdout = self.kops.exec(["validate", "cluster", self.name()])
         print(stdout)

@@ -12,8 +12,11 @@ _artifacts_dir = None
 def artifacts_dir():
   global _artifacts_dir
   if _artifacts_dir is None:
-    wd = workspace_dir()
-    _artifacts_dir = os.path.join(wd, "artifacts")
+    if os.environ.get("ARTIFACTS"):
+      _artifacts_dir = os.environ.get("ARTIFACTS")
+    else:
+      wd = workspace_dir()
+      _artifacts_dir = os.path.join(wd, "artifacts")
     os.makedirs(_artifacts_dir, exist_ok=True)
   return _artifacts_dir
 
