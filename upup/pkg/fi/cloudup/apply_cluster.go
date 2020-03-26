@@ -94,7 +94,7 @@ var (
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
 	OldestSupportedKubernetesVersion = "1.9.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
-	OldestRecommendedKubernetesVersion = "1.10.0"
+	OldestRecommendedKubernetesVersion = "1.11.0"
 )
 
 type ApplyClusterCmd struct {
