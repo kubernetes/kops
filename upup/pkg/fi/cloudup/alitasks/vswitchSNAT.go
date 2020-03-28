@@ -183,8 +183,8 @@ func (_ *VSwitchSNAT) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VSwitchSNA
 }
 
 type terraformVSwitchSNAT struct {
-	SnatTableId *string            `json:"snat_table_id,omitempty"`
-	VSwitchId   *terraform.Literal `json:"source_vswitch_id,omitempty"`
+	SnatTableId *string            `json:"snat_table_id,omitempty" cty:"snat_table_id"`
+	VSwitchId   *terraform.Literal `json:"source_vswitch_id,omitempty" cty:"source_vswitch_id"`
 }
 
 func (_ *VSwitchSNAT) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VSwitchSNAT) error {

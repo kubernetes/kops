@@ -112,8 +112,8 @@ func (_ *VPCCIDRBlock) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCCIDRBl
 }
 
 type terraformVPCCIDRBlock struct {
-	VPCID     *terraform.Literal `json:"vpc_id"`
-	CIDRBlock *string            `json:"cidr_block"`
+	VPCID     *terraform.Literal `json:"vpc_id" cty:"vpc_id"`
+	CIDRBlock *string            `json:"cidr_block" cty:"cidr_block"`
 }
 
 func (_ *VPCCIDRBlock) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCCIDRBlock) error {

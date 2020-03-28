@@ -125,8 +125,8 @@ func (_ *RAMRole) RenderALI(t *aliup.ALIAPITarget, a, e, changes *RAMRole) error
 }
 
 type terraformRAMRole struct {
-	Name     *string `json:"name,omitempty"`
-	Document *string `json:"document,omitempty"`
+	Name     *string `json:"name,omitempty" cty:"name"`
+	Document *string `json:"document,omitempty" cty:"document"`
 }
 
 func (_ *RAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RAMRole) error {

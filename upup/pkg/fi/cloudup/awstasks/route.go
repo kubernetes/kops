@@ -221,11 +221,11 @@ func checkNotNil(s *string) *string {
 }
 
 type terraformRoute struct {
-	RouteTableID      *terraform.Literal `json:"route_table_id"`
-	CIDR              *string            `json:"destination_cidr_block,omitempty"`
-	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty"`
-	NATGatewayID      *terraform.Literal `json:"nat_gateway_id,omitempty"`
-	InstanceID        *terraform.Literal `json:"instance_id,omitempty"`
+	RouteTableID      *terraform.Literal `json:"route_table_id" cty:"route_table_id"`
+	CIDR              *string            `json:"destination_cidr_block,omitempty" cty:"destination_cidr_block"`
+	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty" cty:"gateway_id"`
+	NATGatewayID      *terraform.Literal `json:"nat_gateway_id,omitempty" cty:"nat_gateway_id"`
+	InstanceID        *terraform.Literal `json:"instance_id,omitempty" cty:"instance_id"`
 }
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {

@@ -158,20 +158,20 @@ func (_ *FirewallRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *FirewallRul
 }
 
 type terraformAllow struct {
-	Protocol string   `json:"protocol,omitempty"`
-	Ports    []string `json:"ports,omitempty"`
+	Protocol string   `json:"protocol,omitempty" cty:"protocol"`
+	Ports    []string `json:"ports,omitempty" cty:"ports"`
 }
 
 type terraformFirewall struct {
-	Name    string             `json:"name"`
-	Network *terraform.Literal `json:"network"`
+	Name    string             `json:"name" cty:"name"`
+	Network *terraform.Literal `json:"network" cty:"network"`
 
-	Allowed []*terraformAllow `json:"allow,omitempty"`
+	Allowed []*terraformAllow `json:"allow,omitempty" cty:"allow"`
 
-	SourceTags []string `json:"source_tags,omitempty"`
+	SourceTags []string `json:"source_tags,omitempty" cty:"source_tags"`
 
-	SourceRanges []string `json:"source_ranges,omitempty"`
-	TargetTags   []string `json:"target_tags,omitempty"`
+	SourceRanges []string `json:"source_ranges,omitempty" cty:"source_ranges"`
+	TargetTags   []string `json:"target_tags,omitempty" cty:"target_tags"`
 }
 
 func (_ *FirewallRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *FirewallRule) error {
