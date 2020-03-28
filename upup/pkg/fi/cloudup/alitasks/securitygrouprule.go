@@ -185,8 +185,8 @@ type terraformSecurityGroupRole struct {
 	Type            *string            `json:"type,omitempty"`
 	IpProtocol      *string            `json:"ip_protocol,omitempty"`
 	SourceCidrIp    *string            `json:"cidr_ip,omitempty"`
-	SecurityGroupId *terraform.Literal `json:"security_group_id ,omitempty"`
-	SourceGroupId   *terraform.Literal `json:"source_security_group_id  ,omitempty"`
+	SecurityGroupId *terraform.Literal `json:"security_group_id,omitempty"`
+	SourceGroupId   *terraform.Literal `json:"source_security_group_id,omitempty"`
 	PortRange       *string            `json:"port_range,omitempty"`
 }
 
