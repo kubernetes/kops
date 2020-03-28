@@ -179,16 +179,16 @@ func (d *Disk) getDiskTagsToDelete(currentTags map[string]string) map[string]str
 }
 
 type terraformDiskTag struct {
-	Key   *string `json:"key"`
-	Value *string `json:"value"`
+	Key   *string `json:"key" cty:"key"`
+	Value *string `json:"value" cty:"value"`
 }
 
 type terraformDisk struct {
-	DiskName     *string             `json:"name,omitempty"`
-	DiskCategory *string             `json:"category,omitempty"`
-	SizeGB       *int                `json:"size,omitempty"`
-	Zone         *string             `json:"availability_zone,omitempty"`
-	Tags         []*terraformDiskTag `json:"tags,omitempty"`
+	DiskName     *string             `json:"name,omitempty" cty:"name"`
+	DiskCategory *string             `json:"category,omitempty" cty:"category"`
+	SizeGB       *int                `json:"size,omitempty" cty:"size"`
+	Zone         *string             `json:"availability_zone,omitempty" cty:"availability_zone"`
+	Tags         []*terraformDiskTag `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk) error {

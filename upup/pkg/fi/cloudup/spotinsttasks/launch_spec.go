@@ -440,8 +440,8 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 }
 
 type terraformLaunchSpec struct {
-	Name    *string            `json:"name,omitempty"`
-	OceanID *terraform.Literal `json:"ocean_id,omitempty"`
+	Name    *string            `json:"name,omitempty" cty:"name"`
+	OceanID *terraform.Literal `json:"ocean_id,omitempty" cty:"ocean_id"`
 
 	*terraformOceanLaunchSpec
 }

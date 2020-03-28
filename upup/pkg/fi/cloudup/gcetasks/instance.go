@@ -396,7 +396,7 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 type terraformInstance struct {
 	terraformInstanceCommon
 
-	Name string `json:"name"`
+	Name string `json:"name" cty:"name"`
 }
 
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {

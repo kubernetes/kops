@@ -144,14 +144,14 @@ func (r *RAMPolicy) policyDocumentString() (string, error) {
 }
 
 type terraformRAMPolicy struct {
-	Name     *string `json:"name,omitempty"`
-	Document *string `json:"document,omitempty"`
+	Name     *string `json:"name,omitempty" cty:"name"`
+	Document *string `json:"document,omitempty" cty:"document"`
 }
 
 type terraformRAMPolicyAttach struct {
-	PolicyName *terraform.Literal `json:"policy_name,omitempty"`
-	PolicyType *string            `json:"policy_type,omitempty"`
-	RoleName   *terraform.Literal `json:"role_name,omitempty"`
+	PolicyName *terraform.Literal `json:"policy_name,omitempty" cty:"policy_name"`
+	PolicyType *string            `json:"policy_type,omitempty" cty:"policy_type"`
+	RoleName   *terraform.Literal `json:"role_name,omitempty" cty:"role_name"`
 }
 
 func (_ *RAMPolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RAMPolicy) error {
