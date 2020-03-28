@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,20 +17,27 @@ limitations under the License.
 package terraform
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"sync"
 
-	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
+
+// Version represents which terraform version is targeted
+type Version string
+
+// Version011 represents terraform versions before 0.12
+const Version011 Version = "0.11"
+
+// Version012 represents terraform versions 0.12 and above
+const Version012 Version = "0.12"
 
 type TerraformTarget struct {
 	Cloud   fi.Cloud
@@ -38,6 +45,7 @@ type TerraformTarget struct {
 	Project string
 
 	ClusterName string
+	Version     Version
 
 	outDir string
 
@@ -53,11 +61,12 @@ type TerraformTarget struct {
 	clusterSpecTarget *kops.TargetSpec
 }
 
-func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
+func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string, version Version, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
 	return &TerraformTarget{
 		Cloud:   cloud,
 		Region:  region,
 		Project: project,
+		Version: version,
 
 		outDir:            outDir,
 		files:             make(map[string][]byte),
@@ -74,6 +83,14 @@ type terraformResource struct {
 	Item         interface{}
 }
 
+type byTypeAndName []*terraformResource
+
+func (a byTypeAndName) Len() int { return len(a) }
+func (a byTypeAndName) Less(i, j int) bool {
+	return a[i].ResourceType+a[i].ResourceName < a[j].ResourceType+a[j].ResourceName
+}
+func (a byTypeAndName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+
 type terraformOutputVariable struct {
 	Key        string
 	Value      *Literal
@@ -83,6 +100,9 @@ type terraformOutputVariable struct {
 // A TF name can't have dots in it (if we want to refer to it from a literal),
 // so we replace them
 func tfSanitize(name string) string {
+	if _, err := strconv.Atoi(string(name[0])); err == nil {
+		panic(fmt.Sprintf("Terraform resource names cannot start with a digit. This is a bug in Kops, please report this in a GitHub Issue. Name: %v", name))
+	}
 	return strings.NewReplacer(".", "-", "/", "--", ":", "_").Replace(name)
 }
 
@@ -100,7 +120,8 @@ func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key 
 	p := path.Join("data", id)
 	t.files[p] = d
 
-	l := LiteralExpression(fmt.Sprintf("${file(%q)}", path.Join("${path.module}", p)))
+	modulePath := path.Join("${path.module}", p)
+	l := LiteralFileExpression(modulePath)
 	return l, nil
 }
 
@@ -171,136 +192,17 @@ func tfGetProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 }
 
 func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
-	resourcesByType := make(map[string]map[string]interface{})
-
-	for _, res := range t.resources {
-		resources := resourcesByType[res.ResourceType]
-		if resources == nil {
-			resources = make(map[string]interface{})
-			resourcesByType[res.ResourceType] = resources
-		}
-
-		tfName := tfSanitize(res.ResourceName)
-
-		if resources[tfName] != nil {
-			return fmt.Errorf("duplicate resource found: %s.%s", res.ResourceType, tfName)
-		}
-
-		resources[tfName] = res.Item
+	var err error
+	switch t.Version {
+	case Version011:
+		err = t.finish011(taskMap)
+	case Version012:
+		err = t.finish012(taskMap)
+	default:
+		err = fmt.Errorf("unrecognized terraform version %v", t.Version)
 	}
-
-	providersByName := make(map[string]map[string]interface{})
-	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		providerGoogle := make(map[string]interface{})
-		providerGoogle["project"] = t.Project
-		providerGoogle["region"] = t.Region
-		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
-			providerGoogle[k] = v
-		}
-		providersByName["google"] = providerGoogle
-		providerGoogle["version"] = ">= 3.0.0"
-	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
-		providerAWS := make(map[string]interface{})
-		providerAWS["region"] = t.Region
-		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
-			providerAWS[k] = v
-		}
-		providersByName["aws"] = providerAWS
-	} else if t.Cloud.ProviderID() == kops.CloudProviderVSphere {
-		providerVSphere := make(map[string]interface{})
-		providerVSphere["region"] = t.Region
-		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
-			providerVSphere[k] = v
-		}
-		providersByName["vsphere"] = providerVSphere
-	}
-
-	outputVariables := make(map[string]interface{})
-	for _, v := range t.outputs {
-		tfName := tfSanitize(v.Key)
-
-		if outputVariables[tfName] != nil {
-			return fmt.Errorf("duplicate variable found: %s", tfName)
-		}
-
-		tfVar := make(map[string]interface{})
-		if v.Value != nil {
-			tfVar["value"] = v.Value
-		} else {
-			SortLiterals(v.ValueArray)
-			deduped, err := DedupLiterals(v.ValueArray)
-			if err != nil {
-				return err
-			}
-			tfVar["value"] = deduped
-		}
-		outputVariables[tfName] = tfVar
-	}
-
-	localVariables := make(map[string]interface{})
-	for _, v := range t.outputs {
-		tfName := tfSanitize(v.Key)
-
-		if localVariables[tfName] != nil {
-			return fmt.Errorf("duplicate variable found: %s", tfName)
-		}
-
-		if v.Value != nil {
-			localVariables[tfName] = v.Value
-		} else {
-			SortLiterals(v.ValueArray)
-			deduped, err := DedupLiterals(v.ValueArray)
-			if err != nil {
-				return err
-			}
-			localVariables[tfName] = deduped
-		}
-	}
-
-	// See https://github.com/kubernetes/kops/pull/2424 for why we require 0.9.3
-	terraformConfiguration := make(map[string]interface{})
-	if featureflag.TerraformJSON.Enabled() {
-		terraformConfiguration["required_version"] = ">= 0.12.0"
-	} else {
-		terraformConfiguration["required_version"] = ">= 0.9.3"
-	}
-
-	data := make(map[string]interface{})
-	data["terraform"] = terraformConfiguration
-	data["resource"] = resourcesByType
-	if len(providersByName) != 0 {
-		data["provider"] = providersByName
-	}
-	if len(outputVariables) != 0 {
-		data["output"] = outputVariables
-	}
-	if len(localVariables) != 0 {
-		data["locals"] = localVariables
-	}
-
-	jsonBytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		return fmt.Errorf("error marshaling terraform data to json: %v", err)
-	}
-
-	if featureflag.TerraformJSON.Enabled() {
-		t.files["kubernetes.tf.json"] = jsonBytes
-		p := path.Join(t.outDir, "kubernetes.tf")
-		if _, err := os.Stat(p); err == nil {
-			return fmt.Errorf("Error generating kubernetes.tf.json: If you are upgrading from terraform 0.11 or earlier please read the release notes. Also, the kubernetes.tf file is already present. Please move the file away since it will be replaced by the kubernetes.tf.json file. ")
-		}
-	} else {
-		f, err := hcl_parser.Parse(jsonBytes)
-		if err != nil {
-			return fmt.Errorf("error parsing terraform json: %v", err)
-		}
-
-		b, err := hclPrint(f)
-		if err != nil {
-			return fmt.Errorf("error writing terraform data to output: %v", err)
-		}
-
-		t.files["kubernetes.tf"] = b
+		return err
 	}
 
 	for relativePath, contents := range t.files {
@@ -316,7 +218,6 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 			return fmt.Errorf("error writing terraform data to output file %q: %v", p, err)
 		}
 	}
-
 	klog.Infof("Terraform output is in %s", t.outDir)
 
 	return nil
