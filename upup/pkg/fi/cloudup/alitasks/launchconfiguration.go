@@ -302,7 +302,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 }
 
 type terraformLaunchConfiguration struct {
-	ImageID            *string `json:"image_id ,omitempty"`
+	ImageID            *string `json:"image_id,omitempty"`
 	InstanceType       *string `json:"instance_type,omitempty"`
 	SystemDiskCategory *string `json:"system_disk_category,omitempty"`
 	UserData           *string `json:"user_data,omitempty"`
