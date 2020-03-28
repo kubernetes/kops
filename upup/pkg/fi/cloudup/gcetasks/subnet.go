@@ -203,18 +203,18 @@ func (e *Subnet) URL(project string, region string) string {
 }
 
 type terraformSubnet struct {
-	Name    *string            `json:"name"`
-	Network *terraform.Literal `json:"network"`
-	Region  *string            `json:"region"`
-	CIDR    *string            `json:"ip_cidr_range"`
+	Name    *string            `json:"name" cty:"name"`
+	Network *terraform.Literal `json:"network" cty:"network"`
+	Region  *string            `json:"region" cty:"region"`
+	CIDR    *string            `json:"ip_cidr_range" cty:"ip_cidr_range"`
 
 	// SecondaryIPRange defines additional IP ranges
-	SecondaryIPRange []terraformSubnetRange `json:"secondary_ip_range,omitempty"`
+	SecondaryIPRange []terraformSubnetRange `json:"secondary_ip_range,omitempty" cty:"secondary_ip_range"`
 }
 
 type terraformSubnetRange struct {
-	Name string `json:"range_name,omitempty"`
-	CIDR string `json:"ip_cidr_range,omitempty"`
+	Name string `json:"range_name,omitempty" cty:"range_name"`
+	CIDR string `json:"ip_cidr_range,omitempty" cty:"ip_cidr_range"`
 }
 
 func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {

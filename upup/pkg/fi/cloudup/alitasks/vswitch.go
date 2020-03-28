@@ -175,10 +175,10 @@ func (_ *VSwitch) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VSwitch) error
 }
 
 type terraformVSwitch struct {
-	Name      *string            `json:"name,omitempty"`
-	CidrBlock *string            `json:"cidr_block,omitempty"`
-	ZoneId    *string            `json:"availability_zone,omitempty"`
-	VPCId     *terraform.Literal `json:"vpc_id,omitempty"`
+	Name      *string            `json:"name,omitempty" cty:"name"`
+	CidrBlock *string            `json:"cidr_block,omitempty" cty:"cidr_block"`
+	ZoneId    *string            `json:"availability_zone,omitempty" cty:"availability_zone"`
+	VPCId     *terraform.Literal `json:"vpc_id,omitempty" cty:"vpc_id"`
 }
 
 func (_ *VSwitch) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VSwitch) error {

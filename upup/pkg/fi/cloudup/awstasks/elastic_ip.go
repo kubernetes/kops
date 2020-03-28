@@ -280,8 +280,8 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 }
 
 type terraformElasticIP struct {
-	VPC  *bool             `json:"vpc"`
-	Tags map[string]string `json:"tags,omitempty"`
+	VPC  *bool             `json:"vpc" cty:"vpc"`
+	Tags map[string]string `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {

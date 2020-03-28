@@ -184,8 +184,8 @@ func (s *SecurityGroup) getGroupTagsToDelete(currentTags map[string]string) map[
 }
 
 type terraformSecurityGroup struct {
-	Name  *string            `json:"name,omitempty"`
-	VPCId *terraform.Literal `json:"vpc_id,omitempty"`
+	Name  *string            `json:"name,omitempty" cty:"name"`
+	VPCId *terraform.Literal `json:"vpc_id,omitempty" cty:"vpc_id"`
 }
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {

@@ -913,15 +913,15 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 }
 
 type terraformOcean struct {
-	Name                   *string              `json:"name,omitempty"`
-	ControllerClusterID    *string              `json:"controller_id,omitempty"`
-	Region                 *string              `json:"region,omitempty"`
-	InstanceTypesWhitelist []string             `json:"whitelist,omitempty"`
-	InstanceTypesBlacklist []string             `json:"blacklist,omitempty"`
-	SubnetIDs              []*terraform.Literal `json:"subnet_ids,omitempty"`
-	AutoScaler             *terraformAutoScaler `json:"autoscaler,omitempty"`
-	Tags                   []*terraformKV       `json:"tags,omitempty"`
-	Lifecycle              *terraformLifecycle  `json:"lifecycle,omitempty"`
+	Name                   *string              `json:"name,omitempty" cty:"name"`
+	ControllerClusterID    *string              `json:"controller_id,omitempty" cty:"controller_id"`
+	Region                 *string              `json:"region,omitempty" cty:"region"`
+	InstanceTypesWhitelist []string             `json:"whitelist,omitempty" cty:"whitelist"`
+	InstanceTypesBlacklist []string             `json:"blacklist,omitempty" cty:"blacklist"`
+	SubnetIDs              []*terraform.Literal `json:"subnet_ids,omitempty" cty:"subnet_ids"`
+	AutoScaler             *terraformAutoScaler `json:"autoscaler,omitempty" cty:"autoscaler"`
+	Tags                   []*terraformKV       `json:"tags,omitempty" cty:"tags"`
+	Lifecycle              *terraformLifecycle  `json:"lifecycle,omitempty" cty:"lifecycle"`
 
 	*terraformOceanCapacity
 	*terraformOceanStrategy
@@ -929,29 +929,29 @@ type terraformOcean struct {
 }
 
 type terraformOceanCapacity struct {
-	MinSize         *int64 `json:"min_size,omitempty"`
-	MaxSize         *int64 `json:"max_size,omitempty"`
-	DesiredCapacity *int64 `json:"desired_capacity,omitempty"`
+	MinSize         *int64 `json:"min_size,omitempty" cty:"min_size"`
+	MaxSize         *int64 `json:"max_size,omitempty" cty:"max_size"`
+	DesiredCapacity *int64 `json:"desired_capacity,omitempty" cty:"desired_capacity"`
 }
 
 type terraformOceanStrategy struct {
-	SpotPercentage           *float64 `json:"spot_percentage,omitempty"`
-	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty"`
-	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty"`
+	SpotPercentage           *float64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
+	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
+	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
 }
 
 type terraformOceanLaunchSpec struct {
-	Monitoring               *bool                `json:"monitoring,omitempty"`
-	EBSOptimized             *bool                `json:"ebs_optimized,omitempty"`
-	ImageID                  *string              `json:"image_id,omitempty"`
-	AssociatePublicIPAddress *bool                `json:"associate_public_ip_address,omitempty"`
-	RootVolumeSize           *int32               `json:"root_volume_size,omitempty"`
-	UserData                 *terraform.Literal   `json:"user_data,omitempty"`
-	IAMInstanceProfile       *terraform.Literal   `json:"iam_instance_profile,omitempty"`
-	KeyName                  *terraform.Literal   `json:"key_name,omitempty"`
-	SecurityGroups           []*terraform.Literal `json:"security_groups,omitempty"`
-	Labels                   []*terraformKV       `json:"labels,omitempty"`
-	Tags                     []*terraformKV       `json:"tags,omitempty"`
+	Monitoring               *bool                `json:"monitoring,omitempty" cty:"monitoring"`
+	EBSOptimized             *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	ImageID                  *string              `json:"image_id,omitempty" cty:"image_id"`
+	AssociatePublicIPAddress *bool                `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	RootVolumeSize           *int32               `json:"root_volume_size,omitempty" cty:"root_volume_size"`
+	UserData                 *terraform.Literal   `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile       *terraform.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName                  *terraform.Literal   `json:"key_name,omitempty" cty:"key_name"`
+	SecurityGroups           []*terraform.Literal `json:"security_groups,omitempty" cty:"security_groups"`
+	Labels                   []*terraformKV       `json:"labels,omitempty" cty:"labels"`
+	Tags                     []*terraformKV       `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
