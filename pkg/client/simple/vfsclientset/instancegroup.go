@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/klog"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/util/pkg/vfs"
@@ -60,8 +59,6 @@ func NewInstanceGroupMirror(cluster *kopsapi.Cluster, configBase vfs.Path) Insta
 		clusterName: clusterName,
 	}
 	r.init(kind, configBase.Join("instancegroup"), StoreVersion)
-	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
-	r.defaultReadVersion = &defaultReadVersion
 	r.validate = func(o runtime.Object) error {
 		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup)).ToAggregate()
 	}
@@ -81,8 +78,6 @@ func newInstanceGroupVFS(c *VFSClientset, cluster *kopsapi.Cluster) *InstanceGro
 		clusterName: clusterName,
 	}
 	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
-	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
-	r.defaultReadVersion = &defaultReadVersion
 	r.validate = func(o runtime.Object) error {
 		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup)).ToAggregate()
 	}

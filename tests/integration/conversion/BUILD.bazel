@@ -7,12 +7,10 @@ go_test(
         "exported_testdata",  # keep
     ],
     deps = [
-        "//pkg/apis/kops/v1alpha1:go_default_library",
         "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/diff:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
     ],
 )
 
