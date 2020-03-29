@@ -107,14 +107,6 @@ func rewriteAPIGroup(y []byte) []byte {
 		}
 
 		{
-			re := regexp.MustCompile("kops/v1alpha1")
-			if re.Match(lines[i]) {
-				lines[i] = re.ReplaceAllLiteral(lines[i], []byte("kops.k8s.io/v1alpha1"))
-				changed = true
-			}
-		}
-
-		{
 			re := regexp.MustCompile("kops/v1alpha2")
 			lines[i] = re.ReplaceAllLiteral(lines[i], []byte("kops.k8s.io/v1alpha2"))
 			changed = true
