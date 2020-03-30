@@ -285,6 +285,36 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					}
 				}
 			}
+
+			// @ check that NodeLocalDNS addon is configured correctly
+			if c.Spec.KubeDNS.NodeLocalDNS != nil && c.Spec.KubeDNS.NodeLocalDNS.Enabled {
+				if c.Spec.KubeDNS.Provider != "CoreDNS" {
+					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "provider"), "KubeDNS provider must be set to CoreDNS if NodeLocalDNS addon is enabled"))
+				}
+
+				if c.Spec.KubeDNS.NodeLocalDNS.LocalIP == "" {
+					if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.NodeLocalDNS.LocalIP {
+						if c.Spec.KubeProxy != nil && c.Spec.KubeProxy.ProxyMode == "ipvs" {
+							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "clusterDNS"), "Kubelet ClusterDNS must be set to the default IP address for LocalIP when KubeProxy ProxyMode is set to ipvs"))
+						}
+
+						// in case that the CNI is set to Cilium, it is necessary that ClusterDNS points to the NodeLocal DNSCache local IP addr
+						if c.Spec.Networking != nil && c.Spec.Networking.Cilium != nil {
+							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "clusterDNS"), "Kubelet ClusterDNS must be set to the default IP address for LocalIP when CNI is Cilium"))
+						}
+					}
+				} else {
+					address := c.Spec.KubeDNS.NodeLocalDNS.LocalIP
+					ip := net.ParseIP(address)
+					if ip == nil {
+						allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubeDNS", "nodeLocalDNS", "localIP"), address, "Cluster had an invalid kubeDNS.nodeLocalDNS.localIP"))
+					} else {
+						if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.NodeLocalDNS.LocalIP {
+							allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "nodeLocalDNS", "localIP"), fmt.Sprintf("kubelet.ClusterDNS had an IP address %q that did not match %q", c.Spec.Kubelet.ClusterDNS, c.Spec.KubeDNS.NodeLocalDNS.LocalIP)))
+						}
+					}
+				}
+			}
 		}
 
 		// @check the nameservers are valid
