@@ -30,6 +30,8 @@ spec:
     name: events
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.14.0
   masterInternalName: api.internal.crosszone.example.com
   masterPublicName: api.crosszone.example.com

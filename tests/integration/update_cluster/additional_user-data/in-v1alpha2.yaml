@@ -27,6 +27,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.14.0
   masterInternalName: api.internal.additionaluserdata.example.com
   masterPublicName: api.additionaluserdata.example.com
