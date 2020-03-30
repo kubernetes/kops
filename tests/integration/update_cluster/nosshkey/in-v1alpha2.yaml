@@ -27,6 +27,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  kubelet:
+    anonymousAuth: false
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
   kubernetesVersion: v1.11.10
