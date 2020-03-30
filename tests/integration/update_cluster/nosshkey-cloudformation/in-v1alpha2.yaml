@@ -18,6 +18,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.11.10
   masterInternalName: api.internal.nosshkey.example.com
   masterPublicName: api.nosshkey.example.com
