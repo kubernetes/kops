@@ -534,3 +534,88 @@ func Test_Validate_RollingUpdate(t *testing.T) {
 func intStr(i intstr.IntOrString) *intstr.IntOrString {
 	return &i
 }
+
+func Test_Validate_NodeLocalDNS(t *testing.T) {
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "iptables",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: true,
+					},
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Kubelet: &kops.KubeletConfigSpec{
+					ClusterDNS: "100.64.0.10",
+				},
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "ipvs",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: true,
+					},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.kubelet.clusterDNS"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Kubelet: &kops.KubeletConfigSpec{
+					ClusterDNS: "100.64.0.10",
+				},
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "ipvs",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: true,
+					},
+				},
+				Networking: &kops.NetworkingSpec{
+					Cilium: &kops.CiliumNetworkingSpec{},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.kubelet.clusterDNS"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Kubelet: &kops.KubeletConfigSpec{
+					ClusterDNS: "169.254.20.10",
+				},
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "iptables",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: true,
+						LocalIP: "169.254.20.10",
+					},
+				},
+				Networking: &kops.NetworkingSpec{
+					Cilium: &kops.CiliumNetworkingSpec{},
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateNodeLocalDNS(&g.Input, field.NewPath("spec"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
