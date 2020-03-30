@@ -26,6 +26,8 @@ spec:
     - instanceGroup: master-us-test-1c
       name: us-test-1c
     name: events
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.12.9
   masterInternalName: api.internal.mixedinstances.example.com
   masterPublicName: api.mixedinstances.example.com

@@ -224,6 +224,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplec
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -242,6 +243,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplec
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -453,6 +455,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom.Properties.Us
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
