@@ -30,6 +30,8 @@ spec:
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
     auditWebhookBatchThrottleQps: 3.14
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.14.0
   masterInternalName: api.internal.externalpolicies.example.com
   masterPublicName: api.externalpolicies.example.com
