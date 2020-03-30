@@ -486,6 +486,9 @@ func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec,
 		hasCiliumCluster := false
 		for _, cluster := range c.EtcdClusters {
 			if cluster.Name == "cilium" {
+				if cluster.Provider == kops.EtcdProviderTypeLegacy {
+					allErrs = append(allErrs, field.Invalid(fldPath.Root().Child("etcdClusters"), kops.EtcdProviderTypeLegacy, "Legacy etcd provider is not supported for the cilium cluster"))
+				}
 				hasCiliumCluster = true
 				break
 			}
