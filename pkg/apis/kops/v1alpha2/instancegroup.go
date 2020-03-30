@@ -169,7 +169,7 @@ const (
 // SpotAllocationStrategies is a collection of supported strategies
 var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified, SpotAllocationStrategyCapacityOptimized}
 
-// MixedInstancesPolicySpec defines the specification for an autoscaling backed by a ec2 fleet
+// MixedInstancesPolicySpec defines the specification for an autoscaling group backed by a ec2 fleet
 type MixedInstancesPolicySpec struct {
 	// Instances is a list of instance types which we are willing to run in the EC2 fleet
 	Instances []string `json:"instances,omitempty"`
