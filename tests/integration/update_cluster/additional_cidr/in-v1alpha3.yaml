@@ -26,6 +26,8 @@ spec:
     - instanceGroup: master-us-test-1c
       name: us-test-1c
     name: events
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.14.0
   masterInternalName: api.internal.additionalcidr.example.com
   masterPublicName: api.additionalcidr.example.com

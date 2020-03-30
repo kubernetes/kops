@@ -221,6 +221,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
       leaderElect: true
     logLevel: 2
   kubelet:
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -238,6 +239,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
     podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -451,6 +453,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescomplexexamplecom.Properties.Use
     image: k8s.gcr.io/kube-proxy:v1.14.0
     logLevel: 2
   kubelet:
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10

@@ -220,6 +220,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -238,6 +239,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -516,6 +518,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -534,6 +537,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -812,6 +816,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -830,6 +835,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -1044,6 +1050,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10

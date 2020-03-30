@@ -220,6 +220,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterslaunchtemplatesexamplecom.Pro
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -238,6 +239,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterslaunchtemplatesexamplecom.Pro
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -516,6 +518,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmasterslaunchtemplatesexamplecom.Pro
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -534,6 +537,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmasterslaunchtemplatesexamplecom.Pro
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -812,6 +816,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmasterslaunchtemplatesexamplecom.Pro
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -830,6 +835,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmasterslaunchtemplatesexamplecom.Pro
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -1044,6 +1050,7 @@ Resources.AWSEC2LaunchTemplatenodeslaunchtemplatesexamplecom.Properties.LaunchTe
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
