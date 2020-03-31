@@ -61,6 +61,7 @@ type integrationTest struct {
 	lifecycleOverrides []string
 	sshKey             bool
 	jsonOutput         bool
+	bastionUserData    bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
@@ -111,6 +112,11 @@ func (i *integrationTest) withPrivate() *integrationTest {
 
 func (i *integrationTest) withLaunchTemplate() *integrationTest {
 	i.launchTemplate = true
+	return i
+}
+
+func (i *integrationTest) withBastionUserData() *integrationTest {
+	i.bastionUserData = true
 	return i
 }
 
@@ -185,7 +191,7 @@ func TestAdditionalUserData(t *testing.T) {
 
 // TestBastionAdditionalUserData runs the test on passing additional user-data to a bastion instance group
 func TestBastionAdditionalUserData(t *testing.T) {
-	newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").withPrivate().runTestTerraformAWS(t)
+	newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").withPrivate().withBastionUserData().runTestTerraformAWS(t)
 }
 
 // TestMinimal_JSON runs the test on a minimal data set and outputs JSON
@@ -519,8 +525,10 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			expectedFilenames = append(expectedFilenames, []string{
 				"aws_iam_role_bastions." + i.clusterName + "_policy",
 				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-				"aws_launch_configuration_bastion." + i.clusterName + "_user_data",
 			}...)
+			if i.bastionUserData {
+				expectedFilenames = append(expectedFilenames, "aws_launch_configuration_bastion."+i.clusterName+"_user_data")
+			}
 		}
 	}
 	i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, nil)
