@@ -23,6 +23,7 @@ import (
 
 	"github.com/blang/semver"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/apimachinery/pkg/api/validation"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
@@ -35,7 +36,7 @@ import (
 
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, false, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
-	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, field.NewPath("spec"))...)
+	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, cluster, field.NewPath("spec"))...)
 
 	// Additional cloud-specific validation rules
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -48,7 +49,7 @@ func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	return allErrs
 }
 
-func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.ErrorList {
+func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	allErrs = append(allErrs, validateSubnets(spec.Subnets, fieldPath.Child("subnets"))...)
@@ -104,8 +105,16 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	// EtcdClusters
 	{
-		for i, etcdCluster := range spec.EtcdClusters {
-			allErrs = append(allErrs, validateEtcdClusterSpec(etcdCluster, fieldPath.Child("etcdClusters").Index(i))...)
+		fieldEtcdClusters := fieldPath.Child("etcdClusters")
+
+		if len(spec.EtcdClusters) == 0 {
+			allErrs = append(allErrs, field.Required(fieldEtcdClusters, ""))
+		} else {
+			for i, etcdCluster := range spec.EtcdClusters {
+				allErrs = append(allErrs, validateEtcdClusterSpec(etcdCluster, c, fieldEtcdClusters.Index(i))...)
+			}
+			allErrs = append(allErrs, validateEtcdTLS(spec.EtcdClusters, fieldEtcdClusters)...)
+			allErrs = append(allErrs, validateEtcdStorage(spec.EtcdClusters, fieldEtcdClusters)...)
 		}
 	}
 
@@ -539,15 +548,106 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 	return errs
 }
 
-func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
-	errs := field.ErrorList{}
+func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
 
+	if spec.Name == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), "etcdCluster did not have name"))
+	}
 	if spec.Provider != "" {
 		value := string(spec.Provider)
-		errs = append(errs, IsValidValue(fieldPath.Child("provider"), &value, kops.SupportedEtcdProviderTypes)...)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("provider"), &value, kops.SupportedEtcdProviderTypes)...)
+		if spec.Provider == kops.EtcdProviderTypeLegacy && c.IsKubernetesGTE("1.18") {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("provider"), "support for Legacy mode removed as of Kubernetes 1.18"))
+		}
+	}
+	if len(spec.Members) == 0 {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("members"), "No members defined in etcd cluster"))
+	} else if (len(spec.Members) % 2) == 0 {
+		// Not technically a requirement, but doesn't really make sense to allow
+		allErrs = append(allErrs, field.Invalid(fieldPath.Child("members"), len(spec.Members), "Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately"))
+	}
+	allErrs = append(allErrs, validateEtcdVersion(spec, fieldPath, nil)...)
+	for _, m := range spec.Members {
+		allErrs = append(allErrs, validateEtcdMemberSpec(m, fieldPath)...)
 	}
 
-	return errs
+	return allErrs
+}
+
+// validateEtcdTLS checks the TLS settings for etcd are valid
+func validateEtcdTLS(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	var usingTLS int
+	for _, x := range specs {
+		if x.EnableEtcdTLS {
+			usingTLS++
+		}
+	}
+	// check both clusters are using tls if one is enabled
+	if usingTLS > 0 && usingTLS != len(specs) {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("enableEtcdTLS"), "both etcd clusters must have TLS enabled or none at all"))
+	}
+
+	return allErrs
+}
+
+// validateEtcdStorage is responsible for checking versions are identical.
+func validateEtcdStorage(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	version := specs[0].Version
+	for i, x := range specs {
+		if x.Version != "" && x.Version != version {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("version"), fmt.Sprintf("cluster: %q, has a different storage version: %q, both must be the same", x.Name, x.Version)))
+		}
+	}
+
+	return allErrs
+}
+
+// validateEtcdVersion is responsible for validating the storage version of etcd
+// @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1; could be a problem later down the line
+func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) field.ErrorList {
+	// @check if the storage is specified that it's valid
+
+	if minimalVersion == nil {
+		v := semver.MustParse("0.0.0")
+		minimalVersion = &v
+	}
+
+	version := spec.Version
+	if spec.Version == "" {
+		version = components.DefaultEtcd2Version
+	}
+
+	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
+	if err != nil {
+		return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, "the storage version is invalid")}
+	}
+
+	// we only support v3 and v2 for now
+	if sem.Major == 3 || sem.Major == 2 {
+		if sem.LT(*minimalVersion) {
+			return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, fmt.Sprintf("minimum version required is %s", minimalVersion.String()))}
+		}
+		return nil
+	}
+
+	return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, "unsupported storage version, we only support major versions 2 and 3")}
+}
+
+// validateEtcdMemberSpec is responsible for validate the cluster member
+func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if spec.Name == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), "etcdMember did not have name"))
+	}
+
+	if fi.StringValue(spec.InstanceGroup) == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("instanceGroup"), "etcdMember did not have instanceGroup"))
+	}
+
+	return allErrs
 }
 
 func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string, fldPath *field.Path) field.ErrorList {
