@@ -54,6 +54,7 @@ network_closure.sh
 
 # Terraform plans get put here
 /out/
+.terraform
 
 # Docker _src sync
 /docker/_src
