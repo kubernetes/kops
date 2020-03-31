@@ -1615,12 +1615,6 @@ spec:
                     description: NodeLocalDNS specifies the configuration for the
                       node-local-dns addon
                     properties:
-                      clusterIP:
-                        description: ClusterIP is the cluster ip
-                        type: string
-                      domain:
-                        description: Domain is the dns domain
-                        type: string
                       enabled:
                         description: Disable indicates we do not wish to run the node-local-dns
                           addon
@@ -1629,9 +1623,6 @@ spec:
                         description: Local listen IP address. It can be any IP in
                           the 169.254.20.0/16 space or any other IP address that can
                           be guaranteed to not collide with any existing IP.
-                        type: string
-                      serverIP:
-                        description: ServerIP is the server ip
                         type: string
                     type: object
                   provider:

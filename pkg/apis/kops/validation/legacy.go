@@ -277,11 +277,11 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "serverIP"), fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, address)))
 				}
 				if !featureflag.ExperimentalClusterDNS.Enabled() {
-					if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "serverIP"), "Kubelet ClusterDNS did not match cluster kubeDNS.serverIP"))
+					if isExperimentalClusterDNS(c.Spec.Kubelet, c.Spec.KubeDNS) {
+						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubelet", "clusterDNS"), "Kubelet ClusterDNS did not match cluster kubeDNS.serverIP or nodeLocalDNS.localIP"))
 					}
-					if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "serverIP"), "MasterKubelet ClusterDNS did not match cluster kubeDNS.serverIP"))
+					if isExperimentalClusterDNS(c.Spec.MasterKubelet, c.Spec.KubeDNS) {
+						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("masterKubelet", "clusterDNS"), "MasterKubelet ClusterDNS did not match cluster kubeDNS.serverIP or nodeLocalDNS.localIP"))
 					}
 				}
 			}
@@ -713,4 +713,10 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 
 	}
 	return allErrs
+}
+
+func isExperimentalClusterDNS(k *kops.KubeletConfigSpec, dns *kops.KubeDNSConfig) bool {
+
+	return k != nil && k.ClusterDNS != dns.ServerIP && dns.NodeLocalDNS != nil && k.ClusterDNS != dns.NodeLocalDNS.LocalIP
+
 }

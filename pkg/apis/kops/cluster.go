@@ -408,14 +408,8 @@ type KubeDNSConfig struct {
 type NodeLocalDNSConfig struct {
 	// Disable indicates we do not wish to run the node-local-dns addon
 	Enabled bool `json:"enabled,omitempty"`
-	// Domain is the dns domain
-	Domain string `json:"domain,omitempty"`
 	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.
 	LocalIP string `json:"localIP,omitempty"`
-	// ServerIP is the server ip
-	ServerIP string `json:"serverIP,omitempty"`
-	// ClusterIP is the cluster ip
-	ClusterIP string `json:"clusterIP,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
