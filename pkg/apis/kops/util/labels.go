@@ -17,23 +17,17 @@ limitations under the License.
 package util
 
 import (
-	"strings"
-
 	v1 "k8s.io/api/core/v1"
 )
 
 func GetNodeRole(node *v1.Node) string {
-	role := ""
 	// Newer labels
-	for k := range node.Labels {
-		if strings.HasPrefix(k, "node-role.kubernetes.io/") {
-			role = strings.TrimPrefix(k, "node-role.kubernetes.io/")
-		}
+	if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
+		return "master"
+	}
+	if _, ok := node.Labels["node-role.kubernetes.io/node"]; ok {
+		return "node"
 	}
 	// Older label
-	if role == "" {
-		role = node.Labels["kubernetes.io/role"]
-	}
-
-	return role
+	return node.Labels["kubernetes.io/role"]
 }
