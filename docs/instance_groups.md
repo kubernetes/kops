@@ -86,7 +86,6 @@ For example, to set up a 200GB gp2 root volume, your InstanceGroup spec might lo
 
 ```YAML
 metadata:
-  creationTimestamp: "2016-07-11T04:14:00Z"
   name: nodes
 spec:
   machineType: t2.medium
@@ -101,7 +100,6 @@ For example, to set up a 200GB io1 root volume with 200 provisioned Iops, your I
 
 ```YAML
 metadata:
-  creationTimestamp: "2016-07-11T04:14:00Z"
   name: nodes
 spec:
   machineType: t2.medium
@@ -252,6 +250,7 @@ spec:
   # add the mixed instance policy here
   mixedInstancesPolicy:
     instances:
+    - m4.xlarge
     - m5.large
     - m5.xlarge
     - t2.medium
@@ -314,7 +313,6 @@ An example spec looks like this:
 
 ```YAML
 metadata:
-  creationTimestamp: "2016-07-10T15:47:14Z"
   name: nodes
 spec:
   machineType: t2.medium
@@ -341,7 +339,6 @@ Additionally, `nodeLabels` can be added to an IG in order to take advantage of P
 
 ```YAML
 metadata:
-  creationTimestamp: "2016-07-10T15:47:14Z"
   name: nodes
 spec:
   machineType: m3.medium
