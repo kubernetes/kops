@@ -17,11 +17,11 @@ limitations under the License.
 package awsup
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
+	//"fmt"
+	//"strconv"
+	//"strings"
+	//"sync"
+	//"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
