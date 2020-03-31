@@ -26,11 +26,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/util/subnet"
 	"k8s.io/kops/upup/pkg/fi"
-
-	"github.com/blang/semver"
 )
 
 // legacy contains validation functions that don't match the apimachinery style
@@ -495,21 +492,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		}
 	}
 
-	// Etcd
-	{
-		fieldEtcdClusters := fieldSpec.Child("etcdClusters")
-
-		if len(c.Spec.EtcdClusters) == 0 {
-			allErrs = append(allErrs, field.Required(fieldEtcdClusters, ""))
-		} else {
-			for i, x := range c.Spec.EtcdClusters {
-				allErrs = append(allErrs, validateEtcdClusterSpecLegacy(x, fieldEtcdClusters.Index(i))...)
-			}
-			allErrs = append(allErrs, validateEtcdTLS(c.Spec.EtcdClusters, fieldEtcdClusters)...)
-			allErrs = append(allErrs, validateEtcdStorage(c.Spec.EtcdClusters, fieldEtcdClusters)...)
-		}
-	}
-
 	allErrs = append(allErrs, newValidateCluster(c)...)
 
 	return allErrs
@@ -528,101 +510,6 @@ func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IP
 	}
 
 	return false
-}
-
-// validateEtcdClusterSpecLegacy is responsible for validating the etcd cluster spec
-func validateEtcdClusterSpecLegacy(spec *kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	if spec.Name == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), "etcdCluster did not have name"))
-	}
-	if len(spec.Members) == 0 {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("members"), "No members defined in etcd cluster"))
-	} else if (len(spec.Members) % 2) == 0 {
-		// Not technically a requirement, but doesn't really make sense to allow
-		allErrs = append(allErrs, field.Invalid(fieldPath.Child("members"), len(spec.Members), "Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately"))
-	}
-	allErrs = append(allErrs, validateEtcdVersion(spec, fieldPath, nil)...)
-	for _, m := range spec.Members {
-		allErrs = append(allErrs, validateEtcdMemberSpec(m, fieldPath)...)
-	}
-
-	return allErrs
-}
-
-// validateEtcdTLS checks the TLS settings for etcd are valid
-func validateEtcdTLS(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	var usingTLS int
-	for _, x := range specs {
-		if x.EnableEtcdTLS {
-			usingTLS++
-		}
-	}
-	// check both clusters are using tls if one is enabled
-	if usingTLS > 0 && usingTLS != len(specs) {
-		allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("enableEtcdTLS"), "both etcd clusters must have TLS enabled or none at all"))
-	}
-
-	return allErrs
-}
-
-// validateEtcdStorage is responsible for checking versions are identical.
-func validateEtcdStorage(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	version := specs[0].Version
-	for i, x := range specs {
-		if x.Version != "" && x.Version != version {
-			allErrs = append(allErrs, field.Forbidden(fieldPath.Index(i).Child("version"), fmt.Sprintf("cluster: %q, has a different storage version: %q, both must be the same", x.Name, x.Version)))
-		}
-	}
-
-	return allErrs
-}
-
-// validateEtcdVersion is responsible for validating the storage version of etcd
-// @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1; could be a problem later down the line
-func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) field.ErrorList {
-	// @check if the storage is specified that it's valid
-
-	if minimalVersion == nil {
-		v := semver.MustParse("0.0.0")
-		minimalVersion = &v
-	}
-
-	version := spec.Version
-	if spec.Version == "" {
-		version = components.DefaultEtcd2Version
-	}
-
-	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
-	if err != nil {
-		return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, "the storage version is invalid")}
-	}
-
-	// we only support v3 and v2 for now
-	if sem.Major == 3 || sem.Major == 2 {
-		if sem.LT(*minimalVersion) {
-			return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, fmt.Sprintf("minimum version required is %s", minimalVersion.String()))}
-		}
-		return nil
-	}
-
-	return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, "unsupported storage version, we only support major versions 2 and 3")}
-}
-
-// validateEtcdMemberSpec is responsible for validate the cluster member
-func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	if spec.Name == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), "etcdMember did not have name"))
-	}
-
-	if fi.StringValue(spec.InstanceGroup) == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("instanceGroup"), "etcdMember did not have instanceGroup"))
-	}
-
-	return allErrs
 }
 
 // DeepValidate is responsible for validating the instancegroups within the cluster spec
