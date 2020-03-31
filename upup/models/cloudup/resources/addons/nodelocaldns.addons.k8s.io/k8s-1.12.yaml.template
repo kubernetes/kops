@@ -42,7 +42,7 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 data:
   Corefile: |
-    {{ .KubeDNS.NodeLocalDNS.Domain }}:53 {
+    {{ KubeDNS.Domain }}:53 {
         errors
         cache {
           success 9984 30
@@ -50,20 +50,20 @@ data:
         }
         reload
         loop
-        bind {{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }} {{ .KubeDNS.NodeLocalDNS.ServerIP }}
-        forward . {{ .KubeDNS.NodeLocalDNS.ClusterIP }} {
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        forward . {{ NodeLocalDNSClusterIP }} {
           force_tcp
         }
         prometheus :9253
-        health {{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }}:8080
+        health {{ KubeDNS.NodeLocalDNS.LocalIP }}:8080
     }
     in-addr.arpa:53 {
         errors
         cache 30
         reload
         loop
-        bind {{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }} {{ .KubeDNS.NodeLocalDNS.ServerIP }}
-        forward . {{ .KubeDNS.NodeLocalDNS.ClusterIP }} {
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        forward . {{ NodeLocalDNSClusterIP }} {
           force_tcp
         }
         prometheus :9253
@@ -73,8 +73,8 @@ data:
         cache 30
         reload
         loop
-        bind {{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }} {{ .KubeDNS.NodeLocalDNS.ServerIP }}
-        forward . {{ .KubeDNS.NodeLocalDNS.ClusterIP }} {
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        forward . {{ NodeLocalDNSClusterIP }} {
           force_tcp
         }
         prometheus :9253
@@ -84,7 +84,7 @@ data:
         cache 30
         reload
         loop
-        bind {{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }} {{ .KubeDNS.NodeLocalDNS.ServerIP }}
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
         forward . __PILLAR__UPSTREAM__SERVERS__ {
           force_tcp
         }
@@ -133,10 +133,10 @@ spec:
           requests:
             cpu: 25m
             memory: 5Mi
-        {{ if .KubeDNS.NodeLocalDNS.ServerIP }}
-        args: [ "-localip", "{{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }},{{ .KubeDNS.NodeLocalDNS.ServerIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+        {{ if NodeLocalDNSServerIP }}
+        args: [ "-localip", "{{ .KubeDNS.NodeLocalDNS.LocalIP }},{{ NodeLocalDNSServerIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
         {{ else }}
-        args: [ "-localip", "{{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+        args: [ "-localip", "{{ .KubeDNS.NodeLocalDNS.LocalIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
         {{ end }}
         securityContext:
           privileged: true
@@ -152,7 +152,7 @@ spec:
           protocol: TCP
         livenessProbe:
           httpGet:
-            host: {{ or .KubeDNS.NodeLocalDNS.LocalIP "169.254.20.10" }}
+            host: {{ .KubeDNS.NodeLocalDNS.LocalIP }}
             path: /health
             port: 8080
           initialDelaySeconds: 60

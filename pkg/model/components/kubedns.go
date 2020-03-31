@@ -78,25 +78,8 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	if NodeLocalDNS == nil {
 		NodeLocalDNS = &kops.NodeLocalDNSConfig{}
 		NodeLocalDNS.Enabled = false
-	} else if NodeLocalDNS.Enabled {
-		// https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/#configuration
-		NodeLocalDNS.Domain = clusterSpec.ClusterDNSDomain
-
-		switch clusterSpec.KubeProxy.ProxyMode {
-		case "iptables":
-			NodeLocalDNS.ServerIP = clusterSpec.KubeDNS.ServerIP
-			// This will be pushed into the Corefile and replaced by NodeLocal DNSCache at startup
-			NodeLocalDNS.ClusterIP = "__PILLAR__CLUSTER__DNS__"
-
-		case "ipvs":
-			NodeLocalDNS.ServerIP = ""
-			NodeLocalDNS.ClusterIP = clusterSpec.KubeDNS.ServerIP
-
-		default:
-			// the default supposes the kube-proxy working in iptables mode
-			NodeLocalDNS.ServerIP = clusterSpec.KubeDNS.ServerIP
-			NodeLocalDNS.ClusterIP = "__PILLAR__CLUSTER__DNS__"
-		}
+	} else if NodeLocalDNS.Enabled && NodeLocalDNS.LocalIP == "" {
+		NodeLocalDNS.LocalIP = "169.254.20.10"
 	}
 
 	return nil

@@ -553,6 +553,16 @@ spec:
       enabled: true
 ```
 
+If you are using kube-proxy in ipvs mode or Cilium as CNI, you have to set the nodeLocalDNS as ClusterDNS.
+
+```yaml
+spec:
+  kubelet:
+    clusterDNS: 169.254.20.10
+  masterKubelet:
+    clusterDNS: 169.254.20.10
+```
+
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
 
