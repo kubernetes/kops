@@ -538,9 +538,15 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	}
 
 	if e.UserData != nil {
-		tf.UserData, err = t.AddFile("aws_launch_configuration", *e.Name, "user_data", e.UserData)
+		userData, err := fi.ResourceAsString(e.UserData)
 		if err != nil {
 			return err
+		}
+		if userData != "" {
+			tf.UserData, err = t.AddFile("aws_launch_configuration", *e.Name, "user_data", e.UserData)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if e.IAMInstanceProfile != nil {
