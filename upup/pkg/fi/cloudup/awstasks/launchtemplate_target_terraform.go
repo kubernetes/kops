@@ -179,10 +179,14 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	}
 
 	if e.SpotPrice != "" {
+		marketSpotOptions := terraformLaunchTemplateMarketOptionsSpotOptions{MaxPrice: fi.String(e.SpotPrice)}
+		if e.SpotDurationInMinutes != nil {
+			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
+		}
 		tf.MarketOptions = []*terraformLaunchTemplateMarketOptions{
 			{
 				MarketType:  fi.String("spot"),
-				SpotOptions: []*terraformLaunchTemplateMarketOptionsSpotOptions{{MaxPrice: fi.String(e.SpotPrice)}},
+				SpotOptions: []*terraformLaunchTemplateMarketOptionsSpotOptions{&marketSpotOptions},
 			},
 		}
 	}

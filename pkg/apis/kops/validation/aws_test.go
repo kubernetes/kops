@@ -19,6 +19,8 @@ package validation
 import (
 	"testing"
 
+	"k8s.io/kops/upup/pkg/fi"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -101,6 +103,36 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 			ExpectedErrors: []string{
 				"Forbidden::test-nodes.spec.machineType",
 			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				SpotDurationInMinutes: fi.Int64(55),
+			},
+			ExpectedErrors: []string{
+				"Unsupported value::test-nodes.spec.spotDurationInMinutes",
+			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				SpotDurationInMinutes: fi.Int64(380),
+			},
+			ExpectedErrors: []string{
+				"Unsupported value::test-nodes.spec.spotDurationInMinutes",
+			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				SpotDurationInMinutes: fi.Int64(125),
+			},
+			ExpectedErrors: []string{
+				"Unsupported value::test-nodes.spec.spotDurationInMinutes",
+			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				SpotDurationInMinutes: fi.Int64(120),
+			},
+			ExpectedErrors: []string{},
 		},
 	}
 	for _, g := range grid {

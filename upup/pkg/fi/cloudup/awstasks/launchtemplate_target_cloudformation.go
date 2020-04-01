@@ -62,6 +62,8 @@ type cloudformationLaunchTemplateIAMProfile struct {
 }
 
 type cloudformationLaunchTemplateMarketOptionsSpotOptions struct {
+	// BlockDurationMinutes is required duration in minutes. This value must be a multiple of 60.
+	BlockDurationMinutes *int64 `json:"BlockDurationMinutes,omitempty"`
 	// InstancesInterruptionBehavior is the behavior when a Spot Instance is interrupted. Can be hibernate, stop, or terminate
 	InstancesInterruptionBehavior *string `json:"InstancesInterruptionBehavior,omitempty"`
 	// MaxPrice is the maximum hourly price you're willing to pay for the Spot Instances
@@ -74,7 +76,7 @@ type cloudformationLaunchTemplateMarketOptions struct {
 	// MarketType is the option type
 	MarketType *string `json:"MarketType,omitempty"`
 	// SpotOptions are the set of options
-	SpotOptions []*cloudformationLaunchTemplateMarketOptionsSpotOptions `json:"Options,omitempty"`
+	SpotOptions *cloudformationLaunchTemplateMarketOptionsSpotOptions `json:"SpotOptions,omitempty"`
 }
 
 type cloudformationLaunchTemplateBlockDeviceEBS struct {
@@ -165,29 +167,33 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		image = im.ImageId
 	}
 
-	cf := &cloudformationLaunchTemplate{
-		LaunchTemplateName: fi.String(fi.StringValue(e.Name)),
-		LaunchTemplateData: &cloudformationLaunchTemplateData{
-			EBSOptimized: e.RootVolumeOptimization,
-			ImageID:      image,
-			InstanceType: e.InstanceType,
-			NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterface{
-				{
-					AssociatePublicIPAddress: e.AssociatePublicIP,
-					DeleteOnTermination:      fi.Bool(true),
-					DeviceIndex:              fi.Int(0),
-				},
+	launchTemplateData := &cloudformationLaunchTemplateData{
+		EBSOptimized: e.RootVolumeOptimization,
+		ImageID:      image,
+		InstanceType: e.InstanceType,
+		NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterface{
+			{
+				AssociatePublicIPAddress: e.AssociatePublicIP,
+				DeleteOnTermination:      fi.Bool(true),
+				DeviceIndex:              fi.Int(0),
 			},
 		},
 	}
-	data := cf.LaunchTemplateData
 
 	if e.SpotPrice != "" {
-		data.MarketOptions = &cloudformationLaunchTemplateMarketOptions{
-			MarketType:  fi.String("spot"),
-			SpotOptions: []*cloudformationLaunchTemplateMarketOptionsSpotOptions{{MaxPrice: fi.String(e.SpotPrice)}},
+		marketSpotOptions := cloudformationLaunchTemplateMarketOptionsSpotOptions{MaxPrice: fi.String(e.SpotPrice)}
+		if e.SpotDurationInMinutes != nil {
+			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
 		}
+		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.String("spot"), SpotOptions: &marketSpotOptions}
 	}
+
+	cf := &cloudformationLaunchTemplate{
+		LaunchTemplateName: fi.String(fi.StringValue(e.Name)),
+		LaunchTemplateData: launchTemplateData,
+	}
+	data := cf.LaunchTemplateData
+
 	for _, x := range e.SecurityGroups {
 		data.NetworkInterfaces[0].SecurityGroups = append(data.NetworkInterfaces[0].SecurityGroups, x.CloudformationLink())
 	}
