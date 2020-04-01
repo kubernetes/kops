@@ -71,6 +71,8 @@ spec:
   minSize: 2
   role: Node
   instanceProtection: true
+  maxPrice: "0.1"
+  spotDurationInMinutes: 120
   subnets:
   - us-test-1b
 ---
