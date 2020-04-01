@@ -602,6 +602,13 @@
           "ImageId": "ami-12345678",
           "InstanceType": "t3.medium",
           "KeyName": "kubernetes.launchtemplates.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "InstanceMarketOptions": {
+            "MarketType": "spot",
+            "SpotOptions": {
+              "BlockDurationMinutes": 120,
+              "MaxPrice": "0.1"
+            }
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
