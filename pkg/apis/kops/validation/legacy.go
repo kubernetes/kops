@@ -451,68 +451,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	}
 
 	// Kubelet
-	if c.Spec.Kubelet != nil {
-		kubeletPath := fieldSpec.Child("kubelet")
-
-		{
-			// Flag removed in 1.6
-			if c.Spec.Kubelet.APIServers != "" {
-				allErrs = append(allErrs, field.Invalid(
-					kubeletPath.Child("apiServers"),
-					c.Spec.Kubelet.APIServers,
-					"api-servers flag was removed in 1.6"))
-			}
-		}
-
-		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
-			// Flag removed in 1.10
-			if c.Spec.Kubelet.RequireKubeconfig != nil {
-				allErrs = append(allErrs, field.Invalid(
-					kubeletPath.Child("requireKubeconfig"),
-					*c.Spec.Kubelet.RequireKubeconfig,
-					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)"))
-			}
-		}
-
-		if c.Spec.Kubelet.BootstrapKubeconfig != "" {
-			if c.Spec.KubeAPIServer == nil {
-				allErrs = append(allErrs, field.Required(fieldSpec.Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
-			}
-		}
-
-		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.Kubelet.APIServers) {
-			allErrs = append(allErrs, field.Invalid(kubeletPath.Child("apiServers"), c.Spec.Kubelet.APIServers, "Not a valid apiServer URL"))
-		}
-	}
-
-	// MasterKubelet
-	if c.Spec.MasterKubelet != nil {
-		masterKubeletPath := fieldSpec.Child("masterKubelet")
-
-		{
-			// Flag removed in 1.6
-			if c.Spec.MasterKubelet.APIServers != "" {
-				allErrs = append(allErrs, field.Invalid(
-					masterKubeletPath.Child("apiServers"),
-					c.Spec.MasterKubelet.APIServers,
-					"api-servers flag was removed in 1.6"))
-			}
-		}
-
-		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
-			// Flag removed in 1.10
-			if c.Spec.MasterKubelet.RequireKubeconfig != nil {
-				allErrs = append(allErrs, field.Invalid(
-					masterKubeletPath.Child("requireKubeconfig"),
-					*c.Spec.MasterKubelet.RequireKubeconfig,
-					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)"))
-			}
-		}
-
-		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
-			allErrs = append(allErrs, field.Invalid(masterKubeletPath.Child("apiServers"), c.Spec.MasterKubelet.APIServers, "Not a valid apiServers URL"))
-		}
-	}
+	allErrs = append(allErrs, validateKubelet(c.Spec.Kubelet, c, fieldSpec.Child("kubelet"))...)
+	allErrs = append(allErrs, validateKubelet(c.Spec.MasterKubelet, c, fieldSpec.Child("masterKubelet"))...)
 
 	// Topology support
 	if c.Spec.Topology != nil {
@@ -730,4 +670,44 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 	}
 
 	return nil
+}
+
+func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if k != nil {
+
+		{
+			// Flag removed in 1.6
+			if k.APIServers != "" {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("apiServers"),
+					"api-servers flag was removed in 1.6"))
+			}
+		}
+
+		if c.IsKubernetesGTE("1.10") {
+			// Flag removed in 1.10
+			if k.RequireKubeconfig != nil {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("requireKubeconfig"),
+					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)"))
+			}
+		}
+
+		if k.BootstrapKubeconfig != "" {
+			if c.Spec.KubeAPIServer == nil {
+				allErrs = append(allErrs, field.Required(kubeletPath.Root().Child("spec").Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
+			}
+		}
+
+		if k.TopologyManagerPolicy != "" {
+			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("topologyManagerPolicy"), &k.TopologyManagerPolicy, []string{"none", "best-effort", "restricted", "single-numa-node"})...)
+			if !c.IsKubernetesGTE("1.18") {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("topologyManagerPolicy"), "topologyManagerPolicy requires at least Kubernetes 1.18"))
+			}
+		}
+
+	}
+	return allErrs
 }
