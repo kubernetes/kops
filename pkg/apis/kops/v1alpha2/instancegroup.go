@@ -157,6 +157,8 @@ type InstanceGroupSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the rolling-update behavior
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	// EC2InstanceConnect installs the ec2-instance-connect package.
+	EC2InstanceConnect bool `json:"ec2InstanceConnect,omitempty"`
 }
 
 const (

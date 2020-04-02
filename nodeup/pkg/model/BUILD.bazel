@@ -11,6 +11,7 @@ go_library(
         "convenience.go",
         "directories.go",
         "docker.go",
+        "ec2instanceconnect.go",
         "etcd.go",
         "etcd_manager_tls.go",
         "etcd_tls.go",

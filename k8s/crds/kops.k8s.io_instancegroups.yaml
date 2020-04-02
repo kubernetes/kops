@@ -97,6 +97,10 @@ spec:
                 description: DetailedInstanceMonitoring defines if detailed-monitoring
                   is enabled (AWS only)
                 type: boolean
+              ec2InstanceConnect:
+                description: EC2InstanceConnect installs the ec2-instance-connect
+                  package.
+                type: boolean
               externalLoadBalancers:
                 description: ExternalLoadBalancers define loadbalancers that should
                   be attached to the instancegroup

@@ -20,6 +20,18 @@ To change the SSH public key on an existing cluster:
 * `kops update cluster --yes` to reconfigure the auto-scaling groups
 * `kops rolling-update cluster --name <clustername> --yes` to immediately roll all the machines so they have the new key (optional)
 
+### EC2 Instance Connect
+
+Kops clusters on AWS can configure make use of [EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Connect-using-EC2-Instance-Connect.html).
+
+To enable this, add the following to the Instance Group spec.
+
+```
+spec:
+    ec2InstanceConnect: true
+```
+
+
 ## Docker Configuration
 
 If you are using a private registry such as quay.io, you may be familiar with the inconvenience of managing the `imagePullSecrets` for each namespace. It can also be a pain to use [Kops Hooks](cluster_spec.md#hooks) with private images. To configure docker on all nodes with access to one or more private registries:

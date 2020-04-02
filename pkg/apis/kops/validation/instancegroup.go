@@ -207,6 +207,12 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 		}
 	}
 
+	if g.Spec.EC2InstanceConnect {
+		if kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "ec2InstanceConnect"), "ec2-instance-connect is only available on AWS"))
+		}
+	}
+
 	return allErrs
 }
 

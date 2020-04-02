@@ -249,6 +249,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.EC2InstanceConnectBuilder{NodeupModelContext: modelContext})
 
 	if c.cluster.Spec.Networking.Cilium != nil {
 		loader.Builders = append(loader.Builders, &model.CiliumBuilder{NodeupModelContext: modelContext})
