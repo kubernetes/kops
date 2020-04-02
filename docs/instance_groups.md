@@ -20,10 +20,10 @@ By default, a cluster has:
 * If instance groups are not defined correctly (particularly when there are an even number of master or multiple
   groups of masters into one availability zone in a single region), etcd servers will not start and master nodes will not check in. This is because etcd servers are configured per availability zone. DNS and Route53 would be the first places to check when these problems are happening.
 
-
 ## Listing instance groups
 
 `kops get instancegroups`
+
 ```
 NAME                    ROLE    MACHINETYPE     MIN     MAX     ZONES
 master-us-east-1c       Master                  1       1       us-east-1c
@@ -41,6 +41,7 @@ have not yet been applied (this may change soon though!).
 To preview the change:
 
 `kops update cluster <clustername>`
+
 ```
 ...
 Will modify resources:
@@ -83,9 +84,8 @@ The procedure to resize the root volume works the same way:
 
 For example, to set up a 200GB gp2 root volume, your InstanceGroup spec might look like:
 
-```
+```YAML
 metadata:
-  creationTimestamp: "2016-07-11T04:14:00Z"
   name: nodes
 spec:
   machineType: t2.medium
@@ -98,9 +98,8 @@ spec:
 
 For example, to set up a 200GB io1 root volume with 200 provisioned Iops, your InstanceGroup spec might look like:
 
-```
+```YAML
 metadata:
-  creationTimestamp: "2016-07-11T04:14:00Z"
   name: nodes
 spec:
   machineType: t2.medium
@@ -143,7 +142,7 @@ In AWS the above example shows how to add an additional 20gb EBS volume, which a
 
 You can add additional storage via the above `volumes` collection though this only provisions the storage itself. Assuming you don't wish to handle the mechanics of formatting and mounting the device yourself _(perhaps via a hook)_ you can utilize the `volumeMounts` section of the instancegroup to handle this for you.
 
-```
+```YAML
 ---
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
@@ -227,7 +226,7 @@ So the procedure is:
 
 ## Creating a instance group of mixed instances types (AWS Only)
 
-AWS permits the creation of EC2 Fleet Autoscaling Group using a [mixed instance policy](https://aws.amazon.com/blogs/aws/ec2-fleet-manage-thousands-of-on-demand-and-spot-instances-with-one-request/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS. In order to create a mixed instance policy instancegroup.
+AWS permits the creation of mixed instance EC2 Autoscaling Groups using a [mixed instance policy](https://aws.amazon.com/blogs/aws/new-ec2-auto-scaling-groups-with-multiple-instance-types-purchase-options/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS.
 
 Support for mixed instance groups was added in Kops 1.12.0
 
@@ -246,9 +245,12 @@ spec:
   machineType: m4.large
   maxSize: 50
   minSize: 10
-  # add the mixed instance here
+  # You can manually set the maxPrice you're willing to pay - it will default to the onDemand price.
+  maxPrice: "1.0"
+  # add the mixed instance policy here
   mixedInstancesPolicy:
     instances:
+    - m4.xlarge
     - m5.large
     - m5.xlarge
     - t2.medium
@@ -261,25 +263,25 @@ The mixed instance policy permits setting the following configurable below, but 
 ```Go
 // MixedInstancesPolicySpec defines the specification for an autoscaling backed by a ec2 fleet
 type MixedInstancesPolicySpec struct {
-	// Instances is a list of instance types which we are willing to run in the EC2 fleet
-	Instances []string `json:"instances,omitempty"`
-	// OnDemandAllocationStrategy indicates how to allocate instance types to fulfill On-Demand capacity
-	OnDemandAllocationStrategy *string `json:"onDemandAllocationStrategy,omitempty"`
-	// OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
-	// fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.
-	OnDemandBase *int64 `json:"onDemandBase,omitempty"`
-	// OnDemandAboveBase controls the percentages of On-Demand Instances and Spot Instances for your
-	// additional capacity beyond OnDemandBase. The range is 0–100. The default value is 100. If you
-	// leave this parameter set to 100, the percentages are 100% for On-Demand Instances and 0% for
-	// Spot Instances.
-	OnDemandAboveBase *int64 `json:"onDemandAboveBase,omitempty"`
-	// SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
-	// find the best pricing. Higher Spot availability may result from a larger number of
-	// instance types to choose from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet.html#spot-fleet-allocation-strategy
-	SpotAllocationStrategy *string `json:"spotAllocationStrategy,omitempty"`
-	// SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
-	// pools are determined from the different instance types in the Overrides array of LaunchTemplate
-	SpotInstancePools *int64 `json:"spotInstancePools,omitempty"`
+  // Instances is a list of instance types which we are willing to run in the EC2 fleet
+  Instances []string `json:"instances,omitempty"`
+  // OnDemandAllocationStrategy indicates how to allocate instance types to fulfill On-Demand capacity
+  OnDemandAllocationStrategy *string `json:"onDemandAllocationStrategy,omitempty"`
+  // OnDemandBase is the minimum amount of the Auto Scaling group's capacity that must be
+  // fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.
+  OnDemandBase *int64 `json:"onDemandBase,omitempty"`
+  // OnDemandAboveBase controls the percentages of On-Demand Instances and Spot Instances for your
+  // additional capacity beyond OnDemandBase. The range is 0–100. The default value is 100. If you
+  // leave this parameter set to 100, the percentages are 100% for On-Demand Instances and 0% for
+  // Spot Instances.
+  OnDemandAboveBase *int64 `json:"onDemandAboveBase,omitempty"`
+  // SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
+  // find the best pricing. Higher Spot availability may result from a larger number of
+  // instance types to choose from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet.html#spot-fleet-allocation-strategy
+  SpotAllocationStrategy *string `json:"spotAllocationStrategy,omitempty"`
+  // SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
+  // pools are determined from the different instance types in the Overrides array of LaunchTemplate
+  SpotInstancePools *int64 `json:"spotInstancePools,omitempty"`
 }
 ```
 
@@ -302,7 +304,6 @@ So the procedure is:
 * Apply: `kops update cluster <clustername> --yes`
 * Rolling update to update existing instances: `kops rolling-update cluster --yes`
 
-
 ## Converting an instance group to use spot instances
 
 Follow the normal procedure for reconfiguring an InstanceGroup, but set the maxPrice property to your bid.
@@ -310,9 +311,8 @@ For example, "0.10" represents a spot-price bid of $0.10 (10 cents) per hour.
 
 An example spec looks like this:
 
-```
+```YAML
 metadata:
-  creationTimestamp: "2016-07-10T15:47:14Z"
   name: nodes
 spec:
   machineType: t2.medium
@@ -329,7 +329,6 @@ So the procedure is:
 * Apply: `kops update cluster <clustername> --yes`
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
 
-
 ## Adding Taints or Labels to an Instance Group
 
 If you're running Kubernetes 1.6.0 or later, you can also control taints in the InstanceGroup.
@@ -338,9 +337,8 @@ using the same `edit` -> `update` -> `rolling-update` process as above.
 
 Additionally, `nodeLabels` can be added to an IG in order to take advantage of Pod Affinity. Every node in the IG will be assigned the desired labels. For more information see the [labels](./labels.md) documentation.
 
-```
+```YAML
 metadata:
-  creationTimestamp: "2016-07-10T15:47:14Z"
   name: nodes
 spec:
   machineType: m3.medium
@@ -354,7 +352,6 @@ spec:
     spot: "false"
 ```
 
-
 ## Resizing the master
 
 (This procedure should be pretty familiar by now!)
@@ -365,7 +362,7 @@ Your master instance group will probably be called `master-us-west-1c` or someth
 
 Add or set the machineType:
 
-```
+```YAML
 spec:
   machineType: m3.large
 ```
@@ -380,7 +377,6 @@ If you want to minimize downtime, scale the master ASG up to size 2, then wait f
 be Ready in `kubectl get nodes`, then delete the old master instance, and scale the ASG back down to size 1.  (A
 future version of rolling-update will probably do this automatically)
 
-
 ## Deleting an instance group
 
 If you decide you don't need an InstanceGroup any more, you delete it using: `kops delete ig <name>`
@@ -393,7 +389,7 @@ No `kops update cluster` nor `kops rolling-update` is needed, so **be careful** 
 
 EBS-Optimized instances can be created by setting the following field:
 
-```
+```YAML
 spec:
   rootVolumeOptimization: true
 ```
@@ -402,11 +398,11 @@ spec:
 
 Kops utilizes cloud-init to initialize and setup a host at boot time. However in certain cases you may already be leveraging certain features of cloud-init in your infrastructure and would like to continue doing so. More information on cloud-init can be found [here](http://cloudinit.readthedocs.io/en/latest/)
 
-
 Additional user-data can be passed to the host provisioning by setting the `additionalUserData` field. A list of valid user-data content-types can be found [here](http://cloudinit.readthedocs.io/en/latest/topics/format.html#mime-multi-part-archive)
 
 Example:
-```
+
+```YAML
 spec:
   additionalUserData:
   - name: myscript.sh
@@ -431,7 +427,7 @@ spec:
 
 If you need to add tags on auto scaling groups or instances (propagate ASG tags), you can add it in the instance group specs with *cloudLabels*. Cloud Labels defined at the cluster spec level will also be inherited.
 
-```
+```YAML
 # Example for nodes
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
@@ -459,7 +455,7 @@ An example of this is if you are running multiple AZs in an ASG while using a Ku
 The autoscaler will remove specific instances that are not being used.  In some cases, the `AZRebalance` process
 will rescale the ASG without warning.
 
-```
+```YAML
 # Example for nodes
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
@@ -481,7 +477,7 @@ spec:
 Autoscaling groups may scale up or down automatically to balance types of instances, regions, etc.
 [Instance protection](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-instance-termination.html#instance-protection) prevents the ASG from being scaled in.
 
-```
+```YAML
 # Example for nodes
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
@@ -510,7 +506,7 @@ You can specify either `loadBalancerName` to link the instance group to an AWS C
 specify `targetGroupArn` to link the instance group to a target group, which are used by Application
 load balancers and Network load balancers.
 
-```
+```YAML
 # Example ingress nodes
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
@@ -534,7 +530,7 @@ Detailed-Monitoring will cause the monitoring data to be available every 1 minut
 
 **Note: that enabling detailed monitoring is a subject for [charge](https://aws.amazon.com/cloudwatch)**
 
-```
+```YAML
 # Example for nodes
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
@@ -554,7 +550,7 @@ spec:
 
 If you want to boot from a volume when you are running in openstack you can set annotations on the instance groups.
 
-```yaml
+```YAML
 # Example for nodes
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
@@ -575,7 +571,6 @@ spec:
 
 If `openstack.kops.io/osVolumeSize` is not set it will default to the minimum disk specified by the image.
 
-
 ## Setting Custom Kernel Runtime Parameters
 
 To add custom kernel runtime parameters to your instance group, specify the
@@ -589,7 +584,7 @@ parameters.
 
 For example:
 
-```yaml
+```YAML
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -601,4 +596,3 @@ spec:
 ```
 
 which would end up in a drop-in file on nodes of the instance group in question.
-
