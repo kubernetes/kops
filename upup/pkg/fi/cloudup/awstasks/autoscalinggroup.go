@@ -59,7 +59,7 @@ type AutoscalingGroup struct {
 	Metrics []string
 	// MinSize is the smallest number of nodes in the asg
 	MinSize *int64
-	// MixedInstanceOverrides is a collection of instance type to use with fleet policy
+	// MixedInstanceOverrides is a collection of instance types to use with fleet policy
 	MixedInstanceOverrides []string
 	// MixedOnDemandAllocationStrategy is allocation strategy to use for on-demand instances
 	MixedOnDemandAllocationStrategy *string
