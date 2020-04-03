@@ -839,6 +839,9 @@ spec:
               value: "true"
 
             # kops additions
+            # Controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom
+            - name: FELIX_CHAININSERTMODE
+              value: "{{- or .Networking.Calico.ChainInsertMode "append" }}"
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
               value: "{{- or .Networking.Calico.IptablesBackend "Auto" }}"

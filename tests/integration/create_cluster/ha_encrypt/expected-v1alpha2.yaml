@@ -26,6 +26,7 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: main
+    version: 3.2.24
   - cpuRequest: 100m
     etcdMembers:
     - encryptedVolume: true
@@ -39,6 +40,7 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: events
+    version: 3.2.24
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -50,7 +52,8 @@ spec:
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    calico:
+      majorVersion: v3
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0

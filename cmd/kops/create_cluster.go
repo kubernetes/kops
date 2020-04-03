@@ -174,7 +174,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
 	o.Models = strings.Join(cloudup.CloudupModels, ",")
-	o.Networking = "kubenet"
+	o.Networking = "calico"
 	o.Channel = api.DefaultChannel
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)

@@ -19,12 +19,14 @@ spec:
       name: a
     memoryRequest: 100Mi
     name: main
+    version: 3.2.24
   - cpuRequest: 100m
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: events
+    version: 3.2.24
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -36,7 +38,8 @@ spec:
   masterPublicName: api.overrides.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    calico:
+      majorVersion: v3
   nodePortAccess:
   - 1.2.3.4/32
   - 10.20.30.0/24

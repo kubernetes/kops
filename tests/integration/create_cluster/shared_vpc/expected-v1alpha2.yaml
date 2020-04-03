@@ -19,12 +19,14 @@ spec:
       name: a
     memoryRequest: 100Mi
     name: main
+    version: 3.2.24
   - cpuRequest: 100m
     etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
     memoryRequest: 100Mi
     name: events
+    version: 3.2.24
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -37,7 +39,8 @@ spec:
   networkCIDR: 10.0.0.0/12
   networkID: vpc-12345678
   networking:
-    kubenet: {}
+    calico:
+      majorVersion: v3
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0

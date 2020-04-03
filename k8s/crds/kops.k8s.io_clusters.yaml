@@ -2490,7 +2490,16 @@ spec:
                 calico:
                   description: CalicoNetworkingSpec declares that we want Calico networking
                   properties:
+                    chainInsertMode:
+                      description: 'ChainInsertMode controls whether Felix inserts
+                        rules to the top of iptables chains, or appends to the bottom.
+                        Leaving the default option is safest to prevent accidentally
+                        breaking connectivity. Default: ''insert'' (other options:
+                        ''append'')'
+                      type: string
                     crossSubnet:
+                      description: CrossSubnet enables Calico's cross-subnet mode
+                        when set to true
                       type: boolean
                     ipipMode:
                       description: IPIPMode is mode for CALICO_IPV4POOL_IPIP

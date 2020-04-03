@@ -23,6 +23,7 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: main
+    version: 3.2.24
   - cpuRequest: 100m
     etcdMembers:
     - instanceGroup: master-us-test1-a
@@ -33,6 +34,7 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: events
+    version: 3.2.24
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -43,7 +45,8 @@ spec:
   kubernetesVersion: v1.15.6-beta.1
   masterPublicName: api.ha-gce.example.com
   networking:
-    kubenet: {}
+    calico:
+      majorVersion: v3
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testproject
   sshAccess:

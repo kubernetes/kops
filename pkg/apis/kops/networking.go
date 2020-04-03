@@ -100,7 +100,12 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
-	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
+	// ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or
+	// appends to the bottom. Leaving the default option is safest to prevent accidentally
+	// breaking connectivity. Default: 'insert' (other options: 'append')
+	ChainInsertMode string `json:"chainInsertMode,omitempty"`
+	// CrossSubnet enables Calico's cross-subnet mode when set to true
+	CrossSubnet bool `json:"crossSubnet,omitempty"`
 	// LogSeverityScreen lets us set the desired log level. (Default: info)
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// MTU to be set in the cni-network-config for calico.
