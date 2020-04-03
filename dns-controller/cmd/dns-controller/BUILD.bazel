@@ -51,6 +51,7 @@ container_image(
     files = [
         "dns-controller",
     ],
+    stamp = True,
 )
 
 container_push(
