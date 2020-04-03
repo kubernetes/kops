@@ -1,0 +1,22 @@
+kind: Addons
+metadata:
+  name: metrics-server
+spec:
+  addons:
+  - version: 0.1.0
+    selector:
+      k8s-addon: metrics-server.addons.k8s.io
+    manifest: v1.7.x.yaml
+    kubernetesVersion: "<1.8.0"
+  - version: 0.3.6
+    selector:
+      k8s-addon: metrics-server.addons.k8s.io
+    id: pre-k8s-1-16
+    kubernetesVersion: "<1.16.0"
+    manifest: v1.8.x.yaml
+  - version: 0.3.6
+    selector:
+      k8s-addon: metrics-server.addons.k8s.io
+    manifest: v1.16.x.yaml
+    id: k8s-1-16
+    kubernetesVersion: ">=1.16.0"
