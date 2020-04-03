@@ -46,6 +46,7 @@ container_image(
     files = [
         "//cmd/kops-controller",
     ],
+    stamp = True,
 )
 
 container_push(

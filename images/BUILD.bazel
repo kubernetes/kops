@@ -87,4 +87,5 @@ container_image(
     files = [
         "//cmd/kops-controller",
     ],
+    stamp = True,
 )
