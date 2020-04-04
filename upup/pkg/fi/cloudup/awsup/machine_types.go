@@ -22,16 +22,11 @@ import (
 	"k8s.io/klog"
 )
 
-// I believe one vCPU ~ 3 ECUS, and 60 CPU credits would be needed to use one vCPU for an hour
-const BurstableCreditsToECUS float32 = 3.0 / 60.0
-
 type AWSMachineTypeInfo struct {
 	Name              string
 	MemoryGB          float32
-	ECU               float32
 	Cores             int
 	EphemeralDisks    []int
-	Burstable         bool
 	GPU               bool
 	MaxPods           int
 	InstanceENIs      int
@@ -101,7 +96,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "a1.medium",
 		MemoryGB:          2,
-		ECU:               0,
 		Cores:             1,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 4,
@@ -111,7 +105,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "a1.large",
 		MemoryGB:          4,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -121,7 +114,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "a1.xlarge",
 		MemoryGB:          8,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -131,7 +123,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "a1.2xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -141,7 +132,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "a1.4xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -151,7 +141,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "a1.metal",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -162,7 +151,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c1.medium",
 		MemoryGB:          1.7,
-		ECU:               5,
 		Cores:             2,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 6,
@@ -172,7 +160,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c1.xlarge",
 		MemoryGB:          7,
-		ECU:               20,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -183,7 +170,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c3.large",
 		MemoryGB:          3.75,
-		ECU:               7,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -193,7 +179,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c3.xlarge",
 		MemoryGB:          7.5,
-		ECU:               14,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -203,7 +188,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c3.2xlarge",
 		MemoryGB:          15,
-		ECU:               28,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -213,7 +197,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c3.4xlarge",
 		MemoryGB:          30,
-		ECU:               55,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -223,7 +206,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c3.8xlarge",
 		MemoryGB:          60,
-		ECU:               108,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -234,7 +216,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c4.large",
 		MemoryGB:          3.75,
-		ECU:               8,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -244,7 +225,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c4.xlarge",
 		MemoryGB:          7.5,
-		ECU:               16,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -254,7 +234,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c4.2xlarge",
 		MemoryGB:          15,
-		ECU:               31,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -264,7 +243,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c4.4xlarge",
 		MemoryGB:          30,
-		ECU:               62,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -274,7 +252,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c4.8xlarge",
 		MemoryGB:          60,
-		ECU:               132,
 		Cores:             36,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -285,7 +262,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.large",
 		MemoryGB:          4,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -295,7 +271,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.xlarge",
 		MemoryGB:          8,
-		ECU:               20,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -305,7 +280,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.2xlarge",
 		MemoryGB:          16,
-		ECU:               39,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -315,7 +289,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.4xlarge",
 		MemoryGB:          32,
-		ECU:               73,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -325,7 +298,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.9xlarge",
 		MemoryGB:          72,
-		ECU:               139,
 		Cores:             36,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -335,7 +307,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.12xlarge",
 		MemoryGB:          96,
-		ECU:               188,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -345,7 +316,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.18xlarge",
 		MemoryGB:          144,
-		ECU:               281,
 		Cores:             72,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -355,7 +325,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.24xlarge",
 		MemoryGB:          192,
-		ECU:               375,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -365,7 +334,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5.metal",
 		MemoryGB:          192,
-		ECU:               375,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -376,7 +344,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.large",
 		MemoryGB:          4,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -386,7 +353,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.xlarge",
 		MemoryGB:          8,
-		ECU:               20,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -396,7 +362,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.2xlarge",
 		MemoryGB:          16,
-		ECU:               39,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -406,7 +371,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.4xlarge",
 		MemoryGB:          32,
-		ECU:               73,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -416,7 +380,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.9xlarge",
 		MemoryGB:          72,
-		ECU:               139,
 		Cores:             36,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -426,7 +389,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.12xlarge",
 		MemoryGB:          96,
-		ECU:               188,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -436,7 +398,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.18xlarge",
 		MemoryGB:          144,
-		ECU:               281,
 		Cores:             72,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -446,7 +407,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.24xlarge",
 		MemoryGB:          192,
-		ECU:               375,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -456,7 +416,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5d.metal",
 		MemoryGB:          192,
-		ECU:               375,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -467,7 +426,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5n.large",
 		MemoryGB:          5.25,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -477,7 +435,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5n.xlarge",
 		MemoryGB:          10.5,
-		ECU:               20,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -487,7 +444,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5n.2xlarge",
 		MemoryGB:          21,
-		ECU:               39,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -497,7 +453,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5n.4xlarge",
 		MemoryGB:          42,
-		ECU:               73,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -507,7 +462,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5n.9xlarge",
 		MemoryGB:          96,
-		ECU:               139,
 		Cores:             36,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -517,7 +471,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5n.18xlarge",
 		MemoryGB:          192,
-		ECU:               281,
 		Cores:             72,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -527,7 +480,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "c5n.metal",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             72,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -538,7 +490,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "cc2.8xlarge",
 		MemoryGB:          60.5,
-		ECU:               88,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -549,7 +500,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "cr1.8xlarge",
 		MemoryGB:          244,
-		ECU:               88,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -560,7 +510,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "d2.xlarge",
 		MemoryGB:          30.5,
-		ECU:               14,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -570,7 +519,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "d2.2xlarge",
 		MemoryGB:          61,
-		ECU:               28,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -580,7 +528,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "d2.4xlarge",
 		MemoryGB:          122,
-		ECU:               56,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -590,7 +537,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "d2.8xlarge",
 		MemoryGB:          244,
-		ECU:               116,
 		Cores:             36,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -601,7 +547,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "f1.2xlarge",
 		MemoryGB:          122,
-		ECU:               31,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -611,7 +556,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "f1.4xlarge",
 		MemoryGB:          244,
-		ECU:               58,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -621,7 +565,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "f1.16xlarge",
 		MemoryGB:          976,
-		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 50,
@@ -632,7 +575,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g2.2xlarge",
 		MemoryGB:          15,
-		ECU:               26,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -643,7 +585,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g2.8xlarge",
 		MemoryGB:          60,
-		ECU:               104,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -655,7 +596,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g3.4xlarge",
 		MemoryGB:          122,
-		ECU:               58,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -666,7 +606,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g3.8xlarge",
 		MemoryGB:          244,
-		ECU:               97,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -677,7 +616,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g3.16xlarge",
 		MemoryGB:          488,
-		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -689,7 +627,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g3s.xlarge",
 		MemoryGB:          30.5,
-		ECU:               13,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -701,7 +638,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g4dn.xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -712,7 +648,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g4dn.2xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -723,7 +658,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g4dn.4xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -734,7 +668,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g4dn.8xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -745,7 +678,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g4dn.12xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -756,7 +688,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "g4dn.16xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -768,7 +699,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "h1.2xlarge",
 		MemoryGB:          32,
-		ECU:               31,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -778,7 +708,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "h1.4xlarge",
 		MemoryGB:          64,
-		ECU:               58,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -788,7 +717,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "h1.8xlarge",
 		MemoryGB:          128,
-		ECU:               97,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -798,7 +726,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "h1.16xlarge",
 		MemoryGB:          256,
-		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -809,7 +736,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "hs1.8xlarge",
 		MemoryGB:          117,
-		ECU:               35,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -820,7 +746,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i2.xlarge",
 		MemoryGB:          30.5,
-		ECU:               14,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -830,7 +755,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i2.2xlarge",
 		MemoryGB:          61,
-		ECU:               27,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -840,7 +764,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i2.4xlarge",
 		MemoryGB:          122,
-		ECU:               53,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -850,7 +773,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i2.8xlarge",
 		MemoryGB:          244,
-		ECU:               104,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -861,7 +783,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.large",
 		MemoryGB:          15.25,
-		ECU:               8,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -871,7 +792,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.xlarge",
 		MemoryGB:          30.5,
-		ECU:               16,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -881,7 +801,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.2xlarge",
 		MemoryGB:          61,
-		ECU:               31,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -891,7 +810,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.4xlarge",
 		MemoryGB:          122,
-		ECU:               58,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -901,7 +819,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.8xlarge",
 		MemoryGB:          244,
-		ECU:               97,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -911,7 +828,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.16xlarge",
 		MemoryGB:          488,
-		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -921,7 +837,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3.metal",
 		MemoryGB:          512,
-		ECU:               208,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -932,7 +847,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.large",
 		MemoryGB:          16,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -942,7 +856,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -952,7 +865,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.2xlarge",
 		MemoryGB:          64,
-		ECU:               37,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -962,7 +874,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.3xlarge",
 		MemoryGB:          96,
-		ECU:               0,
 		Cores:             12,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -972,7 +883,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.6xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             24,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -982,7 +892,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.12xlarge",
 		MemoryGB:          384,
-		ECU:               168,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -992,7 +901,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.24xlarge",
 		MemoryGB:          768,
-		ECU:               337,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1002,7 +910,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "i3en.metal",
 		MemoryGB:          768,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1013,7 +920,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "inf1.xlarge",
 		MemoryGB:          8,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 10,
@@ -1023,7 +929,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "inf1.2xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 10,
@@ -1033,7 +938,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "inf1.6xlarge",
 		MemoryGB:          48,
-		ECU:               0,
 		Cores:             24,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1043,7 +947,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "inf1.24xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1054,7 +957,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m1.small",
 		MemoryGB:          1.7,
-		ECU:               1,
 		Cores:             1,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 4,
@@ -1064,7 +966,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m1.medium",
 		MemoryGB:          3.75,
-		ECU:               2,
 		Cores:             1,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 6,
@@ -1074,7 +975,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m1.large",
 		MemoryGB:          7.5,
-		ECU:               4,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1084,7 +984,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m1.xlarge",
 		MemoryGB:          15,
-		ECU:               8,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1095,7 +994,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m2.xlarge",
 		MemoryGB:          17.1,
-		ECU:               6.5,
 		Cores:             2,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1105,7 +1003,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m2.2xlarge",
 		MemoryGB:          34.2,
-		ECU:               13,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 30,
@@ -1115,7 +1012,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m2.4xlarge",
 		MemoryGB:          68.4,
-		ECU:               26,
 		Cores:             8,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1126,7 +1022,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m3.medium",
 		MemoryGB:          3.75,
-		ECU:               3,
 		Cores:             1,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 6,
@@ -1136,7 +1031,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m3.large",
 		MemoryGB:          7.5,
-		ECU:               6.5,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1146,7 +1040,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m3.xlarge",
 		MemoryGB:          15,
-		ECU:               13,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1156,7 +1049,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m3.2xlarge",
 		MemoryGB:          30,
-		ECU:               26,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 30,
@@ -1167,7 +1059,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m4.large",
 		MemoryGB:          8,
-		ECU:               6.5,
 		Cores:             2,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 10,
@@ -1177,7 +1068,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m4.xlarge",
 		MemoryGB:          16,
-		ECU:               13,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1187,7 +1077,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m4.2xlarge",
 		MemoryGB:          32,
-		ECU:               26,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1197,7 +1086,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m4.4xlarge",
 		MemoryGB:          64,
-		ECU:               53.5,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1207,7 +1095,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m4.10xlarge",
 		MemoryGB:          160,
-		ECU:               124.5,
 		Cores:             40,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1217,7 +1104,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m4.16xlarge",
 		MemoryGB:          256,
-		ECU:               188,
 		Cores:             64,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1228,7 +1114,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.large",
 		MemoryGB:          8,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1238,7 +1123,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.xlarge",
 		MemoryGB:          16,
-		ECU:               16,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1248,7 +1132,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.2xlarge",
 		MemoryGB:          32,
-		ECU:               37,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1258,7 +1141,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.4xlarge",
 		MemoryGB:          64,
-		ECU:               70,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1268,7 +1150,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.8xlarge",
 		MemoryGB:          128,
-		ECU:               128,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1278,7 +1159,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.12xlarge",
 		MemoryGB:          192,
-		ECU:               168,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1288,7 +1168,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.16xlarge",
 		MemoryGB:          256,
-		ECU:               256,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 30,
@@ -1298,7 +1177,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.24xlarge",
 		MemoryGB:          384,
-		ECU:               337,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1308,7 +1186,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5.metal",
 		MemoryGB:          384,
-		ECU:               345,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1319,7 +1196,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.large",
 		MemoryGB:          8,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1329,7 +1205,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1339,7 +1214,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.2xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1349,7 +1223,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.4xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1359,7 +1232,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.8xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1369,7 +1241,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.12xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1379,7 +1250,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.16xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 30,
@@ -1389,7 +1259,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5a.24xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1400,7 +1269,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5ad.large",
 		MemoryGB:          8,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1410,7 +1278,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5ad.xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1420,7 +1287,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5ad.2xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1430,7 +1296,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5ad.4xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1440,7 +1305,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5ad.12xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1450,7 +1314,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5ad.24xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1461,7 +1324,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.large",
 		MemoryGB:          8,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1471,7 +1333,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.xlarge",
 		MemoryGB:          16,
-		ECU:               16,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1481,7 +1342,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.2xlarge",
 		MemoryGB:          32,
-		ECU:               37,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1491,7 +1351,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.4xlarge",
 		MemoryGB:          64,
-		ECU:               70,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1501,7 +1360,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.8xlarge",
 		MemoryGB:          128,
-		ECU:               128,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1511,7 +1369,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.12xlarge",
 		MemoryGB:          192,
-		ECU:               168,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1521,7 +1378,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.16xlarge",
 		MemoryGB:          256,
-		ECU:               256,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 30,
@@ -1531,7 +1387,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.24xlarge",
 		MemoryGB:          384,
-		ECU:               337,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1541,7 +1396,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5d.metal",
 		MemoryGB:          384,
-		ECU:               345,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1552,7 +1406,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.large",
 		MemoryGB:          8,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1562,7 +1415,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1572,7 +1424,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.2xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1582,7 +1433,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.4xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1592,7 +1442,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.8xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1602,7 +1451,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.12xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1612,7 +1460,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.16xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1622,7 +1469,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5dn.24xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1633,7 +1479,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.large",
 		MemoryGB:          8,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1643,7 +1488,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1653,7 +1497,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.2xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1663,7 +1506,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.4xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1673,7 +1515,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.8xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1683,7 +1524,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.12xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1693,7 +1533,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.16xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1703,7 +1542,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m5n.24xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1714,7 +1552,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.medium",
 		MemoryGB:          4,
-		ECU:               0,
 		Cores:             1,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1724,7 +1561,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.large",
 		MemoryGB:          8,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1734,7 +1570,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.xlarge",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1744,7 +1579,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.2xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1754,7 +1588,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.4xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1764,7 +1597,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.8xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1774,7 +1606,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.12xlarge",
 		MemoryGB:          192,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1784,7 +1615,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "m6g.16xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      0,
 		InstanceIPsPerENI: 0,
@@ -1795,7 +1625,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "p2.xlarge",
 		MemoryGB:          61,
-		ECU:               16,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1806,7 +1635,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "p2.8xlarge",
 		MemoryGB:          488,
-		ECU:               97,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1817,7 +1645,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "p2.16xlarge",
 		MemoryGB:          732,
-		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1829,7 +1656,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "p3.2xlarge",
 		MemoryGB:          61,
-		ECU:               31,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1840,7 +1666,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "p3.8xlarge",
 		MemoryGB:          244,
-		ECU:               97,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1851,7 +1676,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "p3.16xlarge",
 		MemoryGB:          488,
-		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1863,7 +1687,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "p3dn.24xlarge",
 		MemoryGB:          768,
-		ECU:               337,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1875,7 +1698,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r3.large",
 		MemoryGB:          15.25,
-		ECU:               6.5,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1885,7 +1707,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r3.xlarge",
 		MemoryGB:          30.5,
-		ECU:               13,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1895,7 +1716,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r3.2xlarge",
 		MemoryGB:          61,
-		ECU:               26,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1905,7 +1725,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r3.4xlarge",
 		MemoryGB:          122,
-		ECU:               52,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1915,7 +1734,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r3.8xlarge",
 		MemoryGB:          244,
-		ECU:               104,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1926,7 +1744,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.large",
 		MemoryGB:          15.25,
-		ECU:               8,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1936,7 +1753,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.xlarge",
 		MemoryGB:          30.5,
-		ECU:               16,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1946,7 +1762,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.2xlarge",
 		MemoryGB:          61,
-		ECU:               31,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -1956,7 +1771,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.4xlarge",
 		MemoryGB:          122,
-		ECU:               58,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1966,7 +1780,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.8xlarge",
 		MemoryGB:          244,
-		ECU:               97,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -1976,7 +1789,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r4.16xlarge",
 		MemoryGB:          488,
-		ECU:               201,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -1987,7 +1799,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.large",
 		MemoryGB:          16,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -1997,7 +1808,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.xlarge",
 		MemoryGB:          32,
-		ECU:               19,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2007,7 +1817,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.2xlarge",
 		MemoryGB:          64,
-		ECU:               37,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2017,7 +1826,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.4xlarge",
 		MemoryGB:          128,
-		ECU:               70,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2027,7 +1835,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.8xlarge",
 		MemoryGB:          256,
-		ECU:               128,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2037,7 +1844,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.12xlarge",
 		MemoryGB:          384,
-		ECU:               168,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2047,7 +1853,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.16xlarge",
 		MemoryGB:          512,
-		ECU:               256,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2057,7 +1862,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.24xlarge",
 		MemoryGB:          768,
-		ECU:               337,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2067,7 +1871,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5.metal",
 		MemoryGB:          768,
-		ECU:               347,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2078,7 +1881,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.large",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -2088,7 +1890,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2098,7 +1899,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.2xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2108,7 +1908,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.4xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2118,7 +1917,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.8xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2128,7 +1926,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.12xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2138,7 +1935,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.16xlarge",
 		MemoryGB:          512,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2148,7 +1944,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5a.24xlarge",
 		MemoryGB:          768,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2159,7 +1954,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5ad.large",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -2169,7 +1963,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5ad.xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2179,7 +1972,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5ad.2xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2189,7 +1981,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5ad.4xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2199,7 +1990,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5ad.12xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2209,7 +1999,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5ad.24xlarge",
 		MemoryGB:          768,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2220,7 +2009,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.large",
 		MemoryGB:          16,
-		ECU:               10,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -2230,7 +2018,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.xlarge",
 		MemoryGB:          32,
-		ECU:               19,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2240,7 +2027,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.2xlarge",
 		MemoryGB:          64,
-		ECU:               37,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2250,7 +2036,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.4xlarge",
 		MemoryGB:          128,
-		ECU:               70,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2260,7 +2045,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.8xlarge",
 		MemoryGB:          256,
-		ECU:               128,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2270,7 +2054,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.12xlarge",
 		MemoryGB:          384,
-		ECU:               168,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2280,7 +2063,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.16xlarge",
 		MemoryGB:          512,
-		ECU:               256,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2290,7 +2072,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.24xlarge",
 		MemoryGB:          768,
-		ECU:               337,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2300,7 +2081,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5d.metal",
 		MemoryGB:          768,
-		ECU:               347,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2311,7 +2091,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.large",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -2321,7 +2100,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2331,7 +2109,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.2xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2341,7 +2118,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.4xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2351,7 +2127,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.8xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2361,7 +2136,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.12xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2371,7 +2145,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.16xlarge",
 		MemoryGB:          512,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2381,7 +2154,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5dn.24xlarge",
 		MemoryGB:          768,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2392,7 +2164,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.large",
 		MemoryGB:          16,
-		ECU:               0,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -2402,7 +2173,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.xlarge",
 		MemoryGB:          32,
-		ECU:               0,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2412,7 +2182,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.2xlarge",
 		MemoryGB:          64,
-		ECU:               0,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2422,7 +2191,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.4xlarge",
 		MemoryGB:          128,
-		ECU:               0,
 		Cores:             16,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2432,7 +2200,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.8xlarge",
 		MemoryGB:          256,
-		ECU:               0,
 		Cores:             32,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2442,7 +2209,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.12xlarge",
 		MemoryGB:          384,
-		ECU:               0,
 		Cores:             48,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2452,7 +2218,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.16xlarge",
 		MemoryGB:          512,
-		ECU:               0,
 		Cores:             64,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2462,7 +2227,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "r5n.24xlarge",
 		MemoryGB:          768,
-		ECU:               0,
 		Cores:             96,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2473,253 +2237,208 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "t1.micro",
 		MemoryGB:          0.613,
-		ECU:               1 * BurstableCreditsToECUS,
 		Cores:             1,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	// t2 family
 	{
 		Name:              "t2.nano",
 		MemoryGB:          0.5,
-		ECU:               3 * BurstableCreditsToECUS,
 		Cores:             1,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t2.micro",
 		MemoryGB:          1,
-		ECU:               6 * BurstableCreditsToECUS,
 		Cores:             1,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t2.small",
 		MemoryGB:          2,
-		ECU:               12 * BurstableCreditsToECUS,
 		Cores:             1,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 4,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t2.medium",
 		MemoryGB:          4,
-		ECU:               24 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 6,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t2.large",
 		MemoryGB:          8,
-		ECU:               36 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 12,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t2.xlarge",
 		MemoryGB:          16,
-		ECU:               54 * BurstableCreditsToECUS,
 		Cores:             4,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 15,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t2.2xlarge",
 		MemoryGB:          32,
-		ECU:               81.6 * BurstableCreditsToECUS,
 		Cores:             8,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 15,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	// t3 family
 	{
 		Name:              "t3.nano",
 		MemoryGB:          0.5,
-		ECU:               6 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3.micro",
 		MemoryGB:          1,
-		ECU:               12 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3.small",
 		MemoryGB:          2,
-		ECU:               24 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 4,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3.medium",
 		MemoryGB:          4,
-		ECU:               24 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 6,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3.large",
 		MemoryGB:          8,
-		ECU:               36 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 12,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3.xlarge",
 		MemoryGB:          16,
-		ECU:               96 * BurstableCreditsToECUS,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3.2xlarge",
 		MemoryGB:          32,
-		ECU:               192 * BurstableCreditsToECUS,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	// t3a family
 	{
 		Name:              "t3a.nano",
 		MemoryGB:          0.5,
-		ECU:               0 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3a.micro",
 		MemoryGB:          1,
-		ECU:               0 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      2,
 		InstanceIPsPerENI: 2,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3a.small",
 		MemoryGB:          2,
-		ECU:               0 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 4,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3a.medium",
 		MemoryGB:          4,
-		ECU:               0 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 6,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3a.large",
 		MemoryGB:          8,
-		ECU:               0 * BurstableCreditsToECUS,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 12,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3a.xlarge",
 		MemoryGB:          16,
-		ECU:               0 * BurstableCreditsToECUS,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	{
 		Name:              "t3a.2xlarge",
 		MemoryGB:          32,
-		ECU:               0 * BurstableCreditsToECUS,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
 		EphemeralDisks:    nil,
-		Burstable:         true,
 	},
 
 	// x1 family
 	{
 		Name:              "x1.16xlarge",
 		MemoryGB:          976,
-		ECU:               174.5,
 		Cores:             64,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2729,7 +2448,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "x1.32xlarge",
 		MemoryGB:          1952,
-		ECU:               349,
 		Cores:             128,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2740,7 +2458,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "x1e.xlarge",
 		MemoryGB:          122,
-		ECU:               12,
 		Cores:             4,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -2750,7 +2467,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "x1e.2xlarge",
 		MemoryGB:          244,
-		ECU:               23,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2760,7 +2476,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "x1e.4xlarge",
 		MemoryGB:          488,
-		ECU:               47,
 		Cores:             16,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2770,7 +2485,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "x1e.8xlarge",
 		MemoryGB:          976,
-		ECU:               91,
 		Cores:             32,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2780,7 +2494,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "x1e.16xlarge",
 		MemoryGB:          1952,
-		ECU:               179,
 		Cores:             64,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2790,7 +2503,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "x1e.32xlarge",
 		MemoryGB:          3904,
-		ECU:               340,
 		Cores:             128,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2801,7 +2513,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.large",
 		MemoryGB:          16,
-		ECU:               12,
 		Cores:             2,
 		InstanceENIs:      3,
 		InstanceIPsPerENI: 10,
@@ -2811,7 +2522,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.xlarge",
 		MemoryGB:          32,
-		ECU:               23,
 		Cores:             4,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2821,7 +2531,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.2xlarge",
 		MemoryGB:          64,
-		ECU:               45,
 		Cores:             8,
 		InstanceENIs:      4,
 		InstanceIPsPerENI: 15,
@@ -2831,7 +2540,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.3xlarge",
 		MemoryGB:          96,
-		ECU:               64,
 		Cores:             12,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2841,7 +2549,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.6xlarge",
 		MemoryGB:          192,
-		ECU:               116,
 		Cores:             24,
 		InstanceENIs:      8,
 		InstanceIPsPerENI: 30,
@@ -2851,7 +2558,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.12xlarge",
 		MemoryGB:          384,
-		ECU:               235,
 		Cores:             48,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
@@ -2861,7 +2567,6 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 	{
 		Name:              "z1d.metal",
 		MemoryGB:          384,
-		ECU:               271,
 		Cores:             48,
 		InstanceENIs:      15,
 		InstanceIPsPerENI: 50,
