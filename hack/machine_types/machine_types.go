@@ -55,25 +55,6 @@ func run() error {
 
 	klog.Info("Beginning AWS Machine Refresh")
 
-	// Not currently in the API
-	t2CreditsPerHour := map[string]float32{
-		"t1.micro":   1,
-		"t2.nano":    3,
-		"t2.micro":   6,
-		"t2.small":   12,
-		"t2.medium":  24,
-		"t2.large":   36,
-		"t2.xlarge":  54,
-		"t2.2xlarge": 81.6,
-		"t3.nano":    6,
-		"t3.micro":   12,
-		"t3.small":   24,
-		"t3.medium":  24,
-		"t3.large":   36,
-		"t3.xlarge":  96,
-		"t3.2xlarge": 192,
-	}
-
 	machines := []awsup.AWSMachineTypeInfo{}
 	families := make(map[string]struct{})
 
@@ -208,15 +189,6 @@ func run() error {
 					machine.GPU = true
 				}
 
-				if attributes["ecu"] == "Variable" {
-					machine.Burstable = true
-					machine.ECU = t2CreditsPerHour[machine.Name] // This is actually credits * ECUs, but we'll add that later
-				} else if attributes["ecu"] == "NA" {
-					machine.ECU = 0
-				} else {
-					machine.ECU = stringToFloat32(attributes["ecu"])
-				}
-
 				if enis, enisOK := InstanceENIsAvailable[instanceType]; enisOK {
 					machine.InstanceENIs = enis
 				} else {
@@ -276,22 +248,14 @@ func run() error {
 		output = output + fmt.Sprintf("\n// %s family", f)
 		for _, m := range machines {
 			if family := strings.Split(m.Name, ".")[0]; family == f {
-				var ecu string
-				if m.Burstable {
-					ecu = fmt.Sprintf("%v * BurstableCreditsToECUS", m.ECU)
-				} else {
-					ecu = fmt.Sprint(m.ECU)
-				}
-
 				body := fmt.Sprintf(`
 	{
 		Name: "%s",
 		MemoryGB: %v,
-		ECU: %v,
 		Cores: %v,
 		InstanceENIs: %v,
 		InstanceIPsPerENI: %v,
-	`, m.Name, m.MemoryGB, ecu, m.Cores, m.InstanceENIs, m.InstanceIPsPerENI)
+	`, m.Name, m.MemoryGB, m.Cores, m.InstanceENIs, m.InstanceIPsPerENI)
 				output = output + body
 
 				// Avoid awkward []int(nil) syntax
@@ -299,10 +263,6 @@ func run() error {
 					output = output + "EphemeralDisks: nil,\n"
 				} else {
 					output = output + fmt.Sprintf("EphemeralDisks: %#v,\n", m.EphemeralDisks)
-				}
-
-				if m.Burstable {
-					output = output + "Burstable: true,\n"
 				}
 
 				if m.GPU {
