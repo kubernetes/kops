@@ -1080,6 +1080,157 @@ var dockerVersions = []dockerVersion{
 		Dependencies: []string{"libtool-ltdl"},
 	},
 
+	// 19.03.8 - k8s 1.18 - https://github.com/kubernetes/website/pull/19643
+
+	// 19.03.8 - Debian Stretch
+	{
+		DockerVersion: "19.03.8",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.8~3-0~debian-stretch",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_19.03.8~3-0~debian-stretch_amd64.deb",
+		Hash:          "f538a0fdb7e9c90f9640ae3dd531c8e2bb0d7f1e",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.8~3-0~debian-stretch",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce-cli_19.03.8~3-0~debian-stretch_amd64.deb",
+				Hash:    "bd987ea43e654e08ad1549f5d59748de79760f09",
+			},
+			"containerd.io": {
+				Version: "1.2.13-1",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
+				Hash:    "ae4c01ccccc12a58a2559270a99178a5707fcc93",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.8 - Debian Buster
+	{
+		DockerVersion: "19.03.8",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian10},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.8~3-0~debian-buster",
+		Source:        "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_19.03.8~3-0~debian-buster_amd64.deb",
+		Hash:          "369de6e19806b1501df61fc8cdfda6e1ac89cce3",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.8~3-0~debian-buster",
+				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce-cli_19.03.8~3-0~debian-buster_amd64.deb",
+				Hash:    "04994a3b73483c68935996ceed08cd51545a17d9",
+			},
+			"containerd.io": {
+				Version: "1.2.13-1",
+				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
+				Hash:    "90611afda0acabae485f871b09e4c1eba0ac4dc0",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.8 - Xenial
+	{
+		DockerVersion: "19.03.8",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.8~3-0~ubuntu-xenial",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_19.03.8~3-0~ubuntu-xenial_amd64.deb",
+		Hash:          "3158a473343acb4e8ca46510a8a9fb1cd8829e8a",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.8~3-0~ubuntu-xenial",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_19.03.8~3-0~ubuntu-xenial_amd64.deb",
+				Hash:    "a79866f5cb74f3e35afcc6af0070a1a503eaba06",
+			},
+			"containerd.io": {
+				Version: "1.2.13-1",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
+				Hash:    "da0bc9d0b4d09875d0f29d7949754ffd3ee54ea5",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.8 - Bionic
+	{
+		DockerVersion: "19.03.8",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.8~3-0~ubuntu-bionic",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_19.03.8~3-0~ubuntu-bionic_amd64.deb",
+		Hash:          "7292df34a82e58cab0e45af61036ec19c81eb199",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.8~3-0~ubuntu-bionic",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_19.03.8~3-0~ubuntu-bionic_amd64.deb",
+				Hash:    "1ae24a9b73cbc7ca4a048ac204a4470df4d2bc80",
+			},
+			"containerd.io": {
+				Version: "1.2.13-1",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
+				Hash:    "4c7a98e8145fb258c24044c78f6f1f8abc1f6893",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.8 - CentOS / Rhel7
+	{
+		DockerVersion: "19.03.8",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.8",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.8-3.el7.x86_64.rpm",
+		Hash:          "c419bf77fe1a79a43c098c06a75a17624be72681",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.8",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.8-3.el7.x86_64.rpm",
+				Hash:    "45ddbf2e7c3676614369dedbcd152fafd4c71f89",
+			},
+			"containerd.io": {
+				Version: "1.2.13",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm",
+				Hash:    "85f0501529e0b8ecde834d263583f888435b53d4",
+			},
+			"container-selinux": {
+				Version: "2.107",
+				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.107-1.el7_6.noarch.rpm",
+				Hash:    "7de4211fa0dfd240d8827b93763e1eb5f0d56411",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl"},
+	},
+
+	// 19.03.8 - CentOS / Rhel8
+	{
+		DockerVersion: "19.03.8",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel8, distros.DistributionCentos8},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.8",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.8-3.el7.x86_64.rpm",
+		Hash:          "c419bf77fe1a79a43c098c06a75a17624be72681",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.8",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.8-3.el7.x86_64.rpm",
+				Hash:    "45ddbf2e7c3676614369dedbcd152fafd4c71f89",
+			},
+			"containerd.io": {
+				Version: "1.2.13",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm",
+				Hash:    "85f0501529e0b8ecde834d263583f888435b53d4",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl"},
+	},
+
 	// TIP: When adding the next version, copy the previous
 	// version, string replace the version, run `VERIFY_HASHES=1
 	// go test ./nodeup/pkg/model` (you might want to temporarily

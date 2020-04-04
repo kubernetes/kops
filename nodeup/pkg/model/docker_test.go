@@ -55,7 +55,7 @@ func sanityCheckPackageName(t *testing.T, u string, version string, name string)
 
 	expectedNames := []string{}
 	// Match known RPM formats
-	for _, v := range []string{"-1.", "-2.", "-3.", "-3.2."} {
+	for _, v := range []string{"-1.", "-2.", "-3.", "-3.1.", "-3.2."} {
 		for _, d := range []string{"el7", "el7.centos", "el7_6"} {
 			for _, a := range []string{"noarch", "x86_64"} {
 				expectedNames = append(expectedNames, name+"-"+version+v+d+"."+a+".rpm")
