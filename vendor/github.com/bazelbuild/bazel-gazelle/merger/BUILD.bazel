@@ -11,15 +11,3 @@ go_library(
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library"],
 )
-
-filegroup(
-    name = "all_files",
-    testonly = True,
-    srcs = [
-        "BUILD.bazel",
-        "fix.go",
-        "merger.go",
-        "merger_test.go",
-    ],
-    visibility = ["//visibility:public"],
-)
