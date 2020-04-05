@@ -32,7 +32,7 @@ import (
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/pkg/drain"
+	"k8s.io/kubectl/pkg/drain"
 )
 
 const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
