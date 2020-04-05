@@ -2073,6 +2073,10 @@ spec:
                 tlsPrivateKeyFile:
                   description: 'TODO: Remove unused TLSPrivateKeyFile'
                   type: string
+                topologyManagerPolicy:
+                  description: TopologyManagerPolicy determines the allocation policy
+                    for the topology manager.
+                  type: string
                 volumePluginDirectory:
                   description: The full path of the directory in which to search for
                     additional third party volume plugins (this path must be writeable,
@@ -2430,6 +2434,10 @@ spec:
                   type: string
                 tlsPrivateKeyFile:
                   description: 'TODO: Remove unused TLSPrivateKeyFile'
+                  type: string
+                topologyManagerPolicy:
+                  description: TopologyManagerPolicy determines the allocation policy
+                    for the topology manager.
                   type: string
                 volumePluginDirectory:
                   description: The full path of the directory in which to search for
