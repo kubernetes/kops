@@ -297,7 +297,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
 	// https://github.com/kubernetes/kubernetes/pull/89069
 	if b.IsKubernetesLT("1.18") {
-		if (kubeAPIServer.DisableBasicAuth != nil && !*kubeAPIServer.DisableBasicAuth) || kubeAPIServer.DisableBasicAuth == nil {
+		if kubeAPIServer.DisableBasicAuth == nil || !*kubeAPIServer.DisableBasicAuth {
 			kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
 		}
 	} else if b.IsKubernetesLT("1.19") {
