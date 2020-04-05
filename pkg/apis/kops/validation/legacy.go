@@ -40,21 +40,15 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	fieldSpec := field.NewPath("spec")
 	allErrs := field.ErrorList{}
 
-	// kubernetesRelease is the version with only major & minor fields
-	// We initialize to an arbitrary value, preferably in the supported range,
-	// in case the value in c.Spec.KubernetesVersion is blank or unparseable.
-	kubernetesRelease := semver.Version{Major: 1, Minor: 15}
-
 	// KubernetesVersion
+	// This is one case we return error because a large part of the rest of the validation logic depend on a valid kubernetes version.
+
 	if c.Spec.KubernetesVersion == "" {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("kubernetesVersion"), ""))
-	} else {
-		sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
-		if err != nil {
-			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version"))
-		} else {
-			kubernetesRelease = semver.Version{Major: sv.Major, Minor: sv.Minor}
-		}
+		return allErrs
+	} else if _, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion); err != nil {
+		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version"))
+		return allErrs
 	}
 
 	if c.ObjectMeta.Name == "" {
@@ -440,7 +434,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	// KubeAPIServer
 	if c.Spec.KubeAPIServer != nil {
-		if kubernetesRelease.GTE(semver.MustParse("1.10.0")) {
+		if c.IsKubernetesGTE("1.10") {
 			if len(c.Spec.KubeAPIServer.AdmissionControl) > 0 {
 				if len(c.Spec.KubeAPIServer.DisableAdmissionPlugins) > 0 {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "disableAdmissionPlugins"),
