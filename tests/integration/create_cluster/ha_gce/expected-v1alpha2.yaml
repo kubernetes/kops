@@ -33,6 +33,7 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: events
+  gceServiceAccount: default
   iam:
     allowContainerRegistry: true
     legacy: false
