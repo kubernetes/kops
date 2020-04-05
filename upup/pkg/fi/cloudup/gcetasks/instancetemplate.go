@@ -58,7 +58,8 @@ type InstanceTemplate struct {
 	Subnet        *Subnet
 	AliasIPRanges map[string]string
 
-	Scopes []string
+	Scopes          []string
+	ServiceAccounts []string
 
 	Metadata    map[string]*fi.ResourceHolder
 	MachineType *string
@@ -269,19 +270,32 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 	}
 	networkInterfaces = append(networkInterfaces, ni)
 
-	var serviceAccounts []*compute.ServiceAccount
+	scopes := make([]string, 0)
 	if e.Scopes != nil {
-		var scopes []string
 		for _, s := range e.Scopes {
 			s = scopeToLongForm(s)
-
 			scopes = append(scopes, s)
 		}
-		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-			Email:  "default",
-			Scopes: scopes,
-		})
 	}
+	serviceAccounts := []*compute.ServiceAccount{
+		{
+			Email:  e.ServiceAccounts[0],
+			Scopes: scopes,
+		},
+	}
+	// if e.ServiceAccounts != nil {
+	// 	for _, s := range e.ServiceAccounts {
+	// 		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+	// 			Email:  s,
+	// 			Scopes: scopes,
+	// 		})
+	// 	}
+	// } else {
+	// 	serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+	// 		Email:  "default",
+	// 		Scopes: scopes,
+	// 	})
+	// }
 
 	var metadataItems []*compute.MetadataItems
 	for key, r := range e.Metadata {
@@ -423,6 +437,7 @@ type terraformInstanceCommon struct {
 }
 
 type terraformServiceAccount struct {
+	Email  string   `json:"email"`
 	Scopes []string `json:"scopes"`
 }
 
@@ -514,16 +529,23 @@ func (t *terraformInstanceCommon) AddMetadata(target *terraform.TerraformTarget,
 }
 
 func (t *terraformInstanceCommon) AddServiceAccounts(serviceAccounts []*compute.ServiceAccount) {
-	for _, g := range serviceAccounts {
-		for _, scope := range g.Scopes {
-			if t.ServiceAccount == nil {
-				t.ServiceAccount = &terraformServiceAccount{}
-			}
-			t.ServiceAccount.Scopes = append(t.ServiceAccount.Scopes, scope)
+	// there's an inconsistency here- GCP only lets you have one service account per VM
+	// terraform gets it right, but the golang api doesn't. womp womp :(
+	if len(serviceAccounts) != 1 {
+		klog.Fatal("Instances can only have 1 service account assigned.")
+	} else {
+		klog.Infof("adding csa: %v", serviceAccounts[0].Email)
+		csa := serviceAccounts[0]
+		tsa := &terraformServiceAccount{
+			Email:  csa.Email,
+			Scopes: csa.Scopes,
 		}
+		// for _, scope := range csa.Scopes {
+		// 	tsa.Scopes = append(tsa.Scopes, scope)
+		// }
+		t.ServiceAccount = tsa
 	}
 }
-
 func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
 	project := t.Project
 
