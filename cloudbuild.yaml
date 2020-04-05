@@ -5,7 +5,7 @@ options:
   machineType: 'N1_HIGHCPU_8'
 steps:
 # Start by just pushing the image
-- name: 'gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1'
+- name: 'gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.2.0'
   entrypoint: make
   env:
   # _GIT_TAG is not a valid semver, we use CI=1 instead
@@ -16,7 +16,7 @@ steps:
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
   args:
   - kops-controller-push
-- name: 'gcr.io/k8s-testimages/bazelbuild:v20190916-ec59af8-0.29.1'
+- name: 'gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.2.0'
   entrypoint: make
   env:
   # _GIT_TAG is not a valid semver, we use CI=1 instead
