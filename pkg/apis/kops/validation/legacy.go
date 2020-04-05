@@ -41,7 +41,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// KubernetesVersion
-	// This is one case we return error because a large part of the rest of the validation logic depend on a valid kubernetes version.
+	// This is one case we return the error because a large part of the rest of the validation logic depends on a valid kubernetes version.
 
 	if c.Spec.KubernetesVersion == "" {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("kubernetesVersion"), ""))

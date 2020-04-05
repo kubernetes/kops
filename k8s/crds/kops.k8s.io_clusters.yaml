@@ -2071,7 +2071,7 @@ spec:
                   type: string
                 topologyManagerPolicy:
                   description: TopologyManagerPolicy determines the allocation policy
-                    for the topology manager
+                    for the topology manager.
                   type: string
                 volumePluginDirectory:
                   description: The full path of the directory in which to search for
@@ -2433,7 +2433,7 @@ spec:
                   type: string
                 topologyManagerPolicy:
                   description: TopologyManagerPolicy determines the allocation policy
-                    for the topology manager
+                    for the topology manager.
                   type: string
                 volumePluginDirectory:
                   description: The full path of the directory in which to search for
