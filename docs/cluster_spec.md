@@ -344,7 +344,8 @@ spec:
 
 #### Disable Basic Auth
 
-This will disable the passing of the `--basic-auth-file` flag.
+Support for basic authentication was removed in Kubernetes 1.19. For previous versions
+of Kubernetes this will disable the passing of the `--basic-auth-file` flag when:
 
 ```yaml
 spec:
