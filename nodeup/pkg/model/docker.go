@@ -41,10 +41,6 @@ type DockerBuilder struct {
 
 var _ fi.ModelBuilder = &DockerBuilder{}
 
-// DefaultDockerVersion is the (legacy) docker version we use if one is not specified in the manifest.
-// We don't change this with each version of kops, we expect newer versions of kops to populate the field.
-const DefaultDockerVersion = "1.12.3"
-
 var dockerVersions = []packageVersion{
 	// 1.11.2 - Jessie
 	{
@@ -864,16 +860,15 @@ var dockerVersions = []packageVersion{
 	// (you might want to temporarily comment out older versions on a slower connection and then validate)
 }
 
-func (b *DockerBuilder) dockerVersion() string {
+func (b *DockerBuilder) dockerVersion() (string, error) {
 	dockerVersion := ""
 	if b.Cluster.Spec.Docker != nil {
 		dockerVersion = fi.StringValue(b.Cluster.Spec.Docker.Version)
 	}
 	if dockerVersion == "" {
-		dockerVersion = DefaultDockerVersion
-		klog.Warningf("Docker version not specified; using default %q", dockerVersion)
+		return "", fmt.Errorf("error finding Docker version")
 	}
-	return dockerVersion
+	return dockerVersion, nil
 }
 
 // Build is responsible for configuring the docker daemon
@@ -917,7 +912,10 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	dockerVersion := b.dockerVersion()
+	dockerVersion, err := b.dockerVersion()
+	if err != nil {
+		return err
+	}
 
 	// Add packages
 	{
@@ -1277,7 +1275,10 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 
 	// RHEL-family / docker has a bug with 17.x where it fails to use overlay2 because it does a broken kernel check
 	if b.Distribution.IsRHELFamily() {
-		dockerVersion := b.dockerVersion()
+		dockerVersion, err := b.dockerVersion()
+		if err != nil {
+			return err
+		}
 		if strings.HasPrefix(dockerVersion, "17.") {
 			storageOpts := strings.Join(docker.StorageOpts, ",")
 			if strings.Contains(storageOpts, "overlay2.override_kernel_check=1") {
