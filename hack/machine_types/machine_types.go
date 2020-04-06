@@ -22,15 +22,14 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/pricing"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -55,10 +54,104 @@ func run() error {
 
 	klog.Info("Beginning AWS Machine Refresh")
 
-	machines := []awsup.AWSMachineTypeInfo{}
-	families := make(map[string]struct{})
+	// These are instance types not available in every account
+	// If they're not available, they wont be in the ec2.DescribeInstanceTypes response
+	// so they are hardcoded here for reference.
+	// Note that the m6g instances do not have ENI or IP information
+	machines := []awsup.AWSMachineTypeInfo{
+		{
+			Name:              "cr1.8xlarge",
+			MemoryGB:          244,
+			Cores:             32,
+			InstanceENIs:      8,
+			InstanceIPsPerENI: 30,
+			EphemeralDisks:    []int{120, 120},
+		},
+		{
+			Name:              "hs1.8xlarge",
+			MemoryGB:          117,
+			Cores:             16,
+			InstanceENIs:      8,
+			InstanceIPsPerENI: 30,
+			EphemeralDisks:    []int{2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000},
+		},
+		{
+			Name:              "m6g.medium",
+			MemoryGB:          4,
+			Cores:             1,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
 
-	prices := []aws.JSONValue{}
+		{
+			Name:              "m6g.large",
+			MemoryGB:          8,
+			Cores:             2,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
+
+		{
+			Name:              "m6g.xlarge",
+			MemoryGB:          16,
+			Cores:             4,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
+
+		{
+			Name:              "m6g.2xlarge",
+			MemoryGB:          32,
+			Cores:             8,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
+
+		{
+			Name:              "m6g.4xlarge",
+			MemoryGB:          64,
+			Cores:             16,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
+
+		{
+			Name:              "m6g.8xlarge",
+			MemoryGB:          128,
+			Cores:             32,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
+
+		{
+			Name:              "m6g.12xlarge",
+			MemoryGB:          192,
+			Cores:             48,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
+
+		{
+			Name:              "m6g.16xlarge",
+			MemoryGB:          256,
+			Cores:             64,
+			InstanceENIs:      0,
+			InstanceIPsPerENI: 0,
+			EphemeralDisks:    nil,
+		},
+	}
+	families := map[string]struct{}{
+		"cr1": {},
+		"hs1": {},
+		"m6g": {},
+	}
 
 	config := aws.NewConfig()
 	// Give verbose errors on auth problems
@@ -70,144 +163,54 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	svc := pricing.New(sess, config)
-	typeTerm := pricing.FilterTypeTermMatch
-	input := &pricing.GetProductsInput{
-		Filters: []*pricing.Filter{
-			{
-				Field: aws.String("operatingSystem"),
-				Type:  &typeTerm,
-				Value: aws.String("Linux"),
-			},
-			{
-				Field: aws.String("tenancy"),
-				Type:  &typeTerm,
-				Value: aws.String("shared"),
-			},
-			{
-				Field: aws.String("location"),
-				Type:  &typeTerm,
-				Value: aws.String("US East (N. Virginia)"),
-			},
-			{
-				Field: aws.String("preInstalledSw"),
-				Type:  &typeTerm,
-				Value: aws.String("NA"),
-			},
-		},
-		FormatVersion: aws.String("aws_v1"),
-		ServiceCode:   aws.String("AmazonEC2"),
-	}
-
-	for {
-		result, err := svc.GetProducts(input)
-
-		if err != nil {
-			if aerr, ok := err.(awserr.Error); ok {
-				switch aerr.Code() {
-				case pricing.ErrCodeInternalErrorException:
-					return fmt.Errorf("%s: %v", pricing.ErrCodeInternalErrorException, aerr)
-				case pricing.ErrCodeInvalidParameterException:
-					return fmt.Errorf("%s: %v", pricing.ErrCodeInvalidParameterException, aerr)
-				case pricing.ErrCodeNotFoundException:
-					return fmt.Errorf("%s: %v", pricing.ErrCodeNotFoundException, aerr)
-				case pricing.ErrCodeInvalidNextTokenException:
-					return fmt.Errorf("%s: %v", pricing.ErrCodeInvalidNextTokenException, aerr)
-				case pricing.ErrCodeExpiredNextTokenException:
-					return fmt.Errorf("%s: %v", pricing.ErrCodeExpiredNextTokenException, aerr)
-				default:
-					return aerr
-				}
-			} else {
-				// Print the error, cast err to awserr.Error to get the Code and
-				// Message from an error.
-				return err
-			}
-		}
-
-		prices = append(prices, result.PriceList...)
-
-		if result.NextToken != nil {
-			input.NextToken = result.NextToken
-		} else {
-			break
-		}
+	client := ec2.New(sess, config)
+	instanceTypes := make([]*ec2.InstanceTypeInfo, 0)
+	err = client.DescribeInstanceTypesPages(&ec2.DescribeInstanceTypesInput{},
+		func(page *ec2.DescribeInstanceTypesOutput, lastPage bool) bool {
+			instanceTypes = append(instanceTypes, page.InstanceTypes...)
+			return true
+		})
+	if err != nil {
+		return err
 	}
 
 	var warnings []string
 
 	seen := map[string]bool{}
-	for _, item := range prices {
-		for k, v := range item {
-			if k == "product" {
-				product := v.(map[string]interface{})
-				attributes := map[string]string{}
-				for k, v := range product["attributes"].(map[string]interface{}) {
-					attributes[k] = v.(string)
-				}
+	for _, typeInfo := range instanceTypes {
+		instanceType := *typeInfo.InstanceType
 
-				instanceType := attributes["instanceType"]
-
-				if _, ok := seen[instanceType]; ok {
-					continue
-				}
-				seen[instanceType] = true
-
-				machine := awsup.AWSMachineTypeInfo{
-					Name:  instanceType,
-					Cores: stringToInt(attributes["vcpu"]),
-				}
-
-				memory := strings.TrimSuffix(attributes["memory"], " GiB")
-				machine.MemoryGB = stringToFloat32(memory)
-
-				if attributes["storage"] != "EBS only" {
-					storage := strings.Split(attributes["storage"], " ")
-					var size int
-					var count int
-					if len(storage) > 1 {
-						count = stringToInt(storage[0])
-						if storage[2] == "NVMe" {
-							count = 1
-							size = stringToInt(storage[0])
-						} else {
-							size = stringToInt(storage[2])
-						}
-					} else {
-						count = 0
-					}
-
-					ephemeralDisks := []int{}
-					for i := 0; i < count; i++ {
-						ephemeralDisks = append(ephemeralDisks, size)
-					}
-
-					machine.EphemeralDisks = ephemeralDisks
-				}
-
-				if attributes["instanceFamily"] == "GPU instance" {
-					machine.GPU = true
-				}
-
-				if enis, enisOK := InstanceENIsAvailable[instanceType]; enisOK {
-					machine.InstanceENIs = enis
-				} else {
-					warnings = append(warnings, fmt.Sprintf("ENIs not known for %s", instanceType))
-				}
-
-				if ipsPerENI, ipsOK := InstanceIPsAvailable[instanceType]; ipsOK {
-					machine.InstanceIPsPerENI = int(ipsPerENI)
-				} else {
-					warnings = append(warnings, fmt.Sprintf("IPs per ENI not known for %s", instanceType))
-				}
-
-				machines = append(machines, machine)
-
-				family := strings.Split(instanceType, ".")[0]
-				families[family] = struct{}{}
-
-			}
+		if _, ok := seen[instanceType]; ok {
+			continue
 		}
+		seen[instanceType] = true
+		machine := awsup.AWSMachineTypeInfo{
+			Name:              instanceType,
+			GPU:               typeInfo.GpuInfo != nil,
+			InstanceENIs:      intValue(typeInfo.NetworkInfo.MaximumNetworkInterfaces),
+			InstanceIPsPerENI: intValue(typeInfo.NetworkInfo.Ipv4AddressesPerInterface),
+		}
+		memoryGB := float64(intValue(typeInfo.MemoryInfo.SizeInMiB)) / 1024
+		machine.MemoryGB = float32(math.Round(memoryGB*100) / 100)
+
+		if typeInfo.VCpuInfo != nil && typeInfo.VCpuInfo.DefaultVCpus != nil {
+			machine.Cores = intValue(typeInfo.VCpuInfo.DefaultVCpus)
+		}
+		if typeInfo.InstanceStorageInfo != nil && len(typeInfo.InstanceStorageInfo.Disks) > 0 {
+			disks := make([]int, 0)
+			for _, disk := range typeInfo.InstanceStorageInfo.Disks {
+				for i := 0; i < intValue(disk.Count); i++ {
+					disks = append(disks, intValue(disk.SizeInGB))
+				}
+			}
+			machine.EphemeralDisks = disks
+		}
+
+		machines = append(machines, machine)
+
+		family := strings.Split(instanceType, ".")[0]
+		families[family] = struct{}{}
+
 	}
 
 	sortedFamilies := []string{}
@@ -248,6 +251,7 @@ func run() error {
 		output = output + fmt.Sprintf("\n// %s family", f)
 		for _, m := range machines {
 			if family := strings.Split(m.Name, ".")[0]; family == f {
+
 				body := fmt.Sprintf(`
 	{
 		Name: "%s",
@@ -319,22 +323,6 @@ func run() error {
 	return nil
 }
 
-func stringToFloat32(s string) float32 {
-	// For 1,000 case
-	clean := strings.Replace(s, ",", "", -1)
-	value, err := strconv.ParseFloat(clean, 32)
-	if err != nil {
-		klog.Errorf("error converting string to float32: %v", err)
-	}
-	return float32(value)
-}
-
-func stringToInt(s string) int {
-	// For 1,000 case
-	clean := strings.Replace(s, ",", "", -1)
-	value, err := strconv.Atoi(clean)
-	if err != nil {
-		klog.Error(err)
-	}
-	return value
+func intValue(v *int64) int {
+	return int(aws.Int64Value(v))
 }
