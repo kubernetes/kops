@@ -850,15 +850,6 @@ var dockerVersions = []packageVersion{
 		},
 	},
 
-	// 19.03.7 - Linux Generic
-	{
-		PackageVersion: "19.03.7",
-		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
-		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.7.tgz",
-		Hash:           "5f7199aa237cc8fa10b95ee0c06c5e9ca9ad4296",
-	},
-
 	// 19.03.8 - Linux Generic
 	{
 		PackageVersion: "19.03.8",
