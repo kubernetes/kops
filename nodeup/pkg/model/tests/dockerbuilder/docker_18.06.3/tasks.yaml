@@ -268,11 +268,11 @@ contents: |2
 path: /usr/share/doc/docker/apache.txt
 type: file
 ---
-Name: docker-engine
-hash: 30f7840704361673db2b62f25b6038628184b056
+Name: docker-ce
+hash: c06eda4e934cce6a7941a6af6602d4315b500a22
 preventStart: true
-source: http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~xenial_amd64.deb
-version: 1.12.1-0~xenial
+source: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb
+version: 18.06.3~ce~3-0~ubuntu
 ---
 Name: docker-healthcheck.service
 definition: |
