@@ -33,14 +33,6 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 )
 
-var validDockerConfigStorageValues = []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
-
-func ValidateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	allErrs = append(allErrs, IsValidValue(fldPath.Child("storage"), config.Storage, validDockerConfigStorageValues)...)
-	return allErrs
-}
-
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, false, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
 	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, field.NewPath("spec"))...)
@@ -117,9 +109,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		}
 	}
 
-	// Container Runtime
 	if spec.ContainerRuntime != "" {
 		allErrs = append(allErrs, validateContainerRuntime(&spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
+	}
+
+	if spec.Docker != nil {
+		allErrs = append(allErrs, validateDockerConfig(spec.Docker, fieldPath.Child("docker"))...)
 	}
 
 	if spec.RollingUpdate != nil {
@@ -596,6 +591,30 @@ func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorL
 
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, IsValidValue(fldPath, runtime, valid)...)
+
+	return allErrs
+}
+
+func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if config.Version != nil {
+		if strings.HasPrefix(*config.Version, "1.1") {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
+				"version is no longer available: https://www.docker.com/blog/changes-dockerproject-org-apt-yum-repositories/"))
+		} else {
+			valid := []string{"17.03.2", "17.09.0", "18.03.1", "18.06.1", "18.06.2", "18.06.3", "18.09.3", "18.09.9", "19.03.4", "19.03.8"}
+			allErrs = append(allErrs, IsValidValue(fldPath.Child("version"), config.Version, valid)...)
+		}
+	}
+
+	if config.Storage != nil {
+		valid := []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
+		values := strings.Split(*config.Storage, ",")
+		for _, value := range values {
+			allErrs = append(allErrs, IsValidValue(fldPath.Child("storage"), &value, valid)...)
+		}
+	}
 
 	return allErrs
 }
