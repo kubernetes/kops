@@ -121,6 +121,9 @@ type RollingUpdateOptions struct {
 	// ValidationTimeout is the timeout for validation to succeed after the drain and pause
 	ValidationTimeout time.Duration
 
+	// ValidateTimes is the amount of time that a cluster needs to be validated after single node update
+	ValidateTimes int32
+
 	// MasterInterval is the minimum time to wait after stopping a master node.  This does not include drain and validate time.
 	MasterInterval time.Duration
 
@@ -158,6 +161,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 
 	o.PostDrainDelay = 5 * time.Second
 	o.ValidationTimeout = 15 * time.Minute
+	o.ValidateTimes = 2
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -177,6 +181,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
 
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
+	cmd.Flags().Int32Var(&options.ValidateTimes, "validate-times", options.ValidateTimes, "Amount of times that a cluster needs to be validated after single node update")
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
@@ -333,9 +338,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		ClusterName:       options.ClusterName,
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
+		ValidateTimes:     options.ValidateTimes,
+		ValidateSucceeded: 0,
 		// TODO should we expose this to the UI?
-		ValidateTickDuration:    30 * time.Second,
-		ValidateSuccessDuration: 10 * time.Second,
+		ValidateTickDuration: 30 * time.Second,
 	}
 
 	err = d.AdjustNeedUpdate(groups, cluster, list)

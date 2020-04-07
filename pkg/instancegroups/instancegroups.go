@@ -430,10 +430,12 @@ func (c *RollingUpdateCluster) validateClusterWithDuration(duration time.Duratio
 func (c *RollingUpdateCluster) tryValidateCluster(duration time.Duration) bool {
 	result, err := c.ClusterValidator.Validate()
 
-	if err == nil && len(result.Failures) == 0 && c.ValidateSuccessDuration > 0 {
-		klog.Infof("Cluster validated; revalidating in %s to make sure it does not flap.", c.ValidateSuccessDuration)
-		time.Sleep(c.ValidateSuccessDuration)
-		result, err = c.ClusterValidator.Validate()
+	if err == nil && len(result.Failures) == 0 && c.ValidateTimes > 0 {
+		c.ValidateSucceeded++
+		if c.ValidateSucceeded < c.ValidateTimes {
+			klog.Infof("Cluster validated; revalidating %d time(s) to make sure it does not flap.", c.ValidateTimes-c.ValidateSucceeded)
+			return false
+		}
 	}
 
 	if err != nil {
