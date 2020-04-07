@@ -9,6 +9,8 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
+  docker:
+    version: 18.06.3
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -35,5 +37,3 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  docker:
-    version: 1.12.1

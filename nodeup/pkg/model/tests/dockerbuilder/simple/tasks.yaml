@@ -1,3 +1,6 @@
+file: /usr/bin/docker-runc
+mode: +i
+---
 contents: |-
   DOCKER_OPTS=
   DOCKER_NOFILE=1000000
@@ -268,11 +271,11 @@ contents: |2
 path: /usr/share/doc/docker/apache.txt
 type: file
 ---
-Name: docker-engine
-hash: b758fc88346a1e5eebf7408b0d0c99f4f134166c
+Name: docker-ce
+hash: 4dcee1a05ec592e8a76e53e5b464ea43085a2849
 preventStart: true
-source: http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~xenial_amd64.deb
-version: 1.12.3-0~xenial
+source: http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb
+version: 17.03.2~ce-0~ubuntu-xenial
 ---
 Name: docker-healthcheck.service
 definition: |
