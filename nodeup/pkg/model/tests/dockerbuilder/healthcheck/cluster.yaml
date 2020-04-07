@@ -11,6 +11,7 @@ spec:
   configBase: memfs://clusters.example.com/minimal.example.com
   docker:
     healthCheck: true
+    version: 17.03.2
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
