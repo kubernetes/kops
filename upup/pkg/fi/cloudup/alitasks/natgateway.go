@@ -114,8 +114,8 @@ func (_ *NatGateway) RenderALI(t *aliup.ALIAPITarget, a, e, changes *NatGateway)
 }
 
 type terraformNatGateway struct {
-	Name  *string            `json:"name,omitempty"`
-	VpcId *terraform.Literal `json:"vpc_id,omitempty"`
+	Name  *string            `json:"name,omitempty" cty:"name"`
+	VpcId *terraform.Literal `json:"vpc_id,omitempty" cty:"vpc_id"`
 }
 
 func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {

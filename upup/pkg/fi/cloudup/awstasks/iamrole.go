@@ -190,8 +190,8 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 }
 
 type terraformIAMRole struct {
-	Name             *string            `json:"name"`
-	AssumeRolePolicy *terraform.Literal `json:"assume_role_policy"`
+	Name             *string            `json:"name" cty:"name"`
+	AssumeRolePolicy *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
 }
 
 func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {

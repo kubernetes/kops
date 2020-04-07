@@ -17,6 +17,6 @@ limitations under the License.
 package terraform
 
 type Lifecycle struct {
-	PreventDestroy      *bool `json:"prevent_destroy,omitempty"`
-	CreateBeforeDestroy *bool `json:"create_before_destroy,omitempty"`
+	PreventDestroy      *bool `json:"prevent_destroy,omitempty" cty:"prevent_destroy"`
+	CreateBeforeDestroy *bool `json:"create_before_destroy,omitempty" cty:"create_before_destroy"`
 }

@@ -20,13 +20,13 @@ set -o pipefail
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-# integration test cluster directories that are terraform 0.12 compatible
-CLUSTERS_0_12=(
-  "minimal-json"
+# integration test cluster directories that are terraform 0.11 compatible
+CLUSTERS_0_11=(
+  "minimal-tf11"
 )
 
 # Terraform versions
-TAG_0_12=0.12.23
+TAG_0_12=0.12.24
 TAG_0_11=0.11.14
 
 RC=0
@@ -34,7 +34,7 @@ while IFS= read -r -d '' -u 3 test_dir; do
   [ -f "${test_dir}/kubernetes.tf" ] || [ -f "${test_dir}/kubernetes.tf.json" ] || continue
   echo -e "${test_dir}\n"
   cluster=$(basename "${test_dir}")
-  kube::util::array_contains "${cluster}" "${CLUSTERS_0_12[@]}" && tag=$TAG_0_12 || tag=$TAG_0_11
+  kube::util::array_contains "${cluster}" "${CLUSTERS_0_11[@]}" && tag=$TAG_0_11 || tag=$TAG_0_12
 
   docker run --rm -it -v "${test_dir}":"${test_dir}" -w "${test_dir}" --entrypoint=sh hashicorp/terraform:$tag -c '/bin/terraform init >/dev/null && /bin/terraform validate' || RC=$?
 done 3< <(find "${KOPS_ROOT}/tests/integration/update_cluster" -type d -maxdepth 1 -print0)

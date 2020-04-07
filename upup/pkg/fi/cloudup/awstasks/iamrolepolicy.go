@@ -280,10 +280,10 @@ func (e *IAMRolePolicy) policyDocumentString() (string, error) {
 }
 
 type terraformIAMRolePolicy struct {
-	Name           *string            `json:"name,omitempty"`
-	Role           *terraform.Literal `json:"role"`
-	PolicyDocument *terraform.Literal `json:"policy,omitempty"`
-	PolicyArn      *string            `json:"policy_arn,omitempty"`
+	Name           *string            `json:"name,omitempty" cty:"name"`
+	Role           *terraform.Literal `json:"role" cty:"role"`
+	PolicyDocument *terraform.Literal `json:"policy,omitempty" cty:"policy"`
+	PolicyArn      *string            `json:"policy_arn,omitempty" cty:"policy_arn"`
 }
 
 func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRolePolicy) error {

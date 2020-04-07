@@ -96,10 +96,11 @@ require (
 	github.com/go-ini/ini v1.51.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.3.3
 	github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl v1.0.0
+	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
@@ -120,6 +121,7 @@ require (
 	github.com/urfave/cli v1.20.0
 	github.com/vmware/govmomi v0.20.3
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
+	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20191202143827-86a70503ff7e
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
