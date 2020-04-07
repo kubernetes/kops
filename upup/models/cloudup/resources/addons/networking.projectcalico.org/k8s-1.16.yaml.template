@@ -1,4 +1,4 @@
-# Pulled and modified from: https://docs.projectcalico.org/v3.12/manifests/calico-typha.yaml
+# Pulled and modified from: https://docs.projectcalico.org/v3.13/manifests/calico-typha.yaml
 
 ---
 # Source: calico/templates/calico-config.yaml
@@ -60,106 +60,6 @@ data:
 
 ---
 # Source: calico/templates/kdd-crds.yaml
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: FelixConfiguration
-    plural: felixconfigurations
-    singular: felixconfiguration
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: IPAMBlock
-    plural: ipamblocks
-    singular: ipamblock
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: BlockAffinity
-    plural: blockaffinities
-    singular: blockaffinity
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: IPAMHandle
-    plural: ipamhandles
-    singular: ipamhandle
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: IPAMConfig
-    plural: ipamconfigs
-    singular: ipamconfig
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: BGPPeer
-    plural: bgppeers
-    singular: bgppeer
-
----
 
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -177,11 +77,10 @@ spec:
     singular: bgpconfiguration
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: ippools.crd.projectcalico.org
+  name: bgppeers.crd.projectcalico.org
   labels:
     role.kubernetes.io/networking: "1"
 spec:
@@ -189,16 +88,15 @@ spec:
   group: crd.projectcalico.org
   version: v1
   names:
-    kind: IPPool
-    plural: ippools
-    singular: ippool
+    kind: BGPPeer
+    plural: bgppeers
+    singular: bgppeer
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: hostendpoints.crd.projectcalico.org
+  name: blockaffinities.crd.projectcalico.org
   labels:
     role.kubernetes.io/networking: "1"
 spec:
@@ -206,12 +104,11 @@ spec:
   group: crd.projectcalico.org
   version: v1
   names:
-    kind: HostEndpoint
-    plural: hostendpoints
-    singular: hostendpoint
+    kind: BlockAffinity
+    plural: blockaffinities
+    singular: blockaffinity
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -232,6 +129,22 @@ spec:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  name: felixconfigurations.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: FelixConfiguration
+    plural: felixconfigurations
+    singular: felixconfiguration
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
   labels:
     role.kubernetes.io/networking: "1"
@@ -245,7 +158,6 @@ spec:
     singular: globalnetworkpolicy
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -262,7 +174,86 @@ spec:
     singular: globalnetworkset
 
 ---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: hostendpoints.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: HostEndpoint
+    plural: hostendpoints
+    singular: hostendpoint
 
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamblocks.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMBlock
+    plural: ipamblocks
+    singular: ipamblock
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamconfigs.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMConfig
+    plural: ipamconfigs
+    singular: ipamconfig
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamhandles.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMHandle
+    plural: ipamhandles
+    singular: ipamhandle
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ippools.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPPool
+    plural: ippools
+    singular: ippool
+
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -279,7 +270,6 @@ spec:
     singular: networkpolicy
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -294,6 +284,7 @@ spec:
     kind: NetworkSet
     plural: networksets
     singular: networkset
+
 ---
 # Source: calico/templates/rbac.yaml
 
@@ -387,6 +378,12 @@ rules:
       - watch
       - list
       # Used to discover Typhas.
+      - get
+  # Pod CIDR auto-detection on kubeadm needs access to config maps.
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs:
       - get
   - apiGroups: [""]
     resources:
@@ -495,6 +492,7 @@ rules:
       - daemonsets
     verbs:
       - get
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -558,6 +556,10 @@ spec:
   selector:
     matchLabels:
       k8s-app: calico-typha
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
       labels:
@@ -588,7 +590,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.12.0
+      - image: calico/typha:v3.13.2
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -706,7 +708,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.12.0
+          image: calico/cni:v3.13.2
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -728,7 +730,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.12.0
+          image: calico/cni:v3.13.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -764,7 +766,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.12.0
+          image: calico/pod2daemon-flexvol:v3.13.2
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -775,7 +777,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.12.0
+          image: calico/node:v3.13.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -804,7 +806,6 @@ spec:
                   key: calico_backend
             # Cluster type to identify the deployment type
             - name: CLUSTER_TYPE
-              # was value: "k8s,bgp"
               value: "kops,bgp"
             # Auto-detect the BGP IP address.
             - name: IP
@@ -980,7 +981,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.12.0
+          image: calico/kube-controllers:v3.13.2
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
