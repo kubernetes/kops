@@ -26,6 +26,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
+	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/iam/v1"
 	oauth2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/storage/v1"
@@ -41,6 +42,7 @@ type GCECloud interface {
 	Compute() *compute.Service
 	Storage() *storage.Service
 	IAM() *iam.Service
+	CloudDNS() *dns.Service
 
 	Project() string
 	WaitForOp(op *compute.Operation) error
@@ -60,6 +62,7 @@ type gceCloudImplementation struct {
 	compute *compute.Service
 	storage *storage.Service
 	iam     *iam.Service
+	dns     *dns.Service
 
 	region  string
 	project string
@@ -141,6 +144,12 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.iam = iamService
 
+	dnsService, err := dns.NewService(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error building DNS API client: %v", err)
+	}
+	c.dns = dnsService
+
 	gceCloudInstances[region+"::"+project] = c
 
 	{
@@ -184,6 +193,11 @@ func (c *gceCloudImplementation) Storage() *storage.Service {
 // IAM returns the IAM client
 func (c *gceCloudImplementation) IAM() *iam.Service {
 	return c.iam
+}
+
+// NameService returns the DNS client
+func (c *gceCloudImplementation) CloudDNS() *dns.Service {
+	return c.dns
 }
 
 // Region returns private struct element region.
