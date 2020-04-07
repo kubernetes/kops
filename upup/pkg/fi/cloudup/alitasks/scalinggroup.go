@@ -178,12 +178,12 @@ func (_ *ScalingGroup) RenderALI(t *aliup.ALIAPITarget, a, e, changes *ScalingGr
 }
 
 type terraformScalingGroup struct {
-	Name    *string `json:"scaling_group_name,omitempty"`
-	MaxSize *int    `json:"max_size,omitempty"`
-	MinSize *int    `json:"min_size,omitempty"`
+	Name    *string `json:"scaling_group_name,omitempty" cty:"scaling_group_name"`
+	MaxSize *int    `json:"max_size,omitempty" cty:"max_size"`
+	MinSize *int    `json:"min_size,omitempty" cty:"min_size"`
 
-	VSwitchs     []*terraform.Literal `json:"vswitch_ids,omitempty"`
-	LoadBalancer []*terraform.Literal `json:"loadbalancer_ids,omitempty"`
+	VSwitchs     []*terraform.Literal `json:"vswitch_ids,omitempty" cty:"vswitch_ids"`
+	LoadBalancer []*terraform.Literal `json:"loadbalancer_ids,omitempty" cty:"loadbalancer_ids"`
 }
 
 func (_ *ScalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ScalingGroup) error {

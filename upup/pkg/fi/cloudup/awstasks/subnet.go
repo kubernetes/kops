@@ -214,10 +214,10 @@ func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
 }
 
 type terraformSubnet struct {
-	VPCID            *terraform.Literal `json:"vpc_id"`
-	CIDR             *string            `json:"cidr_block"`
-	AvailabilityZone *string            `json:"availability_zone"`
-	Tags             map[string]string  `json:"tags,omitempty"`
+	VPCID            *terraform.Literal `json:"vpc_id" cty:"vpc_id"`
+	CIDR             *string            `json:"cidr_block" cty:"cidr_block"`
+	AvailabilityZone *string            `json:"availability_zone" cty:"availability_zone"`
+	Tags             map[string]string  `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {

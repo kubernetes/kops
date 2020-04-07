@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "ast.go",
+        "ast_attribute.go",
+        "ast_block.go",
+        "ast_body.go",
+        "ast_expression.go",
+        "doc.go",
+        "format.go",
+        "generate.go",
+        "native_node_sorter.go",
+        "node.go",
+        "parser.go",
+        "public.go",
+        "tokens.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/hashicorp/hcl/v2/hclwrite",
+    importpath = "github.com/hashicorp/hcl/v2/hclwrite",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/apparentlymart/go-textseg/textseg:go_default_library",
+        "//vendor/github.com/google/go-cmp/cmp:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/v2:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/v2/hclsyntax:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty:go_default_library",
+    ],
+)

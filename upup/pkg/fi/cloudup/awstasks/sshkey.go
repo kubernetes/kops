@@ -166,8 +166,8 @@ func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 }
 
 type terraformSSHKey struct {
-	Name      *string            `json:"key_name"`
-	PublicKey *terraform.Literal `json:"public_key"`
+	Name      *string            `json:"key_name" cty:"key_name"`
+	PublicKey *terraform.Literal `json:"public_key" cty:"public_key"`
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
