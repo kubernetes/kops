@@ -215,7 +215,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 func Test_Validate_DockerConfig_Storage(t *testing.T) {
 	for _, name := range []string{"aufs", "zfs", "overlay"} {
 		config := &kops.DockerConfig{Storage: &name}
-		errs := ValidateDockerConfig(config, field.NewPath("docker"))
+		errs := validateDockerConfig(config, field.NewPath("docker"))
 		if len(errs) != 0 {
 			t.Fatalf("Unexpected errors validating DockerConfig %q", errs)
 		}
@@ -223,7 +223,7 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 
 	for _, name := range []string{"overlayfs", "", "au"} {
 		config := &kops.DockerConfig{Storage: &name}
-		errs := ValidateDockerConfig(config, field.NewPath("docker"))
+		errs := validateDockerConfig(config, field.NewPath("docker"))
 		if len(errs) != 1 {
 			t.Fatalf("Expected errors validating DockerConfig %+v", config)
 		}
