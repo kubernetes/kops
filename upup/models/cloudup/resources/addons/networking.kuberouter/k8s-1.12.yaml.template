@@ -1,3 +1,5 @@
+# Pulled and modified from https://github.com/cloudnativelabs/kube-router/blob/v0.4.0/daemonset/kubeadm-kuberouter.yaml
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,13 +11,19 @@ metadata:
 data:
   cni-conf.json: |
     {
-      "name":"kubernetes",
-      "type":"bridge",
-      "bridge":"kube-bridge",
-      "isDefaultGateway":true,
-      "ipam": {
-        "type":"host-local"
-      }
+       "cniVersion":"0.3.0",
+       "name":"mynet",
+       "plugins":[
+          {
+             "name":"kubernetes",
+             "type":"bridge",
+             "bridge":"kube-bridge",
+             "isDefaultGateway":true,
+             "ipam":{
+                "type":"host-local"
+             }
+          }
+       ]
     }
 ---
 apiVersion: apps/v1
@@ -36,23 +44,25 @@ spec:
       labels:
         k8s-app: kube-router
         tier: node
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      priorityClassName: system-node-critical
+      serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: cloudnativelabs/kube-router:v0.3.1
+        image: docker.io/cloudnativelabs/kube-router:v0.4.0
         args:
         - --run-router=true
         - --run-firewall=true
         - --run-service-proxy=true
-        - --metrics-port=12013
         - --kubeconfig=/var/lib/kube-router/kubeconfig
+        - --metrics-port=12013
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: KUBE_ROUTER_CNI_CONF_FILE
+          value: /etc/cni/net.d/10-kuberouter.conflist
         livenessProbe:
           httpGet:
             path: /healthz
@@ -81,37 +91,42 @@ spec:
         - /bin/sh
         - -c
         - set -e -x;
-          if [ ! -f /etc/cni/net.d/10-kuberouter.conf ]; then
+          if [ ! -f /etc/cni/net.d/10-kuberouter.conflist ]; then
+            if [ -f /etc/cni/net.d/*.conf ]; then
+              rm -f /etc/cni/net.d/*.conf;
+            fi;
             TMP=/etc/cni/net.d/.tmp-kuberouter-cfg;
             cp /etc/kube-router/cni-conf.json ${TMP};
-            mv ${TMP} /etc/cni/net.d/10-kuberouter.conf;
+            mv ${TMP} /etc/cni/net.d/10-kuberouter.conflist;
           fi
         volumeMounts:
-        - name: cni-conf-dir
-          mountPath: /etc/cni/net.d
-        - name: kube-router-cfg
-          mountPath: /etc/kube-router
+        - mountPath: /etc/cni/net.d
+          name: cni-conf-dir
+        - mountPath: /etc/kube-router
+          name: kube-router-cfg
       hostNetwork: true
-      priorityClassName: system-node-critical
-      serviceAccountName: kube-router
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
       - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      - effect: NoSchedule
+        key: node.kubernetes.io/not-ready
         operator: Exists
       volumes:
-      - hostPath:
-          path: /lib/modules
-        name: lib-modules
-      - hostPath:
-          path: /etc/cni/net.d
-        name: cni-conf-dir
-      - name: kubeconfig
+      - name: lib-modules
         hostPath:
-          path: /var/lib/kube-router/kubeconfig
+          path: /lib/modules
+      - name: cni-conf-dir
+        hostPath:
+          path: /etc/cni/net.d
       - name: kube-router-cfg
         configMap:
           name: kube-router-cfg
+      - name: kubeconfig
+        hostPath:
+          path: /var/lib/kube-router/kubeconfig
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -119,14 +134,14 @@ metadata:
   name: kube-router
   namespace: kube-system
 ---
-# Kube-router roles
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: kube-router
   namespace: kube-system
 rules:
-  - apiGroups: [""]
+  - apiGroups:
+    - ""
     resources:
       - namespaces
       - pods
@@ -134,17 +149,19 @@ rules:
       - nodes
       - endpoints
     verbs:
-      - get
       - list
+      - get
       - watch
-  - apiGroups: ["networking.k8s.io"]
+  - apiGroups:
+    - "networking.k8s.io"
     resources:
       - networkpolicies
     verbs:
-      - get
       - list
+      - get
       - watch
-  - apiGroups: ["extensions"]
+  - apiGroups:
+    - extensions
     resources:
       - networkpolicies
     verbs:
