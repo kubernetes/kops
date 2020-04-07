@@ -330,6 +330,12 @@ rules:
       - list
       # Used to discover Typhas.
       - get
+  # Pod CIDR auto-detection on kubeadm needs access to config maps.
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs:
+      - get
   - apiGroups: [""]
     resources:
       - nodes/status
@@ -407,6 +413,7 @@ rules:
     verbs:
       - create
       - update
+
 ---
 # Flannel ClusterRole
 # Pulled from https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel-rbac.yml
@@ -542,7 +549,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.13.1
+      - image: calico/typha:v3.13.2
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -653,7 +660,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.13.1
+          image: calico/cni:v3.13.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -689,7 +696,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.13.1
+          image: calico/pod2daemon-flexvol:v3.13.2
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -700,7 +707,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.13.1
+          image: calico/node:v3.13.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -751,9 +758,9 @@ spec:
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
-            # Set Felix logging to "INFO"
+            # Set Felix logging to "info"
             - name: FELIX_LOGSEVERITYSCREEN
-              value: "{{- or .Networking.Canal.LogSeveritySys "INFO" }}"
+              value: "{{- or .Networking.Canal.LogSeveritySys "info" }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
 
@@ -780,7 +787,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 250m
+              cpu: 90m
           livenessProbe:
             exec:
               command:
