@@ -1219,18 +1219,18 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 }
 
 type terraformElastigroup struct {
-	Name                 *string                                 `json:"name,omitempty"`
-	Description          *string                                 `json:"description,omitempty"`
-	Product              *string                                 `json:"product,omitempty"`
-	Region               *string                                 `json:"region,omitempty"`
-	SubnetIDs            []*terraform.Literal                    `json:"subnet_ids,omitempty"`
-	LoadBalancers        []*terraform.Literal                    `json:"elastic_load_balancers,omitempty"`
-	NetworkInterfaces    []*terraformElastigroupNetworkInterface `json:"network_interface,omitempty"`
-	RootBlockDevice      *terraformElastigroupBlockDevice        `json:"ebs_block_device,omitempty"`
-	EphemeralBlockDevice []*terraformElastigroupBlockDevice      `json:"ephemeral_block_device,omitempty"`
-	Integration          *terraformElastigroupIntegration        `json:"integration_kubernetes,omitempty"`
-	Tags                 []*terraformKV                          `json:"tags,omitempty"`
-	Lifecycle            *terraformLifecycle                     `json:"lifecycle,omitempty"`
+	Name                 *string                                 `json:"name,omitempty" cty:"name"`
+	Description          *string                                 `json:"description,omitempty" cty:"description"`
+	Product              *string                                 `json:"product,omitempty" cty:"product"`
+	Region               *string                                 `json:"region,omitempty" cty:"region"`
+	SubnetIDs            []*terraform.Literal                    `json:"subnet_ids,omitempty" cty:"subnet_ids"`
+	LoadBalancers        []*terraform.Literal                    `json:"elastic_load_balancers,omitempty" cty:"elastic_load_balancers"`
+	NetworkInterfaces    []*terraformElastigroupNetworkInterface `json:"network_interface,omitempty" cty:"network_interface"`
+	RootBlockDevice      *terraformElastigroupBlockDevice        `json:"ebs_block_device,omitempty" cty:"ebs_block_device"`
+	EphemeralBlockDevice []*terraformElastigroupBlockDevice      `json:"ephemeral_block_device,omitempty" cty:"ephemeral_block_device"`
+	Integration          *terraformElastigroupIntegration        `json:"integration_kubernetes,omitempty" cty:"integration_kubernetes"`
+	Tags                 []*terraformKV                          `json:"tags,omitempty" cty:"tags"`
+	Lifecycle            *terraformLifecycle                     `json:"lifecycle,omitempty" cty:"lifecycle"`
 
 	*terraformElastigroupCapacity
 	*terraformElastigroupStrategy
@@ -1239,84 +1239,84 @@ type terraformElastigroup struct {
 }
 
 type terraformElastigroupCapacity struct {
-	MinSize         *int64  `json:"min_size,omitempty"`
-	MaxSize         *int64  `json:"max_size,omitempty"`
-	DesiredCapacity *int64  `json:"desired_capacity,omitempty"`
-	CapacityUnit    *string `json:"capacity_unit,omitempty"`
+	MinSize         *int64  `json:"min_size,omitempty" cty:"min_size"`
+	MaxSize         *int64  `json:"max_size,omitempty" cty:"max_size"`
+	DesiredCapacity *int64  `json:"desired_capacity,omitempty" cty:"desired_capacity"`
+	CapacityUnit    *string `json:"capacity_unit,omitempty" cty:"capacity_unit"`
 }
 
 type terraformElastigroupStrategy struct {
-	SpotPercentage           *float64 `json:"spot_percentage,omitempty"`
-	Orientation              *string  `json:"orientation,omitempty"`
-	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty"`
-	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty"`
+	SpotPercentage           *float64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
+	Orientation              *string  `json:"orientation,omitempty" cty:"orientation"`
+	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
+	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
 }
 
 type terraformElastigroupInstanceTypes struct {
-	OnDemand *string  `json:"instance_types_ondemand,omitempty"`
-	Spot     []string `json:"instance_types_spot,omitempty"`
+	OnDemand *string  `json:"instance_types_ondemand,omitempty" cty:"instance_types_ondemand"`
+	Spot     []string `json:"instance_types_spot,omitempty" cty:"instance_types_spot"`
 }
 
 type terraformElastigroupLaunchSpec struct {
-	Monitoring         *bool                `json:"enable_monitoring,omitempty"`
-	EBSOptimized       *bool                `json:"ebs_optimized,omitempty"`
-	ImageID            *string              `json:"image_id,omitempty"`
-	HealthCheckType    *string              `json:"health_check_type,omitempty"`
-	SecurityGroups     []*terraform.Literal `json:"security_groups,omitempty"`
-	UserData           *terraform.Literal   `json:"user_data,omitempty"`
-	IAMInstanceProfile *terraform.Literal   `json:"iam_instance_profile,omitempty"`
-	KeyName            *terraform.Literal   `json:"key_name,omitempty"`
+	Monitoring         *bool                `json:"enable_monitoring,omitempty" cty:"enable_monitoring"`
+	EBSOptimized       *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	ImageID            *string              `json:"image_id,omitempty" cty:"image_id"`
+	HealthCheckType    *string              `json:"health_check_type,omitempty" cty:"health_check_type"`
+	SecurityGroups     []*terraform.Literal `json:"security_groups,omitempty" cty:"security_groups"`
+	UserData           *terraform.Literal   `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile *terraform.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName            *terraform.Literal   `json:"key_name,omitempty" cty:"key_name"`
 }
 
 type terraformElastigroupBlockDevice struct {
-	DeviceName          *string `json:"device_name,omitempty"`
-	VirtualName         *string `json:"virtual_name,omitempty"`
-	VolumeType          *string `json:"volume_type,omitempty"`
-	VolumeSize          *int64  `json:"volume_size,omitempty"`
-	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty"`
+	DeviceName          *string `json:"device_name,omitempty" cty:"device_name"`
+	VirtualName         *string `json:"virtual_name,omitempty" cty:"virtual_name"`
+	VolumeType          *string `json:"volume_type,omitempty" cty:"volume_type"`
+	VolumeSize          *int64  `json:"volume_size,omitempty" cty:"volume_size"`
+	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
 }
 
 type terraformElastigroupNetworkInterface struct {
-	Description              *string `json:"description,omitempty"`
-	DeviceIndex              *int    `json:"device_index,omitempty"`
-	AssociatePublicIPAddress *bool   `json:"associate_public_ip_address,omitempty"`
-	DeleteOnTermination      *bool   `json:"delete_on_termination,omitempty"`
+	Description              *string `json:"description,omitempty" cty:"description"`
+	DeviceIndex              *int    `json:"device_index,omitempty" cty:"device_index"`
+	AssociatePublicIPAddress *bool   `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	DeleteOnTermination      *bool   `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
 }
 
 type terraformElastigroupIntegration struct {
-	IntegrationMode   *string `json:"integration_mode,omitempty"`
-	ClusterIdentifier *string `json:"cluster_identifier,omitempty"`
+	IntegrationMode   *string `json:"integration_mode,omitempty" cty:"integration_mode"`
+	ClusterIdentifier *string `json:"cluster_identifier,omitempty" cty:"cluster_identifier"`
 
 	*terraformAutoScaler
 }
 
 type terraformAutoScaler struct {
-	Enabled    *bool                        `json:"autoscale_is_enabled,omitempty"`
-	AutoConfig *bool                        `json:"autoscale_is_auto_config,omitempty"`
-	Headroom   *terraformAutoScalerHeadroom `json:"autoscale_headroom,omitempty"`
-	Down       *terraformAutoScalerDown     `json:"autoscale_down,omitempty"`
-	Labels     []*terraformKV               `json:"autoscale_labels,omitempty"`
+	Enabled    *bool                        `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
+	AutoConfig *bool                        `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
+	Headroom   *terraformAutoScalerHeadroom `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
+	Down       *terraformAutoScalerDown     `json:"autoscale_down,omitempty" cty:"autoscale_down"`
+	Labels     []*terraformKV               `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
 }
 
 type terraformAutoScalerHeadroom struct {
-	CPUPerUnit *int `json:"cpu_per_unit,omitempty"`
-	GPUPerUnit *int `json:"gpu_per_unit,omitempty"`
-	MemPerUnit *int `json:"memory_per_unit,omitempty"`
-	NumOfUnits *int `json:"num_of_units,omitempty"`
+	CPUPerUnit *int `json:"cpu_per_unit,omitempty" cty:"cpu_per_unit"`
+	GPUPerUnit *int `json:"gpu_per_unit,omitempty" cty:"gpu_per_unit"`
+	MemPerUnit *int `json:"memory_per_unit,omitempty" cty:"memory_per_unit"`
+	NumOfUnits *int `json:"num_of_units,omitempty" cty:"num_of_units"`
 }
 
 type terraformAutoScalerDown struct {
-	MaxPercentage     *int `json:"max_scale_down_percentage,omitempty"`
-	EvaluationPeriods *int `json:"evaluation_periods,omitempty"`
+	MaxPercentage     *int `json:"max_scale_down_percentage,omitempty" cty:"max_scale_down_percentage"`
+	EvaluationPeriods *int `json:"evaluation_periods,omitempty" cty:"evaluation_periods"`
 }
 
 type terraformKV struct {
-	Key   *string `json:"key"`
-	Value *string `json:"value"`
+	Key   *string `json:"key" cty:"key"`
+	Value *string `json:"value" cty:"value"`
 }
 
 type terraformLifecycle struct {
-	IgnoreChanges []string `json:"ignore_changes,omitempty"`
+	IgnoreChanges []string `json:"ignore_changes,omitempty" cty:"ignore_changes"`
 }
 
 func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Elastigroup) error {

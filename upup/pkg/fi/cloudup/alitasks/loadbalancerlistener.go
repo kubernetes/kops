@@ -149,10 +149,10 @@ func (_ *LoadBalancerListener) RenderALI(t *aliup.ALIAPITarget, a, e, changes *L
 }
 
 type terraformLoadBalancerListener struct {
-	ListenerPort      *int               `json:"frontend_port,omitempty"`
-	BackendServerPort *int               `json:"backend_port,omitempty"`
-	Protocol          *string            `json:"protocol,omitempty"`
-	LoadBalancerId    *terraform.Literal `json:"load_balancer_id,omitempty"`
+	ListenerPort      *int               `json:"frontend_port,omitempty" cty:"frontend_port"`
+	BackendServerPort *int               `json:"backend_port,omitempty" cty:"backend_port"`
+	Protocol          *string            `json:"protocol,omitempty" cty:"protocol"`
+	LoadBalancerId    *terraform.Literal `json:"load_balancer_id,omitempty" cty:"load_balancer_id"`
 }
 
 func (_ *LoadBalancerListener) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerListener) error {

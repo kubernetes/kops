@@ -151,9 +151,9 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 }
 
 type terraformNetwork struct {
-	Name                  *string `json:"name"`
-	IPv4Range             *string `json:"ipv4_range,omitempty"`
-	AutoCreateSubnetworks *bool   `json:"auto_create_subnetworks,omitempty"`
+	Name                  *string `json:"name" cty:"name"`
+	IPv4Range             *string `json:"ipv4_range,omitempty" cty:"ipv4_range"`
+	AutoCreateSubnetworks *bool   `json:"auto_create_subnetworks,omitempty" cty:"auto_create_subnetworks"`
 }
 
 func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Network) error {

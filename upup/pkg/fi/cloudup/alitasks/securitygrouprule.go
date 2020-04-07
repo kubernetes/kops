@@ -181,13 +181,13 @@ func (_ *SecurityGroupRule) RenderALI(t *aliup.ALIAPITarget, a, e, changes *Secu
 }
 
 type terraformSecurityGroupRole struct {
-	Name            *string            `json:"name,omitempty"`
-	Type            *string            `json:"type,omitempty"`
-	IpProtocol      *string            `json:"ip_protocol,omitempty"`
-	SourceCidrIp    *string            `json:"cidr_ip,omitempty"`
-	SecurityGroupId *terraform.Literal `json:"security_group_id,omitempty"`
-	SourceGroupId   *terraform.Literal `json:"source_security_group_id,omitempty"`
-	PortRange       *string            `json:"port_range,omitempty"`
+	Name            *string            `json:"name,omitempty" cty:"name"`
+	Type            *string            `json:"type,omitempty" cty:"type"`
+	IpProtocol      *string            `json:"ip_protocol,omitempty" cty:"ip_protocol"`
+	SourceCidrIp    *string            `json:"cidr_ip,omitempty" cty:"cidr_ip"`
+	SecurityGroupId *terraform.Literal `json:"security_group_id,omitempty" cty:"security_group_id"`
+	SourceGroupId   *terraform.Literal `json:"source_security_group_id,omitempty" cty:"source_security_group_id"`
+	PortRange       *string            `json:"port_range,omitempty" cty:"port_range"`
 }
 
 func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {

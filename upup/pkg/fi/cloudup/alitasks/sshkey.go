@@ -144,8 +144,8 @@ func (_ *SSHKey) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SSHKey) error {
 }
 
 type terraformSSHKey struct {
-	Name      *string `json:"key_name,omitempty"`
-	PublicKey *string `json:"public_key,omitempty"`
+	Name      *string `json:"key_name,omitempty" cty:"key_name"`
+	PublicKey *string `json:"public_key,omitempty" cty:"public_key"`
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {

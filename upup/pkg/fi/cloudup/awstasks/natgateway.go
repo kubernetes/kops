@@ -360,9 +360,9 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 }
 
 type terraformNATGateway struct {
-	AllocationID *terraform.Literal `json:"allocation_id,omitempty"`
-	SubnetID     *terraform.Literal `json:"subnet_id,omitempty"`
-	Tag          map[string]string  `json:"tags,omitempty"`
+	AllocationID *terraform.Literal `json:"allocation_id,omitempty" cty:"allocation_id"`
+	SubnetID     *terraform.Literal `json:"subnet_id,omitempty" cty:"subnet_id"`
+	Tag          map[string]string  `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {

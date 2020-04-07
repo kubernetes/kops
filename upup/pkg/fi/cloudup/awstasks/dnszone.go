@@ -226,9 +226,9 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 }
 
 type terraformRoute53ZoneAssociation struct {
-	ZoneID    *terraform.Literal   `json:"zone_id"`
-	VPCID     *terraform.Literal   `json:"vpc_id"`
-	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty"`
+	ZoneID    *terraform.Literal   `json:"zone_id" cty:"zone_id"`
+	VPCID     *terraform.Literal   `json:"vpc_id" cty:"vpc_id"`
+	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty" cty:"lifecycle"`
 }
 
 func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSZone) error {

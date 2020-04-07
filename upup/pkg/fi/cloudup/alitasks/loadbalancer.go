@@ -239,8 +239,8 @@ func (l *LoadBalancer) jsonMarshalTags(tags map[string]string) string {
 }
 
 type terraformLoadBalancer struct {
-	Name     *string `json:"name,omitempty"`
-	Internet *bool   `json:"internet,omitempty"`
+	Name     *string `json:"name,omitempty" cty:"name"`
+	Internet *bool   `json:"internet,omitempty" cty:"internet"`
 }
 
 func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {

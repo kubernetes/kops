@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -50,7 +51,7 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 
 		switch method {
 		case "RenderTerraform":
-			target = terraform.NewTerraformTarget(cloud, "eu-west-2", "test", outdir, nil)
+			target = terraform.NewTerraformTarget(cloud, "eu-west-2", "test", outdir, terraform.Version012, nil)
 			filename = "kubernetes.tf"
 		case "RenderCloudformation":
 			target = cloudformation.NewCloudformationTarget(cloud, "eu-west-2", "test", outdir)
@@ -87,6 +88,8 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 					return err
 				}
 				if c.Expected != string(content) {
+					diffString := diff.FormatDiff(c.Expected, string(content))
+					t.Logf("diff:\n%s\n", diffString)
 					t.Errorf("case %d, expected: %s\n,got: %s\n", i, c.Expected, string(content))
 					//assert.Equal(t, "", string(content))
 				}
