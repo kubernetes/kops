@@ -144,7 +144,7 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.iam = iamService
 
-	dnsService, err := dns.New(client)
+	dnsService, err := dns.NewService(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error building DNS API client: %v", err)
 	}
