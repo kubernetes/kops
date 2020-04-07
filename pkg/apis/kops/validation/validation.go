@@ -422,7 +422,7 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
 				"version is no longer available: https://www.docker.com/blog/changes-dockerproject-org-apt-yum-repositories/"))
 		} else {
-			valid := []string{"17.03.2", "17.09.0", "18.03.1", "18.06.1", "18.06.2", "18.06.3", "18.09.3", "18.09.9", "19.03.4", "19.03.8"}
+			valid := []string{"17.03.2", "17.09.0", "18.03.1", "18.06.1", "18.06.2", "18.06.3", "18.09.3", "18.09.9", "19.03.4"}
 			allErrs = append(allErrs, IsValidValue(fldPath.Child("version"), config.Version, valid)...)
 		}
 	}
