@@ -175,7 +175,9 @@ kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 
 UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
 upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
-	cd ${KOPS_ROOT}; ${GOBINDATA} -o $@ -pkg models -nometadata -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/... && GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v upup/models/bindata.go
+	cd ${KOPS_ROOT}; ${GOBINDATA} -o $@ -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v upup/models/bindata.go
+	gofmt -w -s upup/models/bindata.go
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
