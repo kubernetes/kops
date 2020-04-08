@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -67,7 +68,8 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 		Long:    getInstancegroupsLong,
 		Example: getInstancegroupsExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunGetInstanceGroups(&options, args)
+			ctx := context.TODO()
+			err := RunGetInstanceGroups(ctx, &options, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -77,7 +79,7 @@ func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOpti
 	return cmd
 }
 
-func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) error {
+func RunGetInstanceGroups(ctx context.Context, options *GetInstanceGroupsOptions, args []string) error {
 	out := os.Stdout
 
 	clusterName := rootCommand.ClusterName()
@@ -90,7 +92,7 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(clusterName)
+	cluster, err := clientset.GetCluster(ctx, clusterName)
 	if err != nil {
 		return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
 	}
@@ -99,7 +101,7 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 		return fmt.Errorf("cluster %q was not found", clusterName)
 	}
 
-	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

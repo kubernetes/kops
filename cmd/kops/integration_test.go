@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -334,6 +335,8 @@ func TestLaunchTemplatesASG(t *testing.T) {
 }
 
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
+	ctx := context.Background()
+
 	var stdout bytes.Buffer
 
 	i.srcDir = updateClusterTestBase + i.srcDir
@@ -358,7 +361,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		options := &CreateOptions{}
 		options.Filenames = []string{path.Join(i.srcDir, inputYAML)}
 
-		err := RunCreate(factory, &stdout, options)
+		err := RunCreate(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create: %v", inputYAML, err)
 		}
@@ -370,7 +373,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		options.Name = "admin"
 		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
 
-		err := RunCreateSecretPublicKey(factory, &stdout, options)
+		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create: %v", inputYAML, err)
 		}
@@ -391,7 +394,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 
 		options.LifecycleOverrides = i.lifecycleOverrides
 
-		_, err := RunUpdateCluster(factory, i.clusterName, &stdout, options)
+		_, err := RunUpdateCluster(ctx, factory, i.clusterName, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
 		}
@@ -596,6 +599,8 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 }
 
 func (i *integrationTest) runTestCloudformation(t *testing.T) {
+	ctx := context.Background()
+
 	i.srcDir = updateClusterTestBase + i.srcDir
 	var stdout bytes.Buffer
 
@@ -617,7 +622,7 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 		options := &CreateOptions{}
 		options.Filenames = []string{path.Join(i.srcDir, inputYAML)}
 
-		err := RunCreate(factory, &stdout, options)
+		err := RunCreate(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create: %v", inputYAML, err)
 		}
@@ -629,7 +634,7 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 		options.Name = "admin"
 		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
 
-		err := RunCreateSecretPublicKey(factory, &stdout, options)
+		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running %q create: %v", inputYAML, err)
 		}
@@ -646,7 +651,7 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 		options.CreateKubecfg = false
 		options.LifecycleOverrides = i.lifecycleOverrides
 
-		_, err := RunUpdateCluster(factory, i.clusterName, &stdout, options)
+		_, err := RunUpdateCluster(ctx, factory, i.clusterName, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
 		}

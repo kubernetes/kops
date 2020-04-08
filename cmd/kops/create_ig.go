@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -86,7 +87,8 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    createIgLong,
 		Example: createIgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunCreateInstanceGroup(f, cmd, args, os.Stdout, options)
+			ctx := context.TODO()
+			err := RunCreateInstanceGroup(ctx, f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -109,7 +111,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *CreateInstanceGroupOptions) error {
+func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *CreateInstanceGroupOptions) error {
 	if len(args) == 0 {
 		return fmt.Errorf("Specify name of instance group to create")
 	}
@@ -118,7 +120,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	}
 	groupName := args[0]
 
-	cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
 	}
@@ -133,7 +135,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	existing, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
+	existing, err := clientset.InstanceGroupsFor(cluster).Get(ctx, groupName, metav1.GetOptions{})
 	if err != nil {
 		// We expect a NotFound error when creating the instance group
 		if !errors.IsNotFound(err) {
@@ -233,7 +235,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		ig = group
 	}
 
-	_, err = clientset.InstanceGroupsFor(cluster).Create(ig)
+	_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}

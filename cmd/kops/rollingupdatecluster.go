@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -194,6 +195,8 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
+		ctx := context.TODO()
+
 		err := rootCommand.ProcessArgs(args)
 		if err != nil {
 			exitWithError(err)
@@ -208,7 +211,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 		options.ClusterName = clusterName
 
-		err = RunRollingUpdateCluster(f, os.Stdout, &options)
+		err = RunRollingUpdateCluster(ctx, f, os.Stdout, &options)
 		if err != nil {
 			exitWithError(err)
 			return
@@ -219,14 +222,14 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
+func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
 
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := GetCluster(f, options.ClusterName)
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -248,7 +251,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
 		}
 
-		nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
 			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the k8s API\n\n")
@@ -260,7 +263,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		}
 	}
 
-	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -424,5 +427,5 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 	d.ClusterValidator = clusterValidator
 
-	return d.RollingUpdate(groups, cluster, list)
+	return d.RollingUpdate(ctx, groups, cluster, list)
 }
