@@ -173,11 +173,15 @@ gobindata-tool: ${GOBINDATA}
 .PHONY: kops-gobindata
 kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 
+.PHONY: update-bindata
+update-bindata:
+	cd ${KOPS_ROOT}; ${GOBINDATA} -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v ${BINDATA_TARGETS}
+	gofmt -w -s ${BINDATA_TARGETS}
+
 UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
 upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
-	cd ${KOPS_ROOT}; ${GOBINDATA} -o $@ -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
-	GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v upup/models/bindata.go
-	gofmt -w -s upup/models/bindata.go
+	make update-bindata
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
@@ -545,12 +549,16 @@ verify-shellcheck:
 verify-terraform:
 	./hack/verify-terraform.sh
 
+.PHONY: verify-bindata
+verify-bindata:
+	./hack/verify-bindata.sh
+
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
@@ -558,7 +566,7 @@ ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boil
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-generate verify-gomod verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
