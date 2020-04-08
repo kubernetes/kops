@@ -20,4 +20,5 @@ limitations under the License.
 // +k8s:defaulter-gen=TypeMeta
 
 // +groupName=kops.k8s.io
+// +versionName=v1alpha2
 package v1alpha2 // import "k8s.io/kops/pkg/apis/kops/v1alpha2"
