@@ -15,6 +15,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "escaping_test.go",
         "manifest_test.go",
         "unit_test.go",
     ],
