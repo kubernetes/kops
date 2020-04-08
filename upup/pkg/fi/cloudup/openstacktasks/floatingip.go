@@ -71,7 +71,7 @@ func findL3Floating(cloud openstack.OpenstackCloud, opts l3floatingip.ListOpts) 
 }
 
 func (e *FloatingIP) findServerFloatingIP(context *fi.Context, cloud openstack.OpenstackCloud) (*string, error) {
-	ips, err := cloud.ListServerFloatingIPs(fi.StringValue(e.Server.ID))
+	ips, err := cloud.ListServerIPs(fi.StringValue(e.Server.ID), openstack.FloatingType)
 	if err != nil {
 		return nil, err
 	}

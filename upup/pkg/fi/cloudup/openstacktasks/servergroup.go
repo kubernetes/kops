@@ -133,12 +133,30 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		for currentLastIndex > fi.Int32Value(changes.MaxSize) {
 			iName := strings.ToLower(fmt.Sprintf("%s-%d.%s", fi.StringValue(a.IGName), currentLastIndex, fi.StringValue(a.ClusterName)))
 			instanceName := strings.Replace(iName, ".", "-", -1)
-			opts := servers.ListOpts{
-				Name: fmt.Sprintf("^%s$", instanceName),
-			}
-			instances, err := t.Cloud.ListInstances(opts)
+			allInstances, err := t.Cloud.ListInstances(servers.ListOpts{})
 			if err != nil {
 				return fmt.Errorf("error fetching instance list: %v", err)
+			}
+
+			instances := []servers.Server{}
+			for _, server := range allInstances {
+				val, ok := server.Metadata["k8s"]
+				if !ok || val != fi.StringValue(a.ClusterName) {
+					continue
+				}
+				metadataName := ""
+				val, ok = server.Metadata[openstack.TagKopsName]
+				if ok {
+					metadataName = val
+				}
+				_, detachTag := server.Metadata[openstack.TagNameDetach]
+				// name or metadata tag should match to instance name
+				// this is needed for backwards compatibility
+				if server.Name == instanceName || metadataName == instanceName {
+					if !detachTag {
+						instances = append(instances, server)
+					}
+				}
 			}
 
 			if len(instances) == 1 {

@@ -152,6 +152,8 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Metadata:         igMeta,
 			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
+			ClusterName:      s(b.ClusterName()),
+			GroupName:        s(ig.Name),
 		}
 		if igUserData != nil {
 			instanceTask.UserData = igUserData

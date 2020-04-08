@@ -64,9 +64,13 @@ const (
 	TagClusterName           = "KubernetesCluster"
 	TagRoleMaster            = "master"
 	TagKopsNetwork           = "KopsNetwork"
+	TagNameDetach            = "KopsDetach"
+	TagKopsName              = "KopsName"
 	ResourceTypePort         = "ports"
 	ResourceTypeNetwork      = "networks"
 	ResourceTypeSubnet       = "subnets"
+	FloatingType             = "floating"
+	FixedType                = "fixed"
 )
 
 // ErrNotFound is used to inform that the object is not found
@@ -292,7 +296,7 @@ type OpenstackCloud interface {
 
 	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
 
-	ListServerFloatingIPs(id string) ([]*string, error)
+	ListServerIPs(id string, IPType string) ([]*string, error)
 
 	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)
 	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
@@ -661,7 +665,7 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 			if ok && val == cluster.Name && ok2 {
 				role, success := kops.ParseInstanceGroupRole(val2, false)
 				if success && role == kops.InstanceGroupRoleMaster {
-					ips, err := c.ListServerFloatingIPs(instance.ID)
+					ips, err := c.ListServerIPs(instance.ID, FloatingType)
 					if err != nil {
 						return ingresses, err
 					}

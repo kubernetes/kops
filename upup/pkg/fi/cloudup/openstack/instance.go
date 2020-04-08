@@ -65,7 +65,7 @@ func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers
 	}
 }
 
-func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, error) {
+func (c *openstackCloud) ListServerIPs(instanceID string, IPType string) ([]*string, error) {
 	var result []*string
 	_, err := vfs.RetryWithBackoff(floatingBackoff, func() (bool, error) {
 		server, err := c.GetInstance(instanceID)
@@ -82,7 +82,7 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 		for _, addrList := range addresses {
 			for _, props := range addrList {
 				if c.floatingEnabled {
-					if props.IPType == "floating" {
+					if props.IPType == IPType {
 						result = append(result, fi.String(props.Addr))
 					}
 				} else {
@@ -96,7 +96,7 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 		return false, nil
 	})
 	if len(result) == 0 || err != nil {
-		return result, fmt.Errorf("could not find floating ip associated to server (\"%s\") %v", instanceID, err)
+		return result, fmt.Errorf("could not find %s ip associated to server (\"%s\") %v", IPType, instanceID, err)
 	}
 	return result, nil
 }
@@ -112,6 +112,7 @@ func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
 func (c *openstackCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	// TODO: tag port and instance with detach tag
 	klog.V(8).Info("openstack cloud provider DetachInstance not implemented yet")
 	return fmt.Errorf("openstack cloud provider does not support surging")
 }

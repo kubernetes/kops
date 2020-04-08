@@ -19,6 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 //go:generate fitask -type=Instance
@@ -45,8 +47,9 @@ type Instance struct {
 	Metadata         map[string]string
 	AvailabilityZone *string
 	SecurityGroups   []string
-
-	Lifecycle *fi.Lifecycle
+	ClusterName      *string
+	GroupName        *string
+	Lifecycle        *fi.Lifecycle
 }
 
 var _ fi.HasAddress = &Instance{}
@@ -97,30 +100,55 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if e == nil || e.Name == nil {
 		return nil, nil
 	}
+	tmp := strings.Replace(strings.ToLower(fi.StringValue(e.GroupName)), "_", "-", -1)
+	groupName := strings.Replace(tmp, ".", "-", -1)
 	serverPage, err := servers.List(c.Cloud.(openstack.OpenstackCloud).ComputeClient(), servers.ListOpts{
-		Name: fmt.Sprintf("^%s$", fi.StringValue(e.Name)),
+		Name: fmt.Sprintf("^%s", groupName),
 	}).AllPages()
 	if err != nil {
-		return nil, fmt.Errorf("error finding server with name %s: %v", fi.StringValue(e.Name), err)
+		return nil, fmt.Errorf("error listing servers: %v", err)
 	}
 	serverList, err := servers.ExtractServers(serverPage)
 	if err != nil {
 		return nil, fmt.Errorf("error extracting server page: %v", err)
 	}
-	if len(serverList) == 0 {
+
+	filteredList := []servers.Server{}
+	for _, server := range serverList {
+		val, ok := server.Metadata["k8s"]
+		if !ok || val != fi.StringValue(e.ClusterName) {
+			continue
+		}
+		metadataName := ""
+		val, ok = server.Metadata[openstack.TagKopsName]
+		if ok {
+			metadataName = val
+		}
+		_, detachTag := server.Metadata[openstack.TagNameDetach]
+		// name or metadata tag should match to instance name
+		// this is needed for backwards compatibility
+		if server.Name == fi.StringValue(e.Name) || metadataName == fi.StringValue(e.Name) {
+			if !detachTag {
+				filteredList = append(filteredList, server)
+			}
+		}
+	}
+	if len(filteredList) == 0 {
 		return nil, nil
 	}
-	if len(serverList) > 1 {
+	if len(filteredList) > 1 {
 		return nil, fmt.Errorf("Multiple servers found with name %s", fi.StringValue(e.Name))
 	}
 
-	server := serverList[0]
+	server := filteredList[0]
 	actual := &Instance{
 		ID:               fi.String(server.ID),
-		Name:             fi.String(server.Name),
+		Name:             e.Name,
 		SSHKey:           fi.String(server.KeyName),
 		Lifecycle:        e.Lifecycle,
 		AvailabilityZone: e.AvailabilityZone,
+		ClusterName:      e.ClusterName,
+		GroupName:        e.GroupName,
 	}
 	e.ID = actual.ID
 
@@ -151,12 +179,23 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 	return a == nil, nil
 }
 
+func makeServerName(e *Instance) string {
+	hash := utils.RandomString(6)
+	// FIXME: Must ensure 63 or less characters
+	// replace all dots and _ with -, this is needed to get external cloudprovider working
+	stripped := strings.Replace(fi.StringValue(e.ClusterName), ".k8s.local", "", -1)
+	iName := strings.Replace(strings.ToLower(fmt.Sprintf("%s-%s.%s", fi.StringValue(e.GroupName), hash, stripped)), "_", "-", -1)
+	instanceName := strings.Replace(iName, ".", "-", -1)
+	return instanceName
+}
+
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
 	if a == nil {
-		klog.V(2).Infof("Creating Instance with name: %q", fi.StringValue(e.Name))
-
+		e.Metadata[openstack.TagKopsName] = fi.StringValue(e.Name)
+		serverName := makeServerName(e)
+		klog.V(2).Infof("Creating Instance with name: %q", serverName)
 		opt := servers.CreateOpts{
-			Name:       fi.StringValue(e.Name),
+			Name:       serverName,
 			ImageName:  fi.StringValue(e.Image),
 			FlavorName: fi.StringValue(e.Flavor),
 			Networks: []servers.Network{
