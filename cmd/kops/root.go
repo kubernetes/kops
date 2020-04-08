@@ -116,7 +116,8 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	goflag.CommandLine.VisitAll(func(goflag *goflag.Flag) {
 		switch goflag.Name {
 		case "cloud-provider-gce-lb-src-cidrs":
-			// Skip; this is dragged in by the google cloudprovider dependency
+		case "cloud-provider-gce-l7lb-src-cidrs":
+			// Skip; these is dragged in by the google cloudprovider dependency
 
 		default:
 			cmd.PersistentFlags().AddGoFlag(goflag)
