@@ -7,6 +7,7 @@ go_library(
         "doc.go",
         "package.go",
         "register.go",
+        "topology.go",
         "validation.go",
         "zz_generated.markerhelp.go",
     ],
@@ -14,7 +15,7 @@ go_library(
     importpath = "sigs.k8s.io/controller-tools/pkg/crd/markers",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1:go_default_library",
+        "//vendor/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1:go_default_library",
         "//vendor/sigs.k8s.io/controller-tools/pkg/markers:go_default_library",
     ],
 )

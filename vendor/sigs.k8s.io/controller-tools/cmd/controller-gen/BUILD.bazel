@@ -16,6 +16,7 @@ go_library(
         "//vendor/sigs.k8s.io/controller-tools/pkg/markers:go_default_library",
         "//vendor/sigs.k8s.io/controller-tools/pkg/rbac:go_default_library",
         "//vendor/sigs.k8s.io/controller-tools/pkg/schemapatcher:go_default_library",
+        "//vendor/sigs.k8s.io/controller-tools/pkg/version:go_default_library",
         "//vendor/sigs.k8s.io/controller-tools/pkg/webhook:go_default_library",
     ],
 )

@@ -19,7 +19,7 @@ limitations under the License.
 //
 // The markers take the form:
 //
-//  +kubebuilder:webhook:failurePolicy=<string>,groups=<[]string>,resources=<[]string>,verbs=<[]string>,versions=<[]string>,name=<string>,path=<string>,mutating=<bool>
+//  +kubebuilder:webhook:failurePolicy=<string>,matchPolicy=<string>,groups=<[]string>,resources=<[]string>,verbs=<[]string>,versions=<[]string>,name=<string>,path=<string>,mutating=<bool>
 package webhook
 
 import (
@@ -49,7 +49,7 @@ type Config struct {
 	// Mutating marks this as a mutating webhook (it's validating only if false)
 	//
 	// Mutating webhooks are allowed to change the object in their response,
-	// and are called *after* all validating webhooks.  Mutating webhooks may
+	// and are called *before* all validating webhooks.  Mutating webhooks may
 	// choose to reject an object, similarly to a validating webhook.
 	Mutating bool
 	// FailurePolicy specifies what should happen if the API server cannot reach the webhook.
@@ -57,6 +57,10 @@ type Config struct {
 	// It may be either "ignore" (to skip the webhook and continue on) or "fail" (to reject
 	// the object in question).
 	FailurePolicy string
+	// MatchPolicy defines how the "rules" list is used to match incoming requests.
+	// Allowed values are "Exact" (match only if it exactly matches the specified rule)
+	// or "Equivalent" (match a request if it modifies a resource listed in rules, even via another API group or version).
+	MatchPolicy string `marker:",optional"`
 
 	// Groups specifies the API groups that this webhook receives requests for.
 	Groups []string
@@ -70,9 +74,15 @@ type Config struct {
 	// Versions specifies the API versions that this webhook receives requests for.
 	Versions []string
 
-	// Name indicates the name of this webhook configuration.
+	// Name indicates the name of this webhook configuration. Should be a domain with at least three segments separated by dots
 	Name string
-	// Path specifies that path that the API server should connect to this webhook on.
+
+	// Path specifies that path that the API server should connect to this webhook on. Must be
+	// prefixed with a '/validate-' or '/mutate-' depending on the type, and followed by
+	// $GROUP-$VERSION-$KIND where all values are lower-cased and the periods in the group
+	// are substituted for hyphens. For example, a validating webhook path for type
+	// batch.tutorial.kubebuilder.io/v1,Kind=CronJob would be
+	// /validate-batch-tutorial-kubebuilder-io-v1-cronjob
 	Path string
 }
 
@@ -101,10 +111,16 @@ func (c Config) ToMutatingWebhook() (admissionreg.MutatingWebhook, error) {
 		return admissionreg.MutatingWebhook{}, fmt.Errorf("%s is a validating webhook", c.Name)
 	}
 
+	matchPolicy, err := c.matchPolicy()
+	if err != nil {
+		return admissionreg.MutatingWebhook{}, err
+	}
+
 	return admissionreg.MutatingWebhook{
 		Name:          c.Name,
 		Rules:         c.rules(),
 		FailurePolicy: c.failurePolicy(),
+		MatchPolicy:   matchPolicy,
 		ClientConfig:  c.clientConfig(),
 	}, nil
 }
@@ -115,10 +131,16 @@ func (c Config) ToValidatingWebhook() (admissionreg.ValidatingWebhook, error) {
 		return admissionreg.ValidatingWebhook{}, fmt.Errorf("%s is a mutating webhook", c.Name)
 	}
 
+	matchPolicy, err := c.matchPolicy()
+	if err != nil {
+		return admissionreg.ValidatingWebhook{}, err
+	}
+
 	return admissionreg.ValidatingWebhook{
 		Name:          c.Name,
 		Rules:         c.rules(),
 		FailurePolicy: c.failurePolicy(),
+		MatchPolicy:   matchPolicy,
 		ClientConfig:  c.clientConfig(),
 	}, nil
 }
@@ -162,6 +184,22 @@ func (c Config) failurePolicy() *admissionreg.FailurePolicyType {
 		failurePolicy = admissionreg.FailurePolicyType(c.FailurePolicy)
 	}
 	return &failurePolicy
+}
+
+// matchPolicy converts the string value to the proper value for the API.
+func (c Config) matchPolicy() (*admissionreg.MatchPolicyType, error) {
+	var matchPolicy admissionreg.MatchPolicyType
+	switch strings.ToLower(c.MatchPolicy) {
+	case strings.ToLower(string(admissionreg.Exact)):
+		matchPolicy = admissionreg.Exact
+	case strings.ToLower(string(admissionreg.Equivalent)):
+		matchPolicy = admissionreg.Equivalent
+	case "":
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unknown value %q for matchPolicy", c.MatchPolicy)
+	}
+	return &matchPolicy, nil
 }
 
 // clientConfig returns the client config for a webhook.
@@ -242,8 +280,8 @@ func (Generator) Generate(ctx *genall.GenerationContext) error {
 
 	}
 
-	if err := ctx.WriteYAML("manifests.yaml", objs...); err != nil {
-		return err
+	if len(objs) > 0 {
+		return ctx.WriteYAML("manifests.yaml", objs...)
 	}
 
 	return nil

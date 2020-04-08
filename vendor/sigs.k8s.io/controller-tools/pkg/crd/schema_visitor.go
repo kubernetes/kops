@@ -17,7 +17,7 @@ limitations under the License.
 package crd
 
 import (
-	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // SchemaVisitor walks the nodes of a schema.
