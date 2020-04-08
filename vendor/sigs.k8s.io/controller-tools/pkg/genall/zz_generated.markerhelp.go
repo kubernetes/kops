@@ -40,7 +40,7 @@ func (OutputArtifacts) Help() *markers.DefinitionHelp {
 		Category: "",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "outputs artifacts to different locations, depending on whether they're package-associated or not. ",
-			Details: " Non-package associated artifacts are output to the Config directory, while package-associated ones are output to their package's source files' directory, unless an alternate path is specified in Code.",
+			Details: "Non-package associated artifacts are output to the Config directory, while package-associated ones are output to their package's source files' directory, unless an alternate path is specified in Code.",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{
 			"Config": markers.DetailedHelp{
@@ -82,7 +82,7 @@ func (outputToStdout) Help() *markers.DefinitionHelp {
 		Category: "",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "outputs everything to standard-out, with no separation. ",
-			Details: " Generally useful for single-artifact outputs.",
+			Details: "Generally useful for single-artifact outputs.",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{},
 	}

@@ -39,10 +39,10 @@ func (n nopCloser) Close() error {
 // DirectoryPerGenerator produces output rules mapping output to a different subdirectory
 // of the given base directory for each generator (with each subdirectory specified as
 // the key in the input map).
-func DirectoryPerGenerator(base string, generators map[string]Generator) OutputRules {
+func DirectoryPerGenerator(base string, generators map[string]*Generator) OutputRules {
 	rules := OutputRules{
 		Default:     OutputArtifacts{Config: OutputToDirectory(base)},
-		ByGenerator: make(map[Generator]OutputRule, len(generators)),
+		ByGenerator: make(map[*Generator]OutputRule, len(generators)),
 	}
 
 	for name, gen := range generators {
@@ -59,12 +59,15 @@ type OutputRules struct {
 	// Default is the output rule used when no specific per-generator overrides match.
 	Default OutputRule
 	// ByGenerator contains specific per-generator overrides.
-	ByGenerator map[Generator]OutputRule
+	// NB(directxman12): this is a pointer to avoid issues if a given Generator becomes unhashable
+	// (interface values compare by "dereferencing" their internal pointer first, whereas pointers
+	// compare by the actual pointer itself).
+	ByGenerator map[*Generator]OutputRule
 }
 
 // ForGenerator returns the output rule that should be used
 // by the given Generator.
-func (o OutputRules) ForGenerator(gen Generator) OutputRule {
+func (o OutputRules) ForGenerator(gen *Generator) OutputRule {
 	if forGen, specific := o.ByGenerator[gen]; specific {
 		return forGen
 	}

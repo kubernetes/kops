@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"go/ast"
 
-	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"sigs.k8s.io/controller-tools/pkg/loader"
@@ -110,15 +110,20 @@ func (p *Parser) indexTypes(pkg *loader.Package) {
 	pkgMarkers, err := markers.PackageMarkers(p.Collector, pkg)
 	if err != nil {
 		pkg.AddError(err)
-	} else if nameVal := pkgMarkers.Get("groupName"); nameVal != nil {
-		versionVal := pkg.Name // a reasonable guess
-		if versionMarker := pkgMarkers.Get("versionName"); versionMarker != nil {
-			versionVal = versionMarker.(string)
+	} else {
+		if skipPkg := pkgMarkers.Get("kubebuilder:skip"); skipPkg != nil {
+			return
 		}
+		if nameVal := pkgMarkers.Get("groupName"); nameVal != nil {
+			versionVal := pkg.Name // a reasonable guess
+			if versionMarker := pkgMarkers.Get("versionName"); versionMarker != nil {
+				versionVal = versionMarker.(string)
+			}
 
-		p.GroupVersions[pkg] = schema.GroupVersion{
-			Version: versionVal,
-			Group:   nameVal.(string),
+			p.GroupVersions[pkg] = schema.GroupVersion{
+				Version: versionVal,
+				Group:   nameVal.(string),
+			}
 		}
 	}
 
