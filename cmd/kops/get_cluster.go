@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -93,6 +94,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 		Long:    getClusterLong,
 		Example: getClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
 			if len(args) != 0 {
 				options.ClusterNames = append(options.ClusterNames, args...)
 			}
@@ -105,7 +107,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 				options.ClusterNames = append(options.ClusterNames, rootCommand.clusterName)
 			}
 
-			err := RunGetClusters(&rootCommand, os.Stdout, &options)
+			err := RunGetClusters(ctx, &rootCommand, os.Stdout, &options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -117,15 +119,15 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	return cmd
 }
 
-func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) error {
-	client, err := context.Clientset()
+func RunGetClusters(ctx context.Context, f Factory, out io.Writer, options *GetClusterOptions) error {
+	client, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
 	var clusterList []*api.Cluster
 	if len(options.ClusterNames) != 1 {
-		list, err := client.ListClusters(metav1.ListOptions{})
+		list, err := client.ListClusters(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -134,7 +136,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		}
 	} else {
 		// Optimization - avoid fetching all clusters if we're only querying one
-		cluster, err := client.GetCluster(options.ClusterNames[0])
+		cluster, err := client.GetCluster(ctx, options.ClusterNames[0])
 		if err != nil {
 			if !apierrors.IsNotFound(err) {
 				return err

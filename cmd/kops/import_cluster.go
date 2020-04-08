@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -37,7 +38,8 @@ func init() {
 		Long:    importLong,
 		Example: importExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := importCluster.Run()
+			ctx := context.TODO()
+			err := importCluster.Run(ctx)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -49,7 +51,7 @@ func init() {
 	cmd.Flags().StringVar(&importCluster.Region, "region", "", "region")
 }
 
-func (c *ImportClusterCmd) Run() error {
+func (c *ImportClusterCmd) Run(ctx context.Context) error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
 	}
@@ -69,7 +71,7 @@ func (c *ImportClusterCmd) Run() error {
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(clusterName)
+	cluster, err := clientset.GetCluster(ctx, clusterName)
 	if err != nil {
 		return err
 	}
@@ -82,7 +84,7 @@ func (c *ImportClusterCmd) Run() error {
 	d.Cloud = cloud
 	d.Clientset = clientset
 
-	err = d.ImportAWSCluster()
+	err = d.ImportAWSCluster(ctx)
 	if err != nil {
 		return err
 	}

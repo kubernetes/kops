@@ -149,14 +149,16 @@ func (n *NodeAuthorizer) createToken(expiration time.Duration, usages []string) 
 	var err error
 	var token *Token
 
-	err = utils.Retry(context.TODO(), 2000*time.Millisecond, 10*time.Second, func() error {
+	ctx := context.TODO()
+
+	err = utils.Retry(ctx, 2000*time.Millisecond, 10*time.Second, func() error {
 		// @step: generate a random token for them
 		if token, err = NewToken(); err != nil {
 			return err
 		}
 
 		// @step: check if the token already exist, remote but a possibility
-		if found, err := n.hasToken(token); err != nil {
+		if found, err := n.hasToken(ctx, token); err != nil {
 			return err
 		} else if found {
 			return fmt.Errorf("duplicate token found: %s, skipping", token.ID)
@@ -174,7 +176,7 @@ func (n *NodeAuthorizer) createToken(expiration time.Duration, usages []string) 
 			Data: encodeTokenSecretData(token, usages, expiration),
 		}
 
-		if _, err := n.client.CoreV1().Secrets(tokenNamespace).Create(v1secret); err != nil {
+		if _, err := n.client.CoreV1().Secrets(tokenNamespace).Create(ctx, v1secret, metav1.CreateOptions{}); err != nil {
 			return err
 		}
 
@@ -185,8 +187,8 @@ func (n *NodeAuthorizer) createToken(expiration time.Duration, usages []string) 
 }
 
 // hasToken checks if the tokens already exists
-func (n *NodeAuthorizer) hasToken(token *Token) (bool, error) {
-	resp, err := n.client.CoreV1().Secrets(tokenNamespace).List(metav1.ListOptions{
+func (n *NodeAuthorizer) hasToken(ctx context.Context, token *Token) (bool, error) {
+	resp, err := n.client.CoreV1().Secrets(tokenNamespace).List(ctx, metav1.ListOptions{
 		LabelSelector: "name=" + token.Name(),
 		Limit:         1,
 	})

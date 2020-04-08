@@ -18,6 +18,7 @@ package vfsclientset
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -58,7 +59,7 @@ func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.Gr
 	c.basePath = basePath
 }
 
-func (c *commonVFS) find(name string) (runtime.Object, error) {
+func (c *commonVFS) find(ctx context.Context, name string) (runtime.Object, error) {
 	o, err := c.readConfig(c.basePath.Join(name))
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -69,11 +70,11 @@ func (c *commonVFS) find(name string) (runtime.Object, error) {
 	return o, nil
 }
 
-func (c *commonVFS) list(items interface{}, options metav1.ListOptions) (interface{}, error) {
-	return c.readAll(items)
+func (c *commonVFS) list(ctx context.Context, items interface{}, options metav1.ListOptions) (interface{}, error) {
+	return c.readAll(ctx, items)
 }
 
-func (c *commonVFS) create(cluster *kops.Cluster, i runtime.Object) error {
+func (c *commonVFS) create(ctx context.Context, cluster *kops.Cluster, i runtime.Object) error {
 	objectMeta, err := meta.Accessor(i)
 	if err != nil {
 		return err
@@ -173,7 +174,7 @@ func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o ru
 	return nil
 }
 
-func (c *commonVFS) update(cluster *kops.Cluster, i runtime.Object) error {
+func (c *commonVFS) update(ctx context.Context, cluster *kops.Cluster, i runtime.Object) error {
 	objectMeta, err := meta.Accessor(i)
 	if err != nil {
 		return err
@@ -199,7 +200,7 @@ func (c *commonVFS) update(cluster *kops.Cluster, i runtime.Object) error {
 	return nil
 }
 
-func (c *commonVFS) delete(name string, options *metav1.DeleteOptions) error {
+func (c *commonVFS) delete(ctx context.Context, name string, options metav1.DeleteOptions) error {
 	p := c.basePath.Join(name)
 	err := p.Remove()
 	if err != nil {
@@ -211,8 +212,8 @@ func (c *commonVFS) delete(name string, options *metav1.DeleteOptions) error {
 	return nil
 }
 
-func (c *commonVFS) listNames() ([]string, error) {
-	keys, err := listChildNames(c.basePath)
+func (c *commonVFS) listNames(ctx context.Context) ([]string, error) {
+	keys, err := listChildNames(ctx, c.basePath)
 	if err != nil {
 		return nil, fmt.Errorf("error listing %s in state store: %v", c.kind, err)
 	}
@@ -223,20 +224,20 @@ func (c *commonVFS) listNames() ([]string, error) {
 	return keys, nil
 }
 
-func (c *commonVFS) readAll(items interface{}) (interface{}, error) {
+func (c *commonVFS) readAll(ctx context.Context, items interface{}) (interface{}, error) {
 	sliceValue := reflect.ValueOf(items)
 	sliceType := reflect.TypeOf(items)
 	if sliceType.Kind() != reflect.Slice {
 		return nil, fmt.Errorf("expected slice, got %T", items)
 	}
 
-	names, err := c.listNames()
+	names, err := c.listNames(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, name := range names {
-		o, err := c.find(name)
+		o, err := c.find(ctx, name)
 		if err != nil {
 			return nil, err
 		}

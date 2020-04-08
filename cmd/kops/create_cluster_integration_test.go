@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -113,6 +114,8 @@ func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
 }
 
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {
+	ctx := context.Background()
+
 	var stdout bytes.Buffer
 
 	optionsYAML := "options.yaml"
@@ -183,7 +186,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 			options.SSHPublicKeys = sshPublicKeys
 		}
 
-		err = RunCreateCluster(factory, &stdout, options)
+		err = RunCreateCluster(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running create cluster: %v", err)
 		}
@@ -195,7 +198,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	}
 
 	// Compare cluster
-	clusters, err := clientset.ListClusters(metav1.ListOptions{})
+	clusters, err := clientset.ListClusters(ctx, metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing clusters: %v", err)
 	}
@@ -219,7 +222,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	// Compare instance groups
 
-	instanceGroups, err := clientset.InstanceGroupsFor(&clusters.Items[0]).List(metav1.ListOptions{})
+	instanceGroups, err := clientset.InstanceGroupsFor(&clusters.Items[0]).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing instance groups: %v", err)
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package k8sapi
 
 import (
+	"context"
 	"crypto/x509"
 	"fmt"
 	"math/big"
@@ -79,8 +80,8 @@ func (c *KubernetesKeystore) issueCert(signer string, id string, serial *big.Int
 	return cert, nil
 }
 
-func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
-	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(id, metav1.GetOptions{})
+func (c *KubernetesKeystore) findSecret(ctx context.Context, id string) (*v1.Secret, error) {
+	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(ctx, id, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil, nil
@@ -91,7 +92,9 @@ func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
 }
 
 func (c *KubernetesKeystore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
-	secret, err := c.findSecret(id)
+	ctx := context.TODO()
+
+	secret, err := c.findSecret(ctx, id)
 	if err != nil {
 		return nil, nil, "", err
 	}
@@ -121,6 +124,8 @@ func (c *KubernetesKeystore) CreateKeypair(signer string, id string, template *x
 }
 
 func (c *KubernetesKeystore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
+	ctx := context.TODO()
+
 	keypair := &KeypairSecret{
 		Namespace:   c.namespace,
 		Name:        id,
@@ -132,7 +137,7 @@ func (c *KubernetesKeystore) StoreKeypair(id string, cert *pki.Certificate, priv
 	if err != nil {
 		return fmt.Errorf("error encoding keypair: %+v  err: %s", keypair, err)
 	}
-	createdSecret, err := c.client.CoreV1().Secrets(c.namespace).Create(secret)
+	createdSecret, err := c.client.CoreV1().Secrets(c.namespace).Create(ctx, secret, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("error creating secret %s/%s: %v", secret.Namespace, secret.Name, err)
 	}
