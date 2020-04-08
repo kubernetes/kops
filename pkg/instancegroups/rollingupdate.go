@@ -64,9 +64,11 @@ type RollingUpdateCluster struct {
 	// ValidateTickDuration is the amount of time to wait between cluster validation attempts
 	ValidateTickDuration time.Duration
 
-	// ValidateSuccessDuration is the amount of time a cluster must continue to validate successfully
-	// before updating the next node
-	ValidateSuccessDuration time.Duration
+	// ValidateCount is the amount of time that a cluster needs to be validated after single node update
+	ValidateCount int32
+
+	// ValidateSucceeded is the amount of times that a cluster validate is succeeded already
+	ValidateSucceeded int32
 }
 
 // AdjustNeedUpdate adjusts the set of instances that need updating, using factors outside those known by the cloud implementation
