@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -72,11 +73,12 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 		Example:    deleteExample,
 		SuggestFor: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
 			if len(options.Filenames) == 0 {
 				cmd.Help()
 				return
 			}
-			cmdutil.CheckErr(RunDelete(f, out, options))
+			cmdutil.CheckErr(RunDelete(ctx, f, out, options))
 		},
 	}
 
@@ -92,7 +94,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
+func RunDelete(ctx context.Context, factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 	// We could have more than one cluster in a manifest so we are using a set
 	deletedClusters := sets.NewString()
 
@@ -124,7 +126,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 					ClusterName: v.ObjectMeta.Name,
 					Yes:         d.Yes,
 				}
-				err = RunDeleteCluster(factory, out, options)
+				err = RunDeleteCluster(ctx, factory, out, options)
 				if err != nil {
 					exitWithError(err)
 				}
@@ -142,7 +144,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 					continue
 				}
 
-				err := RunDeleteInstanceGroup(factory, out, options)
+				err := RunDeleteInstanceGroup(ctx, factory, out, options)
 				if err != nil {
 					exitWithError(err)
 				}
@@ -159,7 +161,7 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 					SecretID:    fingerprint,
 				}
 
-				err = RunDeleteSecret(factory, out, options)
+				err = RunDeleteSecret(ctx, factory, out, options)
 				if err != nil {
 					exitWithError(err)
 				}

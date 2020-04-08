@@ -64,13 +64,15 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    toolboxDumpLong,
 		Example: toolboxDumpExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)
 			}
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err := RunToolboxDump(f, out, options)
+			err := RunToolboxDump(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -84,7 +86,7 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions) error {
+func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options *ToolboxDumpOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -94,7 +96,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	cluster, err := clientset.GetCluster(options.ClusterName)
+	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
 	if err != nil {
 		return err
 	}

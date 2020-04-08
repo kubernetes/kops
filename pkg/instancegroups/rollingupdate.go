@@ -17,6 +17,7 @@ limitations under the License.
 package instancegroups
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -97,7 +98,7 @@ func (c *RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstance
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		klog.Info("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -135,7 +136,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 				defer wg.Done()
 
-				err := c.rollingUpdateInstanceGroup(cluster, group, true, c.BastionInterval, c.ValidationTimeout)
+				err := c.rollingUpdateInstanceGroup(ctx, cluster, group, true, c.BastionInterval, c.ValidationTimeout)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -160,7 +161,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		// and we don't want to roll all the masters at the same time.  See issue #284
 
 		for _, group := range masterGroups {
-			err := c.rollingUpdateInstanceGroup(cluster, group, false, c.MasterInterval, c.ValidationTimeout)
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.MasterInterval, c.ValidationTimeout)
 
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 			if err != nil {
@@ -182,7 +183,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		}
 
 		for k, group := range nodeGroups {
-			err := c.rollingUpdateInstanceGroup(cluster, group, false, c.NodeInterval, c.ValidationTimeout)
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.NodeInterval, c.ValidationTimeout)
 
 			results[k] = err
 

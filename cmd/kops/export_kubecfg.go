@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -60,7 +61,8 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    exportKubecfgLong,
 		Example: exportKubecfgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunExportKubecfg(f, out, options, args)
+			ctx := context.TODO()
+			err := RunExportKubecfg(ctx, f, out, options, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -73,7 +75,7 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
+func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
@@ -84,7 +86,7 @@ func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOpti
 		if len(args) != 0 {
 			return fmt.Errorf("Cannot use both --all flag and positional arguments")
 		}
-		list, err := clientset.ListClusters(metav1.ListOptions{})
+		list, err := clientset.ListClusters(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -96,7 +98,7 @@ func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOpti
 		if err != nil {
 			return err
 		}
-		cluster, err := rootCommand.Cluster()
+		cluster, err := rootCommand.Cluster(ctx)
 		if err != nil {
 			return err
 		}

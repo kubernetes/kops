@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -149,9 +150,9 @@ type ApplyClusterCmd struct {
 	TaskMap map[string]fi.Task
 }
 
-func (c *ApplyClusterCmd) Run() error {
+func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(metav1.ListOptions{})
+		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -918,7 +919,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		for _, g := range c.InstanceGroups {
 			// TODO: We need to update the mirror (below), but do we need to update the primary?
-			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(g)
+			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(ctx, g, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
 			}

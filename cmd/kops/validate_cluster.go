@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -60,7 +61,9 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    validateLong,
 		Example: validateExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			result, err := RunValidateCluster(f, cmd, args, os.Stdout, options)
+			ctx := context.TODO()
+
+			result, err := RunValidateCluster(ctx, f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(fmt.Errorf("Validation failed: %v", err))
 			}
@@ -80,13 +83,13 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) (*validation.ValidationCluster, error) {
+func RunValidateCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) (*validation.ValidationCluster, error) {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return nil, err
 	}
 
-	cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +104,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return nil, err
 	}
 
-	list, err := clientSet.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+	list, err := clientSet.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}

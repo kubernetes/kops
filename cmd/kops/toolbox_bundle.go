@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -66,7 +67,8 @@ func NewCmdToolboxBundle(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    toolboxBundleLong,
 		Example: toolboxBundleExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunToolboxBundle(f, out, options, args)
+			ctx := context.TODO()
+			err := RunToolboxBundle(ctx, f, out, options, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -78,7 +80,7 @@ func NewCmdToolboxBundle(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunToolboxBundle(context Factory, out io.Writer, options *ToolboxBundleOptions, args []string) error {
+func RunToolboxBundle(ctx context.Context, f Factory, out io.Writer, options *ToolboxBundleOptions, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("specify name of instance group for node")
 	}
@@ -91,17 +93,17 @@ func RunToolboxBundle(context Factory, out io.Writer, options *ToolboxBundleOpti
 	}
 	groupName := args[0]
 
-	cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
 	}
 
-	clientset, err := context.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	ig, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
+	ig, err := clientset.InstanceGroupsFor(cluster).Get(ctx, groupName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}

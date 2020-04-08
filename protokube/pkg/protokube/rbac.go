@@ -17,6 +17,7 @@ limitations under the License.
 package protokube
 
 import (
+	"context"
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
@@ -29,7 +30,7 @@ import (
 )
 
 // applyRBAC is responsible for initializing RBAC
-func applyRBAC(kubeContext *KubernetesContext) error {
+func applyRBAC(ctx context.Context, kubeContext *KubernetesContext) error {
 	k8sClient, err := kubeContext.KubernetesClient()
 	if err != nil {
 		return fmt.Errorf("error connecting to kubernetes: %v", err)
@@ -38,11 +39,11 @@ func applyRBAC(kubeContext *KubernetesContext) error {
 
 	var errors []error
 	// kube-dns & kube-proxy service accounts
-	if err := createServiceAccounts(clientset); err != nil {
+	if err := createServiceAccounts(ctx, clientset); err != nil {
 		errors = append(errors, fmt.Errorf("error creating service accounts: %v", err))
 	}
 	//Currently all kubeadm specific
-	if err := createClusterRoleBindings(clientset); err != nil {
+	if err := createClusterRoleBindings(ctx, clientset); err != nil {
 		errors = append(errors, fmt.Errorf("error creating cluster role bindings: %v", err))
 	}
 
@@ -77,7 +78,7 @@ const (
 )
 
 // createServiceAccounts creates the necessary serviceaccounts that kubeadm uses/might use, if they don't already exist.
-func createServiceAccounts(clientset kubernetes.Interface) error {
+func createServiceAccounts(ctx context.Context, clientset kubernetes.Interface) error {
 	serviceAccounts := []v1.ServiceAccount{
 		{
 			ObjectMeta: metav1.ObjectMeta{
@@ -94,7 +95,7 @@ func createServiceAccounts(clientset kubernetes.Interface) error {
 	}
 
 	for _, sa := range serviceAccounts {
-		if _, err := clientset.CoreV1().ServiceAccounts(metav1.NamespaceSystem).Create(&sa); err != nil {
+		if _, err := clientset.CoreV1().ServiceAccounts(metav1.NamespaceSystem).Create(ctx, &sa, metav1.CreateOptions{}); err != nil {
 			if !apierrors.IsAlreadyExists(err) {
 				return err
 			}
@@ -103,7 +104,7 @@ func createServiceAccounts(clientset kubernetes.Interface) error {
 	return nil
 }
 
-func createClusterRoleBindings(clientset *kubernetes.Clientset) error {
+func createClusterRoleBindings(ctx context.Context, clientset *kubernetes.Clientset) error {
 	clusterRoleBindings := []rbac.ClusterRoleBinding{
 		//{
 		//	ObjectMeta: metav1.ObjectMeta{
@@ -157,12 +158,12 @@ func createClusterRoleBindings(clientset *kubernetes.Clientset) error {
 	}
 
 	for _, clusterRoleBinding := range clusterRoleBindings {
-		if _, err := clientset.RbacV1beta1().ClusterRoleBindings().Create(&clusterRoleBinding); err != nil {
+		if _, err := clientset.RbacV1beta1().ClusterRoleBindings().Create(ctx, &clusterRoleBinding, metav1.CreateOptions{}); err != nil {
 			if !apierrors.IsAlreadyExists(err) {
 				return fmt.Errorf("unable to create RBAC clusterrolebinding: %v", err)
 			}
 
-			if _, err := clientset.RbacV1beta1().ClusterRoleBindings().Update(&clusterRoleBinding); err != nil {
+			if _, err := clientset.RbacV1beta1().ClusterRoleBindings().Update(ctx, &clusterRoleBinding, metav1.UpdateOptions{}); err != nil {
 				return fmt.Errorf("unable to update RBAC clusterrolebinding: %v", err)
 			}
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -52,13 +53,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = up()
+	ctx := context.TODO()
+
+	err = up(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error from up: %v\n", err)
 		os.Exit(1)
 	}
 
-	err = apply()
+	err = apply(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error from apply: %v\n", err)
 		os.Exit(1)
