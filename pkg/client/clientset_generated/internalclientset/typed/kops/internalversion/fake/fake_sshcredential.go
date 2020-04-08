@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -39,7 +41,7 @@ var sshcredentialsResource = schema.GroupVersionResource{Group: "kops.k8s.io", V
 var sshcredentialsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "", Kind: "SSHCredential"}
 
 // Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
-func (c *FakeSSHCredentials) Get(name string, options v1.GetOptions) (result *kops.SSHCredential, err error) {
+func (c *FakeSSHCredentials) Get(ctx context.Context, name string, options v1.GetOptions) (result *kops.SSHCredential, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(sshcredentialsResource, c.ns, name), &kops.SSHCredential{})
 
@@ -50,7 +52,7 @@ func (c *FakeSSHCredentials) Get(name string, options v1.GetOptions) (result *ko
 }
 
 // List takes label and field selectors, and returns the list of SSHCredentials that match those selectors.
-func (c *FakeSSHCredentials) List(opts v1.ListOptions) (result *kops.SSHCredentialList, err error) {
+func (c *FakeSSHCredentials) List(ctx context.Context, opts v1.ListOptions) (result *kops.SSHCredentialList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(sshcredentialsResource, sshcredentialsKind, c.ns, opts), &kops.SSHCredentialList{})
 
@@ -72,14 +74,14 @@ func (c *FakeSSHCredentials) List(opts v1.ListOptions) (result *kops.SSHCredenti
 }
 
 // Watch returns a watch.Interface that watches the requested sSHCredentials.
-func (c *FakeSSHCredentials) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeSSHCredentials) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(sshcredentialsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a sSHCredential and creates it.  Returns the server's representation of the sSHCredential, and an error, if there is any.
-func (c *FakeSSHCredentials) Create(sSHCredential *kops.SSHCredential) (result *kops.SSHCredential, err error) {
+func (c *FakeSSHCredentials) Create(ctx context.Context, sSHCredential *kops.SSHCredential, opts v1.CreateOptions) (result *kops.SSHCredential, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(sshcredentialsResource, c.ns, sSHCredential), &kops.SSHCredential{})
 
@@ -90,7 +92,7 @@ func (c *FakeSSHCredentials) Create(sSHCredential *kops.SSHCredential) (result *
 }
 
 // Update takes the representation of a sSHCredential and updates it. Returns the server's representation of the sSHCredential, and an error, if there is any.
-func (c *FakeSSHCredentials) Update(sSHCredential *kops.SSHCredential) (result *kops.SSHCredential, err error) {
+func (c *FakeSSHCredentials) Update(ctx context.Context, sSHCredential *kops.SSHCredential, opts v1.UpdateOptions) (result *kops.SSHCredential, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(sshcredentialsResource, c.ns, sSHCredential), &kops.SSHCredential{})
 
@@ -101,7 +103,7 @@ func (c *FakeSSHCredentials) Update(sSHCredential *kops.SSHCredential) (result *
 }
 
 // Delete takes name of the sSHCredential and deletes it. Returns an error if one occurs.
-func (c *FakeSSHCredentials) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeSSHCredentials) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(sshcredentialsResource, c.ns, name), &kops.SSHCredential{})
 
@@ -109,15 +111,15 @@ func (c *FakeSSHCredentials) Delete(name string, options *v1.DeleteOptions) erro
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeSSHCredentials) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(sshcredentialsResource, c.ns, listOptions)
+func (c *FakeSSHCredentials) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(sshcredentialsResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &kops.SSHCredentialList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched sSHCredential.
-func (c *FakeSSHCredentials) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.SSHCredential, err error) {
+func (c *FakeSSHCredentials) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kops.SSHCredential, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(sshcredentialsResource, c.ns, name, pt, data, subresources...), &kops.SSHCredential{})
 
