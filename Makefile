@@ -868,7 +868,7 @@ dev-upload: dev-upload-nodeup dev-upload-protokube dev-upload-dns-controller dev
 
 .PHONY: crds
 crds:
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/ crd:crdVersions=v1
 
 #------------------------------------------------------
 # kops-controller
