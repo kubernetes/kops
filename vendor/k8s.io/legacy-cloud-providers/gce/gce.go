@@ -68,8 +68,9 @@ const (
 	// AffinityTypeClientIP - affinity based on Client IP.
 	gceAffinityTypeClientIP = "CLIENT_IP"
 
-	operationPollInterval        = time.Second
-	maxTargetPoolCreateInstances = 200
+	operationPollInterval           = time.Second
+	maxTargetPoolCreateInstances    = 200
+	maxInstancesPerTargetPoolUpdate = 1000
 
 	// HTTP Load Balancer parameters
 	// Configure 8 second period for external health checks.
@@ -607,11 +608,9 @@ func (g *Cloud) Initialize(clientBuilder cloudprovider.ControllerClientBuilder, 
 	g.clientBuilder = clientBuilder
 	g.client = clientBuilder.ClientOrDie("cloud-provider")
 
-	if g.OnXPN() {
-		g.eventBroadcaster = record.NewBroadcaster()
-		g.eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: g.client.CoreV1().Events("")})
-		g.eventRecorder = g.eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "g-cloudprovider"})
-	}
+	g.eventBroadcaster = record.NewBroadcaster()
+	g.eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: g.client.CoreV1().Events("")})
+	g.eventRecorder = g.eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "g-cloudprovider"})
 
 	go g.watchClusterID(stop)
 }
