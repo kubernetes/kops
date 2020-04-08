@@ -68,7 +68,7 @@ func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud, *kopsapi.Cluste
 		ClusterValidator:     &successfulClusterValidator{},
 		FailOnValidate:       true,
 		ValidateTickDuration: 1 * time.Millisecond,
-		ValidateTimes:        1,
+		ValidateCount:        1,
 		ValidateSucceeded:    0,
 	}
 
@@ -512,7 +512,7 @@ func (v *flappingClusterValidator) Validate() (*validation.ValidationCluster, er
 
 func TestRollingUpdateFlappingValidation(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
-	c.ValidateTimes = 3
+	c.ValidateCount = 3
 
 	// This should only take a few milliseconds,
 	// but we have to pad to allow for random delays (e.g. GC)

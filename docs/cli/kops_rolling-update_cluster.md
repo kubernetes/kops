@@ -80,7 +80,7 @@ kops rolling-update cluster [flags]
       --master-interval duration       Time to wait between restarting masters (default 15s)
       --node-interval duration         Time to wait between restarting nodes (default 15s)
       --post-drain-delay duration      Time to wait after draining each node (default 5s)
-      --validate-times int32           Amount of times that a cluster needs to be validated after single node update (default 2)
+      --validate-count int32           Amount of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration    Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                            Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```
