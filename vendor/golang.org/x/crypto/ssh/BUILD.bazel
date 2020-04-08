@@ -33,5 +33,6 @@ go_library(
         "//vendor/golang.org/x/crypto/curve25519:go_default_library",
         "//vendor/golang.org/x/crypto/ed25519:go_default_library",
         "//vendor/golang.org/x/crypto/poly1305:go_default_library",
+        "//vendor/golang.org/x/crypto/ssh/internal/bcrypt_pbkdf:go_default_library",
     ],
 )
