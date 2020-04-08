@@ -200,6 +200,7 @@ metadata:
   name: aws-iam-authenticator
   labels:
     k8s-app: aws-iam-authenticator
+    does-this: "pass ci?"
 spec:
   updateStrategy:
     type: RollingUpdate
