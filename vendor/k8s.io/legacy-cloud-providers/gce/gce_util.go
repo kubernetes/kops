@@ -19,6 +19,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -75,6 +76,34 @@ func fakeGCECloud(vals TestClusterValues) (*Cloud, error) {
 	return gce, nil
 }
 
+func registerTargetPoolAddInstanceHook(gce *Cloud, callback func(*compute.TargetPoolsAddInstanceRequest)) error {
+	mockGCE, ok := gce.c.(*cloud.MockGCE)
+	if !ok {
+		return fmt.Errorf("couldn't cast cloud to mockGCE: %#v", gce)
+	}
+	existingHandler := mockGCE.MockTargetPools.AddInstanceHook
+	hook := func(ctx context.Context, key *meta.Key, req *compute.TargetPoolsAddInstanceRequest, m *cloud.MockTargetPools) error {
+		callback(req)
+		return existingHandler(ctx, key, req, m)
+	}
+	mockGCE.MockTargetPools.AddInstanceHook = hook
+	return nil
+}
+
+func registerTargetPoolRemoveInstanceHook(gce *Cloud, callback func(*compute.TargetPoolsRemoveInstanceRequest)) error {
+	mockGCE, ok := gce.c.(*cloud.MockGCE)
+	if !ok {
+		return fmt.Errorf("couldn't cast cloud to mockGCE: %#v", gce)
+	}
+	existingHandler := mockGCE.MockTargetPools.RemoveInstanceHook
+	hook := func(ctx context.Context, key *meta.Key, req *compute.TargetPoolsRemoveInstanceRequest, m *cloud.MockTargetPools) error {
+		callback(req)
+		return existingHandler(ctx, key, req, m)
+	}
+	mockGCE.MockTargetPools.RemoveInstanceHook = hook
+	return nil
+}
+
 type gceInstance struct {
 	Zone  string
 	Name  string
@@ -110,7 +139,7 @@ func getProjectAndZone() (string, string, error) {
 }
 
 func (g *Cloud) raiseFirewallChangeNeededEvent(svc *v1.Service, cmd string) {
-	msg := fmt.Sprintf("Firewall change required by network admin: `%v`", cmd)
+	msg := fmt.Sprintf("Firewall change required by security admin: `%v`", cmd)
 	if g.eventRecorder != nil && svc != nil {
 		g.eventRecorder.Event(svc, v1.EventTypeNormal, "LoadBalancerManualChange", msg)
 	}
