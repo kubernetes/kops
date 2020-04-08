@@ -29,16 +29,20 @@ func (Config) Help() *markers.DefinitionHelp {
 		Category: "Webhook",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "specifies how a webhook should be served. ",
-			Details: " It specifies only the details that are intrinsic to the application serving it (e.g. the resources it can handle, or the path it serves on).",
+			Details: "It specifies only the details that are intrinsic to the application serving it (e.g. the resources it can handle, or the path it serves on).",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{
 			"Mutating": markers.DetailedHelp{
 				Summary: "marks this as a mutating webhook (it's validating only if false) ",
-				Details: " Mutating webhooks are allowed to change the object in their response, and are called *after* all validating webhooks.  Mutating webhooks may choose to reject an object, similarly to a validating webhook.",
+				Details: "Mutating webhooks are allowed to change the object in their response, and are called *before* all validating webhooks.  Mutating webhooks may choose to reject an object, similarly to a validating webhook.",
 			},
 			"FailurePolicy": markers.DetailedHelp{
 				Summary: "specifies what should happen if the API server cannot reach the webhook. ",
-				Details: " It may be either \"ignore\" (to skip the webhook and continue on) or \"fail\" (to reject the object in question).",
+				Details: "It may be either \"ignore\" (to skip the webhook and continue on) or \"fail\" (to reject the object in question).",
+			},
+			"MatchPolicy": markers.DetailedHelp{
+				Summary: "defines how the \"rules\" list is used to match incoming requests. Allowed values are \"Exact\" (match only if it exactly matches the specified rule) or \"Equivalent\" (match a request if it modifies a resource listed in rules, even via another API group or version).",
+				Details: "",
 			},
 			"Groups": markers.DetailedHelp{
 				Summary: "specifies the API groups that this webhook receives requests for.",
@@ -50,18 +54,18 @@ func (Config) Help() *markers.DefinitionHelp {
 			},
 			"Verbs": markers.DetailedHelp{
 				Summary: "specifies the Kubernetes API verbs that this webhook receives requests for. ",
-				Details: " Only modification-like verbs may be specified. May be \"create\", \"update\", \"delete\", \"connect\", or \"*\" (for all).",
+				Details: "Only modification-like verbs may be specified. May be \"create\", \"update\", \"delete\", \"connect\", or \"*\" (for all).",
 			},
 			"Versions": markers.DetailedHelp{
 				Summary: "specifies the API versions that this webhook receives requests for.",
 				Details: "",
 			},
 			"Name": markers.DetailedHelp{
-				Summary: "indicates the name of this webhook configuration.",
+				Summary: "indicates the name of this webhook configuration. Should be a domain with at least three segments separated by dots",
 				Details: "",
 			},
 			"Path": markers.DetailedHelp{
-				Summary: "specifies that path that the API server should connect to this webhook on.",
+				Summary: "specifies that path that the API server should connect to this webhook on. Must be prefixed with a '/validate-' or '/mutate-' depending on the type, and followed by $GROUP-$VERSION-$KIND where all values are lower-cased and the periods in the group are substituted for hyphens. For example, a validating webhook path for type batch.tutorial.kubebuilder.io/v1,Kind=CronJob would be /validate-batch-tutorial-kubebuilder-io-v1-cronjob",
 				Details: "",
 			},
 		},

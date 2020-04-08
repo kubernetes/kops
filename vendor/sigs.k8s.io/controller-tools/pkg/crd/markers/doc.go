@@ -21,7 +21,7 @@ limitations under the License.
 //
 // Validation Markers
 //
-// Validation markers have values that imprlement ApplyToSchema
+// Validation markers have values that implement ApplyToSchema
 // (crd.SchemaMarker).  Any marker implementing this will automatically
 // be run after the rest of a given schema node has been generated.
 // Markers that need to be run before any other markers can also

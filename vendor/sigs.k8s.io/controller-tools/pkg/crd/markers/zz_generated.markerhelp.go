@@ -24,6 +24,22 @@ import (
 	"sigs.k8s.io/controller-tools/pkg/markers"
 )
 
+func (Default) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD validation",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "sets the default value for this field. ",
+			Details: "A default value will be accepted as any value valid for the field. Formatting for common types include: boolean: `true`, string: `Cluster`, numerical: `1.24`, array: `{1,2}`, object: `{policy: \"delete\"}`). Defaults should be defined in pruned form, and only best-effort validation will be performed. Full validation of a default requires submission of the containing CRD to an apiserver.",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{
+			"Value": markers.DetailedHelp{
+				Summary: "",
+				Details: "",
+			},
+		},
+	}
+}
+
 func (Enum) Help() *markers.DefinitionHelp {
 	return &markers.DefinitionHelp{
 		Category: "CRD validation",
@@ -62,7 +78,40 @@ func (Format) Help() *markers.DefinitionHelp {
 		Category: "CRD validation",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "specifies additional \"complex\" formatting for this field. ",
-			Details: " For example, a date-time field would be marked as \"type: string\" and \"format: date-time\".",
+			Details: "For example, a date-time field would be marked as \"type: string\" and \"format: date-time\".",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{},
+	}
+}
+
+func (ListMapKey) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD processing",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "specifies the keys to map listTypes. ",
+			Details: "It indicates the index of a map list. They can be repeated if multiple keys must be used. It can only be used when ListType is set to map, and the keys should be scalar types.",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{},
+	}
+}
+
+func (ListType) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD processing",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "specifies the type of data-structure that the list represents (map, set, atomic). ",
+			Details: "Possible data-structure types of a list are: \n - \"map\": it needs to have a key field, which will be used to build an   associative list. A typical example is a the pod container list,   which is indexed by the container name. \n - \"set\": Fields need to be \"scalar\", and there can be only one   occurrence of each. \n - \"atomic\": All the fields in the list are treated as a single value,   are typically manipulated together by the same actor.",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{},
+	}
+}
+
+func (MapType) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD processing",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "specifies the level of atomicity of the map; i.e. whether each item in the map is independent of the others, or all fields are treated as a single unit. ",
+			Details: "Possible values: \n - \"granular\": items in the map are independent of each other,   and can be manipulated by different actors.   This is the default behavior. \n - \"atomic\": all fields are treated as one unit.   Any changes have to replace the entire map.",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{},
 	}
@@ -150,7 +199,7 @@ func (Nullable) Help() *markers.DefinitionHelp {
 		Category: "CRD validation",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "marks this field as allowing the \"null\" value. ",
-			Details: " This is often not necessary, but may be helpful with custom serialization.",
+			Details: "This is often not necessary, but may be helpful with custom serialization.",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{},
 	}
@@ -181,7 +230,7 @@ func (PrintColumn) Help() *markers.DefinitionHelp {
 			},
 			"Type": markers.DetailedHelp{
 				Summary: "indicates the type of the column. ",
-				Details: " It may be any OpenAPI data type listed at https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types.",
+				Details: "It may be any OpenAPI data type listed at https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types.",
 			},
 			"JSONPath": markers.DetailedHelp{
 				Summary: "specifies the jsonpath expression used to extract the value of the column.",
@@ -193,11 +242,11 @@ func (PrintColumn) Help() *markers.DefinitionHelp {
 			},
 			"Format": markers.DetailedHelp{
 				Summary: "specifies the format of the column. ",
-				Details: " It may be any OpenAPI data format corresponding to the type, listed at https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types.",
+				Details: "It may be any OpenAPI data format corresponding to the type, listed at https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types.",
 			},
 			"Priority": markers.DetailedHelp{
 				Summary: "indicates how important it is that this column be displayed. ",
-				Details: " Lower priority (*higher* numbered) columns will be hidden if the terminal width is too small.",
+				Details: "Lower priority (*higher* numbered) columns will be hidden if the terminal width is too small.",
 			},
 		},
 	}
@@ -213,23 +262,23 @@ func (Resource) Help() *markers.DefinitionHelp {
 		FieldHelp: map[string]markers.DetailedHelp{
 			"Path": markers.DetailedHelp{
 				Summary: "specifies the plural \"resource\" for this CRD. ",
-				Details: " It generally corresponds to a plural, lower-cased version of the Kind. See https://book.kubebuilder.io/cronjob-tutorial/gvks.html.",
+				Details: "It generally corresponds to a plural, lower-cased version of the Kind. See https://book.kubebuilder.io/cronjob-tutorial/gvks.html.",
 			},
 			"ShortName": markers.DetailedHelp{
 				Summary: "specifies aliases for this CRD. ",
-				Details: " Short names are often used when people have work with your resource over and over again.  For instance, \"rs\" for \"replicaset\" or \"crd\" for customresourcedefinition.",
+				Details: "Short names are often used when people have work with your resource over and over again.  For instance, \"rs\" for \"replicaset\" or \"crd\" for customresourcedefinition.",
 			},
 			"Categories": markers.DetailedHelp{
 				Summary: "specifies which group aliases this resource is part of. ",
-				Details: " Group aliases are used to work with groups of resources at once. The most common one is \"all\" which covers about a third of the base resources in Kubernetes, and is generally used for \"user-facing\" resources.",
+				Details: "Group aliases are used to work with groups of resources at once. The most common one is \"all\" which covers about a third of the base resources in Kubernetes, and is generally used for \"user-facing\" resources.",
 			},
 			"Singular": markers.DetailedHelp{
 				Summary: "overrides the singular form of your resource. ",
-				Details: " The singular form is otherwise defaulted off the plural (path).",
+				Details: "The singular form is otherwise defaulted off the plural (path).",
 			},
 			"Scope": markers.DetailedHelp{
-				Summary: "overrides the scope of the CRD (cluster vs namespaced). ",
-				Details: " Scope defaults to \"namespaced\".  Cluster-scoped (\"cluster\") resources don't exist in namespaces.",
+				Summary: "overrides the scope of the CRD (Cluster vs Namespaced). ",
+				Details: "Scope defaults to \"Namespaced\".  Cluster-scoped (\"Cluster\") resources don't exist in namespaces.",
 			},
 		},
 	}
@@ -240,7 +289,7 @@ func (SkipVersion) Help() *markers.DefinitionHelp {
 		Category: "CRD",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "removes the particular version of the CRD from the CRDs spec. ",
-			Details: " This is useful if you need to skip generating and listing version entries for 'internal' resource versions, which typically exist if using the Kubernetes upstream conversion-gen tool.",
+			Details: "This is useful if you need to skip generating and listing version entries for 'internal' resource versions, which typically exist if using the Kubernetes upstream conversion-gen tool.",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{},
 	}
@@ -251,7 +300,18 @@ func (StorageVersion) Help() *markers.DefinitionHelp {
 		Category: "CRD",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "marks this version as the \"storage version\" for the CRD for conversion. ",
-			Details: " When conversion is enabled for a CRD (i.e. it's not a trivial-versions/single-version CRD), one version is set as the \"storage version\" to be stored in etcd.  Attempting to store any other version will result in conversion to the storage version via a conversion webhook.",
+			Details: "When conversion is enabled for a CRD (i.e. it's not a trivial-versions/single-version CRD), one version is set as the \"storage version\" to be stored in etcd.  Attempting to store any other version will result in conversion to the storage version via a conversion webhook.",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{},
+	}
+}
+
+func (StructType) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD processing",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "specifies the level of atomicity of the struct; i.e. whether each field in the struct is independent of the others, or all fields are treated as a single unit. ",
+			Details: "Possible values: \n - \"granular\": fields in the struct are independent of each other,   and can be manipulated by different actors.   This is the default behavior. \n - \"atomic\": all fields are treated as one unit.   Any changes have to replace the entire struct.",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{},
 	}
@@ -275,7 +335,7 @@ func (SubresourceScale) Help() *markers.DefinitionHelp {
 			},
 			"SelectorPath": markers.DetailedHelp{
 				Summary: "specifies the jsonpath to the pod label selector field for the scale's status. ",
-				Details: " The selector field must be the *string* form (serialized form) of a selector. Setting a pod label selector is necessary for your type to work with the HorizontalPodAutoscaler.",
+				Details: "The selector field must be the *string* form (serialized form) of a selector. Setting a pod label selector is necessary for your type to work with the HorizontalPodAutoscaler.",
 			},
 		},
 	}
@@ -297,7 +357,7 @@ func (Type) Help() *markers.DefinitionHelp {
 		Category: "CRD validation",
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "overrides the type for this field (which defaults to the equivalent of the Go type). ",
-			Details: " This generally must be paired with custom serialization.  For example, the metav1.Time field would be marked as \"type: string\" and \"format: date-time\".",
+			Details: "This generally must be paired with custom serialization.  For example, the metav1.Time field would be marked as \"type: string\" and \"format: date-time\".",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{},
 	}
@@ -309,6 +369,39 @@ func (UniqueItems) Help() *markers.DefinitionHelp {
 		DetailedHelp: markers.DetailedHelp{
 			Summary: "specifies that all items in this list must be unique.",
 			Details: "",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{},
+	}
+}
+
+func (UnservedVersion) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "does not serve this version. ",
+			Details: "This is useful if you need to drop support for a version in favor of a newer version.",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{},
+	}
+}
+
+func (XEmbeddedResource) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD validation",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "EmbeddedResource marks a fields as an embedded resource with apiVersion, kind and metadata fields. ",
+			Details: "An embedded resource is a value that has apiVersion, kind and metadata fields. They are validated implicitly according to the semantics of the currently running apiserver. It is not necessary to add any additional schema for these field, yet it is possible. This can be combined with PreserveUnknownFields.",
+		},
+		FieldHelp: map[string]markers.DetailedHelp{},
+	}
+}
+
+func (XPreserveUnknownFields) Help() *markers.DefinitionHelp {
+	return &markers.DefinitionHelp{
+		Category: "CRD processing",
+		DetailedHelp: markers.DetailedHelp{
+			Summary: "PreserveUnknownFields stops the apiserver from pruning fields which are not specified. ",
+			Details: "By default the apiserver drops unknown fields from the request payload during the decoding step. This marker stops the API server from doing so. It affects fields recursively, but switches back to normal pruning behaviour if nested  properties or additionalProperties are specified in the schema. This can either be true or undefined. False is forbidden.",
 		},
 		FieldHelp: map[string]markers.DetailedHelp{},
 	}
