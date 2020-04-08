@@ -19,6 +19,7 @@ limitations under the License.
 package internalversion
 
 import (
+	"context"
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,14 +38,14 @@ type KeysetsGetter interface {
 
 // KeysetInterface has methods to work with Keyset resources.
 type KeysetInterface interface {
-	Create(*kops.Keyset) (*kops.Keyset, error)
-	Update(*kops.Keyset) (*kops.Keyset, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*kops.Keyset, error)
-	List(opts v1.ListOptions) (*kops.KeysetList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.Keyset, err error)
+	Create(ctx context.Context, keyset *kops.Keyset, opts v1.CreateOptions) (*kops.Keyset, error)
+	Update(ctx context.Context, keyset *kops.Keyset, opts v1.UpdateOptions) (*kops.Keyset, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*kops.Keyset, error)
+	List(ctx context.Context, opts v1.ListOptions) (*kops.KeysetList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kops.Keyset, err error)
 	KeysetExpansion
 }
 
@@ -63,20 +64,20 @@ func newKeysets(c *KopsClient, namespace string) *keysets {
 }
 
 // Get takes name of the keyset, and returns the corresponding keyset object, and an error if there is any.
-func (c *keysets) Get(name string, options v1.GetOptions) (result *kops.Keyset, err error) {
+func (c *keysets) Get(ctx context.Context, name string, options v1.GetOptions) (result *kops.Keyset, err error) {
 	result = &kops.Keyset{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("keysets").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of Keysets that match those selectors.
-func (c *keysets) List(opts v1.ListOptions) (result *kops.KeysetList, err error) {
+func (c *keysets) List(ctx context.Context, opts v1.ListOptions) (result *kops.KeysetList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -87,13 +88,13 @@ func (c *keysets) List(opts v1.ListOptions) (result *kops.KeysetList, err error)
 		Resource("keysets").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested keysets.
-func (c *keysets) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *keysets) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -104,71 +105,74 @@ func (c *keysets) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("keysets").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a keyset and creates it.  Returns the server's representation of the keyset, and an error, if there is any.
-func (c *keysets) Create(keyset *kops.Keyset) (result *kops.Keyset, err error) {
+func (c *keysets) Create(ctx context.Context, keyset *kops.Keyset, opts v1.CreateOptions) (result *kops.Keyset, err error) {
 	result = &kops.Keyset{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("keysets").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(keyset).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a keyset and updates it. Returns the server's representation of the keyset, and an error, if there is any.
-func (c *keysets) Update(keyset *kops.Keyset) (result *kops.Keyset, err error) {
+func (c *keysets) Update(ctx context.Context, keyset *kops.Keyset, opts v1.UpdateOptions) (result *kops.Keyset, err error) {
 	result = &kops.Keyset{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("keysets").
 		Name(keyset.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(keyset).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the keyset and deletes it. Returns an error if one occurs.
-func (c *keysets) Delete(name string, options *v1.DeleteOptions) error {
+func (c *keysets) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("keysets").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *keysets) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *keysets) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("keysets").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched keyset.
-func (c *keysets) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kops.Keyset, err error) {
+func (c *keysets) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kops.Keyset, err error) {
 	result = &kops.Keyset{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("keysets").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
