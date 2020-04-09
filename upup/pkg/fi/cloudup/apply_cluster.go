@@ -960,7 +960,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	if shouldPrecreateDNS {
-		if err := precreateDNS(cluster, cloud); err != nil {
+		if err := precreateDNS(ctx, cluster, cloud); err != nil {
 			klog.Warningf("unable to pre-create DNS records - cluster startup may be slower: %v", err)
 		}
 	}

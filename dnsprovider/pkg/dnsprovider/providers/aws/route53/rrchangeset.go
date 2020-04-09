@@ -18,6 +18,7 @@ package route53
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -73,7 +74,12 @@ func buildChange(action string, rrs dnsprovider.ResourceRecordSet) *route53.Chan
 	return change
 }
 
-func (c *ResourceRecordChangeset) Apply() error {
+func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
+	// Empty changesets should be a relatively quick no-op
+	if c.IsEmpty() {
+		return nil
+	}
+
 	hostedZoneID := c.zone.impl.Id
 
 	removals := make(map[string]*route53.Change)

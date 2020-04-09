@@ -17,6 +17,8 @@ limitations under the License.
 package provider
 
 import (
+	"context"
+
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
@@ -52,7 +54,12 @@ func (c *resourceRecordChangeset) Upsert(rrs dnsprovider.ResourceRecordSet) dnsp
 }
 
 // Apply applies the accumulated operations to the Zone.
-func (c *resourceRecordChangeset) Apply() error {
+func (c *resourceRecordChangeset) Apply(ctx context.Context) error {
+	// Empty changesets should be a relatively quick no-op
+	if c.IsEmpty() {
+		return nil
+	}
+
 	return c.zone.applyChangeset(c)
 }
 

@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -124,7 +125,7 @@ func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	return nil
 }
 
-func precreateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
+func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) error {
 	// TODO: Move to update
 	if !featureflag.DNSPreCreate.Enabled() {
 		klog.V(4).Infof("Skipping DNS record pre-creation because feature flag not enabled")
@@ -240,7 +241,7 @@ func precreateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	}
 
 	if len(created) != 0 {
-		err := changeset.Apply()
+		err := changeset.Apply(ctx)
 		if err != nil {
 			return fmt.Errorf("error pre-creating DNS records: %v", err)
 		}
