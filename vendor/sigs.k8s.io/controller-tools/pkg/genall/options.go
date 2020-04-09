@@ -108,14 +108,14 @@ func FromOptions(optionsRegistry *markers.Registry, options []string) (*Runtime,
 func protoFromOptions(optionsRegistry *markers.Registry, options []string) (protoRuntime, error) {
 	var gens Generators
 	rules := OutputRules{
-		ByGenerator: make(map[Generator]OutputRule),
+		ByGenerator: make(map[*Generator]OutputRule),
 	}
 	var paths []string
 
 	// collect the generators first, so that we can key the output on the actual
 	// generator, which matters if there's settings in the gen object and it's not a pointer.
 	outputByGen := make(map[string]OutputRule)
-	gensByName := make(map[string]Generator)
+	gensByName := make(map[string]*Generator)
 
 	for _, rawOpt := range options {
 		if rawOpt[0] != '+' {
@@ -128,13 +128,13 @@ func protoFromOptions(optionsRegistry *markers.Registry, options []string) (prot
 
 		val, err := defn.Parse(rawOpt)
 		if err != nil {
-			return protoRuntime{}, fmt.Errorf("unable to parse option %q: %v", rawOpt[1:], err)
+			return protoRuntime{}, fmt.Errorf("unable to parse option %q: %w", rawOpt[1:], err)
 		}
 
 		switch val := val.(type) {
 		case Generator:
-			gens = append(gens, val)
-			gensByName[defn.Name] = val
+			gens = append(gens, &val)
+			gensByName[defn.Name] = &val
 		case OutputRule:
 			_, genName := splitOutputRuleOption(defn.Name)
 			if genName == "" {
@@ -176,7 +176,7 @@ type protoRuntime struct {
 	Paths            []string
 	Generators       Generators
 	OutputRules      OutputRules
-	GeneratorsByName map[string]Generator
+	GeneratorsByName map[string]*Generator
 }
 
 // splitOutputRuleOption splits a marker name of "output:rule:gen" or "output:rule"
