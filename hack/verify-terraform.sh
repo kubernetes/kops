@@ -41,9 +41,7 @@ done 3< <(find "${KOPS_ROOT}/tests/integration/update_cluster" -type d -maxdepth
 
 if [ $RC != 0 ]; then
   echo -e "\nTerraform validation failed\n"
-  # TODO(rifelpet): make this script blocking in PRs by exiting non-zero on failure
-  # exit $RC
-  exit 0
+  exit $RC
 else
   echo -e "\nTerraform validation succeeded\n"
 fi
