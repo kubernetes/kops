@@ -17,11 +17,11 @@ limitations under the License.
 package assettasks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
-	"golang.org/x/net/context"
 	"k8s.io/klog"
 )
 
