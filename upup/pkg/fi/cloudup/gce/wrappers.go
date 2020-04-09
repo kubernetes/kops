@@ -17,9 +17,9 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 
-	context "golang.org/x/net/context"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/klog"
 )
