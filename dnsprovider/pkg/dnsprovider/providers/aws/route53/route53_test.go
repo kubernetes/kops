@@ -298,3 +298,11 @@ func TestResourceRecordSetsDifferentTypes(t *testing.T) {
 	zone := firstZone(t)
 	tests.CommonTestResourceRecordSetsDifferentTypes(t, zone)
 }
+
+// TestContract verifies the general interface contract
+func TestContract(t *testing.T) {
+	zone := firstZone(t)
+	sets := rrs(t, zone)
+
+	tests.TestContract(t, sets)
+}
