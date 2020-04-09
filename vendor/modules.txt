@@ -251,7 +251,7 @@ github.com/googleapis/gax-go/v2
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
-# github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a
+# github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a => github.com/gophercloud/gophercloud v0.9.0
 github.com/gophercloud/gophercloud
 github.com/gophercloud/gophercloud/internal
 github.com/gophercloud/gophercloud/openstack
