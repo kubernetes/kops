@@ -119,6 +119,6 @@ require (
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6
 	sigs.k8s.io/controller-runtime v0.4.0
-	sigs.k8s.io/controller-tools v0.2.2-0.20190919191502-76a25b63325a
+	sigs.k8s.io/controller-tools v0.2.8
 	sigs.k8s.io/yaml v1.1.0
 )

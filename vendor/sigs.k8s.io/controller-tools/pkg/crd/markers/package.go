@@ -33,5 +33,8 @@ func init() {
 
 		must(markers.MakeDefinition("kubebuilder:validation:Required", markers.DescribesPackage, struct{}{})).
 			WithHelp(markers.SimpleHelp("CRD validation", "specifies that all fields in this package are required by default.")),
+
+		must(markers.MakeDefinition("kubebuilder:skip", markers.DescribesPackage, struct{}{})).
+			WithHelp(markers.SimpleHelp("CRD", "don't consider this package as an API version.")),
 	)
 }

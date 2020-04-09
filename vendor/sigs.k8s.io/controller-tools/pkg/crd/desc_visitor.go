@@ -20,7 +20,7 @@ import (
 	"strings"
 	"unicode"
 
-	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // TruncateDescription truncates the description of fields in given schema if it
