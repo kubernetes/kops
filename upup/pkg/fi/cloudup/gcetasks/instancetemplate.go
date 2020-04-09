@@ -417,16 +417,16 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 }
 
 type terraformInstanceTemplate struct {
-	NamePrefix            string                        `json:"name_prefix" cty:"name_prefix"`
-	CanIPForward          bool                          `json:"can_ip_forward" cty:"can_ip_forward"`
-	MachineType           string                        `json:"machine_type,omitempty" cty:"machine_type"`
-	ServiceAccount        *terraformServiceAccount      `json:"service_account,omitempty" cty:"service_account"`
-	Scheduling            *terraformScheduling          `json:"scheduling,omitempty" cty:"scheduling"`
-	Disks                 []*terraformInstanceTemplateAttachedDisk      `json:"disk,omitempty" cty:"disk"`
-	NetworkInterfaces     []*terraformNetworkInterface  `json:"network_interface,omitempty" cty:"network_interface"`
-	Metadata              map[string]*terraform.Literal `json:"metadata,omitempty" cty:"metadata"`
-	MetadataStartupScript *terraform.Literal            `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
-	Tags                  []string                      `json:"tags,omitempty" cty:"tags"`
+	NamePrefix            string                                   `json:"name_prefix" cty:"name_prefix"`
+	CanIPForward          bool                                     `json:"can_ip_forward" cty:"can_ip_forward"`
+	MachineType           string                                   `json:"machine_type,omitempty" cty:"machine_type"`
+	ServiceAccount        *terraformServiceAccount                 `json:"service_account,omitempty" cty:"service_account"`
+	Scheduling            *terraformScheduling                     `json:"scheduling,omitempty" cty:"scheduling"`
+	Disks                 []*terraformInstanceTemplateAttachedDisk `json:"disk,omitempty" cty:"disk"`
+	NetworkInterfaces     []*terraformNetworkInterface             `json:"network_interface,omitempty" cty:"network_interface"`
+	Metadata              map[string]*terraform.Literal            `json:"metadata,omitempty" cty:"metadata"`
+	MetadataStartupScript *terraform.Literal                       `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
+	Tags                  []string                                 `json:"tags,omitempty" cty:"tags"`
 }
 
 type terraformServiceAccount struct {
@@ -444,12 +444,8 @@ type terraformInstanceTemplateAttachedDisk struct {
 	AutoDelete bool   `json:"auto_delete,omitempty" cty:"auto_delete"`
 	DeviceName string `json:"device_name,omitempty" cty:"device_name"`
 
-	// DANGER - common but different meaning:
-	//   for an instance template this is scratch vs persistent
-	//   for an instance this is 'pd-standard', 'pd-ssd', 'local-ssd' etc
-	Type string `json:"type,omitempty" cty:"type"`
-
-	// These values are only for instance templates:
+	// scratch vs persistent
+	Type        string `json:"type,omitempty" cty:"type"`
 	Boot        bool   `json:"boot,omitempty" cty:"boot"`
 	DiskName    string `json:"disk_name,omitempty" cty:"disk_name"`
 	SourceImage string `json:"source_image,omitempty" cty:"source_image"`

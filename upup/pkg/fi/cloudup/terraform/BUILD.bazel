@@ -40,5 +40,6 @@ go_test(
         "//pkg/diff:go_default_library",
         "//vendor/github.com/hashicorp/hcl/v2/hclwrite:go_default_library",
         "//vendor/github.com/zclconf/go-cty/cty:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty/gocty:go_default_library",
     ],
 )
