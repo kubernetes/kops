@@ -177,17 +177,32 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		v := values[k]
 		tokens = append(tokens, []*hclwrite.Token{
 			{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
 			{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(k)},
 			{Type: hclsyntax.TokenCQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
 			{Type: hclsyntax.TokenEqual, Bytes: []byte("="), SpacesBefore: 1},
-			{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
-			{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(v.AsString())},
-			{Type: hclsyntax.TokenCQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
-			{Type: hclsyntax.TokenNewline, Bytes: []byte("\n")},
 		}...)
+
+		v := values[k]
+
+		refLiteral := reflect.New(reflect.TypeOf(Literal{}))
+		err := gocty.FromCtyValue(v, refLiteral.Interface())
+		// If this is a map of literals then do not surround the value with quotes
+		if literal, ok := refLiteral.Interface().(*Literal); err == nil && ok {
+			// For maps of literals we currently only support file references
+			// If we ever need to support a map of strings to resource property references that can be added here
+			if literal.FilePath != "" {
+				tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(fmt.Sprintf("file(%q)", literal.FilePath))})
+			}
+		} else {
+			tokens = append(tokens, []*hclwrite.Token{
+				{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
+				{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(v.AsString())},
+				{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
+			}...)
+		}
+		tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenNewline, Bytes: []byte("\n")})
 	}
 	tokens = append(tokens,
 		&hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")},

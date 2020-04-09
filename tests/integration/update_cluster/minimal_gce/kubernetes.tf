@@ -244,11 +244,83 @@ resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-example-co
 }
 
 resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-example-com" {
+  can_ip_forward = true
+  disk {
+    auto_delete  = true
+    boot         = true
+    device_name  = "persistent-disks-0"
+    disk_name    = ""
+    disk_size_gb = 64
+    disk_type    = "pd-standard"
+    interface    = ""
+    mode         = "READ_WRITE"
+    source       = ""
+    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    type         = "PERSISTENT"
+  }
+  machine_type = "n1-standard-1"
+  metadata = {
+    "cluster-name"                    = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-example-com_metadata_cluster-name")
+    "kops-k8s-io-instance-group-name" = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-example-com_metadata_kops-k8s-io-instance-group-name")
+    "ssh-keys"                        = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-example-com_metadata_ssh-keys")
+    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-example-com_metadata_startup-script")
+  }
   name_prefix = "master-us-test1-a-minimal-do16cp-"
+  network_interface {
+    access_config {
+    }
+    network = google_compute_network.default.name
+  }
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+    preemptible         = false
+  }
+  service_account {
+    email  = "default"
+    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
+  }
+  tags = ["minimal-gce-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
+  can_ip_forward = true
+  disk {
+    auto_delete  = true
+    boot         = true
+    device_name  = "persistent-disks-0"
+    disk_name    = ""
+    disk_size_gb = 128
+    disk_type    = "pd-standard"
+    interface    = ""
+    mode         = "READ_WRITE"
+    source       = ""
+    source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
+    type         = "PERSISTENT"
+  }
+  machine_type = "n1-standard-2"
+  metadata = {
+    "cluster-name"                    = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-example-com_metadata_cluster-name")
+    "kops-k8s-io-instance-group-name" = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-example-com_metadata_kops-k8s-io-instance-group-name")
+    "ssh-keys"                        = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-example-com_metadata_ssh-keys")
+    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-example-com_metadata_startup-script")
+  }
   name_prefix = "nodes-minimal-gce-example-com-"
+  network_interface {
+    access_config {
+    }
+    network = google_compute_network.default.name
+  }
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+    preemptible         = false
+  }
+  service_account {
+    email  = "default"
+    scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/devstorage.read_only"]
+  }
+  tags = ["minimal-gce-example-com-k8s-io-role-node"]
 }
 
 resource "google_compute_network" "default" {
