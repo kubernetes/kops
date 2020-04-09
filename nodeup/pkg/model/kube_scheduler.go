@@ -96,14 +96,21 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 	if useConfigFile {
-		config, err := configbuilder.BuildConfigYaml(b.Cluster.Spec.KubeScheduler, NewSchedulerConfig())
+		var config *SchedulerConfig
+		if b.IsKubernetesGTE("1.18") {
+			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1alpha2")
+		} else {
+			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1alpha1")
+		}
+
+		manifest, err := configbuilder.BuildConfigYaml(b.Cluster.Spec.KubeScheduler, config)
 		if err != nil {
 			return err
 		}
 
 		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-scheduler/config.yaml",
-			Contents: fi.NewBytesResource(config),
+			Contents: fi.NewBytesResource(manifest),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
@@ -123,9 +130,9 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 // NewSchedulerConfig initializes a new kube-scheduler config file
-func NewSchedulerConfig() *SchedulerConfig {
+func NewSchedulerConfig(apiVersion string) *SchedulerConfig {
 	schedConfig := new(SchedulerConfig)
-	schedConfig.APIVersion = "kubescheduler.config.k8s.io/v1alpha1"
+	schedConfig.APIVersion = apiVersion
 	schedConfig.Kind = "KubeSchedulerConfiguration"
 	schedConfig.ClientConnection = ClientConnectionConfig{}
 	schedConfig.ClientConnection.Kubeconfig = defaultKubeConfig
