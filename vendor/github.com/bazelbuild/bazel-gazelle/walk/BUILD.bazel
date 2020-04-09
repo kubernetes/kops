@@ -16,15 +16,3 @@ go_library(
         "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
     ],
 )
-
-filegroup(
-    name = "all_files",
-    testonly = True,
-    srcs = [
-        "BUILD.bazel",
-        "config.go",
-        "walk.go",
-        "walk_test.go",
-    ],
-    visibility = ["//visibility:public"],
-)

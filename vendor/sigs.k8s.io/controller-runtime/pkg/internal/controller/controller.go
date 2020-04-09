@@ -236,7 +236,7 @@ func (c *Controller) reconcileHandler(obj interface{}) bool {
 	// Update metrics after processing each item
 	reconcileStartTS := time.Now()
 	defer func() {
-		c.updateMetrics(time.Now().Sub(reconcileStartTS))
+		c.updateMetrics(time.Since(reconcileStartTS))
 	}()
 
 	var req reconcile.Request

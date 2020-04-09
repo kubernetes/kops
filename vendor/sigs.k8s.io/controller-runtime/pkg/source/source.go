@@ -55,6 +55,22 @@ type Source interface {
 	Start(handler.EventHandler, workqueue.RateLimitingInterface, ...predicate.Predicate) error
 }
 
+// NewKindWithCache creates a Source without InjectCache, so that it is assured that the given cache is used
+// and not overwritten. It can be used to watch objects in a different cluster by passing the cache
+// from that other cluster
+func NewKindWithCache(object runtime.Object, cache cache.Cache) Source {
+	return &kindWithCache{kind: Kind{Type: object, cache: cache}}
+}
+
+type kindWithCache struct {
+	kind Kind
+}
+
+func (ks *kindWithCache) Start(handler handler.EventHandler, queue workqueue.RateLimitingInterface,
+	prct ...predicate.Predicate) error {
+	return ks.kind.Start(handler, queue, prct...)
+}
+
 // Kind is used to provide a source of events originating inside the cluster from Watches (e.g. Pod Create)
 type Kind struct {
 	// Type is the type of object to watch.  e.g. &v1.Pod{}

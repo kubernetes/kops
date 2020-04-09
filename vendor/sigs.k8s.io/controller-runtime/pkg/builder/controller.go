@@ -74,7 +74,7 @@ func (blder *Builder) For(apiType runtime.Object) *Builder {
 
 // Owns defines types of Objects being *generated* by the ControllerManagedBy, and configures the ControllerManagedBy to respond to
 // create / delete / update events by *reconciling the owner object*.  This is the equivalent of calling
-// Watches(&handler.EnqueueRequestForOwner{&source.Kind{Type: <ForType-apiType>}, &handler.EnqueueRequestForOwner{OwnerType: apiType, IsController: true})
+// Watches(&source.Kind{Type: <ForType-apiType>}, &handler.EnqueueRequestForOwner{OwnerType: apiType, IsController: true})
 func (blder *Builder) Owns(apiType runtime.Object) *Builder {
 	blder.managedObjects = append(blder.managedObjects, apiType)
 	return blder
