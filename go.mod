@@ -46,6 +46,8 @@ replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.17.4
 
 replace k8s.io/code-generator => k8s.io/code-generator v0.17.4
 
+replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.9.0
+
 require (
 	cloud.google.com/go v0.38.0
 	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
