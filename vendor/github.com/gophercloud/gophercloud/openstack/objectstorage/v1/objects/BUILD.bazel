@@ -15,6 +15,7 @@ go_library(
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/objectstorage/v1/accounts:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/pagination:go_default_library",
     ],
 )
