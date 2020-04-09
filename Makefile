@@ -151,9 +151,9 @@ help: # Show this help
 	} 1>&2; \
 
 .PHONY: clean
-clean: # Remove build directory and bindata-generated files
-	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done
+clean:
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
+	bazel clean
 	rm -rf tests/integration/update_cluster/*/.terraform
 
 .PHONY: kops
