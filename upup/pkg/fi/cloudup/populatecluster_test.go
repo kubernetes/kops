@@ -469,11 +469,11 @@ func TestPopulateCluster_DockerVersion(t *testing.T) {
 	}{
 		{
 			KubernetesVersion: "1.4.6",
-			DockerVersion:     "1.11.2",
+			DockerVersion:     "17.03.2",
 		},
 		{
 			KubernetesVersion: "1.5.1",
-			DockerVersion:     "1.12.3",
+			DockerVersion:     "17.03.2",
 		},
 	}
 
