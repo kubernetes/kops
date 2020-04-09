@@ -119,7 +119,7 @@ require (
 	k8s.io/kubectl v0.0.0
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
-	sigs.k8s.io/controller-runtime v0.4.0
+	sigs.k8s.io/controller-runtime v0.5.1-0.20200326092940-754026bd8510
 	sigs.k8s.io/controller-tools v0.2.8
 	sigs.k8s.io/yaml v1.2.0
 )
