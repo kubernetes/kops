@@ -22,6 +22,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/kops/pkg/diff"
 )
 
@@ -252,6 +253,56 @@ tags = {
 			f := hclwrite.NewEmptyFile()
 			root := f.Body()
 			writeMap(root, "tags", tc.values)
+			actual := strings.TrimSpace(string(f.Bytes()))
+			expected := strings.TrimSpace(tc.expected)
+			if actual != expected {
+				diffString := diff.FormatDiff(expected, string(actual))
+				t.Logf("diff:\n%s\n", diffString)
+				t.Errorf("expected: '%s', got: '%s'\n", expected, actual)
+			}
+		})
+	}
+}
+
+func TestWriteMapLiterals(t *testing.T) {
+	cases := []struct {
+		name     string
+		values   map[string]Literal
+		expected string
+	}{
+		{
+			name: "literal values",
+			values: map[string]Literal{
+				"key1": {FilePath: "${module.path}/path/to/value1"},
+				"key2": {FilePath: "${module.path}/path/to/value2"},
+			},
+			expected: `
+metadata = {
+  "key1" = file("${module.path}/path/to/value1")
+  "key2" = file("${module.path}/path/to/value2")
+}
+			`,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			literalMap := make(map[string]cty.Value)
+			for k, v := range tc.values {
+				literalType, err := gocty.ImpliedType(v)
+				if err != nil {
+					t.Errorf("unexpected error %v", err)
+				}
+				literalVal, err := gocty.ToCtyValue(v, literalType)
+
+				if err != nil {
+					t.Errorf("unexpected error %v", err)
+				}
+				literalMap[k] = literalVal
+			}
+
+			f := hclwrite.NewEmptyFile()
+			root := f.Body()
+			writeMap(root, "metadata", literalMap)
 			actual := strings.TrimSpace(string(f.Bytes()))
 			expected := strings.TrimSpace(tc.expected)
 			if actual != expected {
