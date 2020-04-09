@@ -30,7 +30,6 @@ BINDATA_TARGETS=upup/models/bindata.go
 ARTIFACTS=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
-GOBINDATA=$(LOCAL)/go-bindata
 CHANNELS=$(LOCAL)/channels
 NODEUP=$(LOCAL)/nodeup
 PROTOKUBE=$(LOCAL)/protokube
@@ -108,7 +107,7 @@ ifdef DEBUGGABLE
 endif
 
 .PHONY: kops-install # Install kops to local $GOPATH/bin
-kops-install: gobindata-tool ${BINDATA_TARGETS}
+kops-install: ${BINDATA_TARGETS}
 	go install ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
 
 .PHONY: channels-install # Install channels to local $GOPATH/bin
@@ -163,24 +162,17 @@ kops: ${KOPS}
 ${KOPS}: ${BINDATA_TARGETS}
 	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
-${GOBINDATA}:
-	mkdir -p ${LOCAL}
-	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/go-bindata/go-bindata/go-bindata
-
-.PHONY: gobindata-tool
-gobindata-tool: ${GOBINDATA}
-
 .PHONY: kops-gobindata
-kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
+kops-gobindata: ${BINDATA_TARGETS}
 
 .PHONY: update-bindata
 update-bindata:
-	cd ${KOPS_ROOT}; ${GOBINDATA} -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	GO111MODULE=on go run github.com/go-bindata/go-bindata/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 	GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v ${BINDATA_TARGETS}
 	gofmt -w -s ${BINDATA_TARGETS}
 
 UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
-upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
+upup/models/bindata.go: ${UPUP_MODELS_BINDATA_SOURCES}
 	make update-bindata
 
 # Build in a docker container with golang 1.X
