@@ -17,6 +17,7 @@ limitations under the License.
 package clouddns
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -49,7 +50,8 @@ func (c *ResourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 	return c
 }
 
-func (c *ResourceRecordChangeset) Apply() error {
+func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
+	// Empty changesets should be a relatively quick no-op
 	if c.IsEmpty() {
 		return nil
 	}

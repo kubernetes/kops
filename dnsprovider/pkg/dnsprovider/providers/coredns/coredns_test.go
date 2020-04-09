@@ -17,6 +17,7 @@ limitations under the License.
 package coredns
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -125,8 +126,8 @@ func getExampleRrs(zone dnsprovider.Zone) dnsprovider.ResourceRecordSet {
 	return rrsets.New("www11."+zone.Name(), []string{"10.10.10.10", "169.20.20.20"}, 180, rrstype.A)
 }
 
-func addRrsetOrFail(t *testing.T, rrsets dnsprovider.ResourceRecordSets, rrset dnsprovider.ResourceRecordSet) {
-	err := rrsets.StartChangeset().Add(rrset).Apply()
+func addRrsetOrFail(ctx context.Context, t *testing.T, rrsets dnsprovider.ResourceRecordSets, rrset dnsprovider.ResourceRecordSet) {
+	err := rrsets.StartChangeset().Add(rrset).Apply(ctx)
 	if err != nil {
 		t.Fatalf("Failed to add recordsets: %v", err)
 	}
@@ -154,11 +155,13 @@ func TestResourceRecordSetsGet(t *testing.T) {
 
 /* TestResourceRecordSetsAddSuccess verifies that addition of a valid RRS succeeds */
 func TestResourceRecordSetsAddSuccess(t *testing.T) {
+	ctx := context.Background()
+
 	zone := firstZone(t)
 	sets := rrs(t, zone)
 	set := getExampleRrs(zone)
-	addRrsetOrFail(t, sets, set)
-	defer sets.StartChangeset().Remove(set).Apply()
+	addRrsetOrFail(ctx, t, sets, set)
+	defer sets.StartChangeset().Remove(set).Apply(ctx)
 	t.Logf("Successfully added resource record set: %v", set)
 	if sets.Zone().ID() != zone.ID() {
 		t.Errorf("Zone for rrset does not match expected")
@@ -167,11 +170,13 @@ func TestResourceRecordSetsAddSuccess(t *testing.T) {
 
 /* TestResourceRecordSetsAdditionVisible verifies that added RRS is visible after addition */
 func TestResourceRecordSetsAdditionVisible(t *testing.T) {
+	ctx := context.Background()
+
 	zone := firstZone(t)
 	sets := rrs(t, zone)
 	rrset := getExampleRrs(zone)
-	addRrsetOrFail(t, sets, rrset)
-	defer sets.StartChangeset().Remove(rrset).Apply()
+	addRrsetOrFail(ctx, t, sets, rrset)
+	defer sets.StartChangeset().Remove(rrset).Apply(ctx)
 	t.Logf("Successfully added resource record set: %v", rrset)
 
 	record := getRrOrFail(t, sets, rrset.Name())
@@ -180,18 +185,20 @@ func TestResourceRecordSetsAdditionVisible(t *testing.T) {
 	}
 }
 
-/* TestResourceRecordSetsAddDuplicateFail verifies that addition of a duplicate RRS fails */
+/* TestResourceRecordSetsAddDuplicateFailure verifies that addition of a duplicate RRS fails */
 func TestResourceRecordSetsAddDuplicateFailure(t *testing.T) {
+	ctx := context.Background()
+
 	zone := firstZone(t)
 	sets := rrs(t, zone)
 	rrset := getExampleRrs(zone)
-	addRrsetOrFail(t, sets, rrset)
-	defer sets.StartChangeset().Remove(rrset).Apply()
+	addRrsetOrFail(ctx, t, sets, rrset)
+	defer sets.StartChangeset().Remove(rrset).Apply(ctx)
 	t.Logf("Successfully added resource record set: %v", rrset)
 	// Try to add it again, and verify that the call fails.
-	err := sets.StartChangeset().Add(rrset).Apply()
+	err := sets.StartChangeset().Add(rrset).Apply(ctx)
 	if err == nil {
-		defer sets.StartChangeset().Remove(rrset).Apply()
+		defer sets.StartChangeset().Remove(rrset).Apply(ctx)
 		t.Errorf("Should have failed to add duplicate resource record %v, but succeeded instead.", rrset)
 	} else {
 		t.Logf("Correctly failed to add duplicate resource record %v: %v", rrset, err)
@@ -200,14 +207,16 @@ func TestResourceRecordSetsAddDuplicateFailure(t *testing.T) {
 
 /* TestResourceRecordSetsRemove verifies that the removal of an existing RRS succeeds */
 func TestResourceRecordSetsRemove(t *testing.T) {
+	ctx := context.Background()
+
 	zone := firstZone(t)
 	sets := rrs(t, zone)
 	rrset := getExampleRrs(zone)
-	addRrsetOrFail(t, sets, rrset)
-	err := sets.StartChangeset().Remove(rrset).Apply()
+	addRrsetOrFail(ctx, t, sets, rrset)
+	err := sets.StartChangeset().Remove(rrset).Apply(ctx)
 	if err != nil {
 		// Try again to clean up.
-		defer sets.StartChangeset().Remove(rrset).Apply()
+		defer sets.StartChangeset().Remove(rrset).Apply(ctx)
 		t.Errorf("Failed to remove resource record set %v after adding", rrset)
 	} else {
 		t.Logf("Successfully removed resource set %v after adding", rrset)
@@ -216,14 +225,16 @@ func TestResourceRecordSetsRemove(t *testing.T) {
 
 /* TestResourceRecordSetsRemoveGone verifies that a removed RRS no longer exists */
 func TestResourceRecordSetsRemoveGone(t *testing.T) {
+	ctx := context.Background()
+
 	zone := firstZone(t)
 	sets := rrs(t, zone)
 	rrset := getExampleRrs(zone)
-	addRrsetOrFail(t, sets, rrset)
-	err := sets.StartChangeset().Remove(rrset).Apply()
+	addRrsetOrFail(ctx, t, sets, rrset)
+	err := sets.StartChangeset().Remove(rrset).Apply(ctx)
 	if err != nil {
 		// Try again to clean up.
-		defer sets.StartChangeset().Remove(rrset).Apply()
+		defer sets.StartChangeset().Remove(rrset).Apply(ctx)
 		t.Errorf("Failed to remove resource record set %v after adding", rrset)
 	} else {
 		t.Logf("Successfully removed resource set %v after adding", rrset)
