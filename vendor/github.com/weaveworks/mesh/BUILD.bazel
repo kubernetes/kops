@@ -11,7 +11,7 @@ go_library(
         "logger.go",
         "overlay.go",
         "peer.go",
-        "peer_name_hash.go",
+        "peer_name_mac.go",
         "peers.go",
         "protocol.go",
         "protocol_crypto.go",
