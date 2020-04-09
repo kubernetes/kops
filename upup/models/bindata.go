@@ -200,6 +200,7 @@ metadata:
   name: aws-iam-authenticator
   labels:
     k8s-app: aws-iam-authenticator
+    test: bindata
 spec:
   updateStrategy:
     type: RollingUpdate
