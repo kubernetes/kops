@@ -24,7 +24,6 @@ go_library(
         "//pkg/cloudinstances:go_default_library",
         "//protokube/pkg/etcd:go_default_library",
         "//upup/pkg/fi:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/oauth2/google:go_default_library",
         "//vendor/google.golang.org/api/compute/v0.beta:go_default_library",
         "//vendor/google.golang.org/api/dns/v1:go_default_library",
