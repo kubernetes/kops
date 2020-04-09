@@ -1,6 +1,10 @@
 package ports
 
 import (
+	"fmt"
+	"net/url"
+	"strings"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/pagination"
 )
@@ -36,11 +40,37 @@ type ListOpts struct {
 	TagsAny      string `q:"tags-any"`
 	NotTags      string `q:"not-tags"`
 	NotTagsAny   string `q:"not-tags-any"`
+	FixedIPs     []FixedIPOpts
+}
+
+type FixedIPOpts struct {
+	IPAddress       string
+	IPAddressSubstr string
+	SubnetID        string
+}
+
+func (f FixedIPOpts) String() string {
+	var res []string
+	if f.IPAddress != "" {
+		res = append(res, fmt.Sprintf("ip_address=%s", f.IPAddress))
+	}
+	if f.IPAddressSubstr != "" {
+		res = append(res, fmt.Sprintf("ip_address_substr=%s", f.IPAddressSubstr))
+	}
+	if f.SubnetID != "" {
+		res = append(res, fmt.Sprintf("subnet_id=%s", f.SubnetID))
+	}
+	return strings.Join(res, ",")
 }
 
 // ToPortListQuery formats a ListOpts into a query string.
 func (opts ListOpts) ToPortListQuery() (string, error) {
 	q, err := gophercloud.BuildQueryString(opts)
+	params := q.Query()
+	for _, fixedIP := range opts.FixedIPs {
+		params.Add("fixed_ips", fixedIP.String())
+	}
+	q = &url.URL{RawQuery: params.Encode()}
 	return q.String(), err
 }
 

@@ -3,6 +3,7 @@ package servers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
@@ -179,7 +180,9 @@ type CreateOpts struct {
 	// Networks dictates how this server will be attached to available networks.
 	// By default, the server will be attached to all isolated networks for the
 	// tenant.
-	Networks []Network `json:"-"`
+	// Starting with microversion 2.37 networks can also be an "auto" or "none"
+	// string.
+	Networks interface{} `json:"-"`
 
 	// Metadata contains key-value pairs (up to 255 bytes each) to attach to the
 	// server.
@@ -245,21 +248,30 @@ func (opts CreateOpts) ToServerCreateMap() (map[string]interface{}, error) {
 		b["security_groups"] = securityGroups
 	}
 
-	if len(opts.Networks) > 0 {
-		networks := make([]map[string]interface{}, len(opts.Networks))
-		for i, net := range opts.Networks {
-			networks[i] = make(map[string]interface{})
-			if net.UUID != "" {
-				networks[i]["uuid"] = net.UUID
+	switch v := opts.Networks.(type) {
+	case []Network:
+		if len(v) > 0 {
+			networks := make([]map[string]interface{}, len(v))
+			for i, net := range v {
+				networks[i] = make(map[string]interface{})
+				if net.UUID != "" {
+					networks[i]["uuid"] = net.UUID
+				}
+				if net.Port != "" {
+					networks[i]["port"] = net.Port
+				}
+				if net.FixedIP != "" {
+					networks[i]["fixed_ip"] = net.FixedIP
+				}
 			}
-			if net.Port != "" {
-				networks[i]["port"] = net.Port
-			}
-			if net.FixedIP != "" {
-				networks[i]["fixed_ip"] = net.FixedIP
-			}
+			b["networks"] = networks
 		}
-		b["networks"] = networks
+	case string:
+		if v == "auto" || v == "none" {
+			b["networks"] = v
+		} else {
+			return nil, fmt.Errorf(`networks must be a slice of Network struct or a string with "auto" or "none" values, current value is %q`, v)
+		}
 	}
 
 	// If ImageRef isn't provided, check if ImageName was provided to ascertain
