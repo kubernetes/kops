@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -28,7 +29,6 @@ import (
 
 	"github.com/denverdino/aliyungo/oss"
 	"github.com/gophercloud/gophercloud"
-	"golang.org/x/net/context"
 	"google.golang.org/api/option"
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"

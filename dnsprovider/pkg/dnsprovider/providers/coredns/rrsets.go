@@ -17,13 +17,13 @@ limitations under the License.
 package coredns
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
 
 	etcdc "github.com/coreos/etcd/client"
 	dnsmsg "github.com/miekg/coredns/middleware/etcd/msg"
-	"golang.org/x/net/context"
 	"k8s.io/klog"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
