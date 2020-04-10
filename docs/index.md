@@ -1,3 +1,9 @@
+<div class="hidden">
+<hr>
+<strong>For a better viewing experience please check out our live Documentation site at <a href="https://kops.sigs.k8s.io/">kops.sigs.k8s.io</a>.</strong>
+<hr>
+</div>
+
 # kops - Kubernetes Operations
 
 [GoDoc]: https://pkg.go.dev/k8s.io/kops

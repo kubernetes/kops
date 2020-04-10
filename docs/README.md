@@ -1,5 +1,7 @@
 # Documentation Index
 
+For a better viewing experience please check out our live Documentation site at [kops.sigs.k8s.io](https://kops.sigs.k8s.io/).
+
 ## Quick start
 * [Getting started on AWS](getting_started/aws.md)
 * [Getting started on GCE](getting_started/gce.md)
