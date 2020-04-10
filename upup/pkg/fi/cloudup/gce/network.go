@@ -17,11 +17,11 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
 
-	context "golang.org/x/net/context"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
