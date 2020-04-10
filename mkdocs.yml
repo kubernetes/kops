@@ -117,7 +117,7 @@ nav:
     - Authentication: "authentication.md"
   - Development:
     - Building: "development/building.md"
-    - Releases: "releases.md"
+    - Releasing: "development/release.md"
     - New Kubernetes Version: "development/new_kubernetes_version.md"
     - Developing using Docker: "development/Docker.md"
     - Development with vSphere: "vsphere-dev.md"
@@ -132,11 +132,11 @@ nav:
     - Notes on master instance sizing: "development/instancesizes.md"
     - Our release process: "development/release.md"
     - Releasing with Homebrew: "development/homebrew.md"
-    - Rolling Update Diagrams: "development/rolling_update.md"
     - Bazel: "development/bazel.md"
     - Vendoring: "development/vendoring.md"
     - Ports: "development/ports.md"
   - Releases:
+    - 1.16: releases/1.16-NOTES.md
     - 1.15: releases/1.15-NOTES.md
     - 1.14: releases/1.14-NOTES.md
     - 1.13: releases/1.13-NOTES.md
