@@ -39,8 +39,8 @@ nav:
     - Deploying to GCE: "getting_started/gce.md"
     - Deploying to OpenStack - Beta: "getting_started/openstack.md"
     - Deploying to Digital Ocean - Alpha: "getting_started/digitalocean.md"
-    - Kops Commands: "getting_started/commands.md"
-    - Kops Arguments: "getting_started/arguments.md"
+    - kops Commands: "getting_started/commands.md"
+    - kops Arguments: "getting_started/arguments.md"
     - kubectl usage: "getting_started/kubectl.md"
   - CLI:
     - kops: "cli/kops.md"
@@ -61,11 +61,9 @@ nav:
     - kops validate: "cli/kops_validate.md"
     - kops version: "cli/kops_version.md"
   - API:
-    - Cluster Spec: "cluster_spec.md"
-    - Instance Group API: "instance_groups.md"
+    - Cluster Resource: "cluster_spec.md"
+    - InstanceGroup Resource: "instance_groups.md"
     - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
-    - Godocs for Cluster - ClusterSpec: "https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec"
-    - Godocs for Instance Group - InstanceGroupSpec: "https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec"
 
   - Operations:
     - Updates & Upgrades: "operations/updates_and_upgrades.md"
