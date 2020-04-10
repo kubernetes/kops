@@ -1,19 +1,14 @@
-# kubectl
+# kubectl cluster admin configuration
 
-## Create kubecfg settings for kubectl
-
-`update cluster` will do it automatically after cluster creation.
-But we expect that if you're part of a team you might share the KOPS_STATE_STORE, and then you can do
-this on different machines instead of having to share kubecfg files)
+When you run `kops update cluster` during cluster creation, you automatically get a kubectl configuration for accessing the cluster. This configuration gives you full admin access to the cluster.
+If you want to create this configuration on other machine, you can run the following as long as you have access to the kops state store.
 
 To create the kubecfg configuration settings for use with kubectl:
 
 ```
-export KOPS_STATE_STORE=s3://<somes3bucket>
-# NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops export kubecfg ${NAME}
+export KOPS_STATE_STORE=<location of the kops state store>
+NAME=<kubernetes.mydomain.com>
+kops export kubecfg ${NAME}
 ```
 
-You can now use kubernetes using the kubectl tool (after allowing a few minutes for the cluster to come up):
-
-```kubectl get nodes```
+Warning: Note that the exported configuration gives you full admin privileges using TLS certificates that are not easy to rotate. For regular kubectl usage, you should consider using another method for authenticating to the cluster.
