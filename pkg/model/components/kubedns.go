@@ -74,5 +74,13 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.MemoryLimit = &defaultMemoryLimit
 	}
 
+	NodeLocalDNS := clusterSpec.KubeDNS.NodeLocalDNS
+	if NodeLocalDNS == nil {
+		NodeLocalDNS = &kops.NodeLocalDNSConfig{}
+		NodeLocalDNS.Enabled = false
+	} else if NodeLocalDNS.Enabled && NodeLocalDNS.LocalIP == "" {
+		NodeLocalDNS.LocalIP = "169.254.20.10"
+	}
+
 	return nil
 }

@@ -1611,6 +1611,20 @@ spec:
                       dns container in the cluster. Default 70m.
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
+                  nodeLocalDNS:
+                    description: NodeLocalDNS specifies the configuration for the
+                      node-local-dns addon
+                    properties:
+                      enabled:
+                        description: Disable indicates we do not wish to run the node-local-dns
+                          addon
+                        type: boolean
+                      localIP:
+                        description: Local listen IP address. It can be any IP in
+                          the 169.254.20.0/16 space or any other IP address that can
+                          be guaranteed to not collide with any existing IP.
+                        type: string
+                    type: object
                   provider:
                     description: Provider indicates whether CoreDNS or kube-dns will
                       be the default service discovery.
