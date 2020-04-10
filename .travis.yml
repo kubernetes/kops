@@ -6,6 +6,7 @@ go:
   # 1.12 is now best-effort; we recommend 1.13
   - "1.12"
   - "1.13"
+  - "1.14"
 
 go_import_path: k8s.io/kops
 
