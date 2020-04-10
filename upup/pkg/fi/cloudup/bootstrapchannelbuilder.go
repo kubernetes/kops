@@ -451,6 +451,29 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
+	// @check the node-local-dns has not been disabled
+	NodeLocalDNS := b.cluster.Spec.KubeDNS.NodeLocalDNS
+	if kubeDNS.Provider == "CoreDNS" && NodeLocalDNS != nil && NodeLocalDNS.Enabled {
+		{
+			key := "nodelocaldns.addons.k8s.io"
+			version := "1.18.0"
+
+			{
+				location := key + "/k8s-1.12.yaml"
+				id := "k8s-1.12"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.12.0",
+					Id:                id,
+				})
+			}
+		}
+	}
+
 	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 		key := "storage-aws.addons.k8s.io"
 		version := "1.15.0"

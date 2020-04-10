@@ -543,6 +543,26 @@ spec:
 
 **Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`.
 
+If you are using CoreDNS, you can enable NodeLocal DNSCache. It is used to improve improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
+
+```yaml
+spec:
+  kubeDNS:
+    provider: CoreDNS
+    nodeLocalDNS:
+      enabled: true
+```
+
+If you are using kube-proxy in ipvs mode or Cilium as CNI, you have to set the nodeLocalDNS as ClusterDNS.
+
+```yaml
+spec:
+  kubelet:
+    clusterDNS: 169.254.20.10
+  masterKubelet:
+    clusterDNS: 169.254.20.10
+```
+
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
 

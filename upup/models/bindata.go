@@ -52,6 +52,7 @@
 // upup/models/cloudup/resources/addons/networking.weave/k8s-1.8.yaml.template
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template
+// upup/models/cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/BUILD.bazel
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.11.yaml.template
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template
@@ -15371,6 +15372,204 @@ func cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate() (*asset
 	return a, nil
 }
 
+var _cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate = []byte(`# Vendored from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/dns/nodelocaldns/nodelocaldns.yaml
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-local-dns
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-dns-upstream
+  namespace: kube-system
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+    kubernetes.io/name: "KubeDNSUpstream"
+spec:
+  ports:
+  - name: dns
+    port: 53
+    protocol: UDP
+    targetPort: 53
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+    targetPort: 53
+  selector:
+    k8s-app: kube-dns
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-local-dns
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+data:
+  Corefile: |
+    {{ KubeDNS.Domain }}:53 {
+        errors
+        cache {
+          success 9984 30
+          denial 9984 5
+        }
+        reload
+        loop
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        forward . {{ NodeLocalDNSClusterIP }} {
+          force_tcp
+        }
+        prometheus :9253
+        health {{ KubeDNS.NodeLocalDNS.LocalIP }}:8080
+    }
+    in-addr.arpa:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        forward . {{ NodeLocalDNSClusterIP }} {
+          force_tcp
+        }
+        prometheus :9253
+    }
+    ip6.arpa:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        forward . {{ NodeLocalDNSClusterIP }} {
+          force_tcp
+        }
+        prometheus :9253
+    }
+    .:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        forward . __PILLAR__UPSTREAM__SERVERS__ {
+          force_tcp
+        }
+        prometheus :9253
+    }
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-local-dns
+  namespace: kube-system
+  labels:
+    k8s-app: node-local-dns
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 10%
+  selector:
+    matchLabels:
+      k8s-app: node-local-dns
+  template:
+    metadata:
+      labels:
+        k8s-app: node-local-dns
+      annotations:
+        prometheus.io/port: "9253"
+        prometheus.io/scrape: "true"
+    spec:
+      priorityClassName: system-node-critical
+      serviceAccountName: node-local-dns
+      hostNetwork: true
+      dnsPolicy: Default  # Don't use cluster DNS.
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      - effect: "NoExecute"
+        operator: "Exists"
+      - effect: "NoSchedule"
+        operator: "Exists"
+      containers:
+      - name: node-cache
+        image: k8s.gcr.io/k8s-dns-node-cache:1.15.10
+        resources:
+          requests:
+            cpu: 25m
+            memory: 5Mi
+        {{ if NodeLocalDNSServerIP }}
+        args: [ "-localip", "{{ .KubeDNS.NodeLocalDNS.LocalIP }},{{ NodeLocalDNSServerIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+        {{ else }}
+        args: [ "-localip", "{{ .KubeDNS.NodeLocalDNS.LocalIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+        {{ end }}
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 9253
+          name: metrics
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            host: {{ .KubeDNS.NodeLocalDNS.LocalIP }}
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+        volumeMounts:
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+        - name: config-volume
+          mountPath: /etc/coredns
+        - name: kube-dns-config
+          mountPath: /etc/kube-dns
+      volumes:
+      - name: xtables-lock
+        hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+      - name: kube-dns-config
+        configMap:
+          name: kube-dns
+          optional: true
+      - name: config-volume
+        configMap:
+          name: node-local-dns
+          items:
+            - key: Corefile
+              path: Corefile.base`)
+
+func cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate, nil
+}
+
+func cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 var _cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel = []byte(`filegroup(
     name = "exported_testdata",
     srcs = glob(["**"]),
@@ -17035,6 +17234,7 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/networking.weave/k8s-1.8.yaml.template":                                     cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplate,
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s110YamlTemplate,
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate,
+	"cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template":                          cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/openstack.addons.k8s.io/BUILD.bazel":                                        cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel,
 	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.11.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplate,
 	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate,
@@ -17192,6 +17392,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				"node-authorizer.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.10.yaml.template": {cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s110YamlTemplate, map[string]*bintree{}},
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate, map[string]*bintree{}},
+				}},
+				"nodelocaldns.addons.k8s.io": {nil, map[string]*bintree{
+					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate, map[string]*bintree{}},
 				}},
 				"openstack.addons.k8s.io": {nil, map[string]*bintree{
 					"BUILD.bazel":            {cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel, map[string]*bintree{}},
