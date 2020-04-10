@@ -7,11 +7,11 @@ do our best to support previous releases for a period of time.
 
 One exception, in regard to compatibility, kops supports the equivalent
 Kubernetes minor release number.  A minor version is the second digit in the
-release number.  kops version 1.13.0 has a minor version of 13. The numbering
+release number.  kops version 1.16.0 has a minor version of 16. The numbering
 follows the semantic versioning specification, MAJOR.MINOR.PATCH.
 
-For example, kops 1.12.0 does not support Kubernetes 1.13.0, but kops 1.13.0
-supports Kubernetes 1.12.2 and previous Kubernetes versions. Only when the kops minor
+For example, kops 1.16.0 does not support Kubernetes 1.17.0, but kops 1.16.0
+supports Kubernetes 1.15.2 and previous Kubernetes versions. Only when the kops minor
 version matches the Kubernetes minor version does kops officially support the
 Kubernetes release.  kops does not stop a user from installing mismatching
 versions of K8s, but Kubernetes releases always require kops to install specific
@@ -21,13 +21,13 @@ Kubernetes version.
 
 ## Compatibility Matrix
 
-| kops version  | k8s 1.11.x | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x | k8s 1.15.x |
+| kops version  | k8s 1.12.x | k8s 1.13.x | k8s 1.14.x | k8s 1.15.x | k8s 1.16.x |
 |---------------|------------|------------|------------|------------|------------|
-| 1.15.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
-| 1.14.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
-| 1.13.x        | ✔          | ✔          | ✔          | ⚫         | ⚫         |
-| ~~1.12.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
-| ~~1.11.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
+| 1.16.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
+| 1.15.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
+| 1.14.x        | ✔          | ✔          | ✔          | ⚫         | ⚫         |
+| ~~1.13.x~~    | ✔          | ✔          | ⚫         | ⚫         | ⚫         |
+| ~~1.12.x~~    | ✔          | ⚫         | ⚫         | ⚫         | ⚫         |
 
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat

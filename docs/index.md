@@ -37,8 +37,3 @@ in alpha, and other platforms planned.
 * Choose from eight different CNI [Networking](networking.md) providers out-of-the-box
 * Supports upgrading from [kube-up](upgrade_from_kubeup.md)
 * Capability to add containers, as hooks, and files to nodes via a [cluster manifest](cluster_spec.md)
-
-
-## Documentation
-
-[To check out Live documentation](https://kops.sigs.k8s.io/)
