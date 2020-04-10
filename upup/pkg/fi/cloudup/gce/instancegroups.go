@@ -17,12 +17,12 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"encoding/base32"
 	"fmt"
 	"hash/fnv"
 	"strings"
 
-	context "golang.org/x/net/context"
 	compute "google.golang.org/api/compute/v0.beta"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
