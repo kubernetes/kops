@@ -97,6 +97,21 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return tf.cluster.Spec.KubeDNS
 	}
 
+	dest["NodeLocalDNSClusterIP"] = func() string {
+		if tf.cluster.Spec.KubeProxy.ProxyMode == "ipvs" {
+			return tf.cluster.Spec.KubeDNS.ServerIP
+		} else {
+			return "__PILLAR__CLUSTER__DNS__"
+		}
+	}
+	dest["NodeLocalDNSServerIP"] = func() string {
+		if tf.cluster.Spec.KubeProxy.ProxyMode == "ipvs" {
+			return ""
+		} else {
+			return tf.cluster.Spec.KubeDNS.ServerIP
+		}
+	}
+
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
