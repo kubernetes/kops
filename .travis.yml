@@ -3,8 +3,7 @@ os:
   - linux
   - osx
 go:
-  # 1.12 is now best-effort; we recommend 1.13
-  - "1.12"
+  # 1.12 is no longer supported by apimachinery; we recommend 1.13
   - "1.13"
   - "1.14"
 
@@ -14,9 +13,11 @@ script:
   - GOPROXY=https://proxy.golang.org make nodeup examples test
 
 jobs:
-  exclude:
-    - os: osx
-      go: "1.12"
+  # To exclude a known-bad configuration:
+  #exclude:
+  #  - os: osx
+  #    go: "1.12"
+
   include:
     - name: Verify
       os: linux
