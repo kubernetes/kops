@@ -960,4 +960,3 @@ spec:
 ```
 
 which would end up in a drop-in file on all masters and nodes of the cluster.
-
