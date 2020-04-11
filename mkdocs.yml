@@ -63,10 +63,11 @@ nav:
   - API:
     - Cluster Resource: "cluster_spec.md"
     - InstanceGroup Resource: "instance_groups.md"
-    - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
 
   - Operations:
     - Updates & Upgrades: "operations/updates_and_upgrades.md"
+    - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
+    - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
     - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
     - Instancegroup images: "operations/images.md"
@@ -80,7 +81,6 @@ nav:
     - Secret management: "secrets.md"
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
-    - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Running kops in a CI environment: "continuous_integration.md"
     - etcd administration: "operations/etcd_administration.md"
   - Networking:
