@@ -273,6 +273,8 @@ resource "aws_internet_gateway" "crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "crosszone.example.com"
+    "Owner"                                       = "John Doe"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
   }
   vpc_id = aws_vpc.crosszone-example-com.id
@@ -347,6 +349,8 @@ resource "aws_route_table" "crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "crosszone.example.com"
+    "Owner"                                       = "John Doe"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
     "kubernetes.io/kops/role"                     = "public"
   }
@@ -536,6 +540,8 @@ resource "aws_security_group" "api-elb-crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "api-elb.crosszone.example.com"
+    "Owner"                                       = "John Doe"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
   }
   vpc_id = aws_vpc.crosszone-example-com.id
@@ -547,6 +553,8 @@ resource "aws_security_group" "masters-crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "masters.crosszone.example.com"
+    "Owner"                                       = "John Doe"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
   }
   vpc_id = aws_vpc.crosszone-example-com.id
@@ -558,6 +566,8 @@ resource "aws_security_group" "nodes-crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "nodes.crosszone.example.com"
+    "Owner"                                       = "John Doe"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
   }
   vpc_id = aws_vpc.crosszone-example-com.id
@@ -569,7 +579,9 @@ resource "aws_subnet" "us-test-1a-crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "us-test-1a.crosszone.example.com"
+    "Owner"                                       = "John Doe"
     "SubnetType"                                  = "Public"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
     "kubernetes.io/role/elb"                      = "1"
   }
@@ -587,6 +599,8 @@ resource "aws_vpc_dhcp_options" "crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "crosszone.example.com"
+    "Owner"                                       = "John Doe"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
   }
 }
@@ -598,6 +612,8 @@ resource "aws_vpc" "crosszone-example-com" {
   tags = {
     "KubernetesCluster"                           = "crosszone.example.com"
     "Name"                                        = "crosszone.example.com"
+    "Owner"                                       = "John Doe"
+    "foo/bar"                                     = "fib+baz"
     "kubernetes.io/cluster/crosszone.example.com" = "owned"
   }
 }
