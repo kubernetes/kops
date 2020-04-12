@@ -7,6 +7,9 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
+  cloudLabels:
+    Owner: John Doe
+    foo/bar: fib+baz
   cloudProvider: aws
   configBase: memfs://clusters.example.com/privatedns1.example.com
   dnsZone: internal.example.com

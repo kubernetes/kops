@@ -285,6 +285,8 @@ resource "aws_internet_gateway" "nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "nosshkey.example.com"
+    Owner                                        = "John Doe"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
   }
 }
@@ -363,6 +365,8 @@ resource "aws_route_table" "nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "nosshkey.example.com"
+    Owner                                        = "John Doe"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
     "kubernetes.io/kops/role"                    = "public"
   }
@@ -381,6 +385,8 @@ resource "aws_security_group" "api-elb-nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "api-elb.nosshkey.example.com"
+    Owner                                        = "John Doe"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
   }
 }
@@ -393,6 +399,8 @@ resource "aws_security_group" "masters-nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "masters.nosshkey.example.com"
+    Owner                                        = "John Doe"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
   }
 }
@@ -405,6 +413,8 @@ resource "aws_security_group" "nodes-nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "nodes.nosshkey.example.com"
+    Owner                                        = "John Doe"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
   }
 }
@@ -588,7 +598,9 @@ resource "aws_subnet" "us-test-1a-nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "us-test-1a.nosshkey.example.com"
+    Owner                                        = "John Doe"
     SubnetType                                   = "Public"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
     "kubernetes.io/role/elb"                     = "1"
   }
@@ -602,6 +614,8 @@ resource "aws_vpc" "nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "nosshkey.example.com"
+    Owner                                        = "John Doe"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
   }
 }
@@ -613,6 +627,8 @@ resource "aws_vpc_dhcp_options" "nosshkey-example-com" {
   tags = {
     KubernetesCluster                            = "nosshkey.example.com"
     Name                                         = "nosshkey.example.com"
+    Owner                                        = "John Doe"
+    "foo/bar"                                    = "fib+baz"
     "kubernetes.io/cluster/nosshkey.example.com" = "owned"
   }
 }

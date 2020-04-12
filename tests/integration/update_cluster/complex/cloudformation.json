@@ -220,6 +220,14 @@
             "Value": "complex.example.com"
           },
           {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
             "Key": "kubernetes.io/cluster/complex.example.com",
             "Value": "owned"
           }
@@ -237,6 +245,14 @@
           {
             "Key": "Name",
             "Value": "complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
           },
           {
             "Key": "kubernetes.io/cluster/complex.example.com",
@@ -271,6 +287,14 @@
           {
             "Key": "Name",
             "Value": "complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
           },
           {
             "Key": "kubernetes.io/cluster/complex.example.com",
@@ -544,6 +568,14 @@
             "Value": "api-elb.complex.example.com"
           },
           {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
             "Key": "kubernetes.io/cluster/complex.example.com",
             "Value": "owned"
           }
@@ -567,6 +599,14 @@
             "Value": "masters.complex.example.com"
           },
           {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
             "Key": "kubernetes.io/cluster/complex.example.com",
             "Value": "owned"
           }
@@ -588,6 +628,14 @@
           {
             "Key": "Name",
             "Value": "nodes.complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
           },
           {
             "Key": "kubernetes.io/cluster/complex.example.com",
@@ -625,8 +673,16 @@
             "Value": "us-test-1a.complex.example.com"
           },
           {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
             "Key": "SubnetType",
             "Value": "Public"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
           },
           {
             "Key": "kubernetes.io/cluster/complex.example.com",
@@ -675,6 +731,14 @@
           {
             "Key": "Name",
             "Value": "complex.example.com"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
           },
           {
             "Key": "kubernetes.io/cluster/complex.example.com",

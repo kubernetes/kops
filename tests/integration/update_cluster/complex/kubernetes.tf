@@ -285,6 +285,8 @@ resource "aws_internet_gateway" "complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
@@ -377,6 +379,8 @@ resource "aws_route_table" "complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
     "kubernetes.io/kops/role"                   = "public"
   }
@@ -395,6 +399,8 @@ resource "aws_security_group" "api-elb-complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "api-elb.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
@@ -407,6 +413,8 @@ resource "aws_security_group" "masters-complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "masters.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
@@ -419,6 +427,8 @@ resource "aws_security_group" "nodes-complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "nodes.complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
@@ -602,7 +612,9 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "us-test-1a.complex.example.com"
+    Owner                                       = "John Doe"
     SubnetType                                  = "Public"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
     "kubernetes.io/role/elb"                    = "1"
   }
@@ -616,6 +628,8 @@ resource "aws_vpc" "complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
@@ -627,6 +641,8 @@ resource "aws_vpc_dhcp_options" "complex-example-com" {
   tags = {
     KubernetesCluster                           = "complex.example.com"
     Name                                        = "complex.example.com"
+    Owner                                       = "John Doe"
+    "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
