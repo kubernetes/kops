@@ -283,6 +283,8 @@ resource "aws_internet_gateway" "externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
   vpc_id = aws_vpc.externalpolicies-example-com.id
@@ -357,6 +359,8 @@ resource "aws_route_table" "externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
     "kubernetes.io/kops/role"                            = "public"
   }
@@ -546,6 +550,8 @@ resource "aws_security_group" "api-elb-externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "api-elb.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
   vpc_id = aws_vpc.externalpolicies-example-com.id
@@ -557,6 +563,8 @@ resource "aws_security_group" "masters-externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "masters.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
   vpc_id = aws_vpc.externalpolicies-example-com.id
@@ -568,6 +576,8 @@ resource "aws_security_group" "nodes-externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "nodes.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
   vpc_id = aws_vpc.externalpolicies-example-com.id
@@ -579,7 +589,9 @@ resource "aws_subnet" "us-test-1a-externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "us-test-1a.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
     "SubnetType"                                         = "Public"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
     "kubernetes.io/role/elb"                             = "1"
   }
@@ -597,6 +609,8 @@ resource "aws_vpc_dhcp_options" "externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
 }
@@ -608,6 +622,8 @@ resource "aws_vpc" "externalpolicies-example-com" {
   tags = {
     "KubernetesCluster"                                  = "externalpolicies.example.com"
     "Name"                                               = "externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
     "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
 }

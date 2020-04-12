@@ -138,6 +138,16 @@ resource "aws_autoscaling_group" "bastion-privatedns1-example-com" {
     value               = "bastion.privatedns1.example.com"
   }
   tag {
+    key                 = "Owner"
+    propagate_at_launch = true
+    value               = "John Doe"
+  }
+  tag {
+    key                 = "foo/bar"
+    propagate_at_launch = true
+    value               = "fib+baz"
+  }
+  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -171,6 +181,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns1-example-
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1a.masters.privatedns1.example.com"
+  }
+  tag {
+    key                 = "Owner"
+    propagate_at_launch = true
+    value               = "John Doe"
+  }
+  tag {
+    key                 = "foo/bar"
+    propagate_at_launch = true
+    value               = "fib+baz"
   }
   tag {
     key                 = "k8s.io/role/master"
@@ -208,6 +228,16 @@ resource "aws_autoscaling_group" "nodes-privatedns1-example-com" {
     value               = "nodes.privatedns1.example.com"
   }
   tag {
+    key                 = "Owner"
+    propagate_at_launch = true
+    value               = "John Doe"
+  }
+  tag {
+    key                 = "foo/bar"
+    propagate_at_launch = true
+    value               = "fib+baz"
+  }
+  tag {
     key                 = "k8s.io/role/node"
     propagate_at_launch = true
     value               = "1"
@@ -232,6 +262,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "us-test-1a.etcd-events.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "k8s.io/etcd/events"                            = "us-test-1a/us-test-1a"
     "k8s.io/role/master"                            = "1"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
@@ -246,6 +278,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "us-test-1a.etcd-main.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "k8s.io/etcd/main"                              = "us-test-1a/us-test-1a"
     "k8s.io/role/master"                            = "1"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
@@ -257,6 +291,8 @@ resource "aws_eip" "us-test-1a-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "us-test-1a.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   vpc = true
@@ -285,6 +321,8 @@ resource "aws_elb" "api-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "api.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
@@ -311,6 +349,8 @@ resource "aws_elb" "bastion-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "bastion.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
@@ -367,6 +407,8 @@ resource "aws_internet_gateway" "privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatedns1-example-com.id
@@ -446,6 +488,8 @@ resource "aws_nat_gateway" "us-test-1a-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "us-test-1a.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
@@ -480,6 +524,8 @@ resource "aws_route_table" "private-us-test-1a-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "private-us-test-1a.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     "kubernetes.io/kops/role"                       = "private-us-test-1a"
   }
@@ -490,6 +536,8 @@ resource "aws_route_table" "privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     "kubernetes.io/kops/role"                       = "public"
   }
@@ -685,6 +733,8 @@ resource "aws_security_group" "api-elb-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "api-elb.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatedns1-example-com.id
@@ -696,6 +746,8 @@ resource "aws_security_group" "bastion-elb-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "bastion-elb.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatedns1-example-com.id
@@ -707,6 +759,8 @@ resource "aws_security_group" "bastion-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "bastion.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatedns1-example-com.id
@@ -718,6 +772,8 @@ resource "aws_security_group" "masters-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "masters.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatedns1-example-com.id
@@ -729,6 +785,8 @@ resource "aws_security_group" "nodes-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "nodes.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatedns1-example-com.id
@@ -740,7 +798,9 @@ resource "aws_subnet" "us-test-1a-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "us-test-1a.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
     "SubnetType"                                    = "Private"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     "kubernetes.io/role/internal-elb"               = "1"
   }
@@ -753,7 +813,9 @@ resource "aws_subnet" "utility-us-test-1a-privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "utility-us-test-1a.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
     "SubnetType"                                    = "Utility"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     "kubernetes.io/role/elb"                        = "1"
   }
@@ -771,6 +833,8 @@ resource "aws_vpc_dhcp_options" "privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
@@ -782,6 +846,8 @@ resource "aws_vpc" "privatedns1-example-com" {
   tags = {
     "KubernetesCluster"                             = "privatedns1.example.com"
     "Name"                                          = "privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
     "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
