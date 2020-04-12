@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -94,6 +95,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    updateClusterLong,
 		Example: updateClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
 				exitWithError(err)
@@ -101,7 +104,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			clusterName := rootCommand.ClusterName()
 
-			if _, err := RunUpdateCluster(f, clusterName, out, options); err != nil {
+			if _, err := RunUpdateCluster(ctx, f, clusterName, out, options); err != nil {
 				exitWithError(err)
 			}
 		},
@@ -129,7 +132,7 @@ type UpdateClusterResults struct {
 	TaskMap map[string]fi.Task
 }
 
-func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) (*UpdateClusterResults, error) {
+func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) (*UpdateClusterResults, error) {
 	results := &UpdateClusterResults{}
 
 	isDryrun := false
@@ -157,7 +160,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 	}
 
-	cluster, err := GetCluster(f, clusterName)
+	cluster, err := GetCluster(ctx, f, clusterName)
 	if err != nil {
 		return results, err
 	}
@@ -235,7 +238,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 	var instanceGroups []*kops.InstanceGroup
 	{
-		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+		list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -268,7 +271,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		LifecycleOverrides: lifecycleOverrideMap,
 	}
 
-	if err := applyCmd.Run(); err != nil {
+	if err := applyCmd.Run(ctx); err != nil {
 		return results, err
 	}
 

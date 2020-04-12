@@ -19,6 +19,7 @@ package kutil
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -45,7 +46,7 @@ type ImportCluster struct {
 	Clientset simple.Clientset
 }
 
-func (x *ImportCluster) ImportAWSCluster() error {
+func (x *ImportCluster) ImportAWSCluster(ctx context.Context) error {
 	awsCloud := x.Cloud.(awsup.AWSCloud)
 	clusterName := x.ClusterName
 
@@ -487,7 +488,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		fullInstanceGroups = append(fullInstanceGroups, full)
 	}
 
-	err = registry.CreateClusterConfig(x.Clientset, cluster, fullInstanceGroups)
+	err = registry.CreateClusterConfig(ctx, x.Clientset, cluster, fullInstanceGroups)
 	if err != nil {
 		return err
 	}

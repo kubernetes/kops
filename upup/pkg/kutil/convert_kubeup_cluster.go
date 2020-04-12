@@ -17,6 +17,7 @@ limitations under the License.
 package kutil
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -50,7 +51,7 @@ type ConvertKubeupCluster struct {
 	Channel *api.Channel
 }
 
-func (x *ConvertKubeupCluster) Upgrade() error {
+func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 	awsCloud := x.Cloud.(awsup.AWSCloud)
 
 	cluster := x.ClusterConfig
@@ -464,7 +465,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		}
 	}
 
-	err = registry.CreateClusterConfig(x.Clientset, cluster, x.InstanceGroups)
+	err = registry.CreateClusterConfig(ctx, x.Clientset, cluster, x.InstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}

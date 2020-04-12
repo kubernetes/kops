@@ -1,5 +1,28 @@
+linters:
+  disable-all: true
+  enable:
+    - misspell
+    - structcheck
+    - golint
+    - govet
+    - deadcode
+    - errcheck
+    - varcheck
+    - goconst
+    - unparam
+    - ineffassign
+    - nakedret
+    - interfacer
+    - gocyclo
+    - lll
+    - dupl
+    - goimports
+
 linters-settings:
   lll:
     line-length: 170
   dupl:
     threshold: 400
+
+run:
+  timeout: 5m

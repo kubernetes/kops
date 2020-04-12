@@ -40,6 +40,11 @@ func (mounter *Mounter) Mount(source string, target string, fstype string, optio
 	return errUnsupported
 }
 
+// MountSensitive always returns an error on unsupported platforms
+func (n *Mounter) MountSensitive(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
+	return errUnsupported
+}
+
 // Unmount always returns an error on unsupported platforms
 func (mounter *Mounter) Unmount(target string) error {
 	return errUnsupported

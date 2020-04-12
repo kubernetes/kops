@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -70,13 +71,15 @@ func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command
 		Long:    toolboxConvertImportedLong,
 		Example: toolboxConvertImportedExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)
 			}
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err := RunToolboxConvertImported(f, out, options)
+			err := RunToolboxConvertImported(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -89,7 +92,7 @@ func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command
 	return cmd
 }
 
-func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxConvertImportedOptions) error {
+func RunToolboxConvertImported(ctx context.Context, f *util.Factory, out io.Writer, options *ToolboxConvertImportedOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -99,7 +102,7 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	cluster, err := clientset.GetCluster(options.ClusterName)
+	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -108,7 +111,7 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		return fmt.Errorf("cluster %q not found", options.ClusterName)
 	}
 
-	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -170,7 +173,7 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		Channel:        channel,
 	}
 
-	err = d.Upgrade()
+	err = d.Upgrade(ctx)
 	if err != nil {
 		return err
 	}

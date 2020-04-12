@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -64,6 +65,8 @@ func NewCmdCreateSecretCaCert(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    createSecretCacertLong,
 		Example: createSecretCacertExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
 				exitWithError(err)
@@ -71,7 +74,7 @@ func NewCmdCreateSecretCaCert(f *util.Factory, out io.Writer) *cobra.Command {
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err = RunCreateSecretCaCert(f, os.Stdout, options)
+			err = RunCreateSecretCaCert(ctx, f, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -85,7 +88,7 @@ func NewCmdCreateSecretCaCert(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 // RunCreateSecretCaCert adds a custom ca certificate and private key
-func RunCreateSecretCaCert(f *util.Factory, out io.Writer, options *CreateSecretCaCertOptions) error {
+func RunCreateSecretCaCert(ctx context.Context, f *util.Factory, out io.Writer, options *CreateSecretCaCertOptions) error {
 	if options.CaCertPath == "" {
 		return fmt.Errorf("error cert provided")
 	}
@@ -94,7 +97,7 @@ func RunCreateSecretCaCert(f *util.Factory, out io.Writer, options *CreateSecret
 		return fmt.Errorf("error no private key provided")
 	}
 
-	cluster, err := GetCluster(f, options.ClusterName)
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return fmt.Errorf("error getting cluster: %q: %v", options.ClusterName, err)
 	}

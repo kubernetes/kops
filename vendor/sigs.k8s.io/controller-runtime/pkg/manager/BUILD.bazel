@@ -6,7 +6,6 @@ go_library(
         "doc.go",
         "internal.go",
         "manager.go",
-        "testutil.go",
     ],
     importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/manager",
     importpath = "sigs.k8s.io/controller-runtime/pkg/manager",

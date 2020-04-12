@@ -25,6 +25,7 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/klog"
@@ -131,7 +132,7 @@ func (r *NodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	if err := r.patchNodeLabels(node, updateLabels); err != nil {
+	if err := r.patchNodeLabels(ctx, node, updateLabels); err != nil {
 		klog.Warningf("failed to patch node labels on %s: %v", node.Name, err)
 		return ctrl.Result{}, err
 	}
@@ -154,7 +155,7 @@ type nodePatchMetadata struct {
 }
 
 // patchNodeLabels patches the node labels to set the specified labels
-func (r *NodeReconciler) patchNodeLabels(node *corev1.Node, setLabels map[string]string) error {
+func (r *NodeReconciler) patchNodeLabels(ctx context.Context, node *corev1.Node, setLabels map[string]string) error {
 	nodePatchMetadata := &nodePatchMetadata{
 		Labels: setLabels,
 	}
@@ -168,7 +169,7 @@ func (r *NodeReconciler) patchNodeLabels(node *corev1.Node, setLabels map[string
 
 	klog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
 
-	_, err = r.coreV1Client.Nodes().Patch(node.Name, types.StrategicMergePatchType, nodePatchJson)
+	_, err = r.coreV1Client.Nodes().Patch(ctx, node.Name, types.StrategicMergePatchType, nodePatchJson, metav1.PatchOptions{})
 	if err != nil {
 		return fmt.Errorf("error applying patch to node: %v", err)
 	}
