@@ -17,6 +17,7 @@ limitations under the License.
 package channels
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 
@@ -87,12 +88,12 @@ func (a *Addon) buildChannel() *Channel {
 	return channel
 }
 
-func (a *Addon) GetRequiredUpdates(k8sClient kubernetes.Interface) (*AddonUpdate, error) {
+func (a *Addon) GetRequiredUpdates(ctx context.Context, k8sClient kubernetes.Interface) (*AddonUpdate, error) {
 	newVersion := a.ChannelVersion()
 
 	channel := a.buildChannel()
 
-	existingVersion, err := channel.GetInstalledVersion(k8sClient)
+	existingVersion, err := channel.GetInstalledVersion(ctx, k8sClient)
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +125,8 @@ func (a *Addon) GetManifestFullUrl() (*url.URL, error) {
 	return manifestURL, nil
 }
 
-func (a *Addon) EnsureUpdated(k8sClient kubernetes.Interface) (*AddonUpdate, error) {
-	required, err := a.GetRequiredUpdates(k8sClient)
+func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interface) (*AddonUpdate, error) {
+	required, err := a.GetRequiredUpdates(ctx, k8sClient)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +145,7 @@ func (a *Addon) EnsureUpdated(k8sClient kubernetes.Interface) (*AddonUpdate, err
 	}
 
 	channel := a.buildChannel()
-	err = channel.SetInstalledVersion(k8sClient, a.ChannelVersion())
+	err = channel.SetInstalledVersion(ctx, k8sClient, a.ChannelVersion())
 	if err != nil {
 		return nil, fmt.Errorf("error applying annotation to record addon installation: %v", err)
 	}

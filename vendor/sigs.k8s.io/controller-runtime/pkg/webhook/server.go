@@ -19,7 +19,9 @@ package webhook
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -31,11 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics"
-)
-
-const (
-	certName = "tls.crt"
-	keyName  = "tls.key"
 )
 
 // DefaultPort is the default port that the webhook server serves.
@@ -52,12 +49,19 @@ type Server struct {
 	// It will be defaulted to 443 if unspecified.
 	Port int
 
-	// CertDir is the directory that contains the server key and certificate.
-	// If using FSCertWriter in Provisioner, the server itself will provision the certificate and
-	// store it in this directory.
-	// If using SecretCertWriter in Provisioner, the server will provision the certificate in a secret,
-	// the user is responsible to mount the secret to the this location for the server to consume.
+	// CertDir is the directory that contains the server key and certificate. The
+	// server key and certificate.
 	CertDir string
+
+	// CertName is the server certificate name. Defaults to tls.crt.
+	CertName string
+
+	// KeyName is the server key name. Defaults to tls.key.
+	KeyName string
+
+	// ClientCAName is the CA certificate name which server used to verify remote(client)'s certificate.
+	// Defaults to "", which means server does not verify client's certificate.
+	ClientCAName string
 
 	// WebhookMux is the multiplexer that handles different webhooks.
 	WebhookMux *http.ServeMux
@@ -87,6 +91,14 @@ func (s *Server) setDefaults() {
 	if len(s.CertDir) == 0 {
 		s.CertDir = filepath.Join(os.TempDir(), "k8s-webhook-server", "serving-certs")
 	}
+
+	if len(s.CertName) == 0 {
+		s.CertName = "tls.crt"
+	}
+
+	if len(s.KeyName) == 0 {
+		s.KeyName = "tls.key"
+	}
 }
 
 // NeedLeaderElection implements the LeaderElectionRunnable interface, which indicates
@@ -113,7 +125,7 @@ func (s *Server) Register(path string, hook http.Handler) {
 func instrumentedHook(path string, hookRaw http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		startTS := time.Now()
-		defer func() { metrics.RequestLatency.WithLabelValues(path).Observe(time.Now().Sub(startTS).Seconds()) }()
+		defer func() { metrics.RequestLatency.WithLabelValues(path).Observe(time.Since(startTS).Seconds()) }()
 		hookRaw.ServeHTTP(resp, req)
 
 		// TODO(directxman12): add back in metric about total requests broken down by result?
@@ -143,8 +155,8 @@ func (s *Server) Start(stop <-chan struct{}) error {
 		}
 	}
 
-	certPath := filepath.Join(s.CertDir, certName)
-	keyPath := filepath.Join(s.CertDir, keyName)
+	certPath := filepath.Join(s.CertDir, s.CertName)
+	keyPath := filepath.Join(s.CertDir, s.KeyName)
 
 	certWatcher, err := certwatcher.New(certPath, keyPath)
 	if err != nil {
@@ -160,6 +172,23 @@ func (s *Server) Start(stop <-chan struct{}) error {
 	cfg := &tls.Config{
 		NextProtos:     []string{"h2"},
 		GetCertificate: certWatcher.GetCertificate,
+	}
+
+	// load CA to verify client certificate
+	if s.ClientCAName != "" {
+		certPool := x509.NewCertPool()
+		clientCABytes, err := ioutil.ReadFile(filepath.Join(s.CertDir, s.ClientCAName))
+		if err != nil {
+			return fmt.Errorf("failed to read client CA cert: %v", err)
+		}
+
+		ok := certPool.AppendCertsFromPEM(clientCABytes)
+		if !ok {
+			return fmt.Errorf("failed to append client CA cert to CA pool")
+		}
+
+		cfg.ClientCAs = certPool
+		cfg.ClientAuth = tls.RequireAndVerifyClientCert
 	}
 
 	listener, err := tls.Listen("tcp", net.JoinHostPort(s.Host, strconv.Itoa(int(s.Port))), cfg)

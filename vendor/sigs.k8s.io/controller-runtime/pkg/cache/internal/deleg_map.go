@@ -17,6 +17,7 @@ limitations under the License.
 package internal
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -63,26 +64,32 @@ func (m *InformersMap) Start(stop <-chan struct{}) error {
 	return nil
 }
 
-// WaitForCacheSync waits until all the caches have been synced.
+// WaitForCacheSync waits until all the caches have been started and synced.
 func (m *InformersMap) WaitForCacheSync(stop <-chan struct{}) bool {
 	syncedFuncs := append([]cache.InformerSynced(nil), m.structured.HasSyncedFuncs()...)
 	syncedFuncs = append(syncedFuncs, m.unstructured.HasSyncedFuncs()...)
 
+	if !m.structured.waitForStarted(stop) {
+		return false
+	}
+	if !m.unstructured.waitForStarted(stop) {
+		return false
+	}
 	return cache.WaitForCacheSync(stop, syncedFuncs...)
 }
 
 // Get will create a new Informer and add it to the map of InformersMap if none exists.  Returns
 // the Informer from the map.
-func (m *InformersMap) Get(gvk schema.GroupVersionKind, obj runtime.Object) (bool, *MapEntry, error) {
+func (m *InformersMap) Get(ctx context.Context, gvk schema.GroupVersionKind, obj runtime.Object) (bool, *MapEntry, error) {
 	_, isUnstructured := obj.(*unstructured.Unstructured)
 	_, isUnstructuredList := obj.(*unstructured.UnstructuredList)
 	isUnstructured = isUnstructured || isUnstructuredList
 
 	if isUnstructured {
-		return m.unstructured.Get(gvk, obj)
+		return m.unstructured.Get(ctx, gvk, obj)
 	}
 
-	return m.structured.Get(gvk, obj)
+	return m.structured.Get(ctx, gvk, obj)
 }
 
 // newStructuredInformersMap creates a new InformersMap for structured objects.

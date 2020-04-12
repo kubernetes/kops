@@ -17,6 +17,7 @@ limitations under the License.
 package channels
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -149,8 +150,8 @@ func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 	return true
 }
 
-func (c *Channel) GetInstalledVersion(k8sClient kubernetes.Interface) (*ChannelVersion, error) {
-	ns, err := k8sClient.CoreV1().Namespaces().Get(c.Namespace, metav1.GetOptions{})
+func (c *Channel) GetInstalledVersion(ctx context.Context, k8sClient kubernetes.Interface) (*ChannelVersion, error) {
+	ns, err := k8sClient.CoreV1().Namespaces().Get(ctx, c.Namespace, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error querying namespace %q: %v", c.Namespace, err)
 	}
@@ -170,9 +171,9 @@ type annotationPatchMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
-func (c *Channel) SetInstalledVersion(k8sClient kubernetes.Interface, version *ChannelVersion) error {
+func (c *Channel) SetInstalledVersion(ctx context.Context, k8sClient kubernetes.Interface, version *ChannelVersion) error {
 	// Primarily to check it exists
-	_, err := k8sClient.CoreV1().Namespaces().Get(c.Namespace, metav1.GetOptions{})
+	_, err := k8sClient.CoreV1().Namespaces().Get(ctx, c.Namespace, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error querying namespace %q: %v", c.Namespace, err)
 	}
@@ -190,7 +191,7 @@ func (c *Channel) SetInstalledVersion(k8sClient kubernetes.Interface, version *C
 
 	klog.V(2).Infof("sending patch: %q", string(annotationPatchJSON))
 
-	_, err = k8sClient.CoreV1().Namespaces().Patch(c.Namespace, types.StrategicMergePatchType, annotationPatchJSON)
+	_, err = k8sClient.CoreV1().Namespaces().Patch(ctx, c.Namespace, types.StrategicMergePatchType, annotationPatchJSON, metav1.PatchOptions{})
 	if err != nil {
 		return fmt.Errorf("error applying annotation to namespace: %v", err)
 	}

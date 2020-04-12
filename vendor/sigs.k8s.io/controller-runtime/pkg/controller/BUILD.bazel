@@ -15,6 +15,7 @@ go_library(
         "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/controller:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/manager:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/predicate:go_default_library",
+        "//vendor/sigs.k8s.io/controller-runtime/pkg/ratelimiter:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/reconcile:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/source:go_default_library",
     ],

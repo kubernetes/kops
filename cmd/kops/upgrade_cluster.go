@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -25,6 +26,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -49,7 +51,9 @@ func init() {
 		Long:    upgradeLong,
 		Example: upgradeExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := upgradeCluster.Run(args)
+			ctx := context.TODO()
+
+			err := upgradeCluster.Run(ctx, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -71,13 +75,13 @@ type upgradeAction struct {
 	apply func()
 }
 
-func (c *UpgradeClusterCmd) Run(args []string) error {
+func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
 	}
 
-	cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
 	}
@@ -87,7 +91,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	instanceGroups, err := commands.ReadAllInstanceGroups(clientset, cluster)
+	instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, cluster)
 	if err != nil {
 		return err
 	}
@@ -277,12 +281,12 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		action.apply()
 	}
 
-	if err := commands.UpdateCluster(clientset, cluster, instanceGroups); err != nil {
+	if err := commands.UpdateCluster(ctx, clientset, cluster, instanceGroups); err != nil {
 		return err
 	}
 
 	for _, g := range instanceGroups {
-		_, err := clientset.InstanceGroupsFor(cluster).Update(g)
+		_, err := clientset.InstanceGroupsFor(cluster).Update(ctx, g, metav1.UpdateOptions{})
 		if err != nil {
 			return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -67,7 +68,8 @@ func NewCmdGetSecrets(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 		Long:    getSecretLong,
 		Example: getSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunGetSecrets(&options, args)
+			ctx := context.TODO()
+			err := RunGetSecrets(ctx, &options, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -181,8 +183,8 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 	return items, nil
 }
 
-func RunGetSecrets(options *GetSecretsOptions, args []string) error {
-	cluster, err := rootCommand.Cluster()
+func RunGetSecrets(ctx context.Context, options *GetSecretsOptions, args []string) error {
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
 	}

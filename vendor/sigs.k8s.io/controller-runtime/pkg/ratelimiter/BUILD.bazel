@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "ratelimiter.go",
+    ],
+    importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/ratelimiter",
+    importpath = "sigs.k8s.io/controller-runtime/pkg/ratelimiter",
+    visibility = ["//visibility:public"],
+)

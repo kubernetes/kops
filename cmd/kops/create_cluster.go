@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -261,6 +262,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    createClusterLong,
 		Example: createClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			if cmd.Flag("associate-public-ip").Changed {
 				options.AssociatePublicIP = &associatePublicIP
 			}
@@ -280,7 +283,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 				}
 			}
 
-			err = RunCreateCluster(f, out, options)
+			err = RunCreateCluster(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -405,7 +408,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
+func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)
 	targetName := c.Target
@@ -446,7 +449,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(clusterName)
+	cluster, err := clientset.GetCluster(ctx, clusterName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			cluster = nil
@@ -1348,7 +1351,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	err = registry.CreateClusterConfig(clientset, cluster, fullInstanceGroups)
+	err = registry.CreateClusterConfig(ctx, clientset, cluster, fullInstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
@@ -1417,7 +1420,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
 		//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
 
-		_, err := RunUpdateCluster(f, clusterName, out, updateClusterOptions)
+		_, err := RunUpdateCluster(ctx, f, clusterName, out, updateClusterOptions)
 		if err != nil {
 			return err
 		}

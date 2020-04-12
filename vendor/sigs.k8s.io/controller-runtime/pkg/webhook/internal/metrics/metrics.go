@@ -23,16 +23,6 @@ import (
 )
 
 var (
-	// TotalRequests is a prometheus metric which counts the total number of requests that
-	// the webhook server has received.
-	TotalRequests = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "controller_runtime_webhook_requests_total",
-			Help: "Total number of admission requests",
-		},
-		[]string{"webhook", "succeeded"},
-	)
-
 	// RequestLatency is a prometheus metric which is a histogram of the latency
 	// of processing admission requests.
 	RequestLatency = prometheus.NewHistogramVec(
@@ -46,6 +36,5 @@ var (
 
 func init() {
 	metrics.Registry.MustRegister(
-		TotalRequests,
 		RequestLatency)
 }

@@ -116,6 +116,10 @@ func (n *Mounter) makeNsenterArgs(source, target, fstype string, options []strin
 
 // We deliberately implement only the functions we need, so we don't have to maintain them...
 
+func (n *Mounter) MountSensitive(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
+	return fmt.Errorf("MountSensitive not implemented for containerized mounter")
+}
+
 func (n *Mounter) GetMountRefs(pathname string) ([]string, error) {
 	return nil, fmt.Errorf("GetMountRefs not implemented for containerized mounter")
 }

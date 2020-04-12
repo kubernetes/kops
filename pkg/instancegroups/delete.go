@@ -17,8 +17,10 @@ limitations under the License.
 package instancegroups
 
 import (
+	"context"
 	"fmt"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
@@ -34,6 +36,7 @@ type DeleteInstanceGroup struct {
 
 // DeleteInstanceGroup deletes a cloud instance group
 func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
+	ctx := context.TODO()
 
 	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, false, nil)
 	if err != nil {
@@ -56,7 +59,7 @@ func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 		}
 	}
 
-	err = d.Clientset.InstanceGroupsFor(d.Cluster).Delete(group.ObjectMeta.Name, nil)
+	err = d.Clientset.InstanceGroupsFor(d.Cluster).Delete(ctx, group.ObjectMeta.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

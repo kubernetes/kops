@@ -17,12 +17,12 @@ limitations under the License.
 package watchers
 
 import (
+	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"k8s.io/klog"
-
-	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -68,12 +68,14 @@ func (c *PodController) Run() {
 
 func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
+		ctx := context.TODO()
+
 		var listOpts metav1.ListOptions
 		klog.V(4).Infof("querying without label filter")
 
 		allKeys := c.scope.AllKeys()
 
-		podList, err := c.client.CoreV1().Pods(c.namespace).List(listOpts)
+		podList, err := c.client.CoreV1().Pods(c.namespace).List(ctx, listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing pods: %v", err)
 		}
@@ -95,7 +97,7 @@ func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = podList.ResourceVersion
-		watcher, err := c.client.CoreV1().Pods(c.namespace).Watch(listOpts)
+		watcher, err := c.client.CoreV1().Pods(c.namespace).Watch(ctx, listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching pods: %v", err)
 		}

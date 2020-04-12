@@ -20,6 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 )
 
 // {{{ "Functional" Option Interfaces
@@ -388,6 +389,25 @@ func (m MatchingLabels) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
 	m.ApplyToList(&opts.ListOptions)
 }
 
+// HasLabels filters the list/delete operation checking if the set of labels exists
+// without checking their values.
+type HasLabels []string
+
+func (m HasLabels) ApplyToList(opts *ListOptions) {
+	sel := labels.NewSelector()
+	for _, label := range m {
+		r, err := labels.NewRequirement(label, selection.Exists, nil)
+		if err == nil {
+			sel = sel.Add(*r)
+		}
+	}
+	opts.LabelSelector = sel
+}
+
+func (m HasLabels) ApplyToDeleteAllOf(opts *DeleteAllOfOptions) {
+	m.ApplyToList(&opts.ListOptions)
+}
+
 // MatchingLabelsSelector filters the list/delete operation on the given label
 // selector (or index in the case of cached lists). A struct is used because
 // labels.Selector is an interface, which cannot be aliased.
@@ -411,13 +431,13 @@ func MatchingField(name, val string) MatchingFields {
 	return MatchingFields{name: val}
 }
 
-// MatchingField filters the list/delete operation on the given field Set
+// MatchingFields filters the list/delete operation on the given field Set
 // (or index in the case of cached lists).
 type MatchingFields fields.Set
 
 func (m MatchingFields) ApplyToList(opts *ListOptions) {
 	// TODO(directxman12): can we avoid re-serializing this?
-	sel := fields.SelectorFromSet(fields.Set(m))
+	sel := fields.Set(m).AsSelector()
 	opts.FieldSelector = sel
 }
 

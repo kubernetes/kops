@@ -17,6 +17,8 @@ limitations under the License.
 package simple
 
 import (
+	"context"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
@@ -26,16 +28,16 @@ import (
 
 type Clientset interface {
 	// GetCluster reads a cluster by name
-	GetCluster(name string) (*kops.Cluster, error)
+	GetCluster(ctx context.Context, name string) (*kops.Cluster, error)
 
 	// CreateCluster creates a cluster
-	CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error)
+	CreateCluster(ctx context.Context, cluster *kops.Cluster) (*kops.Cluster, error)
 
 	// UpdateCluster updates a cluster
-	UpdateCluster(cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error)
+	UpdateCluster(ctx context.Context, cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error)
 
 	// ListClusters returns all clusters
-	ListClusters(options metav1.ListOptions) (*kops.ClusterList, error)
+	ListClusters(ctx context.Context, options metav1.ListOptions) (*kops.ClusterList, error)
 
 	// ConfigBaseFor returns the vfs path where we will read configuration information from
 	ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error)
@@ -53,5 +55,5 @@ type Clientset interface {
 	SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error)
 
 	// DeleteCluster deletes all the state for the specified cluster
-	DeleteCluster(cluster *kops.Cluster) error
+	DeleteCluster(ctx context.Context, cluster *kops.Cluster) error
 }
