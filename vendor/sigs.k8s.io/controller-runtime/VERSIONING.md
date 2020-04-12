@@ -241,7 +241,7 @@ leads to API cruft.
 
 Since one of the goals of controller-runtime is to be a friendly and
 intuitive API, we want to avoid too much API cruft over time, and
-occaisonal breaking changes in major releases help accomplish that goal.
+occasional breaking changes in major releases help accomplish that goal.
 
 Furthermore, our dependency on Kubernetes libraries makes this difficult
 (see below)

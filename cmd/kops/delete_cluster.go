@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -69,6 +70,8 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    deleteClusterLong,
 		Example: deleteClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
 				exitWithError(err)
@@ -77,7 +80,7 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			// Note _not_ ClusterName(); we only want the --name flag
 			options.ClusterName = rootCommand.clusterName
 
-			err = RunDeleteCluster(f, out, options)
+			err = RunDeleteCluster(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -92,7 +95,7 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOptions) error {
+func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteClusterOptions) error {
 	clusterName := options.ClusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required (for safety)")
@@ -114,7 +117,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			return fmt.Errorf("error initializing AWS client: %v", err)
 		}
 	} else {
-		cluster, err = GetCluster(f, clusterName)
+		cluster, err = GetCluster(ctx, f, clusterName)
 		if err != nil {
 			return err
 		}
@@ -195,7 +198,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		if err != nil {
 			return err
 		}
-		err = clientset.DeleteCluster(cluster)
+		err = clientset.DeleteCluster(ctx, cluster)
 		if err != nil {
 			return fmt.Errorf("error removing cluster from state store: %v", err)
 		}

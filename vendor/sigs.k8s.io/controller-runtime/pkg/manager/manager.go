@@ -111,6 +111,8 @@ type Options struct {
 	// reconciled. A lower period will correct entropy more quickly, but reduce
 	// responsiveness to change if there are many watched resources. Change this
 	// value only if you know what you are doing. Defaults to 10 hours if unset.
+	// there will a 10 percent jitter between the SyncPeriod of all controllers
+	// so that all controllers will not send list requests simultaneously.
 	SyncPeriod *time.Duration
 
 	// LeaderElection determines whether or not to use leader election when
@@ -168,7 +170,8 @@ type Options struct {
 
 	// CertDir is the directory that contains the server key and certificate.
 	// if not set, webhook server would look up the server key and certificate in
-	// {TempDir}/k8s-webhook-server/serving-certs
+	// {TempDir}/k8s-webhook-server/serving-certs. The server key and certificate
+	// must be named tls.key and tls.crt, respectively.
 	CertDir string
 	// Functions to all for a user to customize the values that will be injected.
 

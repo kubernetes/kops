@@ -125,6 +125,8 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 }
 
 func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
+	ctx := context.TODO()
+
 	clusterName := v.cluster.Name
 
 	validation := &ValidationCluster{}
@@ -154,7 +156,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 		}
 	}
 
-	nodeList, err := v.k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := v.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error listing nodes: %v", err)
 	}
@@ -166,19 +168,19 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	}
 	validation.validateNodes(cloudGroups)
 
-	if err := validation.collectComponentFailures(v.k8sClient); err != nil {
+	if err := validation.collectComponentFailures(ctx, v.k8sClient); err != nil {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
-	if err := validation.collectPodFailures(v.k8sClient, nodeList.Items); err != nil {
+	if err := validation.collectPodFailures(ctx, v.k8sClient, nodeList.Items); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
 	return validation, nil
 }
 
-func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface) error {
-	componentList, err := client.CoreV1().ComponentStatuses().List(metav1.ListOptions{})
+func (v *ValidationCluster) collectComponentFailures(ctx context.Context, client kubernetes.Interface) error {
+	componentList, err := client.CoreV1().ComponentStatuses().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("error listing ComponentStatuses: %v", err)
 	}
@@ -197,7 +199,7 @@ func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface
 	return nil
 }
 
-func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface, nodes []v1.Node) error {
+func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node) error {
 	masterWithoutManager := map[string]bool{}
 	nodeByAddress := map[string]string{}
 	for _, node := range nodes {
@@ -211,7 +213,7 @@ func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface, node
 	}
 
 	err := pager.New(pager.SimplePageFunc(func(opts metav1.ListOptions) (runtime.Object, error) {
-		return client.CoreV1().Pods(metav1.NamespaceAll).List(opts)
+		return client.CoreV1().Pods(metav1.NamespaceAll).List(ctx, opts)
 	})).EachListItem(context.TODO(), metav1.ListOptions{}, func(obj runtime.Object) error {
 		pod := obj.(*v1.Pod)
 		priority := pod.Spec.PriorityClassName

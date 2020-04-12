@@ -19,6 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -69,7 +70,9 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    editClusterLong,
 		Example: editClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunEditCluster(f, cmd, args, out, options)
+			ctx := context.TODO()
+
+			err := RunEditCluster(ctx, f, cmd, args, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -79,13 +82,13 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *EditClusterOptions) error {
+func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *EditClusterOptions) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
 	}
 
-	oldCluster, err := rootCommand.Cluster()
+	oldCluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
 	}
@@ -100,7 +103,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	instanceGroups, err := commands.ReadAllInstanceGroups(clientset, oldCluster)
+	instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, oldCluster)
 	if err != nil {
 		return err
 	}
@@ -242,7 +245,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.UpdateCluster(newCluster, status)
+		_, err = clientset.UpdateCluster(ctx, newCluster, status)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}

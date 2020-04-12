@@ -17,6 +17,7 @@ limitations under the License.
 package watchers
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -65,12 +66,14 @@ func (c *NodeController) Run() {
 
 func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
+		ctx := context.TODO()
+
 		var listOpts metav1.ListOptions
 		klog.V(4).Infof("querying without field filter")
 
 		// Note we need to watch all the nodes, to set up alias targets
 		allKeys := c.scope.AllKeys()
-		nodeList, err := c.client.CoreV1().Nodes().List(listOpts)
+		nodeList, err := c.client.CoreV1().Nodes().List(ctx, listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing nodes: %v", err)
 		}
@@ -92,7 +95,7 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = nodeList.ResourceVersion
-		watcher, err := c.client.CoreV1().Nodes().Watch(listOpts)
+		watcher, err := c.client.CoreV1().Nodes().Watch(ctx, listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching nodes: %v", err)
 		}

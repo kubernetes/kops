@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -72,12 +73,13 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    replaceLong,
 		Example: replaceExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
 			if len(options.Filenames) == 0 {
 				cmd.Help()
 				return
 			}
 
-			cmdutil.CheckErr(RunReplace(f, cmd, out, options))
+			cmdutil.CheckErr(RunReplace(ctx, f, cmd, out, options))
 		},
 	}
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")
@@ -88,7 +90,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 // RunReplace processes the replace command
-func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOptions) error {
+func RunReplace(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -130,7 +132,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 
 					// Check if the cluster exists already
 					clusterName := v.Name
-					cluster, err := clientset.GetCluster(clusterName)
+					cluster, err := clientset.GetCluster(ctx, clusterName)
 					if err != nil {
 						if errors.IsNotFound(err) {
 							cluster = nil
@@ -142,12 +144,12 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 						if !c.force {
 							return fmt.Errorf("cluster %v does not exist (try adding --force flag)", clusterName)
 						}
-						_, err = clientset.CreateCluster(v)
+						_, err = clientset.CreateCluster(ctx, v)
 						if err != nil {
 							return fmt.Errorf("error creating cluster: %v", err)
 						}
 					} else {
-						_, err = clientset.UpdateCluster(v, status)
+						_, err = clientset.UpdateCluster(ctx, v, status)
 						if err != nil {
 							return fmt.Errorf("error replacing cluster: %v", err)
 						}
@@ -159,7 +161,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to replace instanceGroup", kopsapi.LabelClusterName)
 				}
-				cluster, err := clientset.GetCluster(clusterName)
+				cluster, err := clientset.GetCluster(ctx, clusterName)
 				if err != nil {
 					if errors.IsNotFound(err) {
 						return fmt.Errorf("cluster %q not found", clusterName)
@@ -168,7 +170,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 				// check if the instancegroup exists already
 				igName := v.ObjectMeta.Name
-				ig, err := clientset.InstanceGroupsFor(cluster).Get(igName, metav1.GetOptions{})
+				ig, err := clientset.InstanceGroupsFor(cluster).Get(ctx, igName, metav1.GetOptions{})
 				if err != nil {
 					if errors.IsNotFound(err) {
 						if !c.force {
@@ -181,12 +183,12 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				switch ig {
 				case nil:
 					klog.Infof("instanceGroup: %v was not found, creating resource now", igName)
-					_, err = clientset.InstanceGroupsFor(cluster).Create(v)
+					_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, v, metav1.CreateOptions{})
 					if err != nil {
 						return fmt.Errorf("error creating instanceGroup: %v", err)
 					}
 				default:
-					_, err = clientset.InstanceGroupsFor(cluster).Update(v)
+					_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, v, metav1.UpdateOptions{})
 					if err != nil {
 						return fmt.Errorf("error replacing instanceGroup: %v", err)
 					}
@@ -200,7 +202,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 					return fmt.Errorf("spec.PublicKey is required")
 				}
 
-				cluster, err := clientset.GetCluster(clusterName)
+				cluster, err := clientset.GetCluster(ctx, clusterName)
 				if err != nil {
 					return err
 				}

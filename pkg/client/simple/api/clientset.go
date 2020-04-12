@@ -17,6 +17,7 @@ limitations under the License.
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -41,21 +42,21 @@ type RESTClientset struct {
 }
 
 // GetCluster implements the GetCluster method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) GetCluster(name string) (*kops.Cluster, error) {
+func (c *RESTClientset) GetCluster(ctx context.Context, name string) (*kops.Cluster, error) {
 	namespace := restNamespaceForClusterName(name)
-	return c.KopsClient.Clusters(namespace).Get(name, metav1.GetOptions{})
+	return c.KopsClient.Clusters(namespace).Get(ctx, name, metav1.GetOptions{})
 }
 
 // CreateCluster implements the CreateCluster method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+func (c *RESTClientset) CreateCluster(ctx context.Context, cluster *kops.Cluster) (*kops.Cluster, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
-	return c.KopsClient.Clusters(namespace).Create(cluster)
+	return c.KopsClient.Clusters(namespace).Create(ctx, cluster, metav1.CreateOptions{})
 }
 
 // UpdateCluster implements the UpdateCluster method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) UpdateCluster(cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error) {
+func (c *RESTClientset) UpdateCluster(ctx context.Context, cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error) {
 	klog.Warningf("validating cluster update client side; needs to move to server")
-	old, err := c.GetCluster(cluster.Name)
+	old, err := c.GetCluster(ctx, cluster.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (c *RESTClientset) UpdateCluster(cluster *kops.Cluster, status *kops.Cluste
 	}
 
 	namespace := restNamespaceForClusterName(cluster.Name)
-	return c.KopsClient.Clusters(namespace).Update(cluster)
+	return c.KopsClient.Clusters(namespace).Update(ctx, cluster, metav1.UpdateOptions{})
 }
 
 // ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
@@ -78,8 +79,8 @@ func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
 }
 
 // ListClusters implements the ListClusters method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) ListClusters(options metav1.ListOptions) (*kops.ClusterList, error) {
-	return c.KopsClient.Clusters(metav1.NamespaceAll).List(options)
+func (c *RESTClientset) ListClusters(ctx context.Context, options metav1.ListOptions) (*kops.ClusterList, error) {
+	return c.KopsClient.Clusters(metav1.NamespaceAll).List(ctx, options)
 }
 
 // InstanceGroupsFor implements the InstanceGroupsFor method of Clientset for a kubernetes-API state store
@@ -103,7 +104,7 @@ func (c *RESTClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredent
 	return fi.NewClientsetSSHCredentialStore(cluster, c.KopsClient, namespace), nil
 }
 
-func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
+func (c *RESTClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster) error {
 	configBase, err := registry.ConfigBase(cluster)
 	if err != nil {
 		return err
@@ -118,14 +119,14 @@ func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
 	namespace := restNamespaceForClusterName(name)
 
 	{
-		keysets, err := c.KopsClient.Keysets(namespace).List(metav1.ListOptions{})
+		keysets, err := c.KopsClient.Keysets(namespace).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return fmt.Errorf("error listing Keysets: %v", err)
 		}
 
 		for i := range keysets.Items {
 			keyset := &keysets.Items[i]
-			err = c.KopsClient.Keysets(namespace).Delete(keyset.Name, &metav1.DeleteOptions{})
+			err = c.KopsClient.Keysets(namespace).Delete(ctx, keyset.Name, metav1.DeleteOptions{})
 			if err != nil {
 				if errors.IsNotFound(err) {
 					// Unlikely...
@@ -138,14 +139,14 @@ func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
 	}
 
 	{
-		igs, err := c.KopsClient.InstanceGroups(namespace).List(metav1.ListOptions{})
+		igs, err := c.KopsClient.InstanceGroups(namespace).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return fmt.Errorf("error listing instance groups: %v", err)
 		}
 
 		for i := range igs.Items {
 			ig := &igs.Items[i]
-			err = c.KopsClient.InstanceGroups(namespace).Delete(ig.Name, &metav1.DeleteOptions{})
+			err = c.KopsClient.InstanceGroups(namespace).Delete(ctx, ig.Name, metav1.DeleteOptions{})
 			if err != nil {
 				if errors.IsNotFound(err) {
 					// Unlikely...
@@ -157,7 +158,7 @@ func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
 		}
 	}
 
-	err = c.KopsClient.Clusters(namespace).Delete(name, &metav1.DeleteOptions{})
+	err = c.KopsClient.Clusters(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Unlikely...

@@ -17,13 +17,14 @@ limitations under the License.
 package vfsclientset
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func listChildNames(vfsPath vfs.Path) ([]string, error) {
+func listChildNames(ctx context.Context, vfsPath vfs.Path) ([]string, error) {
 	children, err := vfsPath.ReadDir()
 	if err != nil {
 		if os.IsNotExist(err) {

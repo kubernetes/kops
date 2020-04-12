@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -52,6 +53,8 @@ func NewCmdSetCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    setClusterLong,
 		Example: setClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			for i, arg := range args {
 				index := strings.Index(arg, "=")
 
@@ -70,7 +73,7 @@ func NewCmdSetCluster(f *util.Factory, out io.Writer) *cobra.Command {
 				options.ClusterName = rootCommand.ClusterName()
 			}
 
-			if err := commands.RunSetCluster(f, cmd, out, options); err != nil {
+			if err := commands.RunSetCluster(ctx, f, cmd, out, options); err != nil {
 				exitWithError(err)
 			}
 		},

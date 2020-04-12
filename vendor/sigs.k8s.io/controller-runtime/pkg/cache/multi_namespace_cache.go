@@ -36,7 +36,9 @@ type NewCacheFunc func(config *rest.Config, opts Options) (Cache, error)
 
 // MultiNamespacedCacheBuilder - Builder function to create a new multi-namespaced cache.
 // This will scope the cache to a list of namespaces. Listing for all namespaces
-// will list for all the namespaces that this knows about.
+// will list for all the namespaces that this knows about. Note that this is not intended
+// to be used for excluding namespaces, this is better done via a Predicate. Also note that
+// you may face performance issues when using this with a high number of namespaces.
 func MultiNamespacedCacheBuilder(namespaces []string) NewCacheFunc {
 	return func(config *rest.Config, opts Options) (Cache, error) {
 		opts, err := defaultOpts(config, opts)

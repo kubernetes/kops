@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/internal/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
@@ -35,6 +36,11 @@ type Options struct {
 
 	// Reconciler reconciles an object
 	Reconciler reconcile.Reconciler
+
+	// RateLimiter is used to limit how frequently requests may be queued.
+	// Defaults to MaxOfRateLimiter which has both overall and per-item rate limiting.
+	// The overall is a token bucket and the per-item is exponential.
+	RateLimiter ratelimiter.RateLimiter
 }
 
 // Controller implements a Kubernetes API.  A Controller manages a work queue fed reconcile.Requests
@@ -73,6 +79,10 @@ func New(name string, mgr manager.Manager, options Options) (Controller, error) 
 		options.MaxConcurrentReconciles = 1
 	}
 
+	if options.RateLimiter == nil {
+		options.RateLimiter = workqueue.DefaultControllerRateLimiter()
+	}
+
 	// Inject dependencies into Reconciler
 	if err := mgr.SetFields(options.Reconciler); err != nil {
 		return nil, err
@@ -87,7 +97,7 @@ func New(name string, mgr manager.Manager, options Options) (Controller, error) 
 		Client:   mgr.GetClient(),
 		Recorder: mgr.GetEventRecorderFor(name),
 		MakeQueue: func() workqueue.RateLimitingInterface {
-			return workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), name)
+			return workqueue.NewNamedRateLimitingQueue(options.RateLimiter, name)
 		},
 		MaxConcurrentReconciles: options.MaxConcurrentReconciles,
 		Name:                    name,

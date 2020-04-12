@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -55,6 +56,8 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    deleteSecretLong,
 		Example: deleteSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			if len(args) != 2 && len(args) != 3 {
 				exitWithError(fmt.Errorf("Syntax: <type> <name> [<id>]"))
 			}
@@ -67,7 +70,7 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err := RunDeleteSecret(f, out, options)
+			err := RunDeleteSecret(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -77,7 +80,7 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOptions) error {
+func RunDeleteSecret(ctx context.Context, f *util.Factory, out io.Writer, options *DeleteSecretOptions) error {
 	if options.ClusterName == "" {
 		return fmt.Errorf("ClusterName is required")
 	}
@@ -93,7 +96,7 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 		return err
 	}
 
-	cluster, err := GetCluster(f, options.ClusterName)
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}

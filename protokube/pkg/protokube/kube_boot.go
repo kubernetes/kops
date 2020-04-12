@@ -17,6 +17,7 @@ limitations under the License.
 package protokube
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"path/filepath"
@@ -104,7 +105,8 @@ func (k *KubeBoot) Init(volumesProvider Volumes) {
 // RunSyncLoop is responsible for provision the cluster
 func (k *KubeBoot) RunSyncLoop() {
 	for {
-		if err := k.syncOnce(); err != nil {
+		ctx := context.Background()
+		if err := k.syncOnce(ctx); err != nil {
 			klog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
 		}
 
@@ -112,7 +114,7 @@ func (k *KubeBoot) RunSyncLoop() {
 	}
 }
 
-func (k *KubeBoot) syncOnce() error {
+func (k *KubeBoot) syncOnce(ctx context.Context) error {
 	if k.Master && k.ManageEtcd {
 		// attempt to mount the volumes
 		volumes, err := k.volumeMounter.mountMasterVolumes()
@@ -152,17 +154,17 @@ func (k *KubeBoot) syncOnce() error {
 
 	if k.Master {
 		if k.BootstrapMasterNodeLabels {
-			if err := bootstrapMasterNodeLabels(k.Kubernetes, k.NodeName); err != nil {
+			if err := bootstrapMasterNodeLabels(ctx, k.Kubernetes, k.NodeName); err != nil {
 				klog.Warningf("error bootstrapping master node labels: %v", err)
 			}
 		}
 		if k.ApplyTaints {
-			if err := applyMasterTaints(k.Kubernetes); err != nil {
+			if err := applyMasterTaints(ctx, k.Kubernetes); err != nil {
 				klog.Warningf("error updating master taints: %v", err)
 			}
 		}
 		if k.InitializeRBAC {
-			if err := applyRBAC(k.Kubernetes); err != nil {
+			if err := applyRBAC(ctx, k.Kubernetes); err != nil {
 				klog.Warningf("error initializing rbac: %v", err)
 			}
 		}

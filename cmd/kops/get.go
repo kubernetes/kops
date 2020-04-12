@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -81,6 +82,8 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:       getLong,
 		Example:    getExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			if len(args) != 0 {
 				options.clusterName = args[0]
 			}
@@ -93,7 +96,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 				options.clusterName = rootCommand.clusterName
 			}
 
-			err := RunGet(&rootCommand, os.Stdout, options)
+			err := RunGet(ctx, &rootCommand, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -110,14 +113,14 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunGet(context Factory, out io.Writer, options *GetOptions) error {
+func RunGet(ctx context.Context, f Factory, out io.Writer, options *GetOptions) error {
 
-	client, err := context.Clientset()
+	client, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := client.GetCluster(options.clusterName)
+	cluster, err := client.GetCluster(ctx, options.clusterName)
 	if err != nil {
 		return err
 	}
@@ -126,7 +129,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 		return fmt.Errorf("No cluster found")
 	}
 
-	igList, err := client.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+	igList, err := client.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
