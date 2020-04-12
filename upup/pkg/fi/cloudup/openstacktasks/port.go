@@ -126,14 +126,14 @@ func (s *Port) Find(context *fi.Context) (*Port, error) {
 	if err != nil {
 		return nil, err
 	}
-	filteredList := []ports.Port{}
+	var filteredList []ports.Port
 	for _, port := range rs {
 		if fi.ArrayContains(port.Tags, openstack.TagNameDetach) {
 			continue
 		}
 		filteredList = append(filteredList, port)
 	}
-	if len(filteredList) == 0 {
+	if filteredList == nil {
 		return nil, nil
 	} else if len(filteredList) != 1 {
 		return nil, fmt.Errorf("found multiple ports with name: %s", fi.StringValue(s.Name))

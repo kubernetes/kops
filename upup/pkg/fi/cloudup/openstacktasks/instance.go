@@ -109,7 +109,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		return nil, fmt.Errorf("error extracting server page: %v", err)
 	}
 
-	filteredList := []servers.Server{}
+	var filteredList []servers.Server
 	for _, server := range serverList {
 		val, ok := server.Metadata["k8s"]
 		if !ok || val != fi.StringValue(e.ServerGroup.ClusterName) {
@@ -129,7 +129,8 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 			}
 		}
 	}
-	if len(filteredList) == 0 {
+	serverList = nil
+	if filteredList == nil {
 		return nil, nil
 	}
 	if len(filteredList) > 1 {
