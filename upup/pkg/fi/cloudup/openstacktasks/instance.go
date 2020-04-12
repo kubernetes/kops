@@ -28,13 +28,13 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 //go:generate fitask -type=Instance
 type Instance struct {
 	ID               *string
 	Name             *string
+	NamePrefix       *string
 	Port             *Port
 	Region           *string
 	Flavor           *string
@@ -47,8 +47,6 @@ type Instance struct {
 	Metadata         map[string]string
 	AvailabilityZone *string
 	SecurityGroups   []string
-	ClusterName      *string
-	GroupName        *string
 	Lifecycle        *fi.Lifecycle
 }
 
@@ -100,10 +98,8 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if e == nil || e.Name == nil {
 		return nil, nil
 	}
-	tmp := strings.Replace(strings.ToLower(fi.StringValue(e.GroupName)), "_", "-", -1)
-	groupName := strings.Replace(tmp, ".", "-", -1)
 	serverPage, err := servers.List(c.Cloud.(openstack.OpenstackCloud).ComputeClient(), servers.ListOpts{
-		Name: fmt.Sprintf("^%s", groupName),
+		Name: fmt.Sprintf("^%s", fi.StringValue(e.NamePrefix)),
 	}).AllPages()
 	if err != nil {
 		return nil, fmt.Errorf("error listing servers: %v", err)
@@ -116,7 +112,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	filteredList := []servers.Server{}
 	for _, server := range serverList {
 		val, ok := server.Metadata["k8s"]
-		if !ok || val != fi.StringValue(e.ClusterName) {
+		if !ok || val != fi.StringValue(e.ServerGroup.ClusterName) {
 			continue
 		}
 		metadataName := ""
@@ -147,8 +143,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		SSHKey:           fi.String(server.KeyName),
 		Lifecycle:        e.Lifecycle,
 		AvailabilityZone: e.AvailabilityZone,
-		ClusterName:      e.ClusterName,
-		GroupName:        e.GroupName,
+		NamePrefix:       e.NamePrefix,
 	}
 	e.ID = actual.ID
 
@@ -179,20 +174,29 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 	return a == nil, nil
 }
 
-func makeServerName(e *Instance) string {
-	hash := utils.RandomString(6)
-	// FIXME: Must ensure 63 or less characters
-	// replace all dots and _ with -, this is needed to get external cloudprovider working
-	stripped := strings.Replace(fi.StringValue(e.ClusterName), ".k8s.local", "", -1)
-	iName := strings.Replace(strings.ToLower(fmt.Sprintf("%s-%s.%s", fi.StringValue(e.GroupName), hash, stripped)), "_", "-", -1)
-	instanceName := strings.Replace(iName, ".", "-", -1)
-	return instanceName
+// makeServerName generates name for the instance
+// the instance format is [namePrefix]-[6 character hash]
+func makeServerName(e *Instance) (string, error) {
+	secret, err := fi.CreateSecret()
+	if err != nil {
+		return "", err
+	}
+
+	hash, err := secret.AsString()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ToLower(fmt.Sprintf("%s-%s", fi.StringValue(e.NamePrefix), hash[0:5])), nil
 }
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
 	if a == nil {
 		e.Metadata[openstack.TagKopsName] = fi.StringValue(e.Name)
-		serverName := makeServerName(e)
+		serverName, err := makeServerName(e)
+		if err != nil {
+			return err
+		}
 		klog.V(2).Infof("Creating Instance with name: %q", serverName)
 		opt := servers.CreateOpts{
 			Name:       serverName,

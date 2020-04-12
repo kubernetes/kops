@@ -98,13 +98,13 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		securityGroups = append(securityGroups, b.LinkToSecurityGroup(b.Cluster.Spec.MasterPublicName))
 	}
 
+	r := strings.NewReplacer("_", "-", ".", "-")
+	groupName := r.Replace(strings.ToLower(ig.Name))
 	// In the future, OpenStack will use Machine API to manage groups,
 	// for now create d.InstanceGroups.Spec.MinSize amount of servers
 	for i := int32(0); i < *ig.Spec.MinSize; i++ {
 		// FIXME: Must ensure 63 or less characters
-		// replace all dots and _ with -, this is needed to get external cloudprovider working
-		iName := strings.Replace(strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName())), "_", "-", -1)
-		instanceName := fi.String(strings.Replace(iName, ".", "-", -1))
+		instanceName := fi.String(r.Replace(strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName()))))
 
 		var az *string
 		var subnets []*openstacktasks.Subnet
@@ -141,6 +141,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 		instanceTask := &openstacktasks.Instance{
 			Name:             instanceName,
+			NamePrefix:       s(groupName),
 			Region:           fi.String(b.Cluster.Spec.Subnets[0].Region),
 			Flavor:           fi.String(ig.Spec.MachineType),
 			Image:            fi.String(ig.Spec.Image),
@@ -152,8 +153,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Metadata:         igMeta,
 			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
-			ClusterName:      s(b.ClusterName()),
-			GroupName:        s(ig.Name),
 		}
 		if igUserData != nil {
 			instanceTask.UserData = igUserData
