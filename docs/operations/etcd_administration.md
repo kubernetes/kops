@@ -108,4 +108,3 @@ Other etcdhelper commands are possible, like "ls":
 ```
 sudo etcdhelper -key /etc/kubernetes/pki/kube-apiserver/etcd-client.key -cert /etc/kubernetes/pki/kube-apiserver/etcd-client.crt  -cacert /etc/kubernetes/pki/kube-apiserver/etcd-ca.crt -endpoint https://127.0.0.1:4001 ls
 ```
-
