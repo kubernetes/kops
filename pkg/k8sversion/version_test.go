@@ -16,7 +16,9 @@ limitations under the License.
 
 package k8sversion
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestParse(t *testing.T) {
 	grid := []struct {
@@ -53,5 +55,56 @@ func TestParse(t *testing.T) {
 			t.Errorf("unexpected result parsing %q: actual=%q expected=%q", g.Input, actual.String(), g.Expected)
 			continue
 		}
+	}
+}
+
+func TestIsGTE(t *testing.T) {
+	kv, _ := Parse("1.6.2-alpha.1+ea69570f61af8e")
+	cases := []struct {
+		Name     string
+		Version  string
+		Expected bool
+	}{
+		{
+			Name:     "KV greater than Version",
+			Version:  "1.4.0",
+			Expected: true,
+		},
+		{
+			Name:     "KV greater than Version",
+			Version:  "1.4.0-alpha.1",
+			Expected: true,
+		},
+
+		{
+			Name:     "KV equal Version",
+			Version:  "1.6.2",
+			Expected: true,
+		},
+		{
+			Name:     "KV equal Version",
+			Version:  "1.6.2-alpha.1+ea69570f61af8e",
+			Expected: true,
+		},
+
+		{
+			Name:     "Version greater than KV",
+			Version:  "1.6.5",
+			Expected: false,
+		},
+		{
+			Name:     "KV equal Version",
+			Version:  "1.6.5+ea69570f61af8e",
+			Expected: false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			ret := kv.IsGTE(c.Version)
+			if c.Expected != ret {
+				t.Errorf("Expected: %v, Got: %v", c.Expected, ret)
+			}
+		})
 	}
 }
