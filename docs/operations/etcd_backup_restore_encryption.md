@@ -15,24 +15,15 @@ result in six volumes for etcd data (one in each AZ). An EBS volume is designed
 to have a [failure rate](https://aws.amazon.com/ebs/details/#AvailabilityandDurability)
 of 0.1%-0.2% per year.
 
-### Backups using etcd-manager
+## Backup and restore using etcd-manager
+
+## Taking backups
 
 Backups are done periodically and before cluster modifications using [etcd-manager](etcd_administration.md)
 (introduced in kops 1.12). Backups for both the `main` and `events` etcd clusters
 are stored in object storage (like S3) together with the cluster configuration.
 
-### Volume backups (legacy etcd)
-
-If you are running your cluster in legacy etcd mode (without etcd-manager),
-backups can be done through snapshots of the etcd volumes.
-
-You can for example use CloudWatch to trigger an AWS Lambda with a defined schedule (e.g. once per
-hour). The Lambda will then create a new snapshot of all etcd volumes. A complete
-guide on how to setup automated snapshots can be found [here](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups/).
-
-Note: this is one of many examples on how to do scheduled snapshots.
-
-## Restore using etcd-manager
+## Restore backups
 
 In case of a disaster situation with etcd (lost data, cluster issues etc.) it's
 possible to do a restore of the etcd cluster using `etcd-manager-ctl`.
@@ -100,7 +91,20 @@ It's a good idea to temporarily increase the instance size of your masters and r
 
 For more information and troubleshooting, please check the [etcd-manager documentation](https://github.com/kopeio/etcd-manager).
 
-### Restore volume backups (legacy etcd)
+## Backup and restore using legacy etcd
+
+### Volume backups
+
+If you are running your cluster in legacy etcd mode (without etcd-manager),
+backups can be done through snapshots of the etcd volumes.
+
+You can for example use CloudWatch to trigger an AWS Lambda with a defined schedule (e.g. once per
+hour). The Lambda will then create a new snapshot of all etcd volumes. A complete
+guide on how to setup automated snapshots can be found [here](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups/).
+
+Note: this is one of many examples on how to do scheduled snapshots.
+
+### Restore volume backups
 
 If you're using legacy etcd (without etcd-manager), it is possible to restore the volume from a snapshot we created
 earlier. Details about creating a volume from a snapshot can be found in the
