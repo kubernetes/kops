@@ -17,7 +17,7 @@ of 0.1%-0.2% per year.
 
 ### Backups using etcd-manager
 
-Backups are done periodically and before cluster modifications using [etcd-manager](../etcd/manager.md)
+Backups are done periodically and before cluster modifications using [etcd-manager](etcd_administration.md)
 (introduced in kops 1.12). Backups for both the `main` and `events` etcd clusters
 are stored in object storage (like S3) together with the cluster configuration.
 
