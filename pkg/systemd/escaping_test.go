@@ -26,8 +26,8 @@ func TestEscapeCommand(t *testing.T) {
 		expectedStr string
 	}{
 		{
-			argv:        []string{`a`, `(b)`, `\c`, `\\d`, `"`, ` `},
-			expectedStr: `a (b) \\c \\\\d \" " "`,
+			argv:        []string{`a`, `(b)`, `\c`, `\\d`, `"`, `\'`, ` `},
+			expectedStr: `a (b) \\c \\\\d \" \\\' " "`,
 		},
 		{
 			argv:        []string{"/usr/bin/docker", "pull", "busybox:latest"},
