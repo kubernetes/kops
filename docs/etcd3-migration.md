@@ -1,19 +1,8 @@
 # Moving to etcd3 and/or adopting etcd-manager
 
-- [Moving to etcd3 and/or adopting etcd-manager](#moving-to-etcd3-andor-adopting-etcd-manager)
-  - [Background Info](#background-info)
-  - [Default upgrades](#default-upgrades)
-    - [Non-calico users](#non-calico-users)
-    - [Calico users](#calico-users)
-  - [Gradual updates](#gradual-updates)
-    - [Adopt etcd-manager with kops 1.11 / kubernetes 1.11](#adopt-etcd-manager-with-kops-111--kubernetes-111)
-    - [Delay adopting etcd-manager with kops 1.12](#delay-adopting-etcd-manager-with-kops-112)
-    - [Delay adopting etcd3 with kops 1.12](#delay-adopting-etcd3-with-kops-112)
-  - [Mitigating Workload Downtime](#mitigating-workload-downtime)
-
 ## Background Info
 
-Kubernetes is moving from etcd2 to etcd3, which is an upgrade that involves Kubernetes API Server
+Kubernetes has moved from etcd2 to etcd3, which is an upgrade that involves Kubernetes API Server
 downtime. Technically there is no usable upgrade path from etcd2 to etcd3 that
 supports HA scenarios, but kops has enabled it using etcd-manager.
 
@@ -42,12 +31,12 @@ bottom of this doc that outlines how to do that.
 
 When upgrading to kubernetes 1.12 with kops 1.12, by default:
 
-* Calico will be updated to a configuration that uses CRDs
+* Calico and Cilium will be updated to a configuration that uses CRDs
 * We will automatically start using etcd-manager
 * Using etcd-manager will default to etcd3
-* Using etcd3 will default to using TLS for all etcd communications
+* Using etcd3 will use TLS for all etcd communications
 
-### Non-calico users
+### Non-calico/cilium users
 
 The upgrade is therefore disruptive to the masters.  The recommended procedure is to quickly roll your masters, and then do a normal roll of your nodes:
 
@@ -65,7 +54,7 @@ kops rolling-update cluster --yes
 ```
 
 
-### Calico users
+### Calico/Cilium users
 
 If you are using calico the switch to CRDs will effectively cause a network partition during the rolling-update.  Your application might tolerate this, but it probably won't.  We therefore recommend rolling your nodes as fast as possible also:
 
