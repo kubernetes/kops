@@ -188,7 +188,7 @@ func makeServerName(e *Instance) (string, error) {
 		return "", err
 	}
 
-	return strings.ToLower(fmt.Sprintf("%s-%s", fi.StringValue(e.NamePrefix), hash[0:5])), nil
+	return strings.ToLower(fmt.Sprintf("%s-%s", fi.StringValue(e.NamePrefix), hash[0:6])), nil
 }
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
