@@ -13,10 +13,10 @@ script:
   - GOPROXY=https://proxy.golang.org make nodeup examples test
 
 jobs:
-  # To exclude a known-bad configuration:
-  #exclude:
-  #  - os: osx
-  #    go: "1.12"
+  # Exclude GO 1.14 for OSX until it becomes the default because of limited availability
+  exclude:
+    - os: osx
+      go: "1.14"
 
   include:
     - name: Verify
