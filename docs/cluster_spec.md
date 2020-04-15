@@ -1,10 +1,12 @@
-# Description of Keys in `config` and `cluster.spec`
+# The `Cluster` resource
 
-This list is not complete but aims to document any keys that are less than self-explanatory. Our [go.dev](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops) reference provides a more detailed list of API values. [ClusterSpec](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec), defined as `kind: Cluster` in YAML, and [InstanceGroupSpec](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec), defined as `kind: InstanceGroup` in YAML, are the two top-level API values used to describe a cluster.
+The `Cluster` resource contains the specification of the cluster itself.
 
-## spec
+The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec) reference page. 
 
-### api
+On this page, we will expand on the more important configuration keys.
+
+## api
 
 This object configures how we expose the API:
 
@@ -76,9 +78,11 @@ spec:
       crossZoneLoadBalancing: true
 ```
 
-### etcdClusters v3 & tls
+## etcdClusters
 
-Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.
+### The default etcd configuration
+
+Kops will default to v3 using TLS by default. etcd provisioning and upgrades are handled by etcd-manager. By default, the spec looks like this:
 
 ```yaml
 etcdClusters:
@@ -89,9 +93,7 @@ etcdClusters:
     name: a-2
   - instanceGroup: master0-az1
     name: b-1
-  enableEtcdTLS: true
   name: main
-  version: 3.0.17
 - etcdMembers:
   - instanceGroup: master0-az0
     name: a-1
@@ -99,16 +101,14 @@ etcdClusters:
     name: a-2
   - instanceGroup: master0-az1
     name: b-1
-  enableEtcdTLS: true
   name: events
-  version: 3.0.17
 ```
 
-> __Note:__ The images for etcd that kops uses are from the Google Cloud Repository. Google doesn't release every version of etcd to the gcr. Check that the version of etcd you want to use is available [at the gcr](https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/etcd?gcrImageListsize=50) before using it in your cluster spec.
+The etcd version used by kops follows the recommended etcd version for the given kubernetes version. It is possible to override this by adding the `version` key to each of the etcd clusters.
 
 By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
 
-As of Kops 1.12.0 it is also possible to specify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
+As of Kops 1.12.0 it is also possible to modify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
 
 ```yaml
 etcdClusters:
@@ -130,9 +130,9 @@ etcdClusters:
   memoryRequest: 512Mi
 ```
 
-### etcd v3 and metrics
+### etcd metrics
 
-You cam expose /metrics endpoint for `main` and `event` etcd instances and control their type (`basic` or `extensive`) by defining env vars:
+You cam expose /metrics endpoint for the etcd instances and control their type (`basic` or `extensive`) by defining env vars:
 
 ```yaml
 etcdClusters:
@@ -148,7 +148,7 @@ etcdClusters:
       value: basic
 ```
 
-### sshAccess
+## sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
 
@@ -160,7 +160,7 @@ spec:
     - 12.34.56.78/32
 ```
 
-### kubernetesApiAccess
+## kubernetesApiAccess
 
 This array configures the CIDRs that are able to access the kubernetes API. On AWS this is manifested as inbound security group rules on the ELB or master security groups.
 
@@ -172,12 +172,12 @@ spec:
     - 12.34.56.78/32
 ```
 
-### cluster.spec Subnet Keys
+## cluster.spec Subnet Keys
 
-#### id
+### id
 ID of a subnet to share in an existing VPC.
 
-#### egress
+### egress
 The resource identifier (ID) of something in your existing VPC that you would like to use as "egress" to the outside world.
 
 This feature was originally envisioned to allow re-use of NAT gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
@@ -209,7 +209,7 @@ spec:
     zone: us-east-1a
 ```
 
-#### publicIP
+### publicIP
 The IP of an existing EIP that you would like to attach to the NAT gateway.
 
 ```
@@ -222,11 +222,11 @@ spec:
     zone: us-east-1a
 ```
 
-### kubeAPIServer
+## kubeAPIServer
 
 This block contains configuration for the `kube-apiserver`.
 
-#### oidc flags for Open ID Connect Tokens
+### oidc flags for Open ID Connect Tokens
 
 Read more about this here: https://kubernetes.io/docs/admin/authentication/#openid-connect-tokens
 
@@ -244,7 +244,7 @@ spec:
     	- "key=value"
 ```
 
-#### audit logging
+### audit logging
 
 Read more about this here: https://kubernetes.io/docs/admin/audit
 
@@ -264,7 +264,7 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
-#### dynamic audit configuration
+### dynamic audit configuration
 
 Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#dynamic-backend
 
@@ -282,7 +282,7 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
-#### bootstrap tokens
+### bootstrap tokens
 
 Read more about this here: https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
 
@@ -298,7 +298,7 @@ By enabling this feature you instructing two things;
 
 **Note** enabling bootstrap tokens does not provision bootstrap tokens for the worker nodes. Under this configuration it is assumed a third-party process is provisioning the tokens on behalf of the worker nodes. For the full setup please read [Node Authorizer Service](node_authorization.md)
 
-#### Max Requests Inflight
+### Max Requests Inflight
 
 The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
 
@@ -316,7 +316,7 @@ spec:
     maxMutatingRequestsInflight: 450
 ```
 
-#### runtimeConfig
+### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
 
@@ -332,7 +332,7 @@ spec:
 
 Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true`. Note that `kube-apiserver` accepts `true` as a value for switch-like flags.
 
-#### serviceNodePortRange
+### serviceNodePortRange
 
 This value is passed as `--service-node-port-range` for `kube-apiserver`.
 
@@ -342,7 +342,7 @@ spec:
     serviceNodePortRange: 30000-33000
 ```
 
-#### Disable Basic Auth
+### Disable Basic Auth
 
 Support for basic authentication was removed in Kubernetes 1.19. For previous versions
 of Kubernetes this will disable the passing of the `--basic-auth-file` flag when:
@@ -353,7 +353,7 @@ spec:
     disableBasicAuth: true
 ```
 
-#### targetRamMb
+### targetRamMb
 
 Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
 
@@ -363,7 +363,7 @@ spec:
     targetRamMb: 4096
 ```
 
-#### eventTTL
+### eventTTL
 
 How long API server retains events. Note that you must fill empty units of time with zeros.
 
@@ -373,7 +373,7 @@ spec:
     eventTTL: 03h0m0s
 ```
 
-### externalDns
+## externalDns
 
 This block contains configuration options for your `external-DNS` provider.
 The current external-DNS provider is the kops `dns-controller`, which can set up DNS records for Kubernetes resources.
@@ -387,7 +387,7 @@ spec:
 
 Default _kops_ behavior is false. `watchIngress: true` uses the default _dns-controller_ behavior which is to watch the ingress controller for changes. Set this option at risk of interrupting Service updates in some cases.
 
-### kubelet
+## kubelet
 
 This block contains configurations for `kubelet`.  See https://kubernetes.io/docs/admin/kubelet/
 
@@ -400,7 +400,7 @@ NOTE: Where the corresponding configuration value can be empty, fields can be se
 
 Will result in the flag `--resolv-conf=` being built.
 
-#### Disable CPU CFS Quota
+### Disable CPU CFS Quota
 To disable CPU CFS quota enforcement for containers that specify CPU limits (default true) we have to set the flag `--cpu-cfs-quota` to `false`
 on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
 
@@ -410,7 +410,7 @@ spec:
     cpuCFSQuota: false
 ```
 
-#### Configure CPU CFS Period
+### Configure CPU CFS Period
 Configure CPU CFS quota period value (cpu.cfs_period_us). Example:
 
 ```
@@ -419,7 +419,7 @@ spec:
     cpuCFSQuotaPeriod: "100ms"
 ```
 
-#### Enable Custom metrics support
+### Enable Custom metrics support
 To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
 we have to set the flag `--enable-custom-metrics` to `true` on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
 
@@ -429,7 +429,7 @@ spec:
     enableCustomMetrics: true
 ```
 
-#### Setting kubelet CPU management policies
+### Setting kubelet CPU management policies
 Kops 1.12.0 added support for enabling cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
 we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
 
@@ -439,7 +439,7 @@ spec:
     cpuManagerPolicy: static
 ```
 
-#### Setting kubelet configurations together with the Amazon VPC backend
+### Setting kubelet configurations together with the Amazon VPC backend
 Setting kubelet configurations together with the networking Amazon VPC backend requires to also set the `cloudProvider: aws` setting in this block. Example:
 
 ```yaml
@@ -456,7 +456,7 @@ spec:
     amazonvpc: {}
 ```
 
-#### Configure a Flex Volume plugin directory
+### Configure a Flex Volume plugin directory
 An optional flag can be provided within the KubeletSpec to set a volume plugin directory (must be accessible for read/write operations), which is additionally provided to the Controller Manager and mounted in accordingly.
 
 Kops will set this for you based off the Operating System in use:
@@ -471,7 +471,7 @@ spec:
     volumePluginDirectory: /provide/a/writable/path/here
 ```
 
-### kubeScheduler
+## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
 
@@ -485,7 +485,7 @@ Will make kube-scheduler use the scheduler policy from configmap "scheduler-poli
 
 Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
 
-### kubeDNS
+## kubeDNS
 
 This block contains configurations for `kube-dns`.
 
@@ -543,6 +543,8 @@ spec:
 
 **Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`.
 
+## Node local DNS cache
+
 If you are using CoreDNS, you can enable NodeLocal DNSCache. It is used to improve improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
 
 ```yaml
@@ -563,7 +565,7 @@ spec:
     clusterDNS: 169.254.20.10
 ```
 
-### kubeControllerManager
+## kubeControllerManager
 This block contains configurations for the `controller-manager`.
 
 ```yaml
@@ -579,7 +581,9 @@ spec:
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
 
-####  Feature Gates
+###  Feature Gates
+
+Feature gates can be configured on the kubelet.
 
 ```yaml
 spec:
@@ -589,12 +593,10 @@ spec:
       AllowExtTrafficLocalEndpoints: "false"
 ```
 
-Will result in the flag `--feature-gates=Accelerators=true,AllowExtTrafficLocalEndpoints=false`
+The above will result in the flag `--feature-gates=Accelerators=true,AllowExtTrafficLocalEndpoints=false` being added to the kubelet.
 
-NOTE: Feature gate `ExperimentalCriticalPodAnnotation` is enabled by default because some critical components like `kube-proxy` depend on its presence.
-
-Some feature gates also require the `featureGates` setting to be used on other components - e.g. `PodShareProcessNamespace` requires
-the feature gate to be enabled on the api server:
+Some feature gates also require the `featureGates` setting on other components. For example`PodShareProcessNamespace` requires
+the feature gate to be enabled also on the api server:
 
 ```yaml
 spec:
@@ -608,7 +610,7 @@ spec:
 
 For more information, see the [feature gate documentation](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/)
 
-####  Compute Resources Reservation
+###  Compute Resources Reservation
 
 ```yaml
 spec:
@@ -630,7 +632,7 @@ Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,ephemeral-storage
 
 Learn [more about reserving compute resources](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/).
 
-### networkID
+## networkID
 
 On AWS, this is the id of the VPC the cluster is created in. If creating a cluster from scratch, this field does not need to be specified at create time; `kops` will create a `VPC` for you.
 
@@ -641,9 +643,9 @@ spec:
 
 More information about running in an existing VPC is [here](run_in_existing_vpc.md).
 
-### hooks
+## hooks
 
-Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install Nvidia drivers for using GPUs. This hooks can be in the form of Docker images or manifest files (systemd units). Hooks can be placed in either the cluster spec, meaning they will be globally deployed, or they can be placed into the instanceGroup specification. Note: service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
+Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster. For instance you can install Nvidia drivers for using GPUs. This hooks can be in the form of Docker images or manifest files (systemd units). Hooks can be placed in either the cluster spec, meaning they will be globally deployed, or they can be placed into the instanceGroup specification. Note: service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
 When creating a systemd unit hook using the `manifest` field, the hook system will construct a systemd unit file for you. It creates the `[Unit]` section, adding an automated description and setting `Before` and `Requires` values based on the `before` and `requires` fields. The value of the `manifest` field is used as the `[Service]` section of the unit file. To override this behavior, and instead specify the entire unit file yourself, you may specify `useRawManifest: true`. In this case, the contents of the `manifest` field will be used as a systemd unit, unmodified. The `before` and `requires` fields may not be used together with `useRawManifest`.
 
@@ -742,9 +744,9 @@ spec:
       image: busybox
 ```
 
-### fileAssets
+## fileAssets
 
-FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's designated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
+FileAssets permits you to place inline file content into the cluster and instanceGroup specification. This is useful for deploying additional configuration files that kubernetes components requires, such as auditlogs or admission controller configurations.
 
 ```yaml
 spec:
@@ -758,9 +760,9 @@ spec:
 ```
 
 
-### cloudConfig
+## cloudConfig
 
-#### disableSecurityGroupIngress
+### disableSecurityGroupIngress
 If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
 This can be useful to avoid AWS limit: 50 rules per security group.
 ```yaml
@@ -769,8 +771,7 @@ spec:
     disableSecurityGroupIngress: true
 ```
 
-#### elbSecurityGroup
-*WARNING: this works only for Kubernetes version above 1.7.0.*
+### elbSecurityGroup
 
 To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name.
 `api.loadBalancer.additionalSecurityGroups` must be empty, because Kubernetes will add rules per ports that are specified in service file.
@@ -782,8 +783,7 @@ spec:
     elbSecurityGroup: sg-123445678
 ```
 
-### containerRuntime
-*WARNING: this works only for Kubernetes version above 1.11.0.*
+## containerRuntime
 
 Alternative [container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/) can be used to run Kubernetes. Docker is still the default container runtime, but [containerd](https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/) can also be selected.
 
@@ -792,7 +792,7 @@ spec:
   containerRuntime: containerd
 ```
 
-### containerd
+## containerd
 
 It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ContainerdConfig) for the full list of options.
 
@@ -804,11 +804,11 @@ spec:
     configOverride: ""
 ```
 
-### docker
+## docker
 
 It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
 
-#### registryMirrors
+### registryMirrors
 
 If you have a bunch of Docker instances (physical or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
 This setting benefits not only cluster provisioning but also image pulling.
@@ -823,7 +823,7 @@ spec:
     - https://registry.example.com
 ```
 
-#### Skip Install
+### Skip Install
 
 If you want nodeup to skip the Docker installation tasks, you can do so with:
 
@@ -835,7 +835,7 @@ spec:
 
 **NOTE:** When this field is set to `true`, it is entirely up to the user to install and configure Docker.
 
-#### storage
+### storage
 
 The Docker [Storage Driver](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-storage-driver) can be specified in order to override the default. Be sure the driver you choose is supported by your operating system and docker version.
 
@@ -848,7 +848,7 @@ docker:
     - "dm.use_deferred_removal=true"
 ```
 
-### sshKeyName
+## sshKeyName
 
 In some cases, it may be desirable to use an existing AWS SSH key instead of allowing kops to create a new one.
 Providing the name of a key already in AWS is an alternative to `--ssh-public-key`.
@@ -864,8 +864,7 @@ spec:
   sshKeyName: ""
 ```
 
-
-### useHostCertificates
+## useHostCertificates
 
 Self-signed certificates towards Cloud APIs. In some cases Cloud APIs do have self-signed certificates.
 
@@ -874,7 +873,7 @@ spec:
   useHostCertificates: true
 ```
 
-#### Optional step: add root certificates to instancegroups root ca bundle
+### Optional step: add root certificates to instancegroups root ca bundle
 
 ```yaml
   additionalUserData:
@@ -892,8 +891,7 @@ snip
 
 **NOTE**: `update-ca-certificates` is command for debian/ubuntu. That command is different depending your OS.
 
-
-### target
+## target
 
 In some use-cases you may wish to augment the target output with extra options.  `target` supports a minimal amount of options you can do this with.  Currently only the terraform target supports this, but if other use cases present themselves, kops may eventually support more.
 
@@ -905,11 +903,11 @@ spec:
         alias: foo
 ```
 
-### assets
+## assets
 
 Assets define alternative locations from where to retrieve static files and containers
 
-#### containerRegistry
+### containerRegistry
 
 The container registry enables kops / kubernetes to pull containers from a managed registry.
 This is useful when pulling containers from the internet is not an option, eg. because the
@@ -925,7 +923,7 @@ spec:
 ```
 
 
-#### containerProxy
+### containerProxy
 
 The container proxy is designed to acts as a [pull through cache](https://docs.docker.com/registry/recipes/mirror/) for docker container assets.
 Basically, what it does is it remaps the Kubernetes image URL to point to your cache so that the docker daemon will pull the image from that location.
@@ -939,7 +937,7 @@ spec:
     containerProxy: proxy.example.com
 ```
 
-### Setting Custom Kernel Runtime Parameters
+## sysctlParameters
 
 To add custom kernel runtime parameters to your all instance groups in the
 cluster, specify the `sysctlParameters` field as an array of strings. Each
@@ -962,4 +960,3 @@ spec:
 ```
 
 which would end up in a drop-in file on all masters and nodes of the cluster.
-
