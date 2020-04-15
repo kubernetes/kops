@@ -73,6 +73,19 @@ spec:
       bastionPublicName: bastion.mycluster.example.com
 ```
 
+### Additional security groups to ELB
+If you want to add security groups to the bastion ELB
+
+```yaml
+spec:
+  topology:
+    bastion:
+      bastionPublicName: bastion.mycluster.example.com
+      loadBalancer:
+        additionalSecurityGroups:
+        - "sg-***"
+```
+
 ### Access when using gossip (k8s.local)
 
 When using gossip mode, there is no DNS zone where we can configure a
