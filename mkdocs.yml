@@ -81,7 +81,6 @@ nav:
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
     - Running kops in a CI environment: "continuous_integration.md"
-    - etcd administration: "operations/etcd_administration.md"
     - etcd:
       - etcd administration: "operations/etcd_administration.md"
       - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
