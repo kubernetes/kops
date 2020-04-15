@@ -39,8 +39,8 @@ nav:
     - Deploying to GCE: "getting_started/gce.md"
     - Deploying to OpenStack - Beta: "getting_started/openstack.md"
     - Deploying to Digital Ocean - Alpha: "getting_started/digitalocean.md"
-    - Kops Commands: "getting_started/commands.md"
-    - Kops Arguments: "getting_started/arguments.md"
+    - kops Commands: "getting_started/commands.md"
+    - kops Arguments: "getting_started/arguments.md"
     - kubectl usage: "getting_started/kubectl.md"
   - CLI:
     - kops: "cli/kops.md"
@@ -61,14 +61,13 @@ nav:
     - kops validate: "cli/kops_validate.md"
     - kops version: "cli/kops_version.md"
   - API:
-    - Cluster Spec: "cluster_spec.md"
-    - Instance Group API: "instance_groups.md"
-    - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
-    - Godocs for Cluster - ClusterSpec: "https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec"
-    - Godocs for Instance Group - InstanceGroupSpec: "https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec"
+    - Cluster Resource: "cluster_spec.md"
+    - InstanceGroup Resource: "instance_groups.md"
 
   - Operations:
     - Updates & Upgrades: "operations/updates_and_upgrades.md"
+    - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
+    - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
     - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
     - Instancegroup images: "operations/images.md"
@@ -82,7 +81,6 @@ nav:
     - Secret management: "secrets.md"
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
-    - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Running kops in a CI environment: "continuous_integration.md"
     - etcd administration: "operations/etcd_administration.md"
   - Networking:
