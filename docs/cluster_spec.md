@@ -746,7 +746,7 @@ spec:
 
 ## fileAssets
 
-FileAssets permits you to place inline file content into the cluster and instanceGroup specification. This is useful for depoying additionl configuration files that kube components requires, such as auditlogs or admission controller configurations.
+FileAssets permits you to place inline file content into the cluster and instanceGroup specification. This is useful for deploying additional configuration files that kubernetes components requires, such as auditlogs or admission controller configurations.
 
 ```yaml
 spec:
