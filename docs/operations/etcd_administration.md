@@ -1,5 +1,19 @@
 # Etcd Administration Tasks
 
+## etcd-manager
+
+etcd-manager is a kubernetes-associated project that kops uses to manage
+etcd.
+
+etcd-manager uses many of the same ideas as the existing etcd implementation
+built into kops, but it addresses some limitations also:
+
+* separate from kops - can be used by other projects
+* allows etcd2 -> etcd3 upgrade (along with minor upgrades)
+* allows cluster resizing (e.g. going from 1 to 3 nodes)
+
+When using kubernetes >= 1.12 etcd-manager will be used by default. See [../etcd3-migration.md] for upgrades from older clusters.
+
 ## Backups
 
 Backups and restores of etcd on kops are covered in [etcd_backup_restore_encryption.md](etcd_backup_restore_encryption.md)
@@ -94,4 +108,3 @@ Other etcdhelper commands are possible, like "ls":
 ```
 sudo etcdhelper -key /etc/kubernetes/pki/kube-apiserver/etcd-client.key -cert /etc/kubernetes/pki/kube-apiserver/etcd-client.crt  -cacert /etc/kubernetes/pki/kube-apiserver/etcd-ca.crt -endpoint https://127.0.0.1:4001 ls
 ```
-

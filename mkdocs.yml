@@ -69,7 +69,6 @@ nav:
     - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
-    - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
     - Instancegroup images: "operations/images.md"
     - Cluster Addons & Manager : "operations/addons.md"
     - Cluster configuration management: "changing_configuration.md"
@@ -82,7 +81,12 @@ nav:
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
     - Running kops in a CI environment: "continuous_integration.md"
-    - etcd administration: "operations/etcd_administration.md"
+    - etcd:
+      - etcd administration: "operations/etcd_administration.md"
+      - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
+      - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
+      - etcd3 Migration: "etcd3-migration.md"
+
   - Networking:
     - Networking Overview including CNI: "networking.md"
     - Run kops in an existing VPC: "run_in_existing_vpc.md"
@@ -105,7 +109,6 @@ nav:
     - AWS China: "aws-china.md"
     - Calico v3: "calico-v3.md"
     - Custom CA: "custom_ca.md"
-    - etcd3 Migration: "etcd3-migration.md"
     - Horizontal Pod Autoscaling: "horizontal_pod_autoscaling.md"
     - Egress Proxy: "http_proxy.md"
     - Node Authorization: "node_authorization.md"
