@@ -2,7 +2,7 @@
 This page lists the most common kops commands.
 Please refer to the kops [cli reference](../cli/kops.md) for full documentation.
 
-## `kops create
+## `kops create`
 
 `kops create` registers a cluster. There are two ways of registering a cluster: using a cluster spec file or using cli arguments.
 
