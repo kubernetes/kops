@@ -11,7 +11,7 @@ This is convenient for determining policy changes that need to be made when upgr
 NOTE: 
 - *Currently Kops only supports using existing Security Groups for every instance group and Load Balancer in the Cluster, not a mix of existing and managed Security Groups.
 This is due to the lifecycle overrides being used to prevent creation of the Security Groups related resources.*
-- *Kops will still try to add necessary security group rules to the specified existing security group, despite that the name of field is "securityGroupOverride".*
+- *Kops will add necessary rules to the security group specified in `securityGroupOverride`.*
 
 To do this first specify the Security Groups for the ELB (if you are using a LB) and Instance Groups
 Example:
