@@ -549,8 +549,8 @@ resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2383-4000" {
-  from_port                = 2383
+resource "aws_security_group_rule" "node-to-master-tcp-2382-4000" {
+  from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-private-shared-subnet-example-com.id
   source_security_group_id = aws_security_group.nodes-private-shared-subnet-example-com.id
