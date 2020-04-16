@@ -29,24 +29,30 @@ CACHE_DIR=/nvidia-device-plugin
 #   G2         GRID          GRID Series     GRID K520 (deprecated)
 #   G3         Tesla         M-Series        M-60
 #   G3S        Tesla         M-Series        M-60
+#   G4DN       Tesla         T-Series        T4
 #   P2         Tesla         K-Series        K-80
 #   P3         Tesla         V-Series        V100
+#   P3DN       Tesla         V-Series        V100
 # http://www.nvidia.com/Download/index.aspx
 declare -A class_to_driver_file
 class_to_driver_file=( \
-    ["g2"]="http://us.download.nvidia.com/XFree86/Linux-x86_64/367.124/NVIDIA-Linux-x86_64-367.124.run" \
-    ["g3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["g3s"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["p2"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
-    ["p3"]="http://us.download.nvidia.com/tesla/390.46/NVIDIA-Linux-x86_64-390.46.run" \
+    ["g2"]="http://us.download.nvidia.com/XFree86/Linux-x86_64/440.82/NVIDIA-Linux-x86_64-440.82.run" \
+    ["g3"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+    ["g3s"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+    ["g4dn"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+    ["p2"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+    ["p3"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
+    ["p3dn"]="http://us.download.nvidia.com/tesla/410.129/NVIDIA-Linux-x86_64-410.129-diagnostic.run" \
 )
 declare -A class_to_driver_checksum
 class_to_driver_checksum=( \
-    ["g2"]="77f37939efeea4b6505842bed50445971992e303" \
-    ["g3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["g3s"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["p2"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
-    ["p3"]="57569ecb6f6d839ecc77fa10a2c573cc069990cc" \
+    ["g2"]="1552d4cc8b3c7317b80e96268fbf685224022021" \
+    ["g3"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+    ["g3s"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+    ["g4dn"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+    ["p2"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+    ["p3"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
+    ["p3dn"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
 )
 
 # CUDA Files that need to be installed ~1.4GB
@@ -55,16 +61,12 @@ class_to_driver_checksum=( \
 #   Order in the arrays below matters
 # https://developer.nvidia.com/cuda-downloads
 cuda_files=( \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/2/cuda_9.1.85.2_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/3/cuda_9.1.85.3_linux" \
+  "https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux" \
+  "http://developer.download.nvidia.com/compute/cuda/10.0/Prod/patches/1/cuda_10.0.130.1_linux.run" \
 )
 cuda_files_checksums=( \
-  "1540658f4fe657dddd8b0899555b7468727d4aa8" \
-  "7ec6970ecd81163b0d02ef30d35599e7fd6e97d8" \
-  "cfa3b029b58fc117d8ce510a70efc848924dd565" \
-  "6269a2c5784b08997edb97ea0020fb4e6c8769ed" \
+  "009cb0b6d3a81a97eb529e2301ff613e23c6edd3" \
+  "659814268e2712942c58fcc415168c9a23190d4f" \
 )
 
 containsElement () { for e in "${@:2}"; do [[ "$e" = "$1" ]] && return 0; done; return 1; }
