@@ -70,3 +70,55 @@ func TestSetClusterFields(t *testing.T) {
 
 	}
 }
+
+func TestSetCiliumFields(t *testing.T) {
+
+	grid := []struct {
+		Fields []string
+		Input  kops.Cluster
+		Output kops.Cluster
+	}{
+		{
+			Fields: []string{
+				"cluster.spec.networking.cilium.ipam=eni",
+				"cluster.spec.networking.cilium.enableNodePort=true",
+				"cluster.spec.networking.cilium.disableMasquerade=true",
+				"cluster.spec.kubeProxy.enabled=false",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{},
+			},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubeProxy: &kops.KubeProxyConfig{
+						Enabled: fi.Bool(false),
+					},
+					Networking: &kops.NetworkingSpec{
+						Cilium: &kops.CiliumNetworkingSpec{
+							Ipam:              "eni",
+							EnableNodePort:    true,
+							DisableMasquerade: true,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, g := range grid {
+		var igs []*kops.InstanceGroup
+		c := g.Input
+
+		err := SetClusterFields(g.Fields, &c, igs)
+		if err != nil {
+			t.Errorf("unexpected error from setClusterFields %v: %v", g.Fields, err)
+			continue
+		}
+
+		if !reflect.DeepEqual(c, g.Output) {
+			t.Errorf("unexpected output from setClusterFields %v.  expected=%v, actual=%v", g.Fields, g.Output, c)
+			continue
+		}
+
+	}
+}
