@@ -19,6 +19,7 @@ package components
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -77,8 +78,8 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	NodeLocalDNS := clusterSpec.KubeDNS.NodeLocalDNS
 	if NodeLocalDNS == nil {
 		NodeLocalDNS = &kops.NodeLocalDNSConfig{}
-		NodeLocalDNS.Enabled = false
-	} else if NodeLocalDNS.Enabled && NodeLocalDNS.LocalIP == "" {
+		NodeLocalDNS.Enabled = fi.Bool(false)
+	} else if fi.BoolValue(NodeLocalDNS.Enabled) && NodeLocalDNS.LocalIP == "" {
 		NodeLocalDNS.LocalIP = "169.254.20.10"
 	}
 
