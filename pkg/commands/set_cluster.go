@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type SetClusterOptions struct {
@@ -145,11 +146,46 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 				}
 				etcd.Manager.Image = kv[1]
 			}
+		case "cluster.spec.networking.cilium.ipam":
+			createCiliumNetworking(cluster)
+			cluster.Spec.Networking.Cilium.Ipam = kv[1]
+		case "cluster.spec.networking.cilium.enableNodePort":
+			createCiliumNetworking(cluster)
+			v, err := strconv.ParseBool(kv[1])
+			if err != nil {
+				return fmt.Errorf("unknown boolean value: %q", kv[1])
+			}
+			cluster.Spec.Networking.Cilium.EnableNodePort = v
+		case "cluster.spec.networking.cilium.disableMasquerade":
+			createCiliumNetworking(cluster)
+			v, err := strconv.ParseBool(kv[1])
+			if err != nil {
+				return fmt.Errorf("unknown boolean value: %q", kv[1])
+			}
+			cluster.Spec.Networking.Cilium.DisableMasquerade = v
+		case "cluster.spec.kubeProxy.enabled":
+			if cluster.Spec.KubeProxy == nil {
+				cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+			}
+			v, err := strconv.ParseBool(kv[1])
+			if err != nil {
+				return fmt.Errorf("unknown boolean value: %q", kv[1])
+			}
+			cluster.Spec.KubeProxy.Enabled = fi.Bool(v)
 		default:
 			return fmt.Errorf("unhandled field: %q", field)
 		}
 	}
 	return nil
+}
+
+func createCiliumNetworking(cluster *api.Cluster) {
+	if cluster.Spec.Networking == nil {
+		cluster.Spec.Networking = &api.NetworkingSpec{}
+	}
+	if cluster.Spec.Networking.Cilium == nil {
+		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{}
+	}
 }
 
 func toEtcdProviderType(in string) (api.EtcdProviderType, error) {
