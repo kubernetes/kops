@@ -230,6 +230,16 @@ func TestPrivateCalico(t *testing.T) {
 	newIntegrationTest("privatecalico.example.com", "privatecalico").withPrivate().runTestCloudformation(t)
 }
 
+func TestPrivateCilium(t *testing.T) {
+	newIntegrationTest("privatecilium.example.com", "privatecilium").withPrivate().runTestTerraformAWS(t)
+	newIntegrationTest("privatecilium.example.com", "privatecilium").withPrivate().runTestCloudformation(t)
+}
+
+func TestPrivateCiliumAdvanced(t *testing.T) {
+	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").withPrivate().runTestTerraformAWS(t)
+	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").withPrivate().runTestCloudformation(t)
+}
+
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
 func TestPrivateCanal(t *testing.T) {
 	newIntegrationTest("privatecanal.example.com", "privatecanal").withPrivate().runTestTerraformAWS(t)
