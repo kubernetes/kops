@@ -9,6 +9,7 @@ This is convenient for determining policy changes that need to be made when upgr
 **Using Managed Security Groups will not output these differences, it is up to the user to track expected changes to policies.**
 
 NOTE: 
+
 - *Currently Kops only supports using existing Security Groups for every instance group and Load Balancer in the Cluster, not a mix of existing and managed Security Groups.
 This is due to the lifecycle overrides being used to prevent creation of the Security Groups related resources.*
 - *Kops will add necessary rules to the security group specified in `securityGroupOverride`.*
