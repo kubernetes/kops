@@ -244,6 +244,21 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			Tags: tags,
 		}
+		// Add additional security groups to the ELB
+		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.LoadBalancer != nil && b.Cluster.Spec.Topology.Bastion.LoadBalancer.AdditionalSecurityGroups != nil {
+			for _, id := range b.Cluster.Spec.Topology.Bastion.LoadBalancer.AdditionalSecurityGroups {
+				t := &awstasks.SecurityGroup{
+					Name:      fi.String(id),
+					Lifecycle: b.SecurityLifecycle,
+					ID:        fi.String(id),
+					Shared:    fi.Bool(true),
+				}
+				if err := c.EnsureTask(t); err != nil {
+					return err
+				}
+				elb.SecurityGroups = append(elb.SecurityGroups, t)
+			}
+		}
 
 		c.AddTask(elb)
 	}
