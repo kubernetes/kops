@@ -3419,6 +3419,13 @@ spec:
                           idle timeout
                         format: int64
                         type: integer
+                      loadBalancer:
+                        properties:
+                          additionalSecurityGroups:
+                            items:
+                              type: string
+                            type: array
+                        type: object
                     type: object
                   dns:
                     description: DNS configures options relating to DNS, in particular
