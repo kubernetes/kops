@@ -244,6 +244,11 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	udpRanges := []portRange{{From: 1, To: 65535}}
 	protocols := []Protocol{}
 
+	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+		// Block the etcd peer port
+		tcpBlocked[2382] = true
+	}
+
 	if b.Cluster.Spec.Networking.Calico != nil {
 		// Calico needs to access etcd
 		// TODO: Remove, replace with etcd in calico manifest

@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "architecture.go",
+        "cilium.go",
         "cloudconfig.go",
         "containerd.go",
         "context.go",
