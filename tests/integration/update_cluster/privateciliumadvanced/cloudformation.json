@@ -1,0 +1,1454 @@
+{
+  "Resources": {
+    "AWSAutoScalingAutoScalingGroupbastionprivateciliumadvancedexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "bastion.privateciliumadvanced.example.com",
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationbastionprivateciliumadvancedexamplecom"
+        },
+        "MaxSize": 1,
+        "MinSize": 1,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivateciliumadvancedexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.privateciliumadvanced.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/bastion",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "bastion",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ],
+        "LoadBalancerNames": [
+          {
+            "Ref": "AWSElasticLoadBalancingLoadBalancerbastionprivateciliumadvancedexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "master-us-test-1a.masters.privateciliumadvanced.example.com",
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivateciliumadvancedexamplecom"
+        },
+        "MaxSize": 1,
+        "MinSize": 1,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aprivateciliumadvancedexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "master-us-test-1a.masters.privateciliumadvanced.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "master-us-test-1a",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ],
+        "LoadBalancerNames": [
+          {
+            "Ref": "AWSElasticLoadBalancingLoadBalancerapiprivateciliumadvancedexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupnodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "nodes.privateciliumadvanced.example.com",
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationnodesprivateciliumadvancedexamplecom"
+        },
+        "MaxSize": 2,
+        "MinSize": 2,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aprivateciliumadvancedexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.privateciliumadvanced.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/node",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "nodes",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationbastionprivateciliumadvancedexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": true,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 32,
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilebastionsprivateciliumadvancedexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "t2.micro",
+        "KeyName": "kubernetes.privateciliumadvanced.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupbastionprivateciliumadvancedexamplecom"
+          }
+        ],
+        "UserData": "extracted",
+        "InstanceMonitoring": false
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": false,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 64,
+              "DeleteOnTermination": true
+            }
+          },
+          {
+            "DeviceName": "/dev/sdc",
+            "VirtualName": "ephemeral0"
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilemastersprivateciliumadvancedexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "m3.medium",
+        "KeyName": "kubernetes.privateciliumadvanced.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+          }
+        ],
+        "UserData": "extracted",
+        "InstanceMonitoring": false
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationnodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": false,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 128,
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilenodesprivateciliumadvancedexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "t2.medium",
+        "KeyName": "kubernetes.privateciliumadvanced.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+          }
+        ],
+        "UserData": "extracted",
+        "InstanceMonitoring": false
+      }
+    },
+    "AWSEC2DHCPOptionsprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "us-test-1.compute.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2EIPustest1aprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2InternetGatewayprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2NatGatewayustest1aprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "AWSEC2EIPustest1aprivateciliumadvancedexamplecom",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetutilityustest1aprivateciliumadvancedexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Route00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateciliumadvancedexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayprivateciliumadvancedexamplecom"
+        }
+      }
+    },
+    "AWSEC2RouteTableprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
+          }
+        ]
+      }
+    },
+    "AWSEC2RouteTableprivateustest1aprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "private-us-test-1a.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "private-us-test-1a"
+          }
+        ]
+      }
+    },
+    "AWSEC2Routeprivateustest1a00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1aprivateciliumadvancedexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "AWSEC2NatGatewayustest1aprivateciliumadvancedexamplecom"
+        }
+      }
+    },
+    "AWSEC2SecurityGroupEgressapielbegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressbastionegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressbastionelbegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressmasteregress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressnodeegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallnodetonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressbastiontomasterssh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressbastiontonodessh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpsapielb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp12379": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 2379,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp23834000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 2383,
+        "ToPort": 4000,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp400365535": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 4003,
+        "ToPort": 65535,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomasterudp165535": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshelbtobastion": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshexternaltobastionelb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "GroupDescription": "Security group for api ELB",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "api-elb.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupbastionelbprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "GroupDescription": "Security group for bastion ELB",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion-elb.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupbastionprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "GroupDescription": "Security group for bastion",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "GroupDescription": "Security group for masters",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "GroupDescription": "Security group for nodes",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationprivateustest1aprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetustest1aprivateciliumadvancedexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1aprivateciliumadvancedexamplecom"
+        }
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationutilityustest1aprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetutilityustest1aprivateciliumadvancedexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateciliumadvancedexamplecom"
+        }
+      }
+    },
+    "AWSEC2Subnetustest1aprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "CidrBlock": "172.20.32.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Private"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/internal-elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2Subnetutilityustest1aprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "CidrBlock": "172.20.4.0/22",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "utility-us-test-1a.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Utility"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2VPCDHCPOptionsAssociationprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "DhcpOptionsId": {
+          "Ref": "AWSEC2DHCPOptionsprivateciliumadvancedexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCGatewayAttachmentprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
+        },
+        "InternetGatewayId": {
+          "Ref": "AWSEC2InternetGatewayprivateciliumadvancedexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.20.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdciliumprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-cilium.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/cilium",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdeventsprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-events.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/events",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdmainprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-main.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/main",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSElasticLoadBalancingLoadBalancerapiprivateciliumadvancedexamplecom": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": "api-privateciliumadvanced-0cffmm",
+        "Listeners": [
+          {
+            "InstancePort": 443,
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": 443,
+            "Protocol": "TCP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivateciliumadvancedexamplecom"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "SSL:443",
+          "HealthyThreshold": 2,
+          "UnhealthyThreshold": 2,
+          "Interval": 10,
+          "Timeout": 5
+        },
+        "ConnectionSettings": {
+          "IdleTimeout": 300
+        },
+        "CrossZone": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "api.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSElasticLoadBalancingLoadBalancerbastionprivateciliumadvancedexamplecom": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": "bastion-privateciliumadva-0jni40",
+        "Listeners": [
+          {
+            "InstancePort": 22,
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": 22,
+            "Protocol": "TCP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupbastionelbprivateciliumadvancedexamplecom"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivateciliumadvancedexamplecom"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "TCP:22",
+          "HealthyThreshold": 2,
+          "UnhealthyThreshold": 2,
+          "Interval": 10,
+          "Timeout": 5
+        },
+        "ConnectionSettings": {
+          "IdleTimeout": 300
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilebastionsprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolebastionsprivateciliumadvancedexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilemastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersprivateciliumadvancedexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilenodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesprivateciliumadvancedexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMPolicybastionsprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "bastions.privateciliumadvanced.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolebastionsprivateciliumadvancedexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeRegions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicymastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "masters.privateciliumadvanced.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersprivateciliumadvancedexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "autoscaling:UpdateAutoScalingGroup",
+                "ec2:DescribeLaunchTemplateVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "iam:ListServerCertificates",
+                "iam:GetServerCertificate"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicynodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "nodes.privateciliumadvanced.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesprivateciliumadvancedexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolebastionsprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "bastions.privateciliumadvanced.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolemastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "masters.privateciliumadvanced.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolenodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "nodes.privateciliumadvanced.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSRoute53RecordSetapiprivateciliumadvancedexamplecom": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "Name": "api.privateciliumadvanced.example.com",
+        "Type": "A",
+        "AliasTarget": {
+          "DNSName": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingLoadBalancerapiprivateciliumadvancedexamplecom",
+              "DNSName"
+            ]
+          },
+          "HostedZoneId": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingLoadBalancerapiprivateciliumadvancedexamplecom",
+              "CanonicalHostedZoneNameID"
+            ]
+          },
+          "EvaluateTargetHealth": false
+        },
+        "HostedZoneId": "/hostedzone/Z1AFAKE1ZON3YO"
+      }
+    }
+  }
+}
