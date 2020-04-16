@@ -482,6 +482,22 @@ func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec,
 		}
 	}
 
+	if v.EtcdManaged {
+		hasCiliumCluster := false
+		for _, cluster := range c.EtcdClusters {
+			if cluster.Name == "cilium" {
+				if cluster.Provider == kops.EtcdProviderTypeLegacy {
+					allErrs = append(allErrs, field.Invalid(fldPath.Root().Child("etcdClusters"), kops.EtcdProviderTypeLegacy, "Legacy etcd provider is not supported for the cilium cluster"))
+				}
+				hasCiliumCluster = true
+				break
+			}
+		}
+		if !hasCiliumCluster {
+			allErrs = append(allErrs, field.Required(fldPath.Root().Child("etcdClusters"), "Cilium with managed etcd requires a dedicated etcd cluster"))
+		}
+	}
+
 	return allErrs
 }
 

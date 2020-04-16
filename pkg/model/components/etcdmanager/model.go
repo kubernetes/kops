@@ -138,6 +138,15 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}); err != nil {
 			return err
 		}
+
+		if etcdCluster.Name == "cilium" {
+			c.AddTask(&fitasks.Keypair{
+				Name:    fi.String("etcd-clients-ca-cilium"),
+				Subject: "cn=etcd-clients-ca-cilium",
+				Type:    "ca",
+				Format:  format,
+			})
+		}
 	}
 
 	return nil
@@ -278,6 +287,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 
 	etcdInsecure := !b.UseEtcdTLS()
 
+	clientHost := "__name__"
 	clientPort := 4001
 
 	clusterName := "etcd-" + etcdCluster.Name
@@ -320,7 +330,12 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		peerPort = 2381
 		grpcPort = wellknownports.EtcdEventsGRPC
 		quarantinedClientPort = wellknownports.EtcdEventsQuarantinedClientPort
-
+	case "cilium":
+		clientPort = 4003
+		peerPort = 2382
+		grpcPort = wellknownports.EtcdCiliumGRPC
+		quarantinedClientPort = wellknownports.EtcdCiliumQuarantinedClientPort
+		clientHost = b.Cluster.Spec.MasterInternalName
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)
 	}
@@ -351,7 +366,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 		scheme := "https"
 
 		config.PeerUrls = fmt.Sprintf("%s://__name__:%d", scheme, peerPort)
-		config.ClientUrls = fmt.Sprintf("%s://__name__:%d", scheme, clientPort)
+		config.ClientUrls = fmt.Sprintf("%s://%s:%d", scheme, clientHost, clientPort)
 		config.QuarantineClientUrls = fmt.Sprintf("%s://__name__:%d", scheme, quarantinedClientPort)
 
 		// TODO: We need to wire these into the etcd-manager spec
