@@ -306,7 +306,7 @@ resource "aws_elb" "bastion-bastionuserdata-example-com" {
     ssl_certificate_id = ""
   }
   name            = "bastion-bastionuserdata-e-4grhsv"
-  security_groups = [aws_security_group.bastion-elb-bastionuserdata-example-com.id]
+  security_groups = [aws_security_group.bastion-elb-bastionuserdata-example-com.id, "sg-exampleid"]
   subnets         = [aws_subnet.utility-us-test-1a-bastionuserdata-example-com.id]
   tags = {
     "KubernetesCluster"                                 = "bastionuserdata.example.com"

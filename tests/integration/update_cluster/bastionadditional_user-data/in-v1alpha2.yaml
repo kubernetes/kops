@@ -30,6 +30,10 @@ spec:
   sshAccess:
   - 0.0.0.0/0
   topology:
+    bastion:
+      loadBalancer:
+        additionalSecurityGroups:
+        - sg-exampleid
     masters: private
     nodes: private
   subnets:
