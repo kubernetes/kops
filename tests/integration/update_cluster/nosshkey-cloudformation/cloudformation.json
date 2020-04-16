@@ -348,7 +348,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp23834000": {
+    "AWSEC2SecurityGroupIngressnodetomastertcp23824000": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -357,7 +357,7 @@
         "SourceSecurityGroupId": {
           "Ref": "AWSEC2SecurityGroupnodesnosshkeyexamplecom"
         },
-        "FromPort": 2383,
+        "FromPort": 2382,
         "ToPort": 4000,
         "IpProtocol": "tcp"
       }
