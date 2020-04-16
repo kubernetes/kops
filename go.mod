@@ -113,6 +113,7 @@ require (
 	k8s.io/cli-runtime v0.18.1
 	k8s.io/client-go v0.18.1
 	k8s.io/cloud-provider-openstack v1.17.0
+	k8s.io/code-generator v0.18.1
 	k8s.io/component-base v0.18.1
 	k8s.io/helm v2.9.0+incompatible
 	k8s.io/klog v1.0.0

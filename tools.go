@@ -31,4 +31,10 @@ import (
 	_ "honnef.co/go/tools/cmd/staticcheck"
 
 	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
+
+	// For generating apimachinery
+	_ "k8s.io/code-generator/cmd/client-gen"
+	_ "k8s.io/code-generator/cmd/conversion-gen"
+	_ "k8s.io/code-generator/cmd/deepcopy-gen"
+	_ "k8s.io/code-generator/cmd/defaulter-gen"
 )

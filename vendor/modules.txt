@@ -576,6 +576,7 @@ golang.org/x/tools/go/packages
 golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/types/typeutil
 golang.org/x/tools/go/vcs
+golang.org/x/tools/imports
 golang.org/x/tools/internal/fastwalk
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
@@ -1046,6 +1047,24 @@ k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
 # k8s.io/cloud-provider-openstack v1.17.0
 k8s.io/cloud-provider-openstack/pkg/util/openstack
+# k8s.io/code-generator v0.18.1 => k8s.io/code-generator v0.18.1
+k8s.io/code-generator/cmd/client-gen
+k8s.io/code-generator/cmd/client-gen/args
+k8s.io/code-generator/cmd/client-gen/generators
+k8s.io/code-generator/cmd/client-gen/generators/fake
+k8s.io/code-generator/cmd/client-gen/generators/scheme
+k8s.io/code-generator/cmd/client-gen/generators/util
+k8s.io/code-generator/cmd/client-gen/path
+k8s.io/code-generator/cmd/client-gen/types
+k8s.io/code-generator/cmd/conversion-gen
+k8s.io/code-generator/cmd/conversion-gen/args
+k8s.io/code-generator/cmd/conversion-gen/generators
+k8s.io/code-generator/cmd/deepcopy-gen
+k8s.io/code-generator/cmd/deepcopy-gen/args
+k8s.io/code-generator/cmd/defaulter-gen
+k8s.io/code-generator/cmd/defaulter-gen/args
+k8s.io/code-generator/pkg/namer
+k8s.io/code-generator/pkg/util
 # k8s.io/component-base v0.18.1 => k8s.io/component-base v0.18.1
 k8s.io/component-base/metrics
 k8s.io/component-base/metrics/legacyregistry
@@ -1053,6 +1072,15 @@ k8s.io/component-base/metrics/prometheus/restclient
 k8s.io/component-base/version
 # k8s.io/csi-translation-lib v0.18.1 => k8s.io/csi-translation-lib v0.18.1
 k8s.io/csi-translation-lib/plugins
+# k8s.io/gengo v0.0.0-20200114144118-36b2048a9120
+k8s.io/gengo/args
+k8s.io/gengo/examples/deepcopy-gen/generators
+k8s.io/gengo/examples/defaulter-gen/generators
+k8s.io/gengo/examples/set-gen/sets
+k8s.io/gengo/generator
+k8s.io/gengo/namer
+k8s.io/gengo/parser
+k8s.io/gengo/types
 # k8s.io/helm v2.9.0+incompatible
 k8s.io/helm/pkg/strvals
 # k8s.io/klog v1.0.0
