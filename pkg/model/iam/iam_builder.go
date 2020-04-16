@@ -378,9 +378,11 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						Resource: stringorslice.Of(resources...),
 					})
 
-					if b.Cluster.Spec.Networking != nil {
+					networkingSpec := b.Cluster.Spec.Networking
+
+					if networkingSpec != nil {
 						// @check if kuberoute is enabled and permit access to the private key
-						if b.Cluster.Spec.Networking.Kuberouter != nil {
+						if networkingSpec.Kuberouter != nil {
 							p.Statement = append(p.Statement, &Statement{
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
@@ -391,12 +393,23 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						}
 
 						// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
-						if b.Cluster.Spec.Networking.Calico != nil {
+						if networkingSpec.Calico != nil {
 							p.Statement = append(p.Statement, &Statement{
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
 								Resource: stringorslice.Of(
 									strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/calico-client/*"}, ""),
+								),
+							})
+						}
+
+						// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
+						if networkingSpec.Cilium != nil && networkingSpec.Cilium.EtcdManaged {
+							p.Statement = append(p.Statement, &Statement{
+								Effect: StatementEffectAllow,
+								Action: stringorslice.Slice([]string{"s3:Get*"}),
+								Resource: stringorslice.Of(
+									strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/etcd-clients-ca-cilium/*"}, ""),
 								),
 							})
 						}

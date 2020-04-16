@@ -491,6 +491,32 @@ The following command will launch your cluster with desired Cilium configuration
 $ kops update cluster myclustername.mydns.io --yes
 ```
 
+##### Using etcd for agent state sync
+
+By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kops 1.18, kops can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for this must be enabled.
+
+Add the following to `spec.etcdClusters`:
+Make sure `instanceGroup` match the other etcd clusters.
+
+```
+  - etcdMembers:
+    - instanceGroup: master-az-1a
+      name: a
+    - instanceGroup: master-az-1b
+      name: b
+    - instanceGroup: master-az-1c
+      name: c
+    name: cilium
+```
+
+Then enable etcd as kvstore:
+
+```
+  networking:
+    cilium:
+      etcdManaged: true
+```
+
 ##### Enabling BPF NodePort
 
 As of Kops 1.18 you can safely enable Cilium NodePort.
