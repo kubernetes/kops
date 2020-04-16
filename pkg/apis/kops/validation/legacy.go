@@ -287,7 +287,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			}
 
 			// @ check that NodeLocalDNS addon is configured correctly
-			if c.Spec.KubeDNS.NodeLocalDNS != nil && c.Spec.KubeDNS.NodeLocalDNS.Enabled {
+			if c.Spec.KubeDNS.NodeLocalDNS != nil && fi.BoolValue(c.Spec.KubeDNS.NodeLocalDNS.Enabled) {
 				if c.Spec.KubeDNS.Provider != "CoreDNS" {
 					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeDNS", "provider"), "KubeDNS provider must be set to CoreDNS if NodeLocalDNS addon is enabled"))
 				}

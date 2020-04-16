@@ -1616,8 +1616,7 @@ spec:
                       node-local-dns addon
                     properties:
                       enabled:
-                        description: Disable indicates we do not wish to run the node-local-dns
-                          addon
+                        description: Enabled activates the node-local-dns addon
                         type: boolean
                       localIP:
                         description: Local listen IP address. It can be any IP in

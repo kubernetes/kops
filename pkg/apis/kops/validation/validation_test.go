@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_Validate_DNS(t *testing.T) {
@@ -548,7 +549,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: true,
+						Enabled: fi.Bool(true),
 					},
 				},
 			},
@@ -565,7 +566,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: true,
+						Enabled: fi.Bool(true),
 					},
 				},
 			},
@@ -582,7 +583,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: true,
+						Enabled: fi.Bool(true),
 					},
 				},
 				Networking: &kops.NetworkingSpec{
@@ -602,7 +603,7 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				KubeDNS: &kops.KubeDNSConfig{
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
-						Enabled: true,
+						Enabled: fi.Bool(true),
 						LocalIP: "169.254.20.10",
 					},
 				},
