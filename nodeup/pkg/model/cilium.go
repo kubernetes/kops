@@ -47,7 +47,7 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	if err := b.builldBPFMount(c); err != nil {
+	if err := b.buildBPFMount(c); err != nil {
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 
 }
 
-func (b *CiliumBuilder) builldBPFMount(c *fi.ModelBuilderContext) error {
+func (b *CiliumBuilder) buildBPFMount(c *fi.ModelBuilderContext) error {
 
 	var fsdata unix.Statfs_t
 	err := unix.Statfs("/sys/fs/bpf", &fsdata)
@@ -163,7 +163,7 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 	privateKeyBytes := pkiutil.EncodePrivateKeyPEM(privateKey)
 
 	certConfig := &certutil.Config{
-		CommonName: "kube-apiserver",
+		CommonName: "cilium",
 		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 

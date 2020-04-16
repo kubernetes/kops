@@ -420,11 +420,11 @@
         "to_port": 2379,
         "protocol": "tcp"
       },
-      "node-to-master-tcp-2383-4000": {
+      "node-to-master-tcp-2382-4000": {
         "type": "ingress",
         "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
         "source_security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
-        "from_port": 2383,
+        "from_port": 2382,
         "to_port": 4000,
         "protocol": "tcp"
       },
