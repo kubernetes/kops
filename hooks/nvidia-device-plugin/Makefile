@@ -16,13 +16,18 @@
 
 all: image
 
-.PHONY: image push
+.PHONY: image push check-docker-registry
 
-image:  ## Build the image
-	docker build --network host -t fifarzh/nvidia-device-plugin:0.2.0-cuda10.0 -f image/Dockerfile image/
+check-docker-registry:
+ifndef DOCKER_REGISTRY
+	$(error DOCKER_REGISTRY is undefined)
+endif
 
-push:   ## Push the image
-	docker push fifarzh/nvidia-device-plugin:0.2.0-cuda10.0
+image: check-docker-registry  ## Build the image
+	docker build --network host -t $(DOCKER_REGISTRY)/nvidia-device-plugin:0.2.0-cuda10.0 -f image/Dockerfile image/
+
+push: check-docker-registry   ## Push the image
+	docker push $(DOCKER_REGISTRY)/nvidia-device-plugin:0.2.0-cuda10.0
 
 help:   ## Print list of Makefile targets
 	@# Taken from https://github.com/spf13/hugo/blob/master/Makefile
