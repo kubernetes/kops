@@ -60,17 +60,17 @@ func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud, *kopsapi.Cluste
 	cluster.Name = "test.k8s.local"
 
 	c := &RollingUpdateCluster{
-		Cloud:                mockcloud,
-		MasterInterval:       1 * time.Millisecond,
-		NodeInterval:         1 * time.Millisecond,
-		BastionInterval:      1 * time.Millisecond,
-		Force:                false,
-		K8sClient:            k8sClient,
-		ClusterValidator:     &successfulClusterValidator{},
-		FailOnValidate:       true,
-		ValidateTickDuration: 1 * time.Millisecond,
-		ValidateCount:        1,
-		ValidateSucceeded:    0,
+		Cloud:                   mockcloud,
+		MasterInterval:          1 * time.Millisecond,
+		NodeInterval:            1 * time.Millisecond,
+		BastionInterval:         1 * time.Millisecond,
+		Force:                   false,
+		K8sClient:               k8sClient,
+		ClusterValidator:        &successfulClusterValidator{},
+		FailOnValidate:          true,
+		ValidateTickDuration:    1 * time.Millisecond,
+		ValidateSuccessDuration: 5 * time.Millisecond,
+		ValidateCount:           2,
 	}
 
 	return c, mockcloud, cluster
@@ -545,7 +545,6 @@ func TestRollingUpdateFlappingValidation(t *testing.T) {
 	ctx := context.Background()
 
 	c, cloud, cluster := getTestSetup()
-	c.ValidateCount = 3
 
 	// This should only take a few milliseconds,
 	// but we have to pad to allow for random delays (e.g. GC)
@@ -1024,6 +1023,7 @@ func TestRollingUpdateMaxUnavailableAllNeedUpdate(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
 	concurrentTest := newConcurrentTest(t, cloud, 0, true)
+	c.ValidateCount = 1
 	c.ClusterValidator = concurrentTest
 	cloud.MockEC2 = concurrentTest
 
@@ -1048,6 +1048,7 @@ func TestRollingUpdateMaxUnavailableAllButOneNeedUpdate(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
 	concurrentTest := newConcurrentTest(t, cloud, 0, false)
+	c.ValidateCount = 1
 	c.ClusterValidator = concurrentTest
 	cloud.MockEC2 = concurrentTest
 
@@ -1071,6 +1072,7 @@ func TestRollingUpdateMaxUnavailableAllNeedUpdateMaster(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
 	concurrentTest := newConcurrentTest(t, cloud, 0, true)
+	c.ValidateCount = 1
 	c.ClusterValidator = concurrentTest
 	cloud.MockEC2 = concurrentTest
 
@@ -1124,6 +1126,7 @@ func TestRollingUpdateMaxSurgeAllNeedUpdate(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
 	concurrentTest := newConcurrentTest(t, cloud, 2, true)
+	c.ValidateCount = 1
 	c.ClusterValidator = concurrentTest
 	cloud.MockAutoscaling = &concurrentTestAutoscaling{
 		AutoScalingAPI: cloud.MockAutoscaling,
@@ -1152,6 +1155,7 @@ func TestRollingUpdateMaxSurgeAllButOneNeedUpdate(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 
 	concurrentTest := newConcurrentTest(t, cloud, 2, false)
+	c.ValidateCount = 1
 	c.ClusterValidator = concurrentTest
 	cloud.MockAutoscaling = &concurrentTestAutoscaling{
 		AutoScalingAPI: cloud.MockAutoscaling,
@@ -1302,6 +1306,7 @@ func TestRollingUpdateMaxSurgeAllNeedUpdateOneAlreadyDetached(t *testing.T) {
 		detached:                map[string]bool{},
 	}
 
+	c.ValidateCount = 1
 	c.ClusterValidator = alreadyDetachedTest
 	cloud.MockAutoscaling = &alreadyDetachedTestAutoscaling{
 		AutoScalingAPI:      cloud.MockAutoscaling,
@@ -1332,6 +1337,7 @@ func TestRollingUpdateMaxSurgeAllNeedUpdateMaxAlreadyDetached(t *testing.T) {
 
 	// Should behave the same as TestRollingUpdateMaxUnavailableAllNeedUpdate
 	concurrentTest := newConcurrentTest(t, cloud, 0, true)
+	c.ValidateCount = 1
 	c.ClusterValidator = concurrentTest
 	cloud.MockEC2 = concurrentTest
 

@@ -341,10 +341,10 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		ClusterName:       options.ClusterName,
 		PostDrainDelay:    options.PostDrainDelay,
 		ValidationTimeout: options.ValidationTimeout,
-		ValidateCount:     options.ValidateCount,
-		ValidateSucceeded: 0,
+		ValidateCount:     int(options.ValidateCount),
 		// TODO should we expose this to the UI?
-		ValidateTickDuration: 30 * time.Second,
+		ValidateTickDuration:    30 * time.Second,
+		ValidateSuccessDuration: 10 * time.Second,
 	}
 
 	err = d.AdjustNeedUpdate(groups, cluster, list)

@@ -69,7 +69,7 @@ func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting b
 }
 
 // RollingUpdate performs a rolling update on a list of instances.
-func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, cluster *api.Cluster, group *cloudinstances.CloudInstanceGroup, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
+func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, cluster *api.Cluster, group *cloudinstances.CloudInstanceGroup, isBastion bool, sleepAfterTerminate time.Duration) (err error) {
 	// Do not need a k8s client if you are doing cloudonly.
 	if c.K8sClient == nil && !c.CloudOnly {
 		return fmt.Errorf("rollingUpdate is missing a k8s client")
@@ -156,7 +156,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 					klog.Infof("waiting for %v after detaching instance", sleepAfterTerminate)
 					time.Sleep(sleepAfterTerminate)
 
-					if err := c.maybeValidate(validationTimeout, "detaching"); err != nil {
+					if err := c.maybeValidate(c.ValidationTimeout, "detaching"); err != nil {
 						return err
 					}
 					noneReady = false
@@ -185,7 +185,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
 
-		err = c.maybeValidate(validationTimeout, "removing")
+		err = c.maybeValidate(c.ValidationTimeout, "removing")
 		if err != nil {
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
@@ -231,7 +231,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 			}
 		}
 
-		err = c.maybeValidate(validationTimeout, "removing")
+		err = c.maybeValidate(c.ValidationTimeout, "removing")
 		if err != nil {
 			return err
 		}
@@ -401,57 +401,64 @@ func (c *RollingUpdateCluster) maybeValidate(validationTimeout time.Duration, op
 }
 
 // validateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
-func (c *RollingUpdateCluster) validateClusterWithDuration(duration time.Duration) error {
-	// Try to validate cluster at least once, this will handle durations that are lower
-	// than our tick time
-	if c.tryValidateCluster(duration) {
+func (c *RollingUpdateCluster) validateClusterWithDuration(validationTimeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), validationTimeout)
+	defer cancel()
+
+	if c.tryValidateCluster(ctx) {
 		return nil
 	}
 
-	timeout := time.After(duration)
-	ticker := time.NewTicker(c.ValidateTickDuration)
-	defer ticker.Stop()
-	// Keep trying until we're timed out or got a result or got an error
-	for {
-		select {
-		case <-timeout:
-			// Got a timeout fail with a timeout error
-			return fmt.Errorf("cluster did not validate within a duration of %q", duration)
-		case <-ticker.C:
-			// Got a tick, validate cluster
-			if c.tryValidateCluster(duration) {
-				return nil
-			}
-			// ValidateCluster didn't work yet, so let's try again
-			// this will exit up to the for loop
-		}
-	}
+	return fmt.Errorf("cluster did not validate within a duration of %q", validationTimeout)
 }
 
-func (c *RollingUpdateCluster) tryValidateCluster(duration time.Duration) bool {
-	result, err := c.ClusterValidator.Validate()
-
-	if err == nil && len(result.Failures) == 0 && c.ValidateCount > 0 {
-		c.ValidateSucceeded++
-		if c.ValidateSucceeded < c.ValidateCount {
-			klog.Infof("Cluster validated; revalidating %d time(s) to make sure it does not flap.", c.ValidateCount-c.ValidateSucceeded)
-			return false
-		}
+func (c *RollingUpdateCluster) tryValidateCluster(ctx context.Context) bool {
+	if c.ValidateCount == 0 {
+		klog.Warningf("skipping cluster validation because validate-count was 0")
+		return true
 	}
 
-	if err != nil {
-		klog.Infof("Cluster did not validate, will try again in %q until duration %q expires: %v.", c.ValidateTickDuration, duration, err)
-		return false
-	} else if len(result.Failures) > 0 {
-		messages := []string{}
-		for _, failure := range result.Failures {
-			messages = append(messages, failure.Message)
+	successCount := 0
+
+	for {
+		// Note that we validate at least once before checking the timeout, in case the cluster is healthy with a short timeout
+		result, err := c.ClusterValidator.Validate()
+		if err == nil && len(result.Failures) == 0 {
+			successCount++
+			if successCount >= c.ValidateCount {
+				klog.Info("Cluster validated.")
+				return true
+			} else {
+				klog.Infof("Cluster validated; revalidating in %s to make sure it does not flap.", c.ValidateSuccessDuration)
+				time.Sleep(c.ValidateSuccessDuration)
+				continue
+			}
 		}
-		klog.Infof("Cluster did not pass validation, will try again in %q until duration %q expires: %s.", c.ValidateTickDuration, duration, strings.Join(messages, ", "))
-		return false
-	} else {
-		klog.Info("Cluster validated.")
-		return true
+
+		if err != nil {
+			if ctx.Err() != nil {
+				klog.Infof("Cluster did not validate within deadline: %v.", err)
+				return false
+			}
+			klog.Infof("Cluster did not validate, will retry in %q: %v.", c.ValidateTickDuration, err)
+		} else if len(result.Failures) > 0 {
+			messages := []string{}
+			for _, failure := range result.Failures {
+				messages = append(messages, failure.Message)
+			}
+			if ctx.Err() != nil {
+				klog.Infof("Cluster did not pass validation within deadline: %s.", strings.Join(messages, ", "))
+				return false
+			}
+			klog.Infof("Cluster did not pass validation, will retry in %q: %s.", c.ValidateTickDuration, strings.Join(messages, ", "))
+		}
+
+		// Reset the success count; we want N consecutive successful validations
+		successCount = 0
+
+		// Wait before retrying
+		// TODO: Should we check if we have enough time left before the deadline?
+		time.Sleep(c.ValidateTickDuration)
 	}
 }
 
