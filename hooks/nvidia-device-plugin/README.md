@@ -8,13 +8,13 @@ types](https://aws.amazon.com/ec2/instance-types/).
 
 It installs the following from web sources.
 
-1. [Nvidia Device Drivers](http://www.nvidia.com/Download/index.aspx)
-2. [Cuda Libraries v9.1](https://developer.nvidia.com/cuda-downloads)
+1. [NVIDIA Device Drivers](http://www.nvidia.com/Download/index.aspx)
+2. [CUDA Libraries](https://developer.nvidia.com/cuda-downloads)
 3. [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
 4. [docker-ce](https://www.docker.com/community-edition)
 
-Using this hook indicates that you agree to the Nvidia
-[licenses](http://www.nvidia.com/content/DriverDownload-March2009/licence.php?lang=us).
+Using this hook indicates that you agree to the NVIDIA
+[license](http://www.nvidia.com/content/DriverDownload-March2009/licence.php?lang=us).
 
 ## How it works
 
@@ -23,7 +23,7 @@ Using this hook indicates that you agree to the Nvidia
   `nvidia-device-plugin.service` along with setup scripts.
 * The systemd unit `nvidia-device-plugin.service` runs and executes the setup
   scripts in the host directory `/nvidia-device-plugin`.
-* The scripts install the Nvidia device drivers, Cuda libs, Nvidia docker along
+* The scripts install the NVIDIA device drivers, CUDA libs, nvidia-docker along
   with the matching version of docker-ce.
 * The scheduling of work in a separate systemd unit outside of this kops hook
   is required because it is not possible to upgrade docker-ce on the host from
@@ -34,9 +34,9 @@ Using this hook indicates that you agree to the Nvidia
 Although this hook *may* work among many combinatorial versions of software and
 images, it has only been tested with the following:
 
-* kops: **1.9**
-* kubernetes: 1.10, **1.11**
-* OS Image: **`kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27`**
+* kops: **1.9**, **1.15.0**
+* kubernetes: 1.10, **1.11**, **1.15.5**
+* OS Image: **`kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27`**, **`kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17`**
   * This is most certainly not the default image for kops.  The OS image must
     be explicitly overridden in the cluster or instancegroup spec.
   * Debian stretch is needed because `nvidia-docker` requires a newer version
@@ -56,27 +56,34 @@ This kops hook was developed against the following version combinations.
 
 | Kops Version  | Kubernetes Version | GPU Mode     | OS Image |
 | ------------- | ------------------ | ------------ | -------- |
+| 1.15.0        | 1.15.5             | deviceplugin | kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
 | 1.10-beta.1   | 1.10               | deviceplugin | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
 | 1.9.1         | 1.11               | deviceplugin | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
 | 1.9.1         | 1.10               | legacy       | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
+
+### About the Docker Image
+
+- For CUDA 10.0, run `DOCKER_REGISTRY= make image push` with the desired registry to self-host the docker image.
+- For CUDA 9.1, the image is already hosted according to the InstanceGroup spec example but can be mirrored elsewhere.
 
 ## Using this DevicePlugin
 
 ### Create a Cluster with GPU Nodes
 
 ```bash
-kops create cluster gpu.example.com \
+kops create cluster \
+  --name gpu.example.k8s.local \
   --zones us-east-1c \
   --node-size p2.xlarge \
   --node-count 1 \
-  --image kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27 \
-  --kubernetes-version 1.11.0
+  --image kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17 \
+  --kubernetes-version 1.15.5
 ```
 
 ### Enable the Kops Installation Hook and DevicePlugins
 
 This should be safe to do for all machines, because the hook auto-detects if
-the machine is an AWS GPU instancetype and will NO-OP otherwise.  Choose
+the machine is an AWS GPU instancetype and will NO-OP otherwise. Choose
 between the DevicePlugin GPU Mode or Legacy Accelerators GPU Mode.
 
 #### (Preferred) DevicePlugin GPU Mode
@@ -90,7 +97,14 @@ For Kubernetes >= 1.11.0 or clusters supporting DevicePlugins
 
 ```yaml
 # > kops edit instancegroup nodes
+# CUDA 10.0
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
+  hooks:
+  - execContainer:
+      image: DOCKER_REGISTRY/nvidia-device-plugin:0.2.0-cuda10.0 # Replace DOCKER_REGISTRY with the registry used to host the image
 
+# CUDA 9.1
 spec:
   image: kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
   hooks:
@@ -134,22 +148,18 @@ spec:
 ### Update the cluster
 
 ```bash
-kops update cluster gpu.example.com --yes
-kops rolling-update cluster gpu.example.com --yes
+kops update cluster gpu.example.k8s.local --yes
+kops rolling-update cluster gpu.example.k8s.local --yes
 ```
 
-### Deploy the Daemonset for the Nvidia DevicePlugin
+### Deploy the Daemonset for the NVIDIA DevicePlugin
 
 Only for DevicePlugin GPU Mode, load the deviceplugin daemonset for your
-specific environment.  This is not required for the Legacy Accelerators GPU
+specific environment. This is not required for the Legacy Accelerators GPU
 Mode.
 
 ```bash
-# For kubernetes 1.10
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.10/nvidia-device-plugin.yml
-
-# For kubernetes 1.11
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta5/nvidia-device-plugin.yml
 
 # (Optional) Set permissive toleration to allow daemonset to run anywhere.
 #   By default this is permissive in case you have tainted your GPU nodes.
@@ -162,6 +172,26 @@ kubectl patch daemonset nvidia-device-plugin-daemonset --namespace kube-system \
 #### Deploy a Test Pod
 
 ```bash
+# CUDA 10.0
+cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tf-gpu
+spec:
+  containers:
+  - name: gpu
+    image: tensorflow/tensorflow:2.0.1-gpu
+    command: [ "/bin/bash", "-ce", "tail -f /dev/null" ]
+    # ^ From 2.0.0 onwards, CMD is not set
+    imagePullPolicy: IfNotPresent
+    resources:
+      limits:
+        memory: 1024Mi
+        nvidia.com/gpu: 1 # requesting 1 GPU
+EOF
+
+# CUDA 9.1
 cat << EOF | kubectl create -f -
 apiVersion: v1
 kind: Pod
@@ -198,10 +228,10 @@ EOF
 
 ```bash
 # Check that nodes are detected to have GPUs
-kubectl describe nodes|grep -E 'gpu:\s.*[1-9]'
+kubectl describe nodes | grep -E 'gpu:\s.*[1-9]'
 
 # Check the logs of the Tensorflow Container to ensure that it ran
-kubectl logs tf-gpu
+kubectl logs tf-gpu # no output since 2.0.0
 
 # Show GPU info from within the pod
 #   Only works in DevicePlugin mode
@@ -211,4 +241,12 @@ kubectl exec -it tf-gpu nvidia-smi
 #   Only works in DevicePlugin mode
 kubectl exec -it tf-gpu -- \
   python -c 'from tensorflow.python.client import device_lib; print(device_lib.list_local_devices())'
+```
+
+### Teardown the Test Cluster
+
+```yaml
+kubectl delete pod/tf-gpu
+kubectl delete -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta5/nvidia-device-plugin.yml
+kops delete cluster --name gpu.example.k8s.local --yes
 ```
