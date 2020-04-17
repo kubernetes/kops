@@ -97,7 +97,7 @@ spec:
   image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
   hooks:
   - execContainer:
-      image: fifarzh/nvidia-device-plugin:0.2.0-cuda10.0
+      image: DOCKER_REGISTRY/nvidia-device-plugin:0.2.0-cuda10.0 # Replace DOCKER_REGISTRY with the registry used to host the image
 
 # CUDA 9.1
 spec:
@@ -154,7 +154,7 @@ specific environment. This is not required for the Legacy Accelerators GPU
 Mode.
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta5/nvidia-device-plugin.yml
 
 # (Optional) Set permissive toleration to allow daemonset to run anywhere.
 #   By default this is permissive in case you have tainted your GPU nodes.
@@ -242,6 +242,6 @@ kubectl exec -it tf-gpu -- \
 
 ```yaml
 kubectl delete pod/tf-gpu
-kubectl delete -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+kubectl delete -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta5/nvidia-device-plugin.yml
 kops delete cluster --name gpu.example.k8s.local --yes
 ```
