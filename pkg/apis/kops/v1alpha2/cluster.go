@@ -404,8 +404,8 @@ type KubeDNSConfig struct {
 
 // NodeLocalDNSConfig are options of the node-local-dns
 type NodeLocalDNSConfig struct {
-	// Disable indicates we do not wish to run the node-local-dns addon
-	Enabled bool `json:"enabled,omitempty"`
+	// Enabled activates the node-local-dns addon
+	Enabled *bool `json:"enabled,omitempty"`
 	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.
 	LocalIP string `json:"localIP,omitempty"`
 }
