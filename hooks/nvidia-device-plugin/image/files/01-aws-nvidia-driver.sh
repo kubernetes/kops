@@ -55,14 +55,14 @@ class_to_driver_checksum=( \
     ["p3dn"]="e5d234cc8acb35f425f60e1923e07e7e50272d9c" \
 )
 
-# CUDA Files that need to be installed ~1.4GB
+# CUDA Files that need to be installed ~1.9GB
 #   First one is main installation
 #   Subsequent files are patches which need to be applied in order
 #   Order in the arrays below matters
 # https://developer.nvidia.com/cuda-downloads
 cuda_files=( \
   "https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux" \
-  "http://developer.download.nvidia.com/compute/cuda/10.0/Prod/patches/1/cuda_10.0.130.1_linux.run" \
+  "https://developer.download.nvidia.com/compute/cuda/10.0/Prod/patches/1/cuda_10.0.130.1_linux.run" \
 )
 cuda_files_checksums=( \
   "009cb0b6d3a81a97eb529e2301ff613e23c6edd3" \
