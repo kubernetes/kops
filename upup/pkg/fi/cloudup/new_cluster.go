@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
@@ -658,48 +658,14 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			klog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
 		}
 
-		for _, etcdCluster := range EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
-			etcd.Name = etcdCluster
+		clusters := EtcdClusters
 
-			// if this is the main cluster, we use 200 millicores by default.
-			// otherwise we use 100 millicores by default.  100Mi is always default
-			// for event and main clusters.  This is changeable in the kops cluster
-			// configuration.
-			if etcd.Name == "main" {
-				cpuRequest := resource.MustParse("200m")
-				etcd.CPURequest = &cpuRequest
-			} else {
-				cpuRequest := resource.MustParse("100m")
-				etcd.CPURequest = &cpuRequest
-			}
-			memoryRequest := resource.MustParse("100Mi")
-			etcd.MemoryRequest = &memoryRequest
+		if opt.Networking == "cilium-etcd" {
+			clusters = append(clusters, "cilium")
+		}
 
-			var names []string
-			for _, ig := range masters {
-				name := ig.ObjectMeta.Name
-				// We expect the IG to have a `master-` prefix, but this is both superfluous
-				// and not how we named things previously
-				name = strings.TrimPrefix(name, "master-")
-				names = append(names, name)
-			}
-
-			names = trimCommonPrefix(names)
-
-			for i, ig := range masters {
-				m := &api.EtcdMemberSpec{}
-				if opt.EncryptEtcdStorage {
-					m.EncryptedVolume = fi.Bool(opt.EncryptEtcdStorage)
-				}
-				if opt.EtcdStorageType != "" {
-					m.VolumeType = fi.String(opt.EtcdStorageType)
-				}
-				m.Name = names[i]
-
-				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
-				etcd.Members = append(etcd.Members, m)
-			}
+		for _, etcdCluster := range clusters {
+			etcd := createEtcdCluster(etcdCluster, masters, opt.EncryptEtcdStorage, opt.EtcdStorageType)
 			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
 		}
 	}
@@ -815,27 +781,10 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	case "amazonvpc", "amazon-vpc-routed-eni":
 		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
 	case "cilium":
-		cilium := &api.CiliumNetworkingSpec{}
-		cluster.Spec.Networking.Cilium = cilium
-		nodeport := false
-		if cluster.Spec.KubernetesVersion == "" {
-			nodeport = true
-		} else {
-			k8sVersion, err := semver.ParseTolerant(cluster.Spec.KubernetesVersion)
-			if err == nil {
-				if version.IsKubernetesGTE("1.12", k8sVersion) {
-					nodeport = true
-				}
-			}
-		}
-		if nodeport {
-			cilium.EnableNodePort = true
-			if cluster.Spec.KubeProxy == nil {
-				cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-			}
-			enabled := false
-			cluster.Spec.KubeProxy.Enabled = &enabled
-		}
+		addCiliumNetwork(cluster)
+	case "cilium-etcd":
+		addCiliumNetwork(cluster)
+		cluster.Spec.Networking.Cilium.EtcdManaged = true
 	case "lyftvpc":
 		cluster.Spec.Networking.LyftVPC = &api.LyftVPCNetworkingSpec{}
 	case "gce":
@@ -1009,5 +958,75 @@ func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
 		if opt.OpenstackLBSubnet != "" {
 			cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(opt.OpenstackLBSubnet)
 		}
+	}
+}
+
+func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encryptEtcdStorage bool, etcdStorageType string) *api.EtcdClusterSpec {
+	etcd := &api.EtcdClusterSpec{}
+	etcd.Name = etcdCluster
+
+	// if this is the main cluster, we use 200 millicores by default.
+	// otherwise we use 100 millicores by default.  100Mi is always default
+	// for event and main clusters.  This is changeable in the kops cluster
+	// configuration.
+	if etcd.Name == "main" {
+		cpuRequest := resource.MustParse("200m")
+		etcd.CPURequest = &cpuRequest
+	} else {
+		cpuRequest := resource.MustParse("100m")
+		etcd.CPURequest = &cpuRequest
+	}
+	memoryRequest := resource.MustParse("100Mi")
+	etcd.MemoryRequest = &memoryRequest
+
+	var names []string
+	for _, ig := range masters {
+		name := ig.ObjectMeta.Name
+		// We expect the IG to have a `master-` prefix, but this is both superfluous
+		// and not how we named things previously
+		name = strings.TrimPrefix(name, "master-")
+		names = append(names, name)
+	}
+
+	names = trimCommonPrefix(names)
+
+	for i, ig := range masters {
+		m := &api.EtcdMemberSpec{}
+		if encryptEtcdStorage {
+			m.EncryptedVolume = &encryptEtcdStorage
+		}
+		if len(etcdStorageType) > 0 {
+			m.VolumeType = fi.String(etcdStorageType)
+		}
+		m.Name = names[i]
+
+		m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
+		etcd.Members = append(etcd.Members, m)
+	}
+	return etcd
+
+}
+
+func addCiliumNetwork(cluster *api.Cluster) {
+	cilium := &api.CiliumNetworkingSpec{}
+	cluster.Spec.Networking.Cilium = cilium
+	nodeport := false
+	if cluster.Spec.KubernetesVersion == "" {
+		nodeport = true
+	} else {
+		k8sVersion, err := semver.ParseTolerant(cluster.Spec.KubernetesVersion)
+		if err == nil {
+			if version.IsKubernetesGTE("1.12", k8sVersion) {
+				nodeport = true
+			}
+		}
+	}
+	if nodeport {
+		cilium.EnableNodePort = true
+		if cluster.Spec.KubeProxy == nil {
+			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+		}
+		enabled := false
+		cluster.Spec.KubeProxy.Enabled = &enabled
 	}
 }

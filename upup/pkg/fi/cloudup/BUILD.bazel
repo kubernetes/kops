@@ -128,6 +128,7 @@ go_test(
         "//upup/pkg/fi/fitasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],
