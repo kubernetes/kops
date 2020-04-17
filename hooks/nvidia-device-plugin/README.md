@@ -61,6 +61,11 @@ This kops hook was developed against the following version combinations.
 | 1.9.1         | 1.11               | deviceplugin | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
 | 1.9.1         | 1.10               | legacy       | kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-05-27
 
+### About the Docker Image
+
+- For CUDA 10.0, run `DOCKER_REGISTRY= make image push` with the desired registry to self-host the docker image.
+- For CUDA 9.1, the image is already hosted according to the InstanceGroup spec example but can be mirrored elsewhere.
+
 ## Using this DevicePlugin
 
 ### Create a Cluster with GPU Nodes
