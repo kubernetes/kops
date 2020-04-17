@@ -451,9 +451,9 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
-	// @check the node-local-dns has not been disabled
+	// @check if the node-local-dns is enabled
 	NodeLocalDNS := b.cluster.Spec.KubeDNS.NodeLocalDNS
-	if kubeDNS.Provider == "CoreDNS" && NodeLocalDNS != nil && NodeLocalDNS.Enabled {
+	if kubeDNS.Provider == "CoreDNS" && NodeLocalDNS != nil && fi.BoolValue(NodeLocalDNS.Enabled) {
 		{
 			key := "nodelocaldns.addons.k8s.io"
 			version := "1.18.0"
