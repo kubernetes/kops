@@ -65,11 +65,12 @@ type RollingUpdateCluster struct {
 	// ValidateTickDuration is the amount of time to wait between cluster validation attempts
 	ValidateTickDuration time.Duration
 
-	// ValidateCount is the amount of time that a cluster needs to be validated after single node update
-	ValidateCount int32
+	// ValidateSuccessDuration is the amount of time a cluster must continue to validate successfully
+	// before updating the next node
+	ValidateSuccessDuration time.Duration
 
-	// ValidateSucceeded is the amount of times that a cluster validate is succeeded already
-	ValidateSucceeded int32
+	// ValidateCount is the amount of time that a cluster needs to be validated after single node update
+	ValidateCount int
 }
 
 // AdjustNeedUpdate adjusts the set of instances that need updating, using factors outside those known by the cloud implementation
@@ -136,7 +137,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 
 				defer wg.Done()
 
-				err := c.rollingUpdateInstanceGroup(ctx, cluster, group, true, c.BastionInterval, c.ValidationTimeout)
+				err := c.rollingUpdateInstanceGroup(ctx, cluster, group, true, c.BastionInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -161,7 +162,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		// and we don't want to roll all the masters at the same time.  See issue #284
 
 		for _, group := range masterGroups {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.MasterInterval, c.ValidationTimeout)
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.MasterInterval)
 
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 			if err != nil {
@@ -183,7 +184,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		}
 
 		for k, group := range nodeGroups {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.NodeInterval, c.ValidationTimeout)
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.NodeInterval)
 
 			results[k] = err
 
