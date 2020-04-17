@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi"
@@ -30,13 +30,13 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func buildMinimalCluster() *api.Cluster {
+func buildMinimalCluster() *kopsapi.Cluster {
 	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
 
-	c := &api.Cluster{}
+	c := &kopsapi.Cluster{}
 	c.ObjectMeta.Name = "testcluster.test.com"
 	c.Spec.KubernetesVersion = "1.14.6"
-	c.Spec.Subnets = []api.ClusterSubnetSpec{
+	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
 		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
 		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24"},
@@ -46,9 +46,9 @@ func buildMinimalCluster() *api.Cluster {
 	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
 
 	// Default to public topology
-	c.Spec.Topology = &api.TopologySpec{
-		Masters: api.TopologyPublic,
-		Nodes:   api.TopologyPublic,
+	c.Spec.Topology = &kopsapi.TopologySpec{
+		Masters: kopsapi.TopologyPublic,
+		Nodes:   kopsapi.TopologyPublic,
 	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
@@ -60,12 +60,12 @@ func buildMinimalCluster() *api.Cluster {
 	// TODO: Mock cloudprovider
 	c.Spec.DNSZone = "test.com"
 
-	c.Spec.Networking = &api.NetworkingSpec{}
+	c.Spec.Networking = &kopsapi.NetworkingSpec{}
 
 	return c
 }
 
-func addEtcdClusters(c *api.Cluster) {
+func addEtcdClusters(c *kopsapi.Cluster) {
 	subnetNames := sets.NewString()
 	for _, z := range c.Spec.Subnets {
 		subnetNames.Insert(z.Name)
@@ -73,10 +73,10 @@ func addEtcdClusters(c *api.Cluster) {
 	etcdZones := subnetNames.List()
 
 	for _, etcdCluster := range EtcdClusters {
-		etcd := &api.EtcdClusterSpec{}
+		etcd := &kopsapi.EtcdClusterSpec{}
 		etcd.Name = etcdCluster
 		for _, zone := range etcdZones {
-			m := &api.EtcdMemberSpec{}
+			m := &kopsapi.EtcdMemberSpec{}
 			m.Name = zone
 			m.InstanceGroup = fi.String(zone)
 			etcd.Members = append(etcd.Members, m)
@@ -101,7 +101,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 	}
 }
 
-func mockedPopulateClusterSpec(c *api.Cluster) (*api.Cluster, error) {
+func mockedPopulateClusterSpec(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
 	assetBuilder := assets.NewAssetBuilder(c, "")
@@ -115,7 +115,7 @@ func mockedPopulateClusterSpec(c *api.Cluster) (*api.Cluster, error) {
 
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	c := buildMinimalCluster()
-	c.Spec.Docker = &api.DockerConfig{
+	c.Spec.Docker = &kopsapi.DockerConfig{
 		MTU:                fi.Int32(5678),
 		InsecureRegistry:   fi.String("myregistry.com:1234"),
 		InsecureRegistries: []string{"myregistry.com:1234", "myregistry2.com:1234"},
@@ -175,7 +175,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 	}
 }
 
-func build(c *api.Cluster) (*api.Cluster, error) {
+func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 	err := PerformAssignments(c)
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
@@ -210,7 +210,7 @@ func TestPopulateCluster_Kubenet(t *testing.T) {
 func TestPopulateCluster_CNI(t *testing.T) {
 	c := buildMinimalCluster()
 
-	c.Spec.Kubelet = &api.KubeletConfigSpec{
+	c.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
 		ConfigureCBR0:     fi.Bool(false),
 		NetworkPluginName: "cni",
 		NonMasqueradeCIDR: c.Spec.NonMasqueradeCIDR,
@@ -238,7 +238,7 @@ func TestPopulateCluster_CNI(t *testing.T) {
 func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
-	c.Spec.Subnets = []api.ClusterSubnetSpec{
+	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
 		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.2.0/27"},
 		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.32/27"},
 		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27"},
@@ -364,9 +364,9 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	// We can't have a bastion with public masters / nodes
 	c := buildMinimalCluster()
 	addEtcdClusters(c)
-	c.Spec.Topology.Masters = api.TopologyPublic
-	c.Spec.Topology.Nodes = api.TopologyPublic
-	c.Spec.Topology.Bastion = &api.BastionSpec{}
+	c.Spec.Topology.Masters = kopsapi.TopologyPublic
+	c.Spec.Topology.Nodes = kopsapi.TopologyPublic
+	c.Spec.Topology.Bastion = &kopsapi.BastionSpec{}
 	expectErrorFromPopulateCluster(t, c, "bastion")
 }
 
@@ -374,14 +374,14 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T
 	c := buildMinimalCluster()
 	addEtcdClusters(c)
 
-	c.Spec.Topology.Masters = api.TopologyPrivate
-	c.Spec.Topology.Nodes = api.TopologyPrivate
-	c.Spec.Topology.Bastion = &api.BastionSpec{}
+	c.Spec.Topology.Masters = kopsapi.TopologyPrivate
+	c.Spec.Topology.Nodes = kopsapi.TopologyPrivate
+	c.Spec.Topology.Bastion = &kopsapi.BastionSpec{}
 	c.Spec.Topology.Bastion.IdleTimeoutSeconds = fi.Int64(-1)
 	expectErrorFromPopulateCluster(t, c, "bastion")
 }
 
-func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {
+func expectErrorFromPopulateCluster(t *testing.T, c *kopsapi.Cluster, message string) {
 	_, err := mockedPopulateClusterSpec(c)
 	if err == nil {
 		t.Fatalf("Expected error from PopulateCluster")
