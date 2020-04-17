@@ -87,3 +87,5 @@ systemctl mask kops-configuration.service
 
 # Restore protokube and protokube will bring up kubelet
 systemctl start protokube
+# Seems protokube won't bring up kubelet, so start kubelet separately
+systemctl start kubelet
