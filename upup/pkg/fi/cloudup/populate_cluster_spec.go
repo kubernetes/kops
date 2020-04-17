@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/klog"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
@@ -48,10 +48,10 @@ var EtcdClusters = []string{"main", "events"}
 type populateClusterSpec struct {
 	// InputCluster is the api object representing the whole cluster, as input by the user
 	// We build it up into a complete config, but we write the values as input
-	InputCluster *api.Cluster
+	InputCluster *kopsapi.Cluster
 
 	// fullCluster holds the built completed cluster spec
-	fullCluster *api.Cluster
+	fullCluster *kopsapi.Cluster
 
 	// assetBuilder holds the AssetBuilder, used to store assets we discover / remap
 	assetBuilder *assets.AssetBuilder
@@ -64,7 +64,7 @@ func findModelStore() (vfs.Path, error) {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(clientset simple.Clientset, cluster *api.Cluster, assetBuilder *assets.AssetBuilder) (*api.Cluster, error) {
+func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
 	c := &populateClusterSpec{
 		InputCluster: cluster,
 		assetBuilder: assetBuilder,
@@ -92,7 +92,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	}
 
 	// Copy cluster & instance groups, so we can modify them freely
-	cluster := &api.Cluster{}
+	cluster := &kopsapi.Cluster{}
 
 	reflectutils.JsonMergeStruct(cluster, c.InputCluster)
 
@@ -115,7 +115,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	// Check that instance groups are defined in valid zones
 	{
 		// TODO: Check that instance groups referenced here exist
-		//clusterSubnets := make(map[string]*api.ClusterSubnetSpec)
+		//clusterSubnets := make(map[string]*kopsapi.ClusterSubnetSpec)
 		//for _, subnet := range cluster.Spec.Subnets {
 		//	if clusterSubnets[subnet.Name] != nil {
 		//		return fmt.Errorf("Subnets contained a duplicate value: %v", subnet.Name)
@@ -140,8 +140,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 					}
 				}
 
-				etcdInstanceGroups := make(map[string]*api.EtcdMemberSpec)
-				etcdNames := make(map[string]*api.EtcdMemberSpec)
+				etcdInstanceGroups := make(map[string]*kopsapi.EtcdMemberSpec)
+				etcdNames := make(map[string]*kopsapi.EtcdMemberSpec)
 
 				for _, m := range etcd.Members {
 					if etcdNames[m.Name] != nil {
@@ -238,7 +238,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			return err
 		}
 
-		dnsType := api.DNSTypePublic
+		dnsType := kopsapi.DNSTypePublic
 		if cluster.Spec.Topology != nil && cluster.Spec.Topology.DNS != nil && cluster.Spec.Topology.DNS.Type != "" {
 			dnsType = cluster.Spec.Topology.DNS.Type
 		}
@@ -322,7 +322,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	completed.Topology = c.InputCluster.Spec.Topology
 	//completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
-	fullCluster := &api.Cluster{}
+	fullCluster := &kopsapi.Cluster{}
 	*fullCluster = *cluster
 	fullCluster.Spec = *completed
 	tf.cluster = fullCluster
@@ -335,7 +335,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	return nil
 }
 
-func (c *populateClusterSpec) assignSubnets(cluster *api.Cluster) error {
+func (c *populateClusterSpec) assignSubnets(cluster *kopsapi.Cluster) error {
 	if cluster.Spec.NonMasqueradeCIDR == "" {
 		klog.Warningf("NonMasqueradeCIDR not set; can't auto-assign dependent subnets")
 		return nil
@@ -348,7 +348,7 @@ func (c *populateClusterSpec) assignSubnets(cluster *api.Cluster) error {
 	nmOnes, nmBits := nonMasqueradeCIDR.Mask.Size()
 
 	if cluster.Spec.KubeControllerManager == nil {
-		cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
+		cluster.Spec.KubeControllerManager = &kopsapi.KubeControllerManagerConfig{}
 	}
 
 	if cluster.Spec.KubeControllerManager.ClusterCIDR == "" {

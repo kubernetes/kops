@@ -22,13 +22,13 @@ import (
 	"os"
 
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-func usesCNI(c *api.Cluster) bool {
+func usesCNI(c *kopsapi.Cluster) bool {
 	networkConfig := c.Spec.Networking
 	if networkConfig == nil || networkConfig.Classic != nil {
 		// classic
@@ -134,7 +134,7 @@ const (
 	ENV_VAR_CNI_ASSET_HASH_STRING = "CNI_ASSET_HASH_STRING"
 )
 
-func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
+func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
 
 	if cniVersionURL := os.Getenv(ENV_VAR_CNI_VERSION_URL); cniVersionURL != "" {
 		u, err := url.Parse(cniVersionURL)
