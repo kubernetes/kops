@@ -11,11 +11,11 @@ go test -v ./...
 
 ### Adding an integration test
 
-The integration tests takes a cluster spec and builds cloudformation/terraform templates. To add a new integration test, create a new directory in `tests/integration/update_cluster/` and put the cluster spec in `in-v1alpha2.yaml`. Use a unique cluster name.
+The integration tests takes a cluster spec and builds cloudformation/terraform templates. For new functionality, consider adding it to the `complex.example.com` cluster unless it conflicts with existing functionality in that cluster. To add a new integration test, create a new directory in `tests/integration/update_cluster/` and put the cluster spec in `in-v1alpha2.yaml`. Use a unique cluster name.
 
 Then edit `./cmd/kops/integration_test.go` and add the test function with the cluster name and directory from above.
 
-Lastly run `hack/update-expected` to generate the expected output.
+Lastly run `./hack/update-expected.sh` to generate the expected output.
 
 ## Kubernetes e2e testing
 
@@ -32,8 +32,8 @@ Following the examples below, kubetest will download artifacts such as a given K
 
 ### Running against an existing cluster
 
-If you want `kubetest` to run spin up and tear down the cluster on every run, you can run something like the following to re-use an existing cluster.
-This assumes you have already built the kops binary from source.
+You can run something like the following to have `kubetest` re-use an existing cluster.
+This assumes you have already built the kops binary from source. The exact path to the `kops` binary used in the `--kops` flag may differ.
 
 ```
 GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --deployment=kops --cluster=my.testcluster.com --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --extract=ci/latest
@@ -43,7 +43,7 @@ Note the `--extract` flag is only needed on first run or whenever you want to up
 
 ### Running against a new cluster
 
-By adding the `--up` flag, `kubetest` will also spin up a new cluster. In most cases, you also need to add a few additional flags.
+By adding the `--up` flag, `kubetest` will spin up a new cluster. In most cases, you also need to add a few additional flags. See `kubetest --help 2>&1 | grep kops` for the full list.
 
 ```
 GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --check-version-skew=false --deployment=kops --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --kops-args="--network-cidr=192.168.1.0/24" --cluster=my.testcluster.com --up --kops-ssh-key ~/.ssh/id_rsa --kops-admin-access=0.0.0.0/0
