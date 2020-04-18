@@ -94,9 +94,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplec
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -393,9 +390,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom.Properties.Us
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
