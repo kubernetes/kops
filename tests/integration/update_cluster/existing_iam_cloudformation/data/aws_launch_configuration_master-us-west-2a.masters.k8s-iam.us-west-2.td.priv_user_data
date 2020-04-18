@@ -99,9 +99,6 @@ function split-commas() {
 }
 
 function try-download-release() {
-  # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-  # optimization.
-
   local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
   local -r nodeup_filename="${nodeup_urls[0]##*/}"
   if [[ -n "${NODEUP_HASH:-}" ]]; then
