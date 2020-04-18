@@ -28,7 +28,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/assettasks"
@@ -44,7 +44,7 @@ const (
 )
 
 type Loader struct {
-	Cluster *api.Cluster
+	Cluster *kopsapi.Cluster
 
 	WorkDir string
 
