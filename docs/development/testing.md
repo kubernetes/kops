@@ -6,7 +6,7 @@ Unit and integration tests can be run using  `go test`
 
 To run all tests:
 ```
-go test ./...
+go test -v ./...
 ```
 
 ### Adding an integration test
