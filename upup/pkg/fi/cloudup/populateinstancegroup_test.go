@@ -21,22 +21,22 @@ import (
 	"strings"
 	"testing"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 )
 
-func buildMinimalNodeInstanceGroup(subnets ...string) *api.InstanceGroup {
-	g := &api.InstanceGroup{}
+func buildMinimalNodeInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
+	g := &kopsapi.InstanceGroup{}
 	g.ObjectMeta.Name = "nodes"
-	g.Spec.Role = api.InstanceGroupRoleNode
+	g.Spec.Role = kopsapi.InstanceGroupRoleNode
 	g.Spec.Subnets = subnets
 
 	return g
 }
 
-func buildMinimalMasterInstanceGroup(subnets ...string) *api.InstanceGroup {
-	g := &api.InstanceGroup{}
+func buildMinimalMasterInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
+	g := &kopsapi.InstanceGroup{}
 	g.ObjectMeta.Name = "master"
-	g.Spec.Role = api.InstanceGroupRoleMaster
+	g.Spec.Role = kopsapi.InstanceGroupRoleMaster
 	g.Spec.Subnets = subnets
 
 	return g
@@ -47,7 +47,7 @@ func TestPopulateInstanceGroup_Name_Required(t *testing.T) {
 	g := buildMinimalNodeInstanceGroup()
 	g.ObjectMeta.Name = ""
 
-	channel := &api.Channel{}
+	channel := &kopsapi.Channel{}
 
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "objectMeta.name")
 }
@@ -57,12 +57,12 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	g := buildMinimalNodeInstanceGroup()
 	g.Spec.Role = ""
 
-	channel := &api.Channel{}
+	channel := &kopsapi.Channel{}
 
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "spec.role")
 }
 
-func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *api.Cluster, g *api.InstanceGroup, channel *api.Channel, message string) {
+func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *kopsapi.Cluster, g *kopsapi.InstanceGroup, channel *kopsapi.Channel, message string) {
 	_, err := PopulateInstanceGroupSpec(cluster, g, channel)
 	if err == nil {
 		t.Fatalf("Expected error from PopulateInstanceGroup")

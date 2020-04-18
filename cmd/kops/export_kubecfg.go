@@ -25,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -81,7 +81,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 		return err
 	}
 
-	var clusterList []*api.Cluster
+	var clusterList []*kopsapi.Cluster
 	if options.all {
 		if len(args) != 0 {
 			return fmt.Errorf("Cannot use both --all flag and positional arguments")

@@ -32,7 +32,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
@@ -268,7 +268,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		return err
 	}
 
-	var instanceGroups []*api.InstanceGroup
+	var instanceGroups []*kopsapi.InstanceGroup
 	for i := range list.Items {
 		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
@@ -276,10 +276,10 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	warnUnmatched := true
 
 	if len(options.InstanceGroups) != 0 {
-		var filtered []*api.InstanceGroup
+		var filtered []*kopsapi.InstanceGroup
 
 		for _, instanceGroupName := range options.InstanceGroups {
-			var found *api.InstanceGroup
+			var found *kopsapi.InstanceGroup
 			for _, ig := range instanceGroups {
 				if ig.ObjectMeta.Name == instanceGroupName {
 					found = ig
@@ -300,11 +300,11 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	}
 
 	if len(options.InstanceGroupRoles) != 0 {
-		var filtered []*api.InstanceGroup
+		var filtered []*kopsapi.InstanceGroup
 
 		for _, ig := range instanceGroups {
 			for _, role := range options.InstanceGroupRoles {
-				if ig.Spec.Role == api.InstanceGroupRole(strings.Title(strings.ToLower(role))) {
+				if ig.Spec.Role == kopsapi.InstanceGroupRole(strings.Title(strings.ToLower(role))) {
 					filtered = append(filtered, ig)
 					continue
 				}

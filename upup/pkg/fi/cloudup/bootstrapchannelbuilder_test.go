@@ -21,7 +21,7 @@ import (
 	"path"
 	"testing"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/kopscodecs"
@@ -60,7 +60,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", clusterYamlPath, err)
 	}
-	cluster := obj.(*api.Cluster)
+	cluster := obj.(*kopsapi.Cluster)
 
 	if err := PerformAssignments(cluster); err != nil {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
