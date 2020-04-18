@@ -194,6 +194,30 @@ kops create cluster <clustername> --zones us-east-1b
 ...
 ```
 
+If you have changed the dns or kops controllers, you would want to test them as well. To do so, run the respective snippets below before creating the cluster.
+
+For dns-controller:
+
+```bash
+KOPS_VERSION=`bazel run //cmd/kops version -- --short`
+export DOCKER_IMAGE_PREFIX=${USER}/
+export DOCKER_REGISTRY=
+make dns-controller-push
+export DNSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}dns-controller:${KOPS_VERSION}
+```
+
+For kops-controller:
+
+```bash
+KOPS_VERSION=`bazel run //cmd/kops version -- --short`
+export DOCKER_IMAGE_PREFIX=${USER}/
+export DOCKER_REGISTRY=
+make kops-controller-push
+export KOPSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_VERSION}
+```
+
+
+
 ## Using the feature
 
 Users would simply `kops edit cluster`, and add a value like:
