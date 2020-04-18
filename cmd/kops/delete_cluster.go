@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/resources"
 	resourceops "k8s.io/kops/pkg/resources/ops"
@@ -102,7 +102,7 @@ func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, optio
 	}
 
 	var cloud fi.Cloud
-	var cluster *api.Cluster
+	var cluster *kopsapi.Cluster
 	var err error
 
 	if options.External {

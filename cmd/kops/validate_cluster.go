@@ -35,7 +35,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 )
@@ -113,7 +113,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command
 		fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.ObjectMeta.Name)
 	}
 
-	var instanceGroups []api.InstanceGroup
+	var instanceGroups []kopsapi.InstanceGroup
 	for _, ig := range list.Items {
 		instanceGroups = append(instanceGroups, ig)
 		klog.V(2).Infof("instance group: %#v\n\n", ig.Spec)
@@ -217,24 +217,24 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command
 	}
 }
 
-func validateClusterOutputTable(result *validation.ValidationCluster, cluster *api.Cluster, instanceGroups []api.InstanceGroup, out io.Writer) error {
+func validateClusterOutputTable(result *validation.ValidationCluster, cluster *kopsapi.Cluster, instanceGroups []kopsapi.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
-	t.AddColumn("NAME", func(c api.InstanceGroup) string {
+	t.AddColumn("NAME", func(c kopsapi.InstanceGroup) string {
 		return c.ObjectMeta.Name
 	})
-	t.AddColumn("ROLE", func(c api.InstanceGroup) string {
+	t.AddColumn("ROLE", func(c kopsapi.InstanceGroup) string {
 		return string(c.Spec.Role)
 	})
-	t.AddColumn("MACHINETYPE", func(c api.InstanceGroup) string {
+	t.AddColumn("MACHINETYPE", func(c kopsapi.InstanceGroup) string {
 		return c.Spec.MachineType
 	})
-	t.AddColumn("SUBNETS", func(c api.InstanceGroup) string {
+	t.AddColumn("SUBNETS", func(c kopsapi.InstanceGroup) string {
 		return strings.Join(c.Spec.Subnets, ",")
 	})
-	t.AddColumn("MIN", func(c api.InstanceGroup) string {
+	t.AddColumn("MIN", func(c kopsapi.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MinSize)
 	})
-	t.AddColumn("MAX", func(c api.InstanceGroup) string {
+	t.AddColumn("MAX", func(c kopsapi.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MaxSize)
 	})
 
