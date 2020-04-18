@@ -93,9 +93,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -384,9 +381,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -675,9 +669,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -966,9 +957,6 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
