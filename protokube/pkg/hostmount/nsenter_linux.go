@@ -51,7 +51,19 @@ func (*Mounter) List() ([]mount.MountPoint, error) {
 // Mount runs mount(8) in the host's root mount namespace.  Aside from this
 // aspect, Mount has the same semantics as the mounter returned by mount.New()
 func (n *Mounter) Mount(source string, target string, fstype string, options []string) error {
-	bind, bindOpts, bindRemountOpts := mount.MakeBindOpts(options)
+	return n.MountSensitive(source, target, fstype, options, nil)
+}
+
+// MountSensitive is the same as Mount() but this method allows
+// sensitiveOptions to be passed in a separate parameter from the normal
+// mount options and ensures the sensitiveOptions are never logged. This
+// method should be used by callers that pass sensitive material (like
+// passwords) as mount options.
+func (n *Mounter) MountSensitive(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
+	bind, bindOpts, bindRemountOpts, bindRemountSensitiveOpts := mount.MakeBindOptsSensitive(options, sensitiveOptions)
+	if len(bindRemountSensitiveOpts) != 0 {
+		return fmt.Errorf("sensitiveOptions not supported by implementation of MountSensitive")
+	}
 
 	if bind {
 		err := n.doNsenterMount(source, target, fstype, bindOpts)
@@ -115,10 +127,6 @@ func (n *Mounter) makeNsenterArgs(source, target, fstype string, options []strin
 }
 
 // We deliberately implement only the functions we need, so we don't have to maintain them...
-
-func (n *Mounter) MountSensitive(source string, target string, fstype string, options []string, sensitiveOptions []string) error {
-	return fmt.Errorf("MountSensitive not implemented for containerized mounter")
-}
 
 func (n *Mounter) GetMountRefs(pathname string) ([]string, error) {
 	return nil, fmt.Errorf("GetMountRefs not implemented for containerized mounter")
