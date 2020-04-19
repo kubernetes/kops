@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 // ContainerdBuilder install containerd (just the packages at the moment)
@@ -43,7 +44,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.4",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionDebian9},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.4-1",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.4-1_amd64.deb",
 		Hash:           "48c6ab0c908316af9a183de5aad64703bc516bdf",
@@ -54,7 +55,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionDebian9},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "186f2f2c570f37b363102e6b879073db6dec671d",
@@ -65,7 +66,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionDebian10},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "365e4a7541ce2cf3c3036ea2a9bf6b40a50893a8",
@@ -76,7 +77,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionXenial},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "b64e7170d9176bc38967b2e12147c69b65bdd0fc",
@@ -87,7 +88,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionBionic},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "f4c941807310e3fa470dddfb068d599174a3daec",
@@ -98,7 +99,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "f6447e84479df3a58ce04a3da87ccc384663493b",
@@ -109,7 +110,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionRhel8, distros.DistributionCentos8},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "f6447e84479df3a58ce04a3da87ccc384663493b",
@@ -119,7 +120,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.11",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.11.linux-amd64.tar.gz",
 		Hash:           "c98c9fdfd0984557e5b1a1f209213d2d8ad8471c",
 	},
@@ -128,7 +129,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.12",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.12.linux-amd64.tar.gz",
 		Hash:           "9455ca2508ad57438cb02a986ba763033bcb05f7",
 	},
@@ -137,7 +138,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.13",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.13.linux-amd64.tar.gz",
 		Hash:           "70ee2821e26116b0cddc679d14806fd20d25d65c",
 	},
@@ -146,7 +147,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.3.2",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.2.linux-amd64.tar.gz",
 		Hash:           "f451d46280104588f236bee277bca1da8babc0e8",
 	},
@@ -155,7 +156,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.3.3",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.3.linux-amd64.tar.gz",
 		Hash:           "921b74e84da366ec3eaa72ff97fa8d6ae56834c6",
 	},
@@ -163,17 +164,6 @@ var containerdVersions = []packageVersion{
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
 	//   VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run TestContainerdPackageHashes
 	// (you might want to temporarily comment out older versions on a slower connection and then validate)
-}
-
-func (b *ContainerdBuilder) containerdVersion() (string, error) {
-	containerdVersion := ""
-	if b.Cluster.Spec.Containerd != nil {
-		containerdVersion = fi.StringValue(b.Cluster.Spec.Containerd.Version)
-	}
-	if containerdVersion == "" {
-		return "", fmt.Errorf("error finding containerd version")
-	}
-	return containerdVersion, nil
 }
 
 // Build is responsible for configuring the containerd daemon
@@ -232,13 +222,10 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	containerdVersion, err := b.containerdVersion()
-	if err != nil {
-		return err
-	}
-
 	// Add packages
-	{
+	if b.Cluster.Spec.Containerd != nil && b.Cluster.Spec.Containerd.Version != nil {
+		containerdVersion := fi.StringValue(b.Cluster.Spec.Containerd.Version)
+
 		count := 0
 		for i := range containerdVersions {
 			dv := &containerdVersions[i]
@@ -286,15 +273,6 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(packageTask)
 			}
 
-			// As a mitigation for CVE-2019-5736 (possibly a fix, definitely defense-in-depth) we chattr docker-runc to be immutable
-			for _, f := range dv.MarkImmutable {
-				c.AddTask(&nodetasks.Chattr{
-					File: f,
-					Mode: "+i",
-					Deps: []fi.Task{packageTask},
-				})
-			}
-
 			for _, dep := range dv.Dependencies {
 				c.AddTask(&nodetasks.Package{Name: dep})
 			}
@@ -305,6 +283,8 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		if count == 0 {
 			klog.Warningf("Did not find containerd package for %s %s %s", b.Distribution, b.Architecture, containerdVersion)
 		}
+	} else {
+		klog.Infof("containerd version not set; skipping package install")
 	}
 
 	c.AddTask(b.buildSystemdService())

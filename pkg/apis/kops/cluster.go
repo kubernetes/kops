@@ -668,6 +668,12 @@ func (c *Cluster) IsKubernetesGTE(version string) bool {
 	return clusterVersion.GTE(*parsedVersion)
 }
 
+// IsKubernetesLT checks if the version is < the specified version.
+// It panics if the kubernetes version in the cluster is invalid, or if the version is invalid.
+func (c *Cluster) IsKubernetesLT(version string) bool {
+	return !c.IsKubernetesGTE(version)
+}
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.

@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/utils/mount"
 
@@ -42,7 +43,7 @@ import (
 
 // NodeupModelContext is the context supplied the nodeup tasks
 type NodeupModelContext struct {
-	Architecture  Architecture
+	Architecture  architectures.Architecture
 	Assets        *fi.AssetStore
 	Cluster       *kops.Cluster
 	Distribution  distros.Distribution

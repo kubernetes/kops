@@ -51,13 +51,6 @@ func (c *OptionsContext) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
 }
 
-// Architecture returns the architecture we are using
-// We currently only support amd64, and we probably need to pass the InstanceGroup in
-// But we can start collecting the architectural dependencies
-func (c *OptionsContext) Architecture() string {
-	return "amd64"
-}
-
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
 // Deprecated: prefer using OptionsContext.KubernetesVersion
 func KubernetesVersion(clusterSpec *kops.ClusterSpec) (*semver.Version, error) {
@@ -135,7 +128,7 @@ func IsBaseURL(kubernetesVersion string) bool {
 }
 
 // Image returns the docker image name for the specified component
-func Image(component string, architecture string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
+func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
 	if assetsBuilder == nil {
 		return "", fmt.Errorf("unable to parse assets as assetBuilder is not defined")
 	}
@@ -171,13 +164,13 @@ func Image(component string, architecture string, clusterSpec *kops.ClusterSpec,
 	//
 	// But ... this is only the case from 1.16 on...
 	if kubernetesVersion.IsGTE("1.16") {
-		imageName += "-" + architecture
+		imageName += "-amd64"
 	}
 
 	baseURL := clusterSpec.KubernetesVersion
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
-	tagURL := baseURL + "/bin/linux/" + architecture + "/" + component + ".docker_tag"
+	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
 	klog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
 
 	b, err := vfs.Context.ReadFile(tagURL)
