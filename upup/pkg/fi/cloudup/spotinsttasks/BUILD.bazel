@@ -24,6 +24,7 @@ go_library(
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],
