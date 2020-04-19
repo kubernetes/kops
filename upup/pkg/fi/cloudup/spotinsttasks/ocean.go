@@ -27,6 +27,7 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
@@ -222,18 +223,21 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 
 		// User data.
 		{
+			var userData []byte
+
 			if lc.UserData != nil {
-				userData, err := base64.StdEncoding.DecodeString(fi.StringValue(lc.UserData))
+				userData, err = base64.StdEncoding.DecodeString(fi.StringValue(lc.UserData))
 				if err != nil {
 					return nil, err
 				}
-				actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 			}
+
+			actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 		}
 
 		// EBS optimization.
 		{
-			if lc.EBSOptimized != nil {
+			if fi.BoolValue(lc.EBSOptimized) {
 				if actual.RootVolumeOpts == nil {
 					actual.RootVolumeOpts = new(RootVolumeOpts)
 				}
@@ -275,6 +279,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.AutoScalerOpts = new(AutoScalerOpts)
 			actual.AutoScalerOpts.ClusterID = ocean.ControllerClusterID
 			actual.AutoScalerOpts.Enabled = ocean.AutoScaler.IsEnabled
+			actual.AutoScalerOpts.Cooldown = ocean.AutoScaler.Cooldown
 
 			// Headroom.
 			if headroom := ocean.AutoScaler.Headroom; headroom != nil {
@@ -283,6 +288,14 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 					GPUPerUnit: headroom.GPUPerUnit,
 					MemPerUnit: headroom.MemoryPerUnit,
 					NumOfUnits: headroom.NumOfUnits,
+				}
+			}
+
+			// Scale down.
+			if down := ocean.AutoScaler.Down; down != nil {
+				actual.AutoScalerOpts.Down = &AutoScalerDownOpts{
+					MaxPercentage:     down.MaxScaleDownPercentage,
+					EvaluationPeriods: down.EvaluationPeriods,
 				}
 			}
 		}
@@ -410,8 +423,11 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					if err != nil {
 						return err
 					}
-					encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-					ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+
+					if len(userData) > 0 {
+						encoded := base64.StdEncoding.EncodeToString([]byte(userData))
+						ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+					}
 				}
 			}
 
@@ -476,6 +492,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				autoScaler := new(aws.AutoScaler)
 				autoScaler.IsEnabled = opts.Enabled
 				autoScaler.IsAutoConfig = fi.Bool(true)
+				autoScaler.Cooldown = opts.Cooldown
 
 				// Headroom.
 				if headroom := opts.Headroom; headroom != nil {
@@ -485,6 +502,14 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 						GPUPerUnit:    headroom.GPUPerUnit,
 						MemoryPerUnit: headroom.MemPerUnit,
 						NumOfUnits:    headroom.NumOfUnits,
+					}
+				}
+
+				// Scale down.
+				if down := opts.Down; down != nil {
+					autoScaler.Down = &aws.AutoScalerDown{
+						MaxScaleDownPercentage: down.MaxPercentage,
+						EvaluationPeriods:      down.EvaluationPeriods,
 					}
 				}
 
@@ -668,22 +693,25 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			// User data.
 			{
 				if changes.UserData != nil {
-					if ocean.Compute == nil {
-						ocean.Compute = new(aws.Compute)
-					}
-					if ocean.Compute.LaunchSpecification == nil {
-						ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
-					}
-
 					userData, err := e.UserData.AsString()
 					if err != nil {
 						return err
 					}
-					encoded := base64.StdEncoding.EncodeToString([]byte(userData))
 
-					ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+					if len(userData) > 0 {
+						if ocean.Compute == nil {
+							ocean.Compute = new(aws.Compute)
+						}
+						if ocean.Compute.LaunchSpecification == nil {
+							ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
+						}
+
+						encoded := base64.StdEncoding.EncodeToString([]byte(userData))
+						ocean.Compute.LaunchSpecification.SetUserData(fi.String(encoded))
+						changed = true
+					}
+
 					changes.UserData = nil
-					changed = true
 				}
 			}
 
@@ -863,6 +891,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			if opts.Enabled != nil {
 				autoScaler := new(aws.AutoScaler)
 				autoScaler.IsEnabled = e.AutoScalerOpts.Enabled
+				autoScaler.Cooldown = e.AutoScalerOpts.Cooldown
 
 				// Headroom.
 				if headroom := opts.Headroom; headroom != nil {
@@ -873,9 +902,19 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 						MemoryPerUnit: e.AutoScalerOpts.Headroom.MemPerUnit,
 						NumOfUnits:    e.AutoScalerOpts.Headroom.NumOfUnits,
 					}
-				} else {
+				} else if a.AutoScalerOpts != nil && a.AutoScalerOpts.Headroom != nil {
 					autoScaler.IsAutoConfig = fi.Bool(true)
 					autoScaler.SetHeadroom(nil)
+				}
+
+				// Scale down.
+				if down := opts.Down; down != nil {
+					autoScaler.Down = &aws.AutoScalerDown{
+						MaxScaleDownPercentage: down.MaxPercentage,
+						EvaluationPeriods:      down.EvaluationPeriods,
+					}
+				} else if a.AutoScalerOpts.Down != nil {
+					autoScaler.SetDown(nil)
 				}
 
 				ocean.SetAutoScaler(autoScaler)
@@ -941,17 +980,20 @@ type terraformOceanStrategy struct {
 }
 
 type terraformOceanLaunchSpec struct {
-	Monitoring               *bool                `json:"monitoring,omitempty" cty:"monitoring"`
-	EBSOptimized             *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
-	ImageID                  *string              `json:"image_id,omitempty" cty:"image_id"`
-	AssociatePublicIPAddress *bool                `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
-	RootVolumeSize           *int32               `json:"root_volume_size,omitempty" cty:"root_volume_size"`
-	UserData                 *terraform.Literal   `json:"user_data,omitempty" cty:"user_data"`
-	IAMInstanceProfile       *terraform.Literal   `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
-	KeyName                  *terraform.Literal   `json:"key_name,omitempty" cty:"key_name"`
-	SecurityGroups           []*terraform.Literal `json:"security_groups,omitempty" cty:"security_groups"`
-	Labels                   []*terraformKV       `json:"labels,omitempty" cty:"labels"`
-	Tags                     []*terraformKV       `json:"tags,omitempty" cty:"tags"`
+	Monitoring               *bool                          `json:"monitoring,omitempty" cty:"monitoring"`
+	EBSOptimized             *bool                          `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	ImageID                  *string                        `json:"image_id,omitempty" cty:"image_id"`
+	AssociatePublicIPAddress *bool                          `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	RootVolumeSize           *int32                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
+	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
+	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
+	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
+	Taints                   []*corev1.Taint                `json:"taints,omitempty" cty:"taints"`
+	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
+	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
+	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
 }
 
 func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Ocean) error {
@@ -1083,6 +1125,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 				tf.AutoScaler = &terraformAutoScaler{
 					Enabled:    opts.Enabled,
 					AutoConfig: fi.Bool(true),
+					Cooldown:   opts.Cooldown,
 				}
 
 				// Headroom.
@@ -1093,6 +1136,14 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 						GPUPerUnit: headroom.GPUPerUnit,
 						MemPerUnit: headroom.MemPerUnit,
 						NumOfUnits: headroom.NumOfUnits,
+					}
+				}
+
+				// Scale down.
+				if down := opts.Down; down != nil {
+					tf.AutoScaler.Down = &terraformAutoScalerDown{
+						MaxPercentage:     down.MaxPercentage,
+						EvaluationPeriods: down.EvaluationPeriods,
 					}
 				}
 
