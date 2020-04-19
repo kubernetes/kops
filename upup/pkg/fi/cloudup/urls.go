@@ -26,6 +26,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -57,7 +58,7 @@ var defaultKopsMirrors = []mirror{
 var kopsBaseUrl *url.URL
 
 // nodeUpAsset caches the nodeup download urls/hash
-var nodeUpAsset *MirroredAsset
+var nodeUpAsset map[architectures.Architecture]*MirroredAsset
 
 // protokubeLocation caches the protokubeLocation url
 var protokubeLocation *url.URL
@@ -118,19 +119,20 @@ func SetKopsAssetsLocations(assetsBuilder *assets.AssetBuilder) error {
 }
 
 // NodeUpAsset returns the asset for where nodeup should be downloaded
-func NodeUpAsset(assetsBuilder *assets.AssetBuilder) (*MirroredAsset, error) {
-	// Avoid repeated logging
-	if nodeUpAsset != nil {
+func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*MirroredAsset, error) {
+	if nodeUpAsset == nil {
+		nodeUpAsset = make(map[architectures.Architecture]*MirroredAsset)
+	} else if nodeUpAsset[arch] != nil {
 		// Avoid repeated logging
-		klog.V(8).Infof("Using cached nodeup location: %v", nodeUpAsset.Locations)
-		return nodeUpAsset, nil
+		klog.V(8).Infof("Using cached nodeup location: %v", nodeUpAsset[arch].Locations)
+		return nodeUpAsset[arch], nil
 	}
 	env := os.Getenv("NODEUP_URL")
 	var err error
 	var u *url.URL
 	var hash *hashing.Hash
 	if env == "" {
-		u, hash, err = KopsFileUrl("linux/amd64/nodeup", assetsBuilder)
+		u, hash, err = KopsFileUrl(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +152,7 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder) (*MirroredAsset, error) {
 
 	asset := BuildMirroredAsset(u, hash)
 
-	nodeUpAsset = asset
+	nodeUpAsset[arch] = asset
 
 	return asset, nil
 }

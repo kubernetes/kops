@@ -45,8 +45,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL={{ NodeUpSource }}
-NODEUP_HASH={{ NodeUpSourceHash }}
+NODEUP_URL_AMD64={{ NodeUpSourceAmd64 }}
+NODEUP_HASH_AMD64={{ NodeUpSourceHashAmd64 }}
+NODEUP_URL_ARM64={{ NodeUpSourceArm64 }}
+NODEUP_HASH_ARM64={{ NodeUpSourceHashArm64 }}
 
 {{ EnvironmentVariables }}
 
@@ -137,6 +139,21 @@ function try-download-release() {
 }
 
 function download-release() {
+  case "$(uname -m)" in
+  x86_64*|i?86_64*|amd64*)
+    NODEUP_URL="${NODEUP_URL_AMD64}"
+    NODEUP_HASH="${NODEUP_HASH_AMD64}"
+    ;;
+  aarch64*|arm64*)
+    NODEUP_URL="${NODEUP_URL_ARM64}"
+    NODEUP_HASH="${NODEUP_HASH_ARM64}"
+    ;;
+  *)
+    echo "Unsupported host arch: $(uname -m)" >&2
+    exit 1
+    ;;
+  esac
+
   # In case of failure checking integrity of release, retry.
   cd ${INSTALL_DIR}/bin
   until try-download-release; do

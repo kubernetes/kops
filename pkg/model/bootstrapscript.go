@@ -39,9 +39,11 @@ import (
 
 // BootstrapScript creates the bootstrap script
 type BootstrapScript struct {
-	NodeUpSource        string
-	NodeUpSourceHash    string
-	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.Config, error)
+	NodeUpSourceAmd64     string
+	NodeUpSourceHashAmd64 string
+	NodeUpSourceArm64     string
+	NodeUpSourceHashArm64 string
+	NodeUpConfigBuilder   func(ig *kops.InstanceGroup) (*nodeup.Config, error)
 }
 
 // KubeEnv returns the nodeup config for the instance group
@@ -140,11 +142,17 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 	}
 
 	functions := template.FuncMap{
-		"NodeUpSource": func() string {
-			return b.NodeUpSource
+		"NodeUpSourceAmd64": func() string {
+			return b.NodeUpSourceAmd64
 		},
-		"NodeUpSourceHash": func() string {
-			return b.NodeUpSourceHash
+		"NodeUpSourceHashAmd64": func() string {
+			return b.NodeUpSourceHashAmd64
+		},
+		"NodeUpSourceArm64": func() string {
+			return b.NodeUpSourceArm64
+		},
+		"NodeUpSourceHashArm64": func() string {
+			return b.NodeUpSourceHashArm64
 		},
 		"KubeEnv": func() (string, error) {
 			return b.KubeEnv(ig)

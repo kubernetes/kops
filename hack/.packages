@@ -193,6 +193,7 @@ k8s.io/kops/upup/pkg/fi/utils
 k8s.io/kops/upup/pkg/kutil
 k8s.io/kops/upup/tools/generators/fitask
 k8s.io/kops/upup/tools/generators/pkg/codegen
+k8s.io/kops/util/pkg/architectures
 k8s.io/kops/util/pkg/env
 k8s.io/kops/util/pkg/exec
 k8s.io/kops/util/pkg/hashing

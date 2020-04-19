@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -172,13 +173,21 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 		bootstrapScript := model.BootstrapScript{}
 
 		{
-			asset, err := cloudup.NodeUpAsset(assetBuilder)
+			assetAmd64, err := cloudup.NodeUpAsset(assetBuilder, architectures.ArchitectureAmd64)
 			if err != nil {
 				return nil, err
 			}
+			bootstrapScript.NodeUpSourceAmd64 = strings.Join(assetAmd64.Locations, ",")
+			bootstrapScript.NodeUpSourceHashAmd64 = assetAmd64.Hash.Hex()
 
-			bootstrapScript.NodeUpSource = strings.Join(asset.Locations, ",")
-			bootstrapScript.NodeUpSourceHash = asset.Hash.Hex()
+			if cluster.IsKubernetesGTE("1.19") {
+				assetArm64, err := cloudup.NodeUpAsset(assetBuilder, architectures.ArchitectureArm64)
+				if err != nil {
+					return nil, err
+				}
+				bootstrapScript.NodeUpSourceArm64 = strings.Join(assetArm64.Locations, ",")
+				bootstrapScript.NodeUpSourceHashArm64 = assetArm64.Hash.Hex()
+			}
 		}
 
 		bootstrapScript.NodeUpConfigBuilder = func(ig *kops.InstanceGroup) (*nodeup.Config, error) {

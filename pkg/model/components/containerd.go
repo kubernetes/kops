@@ -74,7 +74,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 			// Set the containerd version for known Docker versions
 			switch fi.StringValue(clusterSpec.Docker.Version) {
 			case "19.03.8":
-				containerd.Version = fi.String("1.2.13")
+				// Use version 1.2.13 from the Docker archive
 			case "19.03.4":
 				containerd.Version = fi.String("1.2.10")
 			case "18.09.9":

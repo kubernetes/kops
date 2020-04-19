@@ -40,6 +40,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -88,13 +89,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	if c.CacheDir == "" {
 		return fmt.Errorf("CacheDir is required")
-	}
-	assetStore := fi.NewAssetStore(c.CacheDir)
-	for _, asset := range c.config.Assets {
-		err := assetStore.Add(asset)
-		if err != nil {
-			return fmt.Errorf("error adding asset %q: %v", asset, err)
-		}
 	}
 
 	var configBase vfs.Path
@@ -167,22 +161,40 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return err
 	}
 
+	architecture, err := architectures.FindArchitecture()
+	if err != nil {
+		return fmt.Errorf("error determining OS architecture: %v", err)
+	}
+
+	archTags := architecture.BuildTags()
+
 	distribution, err := distros.FindDistribution(c.FSRoot)
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
 
-	osTags := distribution.BuildTags()
+	distroTags := distribution.BuildTags()
 
 	nodeTags := sets.NewString()
-	nodeTags.Insert(osTags...)
 	nodeTags.Insert(c.config.Tags...)
+	nodeTags.Insert(archTags...)
+	nodeTags.Insert(distroTags...)
 
 	klog.Infof("Config tags: %v", c.config.Tags)
-	klog.Infof("OS tags: %v", osTags)
+	klog.Infof("Arch tags: %v", archTags)
+	klog.Infof("Distro tags: %v", distroTags)
+
+	configAssets := c.config.Assets[architecture]
+	assetStore := fi.NewAssetStore(c.CacheDir)
+	for _, asset := range configAssets {
+		err := assetStore.Add(asset)
+		if err != nil {
+			return fmt.Errorf("error adding asset %q: %v", asset, err)
+		}
+	}
 
 	modelContext := &model.NodeupModelContext{
-		Architecture:  model.ArchitectureAmd64,
+		Architecture:  architecture,
 		Assets:        assetStore,
 		Cluster:       c.cluster,
 		Distribution:  distribution,

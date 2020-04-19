@@ -71,6 +71,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -104,10 +105,10 @@ type ApplyClusterCmd struct {
 	InstanceGroups []*kops.InstanceGroup
 
 	// NodeUpSource is the location from which we download nodeup
-	NodeUpSource string
+	NodeUpSource map[architectures.Architecture]string
 
 	// NodeUpHash is the sha hash
-	NodeUpHash string
+	NodeUpHash map[architectures.Architecture]string
 
 	// Models is a list of cloudup models to apply
 	Models []string
@@ -125,7 +126,7 @@ type ApplyClusterCmd struct {
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets []*MirroredAsset
+	Assets map[architectures.Architecture][]*MirroredAsset
 
 	Clientset simple.Clientset
 
@@ -729,9 +730,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	bootstrapScriptBuilder := &model.BootstrapScript{
-		NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) { return c.BuildNodeUpConfig(assetBuilder, ig) },
-		NodeUpSource:        c.NodeUpSource,
-		NodeUpSourceHash:    c.NodeUpHash,
+		NodeUpConfigBuilder:   func(ig *kops.InstanceGroup) (*nodeup.Config, error) { return c.BuildNodeUpConfig(assetBuilder, ig) },
+		NodeUpSourceAmd64:     c.NodeUpSource[architectures.ArchitectureAmd64],
+		NodeUpSourceHashAmd64: c.NodeUpHash[architectures.ArchitectureAmd64],
+		NodeUpSourceArm64:     c.NodeUpSource[architectures.ArchitectureArm64],
+		NodeUpSourceHashArm64: c.NodeUpHash[architectures.ArchitectureArm64],
 	}
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
@@ -1172,83 +1175,104 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + c.Cluster.Spec.KubernetesVersion
 	}
 
-	k8sAssetsNames := []string{
-		"/bin/linux/amd64/kubelet",
-		"/bin/linux/amd64/kubectl",
-	}
-	if needsMounterAsset(c.Cluster, c.InstanceGroups) {
-		k8sAssetsNames = append(k8sAssetsNames, "/bin/linux/amd64/mounter")
-	}
+	c.Assets = make(map[architectures.Architecture][]*MirroredAsset)
+	c.NodeUpSource = make(map[architectures.Architecture]string)
+	c.NodeUpHash = make(map[architectures.Architecture]string)
+	for _, arch := range architectures.GetArchitectures() {
+		c.Assets[arch] = []*MirroredAsset{}
+		c.NodeUpSource[arch] = ""
+		c.NodeUpHash[arch] = ""
 
-	for _, a := range k8sAssetsNames {
-		k, err := url.Parse(baseURL)
-		if err != nil {
-			return err
-		}
-		k.Path = path.Join(k.Path, a)
-
-		u, hash, err := assetBuilder.RemapFileAndSHA(k)
-		if err != nil {
-			return err
-		}
-		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
-	}
-
-	if usesCNI(c.Cluster) {
-		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder)
-		if err != nil {
-			return err
+		if c.Cluster.IsKubernetesLT("1.19") && arch != architectures.ArchitectureAmd64 {
+			continue
 		}
 
-		c.Assets = append(c.Assets, BuildMirroredAsset(cniAsset, cniAssetHash))
-	}
+		k8sAssetsNames := []string{
+			fmt.Sprintf("/bin/linux/%s/kubelet", arch),
+			fmt.Sprintf("/bin/linux/%s/kubectl", arch),
+		}
 
-	if c.Cluster.Spec.Networking.LyftVPC != nil {
-		var hash *hashing.Hash
+		if needsMounterAsset(c.Cluster, c.InstanceGroups) {
+			k8sAssetsNames = append(k8sAssetsNames, fmt.Sprintf("/bin/linux/%s/mounter", arch))
+		}
 
-		urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
-		if urlString == "" {
-			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
-			hash, err = hashing.FromString("871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566")
+		for _, an := range k8sAssetsNames {
+			k, err := url.Parse(baseURL)
 			if err != nil {
-				// Should be impossible
-				return fmt.Errorf("invalid hard-coded hash for lyft url")
+				return err
 			}
-		} else {
-			klog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
+			k.Path = path.Join(k.Path, an)
+
+			u, hash, err := assetBuilder.RemapFileAndSHA(k)
+			if err != nil {
+				return err
+			}
+			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(u, hash))
 		}
 
-		u, err := url.Parse(urlString)
-		if err != nil {
-			return fmt.Errorf("unable to parse lyft-vpc URL %q", urlString)
+		if usesCNI(c.Cluster) {
+			cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder, arch)
+			if err != nil {
+				return err
+			}
+			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(cniAsset, cniAssetHash))
 		}
 
-		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
-	}
+		if c.Cluster.Spec.Networking.LyftVPC != nil {
+			var hash *hashing.Hash
 
-	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
-	// TODO It is very difficult to pre-determine what OS an ami is, and if that OS needs socat
-	// At this time we just copy the socat and conntrack binaries to all distros.
-	// Most distros will have their own socat and conntrack binary.
-	// Container operating systems like CoreOS need to have socat and conntrack added to them.
-	{
-		utilsLocation, hash, err := KopsFileUrl("linux/amd64/utils.tar.gz", assetBuilder)
+			urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
+			if urlString == "" {
+				switch arch {
+				case architectures.ArchitectureAmd64:
+					urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
+					hash, err = hashing.FromString("871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566")
+				case architectures.ArchitectureArm64:
+					urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-arm64-v0.6.0.tar.gz"
+					hash, err = hashing.FromString("3aadcb32ffda53990153790203eb72898e55a985207aa5b4451357f9862286f0")
+				default:
+					return fmt.Errorf("unknown arch for lyft asset %s", arch)
+				}
+				if err != nil {
+					// Should be impossible
+					return fmt.Errorf("invalid hard-coded hash for lyft url")
+				}
+			} else {
+				klog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
+			}
+
+			u, err := url.Parse(urlString)
+			if err != nil {
+				return fmt.Errorf("unable to parse lyft-vpc URL %q", urlString)
+			}
+
+			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(u, hash))
+		}
+
+		// TODO figure out if we can only do this for CoreOS only and GCE Container OS
+		// TODO It is very difficult to pre-determine what OS an ami is, and if that OS needs socat
+		// At this time we just copy the socat and conntrack binaries to all distros.
+		// Most distros will have their own socat and conntrack binary.
+		// Container operating systems like CoreOS need to have socat and conntrack added to them.
+		if arch == architectures.ArchitectureAmd64 {
+			utilsLocation, hash, err := KopsFileUrl("linux/amd64/utils.tar.gz", assetBuilder)
+			if err != nil {
+				return err
+			}
+			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(utilsLocation, hash))
+		}
+
+		asset, err := NodeUpAsset(assetBuilder, arch)
 		if err != nil {
 			return err
 		}
-		c.Assets = append(c.Assets, BuildMirroredAsset(utilsLocation, hash))
+		c.NodeUpSource[arch] = strings.Join(asset.Locations, ",")
+		c.NodeUpHash[arch] = asset.Hash.Hex()
 	}
-
-	asset, err := NodeUpAsset(assetBuilder)
-	if err != nil {
-		return err
-	}
-	c.NodeUpSource = strings.Join(asset.Locations, ",")
-	c.NodeUpHash = asset.Hash.Hex()
 
 	// Explicitly add the protokube image,
 	// otherwise when the Target is DryRun this asset is not added
-	// Is there a better way to call this?
+	// Is there arch better way to call this?
 	_, _, err = ProtokubeImageSource(assetBuilder)
 	if err != nil {
 		return err
@@ -1326,9 +1350,14 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	config := &nodeup.Config{}
 	config.Tags = append(config.Tags, nodeUpTags.List()...)
 
-	for _, a := range c.Assets {
-		config.Assets = append(config.Assets, a.CompactString())
+	config.Assets = make(map[architectures.Architecture][]string)
+	for _, arch := range architectures.GetArchitectures() {
+		config.Assets[arch] = []string{}
+		for _, a := range c.Assets[arch] {
+			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+		}
 	}
+
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.ConfigBase = fi.String(configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name

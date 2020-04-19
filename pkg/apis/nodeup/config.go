@@ -16,13 +16,17 @@ limitations under the License.
 
 package nodeup
 
+import (
+	"k8s.io/kops/util/pkg/architectures"
+)
+
 // Config is the configuration for the nodeup binary
 type Config struct {
 	// Tags enable/disable chunks of the model
 	Tags []string `json:",omitempty"`
 	// Assets are locations where we can find files to be installed
 	// TODO: Remove once everything is in containers?
-	Assets []string `json:",omitempty"`
+	Assets map[architectures.Architecture][]string `json:",omitempty"`
 	// Images are a list of images we should preload
 	Images []*Image `json:"images,omitempty"`
 	// ConfigBase is the base VFS path for config objects
