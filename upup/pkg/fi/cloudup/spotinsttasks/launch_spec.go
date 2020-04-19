@@ -25,6 +25,7 @@ import (
 
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
@@ -41,10 +42,11 @@ type LaunchSpec struct {
 	ID                 *string
 	UserData           *fi.ResourceHolder
 	SecurityGroups     []*awstasks.SecurityGroup
+	Subnets            []*awstasks.Subnet
 	IAMInstanceProfile *awstasks.IAMInstanceProfile
 	ImageID            *string
 	Tags               map[string]string
-	Labels             map[string]string
+	AutoScalerOpts     *AutoScalerOpts
 
 	Ocean *Ocean
 }
@@ -67,6 +69,12 @@ func (o *LaunchSpec) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	if o.SecurityGroups != nil {
 		for _, sg := range o.SecurityGroups {
 			deps = append(deps, sg)
+		}
+	}
+
+	if o.Subnets != nil {
+		for _, subnet := range o.Subnets {
+			deps = append(deps, subnet)
 		}
 	}
 
@@ -144,18 +152,23 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 
 	// User data.
 	{
+		var userData []byte
+
 		if spec.UserData != nil {
-			userData, err := base64.StdEncoding.DecodeString(fi.StringValue(spec.UserData))
+			userData, err = base64.StdEncoding.DecodeString(fi.StringValue(spec.UserData))
 			if err != nil {
 				return nil, err
 			}
-			actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 		}
+
+		actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 	}
 
 	// IAM instance profile.
-	if spec.IAMInstanceProfile != nil {
-		actual.IAMInstanceProfile = &awstasks.IAMInstanceProfile{Name: spec.IAMInstanceProfile.Name}
+	{
+		if spec.IAMInstanceProfile != nil {
+			actual.IAMInstanceProfile = &awstasks.IAMInstanceProfile{Name: spec.IAMInstanceProfile.Name}
+		}
 	}
 
 	// Security groups.
@@ -164,6 +177,19 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 			for _, sgID := range spec.SecurityGroupIDs {
 				actual.SecurityGroups = append(actual.SecurityGroups,
 					&awstasks.SecurityGroup{ID: fi.String(sgID)})
+			}
+		}
+	}
+
+	// Subnets.
+	{
+		if spec.SubnetIDs != nil {
+			for _, subnetID := range spec.SubnetIDs {
+				actual.Subnets = append(actual.Subnets,
+					&awstasks.Subnet{ID: fi.String(subnetID)})
+			}
+			if subnetSlicesEqualIgnoreOrder(actual.Subnets, o.Subnets) {
+				actual.Subnets = o.Subnets
 			}
 		}
 	}
@@ -178,12 +204,48 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 		}
 	}
 
-	// Labels.
-	if spec.Labels != nil {
-		actual.Labels = make(map[string]string)
+	// Auto Scaler.
+	{
+		if spec.AutoScale != nil {
+			actual.AutoScalerOpts = new(AutoScalerOpts)
 
+			// Headroom.
+			if headrooms := spec.AutoScale.Headrooms; len(headrooms) > 0 {
+				actual.AutoScalerOpts.Headroom = &AutoScalerHeadroomOpts{
+					CPUPerUnit: headrooms[0].CPUPerUnit,
+					GPUPerUnit: headrooms[0].GPUPerUnit,
+					MemPerUnit: headrooms[0].MemoryPerUnit,
+					NumOfUnits: headrooms[0].NumOfUnits,
+				}
+			}
+		}
+	}
+
+	// Labels.
+	if labels := spec.Labels; labels != nil {
+		if actual.AutoScalerOpts == nil {
+			actual.AutoScalerOpts = new(AutoScalerOpts)
+		}
+
+		actual.AutoScalerOpts.Labels = make(map[string]string)
 		for _, label := range spec.Labels {
-			actual.Labels[fi.StringValue(label.Key)] = fi.StringValue(label.Value)
+			actual.AutoScalerOpts.Labels[fi.StringValue(label.Key)] = fi.StringValue(label.Value)
+		}
+	}
+
+	// Taints.
+	if spec.Taints != nil {
+		if actual.AutoScalerOpts == nil {
+			actual.AutoScalerOpts = new(AutoScalerOpts)
+		}
+
+		actual.AutoScalerOpts.Taints = make([]*corev1.Taint, len(spec.Taints))
+		for i, taint := range spec.Taints {
+			actual.AutoScalerOpts.Taints[i] = &corev1.Taint{
+				Key:    fi.StringValue(taint.Key),
+				Value:  fi.StringValue(taint.Value),
+				Effect: corev1.TaintEffect(fi.StringValue(taint.Effect)),
+			}
 		}
 	}
 
@@ -251,8 +313,11 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 			if err != nil {
 				return err
 			}
-			encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-			spec.SetUserData(fi.String(encoded))
+
+			if len(userData) > 0 {
+				encoded := base64.StdEncoding.EncodeToString([]byte(userData))
+				spec.SetUserData(fi.String(encoded))
+			}
 		}
 	}
 
@@ -276,6 +341,17 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Subnets.
+	{
+		if e.Subnets != nil {
+			subnetIDs := make([]string, len(e.Subnets))
+			for i, subnet := range e.Subnets {
+				subnetIDs[i] = fi.StringValue(subnet.ID)
+			}
+			spec.SetSubnetIDs(subnetIDs)
+		}
+	}
+
 	// Tags.
 	{
 		if e.Tags != nil {
@@ -283,17 +359,47 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
-	// Labels.
+	// Auto Scaler.
 	{
-		if e.Labels != nil && len(e.Labels) > 0 {
-			var labels []*aws.Label
-			for k, v := range e.Labels {
-				labels = append(labels, &aws.Label{
-					Key:   fi.String(k),
-					Value: fi.String(v),
-				})
+		if opts := e.AutoScalerOpts; opts != nil {
+			// Headroom.
+			if headroom := opts.Headroom; headroom != nil {
+				autoScale := new(aws.AutoScale)
+				autoScale.Headrooms = []*aws.AutoScaleHeadroom{
+					{
+						CPUPerUnit:    headroom.CPUPerUnit,
+						GPUPerUnit:    headroom.GPUPerUnit,
+						MemoryPerUnit: headroom.MemPerUnit,
+						NumOfUnits:    headroom.NumOfUnits,
+					},
+				}
+				spec.SetAutoScale(autoScale)
 			}
-			spec.SetLabels(labels)
+
+			// Labels.
+			if len(opts.Labels) > 0 {
+				var labels []*aws.Label
+				for k, v := range opts.Labels {
+					labels = append(labels, &aws.Label{
+						Key:   fi.String(k),
+						Value: fi.String(v),
+					})
+				}
+				spec.SetLabels(labels)
+			}
+
+			// Taints.
+			if len(opts.Taints) > 0 {
+				taints := make([]*aws.Taint, len(opts.Taints))
+				for i, taint := range opts.Taints {
+					taints[i] = &aws.Taint{
+						Key:    fi.String(taint.Key),
+						Value:  fi.String(taint.Value),
+						Effect: fi.String(string(taint.Effect)),
+					}
+				}
+				spec.SetTaints(taints)
+			}
 		}
 	}
 
@@ -350,11 +456,14 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 			if err != nil {
 				return err
 			}
-			encoded := base64.StdEncoding.EncodeToString([]byte(userData))
 
-			spec.SetUserData(fi.String(encoded))
+			if len(userData) > 0 {
+				encoded := base64.StdEncoding.EncodeToString([]byte(userData))
+				spec.SetUserData(fi.String(encoded))
+				changed = true
+			}
+
 			changes.UserData = nil
-			changed = true
 		}
 	}
 
@@ -384,6 +493,20 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Subnets.
+	{
+		if changes.Subnets != nil {
+			subnetIDs := make([]string, len(e.Subnets))
+			for i, subnet := range e.Subnets {
+				subnetIDs[i] = fi.StringValue(subnet.ID)
+			}
+
+			spec.SetSubnetIDs(subnetIDs)
+			changes.Subnets = nil
+			changed = true
+		}
+	}
+
 	// Tags.
 	{
 		if changes.Tags != nil {
@@ -393,23 +516,58 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
-	// Labels.
+	// Auto Scaler.
 	{
-		if changes.Labels != nil {
-			labels := make([]*aws.Label, 0, len(e.Labels))
-			for k, v := range e.Labels {
-				labels = append(labels, &aws.Label{
-					Key:   fi.String(k),
-					Value: fi.String(v),
-				})
+		if opts := changes.AutoScalerOpts; opts != nil {
+			// Headroom.
+			if headroom := opts.Headroom; headroom != nil {
+				autoScale := new(aws.AutoScale)
+				autoScale.Headrooms = []*aws.AutoScaleHeadroom{
+					{
+						CPUPerUnit:    e.AutoScalerOpts.Headroom.CPUPerUnit,
+						GPUPerUnit:    e.AutoScalerOpts.Headroom.GPUPerUnit,
+						MemoryPerUnit: e.AutoScalerOpts.Headroom.MemPerUnit,
+						NumOfUnits:    e.AutoScalerOpts.Headroom.NumOfUnits,
+					},
+				}
+
+				spec.SetAutoScale(autoScale)
+				opts.Headroom = nil
+				changed = true
 			}
 
-			spec.SetLabels(labels)
-			changes.Labels = nil
-			changed = true
-		} else if a.Labels != nil { // Forcibly remove all existing labels.
-			spec.SetLabels(nil)
-			changed = true
+			// Labels.
+			if opts.Labels != nil {
+				labels := make([]*aws.Label, 0, len(e.AutoScalerOpts.Labels))
+				for k, v := range e.AutoScalerOpts.Labels {
+					labels = append(labels, &aws.Label{
+						Key:   fi.String(k),
+						Value: fi.String(v),
+					})
+				}
+
+				spec.SetLabels(labels)
+				opts.Labels = nil
+				changed = true
+			}
+
+			// Taints.
+			if opts.Taints != nil {
+				taints := make([]*aws.Taint, 0, len(e.AutoScalerOpts.Taints))
+				for _, taint := range e.AutoScalerOpts.Taints {
+					taints = append(taints, &aws.Taint{
+						Key:    fi.String(taint.Key),
+						Value:  fi.String(taint.Value),
+						Effect: fi.String(string(taint.Effect)),
+					})
+				}
+
+				spec.SetTaints(taints)
+				opts.Taints = nil
+				changed = true
+			}
+
+			changes.AutoScalerOpts = nil
 		}
 	}
 
@@ -456,12 +614,14 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	}
 
 	// Image.
-	if e.ImageID != nil {
-		image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
-		if err != nil {
-			return err
+	{
+		if e.ImageID != nil {
+			image, err := resolveImage(cloud, fi.StringValue(e.ImageID))
+			if err != nil {
+				return err
+			}
+			tf.ImageID = image.ImageId
 		}
-		tf.ImageID = image.ImageId
 	}
 
 	var role string
@@ -476,29 +636,49 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	}
 
 	// Security groups.
-	if e.SecurityGroups != nil {
-		for _, sg := range e.SecurityGroups {
-			tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
-			if role != "" {
-				if err := t.AddOutputVariableArray(role+"_security_groups", sg.TerraformLink()); err != nil {
-					return err
+	{
+		if e.SecurityGroups != nil {
+			for _, sg := range e.SecurityGroups {
+				tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
+				if role != "" {
+					if err := t.AddOutputVariableArray(role+"_security_groups", sg.TerraformLink()); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+
+	// Subnets.
+	{
+		if e.Subnets != nil {
+			for _, subnet := range e.Subnets {
+				tf.SubnetIDs = append(tf.SubnetIDs, subnet.TerraformLink())
+				if role != "" {
+					if err := t.AddOutputVariableArray(role+"_subnet_ids", subnet.TerraformLink()); err != nil {
+						return err
+					}
 				}
 			}
 		}
 	}
 
 	// User data.
-	if e.UserData != nil {
-		var err error
-		tf.UserData, err = t.AddFile("spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData)
-		if err != nil {
-			return err
+	{
+		if e.UserData != nil {
+			var err error
+			tf.UserData, err = t.AddFile("spotinst_ocean_aws_launch_spec", *e.Name, "user_data", e.UserData)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	// IAM instance profile.
-	if e.IAMInstanceProfile != nil {
-		tf.IAMInstanceProfile = e.IAMInstanceProfile.TerraformLink()
+	{
+		if e.IAMInstanceProfile != nil {
+			tf.IAMInstanceProfile = e.IAMInstanceProfile.TerraformLink()
+		}
 	}
 
 	// Tags.
@@ -513,15 +693,35 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 		}
 	}
 
-	// Labels.
+	// Auto Scaler.
 	{
-		if e.Labels != nil {
-			tf.Labels = make([]*terraformKV, 0, len(e.Labels))
-			for k, v := range e.Labels {
-				tf.Labels = append(tf.Labels, &terraformKV{
-					Key:   fi.String(k),
-					Value: fi.String(v),
-				})
+		if opts := e.AutoScalerOpts; opts != nil {
+			// Headroom.
+			if headroom := opts.Headroom; headroom != nil {
+				tf.Headrooms = []*terraformAutoScalerHeadroom{
+					{
+						CPUPerUnit: headroom.CPUPerUnit,
+						GPUPerUnit: headroom.GPUPerUnit,
+						MemPerUnit: headroom.MemPerUnit,
+						NumOfUnits: headroom.NumOfUnits,
+					},
+				}
+			}
+
+			// Labels.
+			if len(opts.Labels) > 0 {
+				tf.Labels = make([]*terraformKV, 0, len(opts.Labels))
+				for k, v := range opts.Labels {
+					tf.Labels = append(tf.Labels, &terraformKV{
+						Key:   fi.String(k),
+						Value: fi.String(v),
+					})
+				}
+			}
+
+			// Taints.
+			if len(opts.Taints) > 0 {
+				tf.Taints = opts.Taints
 			}
 		}
 	}
