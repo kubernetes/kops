@@ -22,6 +22,7 @@ import (
 
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
@@ -36,7 +37,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	cluster.Spec.KubernetesVersion = "v1.9.0"
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
-	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder)
+	cniAsset, cniAssetHash, err := findCNIAssets(cluster, assetBuilder, architectures.ArchitectureAmd64)
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)

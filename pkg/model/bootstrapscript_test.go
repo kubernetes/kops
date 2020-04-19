@@ -118,9 +118,11 @@ func TestBootstrapUserData(t *testing.T) {
 		}
 
 		bs := &BootstrapScript{
-			NodeUpSource:        "NUSource",
-			NodeUpSourceHash:    "NUSHash",
-			NodeUpConfigBuilder: renderNodeUpConfig,
+			NodeUpSourceAmd64:     "NUSourceAmd64",
+			NodeUpSourceHashAmd64: "NUSHashAmd64",
+			NodeUpSourceArm64:     "NUSourceArm64",
+			NodeUpSourceHashArm64: "NUSHashArm64",
+			NodeUpConfigBuilder:   renderNodeUpConfig,
 		}
 
 		// Purposely running this twice to cover issue #3516

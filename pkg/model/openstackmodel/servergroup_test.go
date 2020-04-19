@@ -2715,8 +2715,10 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 					return &nodeup.Config{}, nil
 				},
-				NodeUpSource:     "source",
-				NodeUpSourceHash: "source-hash",
+				NodeUpSourceAmd64:     "source-amd64",
+				NodeUpSourceHashAmd64: "source-hash-amd64",
+				NodeUpSourceArm64:     "source-arm64",
+				NodeUpSourceHashArm64: "source-hash-arm64",
 			}
 
 			builder := createBuilderForCluster(testCase.cluster, testCase.instanceGroups, clusterLifecycle, bootstrapScriptBuilder)
@@ -3179,8 +3181,10 @@ func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGrou
 		NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 			return &nodeup.Config{}, nil
 		},
-		NodeUpSource:     "source",
-		NodeUpSourceHash: "source-hash",
+		NodeUpSourceAmd64:     "source-amd64",
+		NodeUpSourceHashAmd64: "source-hash-amd64",
+		NodeUpSourceArm64:     "source-arm64",
+		NodeUpSourceHashArm64: "source-hash-arm64",
 	}
 	startupResources, err := bootstrapScriptBuilder.ResourceNodeUp(ig, cluster)
 	if err != nil {
