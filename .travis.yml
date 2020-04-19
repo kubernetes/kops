@@ -1,4 +1,7 @@
 language: go
+arch:
+  - amd64
+  - arm64
 os:
   - linux
   - osx
@@ -10,7 +13,7 @@ go:
 go_import_path: k8s.io/kops
 
 script:
-  - GOPROXY=https://proxy.golang.org make nodeup examples test
+  - GOPROXY=https://proxy.golang.org travis_wait 20 make nodeup examples test
 
 jobs:
   # Exclude GO 1.14 for OSX until it becomes the default because of limited availability
@@ -20,6 +23,7 @@ jobs:
 
   include:
     - name: Verify
+      arch: amd64
       os: linux
       go: "1.13"
       script:
