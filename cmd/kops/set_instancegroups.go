@@ -35,11 +35,7 @@ var (
 
 		This command changes the desired instance group configuration in the registry.
 
-        kops set does not update the cloud resources; to apply the changes use "kops update cluster".
-		
-		Valid Instance Group Settings:
-
-		%s`))
+        kops set does not update the cloud resources; to apply the changes use "kops update cluster".`))
 
 	setInstancegroupExample = templates.Examples(i18n.T(`
 		# Set instance group to run image custom-ami-image
@@ -52,13 +48,12 @@ var (
 // NewCmdSetInstancegroup builds a cobra command for the kops set instancegroup command.
 func NewCmdSetInstancegroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &commands.SetInstanceGroupOptions{}
-	kts := commands.ValidInstanceGroupKeysToSetters()
 
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
 		Short:   setInstancegroupShort,
-		Long:    fmt.Sprintf(setInstancegroupLong, kts.PrettyPrintKeysWithNewlines()),
+		Long:    setInstancegroupLong,
 		Example: setInstancegroupExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()

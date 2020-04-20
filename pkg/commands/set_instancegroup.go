@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -44,26 +43,6 @@ type instanceGroupConfigSetter = func(*api.InstanceGroup, string) error
 // InstanceGroupKeySetters is a map of keys to config setting functions for
 // instance groups.
 type InstanceGroupKeySetters map[string]instanceGroupConfigSetter
-
-// PrettyPrintKeysWithCommas prints comma-separated keys.
-func (ks *InstanceGroupKeySetters) PrettyPrintKeysWithCommas() string {
-	keys := make([]string, 0, len(*ks))
-	for k := range *ks {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return strings.Join(keys, ", ")
-}
-
-// PrettyPrintKeysWithNewlines prints newline-separated keys.
-func (ks *InstanceGroupKeySetters) PrettyPrintKeysWithNewlines() string {
-	keys := make([]string, 0, len(*ks))
-	for k := range *ks {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return strings.Join(keys, "\n ")
-}
 
 // RunSetInstancegroup implements the set instancegroup command logic.
 func RunSetInstancegroup(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetInstanceGroupOptions) error {
@@ -119,7 +98,7 @@ func RunSetInstancegroup(ctx context.Context, f *util.Factory, cmd *cobra.Comman
 
 // SetInstancegroupFields sets field values in the instance group.
 func SetInstancegroupFields(fields []string, instanceGroup *api.InstanceGroup) error {
-	validKeyToSetters := ValidInstanceGroupKeysToSetters()
+	validKeyToSetters := validInstanceGroupKeysToSetters()
 
 	for _, field := range fields {
 		kv := strings.SplitN(field, "=", 2)
@@ -129,7 +108,7 @@ func SetInstancegroupFields(fields []string, instanceGroup *api.InstanceGroup) e
 
 		setter, ok := validKeyToSetters[kv[0]]
 		if !ok {
-			return fmt.Errorf("unhandled field: %q; valid instancegroup keys are: %s", field, validKeyToSetters.PrettyPrintKeysWithCommas())
+			return fmt.Errorf("unhandled field: %q", field)
 		}
 
 		err := setter(instanceGroup, kv[1])
@@ -141,9 +120,9 @@ func SetInstancegroupFields(fields []string, instanceGroup *api.InstanceGroup) e
 	return nil
 }
 
-// ValidInstanceGroupKeysToSetters returns the valid keys and config setting
+// validInstanceGroupKeysToSetters returns the valid keys and config setting
 // logic for instance groups.
-func ValidInstanceGroupKeysToSetters() InstanceGroupKeySetters {
+func validInstanceGroupKeysToSetters() InstanceGroupKeySetters {
 	return InstanceGroupKeySetters{
 		"spec.image": func(ig *api.InstanceGroup, v string) error {
 			ig.Spec.Image = v
