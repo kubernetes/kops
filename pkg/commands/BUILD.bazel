@@ -4,7 +4,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "helpers_readwrite.go",
-        "set.go",
         "set_cluster.go",
         "set_instancegroup.go",
         "status_discovery.go",

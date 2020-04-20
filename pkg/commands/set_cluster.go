@@ -31,6 +31,12 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 )
 
+// SetClusterOptions contains the options for setting configuration on a cluster
+type SetClusterOptions struct {
+	Fields      []string
+	ClusterName string
+}
+
 // RunSetCluster implements the set cluster command logic
 func RunSetCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetClusterOptions) error {
 	if !featureflag.SpecOverrideFlag.Enabled() {

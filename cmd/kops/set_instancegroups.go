@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -50,7 +51,7 @@ var (
 
 // NewCmdSetInstancegroup builds a cobra command for the kops set instancegroup command.
 func NewCmdSetInstancegroup(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &commands.SetOptions{}
+	options := &commands.SetInstanceGroupOptions{}
 	kts := commands.ValidInstanceGroupKeysToSetters()
 
 	cmd := &cobra.Command{
@@ -60,6 +61,8 @@ func NewCmdSetInstancegroup(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    fmt.Sprintf(setInstancegroupLong, kts.PrettyPrintKeysWithNewlines()),
 		Example: setInstancegroupExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			for i, arg := range args {
 				index := strings.Index(arg, "=")
 
@@ -79,7 +82,7 @@ func NewCmdSetInstancegroup(f *util.Factory, out io.Writer) *cobra.Command {
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			if err := commands.RunSetInstancegroup(f, cmd, out, options); err != nil {
+			if err := commands.RunSetInstancegroup(ctx, f, cmd, out, options); err != nil {
 				exitWithError(err)
 			}
 		},

@@ -45,7 +45,7 @@ var (
 
 // NewCmdSetCluster builds a cobra command for the kops set cluster command
 func NewCmdSetCluster(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &commands.SetOptions{}
+	options := &commands.SetClusterOptions{}
 
 	cmd := &cobra.Command{
 		Use:     "cluster",

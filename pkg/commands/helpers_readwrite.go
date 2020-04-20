@@ -65,7 +65,7 @@ func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kop
 
 // UpdateInstanceGroup writes the updated instance group to the state store after
 // performing validation
-func UpdateInstanceGroup(clientset simple.Clientset, cluster *kops.Cluster, allInstanceGroups []*kops.InstanceGroup, instanceGroupToUpdate *kops.InstanceGroup) error {
+func UpdateInstanceGroup(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, allInstanceGroups []*kops.InstanceGroup, instanceGroupToUpdate *kops.InstanceGroup) error {
 	err := cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return errors.Wrap(err, "populating configuration")
@@ -83,7 +83,7 @@ func UpdateInstanceGroup(clientset simple.Clientset, cluster *kops.Cluster, allI
 	}
 
 	// Validation was successful so commit the changed instance group.
-	_, err = clientset.InstanceGroupsFor(cluster).Update(instanceGroupToUpdate)
+	_, err = clientset.InstanceGroupsFor(cluster).Update(ctx, instanceGroupToUpdate, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}

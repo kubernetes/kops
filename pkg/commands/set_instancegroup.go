@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"sort"
@@ -29,6 +30,14 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 )
+
+// SetInstanceGroupOptions contains the options for setting configuration on an
+// instance group.
+type SetInstanceGroupOptions struct {
+	Fields            []string
+	ClusterName       string
+	InstanceGroupName string
+}
 
 type instanceGroupConfigSetter = func(*api.InstanceGroup, string) error
 
@@ -57,7 +66,7 @@ func (ks *InstanceGroupKeySetters) PrettyPrintKeysWithNewlines() string {
 }
 
 // RunSetInstancegroup implements the set instancegroup command logic.
-func RunSetInstancegroup(f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetOptions) error {
+func RunSetInstancegroup(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetInstanceGroupOptions) error {
 	if !featureflag.SpecOverrideFlag.Enabled() {
 		return fmt.Errorf("set instancegroup is currently feature gated; set `export KOPS_FEATURE_FLAGS=SpecOverrideFlag`")
 	}
@@ -74,14 +83,14 @@ func RunSetInstancegroup(f *util.Factory, cmd *cobra.Command, out io.Writer, opt
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(options.ClusterName)
+	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
 	if err != nil {
 		return err
 	}
 
 	// All instance groups are needed eventually for validation, so let's grab
 	// them all and update the pointer to the one we are setting config for.
-	instanceGroups, err := ReadAllInstanceGroups(clientset, cluster)
+	instanceGroups, err := ReadAllInstanceGroups(ctx, clientset, cluster)
 	if err != nil {
 		return err
 	}
@@ -100,7 +109,7 @@ func RunSetInstancegroup(f *util.Factory, cmd *cobra.Command, out io.Writer, opt
 		return err
 	}
 
-	err = UpdateInstanceGroup(clientset, cluster, instanceGroups, instanceGroupToUpdate)
+	err = UpdateInstanceGroup(ctx, clientset, cluster, instanceGroups, instanceGroupToUpdate)
 	if err != nil {
 		return err
 	}
