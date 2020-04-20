@@ -1009,7 +1009,7 @@ func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
 func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 	// Update the bundle
 	{
-		p := c.buildPrivateKeyPoolPath(name)
+		p := c.buildCertificatePoolPath(name)
 		ks, err := c.loadCertificates(p, false)
 		if err != nil {
 			return false, err
