@@ -228,38 +228,39 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.UpdateServiceBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.VolumesBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.ContainerdBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.FileAssetsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.NodeAuthorizationBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.LogrotateBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.ManifestsBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.PackagesBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.SecretBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.FirewallBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.NetworkBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
-
-	if c.cluster.Spec.Networking.Cilium != nil {
-		loader.Builders = append(loader.Builders, &model.CiliumBuilder{NodeupModelContext: modelContext})
-	}
-	if c.cluster.Spec.Networking.Kuberouter == nil {
-		loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
-	} else {
-		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
-	}
-	if c.cluster.Spec.Networking.Calico != nil {
-		loader.Builders = append(loader.Builders, &model.EtcdTLSBuilder{NodeupModelContext: modelContext})
+	if !c.instanceGroup.IsBastion() {
+		loader.Builders = append(loader.Builders, &model.ContainerdBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.NodeAuthorizationBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.LogrotateBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.ManifestsBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.PackagesBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.SecretBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.FirewallBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.NetworkBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
+		loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
+		if c.cluster.Spec.Networking.Cilium != nil {
+			loader.Builders = append(loader.Builders, &model.CiliumBuilder{NodeupModelContext: modelContext})
+		}
+		if c.cluster.Spec.Networking.Kuberouter == nil {
+			loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
+		} else {
+			loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
+		}
+		if c.cluster.Spec.Networking.Calico != nil {
+			loader.Builders = append(loader.Builders, &model.EtcdTLSBuilder{NodeupModelContext: modelContext})
+		}
 	}
 
 	if c.cluster.Spec.Networking.LyftVPC != nil {

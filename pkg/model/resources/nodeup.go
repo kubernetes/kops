@@ -195,11 +195,9 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 		writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
 
 		var err error
-		if !ig.IsBastion() {
-			err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(userDataTemplate))
-			if err != nil {
-				return "", err
-			}
+		err = writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(userDataTemplate))
+		if err != nil {
+			return "", err
 		}
 
 		for _, d := range ig.Spec.AdditionalUserData {
