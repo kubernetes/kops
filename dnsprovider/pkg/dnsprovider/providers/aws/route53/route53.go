@@ -62,6 +62,8 @@ func newRoute53(config io.Reader) (*Interface, error) {
 	// This avoids a confusing error message when we fail to get credentials
 	// e.g. https://github.com/kubernetes/kops/issues/605
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
+	awsConfig = awsConfig.WithEndpoint("https://api.route53.cn")
+	awsConfig = awsConfig.WithRegion("cn-northwest-1")
 
 	sess, err := session.NewSession()
 	if err != nil {

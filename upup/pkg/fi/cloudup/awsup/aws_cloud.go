@@ -200,16 +200,23 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		}
 
 		config := aws.NewConfig().WithRegion(region)
-
+		config_route53 := aws.NewConfig().WithRegion(region).WithEndpoint("https://api.route53.cn")
 		// This avoids a confusing error message when we fail to get credentials
 		// e.g. https://github.com/kubernetes/kops/issues/605
-		config = config.WithCredentialsChainVerboseErrors(true)
 		config = request.WithRetryer(config, newLoggingRetryer(ClientMaxRetries))
+		config = config.WithCredentialsChainVerboseErrors(true)
+		
+		config_route53 = request.WithRetryer(config_route53, newLoggingRetryer(ClientMaxRetries))
+		config_route53 = config_route53.WithCredentialsChainVerboseErrors(true)
 
 		// We have the updated aws sdk from 1.9, but don't have https://github.com/kubernetes/kubernetes/pull/55307
 		// Set the SleepDelay function to work around this
 		// TODO: Remove once we update to k8s >= 1.9 (or a version of the retry delayer than includes this)
 		config.SleepDelay = func(d time.Duration) {
+			klog.V(6).Infof("aws request sleeping for %v", d)
+			time.Sleep(d)
+		}
+		config_route53.SleepDelay = func(d time.Duration) {
 			klog.V(6).Infof("aws request sleeping for %v", d)
 			time.Sleep(d)
 		}
@@ -264,11 +271,11 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.autoscaling.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.autoscaling.Handlers)
 
-		sess, err = session.NewSession(config)
+		sess, err = session.NewSession(config_route53)
 		if err != nil {
 			return c, err
 		}
-		c.route53 = route53.New(sess, config)
+		c.route53 = route53.New(sess, config_route53)
 		c.route53.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.route53.Handlers)
 
