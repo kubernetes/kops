@@ -4,8 +4,8 @@ os:
   - osx
 go:
   # 1.12 is no longer supported by apimachinery; we recommend 1.13
-  - "1.13"
-  - "1.14"
+  - 1.13.x
+  - 1.14.x
 
 go_import_path: k8s.io/kops
 
@@ -16,11 +16,11 @@ jobs:
   # Exclude GO 1.14 for OSX until it becomes the default because of limited availability
   exclude:
     - os: osx
-      go: "1.14"
+      go: 1.14.x
 
   include:
     - name: Verify
       os: linux
-      go: "1.13"
+      go: 1.13.x
       script:
         - GOPROXY=https://proxy.golang.org make travis-ci
