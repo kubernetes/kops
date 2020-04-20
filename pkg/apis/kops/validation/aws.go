@@ -18,6 +18,7 @@ package validation
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -48,6 +49,8 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup) field.ErrorList {
 
 	allErrs = append(allErrs, awsValidateAMIforNVMe(field.NewPath(ig.GetName(), "spec", "machineType"), ig)...)
 
+	allErrs = append(allErrs, awsValidateSpotDurationInMinute(field.NewPath(ig.GetName(), "spec", "spotDurationInMinutes"), ig)...)
+
 	return allErrs
 }
 
@@ -57,7 +60,7 @@ func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string)
 	names := sets.NewString()
 	for i, s := range groups {
 		if names.Has(s) {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Index(i), s, "security groups with duplicate name found"))
+			allErrs = append(allErrs, field.Duplicate(fieldPath.Index(i), s))
 		}
 		names.Insert(s)
 		if strings.TrimSpace(s) == "" {
@@ -104,6 +107,16 @@ func awsValidateAMIforNVMe(fieldPath *field.Path, ig *kops.InstanceGroup) field.
 				}
 			}
 		}
+	}
+	return allErrs
+}
+
+func awsValidateSpotDurationInMinute(fieldPath *field.Path, ig *kops.InstanceGroup) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if ig.Spec.SpotDurationInMinutes != nil {
+		validSpotDurations := []string{"60", "120", "180", "240", "300", "360"}
+		spotDurationStr := strconv.FormatInt(*ig.Spec.SpotDurationInMinutes, 10)
+		allErrs = append(allErrs, IsValidValue(fieldPath, &spotDurationStr, validSpotDurations)...)
 	}
 	return allErrs
 }

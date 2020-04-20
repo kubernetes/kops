@@ -103,9 +103,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -228,6 +225,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
       leaderElect: true
     logLevel: 2
   kubelet:
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -245,6 +243,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserda
     podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -417,9 +416,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -478,6 +474,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom.Pro
     image: k8s.gcr.io/kube-proxy:v1.14.0
     logLevel: 2
   kubelet:
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10

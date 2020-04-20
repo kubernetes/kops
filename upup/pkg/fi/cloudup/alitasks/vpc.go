@@ -156,8 +156,8 @@ func (_ *VPC) RenderALI(t *aliup.ALIAPITarget, a, e, changes *VPC) error {
 }
 
 type terraformVPC struct {
-	CIDR *string `json:"cidr_block,omitempty"`
-	Name *string `json:"vpc_name,omitempty"`
+	CIDR *string `json:"cidr_block,omitempty" cty:"cidr_block"`
+	Name *string `json:"vpc_name,omitempty" cty:"vpc_name"`
 }
 
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {

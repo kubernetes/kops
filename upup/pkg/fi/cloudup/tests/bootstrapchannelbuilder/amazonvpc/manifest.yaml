@@ -7,7 +7,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 827a984420c7b24204f7713717b8ebc2a6f63db3
+    manifestHash: 9c35881670887d269f0eac0fa1f0c20509e6a8bb
     name: kops-controller.addons.k8s.io
     selector:
       k8s-addon: kops-controller.addons.k8s.io
@@ -73,7 +73,7 @@ spec:
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 23459f7be52d7c818dc060a8bcf5e3565bd87a7b
+    manifestHash: 5e829e8981470696bef2ed5e96839ea83cb36d24
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
@@ -89,7 +89,7 @@ spec:
   - id: k8s-1.8
     kubernetesVersion: <1.10.0
     manifest: networking.amazon-vpc-routed-eni/k8s-1.8.yaml
-    manifestHash: 544fd24d754b32e8896dba6113f1053a4ba86694
+    manifestHash: c477ea0c2e8764c3a7366976ce8bdb15fe26fe7f
     name: networking.amazon-vpc-routed-eni
     selector:
       role.kubernetes.io/networking: "1"
@@ -97,16 +97,24 @@ spec:
   - id: k8s-1.10
     kubernetesVersion: '>=1.10.0 <1.12.0'
     manifest: networking.amazon-vpc-routed-eni/k8s-1.10.yaml
-    manifestHash: eddd81f1dc347b3ae4566f5aa098106f14597f7c
+    manifestHash: 7db692fb2edbb06e0f5c29c271ca819ce477280c
     name: networking.amazon-vpc-routed-eni
     selector:
       role.kubernetes.io/networking: "1"
     version: 1.5.0-kops.2
   - id: k8s-1.12
-    kubernetesVersion: '>=1.12.0'
+    kubernetesVersion: '>=1.12.0 <1.16.0'
     manifest: networking.amazon-vpc-routed-eni/k8s-1.12.yaml
-    manifestHash: 7b91bf39d562157bd45b6a29e5f58d817c6ea4e1
+    manifestHash: 1b204a83ef58e8b268970861bb18ff2df597c86a
     name: networking.amazon-vpc-routed-eni
     selector:
       role.kubernetes.io/networking: "1"
     version: 1.5.5-kops.1
+  - id: k8s-1.16
+    kubernetesVersion: '>=1.16.0'
+    manifest: networking.amazon-vpc-routed-eni/k8s-1.16.yaml
+    manifestHash: b946da9da7a2bd171e807ed39ed07e6f1eb868ee
+    name: networking.amazon-vpc-routed-eni
+    selector:
+      role.kubernetes.io/networking: "1"
+    version: 1.6.0-kops.1

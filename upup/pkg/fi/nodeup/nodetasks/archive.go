@@ -184,7 +184,7 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 					return fmt.Errorf("error creating directories %q: %v", targetDir, err)
 				}
 
-				args := []string{"tar", "xf", localFile, "-C", targetDir, "--strip-components=" + strconv.Itoa(stripCount), src}
+				args := []string{"tar", "xf", localFile, "-C", targetDir, "--wildcards", "--strip-components=" + strconv.Itoa(stripCount), src}
 
 				klog.Infof("running command %s", args)
 				cmd := exec.Command(args[0], args[1:]...)

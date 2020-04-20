@@ -22,7 +22,7 @@ type ContainerdConfig struct {
 	Address *string `json:"address,omitempty" flag:"address"`
 	// Complete containerd config file provided by the user
 	ConfigOverride *string `json:"configOverride,omitempty"`
-	// Logging level [trace, debug, info, warn, error, fatal, panic] (default "warn")
+	// Logging level [trace, debug, info, warn, error, fatal, panic] (default "info")
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
 	// Directory for persistent data (default "/var/lib/containerd")
 	Root *string `json:"root,omitempty" flag:"root"`

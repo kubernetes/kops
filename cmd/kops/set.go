@@ -28,7 +28,7 @@ import (
 var (
 	setLong = templates.LongDesc(i18n.T(`Set a configuration field.
 
-        kops set does not update the cloud resources, to apply the changes use "kops update cluster".
+        kops set does not update the cloud resources; to apply the changes use "kops update cluster".
     `))
 
 	setExample = templates.Examples(i18n.T(`

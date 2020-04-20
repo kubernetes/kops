@@ -33,6 +33,7 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: events
+  gceServiceAccount: default
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -73,6 +74,7 @@ spec:
   maxSize: 1
   minSize: 1
   nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
     kops.k8s.io/instancegroup: master-us-test1-a
   role: Master
   subnets:
@@ -95,6 +97,7 @@ spec:
   maxSize: 1
   minSize: 1
   nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
     kops.k8s.io/instancegroup: master-us-test1-b
   role: Master
   subnets:
@@ -117,6 +120,7 @@ spec:
   maxSize: 1
   minSize: 1
   nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
     kops.k8s.io/instancegroup: master-us-test1-c
   role: Master
   subnets:
@@ -139,6 +143,7 @@ spec:
   maxSize: 2
   minSize: 2
   nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
     kops.k8s.io/instancegroup: nodes
   role: Node
   subnets:

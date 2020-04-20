@@ -1204,7 +1204,12 @@ func FindAutoScalingLaunchTemplateConfigurations(cloud fi.Cloud, securityGroups 
 		}
 		for _, j := range req.LaunchTemplateVersions {
 			// @check if the security group references the security group above
-			for _, y := range j.LaunchTemplateData.SecurityGroupIds {
+			var s []*string
+			for _, ni := range j.LaunchTemplateData.NetworkInterfaces {
+				s = append(s, ni.Groups...)
+			}
+			s = append(s, j.LaunchTemplateData.SecurityGroupIds...)
+			for _, y := range s {
 				if securityGroups.Has(fi.StringValue(y)) {
 					list = append(list, &resources.Resource{
 						Name:    aws.StringValue(x.LaunchTemplateName),
@@ -1889,11 +1894,13 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 }
 
 func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
-	c := cloud.(awsup.AWSCloud)
+	var attachedPolicies []*iam.AttachedPolicy
+	var policyNames []string
 
+	c := cloud.(awsup.AWSCloud)
 	roleName := r.Name
 
-	var policyNames []string
+	// List Inline policies
 	{
 		request := &iam.ListRolePoliciesInput{
 			RoleName: aws.String(roleName),
@@ -1914,6 +1921,26 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 		}
 	}
 
+	// List Attached Policies
+	{
+		request := &iam.ListAttachedRolePoliciesInput{
+			RoleName: aws.String(roleName),
+		}
+		err := c.IAM().ListAttachedRolePoliciesPages(request, func(page *iam.ListAttachedRolePoliciesOutput, lastPage bool) bool {
+			attachedPolicies = append(attachedPolicies, page.AttachedPolicies...)
+			return true
+		})
+		if err != nil {
+			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+				klog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-detached", roleName)
+				return nil
+			}
+
+			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		}
+	}
+
+	// Delete inline policies
 	for _, policyName := range policyNames {
 		klog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policyName)
 		request := &iam.DeleteRolePolicyInput{
@@ -1926,6 +1953,20 @@ func DeleteIAMRole(cloud fi.Cloud, r *resources.Resource) error {
 		}
 	}
 
+	// Detach Managed Policies
+	for _, policy := range attachedPolicies {
+		klog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policy)
+		request := &iam.DetachRolePolicyInput{
+			RoleName:  aws.String(r.Name),
+			PolicyArn: policy.PolicyArn,
+		}
+		_, err := c.IAM().DetachRolePolicy(request)
+		if err != nil {
+			return fmt.Errorf("error detaching IAM role policy %q %q: %v", roleName, *policy.PolicyArn, err)
+		}
+	}
+
+	// Delete Role
 	{
 		klog.V(2).Infof("Deleting IAM role %q", r.Name)
 		request := &iam.DeleteRoleInput{

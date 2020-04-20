@@ -9,7 +9,7 @@ Set fields on clusters and other resources.
 
 Set a configuration field.
 
- kops set does not update the cloud resources, to apply the changes use "kops update cluster".
+ kops set does not update the cloud resources; to apply the changes use "kops update cluster".
 
 ### Examples
 

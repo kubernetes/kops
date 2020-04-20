@@ -193,6 +193,11 @@ func DeleteInstance(cloud Cloud, instance *cloudinstances.CloudInstanceGroupMemb
 	return fmt.Errorf("spotinst: unexpected instance group type, got: %T", group.Raw)
 }
 
+// DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
+func DetachInstance(cloud Cloud, instance *cloudinstances.CloudInstanceGroupMember) error {
+	return fmt.Errorf("spotinst does not support surging")
+}
+
 // GetCloudGroups returns a list of InstanceGroups as CloudInstanceGroup objects.
 func GetCloudGroups(cloud Cloud, cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup,
 	warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {

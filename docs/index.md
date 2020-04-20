@@ -1,3 +1,9 @@
+<div class="hidden">
+<hr>
+<strong>For a better viewing experience please check out our live documentation site at <a href="https://kops.sigs.k8s.io/">kops.sigs.k8s.io</a>.</strong>
+<hr>
+</div>
+
 # kops - Kubernetes Operations
 
 [GoDoc]: https://pkg.go.dev/k8s.io/kops
@@ -37,8 +43,3 @@ in alpha, and other platforms planned.
 * Choose from eight different CNI [Networking](networking.md) providers out-of-the-box
 * Supports upgrading from [kube-up](upgrade_from_kubeup.md)
 * Capability to add containers, as hooks, and files to nodes via a [cluster manifest](cluster_spec.md)
-
-
-## Documentation
-
-[To check out Live documentation](https://kops.sigs.k8s.io/)

@@ -34,6 +34,7 @@ type SecurityGroup struct {
 	Name             *string
 	Description      *string
 	RemoveExtraRules []string
+	RemoveGroup      bool
 	Lifecycle        *fi.Lifecycle
 }
 
@@ -45,6 +46,10 @@ func (s *SecurityGroup) CompareWithID() *string {
 
 func (s *SecurityGroup) Find(context *fi.Context) (*SecurityGroup, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
+	// avoid creating new group if it has removegroup flag
+	if s.RemoveGroup {
+		return s, nil
+	}
 	return getSecurityGroupByName(s, cloud)
 }
 
@@ -70,6 +75,7 @@ func getSecurityGroupByName(s *SecurityGroup, cloud openstack.OpenstackCloud) (*
 		Lifecycle:   s.Lifecycle,
 	}
 	actual.RemoveExtraRules = s.RemoveExtraRules
+	actual.RemoveGroup = s.RemoveGroup
 	s.ID = actual.ID
 	return actual, nil
 }
@@ -119,8 +125,21 @@ func (_ *SecurityGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, c
 func (s *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
-	if len(s.RemoveExtraRules) == 0 {
+	if len(s.RemoveExtraRules) == 0 && !s.RemoveGroup {
 		return nil, nil
+	}
+
+	cloud := c.Cloud.(openstack.OpenstackCloud)
+	if s.RemoveGroup {
+		sg, err := getSecurityGroupByName(s, cloud)
+		if err != nil {
+			return nil, err
+		}
+		if sg != nil {
+			removals = append(removals, &deleteSecurityGroup{
+				securityGroup: sg,
+			})
+		}
 	}
 
 	var rules []RemovalRule
@@ -132,7 +151,6 @@ func (s *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 		rules = append(rules, rule)
 	}
 
-	cloud := c.Cloud.(openstack.OpenstackCloud)
 	sg, err := getSecurityGroupByName(s, cloud)
 	if err != nil {
 		return nil, err
@@ -201,6 +219,35 @@ func matches(t *SecurityGroupRule, perm sgr.SecGroupRule) bool {
 	}
 
 	return true
+}
+
+type deleteSecurityGroup struct {
+	securityGroup *SecurityGroup
+}
+
+var _ fi.Deletion = &deleteSecurityGroup{}
+
+func (d *deleteSecurityGroup) Delete(t fi.Target) error {
+	klog.V(2).Infof("deleting security group: %v", fi.DebugAsJsonString(d.securityGroup.Name))
+
+	os, ok := t.(*openstack.OpenstackAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+	err := os.Cloud.DeleteSecurityGroup(fi.StringValue(d.securityGroup.ID))
+	if err != nil {
+		return fmt.Errorf("error revoking SecurityGroup: %v", err)
+	}
+	return nil
+}
+
+func (d *deleteSecurityGroup) TaskName() string {
+	return "SecurityGroup"
+}
+
+func (d *deleteSecurityGroup) Item() string {
+	s := fmt.Sprintf("securitygroup=%s", fi.StringValue(d.securityGroup.Name))
+	return s
 }
 
 type deleteSecurityGroupRule struct {

@@ -18,7 +18,6 @@ package model
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -64,46 +63,6 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, assetName := range assetNames {
 		if err := b.addCNIBinAsset(c, assetName); err != nil {
 			return err
-		}
-	}
-
-	if networking.Cilium != nil {
-		// systemd v238 includes the bpffs mount by default; and gives an error "has a bad unit file setting" if we try to mount it again (see mount_point_is_api)
-		var alreadyMounted bool
-		_, err := os.Stat("/sys/fs/bpf")
-		if err != nil {
-			if os.IsNotExist(err) {
-				alreadyMounted = false
-			} else {
-				return fmt.Errorf("error checking for /sys/fs/bpf: %v", err)
-			}
-		} else {
-			alreadyMounted = true
-		}
-
-		if !alreadyMounted {
-			unit := s(`
-[Unit]
-Description=Cilium BPF mounts
-Documentation=http://docs.cilium.io/
-DefaultDependencies=no
-Before=local-fs.target umount.target kubelet.service
-
-[Mount]
-What=bpffs
-Where=/sys/fs/bpf
-Type=bpf
-
-[Install]
-WantedBy=multi-user.target
-`)
-
-			service := &nodetasks.Service{
-				Name:       "sys-fs-bpf.mount",
-				Definition: unit,
-			}
-			service.InitDefaults()
-			c.AddTask(service)
 		}
 	}
 

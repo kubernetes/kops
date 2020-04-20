@@ -35,11 +35,12 @@ type Instance struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	Network     *Network
-	Tags        []string
-	Preemptible *bool
-	Image       *string
-	Disks       map[string]*Disk
+	Network        *Network
+	Tags           []string
+	Preemptible    *bool
+	Image          *string
+	Disks          map[string]*Disk
+	ServiceAccount *string
 
 	CanIPForward *bool
 	IPAddress    *Address
@@ -253,17 +254,18 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 	}
 
 	var serviceAccounts []*compute.ServiceAccount
-	if e.Scopes != nil {
-		var scopes []string
-		for _, s := range e.Scopes {
-			s = scopeToLongForm(s)
-
-			scopes = append(scopes, s)
+	if e.ServiceAccount != nil {
+		if e.Scopes != nil {
+			var scopes []string
+			for _, s := range e.Scopes {
+				s = scopeToLongForm(s)
+				scopes = append(scopes, s)
+			}
+			serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+				Email:  fi.StringValue(e.ServiceAccount),
+				Scopes: scopes,
+			})
 		}
-		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
-			Email:  "default",
-			Scopes: scopes,
-		})
 	}
 
 	var metadataItems []*compute.MetadataItems
@@ -392,9 +394,29 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 }
 
 type terraformInstance struct {
-	terraformInstanceCommon
+	Name                  string                           `json:"name" cty:"name"`
+	CanIPForward          bool                             `json:"can_ip_forward" cty:"can_ip_forward"`
+	MachineType           string                           `json:"machine_type,omitempty" cty:"machine_type"`
+	ServiceAccount        *terraformServiceAccount         `json:"service_account,omitempty" cty:"service_account"`
+	Scheduling            *terraformScheduling             `json:"scheduling,omitempty" cty:"scheduling"`
+	Disks                 []*terraformInstanceAttachedDisk `json:"disk,omitempty" cty:"disk"`
+	NetworkInterfaces     []*terraformNetworkInterface     `json:"network_interface,omitempty" cty:"network_interface"`
+	Metadata              map[string]*terraform.Literal    `json:"metadata,omitempty" cty:"metadata"`
+	MetadataStartupScript *terraform.Literal               `json:"metadata_startup_script,omitempty" cty:"metadata_startup_script"`
+	Tags                  []string                         `json:"tags,omitempty" cty:"tags"`
+	Zone                  string                           `json:"zone,omitempty" cty:"zone"`
+}
 
-	Name string `json:"name"`
+type terraformInstanceAttachedDisk struct {
+	AutoDelete bool   `json:"auto_delete,omitempty" cty:"auto_delete"`
+	DeviceName string `json:"device_name,omitempty" cty:"device_name"`
+
+	// 'pd-standard', 'pd-ssd', 'local-ssd' etc
+	Type    string `json:"type,omitempty" cty:"type"`
+	Disk    string `json:"disk,omitempty" cty:"disk"`
+	Image   string `json:"image,omitempty" cty:"image"`
+	Scratch bool   `json:"scratch,omitempty" cty:"scratch"`
+	Size    int64  `json:"size,omitempty" cty:"size"`
 }
 
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
@@ -424,10 +446,10 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		tf.Zone = *e.Zone
 	}
 
-	tf.AddServiceAccounts(i.ServiceAccounts)
+	tf.ServiceAccount = addServiceAccounts(i.ServiceAccounts)
 
 	for _, d := range i.Disks {
-		tfd := &terraformAttachedDisk{
+		tfd := &terraformInstanceAttachedDisk{
 			AutoDelete: d.AutoDelete,
 			Scratch:    d.Type == "SCRATCH",
 			DeviceName: d.DeviceName,
@@ -444,9 +466,13 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		tf.Disks = append(tf.Disks, tfd)
 	}
 
-	tf.AddNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
+	tf.NetworkInterfaces = addNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
 
-	tf.AddMetadata(t, i.Name, i.Metadata)
+	metadata, err := addMetadata(t, i.Name, i.Metadata)
+	if err != nil {
+		return err
+	}
+	tf.Metadata = metadata
 
 	// Using metadata_startup_script is now mandatory (?)
 	{

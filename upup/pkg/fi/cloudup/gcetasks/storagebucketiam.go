@@ -148,8 +148,8 @@ func (_ *StorageBucketIam) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 }
 
 // type terraformStorageBucketIam struct {
-// 	Bucket     string   `json:"bucket,omitempty"`
-// 	RoleEntity []string `json:"role_entity,omitempty"`
+// 	Bucket     string   `json:"bucket,omitempty" cty:"bucket"`
+// 	RoleEntity []string `json:"role_entity,omitempty" cty:"role_entity"`
 // }
 
 func (_ *StorageBucketIam) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketIam) error {

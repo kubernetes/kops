@@ -10,11 +10,12 @@ Rolling update a cluster.
 This command updates a kubernetes cluster to match the cloud and kops specifications.
 
 To perform a rolling update, you need to update the cloud resources first with the command
-`kops update cluster`.
+`kops update cluster`. Nodes may be additionally marked for update by placing a
+`kops.k8s.io/needs-update` annotation on them.
 
 If rolling-update does not report that the cluster needs to be rolled, you can force the cluster to be
 rolled with the force flag.  Rolling update drains and validates the cluster by default.  A cluster is
-deemed validated when all required nodes are running and all pods in the kube-system namespace are operational.
+deemed validated when all required nodes are running and all pods with a critical priority are operational.
 When a node is deleted, rolling-update sleeps the interval for the node type, and then tries for the same period
 of time for the cluster to be validated.  For instance, setting --master-interval=3m causes rolling-update
 to wait for 3 minutes after a master is rolled, and another 3 minutes for the cluster to stabilize and pass
@@ -79,6 +80,7 @@ kops rolling-update cluster [flags]
       --master-interval duration       Time to wait between restarting masters (default 15s)
       --node-interval duration         Time to wait between restarting nodes (default 15s)
       --post-drain-delay duration      Time to wait after draining each node (default 5s)
+      --validate-count int32           Amount of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration    Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                            Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```

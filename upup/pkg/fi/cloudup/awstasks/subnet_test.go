@@ -58,7 +58,7 @@ func Test_Subnet_CannotChangeSubnet(t *testing.T) {
 	if err == nil {
 		t.Errorf("validation error was expected")
 	}
-	if fmt.Sprintf("%v", err) != "Subnet.CIDR: Invalid value: \"192.168.0.0/16\": field is immutable: old=\"192.168.0.1/16\" new=\"192.168.0.0/16\"" {
+	if fmt.Sprintf("%v", err) != "Subnet.CIDR: Forbidden: field is immutable: old=\"192.168.0.1/16\" new=\"192.168.0.0/16\"" {
 		t.Errorf("unexpected error: %v", err)
 	}
 }

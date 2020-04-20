@@ -12,7 +12,7 @@ This commands validates the following components:
   1.  All k8s masters are running and have "Ready" status.
   2.  All k8s nodes are running and have "Ready" status.
   3.  Component status returns healthy for all components.
-  4.  All pods in the kube-system namespace are running and healthy.
+  4.  All pods with a critical priority are running and healthy.
 
 ```
 kops validate cluster [flags]
@@ -30,6 +30,7 @@ kops validate cluster [flags]
 ### Options
 
 ```
+      --count int           If set, will validate the cluster consecutive times
   -h, --help                help for cluster
       --kubeconfig string   Path to the kubeconfig file
   -o, --output string       Output format. One of json|yaml|table. (default "table")

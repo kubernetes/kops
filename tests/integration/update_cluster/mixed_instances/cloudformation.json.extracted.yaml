@@ -94,9 +94,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -220,6 +217,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -238,6 +236,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -390,9 +389,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -516,6 +512,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -534,6 +531,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -686,9 +684,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -812,6 +807,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -830,6 +826,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesex
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10
@@ -982,9 +979,6 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
   }
 
   function try-download-release() {
-    # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-    # optimization.
-
     local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
     if [[ -n "${NODEUP_HASH:-}" ]]; then
       local -r nodeup_hash="${NODEUP_HASH}"
@@ -1044,6 +1038,7 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
     logLevel: 2
   kubelet:
     allowPrivileged: true
+    anonymousAuth: false
     cgroupRoot: /
     cloudProvider: aws
     clusterDNS: 100.64.0.10

@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -31,13 +32,13 @@ import (
 )
 
 // RunSetCluster implements the set cluster command logic
-func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetOptions) error {
+func RunSetCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, out io.Writer, options *SetClusterOptions) error {
 	if !featureflag.SpecOverrideFlag.Enabled() {
 		return fmt.Errorf("set cluster command is currently feature gated; set `export KOPS_FEATURE_FLAGS=SpecOverrideFlag`")
 	}
 
 	if options.ClusterName == "" {
-		return field.Required(field.NewPath("ClusterName"), "Cluster name is required")
+		return field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}
 
 	clientset, err := f.Clientset()
@@ -45,12 +46,12 @@ func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(options.ClusterName)
+	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
 	if err != nil {
 		return err
 	}
 
-	instanceGroups, err := ReadAllInstanceGroups(clientset, cluster)
+	instanceGroups, err := ReadAllInstanceGroups(ctx, clientset, cluster)
 	if err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func RunSetCluster(f *util.Factory, cmd *cobra.Command, out io.Writer, options *
 		return err
 	}
 
-	if err := UpdateCluster(clientset, cluster, instanceGroups); err != nil {
+	if err := UpdateCluster(ctx, clientset, cluster, instanceGroups); err != nil {
 		return err
 	}
 

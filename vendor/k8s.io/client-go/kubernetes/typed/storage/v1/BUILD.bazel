@@ -3,6 +3,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "csidriver.go",
+        "csinode.go",
         "doc.go",
         "generated_expansion.go",
         "storage_client.go",

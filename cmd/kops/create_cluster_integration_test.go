@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -43,7 +44,6 @@ var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UT
 
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha2")
 }
 
@@ -59,9 +59,7 @@ func TestCreateClusterComplex(t *testing.T) {
 
 // TestCreateClusterHA runs kops create cluster ha.example.com --zones us-test-1a,us-test-1b,us-test-1c --master-zones us-test-1a,us-test-1b,us-test-1c
 func TestCreateClusterHA(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha2")
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha2")
 }
 
@@ -70,55 +68,54 @@ func TestCreateClusterHAGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_gce", "v1alpha2")
 }
 
+// TestCreateClusterGCE runs kops create cluster gce.example.com --cloud gce --zones us-test1-a --gce-service-account=test-account@testproject.iam.gserviceaccounts.com
+func TestCreateClusterGCE(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/gce_byo_sa", "v1alpha2")
+}
+
 // TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the number of zones
 func TestCreateClusterHASharedZones(t *testing.T) {
-	// Cannot be expressed in v1alpha1 API:	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha2")
 }
 
 // TestCreateClusterPrivate runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterPrivate(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha2")
 }
 
 // TestCreateClusterWithNGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterWithNGWSpecified(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha2")
 }
 
 // TestCreateClusterWithINGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterWithINGWSpecified(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha2")
 }
 
 // TestCreateClusterSharedVPC runs kops create cluster vpc.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678
 func TestCreateClusterSharedVPC(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1alpha2")
 }
 
 // TestCreateClusterSharedSubnets runs kops create cluster subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678 --subnets subnet-1
 func TestCreateClusterSharedSubnets(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets", "v1alpha2")
 }
 
 // TestCreateClusterSharedSubnetsVpcLookup runs kops create cluster subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc --subnets subnet-1
 func TestCreateClusterSharedSubnetsVpcLookup(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets_vpc_lookup", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets_vpc_lookup", "v1alpha2")
 }
 
 // TestCreateClusterPrivateSharedSubnets runs kops create cluster private-subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678 --subnets subnet-1 --utility-subnets subnet-2
 func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
-	// Cannot be expressed in v1alpha1 API: runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha2")
 }
 
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {
+	ctx := context.Background()
+
 	var stdout bytes.Buffer
 
 	optionsYAML := "options.yaml"
@@ -189,7 +186,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 			options.SSHPublicKeys = sshPublicKeys
 		}
 
-		err = RunCreateCluster(factory, &stdout, options)
+		err = RunCreateCluster(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running create cluster: %v", err)
 		}
@@ -201,7 +198,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	}
 
 	// Compare cluster
-	clusters, err := clientset.ListClusters(metav1.ListOptions{})
+	clusters, err := clientset.ListClusters(ctx, metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing clusters: %v", err)
 	}
@@ -225,7 +222,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	// Compare instance groups
 
-	instanceGroups, err := clientset.InstanceGroupsFor(&clusters.Items[0]).List(metav1.ListOptions{})
+	instanceGroups, err := clientset.InstanceGroupsFor(&clusters.Items[0]).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing instance groups: %v", err)
 	}

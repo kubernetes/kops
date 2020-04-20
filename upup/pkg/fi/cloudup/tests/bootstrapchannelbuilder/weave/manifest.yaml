@@ -7,7 +7,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 827a984420c7b24204f7713717b8ebc2a6f63db3
+    manifestHash: 9c35881670887d269f0eac0fa1f0c20509e6a8bb
     name: kops-controller.addons.k8s.io
     selector:
       k8s-addon: kops-controller.addons.k8s.io
@@ -73,7 +73,7 @@ spec:
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 23459f7be52d7c818dc060a8bcf5e3565bd87a7b
+    manifestHash: 5e829e8981470696bef2ed5e96839ea83cb36d24
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
@@ -89,16 +89,16 @@ spec:
   - id: k8s-1.8
     kubernetesVersion: <1.12.0
     manifest: networking.weave/k8s-1.8.yaml
-    manifestHash: 50a20409003956b7c31a479408ca42ec97774854
+    manifestHash: 23511c3485517049f5b90ce365a3e329509194ee
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.6.0-kops.2
+    version: 2.6.2-kops.1
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: d2df87d90f8877a201f5cad93de296697191d4ae
+    manifestHash: 5c6202bc41043a72cb78ade6c761ccaf183bd36c
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.6.0-kops.3
+    version: 2.6.2-kops.1

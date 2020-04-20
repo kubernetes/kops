@@ -10,11 +10,13 @@ go_library(
     importpath = "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/utils/pointer:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/client:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/client/apiutil:go_default_library",
     ],

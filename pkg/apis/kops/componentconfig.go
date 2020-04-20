@@ -196,6 +196,11 @@ type KubeletConfigSpec struct {
 	RegistryPullQPS *int32 `json:"registryPullQPS,omitempty" flag:"registry-qps"`
 	//RegistryBurst Maximum size of a bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registry-qps. Only used if --registry-qps > 0 (default 10)
 	RegistryBurst *int32 `json:"registryBurst,omitempty" flag:"registry-burst"`
+	//TopologyManagerPolicy determines the allocation policy for the topology manager.
+	TopologyManagerPolicy string `json:"topologyManagerPolicy,omitempty" flag:"topology-manager-policy"`
+
+	// rotateCertificates enables client certificate rotation.
+	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -247,7 +252,7 @@ type KubeAPIServerConfig struct {
 	// Image is the docker container used
 	Image string `json:"image,omitempty"`
 	// DisableBasicAuth removes the --basic-auth-file flag
-	DisableBasicAuth bool `json:"disableBasicAuth,omitempty"`
+	DisableBasicAuth *bool `json:"disableBasicAuth,omitempty"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// CloudProvider is the name of the cloudProvider we are using, aws, gce etcd
@@ -312,6 +317,8 @@ type KubeAPIServerConfig struct {
 	RuntimeConfig map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
 	// KubeletClientCertificate is the path of a certificate for secure communication between api and kubelet
 	KubeletClientCertificate string `json:"kubeletClientCertificate,omitempty" flag:"kubelet-client-certificate"`
+	// KubeletCertificateAuthority is the path of a certificate authority for secure communication between api and kubelet.
+	KubeletCertificateAuthority string `json:"kubeletCertificateAuthority,omitempty" flag:"kubelet-certificate-authority"`
 	// KubeletClientKey is the path of a private to secure communication between api and kubelet
 	KubeletClientKey string `json:"kubeletClientKey,omitempty" flag:"kubelet-client-key"`
 	// AnonymousAuth indicates if anonymous authentication is permitted

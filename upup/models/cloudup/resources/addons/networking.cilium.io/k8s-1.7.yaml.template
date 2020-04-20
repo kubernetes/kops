@@ -121,6 +121,14 @@ data:
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
   enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  {{ with .Ipam }}
+  ipam: {{ . }}
+  {{ if eq . "eni" }}
+  enable-endpoint-routes: "true"
+  auto-create-cilium-node-resource: "true"
+  blacklist-conflicting-routes: "false"
+  {{ end }}
+  {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1
@@ -363,12 +371,16 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ .MasterInternalName }}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
         {{ with .Networking.Cilium.EnablePolicy }}
         - name: CILIUM_ENABLE_POLICY
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.6.6" }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -561,6 +573,7 @@ spec:
         {{ if .EnablePrometheusMetrics }}
         - --enable-metrics
         {{ end }}
+{{ end }}
         command:
         - cilium-operator
         env:
@@ -634,7 +647,12 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
-        image: "docker.io/cilium/operator:{{ .Version }}"
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ .MasterInternalName }}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+{{ with .Networking.Cilium }}
+        image: "docker.io/cilium/operator:{{- or .Version "v1.6.6" }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
@@ -644,7 +662,6 @@ spec:
           name: prometheus
           protocol: TCP
         {{ end }}
-{{ end }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -657,3 +674,19 @@ spec:
       restartPolicy: Always
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
+      {{if eq .Ipam "eni" }}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+       {{ end }}
+{{ end }}

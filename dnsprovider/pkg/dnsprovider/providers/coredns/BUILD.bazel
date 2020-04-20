@@ -19,7 +19,6 @@ go_library(
         "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//vendor/github.com/coreos/etcd/client:go_default_library",
         "//vendor/github.com/miekg/coredns/middleware/etcd/msg:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/gopkg.in/gcfg.v1:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
     ],

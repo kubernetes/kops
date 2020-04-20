@@ -17,7 +17,10 @@ limitations under the License.
 package commands
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -27,7 +30,7 @@ import (
 )
 
 // UpdateCluster writes the updated cluster to the state store, after performing validation
-func UpdateCluster(clientset simple.Clientset, cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) error {
+func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) error {
 	err := cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return errors.Wrap(err, "populating configuration")
@@ -52,7 +55,7 @@ func UpdateCluster(clientset simple.Clientset, cluster *kops.Cluster, instanceGr
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	_, err = clientset.UpdateCluster(cluster, status)
+	_, err = clientset.UpdateCluster(ctx, cluster, status)
 	if err != nil {
 		return err
 	}
@@ -89,8 +92,8 @@ func UpdateInstanceGroup(clientset simple.Clientset, cluster *kops.Cluster, allI
 }
 
 // ReadAllInstanceGroups reads all the instance groups for the cluster
-func ReadAllInstanceGroups(clientset simple.Clientset, cluster *kops.Cluster) ([]*kops.InstanceGroup, error) {
-	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+func ReadAllInstanceGroups(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster) ([]*kops.InstanceGroup, error) {
+	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

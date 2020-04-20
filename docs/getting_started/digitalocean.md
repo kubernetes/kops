@@ -28,7 +28,7 @@ export S3_SECRET_ACCESS_KEY=<secret-key>  # where <secret-key> is the Spaces API
 export KOPS_FEATURE_FLAGS="AlphaAllowDO"
 ```
 
-## Creating a Cluster
+## Creating a Single Master Cluster
 
 In the following examples, `example.com` should be replaced with the DigitalOcean domain you created when going through the [Requirements](#requirements).
 Note that you kops will only be able to successfully provision clusters in regions that support block storage (AMS3, BLR1, FRA1, LON1, NYC1, NYC3, SFO2, SGP1 and TOR1).
@@ -50,10 +50,21 @@ kops update cluster my-cluster.example.com --yes
 kops delete cluster my-cluster.example.com --yes
 ```
 
+## Creating a Multi-Master HA Cluster
+
+In the below example, `dev5.k8s.local` should be replaced with any cluster name that ends with `.k8s.local` such that a gossip based cluster is created.
+Ensure the master-count is odd-numbered. A load balancer is created dynamically front-facing the master instances.
+
+```bash
+# coreos (the default) + flannel overlay cluster in tor1 with 3 master setup and a public load balancer.
+kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cilium --api-loadbalancer-type=public --master-count=3 --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub --yes
+
+# to delete a cluster - this will also delete the load balancer associated with the cluster.
+kops delete cluster dev5.k8s.local --yes
+```
+
 ## Features Still in Development
 
 kops for DigitalOcean currently does not support these features:
 
-* multi master kubernetes clusters
 * rolling update for instance groups
-* multi-region clusters

@@ -48,6 +48,13 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 			EbsOptimized:          t.RootVolumeOptimization,
 			ImageId:               image.ImageId,
 			InstanceType:          t.InstanceType,
+			NetworkInterfaces: []*ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
+				{
+					AssociatePublicIpAddress: t.AssociatePublicIP,
+					DeleteOnTermination:      aws.Bool(true),
+					DeviceIndex:              fi.Int64(0),
+				},
+			},
 		},
 		LaunchTemplateName: aws.String(name),
 	}
@@ -76,10 +83,9 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	if t.SSHKey != nil {
 		lc.KeyName = t.SSHKey.Name
 	}
-	var securityGroups []*string
 	// @step: add the security groups
 	for _, sg := range t.SecurityGroups {
-		securityGroups = append(securityGroups, sg.ID)
+		lc.NetworkInterfaces[0].Groups = append(lc.NetworkInterfaces[0].Groups, sg.ID)
 	}
 	// @step: add any tenacy details
 	if t.Tenancy != nil {
@@ -96,36 +102,23 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 			Name: t.IAMInstanceProfile.Name,
 		}
 	}
-	// @step: are the node publicly facing
-	if fi.BoolValue(t.AssociatePublicIP) {
-		lc.NetworkInterfaces = append(lc.NetworkInterfaces,
-			&ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
-				AssociatePublicIpAddress: t.AssociatePublicIP,
-				DeleteOnTermination:      aws.Bool(true),
-				DeviceIndex:              fi.Int64(0),
-				Groups:                   securityGroups,
-			})
-	} else {
-		lc.SecurityGroupIds = securityGroups
-	}
 	// @step: add the tags
-	{
-		var list []*ec2.Tag
+	if len(t.Tags) > 0 {
+		var tags []*ec2.Tag
 		for k, v := range t.Tags {
-			list = append(list, &ec2.Tag{
+			tags = append(tags, &ec2.Tag{
 				Key:   aws.String(k),
 				Value: aws.String(v),
 			})
 		}
-		instanceTagSpec := ec2.LaunchTemplateTagSpecificationRequest{
-			ResourceType: aws.String("instance"),
-			Tags:         list,
-		}
-		volumeTagSpec := ec2.LaunchTemplateTagSpecificationRequest{
-			ResourceType: aws.String("volume"),
-			Tags:         list,
-		}
-		lc.TagSpecifications = []*ec2.LaunchTemplateTagSpecificationRequest{&instanceTagSpec, &volumeTagSpec}
+		lc.TagSpecifications = append(lc.TagSpecifications, &ec2.LaunchTemplateTagSpecificationRequest{
+			ResourceType: aws.String(ec2.ResourceTypeInstance),
+			Tags:         tags,
+		})
+		lc.TagSpecifications = append(lc.TagSpecifications, &ec2.LaunchTemplateTagSpecificationRequest{
+			ResourceType: aws.String(ec2.ResourceTypeVolume),
+			Tags:         tags,
+		})
 	}
 	// @step: add the userdata
 	if t.UserData != nil {
@@ -259,6 +252,15 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			return nil, fmt.Errorf("error decoding userdata: %s", err)
 		}
 		actual.UserData = fi.WrapResource(fi.NewStringResource(string(ud)))
+	}
+
+	// @step: add tags
+	if len(lt.LaunchTemplateData.TagSpecifications) > 0 {
+		ts := lt.LaunchTemplateData.TagSpecifications[0]
+		if ts.Tags != nil {
+			tags := mapEC2TagsToMap(ts.Tags)
+			actual.Tags = tags
+		}
 	}
 
 	// @step: to avoid spurious changes on ImageId

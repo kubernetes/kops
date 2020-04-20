@@ -90,9 +90,10 @@ func stmtsEnd(stmts []Expr) Position {
 	return Position{}
 }
 
-// A File represents an entire BUILD file.
+// A File represents an entire BUILD or .bzl file.
 type File struct {
 	Path string // file path, relative to workspace directory
+	Pkg  string // optional; the package of the file
 	Type FileType
 	Comments
 	Stmt []Expr

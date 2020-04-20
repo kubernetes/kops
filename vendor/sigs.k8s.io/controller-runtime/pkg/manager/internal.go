@@ -360,11 +360,9 @@ func (cm *controllerManager) serveMetrics(stop <-chan struct{}) {
 	}()
 
 	// Shutdown the server when stop is closed
-	select {
-	case <-stop:
-		if err := server.Shutdown(context.Background()); err != nil {
-			cm.errSignal.SignalError(err)
-		}
+	<-stop
+	if err := server.Shutdown(context.Background()); err != nil {
+		cm.errSignal.SignalError(err)
 	}
 }
 
@@ -392,11 +390,9 @@ func (cm *controllerManager) serveHealthProbes(stop <-chan struct{}) {
 	cm.mu.Unlock()
 
 	// Shutdown the server when stop is closed
-	select {
-	case <-stop:
-		if err := server.Shutdown(context.Background()); err != nil {
-			cm.errSignal.SignalError(err)
-		}
+	<-stop
+	if err := server.Shutdown(context.Background()); err != nil {
+		cm.errSignal.SignalError(err)
 	}
 }
 

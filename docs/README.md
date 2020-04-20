@@ -1,5 +1,7 @@
 # Documentation Index
 
+For a better viewing experience please check out our live documentation site at [kops.sigs.k8s.io](https://kops.sigs.k8s.io/).
+
 ## Quick start
 * [Getting started on AWS](getting_started/aws.md)
 * [Getting started on GCE](getting_started/gce.md)
@@ -65,6 +67,7 @@
 * [Label management](labels.md)
     * for cluster nodes
 * [Secret management](secrets.md)
+* [Service Account Token Volume Projection](operations/service_account_token_volumes.md)
 * [Moving from a Single Master to Multiple HA Masters](single-to-multi-master.md)
 * [Upgrading Kubernetes](tutorial/upgrading-kubernetes.md)
 * [Working with Instance Groups](tutorial/working-with-instancegroups.md)

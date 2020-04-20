@@ -1,204 +1,54 @@
-## Testing tips
+# Testing
 
-If you are running kops as part of an e2e test, the following tips may be useful.
+## Unit and integration tests
 
-### CI Kubernetes Build
+Unit and integration tests can be run using  `go test`
 
-Set the KubernetesVersion to a `http://` or `https://` base url, such as `https://storage.googleapis.com/kubernetes-release-dev/ci/v1.4.0-alpha.2.677+ea69570f61af8e/`
-
-We expect the base url to have `bin/linux/amd64` directory containing:
-
-* kubelet
-* kubelet.sha1
-* kubectl
-* kubectl.sha1
-* kube-apiserver.docker_tag
-* kube-apiserver.tar
-* kube-apiserver.tar.sha1
-* kube-controller-manager.docker_tag
-* kube-controller-manager.tar
-* kube-controller-manager.tar.sha1
-* kube-proxy.docker_tag
-* kube-proxy.tar
-* kube-proxy.tar.sha1
-* kube-scheduler.docker_tag
-* kube-scheduler.tar
-* kube-scheduler.tar.sha1
-
-
-Do this with `kops edit cluster <clustername>`.  The spec should look like
-
+To run all tests:
 ```
-...
-spec:
-  kubernetesVersion: "https://storage.googleapis.com/kubernetes-release-dev/ci/v1.4.0-alpha.2.677+ea69570f61af8e/"
-  cloudProvider: aws
-  etcdClusters:
-  - etcdMembers:
-    - name: us-east-1c
-      zone: us-east-1c
-    name: main
-...
+go test -v ./...
 ```
 
+### Adding an integration test
 
-### Running the kubernetes e2e test suite
+The integration tests takes a cluster spec and builds cloudformation/terraform templates. For new functionality, consider adding it to the `complex.example.com` cluster unless it conflicts with existing functionality in that cluster. To add a new integration test, create a new directory in `tests/integration/update_cluster/` and put the cluster spec in `in-v1alpha2.yaml`. Use a unique cluster name.
 
-The simple way:
+Then edit `./cmd/kops/integration_test.go` and add the test function with the cluster name and directory from above.
 
-```
-# cd wherever you tend to put git repos
-git clone https://github.com/kubernetes/test-infra.git
-export KOPS_E2E_STATE_STORE=s3://your-kops-state-store # Change to your state store path
-export KOPS_E2E_CLUSTER_NAME=e2e.cluster.name          # Change to an FQDN for your e2e cluster name
-test-infra/jobs/ci-kubernetes-e2e-kops-aws.sh |& tee /tmp/testlog
-```
+Lastly run `./hack/update-expected.sh` to generate the expected output.
 
-This:
+## Kubernetes e2e testing
 
-* Brings up a cluster using the latest `kops` build from `master` (see below for how to use your current build)
-* Runs the default series of tests (which the Kubernetes team is [also
-running here](https://k8s-testgrid.appspot.com/google-aws#kops-aws)) (see below for how to override the test list)
-* Tears down the cluster
-* Pipes all output to `/tmp/testlog`
+### Preparing the environment
 
-(**Note**: By default this script assumes that your AWS credentials are in
-`~/.aws/credentials`, and the SSH keypair you want to use is
-`~/.ssh/kube_aws_rsa`. You can override `JENKINS_AWS_CREDENTIALS_FILE`,
-`JENKINS_AWS_SSH_PRIVATE_KEY_FILE` and `JENKINS_AWS_SSH_PUBLIC_KEY_FILE` if you
-want to change this.)
+The easiest way to run the Kubernetes e2e tests is to install the `kubetest` binary from test-infra.
 
-This isn't yet terribly useful, though - it just shows how to replicate the
-existing job, but not with your custom code. To test a custom `kops` build, you
-can do the following:
+See [e2e-tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/e2e-tests.md) for instructions how to install and general usage of the utility.
 
-To use S3:
-```
-# cd to your kops repo
-export S3_BUCKET_NAME=kops-dev-${USER}
-make kops-install dev-upload UPLOAD_DEST=s3://${S3_BUCKET_NAME}
+You can see https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/ the various jobs that are periodically run against kops.
+The container arguments for each of the jobs are the ones passed to `kubetest`.
 
-KOPS_VERSION=`bazel run //cmd/kops version -- --short`
-export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
-```
+Following the examples below, kubetest will download artifacts such as a given Kubernetes build. Therefore you probably want to run `kubetest` from a directory dedicated for this purpose.
 
-To use GCS:
-```
-export GCS_BUCKET_NAME=kops-dev-${USER}
-make kops-install dev-upload UPLOAD_DEST=gs://${GCS_BUCKET_NAME}
+### Running against an existing cluster
 
-KOPS_VERSION=`bazel run //cmd/kops version -- --short`
-export KOPS_BASE_URL=https://${GCS_BUCKET_NAME}.storage.googleapis.com/kops/${KOPS_VERSION}/
-```
-
-Whether using GCS or S3, you probably want to upload dns-controller &
-kops-contoller images if you have changed them:
-
-For dns-controller (note the slightly different env vars until we build
-dns-controller with bazel):
-
-```bash
-KOPS_VERSION=`bazel run //cmd/kops version -- --short`
-export DOCKER_REGISTRY=${USER}
-make dns-controller-push
-export DNSCONTROLLER_IMAGE=${USER}/dns-controller:${KOPS_VERSION}
-```
-
-For kops-controller:
-
-```bash
-KOPS_VERSION=`bazel run //cmd/kops version -- --short`
-export DOCKER_IMAGE_PREFIX=${USER}/
-export DOCKER_REGISTRY=
-make kops-controller-push
-export KOPSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_VERSION}
-```
-
-You can create a cluster using `kops create cluster <clustername> --zones us-east-1b`
-
-Then follow the test directions above.
-
-To override the test list for the job, you need to familiar with the
-`ginkgo.focus` and `ginkgo.skip`
-flags. Using these flags, you can do:
+You can run something like the following to have `kubetest` re-use an existing cluster.
+This assumes you have already built the kops binary from source. The exact path to the `kops` binary used in the `--kops` flag may differ.
 
 ```
-export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\]"
+GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --deployment=kops --cluster=my.testcluster.com --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --extract=ci/latest
 ```
 
-and follow the instructions above. [Here are some other examples from the `e2e.go` documentation.](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-testing/e2e-tests.md).
+Note the `--extract` flag is only needed on first run or whenever you want to update the kubernetes build. You can omit this flag to run against the already extacted tree on subsequent runs. Just `cd` into the `kubernetes` directory first.
 
-If you want to test against an existing cluster, you can do:
+### Running against a new cluster
 
-```
-export E2E_UP=false; export E2E_DOWN=false
-```
-
-and follow the instructions above. This is particularly useful for testing the
-myriad of `kops` configuration/topology options without having to modify the
-testing infrastructure. *Note:* This is also the only way currently to test a
-custom Kubernetes build
-(see
-[kubernetes/test-infra#1454](https://github.com/kubernetes/test-infra/issues/1454)).
-
-
-### Uploading a custom build
-
-If you want to upload a custom Kubernetes build, here is a simple way (note:
-this assumes you've run `make quick-release` in the Kubernetes repo first):
-
+By adding the `--up` flag, `kubetest` will spin up a new cluster. In most cases, you also need to add a few additional flags. See `kubetest --help 2>&1 | grep kops` for the full list.
 
 ```
-# cd wherever you tend to put git repos
-git clone https://github.com/kubernetes/release.git
-
-# cd back to your kubernetes repo
-/path/to/release/push-build.sh # Fix /path/to/release with wherever you cloned the release repo
+GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --check-version-skew=false --deployment=kops --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --kops-args="--network-cidr=192.168.1.0/24" --cluster=my.testcluster.com --up --kops-ssh-key ~/.ssh/id_rsa --kops-admin-access=0.0.0.0/0
 ```
 
-That will upload the release to a GCS bucket and make it public. You can then
-use the outputted URL in `kops` with `--kubernetes-version`.
+If you want to run the tests against your development version of kops, you need to upload the binaries and set the environment variables as described in [Adding a new feature](adding_a_feature.md).
 
-If you need it private in S3, here's a manual way:
-
-```
-make quick-release
-cd ./_output/release-tars/
-# ??? rm -rf kubernetes/
-tar zxf kubernetes-server-linux-amd64.tar.gz
-
-rm kubernetes/server/bin/federation*
-rm kubernetes/server/bin/hyperkube
-rm kubernetes/server/bin/kubeadm
-rm kubernetes/server/bin/kube-apiserver
-rm kubernetes/server/bin/kube-controller-manager
-rm kubernetes/server/bin/kube-discovery
-rm kubernetes/server/bin/kube-dns
-rm kubernetes/server/bin/kubemark
-rm kubernetes/server/bin/kube-proxy
-rm kubernetes/server/bin/kube-scheduler
-rm kubernetes/kubernetes-src.tar.gz
-
-
-find kubernetes/server/bin -type f -name "*.tar" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
-find kubernetes/server/bin -type f -name "kube???" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
-
-aws s3 sync  --acl public-read kubernetes/server/bin/ s3://${S3_BUCKET_NAME}/kubernetes/dev/v1.6.0-dev/bin/linux/amd64/
-```
-
-### Example e2e command
-
-```
-go run hack/e2e.go -v -up -down -kops `which kops` -kops-cluster test.test-aws.k8s.io -kops-state s3://k8s-kops-state-store/ -kops-nodes=
-4 -deployment kops --kops-kubernetes-version https://storage.googleapis.com/kubernetes-release-dev/ci/$(curl  -SsL https://storage.googleapis.com/kubernetes-release-dev/ci/latest-green.txt)
-```
-
-(note the `v1.6.0-dev`: we insert a kubernetes version so that kops can
-automatically detect which k8s version is in use, which it uses to control
-flags that are not compatible between versions)
-
-Then:
-
-* `kops create cluster ... --kubernetes-version https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/v1.6.0-dev/`
-
-* for an existing cluster: `kops edit cluster` and set `KubernetesVersion` to `https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/v1.6.0-dev/`
+Since we assume you are using this cluster for testing, we leave the cluster running after the tests have finished so that you can inspect the nodes if anything unexpected happens. If you do not need this, you can add the `--down` flag. Otherwise, just delete the cluster as any other cluster: `kops delete cluster my.testcluster.com --yes`

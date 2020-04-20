@@ -19,14 +19,14 @@ package components
 import (
 	"testing"
 
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 )
 
-func buildContainerdCluster(version string) *api.Cluster {
-	return &api.Cluster{
-		Spec: api.ClusterSpec{
+func buildContainerdCluster(version string) *kopsapi.Cluster {
+	return &kopsapi.Cluster{
+		Spec: kopsapi.ClusterSpec{
 			CloudProvider:     "aws",
 			KubernetesVersion: version,
 		},
@@ -127,7 +127,7 @@ func Test_Build_Containerd_Unneeded_Runtime(t *testing.T) {
 
 		c := buildContainerdCluster("1.11.0")
 		c.Spec.ContainerRuntime = "docker"
-		c.Spec.Docker = &api.DockerConfig{
+		c.Spec.Docker = &kopsapi.DockerConfig{
 			Version: &v,
 		}
 		b := assets.NewAssetBuilder(c, "")
@@ -156,7 +156,7 @@ func Test_Build_Containerd_Needed_Runtime(t *testing.T) {
 
 		c := buildContainerdCluster("1.11.0")
 		c.Spec.ContainerRuntime = "docker"
-		c.Spec.Docker = &api.DockerConfig{
+		c.Spec.Docker = &kopsapi.DockerConfig{
 			Version: &v,
 		}
 		b := assets.NewAssetBuilder(c, "")

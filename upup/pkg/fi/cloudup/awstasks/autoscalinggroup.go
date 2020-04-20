@@ -59,7 +59,7 @@ type AutoscalingGroup struct {
 	Metrics []string
 	// MinSize is the smallest number of nodes in the asg
 	MinSize *int64
-	// MixedInstanceOverrides is a collection of instance type to use with fleet policy
+	// MixedInstanceOverrides is a collection of instance types to use with fleet policy
 	MixedInstanceOverrides []string
 	// MixedOnDemandAllocationStrategy is allocation strategy to use for on-demand instances
 	MixedOnDemandAllocationStrategy *string
@@ -263,21 +263,10 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			VPCZoneIdentifier:    fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
 		}
 
-		// @check are we using a launchconfiguation
+		// @check are we using a launch configuration, mixed instances policy, or launch template
 		if e.LaunchConfiguration != nil {
 			request.LaunchConfigurationName = e.LaunchConfiguration.ID
-		}
-		// @check are we using launch template
-		if e.LaunchTemplate != nil {
-			request.LaunchTemplate = &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: e.LaunchTemplate.ID,
-			}
-		}
-
-		// @check if we are using mixed instance policies
-		if e.UseMixedInstancesPolicy() {
-			// we can zero this out for now and use the mixed instance policy for definition
-			request.LaunchTemplate = nil
+		} else if e.UseMixedInstancesPolicy() {
 			request.MixedInstancesPolicy = &autoscaling.MixedInstancesPolicy{
 				InstancesDistribution: &autoscaling.InstancesDistribution{
 					OnDemandPercentageAboveBaseCapacity: e.MixedOnDemandAboveBase,
@@ -287,13 +276,25 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 					SpotMaxPrice:                        e.MixedSpotMaxPrice,
 				},
 				LaunchTemplate: &autoscaling.LaunchTemplate{
-					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{LaunchTemplateName: e.LaunchTemplate.ID, Version: aws.String("1")},
+					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
+						LaunchTemplateName: e.LaunchTemplate.ID,
+						Version:            aws.String("1"),
+					},
 				},
 			}
 			p := request.MixedInstancesPolicy.LaunchTemplate
 			for _, x := range e.MixedInstanceOverrides {
-				p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{InstanceType: fi.String(x)})
+				p.Overrides = append(p.Overrides, &autoscaling.LaunchTemplateOverrides{
+					InstanceType: fi.String(x)},
+				)
 			}
+		} else if e.LaunchTemplate != nil {
+			request.LaunchTemplate = &autoscaling.LaunchTemplateSpecification{
+				LaunchTemplateName: e.LaunchTemplate.ID,
+				Version:            aws.String("1"),
+			}
+		} else {
+			return fmt.Errorf("could not find one of launch configuration, mixed instances policy, or launch template")
 		}
 
 		// @step: attempt to create the autoscaling group for us
@@ -604,64 +605,72 @@ func (e *AutoscalingGroup) getASGTagsToDelete(currentTags map[string]string) []*
 }
 
 type terraformASGTag struct {
-	Key               *string `json:"key"`
-	Value             *string `json:"value"`
-	PropagateAtLaunch *bool   `json:"propagate_at_launch"`
+	Key               *string `json:"key" cty:"key"`
+	Value             *string `json:"value" cty:"value"`
+	PropagateAtLaunch *bool   `json:"propagate_at_launch" cty:"propagate_at_launch"`
 }
 
 type terraformAutoscalingLaunchTemplateSpecification struct {
+	// LaunchTemplateID is the ID of the template to use.
+	LaunchTemplateID *terraform.Literal `json:"id,omitempty" cty:"id"`
+	// Version is the version of the Launch Template to use.
+	Version *terraform.Literal `json:"version,omitempty" cty:"version"`
+}
+
+type terraformAutoscalingMixedInstancesPolicyLaunchTemplateSpecification struct {
 	// LaunchTemplateID is the ID of the template to use
-	LaunchTemplateID *terraform.Literal `json:"launch_template_id,omitempty"`
+	LaunchTemplateID *terraform.Literal `json:"launch_template_id,omitempty" cty:"launch_template_id"`
 	// Version is the version of the Launch Template to use
-	Version *terraform.Literal `json:"version,omitempty"`
+	Version *terraform.Literal `json:"version,omitempty" cty:"version"`
 }
 
-type terraformAutoscalingLaunchTemplateOverride struct {
+type terraformAutoscalingMixedInstancesPolicyLaunchTemplateOverride struct {
 	// InstanceType is the instance to use
-	InstanceType *string `json:"instance_type,omitempty"`
+	InstanceType *string `json:"instance_type,omitempty" cty:"instance_type"`
 }
 
-type terraformAutoscalingLaunchTemplate struct {
+type terraformAutoscalingMixedInstancesPolicyLaunchTemplate struct {
 	// LaunchTemplateSpecification is the definition for a LT
-	LaunchTemplateSpecification []*terraformAutoscalingLaunchTemplateSpecification `json:"launch_template_specification,omitempty"`
+	LaunchTemplateSpecification []*terraformAutoscalingMixedInstancesPolicyLaunchTemplateSpecification `json:"launch_template_specification,omitempty" cty:"launch_template_specification"`
 	// Override the is machine type override
-	Override []*terraformAutoscalingLaunchTemplateOverride `json:"override,omitempty"`
+	Override []*terraformAutoscalingMixedInstancesPolicyLaunchTemplateOverride `json:"override,omitempty" cty:"override"`
 }
 
 type terraformAutoscalingInstanceDistribution struct {
 	// OnDemandAllocationStrategy
-	OnDemandAllocationStrategy *string `json:"on_demand_allocation_strategy,omitempty"`
+	OnDemandAllocationStrategy *string `json:"on_demand_allocation_strategy,omitempty" cty:"on_demand_allocation_strategy"`
 	// OnDemandBaseCapacity is the base ondemand requirement
-	OnDemandBaseCapacity *int64 `json:"on_demand_base_capacity,omitempty"`
+	OnDemandBaseCapacity *int64 `json:"on_demand_base_capacity,omitempty" cty:"on_demand_base_capacity"`
 	// OnDemandPercentageAboveBaseCapacity is the percentage above base for on-demand instances
-	OnDemandPercentageAboveBaseCapacity *int64 `json:"on_demand_percentage_above_base_capacity,omitempty"`
+	OnDemandPercentageAboveBaseCapacity *int64 `json:"on_demand_percentage_above_base_capacity,omitempty" cty:"on_demand_percentage_above_base_capacity"`
 	// SpotAllocationStrategy is the spot allocation stratergy
-	SpotAllocationStrategy *string `json:"spot_allocation_strategy,omitempty"`
+	SpotAllocationStrategy *string `json:"spot_allocation_strategy,omitempty" cty:"spot_allocation_strategy"`
 	// SpotInstancePool is the number of pools
-	SpotInstancePool *int64 `json:"spot_instance_pools,omitempty"`
+	SpotInstancePool *int64 `json:"spot_instance_pools,omitempty" cty:"spot_instance_pools"`
 	// SpotMaxPrice is the max bid on spot instance, defaults to demand value
-	SpotMaxPrice *string `json:"spot_max_price,omitempty"`
+	SpotMaxPrice *string `json:"spot_max_price,omitempty" cty:"spot_max_price"`
 }
 
 type terraformMixedInstancesPolicy struct {
 	// LaunchTemplate is the launch template spec
-	LaunchTemplate []*terraformAutoscalingLaunchTemplate `json:"launch_template,omitempty"`
+	LaunchTemplate []*terraformAutoscalingMixedInstancesPolicyLaunchTemplate `json:"launch_template,omitempty" cty:"launch_template"`
 	// InstanceDistribution is the distribution strategy
-	InstanceDistribution []*terraformAutoscalingInstanceDistribution `json:"instances_distribution,omitempty"`
+	InstanceDistribution []*terraformAutoscalingInstanceDistribution `json:"instances_distribution,omitempty" cty:"instances_distribution"`
 }
 
 type terraformAutoscalingGroup struct {
-	Name                    *string                          `json:"name,omitempty"`
-	LaunchConfigurationName *terraform.Literal               `json:"launch_configuration,omitempty"`
-	MaxSize                 *int64                           `json:"max_size,omitempty"`
-	MinSize                 *int64                           `json:"min_size,omitempty"`
-	MixedInstancesPolicy    []*terraformMixedInstancesPolicy `json:"mixed_instances_policy,omitempty"`
-	VPCZoneIdentifier       []*terraform.Literal             `json:"vpc_zone_identifier,omitempty"`
-	Tags                    []*terraformASGTag               `json:"tag,omitempty"`
-	MetricsGranularity      *string                          `json:"metrics_granularity,omitempty"`
-	EnabledMetrics          []*string                        `json:"enabled_metrics,omitempty"`
-	SuspendedProcesses      []*string                        `json:"suspended_processes,omitempty"`
-	InstanceProtection      *bool                            `json:"protect_from_scale_in,omitempty"`
+	Name                    *string                                          `json:"name,omitempty" cty:"name"`
+	LaunchConfigurationName *terraform.Literal                               `json:"launch_configuration,omitempty" cty:"launch_configuration"`
+	LaunchTemplate          *terraformAutoscalingLaunchTemplateSpecification `json:"launch_template,omitempty" cty:"launch_template"`
+	MaxSize                 *int64                                           `json:"max_size,omitempty" cty:"max_size"`
+	MinSize                 *int64                                           `json:"min_size,omitempty" cty:"min_size"`
+	MixedInstancesPolicy    []*terraformMixedInstancesPolicy                 `json:"mixed_instances_policy,omitempty" cty:"mixed_instances_policy"`
+	VPCZoneIdentifier       []*terraform.Literal                             `json:"vpc_zone_identifier,omitempty" cty:"vpc_zone_identifier"`
+	Tags                    []*terraformASGTag                               `json:"tag,omitempty" cty:"tag"`
+	MetricsGranularity      *string                                          `json:"metrics_granularity,omitempty" cty:"metrics_granularity"`
+	EnabledMetrics          []*string                                        `json:"enabled_metrics,omitempty" cty:"enabled_metrics"`
+	SuspendedProcesses      []*string                                        `json:"suspended_processes,omitempty" cty:"suspended_processes"`
+	InstanceProtection      *bool                                            `json:"protect_from_scale_in,omitempty" cty:"protect_from_scale_in"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -688,7 +697,9 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		})
 	}
 
-	if e.UseMixedInstancesPolicy() {
+	if e.LaunchConfiguration != nil {
+		tf.LaunchConfigurationName = e.LaunchConfiguration.TerraformLink()
+	} else if e.UseMixedInstancesPolicy() {
 		// Temporary warning until https://github.com/terraform-providers/terraform-provider-aws/issues/9750 is resolved
 		if e.MixedSpotAllocationStrategy == fi.String("capacity-optimized") {
 			fmt.Print("Terraform does not currently support a capacity optimized strategy - please see https://github.com/terraform-providers/terraform-provider-aws/issues/9750")
@@ -696,9 +707,9 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 		tf.MixedInstancesPolicy = []*terraformMixedInstancesPolicy{
 			{
-				LaunchTemplate: []*terraformAutoscalingLaunchTemplate{
+				LaunchTemplate: []*terraformAutoscalingMixedInstancesPolicyLaunchTemplate{
 					{
-						LaunchTemplateSpecification: []*terraformAutoscalingLaunchTemplateSpecification{
+						LaunchTemplateSpecification: []*terraformAutoscalingMixedInstancesPolicyLaunchTemplateSpecification{
 							{
 								LaunchTemplateID: e.LaunchTemplate.TerraformLink(),
 								Version:          e.LaunchTemplate.VersionLink(),
@@ -720,8 +731,15 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 
 		for _, x := range e.MixedInstanceOverrides {
-			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override, &terraformAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
+			tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override = append(tf.MixedInstancesPolicy[0].LaunchTemplate[0].Override, &terraformAutoscalingMixedInstancesPolicyLaunchTemplateOverride{InstanceType: fi.String(x)})
 		}
+	} else if e.LaunchTemplate != nil {
+		tf.LaunchTemplate = &terraformAutoscalingLaunchTemplateSpecification{
+			LaunchTemplateID: e.LaunchTemplate.TerraformLink(),
+			Version:          e.LaunchTemplate.VersionLink(),
+		}
+	} else {
+		return fmt.Errorf("could not find one of launch configuration, mixed instances policy, or launch template")
 	}
 
 	role := ""
@@ -736,7 +754,6 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	}
 
 	if e.LaunchConfiguration != nil {
-		tf.LaunchConfigurationName = e.LaunchConfiguration.TerraformLink()
 		// Create TF output variable with security group ids
 		// This is in the launch configuration, but the ASG has the information about the instance group type
 		if role != "" {
@@ -794,8 +811,10 @@ type cloudformationASGMetricsCollection struct {
 }
 
 type cloudformationAutoscalingLaunchTemplateSpecification struct {
-	// LaunchTemplateName is the name of the template to use
-	LaunchTemplateName *string `json:"LaunchTemplateName,omitempty"`
+	// LaunchTemplateId is the IDx of the template to use.
+	LaunchTemplateId *cloudformation.Literal `json:"LaunchTemplateId,omitempty"`
+	// Version is the version number of the template to use.
+	Version *cloudformation.Literal `json:"Version,omitempty"`
 }
 
 type cloudformationAutoscalingLaunchTemplateOverride struct {
@@ -833,16 +852,17 @@ type cloudformationMixedInstancesPolicy struct {
 }
 
 type cloudformationAutoscalingGroup struct {
-	Name                    *string                               `json:"AutoScalingGroupName,omitempty"`
-	LaunchConfigurationName *cloudformation.Literal               `json:"LaunchConfigurationName,omitempty"`
-	MaxSize                 *int64                                `json:"MaxSize,omitempty"`
-	MinSize                 *int64                                `json:"MinSize,omitempty"`
-	VPCZoneIdentifier       []*cloudformation.Literal             `json:"VPCZoneIdentifier,omitempty"`
-	Tags                    []*cloudformationASGTag               `json:"Tags,omitempty"`
-	MetricsCollection       []*cloudformationASGMetricsCollection `json:"MetricsCollection,omitempty"`
-	MixedInstancesPolicy    *cloudformationMixedInstancesPolicy   `json:"MixedInstancesPolicy,omitempty"`
-	LoadBalancerNames       []*cloudformation.Literal             `json:"LoadBalancerNames,omitempty"`
-	TargetGroupARNs         []*cloudformation.Literal             `json:"TargetGroupARNs,omitempty"`
+	Name                    *string                                               `json:"AutoScalingGroupName,omitempty"`
+	LaunchConfigurationName *cloudformation.Literal                               `json:"LaunchConfigurationName,omitempty"`
+	LaunchTemplate          *cloudformationAutoscalingLaunchTemplateSpecification `json:"LaunchTemplate,omitempty"`
+	MaxSize                 *int64                                                `json:"MaxSize,omitempty"`
+	MinSize                 *int64                                                `json:"MinSize,omitempty"`
+	VPCZoneIdentifier       []*cloudformation.Literal                             `json:"VPCZoneIdentifier,omitempty"`
+	Tags                    []*cloudformationASGTag                               `json:"Tags,omitempty"`
+	MetricsCollection       []*cloudformationASGMetricsCollection                 `json:"MetricsCollection,omitempty"`
+	MixedInstancesPolicy    *cloudformationMixedInstancesPolicy                   `json:"MixedInstancesPolicy,omitempty"`
+	LoadBalancerNames       []*cloudformation.Literal                             `json:"LoadBalancerNames,omitempty"`
+	TargetGroupARNs         []*cloudformation.Literal                             `json:"TargetGroupARNs,omitempty"`
 }
 
 // RenderCloudformation is responsible for generating the cloudformation template
@@ -859,11 +879,14 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		},
 	}
 
-	if e.UseMixedInstancesPolicy() {
+	if e.LaunchConfiguration != nil {
+		cf.LaunchConfigurationName = e.LaunchConfiguration.CloudformationLink()
+	} else if e.UseMixedInstancesPolicy() {
 		cf.MixedInstancesPolicy = &cloudformationMixedInstancesPolicy{
 			LaunchTemplate: &cloudformationAutoscalingLaunchTemplate{
 				LaunchTemplateSpecification: &cloudformationAutoscalingLaunchTemplateSpecification{
-					LaunchTemplateName: e.LaunchTemplate.Name,
+					LaunchTemplateId: e.LaunchTemplate.CloudformationLink(),
+					Version:          e.LaunchTemplate.CloudformationVersion(),
 				},
 			},
 			InstanceDistribution: &cloudformationAutoscalingInstanceDistribution{
@@ -879,10 +902,13 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		for _, x := range e.MixedInstanceOverrides {
 			cf.MixedInstancesPolicy.LaunchTemplate.Overrides = append(cf.MixedInstancesPolicy.LaunchTemplate.Overrides, &cloudformationAutoscalingLaunchTemplateOverride{InstanceType: fi.String(x)})
 		}
-	}
-
-	if e.LaunchConfiguration != nil {
-		cf.LaunchConfigurationName = e.LaunchConfiguration.CloudformationLink()
+	} else if e.LaunchTemplate != nil {
+		cf.LaunchTemplate = &cloudformationAutoscalingLaunchTemplateSpecification{
+			LaunchTemplateId: e.LaunchTemplate.CloudformationLink(),
+			Version:          e.LaunchTemplate.CloudformationVersion(),
+		}
+	} else {
+		return fmt.Errorf("could not find one of launch configuration, mixed instances policy, or launch template")
 	}
 
 	for _, s := range e.Subnets {

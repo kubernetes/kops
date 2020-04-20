@@ -22,7 +22,6 @@ go_library(
         "//pkg/util/subnet:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
-        "//util/pkg/slice:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/arn:go_default_library",
         "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/validation:go_default_library",

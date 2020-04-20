@@ -223,30 +223,27 @@ func TestAutoscalingGroupTerraformRender(t *testing.T) {
 }
 
 resource "aws_autoscaling_group" "test" {
-  name                 = "test"
-  launch_configuration = "${aws_launch_configuration.test_lc.id}"
+  enabled_metrics      = ["test"]
+  launch_configuration = aws_launch_configuration.test_lc.id
   max_size             = 10
+  metrics_granularity  = "5min"
   min_size             = 1
-  vpc_zone_identifier  = ["${aws_subnet.test-sg.id}"]
-
-  tag = {
+  name                 = "test"
+  tag {
     key                 = "cluster"
+    propagate_at_launch = true
     value               = "test"
-    propagate_at_launch = true
   }
-
-  tag = {
+  tag {
     key                 = "test"
-    value               = "tag"
     propagate_at_launch = true
+    value               = "tag"
   }
-
-  metrics_granularity = "5min"
-  enabled_metrics     = ["test"]
+  vpc_zone_identifier = [aws_subnet.test-sg.id]
 }
 
-terraform = {
-  required_version = ">= 0.9.3"
+terraform {
+  required_version = ">= 0.12.0"
 }
 `,
 		},
@@ -277,52 +274,44 @@ terraform = {
 }
 
 resource "aws_autoscaling_group" "test1" {
-  name     = "test1"
-  max_size = 10
-  min_size = 5
-
-  mixed_instances_policy = {
-    launch_template = {
-      launch_template_specification = {
-        launch_template_id = "${aws_launch_template.test_lt.id}"
-        version            = "${aws_launch_template.test_lt.latest_version}"
-      }
-
-      override = {
-        instance_type = "t2.medium"
-      }
-
-      override = {
-        instance_type = "t2.large"
-      }
-    }
-
-    instances_distribution = {
+  enabled_metrics = ["test"]
+  max_size        = 10
+  min_size        = 5
+  mixed_instances_policy {
+    instances_distribution {
       on_demand_base_capacity                  = 4
       on_demand_percentage_above_base_capacity = 30
       spot_allocation_strategy                 = "capacity-optimized"
     }
+    launch_template {
+      launch_template_specification {
+        launch_template_id = aws_launch_template.test_lt.id
+        version            = aws_launch_template.test_lt.latest_version
+      }
+      override {
+        instance_type = "t2.medium"
+      }
+      override {
+        instance_type = "t2.large"
+      }
+    }
   }
-
-  vpc_zone_identifier = ["${aws_subnet.test-sg.id}"]
-
-  tag = {
+  name = "test1"
+  tag {
     key                 = "cluster"
+    propagate_at_launch = true
     value               = "test"
-    propagate_at_launch = true
   }
-
-  tag = {
+  tag {
     key                 = "test"
-    value               = "tag"
     propagate_at_launch = true
+    value               = "tag"
   }
-
-  enabled_metrics = ["test"]
+  vpc_zone_identifier = [aws_subnet.test-sg.id]
 }
 
-terraform = {
-  required_version = ">= 0.9.3"
+terraform {
+  required_version = ">= 0.12.0"
 }
 `,
 		},
@@ -390,7 +379,15 @@ func TestAutoscalingGroupCloudformationRender(t *testing.T) {
         "MixedInstancesPolicy": {
           "LaunchTemplate": {
             "LaunchTemplateSpecification": {
-              "LaunchTemplateName": "test_lt"
+              "LaunchTemplateId": {
+                "Ref": "AWSEC2LaunchTemplatetest_lt"
+              },
+              "Version": {
+                "Fn::GetAtt": [
+                  "AWSEC2LaunchTemplatetest_lt",
+                  "LatestVersionNumber"
+                ]
+              }
             },
             "Overrides": [
               {

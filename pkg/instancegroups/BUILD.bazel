@@ -14,7 +14,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/client/simple:go_default_library",
         "//pkg/cloudinstances:go_default_library",
-        "//pkg/drain:go_default_library",
+        "//pkg/featureflag:go_default_library",
         "//pkg/validation:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
@@ -26,6 +26,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/strategicpatch:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/kubectl/pkg/drain:go_default_library",
     ],
 )
 
@@ -45,6 +46,8 @@ go_test(
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2/ec2iface:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

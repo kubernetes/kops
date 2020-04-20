@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -94,7 +95,7 @@ var (
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
 	OldestSupportedKubernetesVersion = "1.9.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
-	OldestRecommendedKubernetesVersion = "1.10.0"
+	OldestRecommendedKubernetesVersion = "1.11.0"
 )
 
 type ApplyClusterCmd struct {
@@ -149,9 +150,9 @@ type ApplyClusterCmd struct {
 	TaskMap map[string]fi.Task
 }
 
-func (c *ApplyClusterCmd) Run() error {
+func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(metav1.ListOptions{})
+		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -862,7 +863,11 @@ func (c *ApplyClusterCmd) Run() error {
 	case TargetTerraform:
 		checkExisting = false
 		outDir := c.OutDir
-		tf := terraform.NewTerraformTarget(cloud, region, project, outDir, cluster.Spec.Target)
+		tfVersion := terraform.Version011
+		if featureflag.Terraform012.Enabled() {
+			tfVersion = terraform.Version012
+		}
+		tf := terraform.NewTerraformTarget(cloud, region, project, outDir, tfVersion, cluster.Spec.Target)
 
 		// We include a few "util" variables in the TF output
 		if err := tf.AddOutputVariable("region", terraform.LiteralFromStringValue(region)); err != nil {
@@ -914,7 +919,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		for _, g := range c.InstanceGroups {
 			// TODO: We need to update the mirror (below), but do we need to update the primary?
-			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(g)
+			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(ctx, g, metav1.UpdateOptions{})
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
 			}
@@ -1053,6 +1058,29 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		return nil
 	}
 
+	kopsVersion, err := semver.Parse(kopsbase.KOPS_RELEASE_VERSION)
+	if err != nil {
+		klog.Warningf("unable to parse kops version %q", kopsVersion)
+	} else {
+		tooNewVersion := kopsVersion
+		tooNewVersion.Minor += 1
+		tooNewVersion.Pre = nil
+		tooNewVersion.Build = nil
+		if util.IsKubernetesGTE(tooNewVersion.String(), *parsed) {
+			fmt.Printf("\n")
+			fmt.Printf("%s\n", starline)
+			fmt.Printf("\n")
+			fmt.Printf("This version of kubernetes is not yet supported; upgrading kops is required\n")
+			fmt.Printf("(you can bypass this check by exporting KOPS_RUN_TOO_NEW_VERSION)\n")
+			fmt.Printf("\n")
+			fmt.Printf("%s\n", starline)
+			fmt.Printf("\n")
+			if os.Getenv("KOPS_RUN_TOO_NEW_VERSION") == "" {
+				return fmt.Errorf("kops upgrade is required")
+			}
+		}
+	}
+
 	if !util.IsKubernetesGTE(OldestSupportedKubernetesVersion, *parsed) {
 		fmt.Printf("This version of Kubernetes is no longer supported; upgrading Kubernetes is required\n")
 		fmt.Printf("\n")
@@ -1180,8 +1208,8 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 
 		urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
 		if urlString == "" {
-			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.5.3/cni-ipvlan-vpc-k8s-amd64-v0.5.3.tar.gz"
-			hash, err = hashing.FromString("5e42bb70b48a9c5b4bd0d95e13a2352860575c9ba87fe58342d3d19b14f36d72")
+			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
+			hash, err = hashing.FromString("871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566")
 			if err != nil {
 				// Should be impossible
 				return fmt.Errorf("invalid hard-coded hash for lyft url")

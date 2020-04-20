@@ -302,15 +302,15 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 }
 
 type terraformLaunchConfiguration struct {
-	ImageID            *string `json:"image_id ,omitempty"`
-	InstanceType       *string `json:"instance_type,omitempty"`
-	SystemDiskCategory *string `json:"system_disk_category,omitempty"`
-	UserData           *string `json:"user_data,omitempty"`
+	ImageID            *string `json:"image_id,omitempty" cty:"image_id"`
+	InstanceType       *string `json:"instance_type,omitempty" cty:"instance_type"`
+	SystemDiskCategory *string `json:"system_disk_category,omitempty" cty:"system_disk_category"`
+	UserData           *string `json:"user_data,omitempty" cty:"user_data"`
 
-	RAMRole       *terraform.Literal `json:"role_name,omitempty"`
-	ScalingGroup  *terraform.Literal `json:"scaling_group_id,omitempty"`
-	SSHKey        *terraform.Literal `json:"key_name,omitempty"`
-	SecurityGroup *terraform.Literal `json:"security_group_id,omitempty"`
+	RAMRole       *terraform.Literal `json:"role_name,omitempty" cty:"role_name"`
+	ScalingGroup  *terraform.Literal `json:"scaling_group_id,omitempty" cty:"scaling_group_id"`
+	SSHKey        *terraform.Literal `json:"key_name,omitempty" cty:"key_name"`
+	SecurityGroup *terraform.Literal `json:"security_group_id,omitempty" cty:"security_group_id"`
 }
 
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {

@@ -18,16 +18,16 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -92,7 +92,8 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 				cmd.Help()
 				return
 			}
-			cmdutil.CheckErr(RunCreate(f, out, options))
+			ctx := context.TODO()
+			cmdutil.CheckErr(RunCreate(ctx, f, out, options))
 		},
 	}
 
@@ -111,7 +112,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
+func RunCreate(ctx context.Context, f *util.Factory, out io.Writer, c *CreateOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -137,11 +138,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		// TODO: this does not support a JSON array
 		sections := text.SplitContentToSections(contents)
 		for _, section := range sections {
-			defaults := &schema.GroupVersionKind{
-				Group:   v1alpha1.SchemeGroupVersion.Group,
-				Version: v1alpha1.SchemeGroupVersion.Version,
-			}
-			o, gvk, err := kopscodecs.Decode(section, defaults)
+			o, gvk, err := kopscodecs.Decode(section, nil)
 			if err != nil {
 				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}
@@ -157,7 +154,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.CreateCluster(v)
+				_, err = clientset.CreateCluster(ctx, v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
@@ -172,7 +169,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
-				cluster, err := clientset.GetCluster(clusterName)
+				cluster, err := clientset.GetCluster(ctx, clusterName)
 				if err != nil {
 					return fmt.Errorf("error querying cluster %q: %v", clusterName, err)
 				}
@@ -181,7 +178,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return fmt.Errorf("cluster %q not found", clusterName)
 				}
 
-				_, err = clientset.InstanceGroupsFor(cluster).Create(v)
+				_, err = clientset.InstanceGroupsFor(cluster).Create(ctx, v, metav1.CreateOptions{})
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
@@ -199,7 +196,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return fmt.Errorf("spec.PublicKey is required")
 				}
 
-				cluster, err := clientset.GetCluster(clusterName)
+				cluster, err := clientset.GetCluster(ctx, clusterName)
 				if err != nil {
 					return err
 				}

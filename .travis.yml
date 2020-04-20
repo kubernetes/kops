@@ -3,9 +3,9 @@ os:
   - linux
   - osx
 go:
-  # 1.12 is now best-effort; we recommend 1.13
-  - "1.12"
-  - "1.13"
+  # 1.12 is no longer supported by apimachinery; we recommend 1.13
+  - 1.13.x
+  - 1.14.x
 
 go_import_path: k8s.io/kops
 
@@ -13,12 +13,14 @@ script:
   - GOPROXY=https://proxy.golang.org make nodeup examples test
 
 jobs:
+  # Exclude GO 1.14 for OSX until it becomes the default because of limited availability
   exclude:
     - os: osx
-      go: "1.12"
+      go: 1.14.x
+
   include:
     - name: Verify
       os: linux
-      go: "1.13"
+      go: 1.13.x
       script:
         - GOPROXY=https://proxy.golang.org make travis-ci

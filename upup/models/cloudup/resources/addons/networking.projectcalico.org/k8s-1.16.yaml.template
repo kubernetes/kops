@@ -1,4 +1,4 @@
-{{- /* Pulled and modified from: https://docs.projectcalico.org/v3.10/manifests/calico-typha.yaml */ -}}
+# Pulled and modified from: https://docs.projectcalico.org/v3.13/manifests/calico-typha.yaml
 
 ---
 # Source: calico/templates/calico-config.yaml
@@ -50,112 +50,16 @@ data:
           "type": "portmap",
           "snat": true,
           "capabilities": {"portMappings": true}
+        },
+        {
+          "type": "bandwidth",
+          "capabilities": {"bandwidth": true}
         }
       ]
     }
 
 ---
 # Source: calico/templates/kdd-crds.yaml
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: felixconfigurations.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: FelixConfiguration
-    plural: felixconfigurations
-    singular: felixconfiguration
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ipamblocks.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: IPAMBlock
-    plural: ipamblocks
-    singular: ipamblock
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: blockaffinities.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: BlockAffinity
-    plural: blockaffinities
-    singular: blockaffinity
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ipamhandles.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: IPAMHandle
-    plural: ipamhandles
-    singular: ipamhandle
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: ipamconfigs.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: IPAMConfig
-    plural: ipamconfigs
-    singular: ipamconfig
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: bgppeers.crd.projectcalico.org
-  labels:
-    role.kubernetes.io/networking: "1"
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: BGPPeer
-    plural: bgppeers
-    singular: bgppeer
-
----
 
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -173,11 +77,10 @@ spec:
     singular: bgpconfiguration
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: ippools.crd.projectcalico.org
+  name: bgppeers.crd.projectcalico.org
   labels:
     role.kubernetes.io/networking: "1"
 spec:
@@ -185,16 +88,15 @@ spec:
   group: crd.projectcalico.org
   version: v1
   names:
-    kind: IPPool
-    plural: ippools
-    singular: ippool
+    kind: BGPPeer
+    plural: bgppeers
+    singular: bgppeer
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: hostendpoints.crd.projectcalico.org
+  name: blockaffinities.crd.projectcalico.org
   labels:
     role.kubernetes.io/networking: "1"
 spec:
@@ -202,12 +104,11 @@ spec:
   group: crd.projectcalico.org
   version: v1
   names:
-    kind: HostEndpoint
-    plural: hostendpoints
-    singular: hostendpoint
+    kind: BlockAffinity
+    plural: blockaffinities
+    singular: blockaffinity
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -228,6 +129,22 @@ spec:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  name: felixconfigurations.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: FelixConfiguration
+    plural: felixconfigurations
+    singular: felixconfiguration
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
   name: globalnetworkpolicies.crd.projectcalico.org
   labels:
     role.kubernetes.io/networking: "1"
@@ -241,7 +158,6 @@ spec:
     singular: globalnetworkpolicy
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -258,7 +174,86 @@ spec:
     singular: globalnetworkset
 
 ---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: hostendpoints.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: HostEndpoint
+    plural: hostendpoints
+    singular: hostendpoint
 
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamblocks.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMBlock
+    plural: ipamblocks
+    singular: ipamblock
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamconfigs.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMConfig
+    plural: ipamconfigs
+    singular: ipamconfig
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamhandles.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMHandle
+    plural: ipamhandles
+    singular: ipamhandle
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ippools.crd.projectcalico.org
+  labels:
+    role.kubernetes.io/networking: "1"
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPPool
+    plural: ippools
+    singular: ippool
+
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -275,7 +270,6 @@ spec:
     singular: networkpolicy
 
 ---
-
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -290,6 +284,7 @@ spec:
     kind: NetworkSet
     plural: networksets
     singular: networkset
+
 ---
 # Source: calico/templates/rbac.yaml
 
@@ -384,6 +379,12 @@ rules:
       - list
       # Used to discover Typhas.
       - get
+  # Pod CIDR auto-detection on kubeadm needs access to config maps.
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs:
+      - get
   - apiGroups: [""]
     resources:
       - nodes/status
@@ -452,7 +453,7 @@ rules:
       - get
       - list
       - watch
-  # These permissions are only requried for upgrade from v2.6, and can
+  # These permissions are only required for upgrade from v2.6, and can
   # be removed after upgrade or on fresh installations.
   - apiGroups: ["crd.projectcalico.org"]
     resources:
@@ -491,6 +492,7 @@ rules:
       - daemonsets
     verbs:
       - get
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -554,20 +556,20 @@ spec:
   selector:
     matchLabels:
       k8s-app: calico-typha
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
       labels:
         k8s-app: calico-typha
         role.kubernetes.io/networking: "1"
       annotations:
-        # This, along with the CriticalAddonsOnly toleration below, marks the pod as a critical
-        # add-on, ensuring it gets priority scheduling and that its resources are reserved
-        # if it ever gets evicted.
-        scheduler.alpha.kubernetes.io/critical-pod: ''
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         kubernetes.io/role: master
       hostNetwork: true
       tolerations:
@@ -584,7 +586,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.10.2
+      - image: calico/typha:v3.13.2
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -673,15 +675,9 @@ spec:
       labels:
         k8s-app: calico-node
         role.kubernetes.io/networking: "1"
-      annotations:
-        # This, along with the CriticalAddonsOnly toleration below,
-        # marks the pod as a critical add-on, ensuring it gets
-        # priority scheduling and that its resources are reserved
-        # if it ever gets evicted.
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       hostNetwork: true
       tolerations:
         # Make sure calico-node gets scheduled on all nodes.
@@ -702,7 +698,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.10.2
+          image: calico/cni:v3.13.2
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -719,10 +715,12 @@ spec:
               name: host-local-net-dir
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir
+          securityContext:
+            privileged: true
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.10.2
+          image: calico/cni:v3.13.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -753,19 +751,23 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
+          securityContext:
+            privileged: true
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.10.2
+          image: calico/pod2daemon-flexvol:v3.13.2
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
+          securityContext:
+            privileged: true
       containers:
         # Runs calico-node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.10.2
+          image: calico/node:v3.13.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -794,7 +796,6 @@ spec:
                   key: calico_backend
             # Cluster type to identify the deployment type
             - name: CLUSTER_TYPE
-              # was value: "k8s,bgp"
               value: "kops,bgp"
             # Auto-detect the BGP IP address.
             - name: IP
@@ -831,7 +832,7 @@ spec:
             # kops additions
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
-              value: "{{- or .Networking.Calico.IptablesBackend "Legacy" }}"
+              value: "{{- or .Networking.Calico.IptablesBackend "Auto" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
               value: "{{- or .Networking.Calico.PrometheusMetricsEnabled "false" }}"
@@ -959,7 +960,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
@@ -970,7 +971,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.10.2
+          image: calico/kube-controllers:v3.13.2
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS

@@ -107,8 +107,8 @@ func (_ *ExternalLoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, 
 }
 
 type terraformExternalLoadBalancerAttachment struct {
-	ELB              *terraform.Literal `json:"elb"`
-	AutoscalingGroup *terraform.Literal `json:"autoscaling_group_name,omitempty"`
+	ELB              *terraform.Literal `json:"elb" cty:"elb"`
+	AutoscalingGroup *terraform.Literal `json:"autoscaling_group_name,omitempty" cty:"autoscaling_group_name"`
 }
 
 func (_ *ExternalLoadBalancerAttachment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ExternalLoadBalancerAttachment) error {

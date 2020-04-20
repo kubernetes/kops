@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -28,7 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -93,6 +94,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 		Long:    getClusterLong,
 		Example: getClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
 			if len(args) != 0 {
 				options.ClusterNames = append(options.ClusterNames, args...)
 			}
@@ -105,7 +107,7 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 				options.ClusterNames = append(options.ClusterNames, rootCommand.clusterName)
 			}
 
-			err := RunGetClusters(&rootCommand, os.Stdout, &options)
+			err := RunGetClusters(ctx, &rootCommand, os.Stdout, &options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -117,15 +119,15 @@ func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	return cmd
 }
 
-func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) error {
-	client, err := context.Clientset()
+func RunGetClusters(ctx context.Context, f Factory, out io.Writer, options *GetClusterOptions) error {
+	client, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	var clusterList []*api.Cluster
+	var clusterList []*kopsapi.Cluster
 	if len(options.ClusterNames) != 1 {
-		list, err := client.ListClusters(metav1.ListOptions{})
+		list, err := client.ListClusters(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -134,7 +136,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		}
 	} else {
 		// Optimization - avoid fetching all clusters if we're only querying one
-		cluster, err := client.GetCluster(options.ClusterNames[0])
+		cluster, err := client.GetCluster(ctx, options.ClusterNames[0])
 		if err != nil {
 			if !apierrors.IsNotFound(err) {
 				return err
@@ -184,14 +186,14 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 
 // filterClustersByName returns the clusters matching the specified names.
 // If names are specified and no cluster is found with a name, we return an error.
-func filterClustersByName(clusterNames []string, clusters []*api.Cluster) ([]*api.Cluster, error) {
+func filterClustersByName(clusterNames []string, clusters []*kopsapi.Cluster) ([]*kopsapi.Cluster, error) {
 	if len(clusterNames) != 0 {
 		// Build a map as we want to return them in the same order as args
-		m := make(map[string]*api.Cluster)
+		m := make(map[string]*kopsapi.Cluster)
 		for _, c := range clusters {
 			m[c.ObjectMeta.Name] = c
 		}
-		var filtered []*api.Cluster
+		var filtered []*kopsapi.Cluster
 		for _, clusterName := range clusterNames {
 			c := m[clusterName]
 			if c == nil {
@@ -206,15 +208,15 @@ func filterClustersByName(clusterNames []string, clusters []*api.Cluster) ([]*ap
 	return clusters, nil
 }
 
-func clusterOutputTable(clusters []*api.Cluster, out io.Writer) error {
+func clusterOutputTable(clusters []*kopsapi.Cluster, out io.Writer) error {
 	t := &tables.Table{}
-	t.AddColumn("NAME", func(c *api.Cluster) string {
+	t.AddColumn("NAME", func(c *kopsapi.Cluster) string {
 		return c.ObjectMeta.Name
 	})
-	t.AddColumn("CLOUD", func(c *api.Cluster) string {
+	t.AddColumn("CLOUD", func(c *kopsapi.Cluster) string {
 		return c.Spec.CloudProvider
 	})
-	t.AddColumn("ZONES", func(c *api.Cluster) string {
+	t.AddColumn("ZONES", func(c *kopsapi.Cluster) string {
 		zones := sets.NewString()
 		for _, s := range c.Spec.Subnets {
 			if s.Zone != "" {
@@ -274,14 +276,14 @@ func fullOutputYAML(out io.Writer, args ...runtime.Object) error {
 	return nil
 }
 
-func fullClusterSpecs(clusters []*api.Cluster) ([]*api.Cluster, error) {
-	var fullSpecs []*api.Cluster
+func fullClusterSpecs(clusters []*kopsapi.Cluster) ([]*kopsapi.Cluster, error) {
+	var fullSpecs []*kopsapi.Cluster
 	for _, cluster := range clusters {
 		configBase, err := registry.ConfigBase(cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 		}
-		fullSpec := &api.Cluster{}
+		fullSpec := &kopsapi.Cluster{}
 		err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
 		if err != nil {
 			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)

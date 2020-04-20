@@ -25,6 +25,12 @@ const (
 	TagOSRHEL8        = "_rhel8"
 
 	TagSystemd = "_systemd"
+
+	// Nodes with the "_automatic_upgrade" tag automatically update installed packages
+	// during bootstrapping and daily for security updates (unless this update would require
+	// a node reboot). To disable automatic node package updates, set:
+	// `Cluster.Spec.UpdatePolicy = external`
+	TagUpdatePolicyAuto = "_automatic_upgrades"
 )
 
 type HasTags interface {

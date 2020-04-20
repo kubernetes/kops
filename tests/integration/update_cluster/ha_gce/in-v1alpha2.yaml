@@ -28,8 +28,11 @@ spec:
     - instanceGroup: master-us-test1-c
       name: "3"
     name: events
+  gceServiceAccount: default
   iam:
     legacy: false
+  kubelet:
+    anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.14.0

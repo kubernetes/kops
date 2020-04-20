@@ -294,8 +294,16 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
 	kubeAPIServer.TokenAuthFile = filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv")
 
-	if !kubeAPIServer.DisableBasicAuth {
-		kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+	// Support for basic auth was deprecated 1.16 and removed in 1.19
+	// https://github.com/kubernetes/kubernetes/pull/89069
+	if b.IsKubernetesLT("1.18") {
+		if kubeAPIServer.DisableBasicAuth == nil || !*kubeAPIServer.DisableBasicAuth {
+			kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+		}
+	} else if b.IsKubernetesLT("1.19") {
+		if kubeAPIServer.DisableBasicAuth != nil && !*kubeAPIServer.DisableBasicAuth {
+			kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+		}
 	}
 
 	if b.UseEtcdManager() && b.UseEtcdTLS() {
@@ -328,8 +336,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	// APIServer aggregation options
-	// TODO fix Test_KubeAPIServer_Builder so we can remove the conditional
-	if b.IsKubernetesGTE("1.7") {
+	{
 		cert, err := b.KeyStore.FindCert("apiserver-aggregator-ca")
 		if err != nil {
 			return nil, fmt.Errorf("apiserver aggregator CA cert lookup failed: %v", err.Error())

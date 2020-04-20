@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_Validate_DNS(t *testing.T) {
@@ -125,14 +126,14 @@ func TestValidateSubnets(t *testing.T) {
 			Input: []kops.ClusterSubnetSpec{
 				{Name: ""},
 			},
-			ExpectedErrors: []string{"Required value::Subnets[0].Name"},
+			ExpectedErrors: []string{"Required value::subnets[0].name"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
 				{Name: "a"},
 				{Name: "a"},
 			},
-			ExpectedErrors: []string{"Invalid value::Subnets"},
+			ExpectedErrors: []string{"Duplicate value::subnets[1].name"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
@@ -145,17 +146,17 @@ func TestValidateSubnets(t *testing.T) {
 				{Name: "a", ProviderID: "a"},
 				{Name: "b", ProviderID: ""},
 			},
-			ExpectedErrors: []string{"Invalid value::Subnets"},
+			ExpectedErrors: []string{"Forbidden::subnets[1].id"},
 		},
 		{
 			Input: []kops.ClusterSubnetSpec{
 				{Name: "a", CIDR: "10.128.0.0/8"},
 			},
-			ExpectedErrors: []string{"Invalid value::Subnets[0].CIDR"},
+			ExpectedErrors: []string{"Invalid value::subnets[0].cidr"},
 		},
 	}
 	for _, g := range grid {
-		errs := validateSubnets(g.Input, field.NewPath("Subnets"))
+		errs := validateSubnets(g.Input, field.NewPath("subnets"))
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
@@ -175,25 +176,25 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				ProxyClientCertFile: &str,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Forbidden::KubeAPIServer",
 			},
-			ExpectedDetail: "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)",
+			ExpectedDetail: "proxyClientCertFile and proxyClientKeyFile must both be specified (or neither)",
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
 				ProxyClientKeyFile: &str,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Forbidden::KubeAPIServer",
 			},
-			ExpectedDetail: "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)",
+			ExpectedDetail: "proxyClientCertFile and proxyClientKeyFile must both be specified (or neither)",
 		},
 		{
 			Input: kops.KubeAPIServerConfig{
 				ServiceNodePortRange: str,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Invalid value::KubeAPIServer.serviceNodePortRange",
 			},
 		},
 		{
@@ -201,9 +202,9 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				AuthorizationMode: &authzMode,
 			},
 			ExpectedErrors: []string{
-				"Invalid value::KubeAPIServer",
+				"Required value::KubeAPIServer.authorizationWebhookConfigFile",
 			},
-			ExpectedDetail: "Authorization mode Webhook requires AuthorizationWebhookConfigFile to be specified",
+			ExpectedDetail: "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified",
 		},
 	}
 	for _, g := range grid {
@@ -232,7 +233,7 @@ func TestValidateKubeAPIServer(t *testing.T) {
 func Test_Validate_DockerConfig_Storage(t *testing.T) {
 	for _, name := range []string{"aufs", "zfs", "overlay"} {
 		config := &kops.DockerConfig{Storage: &name}
-		errs := ValidateDockerConfig(config, field.NewPath("docker"))
+		errs := validateDockerConfig(config, field.NewPath("docker"))
 		if len(errs) != 0 {
 			t.Fatalf("Unexpected errors validating DockerConfig %q", errs)
 		}
@@ -240,7 +241,7 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 
 	for _, name := range []string{"overlayfs", "", "au"} {
 		config := &kops.DockerConfig{Storage: &name}
-		errs := ValidateDockerConfig(config, field.NewPath("docker"))
+		errs := validateDockerConfig(config, field.NewPath("docker"))
 		if len(errs) != 1 {
 			t.Fatalf("Expected errors validating DockerConfig %+v", config)
 		}
@@ -270,13 +271,13 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 			Input: kops.FlannelNetworkingSpec{
 				Backend: "",
 			},
-			ExpectedErrors: []string{"Required value::Networking.Flannel.Backend"},
+			ExpectedErrors: []string{"Required value::networking.flannel.backend"},
 		},
 		{
 			Input: kops.FlannelNetworkingSpec{
 				Backend: "nope",
 			},
-			ExpectedErrors: []string{"Unsupported value::Networking.Flannel.Backend"},
+			ExpectedErrors: []string{"Unsupported value::networking.flannel.backend"},
 		},
 	}
 	for _, g := range grid {
@@ -286,7 +287,7 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		cluster := &kops.Cluster{}
 		cluster.Spec.Networking = networking
 
-		errs := validateNetworking(&cluster.Spec, networking, field.NewPath("Networking"))
+		errs := validateNetworking(&cluster.Spec, networking, field.NewPath("networking"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -308,7 +309,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			Input: map[string]string{
 				"notarole": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "Allow" } ]`,
 			},
-			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies"},
+			ExpectedErrors: []string{"Unsupported value::spec.additionalPolicies"},
 		},
 		{
 			Input: map[string]string{
@@ -326,7 +327,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			Input: map[string]string{
 				"master": `[ { "Action": [ "s3:GetObject" ], "Resource": [ "*" ], "Effect": "allow" } ]`,
 			},
-			ExpectedErrors: []string{"Invalid value::spec.additionalPolicies[master][0].Effect"},
+			ExpectedErrors: []string{"Unsupported value::spec.additionalPolicies[master][0].Effect"},
 		},
 	}
 	for _, g := range grid {
@@ -372,7 +373,7 @@ func Test_Validate_Calico(t *testing.T) {
 				},
 				Etcd: &kops.EtcdClusterSpec{},
 			},
-			ExpectedErrors: []string{"Invalid value::Calico.TyphaReplicas"},
+			ExpectedErrors: []string{"Invalid value::calico.typhaReplicas"},
 		},
 		{
 			Input: caliInput{
@@ -393,11 +394,11 @@ func Test_Validate_Calico(t *testing.T) {
 					Version: "2.2.18",
 				},
 			},
-			ExpectedErrors: []string{"Invalid value::Calico.MajorVersion"},
+			ExpectedErrors: []string{"Forbidden::calico.majorVersion"},
 		},
 	}
 	for _, g := range grid {
-		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("Calico"))
+		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("calico"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -405,6 +406,7 @@ func Test_Validate_Calico(t *testing.T) {
 func Test_Validate_RollingUpdate(t *testing.T) {
 	grid := []struct {
 		Input          kops.RollingUpdate
+		OnMasterIG     bool
 		ExpectedErrors []string
 	}{
 		{
@@ -424,27 +426,197 @@ func Test_Validate_RollingUpdate(t *testing.T) {
 			Input: kops.RollingUpdate{
 				MaxUnavailable: intStr(intstr.FromString("nope")),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
 		},
 		{
 			Input: kops.RollingUpdate{
 				MaxUnavailable: intStr(intstr.FromInt(-1)),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
 		},
 		{
 			Input: kops.RollingUpdate{
 				MaxUnavailable: intStr(intstr.FromString("-1%")),
 			},
-			ExpectedErrors: []string{"Invalid value::TestField.MaxUnavailable"},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromInt(0)),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("0%")),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromInt(1)),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("1%")),
+			},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("nope")),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxSurge"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromInt(-1)),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxSurge"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("-1%")),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxSurge"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromInt(0)),
+			},
+			OnMasterIG: true,
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("0%")),
+			},
+			OnMasterIG: true,
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromInt(1)),
+			},
+			OnMasterIG:     true,
+			ExpectedErrors: []string{"Forbidden::testField.maxSurge"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("1%")),
+			},
+			OnMasterIG:     true,
+			ExpectedErrors: []string{"Forbidden::testField.maxSurge"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("nope")),
+			},
+			OnMasterIG:     true,
+			ExpectedErrors: []string{"Invalid value::testField.maxSurge"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromInt(-1)),
+			},
+			OnMasterIG:     true,
+			ExpectedErrors: []string{"Forbidden::testField.maxSurge"},
+		},
+		{
+			Input: kops.RollingUpdate{
+				MaxSurge: intStr(intstr.FromString("-1%")),
+			},
+			OnMasterIG:     true,
+			ExpectedErrors: []string{"Forbidden::testField.maxSurge"},
 		},
 	}
 	for _, g := range grid {
-		errs := validateRollingUpdate(&g.Input, field.NewPath("TestField"))
+		errs := validateRollingUpdate(&g.Input, field.NewPath("testField"), g.OnMasterIG)
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
 
 func intStr(i intstr.IntOrString) *intstr.IntOrString {
 	return &i
+}
+
+func Test_Validate_NodeLocalDNS(t *testing.T) {
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "iptables",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Kubelet: &kops.KubeletConfigSpec{
+					ClusterDNS: "100.64.0.10",
+				},
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "ipvs",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.kubelet.clusterDNS"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Kubelet: &kops.KubeletConfigSpec{
+					ClusterDNS: "100.64.0.10",
+				},
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "ipvs",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: fi.Bool(true),
+					},
+				},
+				Networking: &kops.NetworkingSpec{
+					Cilium: &kops.CiliumNetworkingSpec{},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.kubelet.clusterDNS"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Kubelet: &kops.KubeletConfigSpec{
+					ClusterDNS: "169.254.20.10",
+				},
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "iptables",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled: fi.Bool(true),
+						LocalIP: "169.254.20.10",
+					},
+				},
+				Networking: &kops.NetworkingSpec{
+					Cilium: &kops.CiliumNetworkingSpec{},
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateNodeLocalDNS(&g.Input, field.NewPath("spec"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
 }

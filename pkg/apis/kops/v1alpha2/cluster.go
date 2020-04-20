@@ -135,6 +135,8 @@ type ClusterSpec struct {
 	//   'external' do not apply updates automatically - they are applied manually or by an external system
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+	// ExternalPolicies allows the insertion of pre-existing managed policies on IG Roles
+	ExternalPolicies *map[string][]string `json:"externalPolicies,omitempty"`
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 	// A collection of files assets for deployed cluster wide
@@ -187,6 +189,8 @@ type ClusterSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the default rolling-update settings for instance groups
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	// GCEServiceAccount specifies the service account with which the GCE VM runs
+	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -394,6 +398,16 @@ type KubeDNSConfig struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// MemoryLimit specifies the memory limit of each dns container in the cluster. Default 170m.
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
+	// NodeLocalDNS specifies the configuration for the node-local-dns addon
+	NodeLocalDNS *NodeLocalDNSConfig `json:"nodeLocalDNS,omitempty"`
+}
+
+// NodeLocalDNSConfig are options of the node-local-dns
+type NodeLocalDNSConfig struct {
+	// Enabled activates the node-local-dns addon
+	Enabled *bool `json:"enabled,omitempty"`
+	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.
+	LocalIP string `json:"localIP,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller
@@ -457,6 +471,11 @@ type EtcdBackupSpec struct {
 type EtcdManagerSpec struct {
 	// Image is the etcd manager image to use.
 	Image string `json:"image,omitempty"`
+	// Env allows users to pass in env variables to the etcd-manager container.
+	// Variables starting with ETCD_ will be further passed down to the etcd process.
+	// This allows etcd setting to be configured/overwriten. No config validation is done.
+	// A list of etcd config ENV vars can be found at https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/configuration.md
+	Env []EnvVar `json:"env,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member
@@ -577,8 +596,8 @@ type RollingUpdate struct {
 	// The value can be an absolute number (for example 5) or a percentage of desired
 	// nodes (for example 10%).
 	// The absolute number is calculated from a percentage by rounding down.
-	// A value of 0 disables rolling updates.
-	// Defaults to 1.
+	// A value of 0 for both this and MaxSurge disables rolling updates.
+	// Defaults to 1 if MaxSurge is 0, otherwise defaults to 0.
 	// Example: when this is set to 30%, the InstanceGroup can be scaled
 	// down to 70% of desired nodes immediately when the rolling update
 	// starts. Once new nodes are ready, more old nodes can be drained,
@@ -586,4 +605,18 @@ type RollingUpdate struct {
 	// during the update is at least 70% of desired nodes.
 	// +optional
 	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty"`
+	// MaxSurge is the maximum number of extra nodes that can be created
+	// during the update.
+	// The value can be an absolute number (for example 5) or a percentage of
+	// desired machines (for example 10%).
+	// The absolute number is calculated from a percentage by rounding up.
+	// A value of 0 for both this and MaxUnavailable disables rolling updates.
+	// Has no effect on instance groups with role "Master".
+	// Defaults to 1 on AWS, 0 otherwise.
+	// Example: when this is set to 30%, the InstanceGroup can be scaled
+	// up immediately when the rolling update starts, such that the total
+	// number of old and new nodes do not exceed 130% of desired
+	// nodes.
+	// +optional
+	MaxSurge *intstr.IntOrString `json:"maxSurge,omitempty"`
 }

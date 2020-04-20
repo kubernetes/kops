@@ -1,4 +1,4 @@
-{{- /* Pulled and modified from: https://docs.projectcalico.org/v3.10/manifests/canal.yaml */ -}}
+# Pulled and modified from: https://docs.projectcalico.org/v3.12/manifests/canal.yaml
 
 ---
 # Source: calico/templates/calico-config.yaml
@@ -57,6 +57,10 @@ data:
           "type": "portmap",
           "snat": true,
           "capabilities": {"portMappings": true}
+        },
+        {
+          "type": "bandwidth",
+          "capabilities": {"bandwidth": true}
         }
       ]
     }
@@ -404,7 +408,7 @@ rules:
       - get
       - list
       - watch
-  # These permissions are only requried for upgrade from v2.6, and can
+  # These permissions are only required for upgrade from v2.6, and can
   # be removed after upgrade or on fresh installations.
   - apiGroups: ["crd.projectcalico.org"]
     resources:
@@ -531,7 +535,7 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         kubernetes.io/role: master
       hostNetwork: true
       tolerations:
@@ -548,7 +552,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.10.2
+      - image: calico/typha:v3.12.0
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -645,7 +649,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       hostNetwork: true
       tolerations:
         # Make sure canal gets scheduled on all nodes.
@@ -665,7 +669,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.10.2
+          image: calico/cni:v3.12.0
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -696,19 +700,23 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
+          securityContext:
+            privileged: true
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.10.2
+          image: calico/pod2daemon-flexvol:v3.12.0
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
+          securityContext:
+            privileged: true
       containers:
         # Runs canal container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.10.2
+          image: calico/node:v3.12.0
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -739,6 +747,9 @@ spec:
             - name: CLUSTER_TYPE
               # was value: "k8s,bgp"
               value: "k8s,canal"
+            # Period, in seconds, at which felix re-applies all iptables state
+            - name: FELIX_IPTABLESREFRESHINTERVAL
+              value: "60"
             # No IP address needed.
             - name: IP
               value: ""
@@ -769,10 +780,7 @@ spec:
               value: "{{- or .Networking.Canal.ChainInsertMode "insert" }}"
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
-              value: "{{- or .Networking.Canal.IptablesBackend "Legacy" }}"
-            # Period, in seconds, at which felix re-applies all iptables state
-            - name: FELIX_IPTABLESREFRESHINTERVAL
-              value: "60"
+              value: "{{- or .Networking.Canal.IptablesBackend "Auto" }}"
             # Set to enable the experimental Prometheus metrics server
             - name: FELIX_PROMETHEUSMETRICSENABLED
               value: "{{- or .Networking.Canal.PrometheusMetricsEnabled "false" }}"

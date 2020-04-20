@@ -1,0 +1,294 @@
+#!/bin/bash
+# Copyright 2016 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.15.0/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/nodeup
+NODEUP_HASH=9604ef18267ad7b5cf4cebbf7ab64423cf5bb0342d169c608ac6376e6af26d81
+
+export AWS_REGION=us-test-1
+
+
+
+
+function ensure-install-dir() {
+  INSTALL_DIR="/opt/kops"
+  # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
+  if [[ -d /var/lib/toolbox ]]; then
+    INSTALL_DIR="/var/lib/toolbox/kops"
+  fi
+  mkdir -p ${INSTALL_DIR}/bin
+  mkdir -p ${INSTALL_DIR}/conf
+  cd ${INSTALL_DIR}
+}
+
+# Retry a download until we get it. args: name, sha, url1, url2...
+download-or-bust() {
+  local -r file="$1"
+  local -r hash="$2"
+  shift 2
+
+  urls=( $* )
+  while true; do
+    for url in "${urls[@]}"; do
+      commands=(
+        "curl -f --ipv4 --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --inet4-only --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+      )
+      for cmd in "${commands[@]}"; do
+        echo "Attempting download with: ${cmd} {url}"
+        if ! (${cmd} "${url}"); then
+          echo "== Download failed with ${cmd} =="
+          continue
+        fi
+        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+          echo "== Hash validation of ${url} failed. Retrying. =="
+          rm -f "${file}"
+        else
+          if [[ -n "${hash}" ]]; then
+            echo "== Downloaded ${url} (SHA1 = ${hash}) =="
+          else
+            echo "== Downloaded ${url} =="
+          fi
+          return
+        fi
+      done
+    done
+
+    echo "All downloads failed; sleeping before retrying"
+    sleep 60
+  done
+}
+
+validate-hash() {
+  local -r file="$1"
+  local -r expected="$2"
+  local actual
+
+  actual=$(sha256sum ${file} | awk '{ print $1 }') || true
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
+    return 1
+  fi
+}
+
+function split-commas() {
+  echo $1 | tr "," "\n"
+}
+
+function try-download-release() {
+  local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
+  if [[ -n "${NODEUP_HASH:-}" ]]; then
+    local -r nodeup_hash="${NODEUP_HASH}"
+  else
+  # TODO: Remove?
+    echo "Downloading sha256 (not found in env)"
+    download-or-bust nodeup.sha256 "" "${nodeup_urls[@]/%/.sha256}"
+    local -r nodeup_hash=$(cat nodeup.sha256)
+  fi
+
+  echo "Downloading nodeup (${nodeup_urls[@]})"
+  download-or-bust nodeup "${nodeup_hash}" "${nodeup_urls[@]}"
+
+  chmod +x nodeup
+}
+
+function download-release() {
+  # In case of failure checking integrity of release, retry.
+  cd ${INSTALL_DIR}/bin
+  until try-download-release; do
+    sleep 15
+    echo "Couldn't download release. Retrying..."
+  done
+
+  echo "Running nodeup"
+  # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
+  ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
+}
+
+####################################################################################
+
+/bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+
+echo "== nodeup node config starting =="
+ensure-install-dir
+
+cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
+cloudConfig: null
+containerRuntime: docker
+containerd:
+  skipInstall: true
+docker:
+  ipMasq: false
+  ipTables: false
+  logDriver: json-file
+  logLevel: warn
+  logOpt:
+  - max-size=10m
+  - max-file=5
+  storage: overlay2,overlay,aufs
+  version: 18.06.3
+encryptionConfig: null
+etcdClusters:
+  cilium:
+    version: 3.3.10
+  events:
+    version: 3.3.10
+  main:
+    version: 3.3.10
+kubeAPIServer:
+  allowPrivileged: true
+  anonymousAuth: false
+  apiServerCount: 1
+  authorizationMode: AlwaysAllow
+  bindAddress: 0.0.0.0
+  cloudProvider: aws
+  enableAdmissionPlugins:
+  - NamespaceLifecycle
+  - LimitRanger
+  - ServiceAccount
+  - PersistentVolumeLabel
+  - DefaultStorageClass
+  - DefaultTolerationSeconds
+  - MutatingAdmissionWebhook
+  - ValidatingAdmissionWebhook
+  - NodeRestriction
+  - ResourceQuota
+  etcdServers:
+  - http://127.0.0.1:4001
+  etcdServersOverrides:
+  - /events#http://127.0.0.1:4002
+  image: k8s.gcr.io/kube-apiserver:v1.14.0
+  insecureBindAddress: 127.0.0.1
+  insecurePort: 8080
+  kubeletPreferredAddressTypes:
+  - InternalIP
+  - Hostname
+  - ExternalIP
+  logLevel: 2
+  requestheaderAllowedNames:
+  - aggregator
+  requestheaderExtraHeaderPrefixes:
+  - X-Remote-Extra-
+  requestheaderGroupHeaders:
+  - X-Remote-Group
+  requestheaderUsernameHeaders:
+  - X-Remote-User
+  securePort: 443
+  serviceClusterIPRange: 100.64.0.0/13
+  storageBackend: etcd3
+kubeControllerManager:
+  allocateNodeCIDRs: true
+  attachDetachReconcileSyncPeriod: 1m0s
+  cloudProvider: aws
+  clusterCIDR: 100.96.0.0/11
+  clusterName: privateciliumadvanced.example.com
+  configureCloudRoutes: false
+  image: k8s.gcr.io/kube-controller-manager:v1.14.0
+  leaderElection:
+    leaderElect: true
+  logLevel: 2
+  useServiceAccountCredentials: true
+kubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  enabled: false
+  hostnameOverride: '@aws'
+  image: k8s.gcr.io/kube-proxy:v1.14.0
+  logLevel: 2
+kubeScheduler:
+  image: k8s.gcr.io/kube-scheduler:v1.14.0
+  leaderElection:
+    leaderElect: true
+  logLevel: 2
+kubelet:
+  anonymousAuth: false
+  cgroupRoot: /
+  cloudProvider: aws
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    ExperimentalCriticalPodAnnotation: "true"
+  hostnameOverride: '@aws'
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+  podManifestPath: /etc/kubernetes/manifests
+masterKubelet:
+  anonymousAuth: false
+  cgroupRoot: /
+  cloudProvider: aws
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    ExperimentalCriticalPodAnnotation: "true"
+  hostnameOverride: '@aws'
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+  podManifestPath: /etc/kubernetes/manifests
+  registerSchedulable: false
+
+__EOF_CLUSTER_SPEC
+
+cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
+kubelet: null
+nodeLabels: null
+taints: null
+
+__EOF_IG_SPEC
+
+cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+Assets:
+- c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
+- 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
+- 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+- 71b7bc444ba0a5f7cd7a36e91b594c1c3d13890e160d85e0dfde38c46a24e416@https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/utils.tar.gz,https://github.com/kubernetes/kops/releases/download/v1.15.0/linux-amd64-utils.tar.gz,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/utils.tar.gz
+ClusterName: privateciliumadvanced.example.com
+ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
+InstanceGroupName: master-us-test-1a
+Tags:
+- _automatic_upgrades
+- _aws
+channels:
+- memfs://clusters.example.com/privateciliumadvanced.example.com/addons/bootstrap-channel.yaml
+etcdManifests:
+- memfs://clusters.example.com/privateciliumadvanced.example.com/manifests/etcd/main.yaml
+- memfs://clusters.example.com/privateciliumadvanced.example.com/manifests/etcd/events.yaml
+- memfs://clusters.example.com/privateciliumadvanced.example.com/manifests/etcd/cilium.yaml
+protokubeImage:
+  hash: 42a9c4324fe26d63ce11f3dd7836371bc93fa06ca8f479807728f3746e27061b
+  name: protokube:1.15.0
+  sources:
+  - https://artifacts.k8s.io/binaries/kops/1.15.0/images/protokube.tar.gz
+  - https://github.com/kubernetes/kops/releases/download/v1.15.0/images-protokube.tar.gz
+  - https://kubeupv2.s3.amazonaws.com/kops/1.15.0/images/protokube.tar.gz
+
+__EOF_KUBE_ENV
+
+download-release
+echo "== nodeup node config done =="

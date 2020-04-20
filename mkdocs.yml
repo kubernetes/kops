@@ -39,8 +39,8 @@ nav:
     - Deploying to GCE: "getting_started/gce.md"
     - Deploying to OpenStack - Beta: "getting_started/openstack.md"
     - Deploying to Digital Ocean - Alpha: "getting_started/digitalocean.md"
-    - Kops Commands: "getting_started/commands.md"
-    - Kops Arguments: "getting_started/arguments.md"
+    - kops Commands: "getting_started/commands.md"
+    - kops Arguments: "getting_started/arguments.md"
     - kubectl usage: "getting_started/kubectl.md"
   - CLI:
     - kops: "cli/kops.md"
@@ -61,16 +61,14 @@ nav:
     - kops validate: "cli/kops_validate.md"
     - kops version: "cli/kops_version.md"
   - API:
-    - Cluster Spec: "cluster_spec.md"
-    - Instance Group API: "instance_groups.md"
-    - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
-    - Godocs for Cluster - ClusterSpec: "https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec"
-    - Godocs for Instance Group - InstanceGroupSpec: "https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec"
+    - Cluster Resource: "cluster_spec.md"
+    - InstanceGroup Resource: "instance_groups.md"
 
   - Operations:
     - Updates & Upgrades: "operations/updates_and_upgrades.md"
+    - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
+    - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
-    - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
     - Instancegroup images: "operations/images.md"
     - Cluster Addons & Manager : "operations/addons.md"
     - Cluster configuration management: "changing_configuration.md"
@@ -80,9 +78,15 @@ nav:
     - kube-up to kops upgrade: "upgrade_from_kubeup.md"
     - Label management: "labels.md"
     - Secret management: "secrets.md"
+    - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
-    - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Running kops in a CI environment: "continuous_integration.md"
+    - etcd:
+      - etcd administration: "operations/etcd_administration.md"
+      - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
+      - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
+      - etcd3 Migration: "etcd3-migration.md"
+
   - Networking:
     - Networking Overview including CNI: "networking.md"
     - Run kops in an existing VPC: "run_in_existing_vpc.md"
@@ -105,7 +109,6 @@ nav:
     - AWS China: "aws-china.md"
     - Calico v3: "calico-v3.md"
     - Custom CA: "custom_ca.md"
-    - etcd3 Migration: "etcd3-migration.md"
     - Horizontal Pod Autoscaling: "horizontal_pod_autoscaling.md"
     - Egress Proxy: "http_proxy.md"
     - Node Authorization: "node_authorization.md"
@@ -115,14 +118,14 @@ nav:
     - Authentication: "authentication.md"
   - Development:
     - Building: "development/building.md"
-    - Releases: "releases.md"
+    - Adding a feature: "development/adding_a_feature.md"
+    - Testing: "development/testing.md"
+    - Releasing: "development/release.md"
     - New Kubernetes Version: "development/new_kubernetes_version.md"
     - Developing using Docker: "development/Docker.md"
     - Development with vSphere: "vsphere-dev.md"
     - vSphere support status: "vsphere-development-status.md"
     - Documentation Guidelines: "development/documentation.md"
-    - E2E testing with `kops` clusters: "development/testing.md"
-    - Example on how to add a feature: "development/adding_a_feature.md"
     - Hack Directory: "development/hack.md"
     - How to update `kops` API: "development/api_updates.md"
     - Low level description on how kops works: "development/how_it_works.md"
@@ -130,11 +133,11 @@ nav:
     - Notes on master instance sizing: "development/instancesizes.md"
     - Our release process: "development/release.md"
     - Releasing with Homebrew: "development/homebrew.md"
-    - Rolling Update Diagrams: "development/rolling_update.md"
     - Bazel: "development/bazel.md"
     - Vendoring: "development/vendoring.md"
     - Ports: "development/ports.md"
   - Releases:
+    - 1.16: releases/1.16-NOTES.md
     - 1.15: releases/1.15-NOTES.md
     - 1.14: releases/1.14-NOTES.md
     - 1.13: releases/1.13-NOTES.md

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -71,6 +72,7 @@ func NewCmdCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer) *co
 		Long:    createSecretWeaveEncryptionconfigLong,
 		Example: createSecretWeaveEncryptionconfigExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
 
 			err := rootCommand.ProcessArgs(args[0:])
 			if err != nil {
@@ -79,7 +81,7 @@ func NewCmdCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer) *co
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err = RunCreateSecretWeaveEncryptionConfig(f, options)
+			err = RunCreateSecretWeaveEncryptionConfig(ctx, f, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -92,14 +94,14 @@ func NewCmdCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer) *co
 	return cmd
 }
 
-func RunCreateSecretWeaveEncryptionConfig(f *util.Factory, options *CreateSecretWeaveEncryptionConfigOptions) error {
+func RunCreateSecretWeaveEncryptionConfig(ctx context.Context, f *util.Factory, options *CreateSecretWeaveEncryptionConfigOptions) error {
 
 	secret, err := fi.CreateSecret()
 	if err != nil {
 		return fmt.Errorf("error creating encryption secret: %v", err)
 	}
 
-	cluster, err := GetCluster(f, options.ClusterName)
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}

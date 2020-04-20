@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "helpers.go",
+        "in.go",
+        "out.go",
+        "type_implied.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/zclconf/go-cty/cty/gocty",
+    importpath = "github.com/zclconf/go-cty/cty/gocty",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/zclconf/go-cty/cty:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty/convert:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty/set:go_default_library",
+    ],
+)

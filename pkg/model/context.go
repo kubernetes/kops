@@ -183,7 +183,7 @@ func (m *KopsModelContext) NodeInstanceGroups() []*kops.InstanceGroup {
 
 // CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
 func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (map[string]string, error) {
-	labels := make(map[string]string)
+	labels := m.CloudTags(m.AutoscalingGroupName(ig), false)
 
 	// Apply any user-specified global labels first so they can be overridden by IG-specific labels
 	for k, v := range m.Cluster.Spec.CloudLabels {
@@ -258,6 +258,9 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 			tags["kubernetes.io/cluster/"+m.Cluster.ObjectMeta.Name] = "shared"
 		} else {
 			tags["kubernetes.io/cluster/"+m.Cluster.ObjectMeta.Name] = "owned"
+			for k, v := range m.Cluster.Spec.CloudLabels {
+				tags[k] = v
+			}
 		}
 
 	}

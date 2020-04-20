@@ -18,6 +18,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  kubelet:
+    anonymousAuth: false
   kubernetesVersion: v1.14.0
   masterInternalName: api.internal.bastionuserdata.example.com
   masterPublicName: api.bastionuserdata.example.com
@@ -28,6 +30,10 @@ spec:
   sshAccess:
   - 0.0.0.0/0
   topology:
+    bastion:
+      loadBalancer:
+        additionalSecurityGroups:
+        - sg-exampleid
     masters: private
     nodes: private
   subnets:

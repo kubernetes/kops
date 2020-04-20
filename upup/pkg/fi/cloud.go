@@ -28,20 +28,24 @@ type Cloud interface {
 
 	DNS() (dnsprovider.Interface, error)
 
-	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
+	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil).
 	FindVPCInfo(id string) (*VPCInfo, error)
 
-	// DeleteInstance deletes a cloud instance
+	// DeleteInstance deletes a cloud instance.
 	DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error
 
-	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances
+	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances.
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 
-	// GetCloudGroups returns a map of cloud instances that back a kops cluster
+	// DetachInstance causes a cloud instance to no longer be counted against the group's size limits.
+	DetachInstance(instance *cloudinstances.CloudInstanceGroupMember) error
+
+	// GetCloudGroups returns a map of cloud instances that back a kops cluster.
+	// Detached instances must be returned in the NeedUpdate slice.
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
-	// Region returns the cloud region bound to the cloud instance
-	// If the region concept does not apply, returns ""
+	// Region returns the cloud region bound to the cloud instance.
+	// If the region concept does not apply, returns "".
 	Region() string
 }
 
@@ -165,6 +169,10 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"cn-northwest-1a": kops.CloudProviderAWS,
 	"cn-northwest-1b": kops.CloudProviderAWS,
 	"cn-northwest-1c": kops.CloudProviderAWS,
+
+	"me-south-1a": kops.CloudProviderAWS,
+	"me-south-1b": kops.CloudProviderAWS,
+	"me-south-1c": kops.CloudProviderAWS,
 
 	"us-gov-east-1a": kops.CloudProviderAWS,
 	"us-gov-east-1b": kops.CloudProviderAWS,

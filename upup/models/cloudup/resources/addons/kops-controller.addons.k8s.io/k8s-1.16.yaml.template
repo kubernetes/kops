@@ -142,6 +142,15 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+- apiGroups:
+  - ""
+  resources:
   - configmaps
   resourceNames:
   - kops-controller-leader

@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -161,6 +162,9 @@ type CreateClusterOptions struct {
 	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
 	OpenstackLBOctavia bool
 
+	// GCEServiceAccount specifies the service account with which the GCE VM runs
+	GCEServiceAccount string
+
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
 
@@ -231,9 +235,9 @@ var (
 		--master-zones $ZONES \
 		--node-count 3 \
 		--yes
-		  
-	# Generate a cluster spec to apply later. 
-	# Run the following, then: kops create -f filename.yamlh 
+
+	# Generate a cluster spec to apply later.
+	# Run the following, then: kops create -f filename.yamlh
 	kops create cluster --name=kubernetes-cluster.example.com \
 		--state=s3://kops-state-1234 \
 		--zones=eu-west-1a \
@@ -258,6 +262,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    createClusterLong,
 		Example: createClusterExample,
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := context.TODO()
+
 			if cmd.Flag("associate-public-ip").Changed {
 				options.AssociatePublicIP = &associatePublicIP
 			}
@@ -277,7 +283,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 				}
 			}
 
-			err = RunCreateCluster(f, out, options)
+			err = RunCreateCluster(ctx, f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -298,7 +304,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
 
-	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 
 	cmd.Flags().StringVar(&options.ContainerRuntime, "container-runtime", options.ContainerRuntime, "Container runtime to use: containerd, docker")
@@ -373,6 +378,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
 	}
 
+	// GCE flags
+	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
+	cmd.Flags().StringVar(&options.GCEServiceAccount, "gce-service-account", options.GCEServiceAccount, "Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.")
+
 	if featureflag.VSphereCloudProvider.Enabled() {
 		// vSphere flags
 		cmd.Flags().StringVar(&options.VSphereServer, "vsphere-server", options.VSphereServer, "vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
@@ -399,7 +408,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
+func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)
 	targetName := c.Target
@@ -440,7 +449,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(clusterName)
+	cluster, err := clientset.GetCluster(ctx, clusterName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			cluster = nil
@@ -990,6 +999,17 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
+	if c.GCEServiceAccount != "" {
+		klog.Infof("VMs will be configured to use specified Service Account: %v", c.GCEServiceAccount)
+		cluster.Spec.GCEServiceAccount = c.GCEServiceAccount
+	} else {
+		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+			klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
+			klog.Warning("Use a pre-create Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
+			cluster.Spec.GCEServiceAccount = "default"
+		}
+	}
+
 	if c.KubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = c.KubernetesVersion
 	}
@@ -1033,7 +1053,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			MajorVersion: "v3",
 		}
 		// Validate to check if etcd clusters have an acceptable version
-		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("Calico")); len(errList) != 0 {
+		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("spec", "networking", "calico")); len(errList) != 0 {
 
 			// This is not a special version but simply of the 3 series
 			for _, etcd := range cluster.Spec.EtcdClusters {
@@ -1144,10 +1164,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			bastionGroup.Spec.Image = c.Image
 			instanceGroups = append(instanceGroups, bastionGroup)
 
-			cluster.Spec.Topology.Bastion = &api.BastionSpec{
-				BastionPublicName: "bastion." + clusterName,
+			if !dns.IsGossipHostname(clusterName) {
+				cluster.Spec.Topology.Bastion = &api.BastionSpec{
+					BastionPublicName: "bastion." + clusterName,
+				}
 			}
-
 		}
 
 	default:
@@ -1292,6 +1313,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			return err
 		}
 		fullGroup.AddInstanceGroupNodeLabel()
+		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+			fullGroup.Spec.NodeLabels["cloud.google.com/metadata-proxy-ready"] = "true"
+		}
 		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 	}
 
@@ -1327,7 +1351,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	err = registry.CreateClusterConfig(clientset, cluster, fullInstanceGroups)
+	err = registry.CreateClusterConfig(ctx, clientset, cluster, fullInstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
@@ -1396,7 +1420,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
 		//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
 
-		_, err := RunUpdateCluster(f, clusterName, out, updateClusterOptions)
+		_, err := RunUpdateCluster(ctx, f, clusterName, out, updateClusterOptions)
 		if err != nil {
 			return err
 		}

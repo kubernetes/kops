@@ -17,11 +17,14 @@ limitations under the License.
 package validation
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/url"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/pager"
 	"k8s.io/kops/upup/pkg/fi"
 
 	v1 "k8s.io/api/core/v1"
@@ -122,6 +125,8 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 }
 
 func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
+	ctx := context.TODO()
+
 	clusterName := v.cluster.Name
 
 	validation := &ValidationCluster{}
@@ -151,7 +156,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 		}
 	}
 
-	nodeList, err := v.k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := v.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error listing nodes: %v", err)
 	}
@@ -163,19 +168,19 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	}
 	validation.validateNodes(cloudGroups)
 
-	if err := validation.collectComponentFailures(v.k8sClient); err != nil {
+	if err := validation.collectComponentFailures(ctx, v.k8sClient); err != nil {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
-	if err = validation.collectPodFailures(v.k8sClient); err != nil {
+	if err := validation.collectPodFailures(ctx, v.k8sClient, nodeList.Items); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
 	return validation, nil
 }
 
-func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface) error {
-	componentList, err := client.CoreV1().ComponentStatuses().List(metav1.ListOptions{})
+func (v *ValidationCluster) collectComponentFailures(ctx context.Context, client kubernetes.Interface) error {
+	componentList, err := client.CoreV1().ComponentStatuses().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("error listing ComponentStatuses: %v", err)
 	}
@@ -194,23 +199,45 @@ func (v *ValidationCluster) collectComponentFailures(client kubernetes.Interface
 	return nil
 }
 
-func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) error {
-	pods, err := client.CoreV1().Pods("kube-system").List(metav1.ListOptions{})
-	if err != nil {
-		return fmt.Errorf("error listing Pods: %v", err)
+func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node) error {
+	masterWithoutManager := map[string]bool{}
+	nodeByAddress := map[string]string{}
+	for _, node := range nodes {
+		labels := node.GetLabels()
+		if labels != nil && labels["kubernetes.io/role"] == "master" {
+			masterWithoutManager[node.Name] = true
+		}
+		for _, nodeAddress := range node.Status.Addresses {
+			nodeByAddress[nodeAddress.Address] = node.Name
+		}
 	}
 
-	for _, pod := range pods.Items {
+	err := pager.New(pager.SimplePageFunc(func(opts metav1.ListOptions) (runtime.Object, error) {
+		return client.CoreV1().Pods(metav1.NamespaceAll).List(ctx, opts)
+	})).EachListItem(context.TODO(), metav1.ListOptions{}, func(obj runtime.Object) error {
+		pod := obj.(*v1.Pod)
+		priority := pod.Spec.PriorityClassName
+		if priority != "system-cluster-critical" && priority != "system-node-critical" {
+			return nil
+		}
 		if pod.Status.Phase == v1.PodSucceeded {
-			continue
+			return nil
 		}
 		if pod.Status.Phase == v1.PodPending {
 			v.addError(&ValidationError{
 				Kind:    "Pod",
-				Name:    "kube-system/" + pod.Name,
-				Message: fmt.Sprintf("kube-system pod %q is pending", pod.Name),
+				Name:    pod.Namespace + "/" + pod.Name,
+				Message: fmt.Sprintf("%s pod %q is pending", priority, pod.Name),
 			})
-			continue
+			return nil
+		}
+		if pod.Status.Phase == v1.PodUnknown {
+			v.addError(&ValidationError{
+				Kind:    "Pod",
+				Name:    pod.Namespace + "/" + pod.Name,
+				Message: fmt.Sprintf("%s pod %q is unknown phase", priority, pod.Name),
+			})
+			return nil
 		}
 		var notready []string
 		for _, container := range pod.Status.ContainerStatuses {
@@ -221,12 +248,30 @@ func (v *ValidationCluster) collectPodFailures(client kubernetes.Interface) erro
 		if len(notready) != 0 {
 			v.addError(&ValidationError{
 				Kind:    "Pod",
-				Name:    "kube-system/" + pod.Name,
-				Message: fmt.Sprintf("kube-system pod %q is not ready (%s)", pod.Name, strings.Join(notready, ",")),
+				Name:    pod.Namespace + "/" + pod.Name,
+				Message: fmt.Sprintf("%s pod %q is not ready (%s)", priority, pod.Name, strings.Join(notready, ",")),
 			})
 
 		}
+
+		labels := pod.GetLabels()
+		if pod.Namespace == "kube-system" && labels != nil && labels["k8s-app"] == "kube-controller-manager" {
+			delete(masterWithoutManager, nodeByAddress[pod.Status.HostIP])
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("error listing Pods: %v", err)
 	}
+
+	for node := range masterWithoutManager {
+		v.addError(&ValidationError{
+			Kind:    "Node",
+			Name:    node,
+			Message: fmt.Sprintf("master %q is missing kube-controller-manager pod", node),
+		})
+	}
+
 	return nil
 }
 
@@ -235,13 +280,20 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 		var allMembers []*cloudinstances.CloudInstanceGroupMember
 		allMembers = append(allMembers, cloudGroup.Ready...)
 		allMembers = append(allMembers, cloudGroup.NeedUpdate...)
-		if len(allMembers) < cloudGroup.MinSize {
+
+		numNodes := 0
+		for _, m := range allMembers {
+			if !m.Detached {
+				numNodes++
+			}
+		}
+		if numNodes < cloudGroup.MinSize {
 			v.addError(&ValidationError{
 				Kind: "InstanceGroup",
 				Name: cloudGroup.InstanceGroup.Name,
 				Message: fmt.Sprintf("InstanceGroup %q did not have enough nodes %d vs %d",
 					cloudGroup.InstanceGroup.Name,
-					len(allMembers),
+					numNodes,
 					cloudGroup.MinSize),
 			})
 		}

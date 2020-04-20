@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -39,7 +41,7 @@ var instancegroupsResource = schema.GroupVersionResource{Group: "kops.k8s.io", V
 var instancegroupsKind = schema.GroupVersionKind{Group: "kops.k8s.io", Version: "v1alpha2", Kind: "InstanceGroup"}
 
 // Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
-func (c *FakeInstanceGroups) Get(name string, options v1.GetOptions) (result *v1alpha2.InstanceGroup, err error) {
+func (c *FakeInstanceGroups) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha2.InstanceGroup, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(instancegroupsResource, c.ns, name), &v1alpha2.InstanceGroup{})
 
@@ -50,7 +52,7 @@ func (c *FakeInstanceGroups) Get(name string, options v1.GetOptions) (result *v1
 }
 
 // List takes label and field selectors, and returns the list of InstanceGroups that match those selectors.
-func (c *FakeInstanceGroups) List(opts v1.ListOptions) (result *v1alpha2.InstanceGroupList, err error) {
+func (c *FakeInstanceGroups) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha2.InstanceGroupList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(instancegroupsResource, instancegroupsKind, c.ns, opts), &v1alpha2.InstanceGroupList{})
 
@@ -72,14 +74,14 @@ func (c *FakeInstanceGroups) List(opts v1.ListOptions) (result *v1alpha2.Instanc
 }
 
 // Watch returns a watch.Interface that watches the requested instanceGroups.
-func (c *FakeInstanceGroups) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeInstanceGroups) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(instancegroupsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a instanceGroup and creates it.  Returns the server's representation of the instanceGroup, and an error, if there is any.
-func (c *FakeInstanceGroups) Create(instanceGroup *v1alpha2.InstanceGroup) (result *v1alpha2.InstanceGroup, err error) {
+func (c *FakeInstanceGroups) Create(ctx context.Context, instanceGroup *v1alpha2.InstanceGroup, opts v1.CreateOptions) (result *v1alpha2.InstanceGroup, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(instancegroupsResource, c.ns, instanceGroup), &v1alpha2.InstanceGroup{})
 
@@ -90,7 +92,7 @@ func (c *FakeInstanceGroups) Create(instanceGroup *v1alpha2.InstanceGroup) (resu
 }
 
 // Update takes the representation of a instanceGroup and updates it. Returns the server's representation of the instanceGroup, and an error, if there is any.
-func (c *FakeInstanceGroups) Update(instanceGroup *v1alpha2.InstanceGroup) (result *v1alpha2.InstanceGroup, err error) {
+func (c *FakeInstanceGroups) Update(ctx context.Context, instanceGroup *v1alpha2.InstanceGroup, opts v1.UpdateOptions) (result *v1alpha2.InstanceGroup, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(instancegroupsResource, c.ns, instanceGroup), &v1alpha2.InstanceGroup{})
 
@@ -101,7 +103,7 @@ func (c *FakeInstanceGroups) Update(instanceGroup *v1alpha2.InstanceGroup) (resu
 }
 
 // Delete takes name of the instanceGroup and deletes it. Returns an error if one occurs.
-func (c *FakeInstanceGroups) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeInstanceGroups) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(instancegroupsResource, c.ns, name), &v1alpha2.InstanceGroup{})
 
@@ -109,15 +111,15 @@ func (c *FakeInstanceGroups) Delete(name string, options *v1.DeleteOptions) erro
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeInstanceGroups) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(instancegroupsResource, c.ns, listOptions)
+func (c *FakeInstanceGroups) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(instancegroupsResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha2.InstanceGroupList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched instanceGroup.
-func (c *FakeInstanceGroups) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha2.InstanceGroup, err error) {
+func (c *FakeInstanceGroups) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha2.InstanceGroup, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(instancegroupsResource, c.ns, name, pt, data, subresources...), &v1alpha2.InstanceGroup{})
 

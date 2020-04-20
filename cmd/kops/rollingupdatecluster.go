@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -31,7 +32,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
@@ -47,11 +48,12 @@ var (
 	This command updates a kubernetes cluster to match the cloud and kops specifications.
 
 	To perform a rolling update, you need to update the cloud resources first with the command
-	` + pretty.Bash("kops update cluster") + `.
+	` + pretty.Bash("kops update cluster") + `. Nodes may be additionally marked for update by placing a
+	` + pretty.Bash("kops.k8s.io/needs-update") + ` annotation on them.
 
 	If rolling-update does not report that the cluster needs to be rolled, you can force the cluster to be
 	rolled with the force flag.  Rolling update drains and validates the cluster by default.  A cluster is
-	deemed validated when all required nodes are running and all pods in the kube-system namespace are operational.
+	deemed validated when all required nodes are running and all pods with a critical priority are operational.
 	When a node is deleted, rolling-update sleeps the interval for the node type, and then tries for the same period
 	of time for the cluster to be validated.  For instance, setting --master-interval=3m causes rolling-update
 	to wait for 3 minutes after a master is rolled, and another 3 minutes for the cluster to stabilize and pass
@@ -120,6 +122,9 @@ type RollingUpdateOptions struct {
 	// ValidationTimeout is the timeout for validation to succeed after the drain and pause
 	ValidationTimeout time.Duration
 
+	// ValidateCount is the amount of time that a cluster needs to be validated after single node update
+	ValidateCount int32
+
 	// MasterInterval is the minimum time to wait after stopping a master node.  This does not include drain and validate time.
 	MasterInterval time.Duration
 
@@ -157,6 +162,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 
 	o.PostDrainDelay = 5 * time.Second
 	o.ValidationTimeout = 15 * time.Minute
+	o.ValidateCount = 2
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -176,6 +182,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
 
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
+	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Amount of times that a cluster needs to be validated after single node update")
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
@@ -188,6 +195,8 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
+		ctx := context.TODO()
+
 		err := rootCommand.ProcessArgs(args)
 		if err != nil {
 			exitWithError(err)
@@ -202,7 +211,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 		options.ClusterName = clusterName
 
-		err = RunRollingUpdateCluster(f, os.Stdout, &options)
+		err = RunRollingUpdateCluster(ctx, f, os.Stdout, &options)
 		if err != nil {
 			exitWithError(err)
 			return
@@ -213,14 +222,14 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
+func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
 
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := GetCluster(f, options.ClusterName)
+	cluster, err := GetCluster(ctx, f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -242,7 +251,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
 		}
 
-		nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
 			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the k8s API\n\n")
@@ -254,12 +263,12 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		}
 	}
 
-	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 
-	var instanceGroups []*api.InstanceGroup
+	var instanceGroups []*kopsapi.InstanceGroup
 	for i := range list.Items {
 		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
@@ -267,10 +276,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	warnUnmatched := true
 
 	if len(options.InstanceGroups) != 0 {
-		var filtered []*api.InstanceGroup
+		var filtered []*kopsapi.InstanceGroup
 
 		for _, instanceGroupName := range options.InstanceGroups {
-			var found *api.InstanceGroup
+			var found *kopsapi.InstanceGroup
 			for _, ig := range instanceGroups {
 				if ig.ObjectMeta.Name == instanceGroupName {
 					found = ig
@@ -291,11 +300,11 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	if len(options.InstanceGroupRoles) != 0 {
-		var filtered []*api.InstanceGroup
+		var filtered []*kopsapi.InstanceGroup
 
 		for _, ig := range instanceGroups {
 			for _, role := range options.InstanceGroupRoles {
-				if ig.Spec.Role == api.InstanceGroupRole(strings.Title(strings.ToLower(role))) {
+				if ig.Spec.Role == kopsapi.InstanceGroupRole(strings.Title(strings.ToLower(role))) {
 					filtered = append(filtered, ig)
 					continue
 				}
@@ -314,6 +323,31 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, warnUnmatched, nodes)
+	if err != nil {
+		return err
+	}
+
+	d := &instancegroups.RollingUpdateCluster{
+		MasterInterval:    options.MasterInterval,
+		NodeInterval:      options.NodeInterval,
+		BastionInterval:   options.BastionInterval,
+		Interactive:       options.Interactive,
+		Force:             options.Force,
+		Cloud:             cloud,
+		K8sClient:         k8sClient,
+		FailOnDrainError:  options.FailOnDrainError,
+		FailOnValidate:    options.FailOnValidate,
+		CloudOnly:         options.CloudOnly,
+		ClusterName:       options.ClusterName,
+		PostDrainDelay:    options.PostDrainDelay,
+		ValidationTimeout: options.ValidationTimeout,
+		ValidateCount:     int(options.ValidateCount),
+		// TODO should we expose this to the UI?
+		ValidateTickDuration:    30 * time.Second,
+		ValidateSuccessDuration: 10 * time.Second,
+	}
+
+	err = d.AdjustNeedUpdate(groups, cluster, list)
 	if err != nil {
 		return err
 	}
@@ -391,24 +425,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}
 	}
-	d := &instancegroups.RollingUpdateCluster{
-		MasterInterval:    options.MasterInterval,
-		NodeInterval:      options.NodeInterval,
-		BastionInterval:   options.BastionInterval,
-		Interactive:       options.Interactive,
-		Force:             options.Force,
-		Cloud:             cloud,
-		K8sClient:         k8sClient,
-		ClusterValidator:  clusterValidator,
-		FailOnDrainError:  options.FailOnDrainError,
-		FailOnValidate:    options.FailOnValidate,
-		CloudOnly:         options.CloudOnly,
-		ClusterName:       options.ClusterName,
-		PostDrainDelay:    options.PostDrainDelay,
-		ValidationTimeout: options.ValidationTimeout,
-		// TODO should we expose this to the UI?
-		ValidateTickDuration:    30 * time.Second,
-		ValidateSuccessDuration: 10 * time.Second,
-	}
-	return d.RollingUpdate(groups, cluster, list)
+	d.ClusterValidator = clusterValidator
+
+	return d.RollingUpdate(ctx, groups, cluster, list)
 }

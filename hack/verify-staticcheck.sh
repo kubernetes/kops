@@ -18,26 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(git rev-parse --show-toplevel)
-
-kube::util::array_contains() {
-  local search="$1"
-  local element
-  shift
-  for element; do
-    if [[ "${element}" == "${search}" ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
-function kube::util::read-array {
-  local i=0
-  unset -v "$1"
-  while IFS= read -r "$1[i++]"; do :; done
-  eval "[[ \${$1[--i]} ]]" || unset "$1[i]" # ensures last element isn't empty
-}
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 FOCUS="${1:-}"
 
@@ -65,7 +46,7 @@ IGNORE=(
 export IFS='|'; ignore_pattern="^(${IGNORE[*]})\$"; unset IFS
 
 # Ensure that we find the binaries we build before anything else.
-export GOBIN="${KUBE_ROOT}/_output/bin"
+export GOBIN="${KOPS_ROOT}/_output/bin"
 PATH="${GOBIN}:${PATH}"
 
 # Install staticcheck from vendor
@@ -73,10 +54,10 @@ echo 'installing staticcheck from vendor'
 
 go install k8s.io/kops/vendor/honnef.co/go/tools/cmd/staticcheck
 
-cd "${KUBE_ROOT}"
+cd "${KOPS_ROOT}"
 
 # Check that the file is in alphabetical order
-failure_file="${KUBE_ROOT}/hack/.staticcheck_failures"
+failure_file="${KOPS_ROOT}/hack/.staticcheck_failures"
 if ! diff -u "${failure_file}" <(LC_ALL=C sort "${failure_file}"); then
   {
     echo

@@ -412,37 +412,37 @@ func (t *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 }
 
 type terraformLaunchConfiguration struct {
-	NamePrefix               *string                 `json:"name_prefix,omitempty"`
-	ImageID                  *string                 `json:"image_id,omitempty"`
-	InstanceType             *string                 `json:"instance_type,omitempty"`
-	KeyName                  *terraform.Literal      `json:"key_name,omitempty"`
-	IAMInstanceProfile       *terraform.Literal      `json:"iam_instance_profile,omitempty"`
-	SecurityGroups           []*terraform.Literal    `json:"security_groups,omitempty"`
-	AssociatePublicIpAddress *bool                   `json:"associate_public_ip_address,omitempty"`
-	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
-	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
-	EBSOptimized             *bool                   `json:"ebs_optimized,omitempty"`
-	EBSBlockDevice           []*terraformBlockDevice `json:"ebs_block_device,omitempty"`
-	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
-	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty"`
-	SpotPrice                *string                 `json:"spot_price,omitempty"`
-	PlacementTenancy         *string                 `json:"placement_tenancy,omitempty"`
-	InstanceMonitoring       *bool                   `json:"enable_monitoring,omitempty"`
+	NamePrefix               *string                 `json:"name_prefix,omitempty" cty:"name_prefix"`
+	ImageID                  *string                 `json:"image_id,omitempty" cty:"image_id"`
+	InstanceType             *string                 `json:"instance_type,omitempty" cty:"instance_type"`
+	KeyName                  *terraform.Literal      `json:"key_name,omitempty" cty:"key_name"`
+	IAMInstanceProfile       *terraform.Literal      `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	SecurityGroups           []*terraform.Literal    `json:"security_groups,omitempty" cty:"security_groups"`
+	AssociatePublicIpAddress *bool                   `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	UserData                 *terraform.Literal      `json:"user_data,omitempty" cty:"user_data"`
+	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty" cty:"root_block_device"`
+	EBSOptimized             *bool                   `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	EBSBlockDevice           []*terraformBlockDevice `json:"ebs_block_device,omitempty" cty:"ebs_block_device"`
+	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty" cty:"ephemeral_block_device"`
+	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty" cty:"lifecycle"`
+	SpotPrice                *string                 `json:"spot_price,omitempty" cty:"spot_price"`
+	PlacementTenancy         *string                 `json:"placement_tenancy,omitempty" cty:"placement_tenancy"`
+	InstanceMonitoring       *bool                   `json:"enable_monitoring,omitempty" cty:"enable_monitoring"`
 }
 
 type terraformBlockDevice struct {
 	// For ephemeral devices
-	DeviceName  *string `json:"device_name,omitempty"`
-	VirtualName *string `json:"virtual_name,omitempty"`
+	DeviceName  *string `json:"device_name,omitempty" cty:"device_name"`
+	VirtualName *string `json:"virtual_name,omitempty" cty:"virtual_name"`
 
 	// For root
-	VolumeType *string `json:"volume_type,omitempty"`
-	VolumeSize *int64  `json:"volume_size,omitempty"`
-	Iops       *int64  `json:"iops,omitempty"`
+	VolumeType *string `json:"volume_type,omitempty" cty:"volume_type"`
+	VolumeSize *int64  `json:"volume_size,omitempty" cty:"volume_size"`
+	Iops       *int64  `json:"iops,omitempty" cty:"iops"`
 	// Encryption
-	Encrypted *bool `json:"encrypted,omitempty"`
+	Encrypted *bool `json:"encrypted,omitempty" cty:"encrypted"`
 	// Termination
-	DeleteOnTermination *bool `json:"delete_on_termination,omitempty"`
+	DeleteOnTermination *bool `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
 }
 
 // RenderTerraform is responsible for rendering the terraform json
@@ -538,9 +538,15 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	}
 
 	if e.UserData != nil {
-		tf.UserData, err = t.AddFile("aws_launch_configuration", *e.Name, "user_data", e.UserData)
+		userData, err := fi.ResourceAsString(e.UserData)
 		if err != nil {
 			return err
+		}
+		if userData != "" {
+			tf.UserData, err = t.AddFile("aws_launch_configuration", *e.Name, "user_data", e.UserData)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if e.IAMInstanceProfile != nil {

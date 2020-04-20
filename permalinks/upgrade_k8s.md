@@ -6,7 +6,7 @@ Kops will drop support for Kubernetes versions as follows:
 | kops version | Drops support for Kubernetes version |
 |--------------|--------------------------------------|
 | 1.18         | 1.8 and below                        |
-| 1.19         | 1.9                                  |
+| 1.19         | 1.9 and 1.10                         |
 
 
 You are running a version of kubernetes that we recommend upgrading.

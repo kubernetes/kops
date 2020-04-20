@@ -7,7 +7,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0-alpha.0'
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 827a984420c7b24204f7713717b8ebc2a6f63db3
+    manifestHash: 9c35881670887d269f0eac0fa1f0c20509e6a8bb
     name: kops-controller.addons.k8s.io
     selector:
       k8s-addon: kops-controller.addons.k8s.io
@@ -21,7 +21,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: <1.12.0
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: c74ca65f461c764fc9682c6d9ec171b241bec335
+    manifestHash: 555f952a8b955ce7a5dd0bcd06a5be9e72bd2895
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -29,7 +29,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 1af655a2947a56b55f67bff73a06cfe9e7b12c35
+    manifestHash: 15ade04df128488a534141bd5b8593d078f4953f
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -73,7 +73,7 @@ spec:
   - id: v1.15.0
     kubernetesVersion: '>=1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 23459f7be52d7c818dc060a8bcf5e3565bd87a7b
+    manifestHash: 5e829e8981470696bef2ed5e96839ea83cb36d24
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
@@ -89,16 +89,16 @@ spec:
   - id: k8s-1.7
     kubernetesVersion: <1.12.0
     manifest: networking.cilium.io/k8s-1.7.yaml
-    manifestHash: 6928e95ec4b8359075e3dfb069f74e290e2e6eb2
+    manifestHash: e6670d455bcd03c5b85ccb6ff6bbe6e068aa7674
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.6.4-kops.3
+    version: 1.7.1-kops.2
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.cilium.io/k8s-1.12.yaml
-    manifestHash: 84295d293c8a461f7d510721c48b969cd1d99e54
+    manifestHash: b9cc0e3b5e63d6aa283e2d1111a150680745abd2
     name: networking.cilium.io
     selector:
       role.kubernetes.io/networking: "1"
-    version: 1.6.4-kops.3
+    version: 1.7.1-kops.2

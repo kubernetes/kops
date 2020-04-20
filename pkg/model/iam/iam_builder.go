@@ -192,6 +192,10 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	}
 
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
+		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+	}
+
 	return p, nil
 }
 
@@ -374,9 +378,11 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						Resource: stringorslice.Of(resources...),
 					})
 
-					if b.Cluster.Spec.Networking != nil {
+					networkingSpec := b.Cluster.Spec.Networking
+
+					if networkingSpec != nil {
 						// @check if kuberoute is enabled and permit access to the private key
-						if b.Cluster.Spec.Networking.Kuberouter != nil {
+						if networkingSpec.Kuberouter != nil {
 							p.Statement = append(p.Statement, &Statement{
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
@@ -387,12 +393,23 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						}
 
 						// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
-						if b.Cluster.Spec.Networking.Calico != nil {
+						if networkingSpec.Calico != nil {
 							p.Statement = append(p.Statement, &Statement{
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
 								Resource: stringorslice.Of(
 									strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/calico-client/*"}, ""),
+								),
+							})
+						}
+
+						// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
+						if networkingSpec.Cilium != nil && networkingSpec.Cilium.EtcdManaged {
+							p.Statement = append(p.Statement, &Statement{
+								Effect: StatementEffectAllow,
+								Action: stringorslice.Slice([]string{"s3:Get*"}),
+								Resource: stringorslice.Of(
+									strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/etcd-clients-ca-cilium/*"}, ""),
 								),
 							})
 						}
@@ -843,6 +860,35 @@ func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, lega
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
+				"ec2:AssignPrivateIpAddresses",
+				"ec2:AttachNetworkInterface",
+				"ec2:CreateNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:DescribeInstanceTypes",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DescribeSubnets",
+				"ec2:DescribeVpcPeeringConnections",
+				"ec2:DescribeVpcs",
+				"ec2:DetachNetworkInterface",
+				"ec2:ModifyNetworkInterfaceAttribute",
+				"ec2:UnassignPrivateIpAddresses",
+			}),
+			Resource: resource,
+		},
+	)
+}
+
+func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
+	if legacyIAM {
+		// Legacy IAM provides ec2:*, so no additional permissions required
+		return
+	}
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
 				"ec2:DescribeSubnets",
 				"ec2:AttachNetworkInterface",
 				"ec2:AssignPrivateIpAddresses",
@@ -871,16 +917,17 @@ func addAmazonVPCCNIPermissions(p *Policy, resource stringorslice.StringOrSlice,
 		&Statement{
 			Effect: StatementEffectAllow,
 			Action: stringorslice.Slice([]string{
-				"ec2:CreateNetworkInterface",
-				"ec2:AttachNetworkInterface",
-				"ec2:DeleteNetworkInterface",
-				"ec2:DetachNetworkInterface",
-				"ec2:DescribeNetworkInterfaces",
-				"ec2:DescribeInstances",
-				"ec2:ModifyNetworkInterfaceAttribute",
 				"ec2:AssignPrivateIpAddresses",
+				"ec2:AttachNetworkInterface",
+				"ec2:CreateNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:DescribeInstances",
+				"ec2:DescribeInstanceTypes",
+				"ec2:DescribeTags",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DetachNetworkInterface",
+				"ec2:ModifyNetworkInterfaceAttribute",
 				"ec2:UnassignPrivateIpAddresses",
-				"tag:TagResources",
 			}),
 			Resource: resource,
 		},

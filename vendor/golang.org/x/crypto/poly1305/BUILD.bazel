@@ -9,8 +9,6 @@ go_library(
         "poly1305.go",
         "sum_amd64.go",
         "sum_amd64.s",
-        "sum_arm.go",
-        "sum_arm.s",
         "sum_generic.go",
         "sum_noasm.go",
         "sum_ppc64le.go",

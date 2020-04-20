@@ -1,0 +1,39 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: minimal.example.com
+spec:
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/minimal.example.com
+  docker:
+    version: 18.06.3
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: master-us-test-1a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: master-us-test-1a
+    name: events
+  kubernetesVersion: v1.13.6
+  masterInternalName: api.internal.minimal.example.com
+  masterPublicName: api.minimal.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - 0.0.0.0/0
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a

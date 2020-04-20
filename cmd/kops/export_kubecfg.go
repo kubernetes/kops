@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -24,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -60,7 +61,8 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    exportKubecfgLong,
 		Example: exportKubecfgExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunExportKubecfg(f, out, options, args)
+			ctx := context.TODO()
+			err := RunExportKubecfg(ctx, f, out, options, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -73,18 +75,18 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
+func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	var clusterList []*api.Cluster
+	var clusterList []*kopsapi.Cluster
 	if options.all {
 		if len(args) != 0 {
 			return fmt.Errorf("Cannot use both --all flag and positional arguments")
 		}
-		list, err := clientset.ListClusters(metav1.ListOptions{})
+		list, err := clientset.ListClusters(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -96,7 +98,7 @@ func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOpti
 		if err != nil {
 			return err
 		}
-		cluster, err := rootCommand.Cluster()
+		cluster, err := rootCommand.Cluster(ctx)
 		if err != nil {
 			return err
 		}

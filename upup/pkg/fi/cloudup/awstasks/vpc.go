@@ -194,10 +194,10 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 }
 
 type terraformVPC struct {
-	CIDR               *string           `json:"cidr_block,omitempty"`
-	EnableDNSHostnames *bool             `json:"enable_dns_hostnames,omitempty"`
-	EnableDNSSupport   *bool             `json:"enable_dns_support,omitempty"`
-	Tags               map[string]string `json:"tags,omitempty"`
+	CIDR               *string           `json:"cidr_block,omitempty" cty:"cidr_block"`
+	EnableDNSHostnames *bool             `json:"enable_dns_hostnames,omitempty" cty:"enable_dns_hostnames"`
+	EnableDNSSupport   *bool             `json:"enable_dns_support,omitempty" cty:"enable_dns_support"`
+	Tags               map[string]string `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {

@@ -1,12 +1,15 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
     srcs = [
+        "hcl2.go",
         "hcl_printer.go",
         "lifecycle.go",
         "literal.go",
         "target.go",
+        "target_0_11.go",
+        "target_0_12.go",
     ],
     importpath = "k8s.io/kops/upup/pkg/fi/cloudup/terraform",
     visibility = ["//visibility:public"],
@@ -17,6 +20,26 @@ go_library(
         "//vendor/github.com/hashicorp/hcl/hcl/ast:go_default_library",
         "//vendor/github.com/hashicorp/hcl/hcl/printer:go_default_library",
         "//vendor/github.com/hashicorp/hcl/json/parser:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/v2:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/v2/hclsyntax:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/v2/hclwrite:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty/gocty:go_default_library",
         "//vendor/k8s.io/klog:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "hcl2_test.go",
+        "target_0_12_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/diff:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/v2/hclwrite:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty:go_default_library",
+        "//vendor/github.com/zclconf/go-cty/cty/gocty:go_default_library",
     ],
 )

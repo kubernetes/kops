@@ -46,6 +46,7 @@ container_image(
     files = [
         "//cmd/kops-controller",
     ],
+    stamp = True,
 )
 
 container_push(
@@ -62,4 +63,18 @@ container_bundle(
     images = {
         "{STABLE_DOCKER_IMAGE_PREFIX}kops-controller:{STABLE_KOPS_CONTROLLER_TAG}": "image",
     },
+)
+
+load("//tools:gzip.bzl", "gzip")
+
+gzip(
+    name = "image-bundle.tar.gz",
+    src = "image-bundle.tar",
+)
+
+load("//tools:hashes.bzl", "hashes")
+
+hashes(
+    name = "image-bundle.tar.gz.hashes",
+    src = "image-bundle.tar.gz",
 )

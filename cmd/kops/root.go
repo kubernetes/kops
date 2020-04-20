@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	goflag "flag"
 	"fmt"
 	"io"
@@ -116,7 +117,8 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	goflag.CommandLine.VisitAll(func(goflag *goflag.Flag) {
 		switch goflag.Name {
 		case "cloud-provider-gce-lb-src-cidrs":
-			// Skip; this is dragged in by the google cloudprovider dependency
+		case "cloud-provider-gce-l7lb-src-cidrs":
+			// Skip; these is dragged in by the google cloudprovider dependency
 
 		default:
 			cmd.PersistentFlags().AddGoFlag(goflag)
@@ -274,18 +276,18 @@ func (c *RootCmd) Clientset() (simple.Clientset, error) {
 	return c.factory.Clientset()
 }
 
-func (c *RootCmd) Cluster() (*kopsapi.Cluster, error) {
+func (c *RootCmd) Cluster(ctx context.Context) (*kopsapi.Cluster, error) {
 	clusterName := c.ClusterName()
 	if clusterName == "" {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	return GetCluster(c.factory, clusterName)
+	return GetCluster(ctx, c.factory, clusterName)
 }
 
-func GetCluster(factory Factory, clusterName string) (*kopsapi.Cluster, error) {
+func GetCluster(ctx context.Context, factory Factory, clusterName string) (*kopsapi.Cluster, error) {
 	if clusterName == "" {
-		return nil, field.Required(field.NewPath("ClusterName"), "Cluster name is required")
+		return nil, field.Required(field.NewPath("clusterName"), "Cluster name is required")
 	}
 
 	clientset, err := factory.Clientset()
@@ -293,7 +295,7 @@ func GetCluster(factory Factory, clusterName string) (*kopsapi.Cluster, error) {
 		return nil, err
 	}
 
-	cluster, err := clientset.GetCluster(clusterName)
+	cluster, err := clientset.GetCluster(ctx, clusterName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading cluster configuration: %v", err)
 	}

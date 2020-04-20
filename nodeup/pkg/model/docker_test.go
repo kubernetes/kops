@@ -168,8 +168,8 @@ func TestDockerBuilder_Simple(t *testing.T) {
 	runDockerBuilderTest(t, "simple")
 }
 
-func TestDockerBuilder_1_12_1(t *testing.T) {
-	runDockerBuilderTest(t, "docker_1.12.1")
+func TestDockerBuilder_18_06_3(t *testing.T) {
+	runDockerBuilderTest(t, "docker_18.06.3")
 }
 
 func TestDockerBuilder_LogFlags(t *testing.T) {
@@ -178,6 +178,10 @@ func TestDockerBuilder_LogFlags(t *testing.T) {
 
 func TestDockerBuilder_SkipInstall(t *testing.T) {
 	runDockerBuilderTest(t, "skipinstall")
+}
+
+func TestDockerBuilder_HealthCheck(t *testing.T) {
+	runDockerBuilderTest(t, "healthcheck")
 }
 
 func TestDockerBuilder_BuildFlags(t *testing.T) {

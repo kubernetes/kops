@@ -198,7 +198,7 @@ func Update(client *gophercloud.ServiceClient, id string, opts UpdateOptsBuilder
 	return
 }
 
-// IDFromName is a convienience function that returns a server's ID given its name.
+// IDFromName is a convienience function that returns a volume's ID given its name.
 func IDFromName(client *gophercloud.ServiceClient, name string) (string, error) {
 	count := 0
 	id := ""

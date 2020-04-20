@@ -7,6 +7,21 @@ metadata:
     role.kubernetes.io/networking: "1"
 data:
 {{ with .Networking.Cilium }}
+
+{{- if .EtcdManaged }}
+  kvstore: etcd
+  kvstore-opt: '{"etcd.config": "/var/lib/etcd-config/etcd.config"}'
+
+  etcd-config: |-
+    ---
+    endpoints:
+      - https://{{ $.MasterInternalName }}:4003
+
+    trusted-ca-file: '/var/lib/etcd-secrets/etcd-ca.crt'
+    key-file: '/var/lib/etcd-secrets/etcd-client.key'
+    cert-file: '/var/lib/etcd-secrets/etcd-client.crt'
+{{ end }}
+
   # Identity allocation mode selects how identities are shared between cilium
   # nodes by setting how they are stored. The options are "crd" or "kvstore".
   # - "crd" stores identities in kubernetes as CRDs (custom resource definition).
@@ -83,6 +98,9 @@ data:
   # Name of the cluster. Only relevant when building a mesh of clusters.
   cluster-name: "{{- if eq .ClusterName "" -}}default{{- else -}}{{ .ClusterName}}{{- end -}}"
 
+  # DNS response code for rejecting DNS requests,
+  # available options are "nameError" and "refused"
+  tofqdns-dns-reject-response-code: "{{- if eq .ToFqdnsDNSRejectResponseCode  "" -}}refused{{- else -}}{{ .ToFqdnsDNSRejectResponseCode }}{{- end -}}"
   # This option is disabled by default starting from version 1.4.x in favor
   # of a more powerful DNS proxy-based implementation, see [0] for details.
   # Enable this option if you want to use FQDN policies but do not want to use
@@ -121,6 +139,16 @@ data:
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
   enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
+  enable-remote-node-identity: "{{- if .EnableRemoteNodeIdentity -}}true{{- else -}}false{{- end -}}"
+  {{ with .Ipam }}
+  ipam: {{ . }}
+  {{ if eq . "eni" }}
+  enable-endpoint-routes: "true"
+  auto-create-cilium-node-resource: "true"
+  blacklist-conflicting-routes: "false"
+  {{ end }}
+  {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1
@@ -150,6 +178,14 @@ rules:
   - networking.k8s.io
   resources:
   - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
   verbs:
   - get
   - list
@@ -207,6 +243,8 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
+  - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints
   - ciliumendpoints/status
   - ciliumnodes
@@ -235,6 +273,14 @@ rules:
   - watch
   - delete
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - ""
   resources:
   # to automatically read from k8s and import the node's pod CIDR to cilium's
@@ -255,6 +301,8 @@ rules:
   resources:
   - ciliumnetworkpolicies
   - ciliumnetworkpolicies/status
+  - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints
   - ciliumendpoints/status
   - ciliumnodes
@@ -316,7 +364,6 @@ spec:
         # gets priority scheduling.
         # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
         scheduler.alpha.kubernetes.io/critical-pod: ""
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated","operator":"Equal","value":"master","effect":"NoSchedule"}]'
       labels:
         k8s-app: cilium
         kubernetes.io/cluster-service: "true"
@@ -363,12 +410,16 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{.MasterInternalName}}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
         {{ with .Networking.Cilium.EnablePolicy }}
         - name: CILIUM_ENABLE_POLICY
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.1" }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -421,12 +472,21 @@ spec:
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+          mountPropagation: HostToContainer
         - mountPath: /var/run/cilium
           name: cilium-run
         - mountPath: /host/opt/cni/bin
           name: cni-path
         - mountPath: /host/etc/cni/net.d
           name: etc-cni-netd
+{{ if .EtcdManaged }}
+        - mountPath: /var/lib/etcd-config
+          name: etcd-config-path
+          readOnly: true
+        - mountPath: /var/lib/etcd-secrets
+          name: etcd-secrets
+          readOnly: true
+{{ end }}
         - mountPath: /var/lib/cilium/clustermesh
           name: clustermesh-secrets
           readOnly: true
@@ -462,7 +522,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.1" }}"
 ## end of `with .Networking.Cilium`
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -477,7 +537,7 @@ spec:
           name: bpf-maps
         - mountPath: /var/run/cilium
           name: cilium-run
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       restartPolicy: Always
       serviceAccount: cilium
       serviceAccountName: cilium
@@ -515,6 +575,21 @@ spec:
           type: FileOrCreate
         name: xtables-lock
         # To read the clustermesh configuration
+{{- if .Networking.Cilium.EtcdManaged }}
+        # To read the etcd config stored in config maps
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: etcd-config
+            path: etcd.config
+          name: cilium-config
+        name: etcd-config-path
+        # To read the Cilium etcd secrets in case the user might want to use TLS
+      - name: etcd-secrets
+        hostPath:
+          path: /etc/kubernetes/pki/cilium
+          type: Directory
+{{- end }}
       - name: clustermesh-secrets
         secret:
           defaultMode: 420
@@ -563,6 +638,7 @@ spec:
         {{ if .EnablePrometheusMetrics }}
         - --enable-metrics
         {{ end }}
+{{ end }}
         command:
         - cilium-operator
         env:
@@ -642,7 +718,12 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
-        image: "docker.io/cilium/operator:{{ .Version }}"
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{.MasterInternalName}}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+{{ with .Networking.Cilium }}
+        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.1{{- else -}}{{ .Version }}{{- end -}}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
@@ -652,16 +733,59 @@ spec:
           name: prometheus
           protocol: TCP
         {{ end }}
-{{ end }}
         livenessProbe:
           httpGet:
+            host: "127.0.0.1"
             path: /healthz
             port: 9234
             scheme: HTTP
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 3
+{{- if .EtcdManaged }}
+        volumeMounts:
+        - mountPath: /var/lib/etcd-config
+          name: etcd-config-path
+          readOnly: true
+        - mountPath: /var/lib/etcd-secrets
+          name: etcd-secrets
+          readOnly: true
+{{- end }}
       hostNetwork: true
+      priorityClassName: system-cluster-critical
       restartPolicy: Always
       serviceAccount: cilium-operator
       serviceAccountName: cilium-operator
+{{- if .EtcdManaged }}
+      volumes:
+      # To read the etcd config stored in config maps
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: etcd-config
+            path: etcd.config
+          name: cilium-config
+        name: etcd-config-path
+        # To read the k8s etcd secrets in case the user might want to use TLS
+      - name: etcd-secrets
+        hostPath:
+          path: /etc/kubernetes/pki/cilium
+          type: Directory
+{{- end }}
+
+      {{ if eq .Ipam "eni" }}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+      {{ end }}
+{{ end }}

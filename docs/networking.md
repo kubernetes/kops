@@ -186,10 +186,10 @@ pools of nodes with L2 connectivity are connected via a router.
 Note that Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh.
 Each node automatically sets up a BGP peering with every other node within the same L2 network.
 This full node-to-node mesh per L2 network has its scaling challenges for larger scale deployments.
-BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. BGP route reflectors are recommended once the number of nodes goes above ~50-100.
+BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. [BGP route reflectors are recommended once the number of nodes goes above ~50-100.](https://docs.projectcalico.org/networking/bgp#topologies-for-public-cloud)
 The setup of BGP route reflectors is currently out of the scope of kops.
 
-Read more here: [BGP route reflectors](https://docs.projectcalico.org/latest/networking/routereflector)
+Read more here: [BGP route reflectors](https://docs.projectcalico.org/reference/architecture/overview#bgp-route-reflector-bird)
 
 To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
 
@@ -217,6 +217,20 @@ In the case of AWS, EC2 instances have source/destination checks enabled by defa
 When you enable cross-subnet mode in kops, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
 will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
 Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
+
+### Configuring Calico MTU
+
+The Calico MTU is configurable by editing the cluster and setting `mtu` option in the calico configuration.
+AWS VPCs support jumbo frames, so on cluster creation kops sets the calico MTU to 8912 bytes (9001 minus overhead).
+
+For more details on Calico MTU please see the [Calico Docs](https://docs.projectcalico.org/networking/mtu#determine-mtu-size).
+
+```
+spec:
+  networking:
+    calico:
+      mtu: 8912
+```
 
 #### More information about Calico
 
@@ -417,9 +431,21 @@ $ kops create cluster \
 
 In case of any issues the directory `/var/log/aws-routed-eni` contains the log files of the CNI plugin. This directory is located in all the nodes in the cluster.
 
+[Configuration options for the Amazon VPC CNI plugin](https://github.com/aws/amazon-vpc-cni-k8s/tree/master#cni-configuration-variables) can be set through env vars defined in the cluster spec:
+
+```yaml
+  networking:
+    amazonvpc:
+      env:
+      - name: WARM_IP_TARGET
+        value: "10"
+      - name: AWS_VPC_K8S_CNI_LOGLEVEL
+        value: debug
+```
+
 ### Cilium Example for CNI and Network Policy
 
-Cilium is open source software for transparently securing the network connectivity between application services deployed using Linux container management platforms like Docker and Kubernetes.
+The Cilium CNI uses a Linux kernel technology called BPF, which enables the dynamic insertion of powerful security visibility and control logic within the Linux kernel.
 
 #### Installing Cilium on a new Cluster
 
@@ -459,19 +485,71 @@ $ kops create cluster \
 
 You can adjust Cilium agent configuration with most options that are available in [cilium-agent command reference](http://cilium.readthedocs.io/en/stable/cmdref/cilium-agent/).
 
-E.g enabling logstash integration would require you to change above block to
-
-```
-  networking:
-    cilium:
-      logstash: true
-```
-
-The following command will create your cluster with desired Cilium configuration
+The following command will launch your cluster with desired Cilium configuration
 
 ```console
 $ kops update cluster myclustername.mydns.io --yes
 ```
+
+##### Using etcd for agent state sync
+
+By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kops 1.18, kops can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for this must be enabled.
+
+Add the following to `spec.etcdClusters`:
+Make sure `instanceGroup` match the other etcd clusters.
+
+```
+  - etcdMembers:
+    - instanceGroup: master-az-1a
+      name: a
+    - instanceGroup: master-az-1b
+      name: b
+    - instanceGroup: master-az-1c
+      name: c
+    name: cilium
+```
+
+Then enable etcd as kvstore:
+
+```
+  networking:
+    cilium:
+      etcdManaged: true
+```
+
+##### Enabling BPF NodePort
+
+As of Kops 1.18 you can safely enable Cilium NodePort.
+
+In this mode, the cluster is fully functional without kube-proxy, with Cilium replacing kube-proxy's NodePort implementation using BPF.
+Read more about this in the [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/nodeport/)
+
+Be aware that you need to use an AMI with at least Linux 4.19.57 for this feature to work.
+
+```
+  kubeProxy:
+    enabled: false
+  networking:
+    cilium:
+      enableNodePort: true
+```
+
+##### Enabling Cilium ENI IPAM
+
+As of Kops 1.18, you can have Cilium provision AWS managed adresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+
+When using ENI IPAM you need to disable masquerading in Cilium as well.
+
+```
+  networking:
+    cilium:
+      disableMasquerade: true
+      ipam: eni
+```
+
+Note that since Cilium Operator is the entity that interacts with the EC2 API to provision and attaching ENIs, we force it to run on the master nodes when this IPAM is used.
+
+Also note that this feature has only been tested on the default kops AMIs.
 
 #### Getting help with Cilium
 
@@ -545,7 +623,7 @@ You can specify which subnets to use for allocating Pod IPs by specifying
   networking:
     lyftvpc:
       subnetTags:
-        kubernetes_kubelet: true
+        KubernetesCluster: myclustername.mydns.io
 ```
 
 In this example, new interfaces will be attached to subnets tagged with `kubernetes_kubelet = true`.
@@ -563,6 +641,7 @@ In this example, new interfaces will be attached to subnets tagged with `kuberne
       "ec2:DetachNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DescribeInstances",
+      "ec2:DescribeInstanceTypes",
       "ec2:ModifyNetworkInterfaceAttribute",
       "ec2:AssignPrivateIpAddresses",
       "ec2:UnassignPrivateIpAddresses",

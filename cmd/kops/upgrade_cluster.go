@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -25,8 +26,9 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/upup/pkg/fi"
@@ -49,7 +51,9 @@ func init() {
 		Long:    upgradeLong,
 		Example: upgradeExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := upgradeCluster.Run(args)
+			ctx := context.TODO()
+
+			err := upgradeCluster.Run(ctx, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -71,13 +75,13 @@ type upgradeAction struct {
 	apply func()
 }
 
-func (c *UpgradeClusterCmd) Run(args []string) error {
+func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
 	}
 
-	cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
 	}
@@ -87,12 +91,12 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	instanceGroups, err := commands.ReadAllInstanceGroups(clientset, cluster)
+	instanceGroups, err := commands.ReadAllInstanceGroups(ctx, clientset, cluster)
 	if err != nil {
 		return err
 	}
 
-	if cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] == api.AnnotationValueManagementImported {
+	if cluster.ObjectMeta.Annotations[kopsapi.AnnotationNameManagement] == kopsapi.AnnotationValueManagementImported {
 		return fmt.Errorf("upgrade is not for use with imported clusters (did you mean `kops toolbox convert-imported`?)")
 	}
 
@@ -101,7 +105,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		channelLocation = cluster.Spec.Channel
 	}
 	if channelLocation == "" {
-		channelLocation = api.DefaultChannel
+		channelLocation = kopsapi.DefaultChannel
 	}
 
 	var actions []*upgradeAction
@@ -117,7 +121,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		})
 	}
 
-	channel, err := api.LoadChannel(channelLocation)
+	channel, err := kopsapi.LoadChannel(channelLocation)
 	if err != nil {
 		return fmt.Errorf("error loading channel %q: %v", channelLocation, err)
 	}
@@ -125,7 +129,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	channelClusterSpec := channel.Spec.Cluster
 	if channelClusterSpec == nil {
 		// Just to prevent too much nil handling
-		channelClusterSpec = &api.ClusterSpec{}
+		channelClusterSpec = &kopsapi.ClusterSpec{}
 	}
 
 	var currentKubernetesVersion *semver.Version
@@ -138,7 +142,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 	}
 
-	proposedKubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
+	proposedKubernetesVersion := kopsapi.RecommendedKubernetesVersion(channel, kops.Version)
 
 	// We won't propose a downgrade
 	// TODO: What if a kubernetes version is bad?
@@ -169,7 +173,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	// Prompt to upgrade to kubenet
 	if channelClusterSpec.Networking != nil {
 		if cluster.Spec.Networking == nil {
-			cluster.Spec.Networking = &api.NetworkingSpec{}
+			cluster.Spec.Networking = &kopsapi.NetworkingSpec{}
 		}
 		// TODO: make this less hard coded
 		if channelClusterSpec.Networking.Kubenet != nil && channelClusterSpec.Networking.Classic != nil {
@@ -222,7 +226,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	// Prompt to upgrade to overlayfs
 	if channelClusterSpec.Docker != nil {
 		if cluster.Spec.Docker == nil {
-			cluster.Spec.Docker = &api.DockerConfig{}
+			cluster.Spec.Docker = &kopsapi.DockerConfig{}
 		}
 		// TODO: make less hard-coded
 		if channelClusterSpec.Docker.Storage != nil {
@@ -277,12 +281,12 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		action.apply()
 	}
 
-	if err := commands.UpdateCluster(clientset, cluster, instanceGroups); err != nil {
+	if err := commands.UpdateCluster(ctx, clientset, cluster, instanceGroups); err != nil {
 		return err
 	}
 
 	for _, g := range instanceGroups {
-		_, err := clientset.InstanceGroupsFor(cluster).Update(g)
+		_, err := clientset.InstanceGroupsFor(cluster).Update(ctx, g, metav1.UpdateOptions{})
 		if err != nil {
 			return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
 		}

@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"fmt"
 	"os"
@@ -58,7 +59,8 @@ func init() {
 		Long:    describeSecretLong,
 		Example: describeSecretExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := describeSecretsCommand.Run(args)
+			ctx := context.TODO()
+			err := describeSecretsCommand.Run(ctx, args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -70,8 +72,8 @@ func init() {
 	cmd.Flags().StringVarP(&describeSecretsCommand.Type, "type", "", "", "Filter by secret type")
 }
 
-func (c *DescribeSecretsCommand) Run(args []string) error {
-	cluster, err := rootCommand.Cluster()
+func (c *DescribeSecretsCommand) Run(ctx context.Context, args []string) error {
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return err
 	}

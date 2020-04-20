@@ -16,7 +16,7 @@ limitations under the License.
 package crd
 
 import (
-	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"sigs.k8s.io/controller-tools/pkg/loader"
 )
@@ -55,7 +55,12 @@ var KnownPackages = map[string]PackageOverride{
 	"k8s.io/apimachinery/pkg/api/resource": func(p *Parser, pkg *loader.Package) {
 		p.Schemata[TypeIdent{Name: "Quantity", Package: pkg}] = apiext.JSONSchemaProps{
 			// TODO(directxman12): regexp validation for this (or get kube to support it as a format value)
-			Type: "string",
+			XIntOrString: true,
+			AnyOf: []apiext.JSONSchemaProps{
+				{Type: "integer"},
+				{Type: "string"},
+			},
+			Pattern: "^(\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))))?$",
 		}
 		// No point in calling AddPackage, this is the sole inhabitant
 	},
@@ -77,13 +82,31 @@ var KnownPackages = map[string]PackageOverride{
 
 	"k8s.io/apimachinery/pkg/util/intstr": func(p *Parser, pkg *loader.Package) {
 		p.Schemata[TypeIdent{Name: "IntOrString", Package: pkg}] = apiext.JSONSchemaProps{
+			XIntOrString: true,
 			AnyOf: []apiext.JSONSchemaProps{
-				{Type: "string"},
 				{Type: "integer"},
+				{Type: "string"},
 			},
 		}
 		// No point in calling AddPackage, this is the sole inhabitant
 	},
+
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1": func(p *Parser, pkg *loader.Package) {
+		p.Schemata[TypeIdent{Name: "JSON", Package: pkg}] = apiext.JSONSchemaProps{
+			XPreserveUnknownFields: boolPtr(true),
+		}
+		p.AddPackage(pkg) // get the rest of the types
+	},
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1": func(p *Parser, pkg *loader.Package) {
+		p.Schemata[TypeIdent{Name: "JSON", Package: pkg}] = apiext.JSONSchemaProps{
+			XPreserveUnknownFields: boolPtr(true),
+		}
+		p.AddPackage(pkg) // get the rest of the types
+	},
+}
+
+func boolPtr(b bool) *bool {
+	return &b
 }
 
 // AddKnownTypes registers the packages overrides in KnownPackages with the given parser.

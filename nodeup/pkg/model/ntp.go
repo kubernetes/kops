@@ -46,22 +46,72 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	var ntpHost string
+	switch b.Cluster.Spec.CloudProvider {
+	case "aws":
+		ntpHost = "169.254.169.123"
+	case "gce":
+		ntpHost = "time.google.com"
+	default:
+		ntpHost = ""
+	}
+
 	if b.Distribution.IsDebianFamily() {
-		c.AddTask(&nodetasks.Package{Name: "ntp"})
-		c.AddTask((&nodetasks.Service{Name: "ntp"}).InitDefaults())
-	} else if b.Distribution.IsRHELFamily() {
-		switch b.Distribution {
-		case distros.DistributionCentos8, distros.DistributionRhel8:
+		if b.Distribution.IsUbuntu() {
+			if ntpHost != "" {
+				c.AddTask(b.buildTimesyncdConf("/etc/systemd/timesyncd.conf", ntpHost))
+			}
+			c.AddTask((&nodetasks.Service{Name: "systemd-timesyncd"}).InitDefaults())
+		} else {
 			c.AddTask(&nodetasks.Package{Name: "chrony"})
-			c.AddTask((&nodetasks.Service{Name: "chronyd"}).InitDefaults())
-		default:
-			c.AddTask(&nodetasks.Package{Name: "ntp"})
-			c.AddTask((&nodetasks.Service{Name: "ntpd"}).InitDefaults())
+			if ntpHost != "" {
+				c.AddTask(b.buildChronydConf("/etc/chrony/chrony.conf", ntpHost))
+			}
+			c.AddTask((&nodetasks.Service{Name: "chrony"}).InitDefaults())
 		}
+	} else if b.Distribution.IsRHELFamily() {
+		c.AddTask(&nodetasks.Package{Name: "chrony"})
+		if ntpHost != "" {
+			c.AddTask(b.buildChronydConf("/etc/chrony.conf", ntpHost))
+		}
+		c.AddTask((&nodetasks.Service{Name: "chronyd"}).InitDefaults())
 	} else {
 		klog.Warningf("unknown distribution, skipping ntp install: %v", b.Distribution)
 		return nil
 	}
 
 	return nil
+}
+
+func (b *NTPBuilder) buildChronydConf(path string, host string) *nodetasks.File {
+	conf := `# Built by Kops - do NOT edit
+
+pool ` + host + ` prefer iburst
+driftfile /var/lib/chrony/drift
+leapsectz right/UTC
+logdir /var/log/chrony
+makestep 1.0 3
+maxupdateskew 100.0
+rtcsync
+`
+	return &nodetasks.File{
+		Path:     path,
+		Contents: fi.NewStringResource(conf),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0644"),
+	}
+}
+
+func (b *NTPBuilder) buildTimesyncdConf(path string, host string) *nodetasks.File {
+	conf := `# Built by Kops - do NOT edit
+
+[Time]
+NTP=` + host + `
+`
+	return &nodetasks.File{
+		Path:     path,
+		Contents: fi.NewStringResource(conf),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0644"),
+	}
 }

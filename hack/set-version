@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+# Copyright 2020 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This script helps with updating versions across the repo, updating the
+# multiple places where we encode a kops version number.
+
+# Use: hack/set-version <new-release-version> <new-ci-version>
+
+# new-release-version is the version you are releasing.
+
+# new-ci-version is the version you are releasing + 1;
+# this is used to avoid CI jobs being out of semver order.
+#
+# Examples:
+# new-release-version  new-ci-version
+# 1.20.1               1.20.2
+# 1.21.0-alpha.1       1.21.0-alpha.2
+# 1.21.0-beta.1        1.21.0-beta.2
+
+set -e
+set -x
+
+NEW_RELEASE_VERSION=$1
+NEW_CI_VERSION=$2
+
+if [[ -z "${NEW_CI_VERSION}" ]]; then
+  echo "syntax $0 <new-release-version> <new-ci-version>"
+  exit 1
+fi
+
+KOPS_RELEASE_VERSION=`grep 'KOPS_RELEASE_VERSION\s*=' version.go  | awk '{print $3}' | sed -e 's_"__g'`
+KOPS_CI_VERSION=`grep 'KOPS_CI_VERSION\s*=' version.go  |  awk '{print $3}' | sed -e 's_"__g'`
+
+echo "KOPS_RELEASE_VERSION ${KOPS_RELEASE_VERSION} -> ${NEW_RELEASE_VERSION}"
+echo "KOPS_CI_VERSION ${KOPS_CI_VERSION} -> ${NEW_CI_VERSION}"
+
+sed -i -e "s@DNS_CONTROLLER_TAG=${KOPS_RELEASE_VERSION}@DNS_CONTROLLER_TAG=${NEW_RELEASE_VERSION}@g" Makefile
+sed -i -e "s@KOPS_CONTROLLER_TAG=${KOPS_RELEASE_VERSION}@KOPS_CONTROLLER_TAG=${NEW_RELEASE_VERSION}@g" Makefile
+sed -i -e "s@\"${KOPS_RELEASE_VERSION}\"@\"${NEW_RELEASE_VERSION}\"@g" upup/pkg/fi/cloudup/bootstrapchannelbuilder.go
+
+git grep -l kope/dns-controller | xargs -I {} sed -i -e "s@dns-controller:${KOPS_RELEASE_VERSION}@dns-controller:${NEW_RELEASE_VERSION}@g" {}
+git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/addons/dns-controller.addons.k8s.io/ | xargs -I {} sed -i -e "s@version: v${KOPS_RELEASE_VERSION}@version: v${NEW_RELEASE_VERSION}@g" {}
+
+git grep -l kope/kops-controller | xargs -I {} sed -i -e "s@kops-controller:${KOPS_RELEASE_VERSION}@kops-controller:${NEW_RELEASE_VERSION}@g" {}
+git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/ | xargs -I {} sed -i -e "s@version: v${KOPS_RELEASE_VERSION}@version: v${NEW_RELEASE_VERSION}@g" {}
+
+git grep -l "version..${KOPS_RELEASE_VERSION}" upup/pkg/fi/cloudup/tests/bootstrapchannelbuilder/ | xargs -I {} sed -i -e "s@version: ${KOPS_RELEASE_VERSION}@version: ${NEW_RELEASE_VERSION}@g" {}
+
+sed -i -e "s@${KOPS_CI_VERSION}@${NEW_CI_VERSION}@g" version.go
+sed -i -e "s@${KOPS_RELEASE_VERSION}@${NEW_RELEASE_VERSION}@g" version.go

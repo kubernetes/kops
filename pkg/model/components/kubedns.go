@@ -19,6 +19,7 @@ package components
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -72,6 +73,14 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	if clusterSpec.KubeDNS.MemoryLimit == nil || clusterSpec.KubeDNS.MemoryLimit.IsZero() {
 		defaultMemoryLimit := resource.MustParse("170Mi")
 		clusterSpec.KubeDNS.MemoryLimit = &defaultMemoryLimit
+	}
+
+	NodeLocalDNS := clusterSpec.KubeDNS.NodeLocalDNS
+	if NodeLocalDNS == nil {
+		NodeLocalDNS = &kops.NodeLocalDNSConfig{}
+		NodeLocalDNS.Enabled = fi.Bool(false)
+	} else if fi.BoolValue(NodeLocalDNS.Enabled) && NodeLocalDNS.LocalIP == "" {
+		NodeLocalDNS.LocalIP = "169.254.20.10"
 	}
 
 	return nil

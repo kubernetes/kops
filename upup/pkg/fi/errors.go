@@ -35,5 +35,5 @@ func CannotChangeField(key string) error {
 
 func FieldIsImmutable(newVal, oldVal interface{}, fldPath *field.Path) *field.Error {
 	details := fmt.Sprintf("%s: old=%v new=%v", validation.FieldImmutableErrorMsg, reflectutils.FormatValue(oldVal), reflectutils.FormatValue(newVal))
-	return field.Invalid(fldPath, newVal, details)
+	return field.Forbidden(fldPath, details)
 }

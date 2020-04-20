@@ -25,14 +25,12 @@ import (
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/internalversion"
-	kopsv1alpha1 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha1"
 	kopsv1alpha2 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	Kops() kopsinternalversion.KopsInterface
-	KopsV1alpha1() kopsv1alpha1.KopsV1alpha1Interface
 	KopsV1alpha2() kopsv1alpha2.KopsV1alpha2Interface
 }
 
@@ -41,18 +39,12 @@ type Interface interface {
 type Clientset struct {
 	*discovery.DiscoveryClient
 	kops         *kopsinternalversion.KopsClient
-	kopsV1alpha1 *kopsv1alpha1.KopsV1alpha1Client
 	kopsV1alpha2 *kopsv1alpha2.KopsV1alpha2Client
 }
 
 // Kops retrieves the KopsClient
 func (c *Clientset) Kops() kopsinternalversion.KopsInterface {
 	return c.kops
-}
-
-// KopsV1alpha1 retrieves the KopsV1alpha1Client
-func (c *Clientset) KopsV1alpha1() kopsv1alpha1.KopsV1alpha1Interface {
-	return c.kopsV1alpha1
 }
 
 // KopsV1alpha2 retrieves the KopsV1alpha2Client
@@ -75,17 +67,13 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	configShallowCopy := *c
 	if configShallowCopy.RateLimiter == nil && configShallowCopy.QPS > 0 {
 		if configShallowCopy.Burst <= 0 {
-			return nil, fmt.Errorf("Burst is required to be greater than 0 when RateLimiter is not set and QPS is set to greater than 0")
+			return nil, fmt.Errorf("burst is required to be greater than 0 when RateLimiter is not set and QPS is set to greater than 0")
 		}
 		configShallowCopy.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(configShallowCopy.QPS, configShallowCopy.Burst)
 	}
 	var cs Clientset
 	var err error
 	cs.kops, err = kopsinternalversion.NewForConfig(&configShallowCopy)
-	if err != nil {
-		return nil, err
-	}
-	cs.kopsV1alpha1, err = kopsv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +94,6 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.kops = kopsinternalversion.NewForConfigOrDie(c)
-	cs.kopsV1alpha1 = kopsv1alpha1.NewForConfigOrDie(c)
 	cs.kopsV1alpha2 = kopsv1alpha2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
@@ -117,7 +104,6 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.kops = kopsinternalversion.New(c)
-	cs.kopsV1alpha1 = kopsv1alpha1.New(c)
 	cs.kopsV1alpha2 = kopsv1alpha2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)

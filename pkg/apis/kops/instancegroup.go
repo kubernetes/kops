@@ -121,6 +121,8 @@ type InstanceGroupSpec struct {
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
 	MaxPrice *string `json:"maxPrice,omitempty"`
+	// SpotDurationInMinutes reserves a spot block for the period specified
+	SpotDurationInMinutes *int64 `json:"spotDurationInMinutes,omitempty"`
 	// AssociatePublicIP is true if we want instances to have a public IP
 	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
@@ -173,7 +175,7 @@ const (
 // SpotAllocationStrategies is a collection of supported strategies
 var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified, SpotAllocationStrategyCapacityOptimized}
 
-// MixedInstancesPolicySpec defines the specification for an autoscaling backed by a ec2 fleet
+// MixedInstancesPolicySpec defines the specification for an autoscaling group backed by a ec2 fleet
 type MixedInstancesPolicySpec struct {
 	// Instances is a list of instance types which we are willing to run in the EC2 fleet
 	Instances []string `json:"instances,omitempty"`

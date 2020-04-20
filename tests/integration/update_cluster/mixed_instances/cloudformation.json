@@ -34,6 +34,11 @@
             "Key": "kops.k8s.io/instancegroup",
             "Value": "master-us-test-1a",
             "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
           }
         ],
         "MetricsCollection": [
@@ -86,6 +91,11 @@
           {
             "Key": "kops.k8s.io/instancegroup",
             "Value": "master-us-test-1b",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+            "Value": "owned",
             "PropagateAtLaunch": true
           }
         ],
@@ -140,6 +150,11 @@
             "Key": "kops.k8s.io/instancegroup",
             "Value": "master-us-test-1c",
             "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
           }
         ],
         "MetricsCollection": [
@@ -190,6 +205,11 @@
             "Key": "kops.k8s.io/instancegroup",
             "Value": "nodes",
             "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
           }
         ],
         "MetricsCollection": [
@@ -210,7 +230,15 @@
         "MixedInstancesPolicy": {
           "LaunchTemplate": {
             "LaunchTemplateSpecification": {
-              "LaunchTemplateName": "nodes.mixedinstances.example.com"
+              "LaunchTemplateId": {
+                "Ref": "AWSEC2LaunchTemplatenodesmixedinstancesexamplecom"
+              },
+              "Version": {
+                "Fn::GetAtt": [
+                  "AWSEC2LaunchTemplatenodesmixedinstancesexamplecom",
+                  "LatestVersionNumber"
+                ]
+              }
             },
             "Overrides": [
               {
@@ -380,7 +408,7 @@
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvda",
-              "EBS": {
+              "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 128,
                 "DeleteOnTermination": true
@@ -398,15 +426,68 @@
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
-              "DeleteOnTermination": true
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesmixedinstancesexamplecom"
+                }
+              ]
             }
           ],
-          "UserData": "extracted",
-          "SecurityGroup": [
+          "TagSpecifications": [
             {
-              "Ref": "AWSEC2SecurityGroupnodesmixedinstancesexamplecom"
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "mixedinstances.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.mixedinstances.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "mixedinstances.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.mixedinstances.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/mixedinstances.example.com",
+                  "Value": "owned"
+                }
+              ]
             }
-          ]
+          ],
+          "UserData": "extracted"
         }
       }
     },

@@ -183,10 +183,10 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 }
 
 type terraformSecurityGroup struct {
-	Name        *string            `json:"name"`
-	VPCID       *terraform.Literal `json:"vpc_id"`
-	Description *string            `json:"description"`
-	Tags        map[string]string  `json:"tags,omitempty"`
+	Name        *string            `json:"name" cty:"name"`
+	VPCID       *terraform.Literal `json:"vpc_id" cty:"vpc_id"`
+	Description *string            `json:"description" cty:"description"`
+	Tags        map[string]string  `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
