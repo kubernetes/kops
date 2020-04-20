@@ -180,7 +180,7 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 			bootstrapScript.NodeUpSourceAmd64 = strings.Join(assetAmd64.Locations, ",")
 			bootstrapScript.NodeUpSourceHashAmd64 = assetAmd64.Hash.Hex()
 
-			if cluster.IsKubernetesGTE("1.19") {
+			if cluster.IsKubernetesGTE("1.18") {
 				assetArm64, err := cloudup.NodeUpAsset(assetBuilder, architectures.ArchitectureArm64)
 				if err != nil {
 					return nil, err

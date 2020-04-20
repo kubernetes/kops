@@ -1183,7 +1183,7 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.NodeUpSource[arch] = ""
 		c.NodeUpHash[arch] = ""
 
-		if c.Cluster.IsKubernetesLT("1.19") && arch != architectures.ArchitectureAmd64 {
+		if c.Cluster.IsKubernetesLT("1.18") && arch != architectures.ArchitectureAmd64 {
 			continue
 		}
 

@@ -71,7 +71,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["UseBootstrapTokens"] = tf.modelContext.UseBootstrapTokens
 	dest["UseEtcdTLS"] = tf.modelContext.UseEtcdTLS
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
-	dest["Arch"] = func() string { return "amd64" }
+	dest["Arch"] = func() string { return "arm64" }
 	dest["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
 	}

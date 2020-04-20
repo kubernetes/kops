@@ -867,9 +867,11 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
-	if c.Image != "" {
-		for _, group := range instanceGroups {
-			group.Spec.Image = c.Image
+	for _, group := range instanceGroups {
+		if group.IsMaster() {
+			group.Spec.Image = "136693071363/debian-10-amd64-20200210-166"
+		} else {
+			group.Spec.Image = "136693071363/debian-10-arm64-20200210-166"
 		}
 	}
 
@@ -1010,9 +1012,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
-	if c.KubernetesVersion != "" {
-		cluster.Spec.KubernetesVersion = c.KubernetesVersion
-	}
+	cluster.Spec.KubernetesVersion = "1.18.2"
 
 	if c.ContainerRuntime != "" {
 		cluster.Spec.ContainerRuntime = c.ContainerRuntime

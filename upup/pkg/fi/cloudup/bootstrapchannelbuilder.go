@@ -236,7 +236,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 	}
 
 	kubeDNS := b.cluster.Spec.KubeDNS
-	if kubeDNS.Provider == "KubeDNS" || kubeDNS.Provider == "" {
+	if kubeDNS.Provider == "KubeDNS" {
 
 		{
 			key := "kube-dns.addons.k8s.io"
@@ -272,7 +272,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
-	if kubeDNS.Provider == "CoreDNS" {
+	if kubeDNS.Provider == "CoreDNS" || kubeDNS.Provider == "" {
 		{
 			key := "coredns.addons.k8s.io"
 			version := "1.6.7-kops.1"
