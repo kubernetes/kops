@@ -160,6 +160,15 @@ var containerdVersions = []packageVersion{
 		Hash:           "921b74e84da366ec3eaa72ff97fa8d6ae56834c6",
 	},
 
+	// 1.3.4 - Linux Generic
+	{
+		PackageVersion: "1.3.4",
+		PlainBinary:    true,
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.4.linux-amd64.tar.gz",
+		Hash:           "ce518d8091ffdd40caa7f386c742d9b1d03e01b5",
+	},
+
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
 	//   VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run TestContainerdPackageHashes
 	// (you might want to temporarily comment out older versions on a slower connection and then validate)
