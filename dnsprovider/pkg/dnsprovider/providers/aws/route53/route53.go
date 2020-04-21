@@ -19,6 +19,8 @@ package route53
 
 import (
 	"io"
+	"strings"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -58,7 +60,10 @@ func newRoute53(config io.Reader) (*Interface, error) {
 	// Connect to AWS Route53 - TODO: Do more sophisticated auth
 
 	awsConfig := aws.NewConfig()
-
+	
+	if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
+		awsConfig = awsConfig.WithEndpoint("https://api.route53.cn")
+	}
 	// This avoids a confusing error message when we fail to get credentials
 	// e.g. https://github.com/kubernetes/kops/issues/605
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)

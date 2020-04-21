@@ -268,6 +268,10 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.autoscaling.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.autoscaling.Handlers)
 
+		if strings.HasPrefix(region, "cn-") {
+			config = config.WithEndpoint("https://api.route53.cn")
+		}
+		
 		sess, err = session.NewSession(config)
 		if err != nil {
 			return c, err
