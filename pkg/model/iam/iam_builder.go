@@ -244,13 +244,12 @@ func (b *PolicyBuilder) BuildAWSPolicyBastion() (*Policy, error) {
 		Version: PolicyDefaultVersion,
 	}
 
-	// Bastion hosts currently don't require any specific permissions.
-	// A trivial permission is granted, because empty policies are not allowed.
-	p.Statement = append(p.Statement, &Statement{
-		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"ec2:DescribeRegions"}),
-		Resource: resource,
-	})
+	addBastionEC2Policies(p, resource)
+
+	var err error
+	if p, err = b.AddS3Permissions(p); err != nil {
+		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
+	}
 
 	return p, nil
 }
@@ -414,6 +413,20 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 							})
 						}
 					}
+				} else if b.Role == kops.InstanceGroupRoleBastion {
+					resources := []string{
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/addons/*"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/cluster.spec"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/config"}, ""),
+						strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
+					}
+					sort.Strings(resources)
+
+					p.Statement = append(p.Statement, &Statement{
+						Effect:   StatementEffectAllow,
+						Action:   stringorslice.Slice([]string{"s3:Get*"}),
+						Resource: stringorslice.Of(resources...),
+					})
 				}
 			}
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
@@ -605,6 +618,15 @@ func addKMSIAMPolicies(p *Policy, resource stringorslice.StringOrSlice, legacyIA
 			"kms:GenerateDataKey*",
 			"kms:ReEncrypt*",
 		),
+		Resource: resource,
+	})
+}
+
+func addBastionEC2Policies(p *Policy, resource stringorslice.StringOrSlice) {
+	// Protokube makes a DescribeInstances call, DescribeRegions when finding S3 State Bucket
+	p.Statement = append(p.Statement, &Statement{
+		Effect:   StatementEffectAllow,
+		Action:   stringorslice.Slice([]string{"ec2:DescribeInstances"}),
 		Resource: resource,
 	})
 }
