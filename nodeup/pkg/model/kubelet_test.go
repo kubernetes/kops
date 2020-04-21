@@ -269,7 +269,6 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 	nodeupModelContext, err := BuildNodeupModelContext(basedir)
 	if err != nil {
 		t.Fatalf("error loading model %q: %v", basedir, err)
-		return
 	}
 
 	keystore := &fakeCAStore{}

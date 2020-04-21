@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/configbuilder"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestParseDefault(t *testing.T) {
@@ -66,4 +67,11 @@ clientConnection:
 	if !bytes.Equal(yaml, expect) {
 		t.Errorf("unexpected result: \n%s, expected: \n%s", yaml, expect)
 	}
+}
+
+func TestKubeSchedulerBuilder(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/minimal", "kube-scheduler", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeSchedulerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
 }

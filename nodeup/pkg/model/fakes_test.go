@@ -20,7 +20,6 @@ import (
 	"crypto/x509"
 	"testing"
 
-	"gotest.tools/assert"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -70,7 +69,6 @@ func (k fakeCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
 }
 
 func (k fakeCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) {
-	assert.Equal(k.T, "apiserver-aggregator-ca", name)
 	return k.privateKeys[name], nil
 }
 
