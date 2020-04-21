@@ -18,12 +18,17 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func Test_InstanceGroupKubeletMerge(t *testing.T) {
@@ -181,7 +186,7 @@ func Test_RunKubeletBuilder(t *testing.T) {
 		context.AddTask(task)
 	}
 
-	testutils.ValidateTasks(t, basedir, context)
+	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }
 
 func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
@@ -213,4 +218,54 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 	}
 
 	return nodeUpModelContext, nil
+}
+
+func mockedPopulateClusterSpec(c *kops.Cluster) (*kops.Cluster, error) {
+	vfs.Context.ResetMemfsContext(true)
+
+	assetBuilder := assets.NewAssetBuilder(c, "")
+	basePath, err := vfs.Context.BuildVfsPath("memfs://tests")
+	if err != nil {
+		return nil, fmt.Errorf("error building vfspath: %v", err)
+	}
+	clientset := vfsclientset.NewVFSClientset(basePath, true)
+	return cloudup.PopulateClusterSpec(clientset, c, assetBuilder)
+}
+
+func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*NodeupModelContext, *fi.ModelBuilderContext) error) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.18.0")
+	h.SetupMockAWS()
+
+	context := &fi.ModelBuilderContext{
+		Tasks: make(map[string]fi.Task),
+	}
+	nodeupModelContext, err := BuildNodeupModelContext(basedir)
+	if err != nil {
+		t.Fatalf("error loading model %q: %v", basedir, err)
+		return
+	}
+	nodeupModelContext.KeyStore = &fakeKeyStore{T: t}
+
+	// Populate the cluster
+	{
+		err := cloudup.PerformAssignments(nodeupModelContext.Cluster)
+		if err != nil {
+			t.Fatalf("error from PerformAssignments: %v", err)
+		}
+
+		full, err := mockedPopulateClusterSpec(nodeupModelContext.Cluster)
+		if err != nil {
+			t.Fatalf("unexpected error from mockedPopulateClusterSpec: %v", err)
+		}
+		nodeupModelContext.Cluster = full
+	}
+
+	if err := builder(nodeupModelContext, context); err != nil {
+		t.Fatalf("error from Build: %v", err)
+	}
+
+	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks-"+key+".yaml"), context)
 }
