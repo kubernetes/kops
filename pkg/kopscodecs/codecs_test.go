@@ -17,6 +17,7 @@ limitations under the License.
 package kopscodecs
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -73,4 +74,14 @@ func TestToVersionedYaml(t *testing.T) {
 		}
 	}
 
+}
+
+func TestRewriteAPIGroup(t *testing.T) {
+	input := []byte("apiVersion: kops/v1alpha2\nkind: Cluster")
+	expected := []byte("apiVersion: kops.k8s.io/v1alpha2\nkind: Cluster")
+	actual := rewriteAPIGroup(input)
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("unexpected return value, expected=%v, actual=%v", expected, actual)
+	}
 }
