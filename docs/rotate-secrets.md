@@ -1,6 +1,8 @@
 # How to rotate all secrets / credentials
 
-This is a disruptive procedure.
+**This is a disruptive procedure.**
+
+## Delete all secrets
 
 Delete all secrets & keypairs that kops is holding:
 
@@ -10,16 +12,46 @@ kops get secrets  | grep ^Secret | awk '{print $2}' | xargs -I {} kops delete se
 kops get secrets  | grep ^Keypair | awk '{print $2}' | xargs -I {} kops delete secret keypair {}
 ```
 
-Now run `kops update cluster` and `kops update cluster --yes` to regenerate the secrets & keypairs.
+## Recreate all secrets
 
-We need to reboot every node (using a rolling-update).  We have to use `--cloudonly` because our keypair no longer matches.
-We set the interval small because nodes will stop trusting each other during the process, so there is no point in going slowly.
+Now run `kops update` to regenerate the secrets & keypairs.
+```
+kops update cluster
+kops update cluster --yes
+```
 
-`kops rolling-update cluster --cloudonly --master-interval=10s --node-interval=10s --force --yes`
+Kops may fail to recreate all the keys on first try. If you get errors about ca key for 'ca' not being found, run `kops update cluster --yes` once more.
+
+## Force cluster to use new secrets
+
+Now you will have to remove the etcd certificates from every master.
+
+Find all the master IPs. One easy way of doing that is running
+
+```
+kops toolbox dump
+```
+
+Then SSH into each node and run
+
+```
+sudo find /mnt/ -name server.* | xargs -I {} sudo rm {}
+sudo find /mnt/ -name me.* | xargs -I {} sudo rm {}
+```
+
+You need to reboot every node (using a rolling-update). You have to use `--cloudonly` because the keypair no longer matches.
+
+```
+kops rolling-update cluster --cloudonly --force --yes
+```
 
 Re-export kubecfg with new settings:
 
-`kops export kubecfg`
+```
+kops export kubecfg
+```
+
+## Recreate all service accounts
 
 Now the service account tokens will need to be regenerated inside the cluster:
 
@@ -35,9 +67,15 @@ for i in ${NS}; do kubectl get secrets --namespace=${i} --no-headers | grep "kub
 # Allow for new secrets to be created
 sleep 60
 
-# Bounce pods that we know use service account tokens - you will likely have to bounce more
-kubectl delete pods -lk8s-app=dns-controller --namespace=kube-system
-kubectl delete pods -lk8s-app=kube-dns --namespace=kube-system
-kubectl delete pods -lk8s-app=kube-dns-autoscaler --namespace=kube-system
+# Bounce all pods to make use of the new service tokens
 pkill -f kube-controller-manager
+kubectl delete pods --all --all-namespaces
+```
+
+## Verify the cluster is back up
+
+The last command from the previous section will take some time. Meanwhile you can check validation to see the cluster gradually coming back online.
+
+```
+kops validate cluster
 ```
