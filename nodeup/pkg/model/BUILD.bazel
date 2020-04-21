@@ -86,6 +86,7 @@ go_test(
     srcs = [
         "containerd_test.go",
         "docker_test.go",
+        "fakes_test.go",
         "kube_apiserver_test.go",
         "kube_proxy_test.go",
         "kube_scheduler_test.go",
