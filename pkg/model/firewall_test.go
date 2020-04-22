@@ -60,3 +60,34 @@ func Test_SharedGroups(t *testing.T) {
 		}
 	}
 }
+
+func TestJoinSuffixes(t *testing.T) {
+	grid := []struct {
+		src      SecurityGroupInfo
+		dest     SecurityGroupInfo
+		expected string
+	}{
+		{
+			src:      SecurityGroupInfo{Suffix: ""},
+			dest:     SecurityGroupInfo{Suffix: ""},
+			expected: "",
+		},
+		{
+			src:      SecurityGroupInfo{Suffix: "srcSuffix"},
+			dest:     SecurityGroupInfo{Suffix: ""},
+			expected: "srcSuffix-default",
+		},
+		{
+			src:      SecurityGroupInfo{Suffix: ""},
+			dest:     SecurityGroupInfo{Suffix: "destSuffix"},
+			expected: "-defaultdestSuffix",
+		},
+	}
+
+	for _, g := range grid {
+		actual := JoinSuffixes(g.src, g.dest)
+		if actual != g.expected {
+			t.Errorf("unexpected result.  expected %q, got %q", g.expected, actual)
+		}
+	}
+}
