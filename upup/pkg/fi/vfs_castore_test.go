@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -212,6 +213,22 @@ spec:
 		if string(roundTrip) != privateKeyData {
 			t.Fatalf("unexpected round-tripped private key data: %q", string(roundTrip))
 		}
+	}
+
+	// Check that keyset gets deleted
+	{
+		keyset := &kops.Keyset{}
+		keyset.Name = "ca"
+		keyset.Spec.Type = kops.SecretTypeKeypair
+
+		s.DeleteKeysetItem(keyset, "237054359138908419352140518924933177492")
+
+		_, err := pathMap["memfs://tests/private/ca/237054359138908419352140518924933177492.key"].ReadFile()
+		pathMap["memfs://tests/private/ca/237054359138908419352140518924933177492.key"].ReadFile()
+		if err == nil {
+			t.Fatalf("File memfs://tests/private/ca/237054359138908419352140518924933177492.key still exists")
+		}
+
 	}
 
 }
