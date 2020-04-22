@@ -72,6 +72,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/apis/kops:go_default_library",
         "//pkg/pki:go_default_library",
         "//util/pkg/vfs:go_default_library",
     ],
