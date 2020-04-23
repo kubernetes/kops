@@ -50,3 +50,34 @@ func TestStringSlicesEqual(t *testing.T) {
 		}
 	}
 }
+
+func TestStringSlicesEqualIgnoreOrder(t *testing.T) {
+	tests := []struct {
+		l        []string
+		r        []string
+		expected bool
+	}{
+		{
+			l:        []string{"a", "b"},
+			r:        []string{"a"},
+			expected: false,
+		},
+		{
+			l:        []string{"a", "b"},
+			r:        []string{"a", "c"},
+			expected: false,
+		},
+		{
+			l:        []string{"a", "b"},
+			r:        []string{"b", "a"},
+			expected: true,
+		},
+	}
+
+	for _, test := range tests {
+		result := StringSlicesEqualIgnoreOrder(test.l, test.r)
+		if test.expected != result {
+			t.Errorf("Expected %v, got %v", test.expected, result)
+		}
+	}
+}
