@@ -37,6 +37,14 @@ rules:
       - list
       - watch
   - apiGroups:
+      - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
       - 'networking.k8s.io'
     resources:
       - networkpolicies
@@ -164,7 +172,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.5.2'
+          image: 'weaveworks/weave-kube:2.6.2'
           ports:
             - name: metrics
               containerPort: 6782
@@ -196,15 +204,15 @@ spec:
               mountPath: /lib/modules
             - name: xtables-lock
               mountPath: /run/xtables.lock
+              readOnly: false
         - name: weave-npc
-          args: []
           env:
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.5.2'
+          image: 'weaveworks/weave-npc:2.6.2'
           ports:
             - name: metrics
               containerPort: 6781
@@ -219,6 +227,7 @@ spec:
           volumeMounts:
             - name: xtables-lock
               mountPath: /run/xtables.lock
+              readOnly: false
       hostNetwork: true
       hostPID: true
       restartPolicy: Always
@@ -227,6 +236,8 @@ spec:
       serviceAccountName: weave-net
       tolerations:
         - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
           operator: Exists
         - key: CriticalAddonsOnly
           operator: Exists
