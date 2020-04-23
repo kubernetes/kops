@@ -14181,6 +14181,14 @@ rules:
       - list
       - watch
   - apiGroups:
+      - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
       - 'networking.k8s.io'
     resources:
       - networkpolicies
@@ -14275,7 +14283,6 @@ spec:
         role.kubernetes.io/networking: "1"
       annotations:
         prometheus.io/scrape: "true"
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       containers:
         - name: weave
@@ -14349,7 +14356,6 @@ spec:
               mountPath: /run/xtables.lock
               readOnly: false
         - name: weave-npc
-          args: []
           env:
             - name: HOSTNAME
               valueFrom:
@@ -14388,6 +14394,8 @@ spec:
       serviceAccountName: weave-net
       tolerations:
         - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
           operator: Exists
         - key: CriticalAddonsOnly
           operator: Exists
@@ -14468,6 +14476,14 @@ rules:
       - pods
       - namespaces
       - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - networkpolicies
     verbs:
       - get
       - list
@@ -14637,7 +14653,6 @@ spec:
               mountPath: /run/xtables.lock
               readOnly: false
         - name: weave-npc
-          args: []
           env:
             - name: HOSTNAME
               valueFrom:
@@ -14675,6 +14690,8 @@ spec:
       serviceAccountName: weave-net
       tolerations:
         - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
           operator: Exists
         - key: CriticalAddonsOnly
           operator: Exists
