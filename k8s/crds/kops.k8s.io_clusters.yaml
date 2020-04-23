@@ -1315,8 +1315,6 @@ spec:
                   tokenAuthFile:
                     description: 'TODO: Remove unused TokenAuthFile'
                     type: string
-                required:
-                - enableProfiling
                 type: object
               kubeControllerManager:
                 description: KubeControllerManagerConfig is the configuration for
@@ -1568,8 +1566,6 @@ spec:
                     description: UseServiceAccountCredentials controls whether we
                       use individual service account credentials for each controller.
                     type: boolean
-                required:
-                - enableProfiling
                 type: object
               kubeDNS:
                 description: KubeDNSConfig defines the kube dns configuration
@@ -1839,8 +1835,6 @@ spec:
                     description: UsePolicyConfigMap enable setting the scheduler policy
                       from a configmap
                     type: boolean
-                required:
-                - enableProfiling
                 type: object
               kubelet:
                 description: KubeletConfigSpec defines the kubelet configuration
