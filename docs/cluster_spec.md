@@ -480,6 +480,16 @@ spec:
     volumePluginDirectory: /provide/a/writable/path/here
 ```
 
+### Protect Kernel Defaults
+
+Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults. (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
+
+```yaml
+spec:
+  kubelet:
+    protectKernelDefaults: true
+```
+
 ## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/

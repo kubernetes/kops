@@ -201,6 +201,10 @@ type KubeletConfigSpec struct {
 
 	// rotateCertificates enables client certificate rotation.
 	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
+
+	// Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
+	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
+	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
