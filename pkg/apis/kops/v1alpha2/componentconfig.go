@@ -471,7 +471,7 @@ type KubeAPIServerConfig struct {
 	AuditDynamicConfiguration *bool `json:"auditDynamicConfiguration,omitempty" flag:"audit-dynamic-configuration"`
 
 	// Enable profiling via web interface
-	EnableProfiling *bool `json:"enableProfiling,imitempty" flag:"profiling"`
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -578,7 +578,7 @@ type KubeControllerManagerConfig struct {
 	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
 
 	// Enable profiling via web interface
-	EnableProfiling *bool `json:"enableProfiling,imitempty" flag:"profiling"`
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
@@ -633,7 +633,7 @@ type KubeSchedulerConfig struct {
 	Burst int32 `json:"burst,omitempty"`
 
 	// Enable profiling via web interface
-	EnableProfiling *bool `json:"enableProfiling,imitempty" flag:"profiling"`
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
