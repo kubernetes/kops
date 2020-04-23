@@ -315,6 +315,15 @@ spec:
   kubeAPIServer:
     maxMutatingRequestsInflight: 450
 ```
+### profiling
+
+Disable profiling via web interface (enabled by default):
+
+```yaml
+spec:
+  kubeAPIServer:
+    enableProfiling: false
+```
 
 ### runtimeConfig
 
@@ -475,10 +484,11 @@ spec:
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
 
- ```yaml
- spec:
-   kubeScheduler:
-     usePolicyConfigMap: true
+```yaml
+spec:
+  kubeScheduler:
+    usePolicyConfigMap: true
+    enableProfiling: false
 ```
 
 Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
@@ -577,6 +587,7 @@ spec:
     horizontalPodAutoscalerUpscaleDelay: 3m0s
     horizontalPodAutoscalerTolerance: 0.1
     experimentalClusterSigningDuration: 8760h0m0s
+    enableProfiling: false
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
