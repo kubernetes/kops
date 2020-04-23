@@ -465,6 +465,9 @@ type KubeAPIServerConfig struct {
 
 	// AuditDynamicConfiguration enables dynamic audit configuration via AuditSinks
 	AuditDynamicConfiguration *bool `json:"auditDynamicConfiguration,omitempty" flag:"audit-dynamic-configuration"`
+
+	// Enable profiling via web interface
+	EnableProfiling *bool `json:"enableProfiling,imitempty" flag:"profiling"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -569,6 +572,9 @@ type KubeControllerManagerConfig struct {
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
 	// This only works on kubernetes >= 1.14
 	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
+
+	// Enable profiling via web interface
+	EnableProfiling *bool `json:"enableProfiling,imitempty" flag:"profiling"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
@@ -621,6 +627,9 @@ type KubeSchedulerConfig struct {
 	Qps *resource.Quantity `json:"qps,omitempty"`
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
 	Burst int32 `json:"burst,omitempty"`
+
+	// Enable profiling via web interface
+	EnableProfiling *bool `json:"enableProfiling,imitempty" flag:"profiling"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
