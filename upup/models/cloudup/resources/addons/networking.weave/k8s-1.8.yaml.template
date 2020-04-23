@@ -37,6 +37,14 @@ rules:
       - list
       - watch
   - apiGroups:
+      - extensions
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
       - 'networking.k8s.io'
     resources:
       - networkpolicies
@@ -201,7 +209,6 @@ spec:
               mountPath: /run/xtables.lock
               readOnly: false
         - name: weave-npc
-          args: []
           env:
             - name: HOSTNAME
               valueFrom:
@@ -235,6 +242,8 @@ spec:
       serviceAccountName: weave-net
       tolerations:
         - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
           operator: Exists
         - key: CriticalAddonsOnly
           operator: Exists
