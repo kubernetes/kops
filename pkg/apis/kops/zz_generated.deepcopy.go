@@ -2435,6 +2435,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableProfiling != nil {
+		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
@@ -2608,6 +2613,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(int32)
 		**out = **in
 	}
+	if in.EnableProfiling != nil {
+		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
@@ -2769,6 +2779,11 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 		in, out := &in.Qps, &out.Qps
 		x := (*in).DeepCopy()
 		*out = &x
+	}
+	if in.EnableProfiling != nil {
+		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
+		**out = **in
 	}
 	return
 }
@@ -3006,6 +3021,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 	}
 	if in.RotateCertificates != nil {
 		in, out := &in.RotateCertificates, &out.RotateCertificates
+		*out = new(bool)
+		**out = **in
+	}
+	if in.ProtectKernelDefaults != nil {
+		in, out := &in.ProtectKernelDefaults, &out.ProtectKernelDefaults
 		*out = new(bool)
 		**out = **in
 	}

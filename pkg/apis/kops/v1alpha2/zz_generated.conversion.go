@@ -3783,6 +3783,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.CPURequest = in.CPURequest
 	out.EventTTL = in.EventTTL
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -3884,6 +3885,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.CPURequest = in.CPURequest
 	out.EventTTL = in.EventTTL
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -3942,6 +3944,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
 	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -4000,6 +4003,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
 	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -4148,6 +4152,7 @@ func autoConvert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
 	out.Qps = in.Qps
 	out.Burst = in.Burst
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -4174,6 +4179,7 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *ko
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
 	out.Qps = in.Qps
 	out.Burst = in.Burst
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -4260,6 +4266,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.RegistryBurst = in.RegistryBurst
 	out.TopologyManagerPolicy = in.TopologyManagerPolicy
 	out.RotateCertificates = in.RotateCertificates
+	out.ProtectKernelDefaults = in.ProtectKernelDefaults
 	return nil
 }
 
@@ -4346,6 +4353,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.RegistryBurst = in.RegistryBurst
 	out.TopologyManagerPolicy = in.TopologyManagerPolicy
 	out.RotateCertificates = in.RotateCertificates
+	out.ProtectKernelDefaults = in.ProtectKernelDefaults
 	return nil
 }
 
