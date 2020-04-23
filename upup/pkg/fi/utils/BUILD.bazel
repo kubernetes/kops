@@ -19,6 +19,9 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["equals_test.go"],
+    srcs = [
+        "equals_test.go",
+        "sanitize_test.go",
+    ],
     embed = [":go_default_library"],
 )
