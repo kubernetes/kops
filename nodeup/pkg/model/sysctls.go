@@ -118,14 +118,14 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		)
 	}
 
-	// Running Flannel on CentOS 7 needs custom settings
+	// Running Flannel on CentOS7 / rhel7 needs custom settings
 	if b.Cluster.Spec.Networking.Flannel != nil {
 		proxyMode := b.Cluster.Spec.KubeProxy.ProxyMode
 		if proxyMode == "" {
 			proxyMode = "iptables"
 		}
 
-		if proxyMode == "iptables" && b.Distribution == distros.DistributionCentos7 {
+		if proxyMode == "iptables" && (b.Distribution == distros.DistributionCentos7 || b.Distribution == distros.DistributionRhel7) {
 			sysctls = append(sysctls,
 				"# Flannel settings on CentOS 7",
 				"# Issue https://github.com/coreos/flannel/issues/902",
