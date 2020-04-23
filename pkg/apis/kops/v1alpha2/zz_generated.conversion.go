@@ -3489,6 +3489,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuthorizationWebhookCacheAuthorizedTTL = in.AuthorizationWebhookCacheAuthorizedTTL
 	out.AuthorizationWebhookCacheUnauthorizedTTL = in.AuthorizationWebhookCacheUnauthorizedTTL
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
+	out.EncryptionProviderConfig = in.EncryptionProviderConfig
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
 	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders
 	out.RequestheaderGroupHeaders = in.RequestheaderGroupHeaders
@@ -3588,6 +3589,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.AuthorizationWebhookCacheAuthorizedTTL = in.AuthorizationWebhookCacheAuthorizedTTL
 	out.AuthorizationWebhookCacheUnauthorizedTTL = in.AuthorizationWebhookCacheUnauthorizedTTL
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
+	out.EncryptionProviderConfig = in.EncryptionProviderConfig
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
 	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders
 	out.RequestheaderGroupHeaders = in.RequestheaderGroupHeaders
