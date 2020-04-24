@@ -56,7 +56,7 @@ Note: terraform users will need to run all of the following commands from the sa
   # only roll the node instancegroup,
   # use the new drain and validate functionality.
   kops rolling-update cluster k8s-cluster.example.com --yes \
-  --fail-on-validate-error="false" \
+  --fail-on-drain-error="false" \
   --node-interval 8m \
   --instance-group nodes
 ```
