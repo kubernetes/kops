@@ -23,7 +23,7 @@ import (
 	"hash/fnv"
 	"strings"
 
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
