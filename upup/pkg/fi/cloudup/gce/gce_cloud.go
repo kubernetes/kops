@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"golang.org/x/oauth2/google"
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/iam/v1"
 	oauth2 "google.golang.org/api/oauth2/v2"

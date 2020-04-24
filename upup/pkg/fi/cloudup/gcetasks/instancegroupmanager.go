@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"reflect"
 
-	compute "google.golang.org/api/compute/v0.beta"
+	compute "google.golang.org/api/compute/v1"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -151,13 +151,11 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 		}
 
 		if changes.TargetSize != nil {
-			request := &compute.InstanceGroupManagersResizeAdvancedRequest{
-				TargetSize: i.TargetSize,
+			newSize := int64(0)
+			if i.TargetSize != 0 {
+				newSize = int64(i.TargetSize)
 			}
-			if i.TargetSize == 0 {
-				request.ForceSendFields = append(request.ForceSendFields, "TargetSize")
-			}
-			op, err := t.Cloud.Compute().InstanceGroupManagers.ResizeAdvanced(t.Cloud.Project(), *e.Zone, i.Name, request).Do()
+			op, err := t.Cloud.Compute().InstanceGroupManagers.Resize(t.Cloud.Project(), *e.Zone, i.Name, newSize).Do()
 			if err != nil {
 				return fmt.Errorf("error resizing InstanceGroupManager: %v", err)
 			}
