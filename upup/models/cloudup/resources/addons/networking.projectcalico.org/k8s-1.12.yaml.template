@@ -844,6 +844,7 @@ spec:
               command:
               - /bin/calico-node
               - -felix-live
+              - -bird-live
             periodSeconds: 10
             initialDelaySeconds: 10
             failureThreshold: 6
