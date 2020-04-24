@@ -93,7 +93,7 @@ func TestIsGTE(t *testing.T) {
 			Expected: false,
 		},
 		{
-			Name:     "KV equal Version",
+			Name:     "Version greater than KV",
 			Version:  "1.6.5+ea69570f61af8e",
 			Expected: false,
 		},
