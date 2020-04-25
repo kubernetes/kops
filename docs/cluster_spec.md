@@ -298,6 +298,16 @@ spec:
     maxMutatingRequestsInflight: 450
 ```
 
+### Profiling
+
+Profiling via web interface `host:port/debug/pprof/`. (default: true)
+
+```yaml
+spec:
+  kubeAPIServer:
+    enableProfiling: false
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
@@ -452,14 +462,25 @@ spec:
     volumePluginDirectory: /provide/a/writable/path/here
 ```
 
+### Protect Kernel Defaults
+
+Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
+
+```yaml
+spec:
+  kubelet:
+    protectKernelDefaults: true
+```
+
 ### kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
 
- ```yaml
- spec:
-   kubeScheduler:
-     usePolicyConfigMap: true
+```yaml
+spec:
+  kubeScheduler:
+    usePolicyConfigMap: true
+    enableProfiling: false
 ```
 
 Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
@@ -536,6 +557,7 @@ spec:
     horizontalPodAutoscalerUpscaleDelay: 3m0s
     horizontalPodAutoscalerTolerance: 0.1
     experimentalClusterSigningDuration: 8760h0m0s
+    enableProfiling: false
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
@@ -901,4 +923,3 @@ spec:
 ```
 
 which would end up in a drop-in file on all masters and nodes of the cluster.
-
