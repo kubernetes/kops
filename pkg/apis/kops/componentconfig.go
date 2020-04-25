@@ -203,7 +203,7 @@ type KubeletConfigSpec struct {
 	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
 
 	// Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
-	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
+	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
 	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 }
 
@@ -470,7 +470,7 @@ type KubeAPIServerConfig struct {
 	// AuditDynamicConfiguration enables dynamic audit configuration via AuditSinks
 	AuditDynamicConfiguration *bool `json:"auditDynamicConfiguration,omitempty" flag:"audit-dynamic-configuration"`
 
-	// Enable profiling via web interface
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
@@ -576,7 +576,7 @@ type KubeControllerManagerConfig struct {
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
 	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
 
-	// Enable profiling via web interface
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
@@ -631,7 +631,7 @@ type KubeSchedulerConfig struct {
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
 	Burst int32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
 
-	// Enable profiling via web interface
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
