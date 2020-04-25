@@ -315,9 +315,9 @@ spec:
   kubeAPIServer:
     maxMutatingRequestsInflight: 450
 ```
-### profiling
+### Profiling
 
-Disable profiling via web interface (enabled by default):
+Profiling via web interface `host:port/debug/pprof/`. (default: true)
 
 ```yaml
 spec:
@@ -482,7 +482,7 @@ spec:
 
 ### Protect Kernel Defaults
 
-Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults. (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.)
+Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
 
 ```yaml
 spec:
