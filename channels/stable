@@ -13,13 +13,13 @@ spec:
     - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-08-17
       providerID: aws
       kubernetesVersion: ">=1.7.0 <1.8.0"
-    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+    - name: kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2018-08-17
       providerID: aws
       kubernetesVersion: ">=1.8.0 <1.9.0"
-    - name: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-08-17
+    - name: kope.io/k8s-1.9-debian-stretch-amd64-hvm-ebs-2018-08-17
       providerID: aws
       kubernetesVersion: ">=1.9.0 <1.10.0"
-    - name: kope.io/k8s-1.10-debian-jessie-amd64-hvm-ebs-2018-08-17
+    - name: kope.io/k8s-1.10-debian-stretch-amd64-hvm-ebs-2018-08-17
       providerID: aws
       kubernetesVersion: ">=1.10.0 <1.11.0"
     # Stretch is the default for 1.11 (for nvme)
