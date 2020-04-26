@@ -7639,7 +7639,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 90m
+              cpu: {{ or .Networking.Calico.CPURequest "100m" }}
           livenessProbe:
             exec:
               command:
@@ -8754,7 +8754,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 90m
+              cpu: {{ or .Networking.Calico.CPURequest "100m" }}
           livenessProbe:
             exec:
               command:
@@ -10863,7 +10863,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 100m
+              cpu: {{ or .Networking.Canal.CPURequest "100m" }}
           livenessProbe:
             httpGet:
               path: /liveness
@@ -11776,7 +11776,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 250m
+              cpu: {{ or .Networking.Canal.CPURequest "100m" }}
           livenessProbe:
             exec:
               command:
@@ -12693,7 +12693,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 90m
+              cpu: {{ or .Networking.Canal.CPURequest "100m" }}
           livenessProbe:
             exec:
               command:

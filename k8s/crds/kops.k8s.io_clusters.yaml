@@ -2601,7 +2601,17 @@ spec:
                     description: CalicoNetworkingSpec declares that we want Calico
                       networking
                     properties:
+                      cpuRequest:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: 'CPURequest CPU request of Calico container.
+                          Default: 100m'
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       crossSubnet:
+                        description: CrossSubnet enables Calico's cross-subnet mode
+                          when set to true
                         type: boolean
                       ipipMode:
                         description: IPIPMode is mode for CALICO_IPV4POOL_IPIP
@@ -2666,6 +2676,14 @@ spec:
                           breaking connectivity. Default: ''insert'' (other options:
                           ''append'')'
                         type: string
+                      cpuRequest:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: 'CPURequest CPU request of Canal container. Default:
+                          100m'
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       defaultEndpointToHostAction:
                         description: 'DefaultEndpointToHostAction allows users to
                           configure the default behaviour for traffic between pod
