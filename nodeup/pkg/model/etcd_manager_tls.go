@@ -17,16 +17,15 @@ limitations under the License.
 package model
 
 import (
-	"crypto/rsa"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
-	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/klog"
-	"k8s.io/kops/pkg/pkiutil"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -106,8 +105,7 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
 
 	{
 		p := filepath.Join(dir, "etcd-ca.crt")
-		certBytes := pkiutil.EncodeCertPEM(etcdClientsCACertificate.Certificate)
-		if err := ioutil.WriteFile(p, certBytes, 0644); err != nil {
+		if err := etcdClientsCACertificate.WriteToFile(p, 0644); err != nil {
 			return fmt.Errorf("error writing certificate key file %q: %v", p, err)
 		}
 	}
@@ -115,39 +113,34 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
 	name := "etcd-client"
 
 	humanName := dir + "/" + name
-	privateKey, err := pkiutil.NewPrivateKey()
+	privateKey, err := pki.GeneratePrivateKey()
 	if err != nil {
 		return fmt.Errorf("unable to create private key %q: %v", humanName, err)
 	}
-	privateKeyBytes := pkiutil.EncodePrivateKeyPEM(privateKey)
 
-	certConfig := &certutil.Config{
-		CommonName: "kube-apiserver",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-
-	signingKey, ok := etcdClientsCAPrivateKey.Key.(*rsa.PrivateKey)
-	if !ok {
-		return fmt.Errorf("etcd-clients-ca private key had unexpected type %T", etcdClientsCAPrivateKey.Key)
+	certTmpl := &x509.Certificate{
+		Subject: pkix.Name{
+			CommonName: "kube-apiserver",
+		},
+		NotAfter:    time.Now().Add(time.Hour * 24 * 365).UTC(),
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 
 	klog.Infof("signing certificate for %q", humanName)
-	cert, err := pkiutil.NewSignedCert(certConfig, privateKey, etcdClientsCACertificate.Certificate, signingKey)
+	cert, err := pki.SignNewCertificate(privateKey, certTmpl, etcdClientsCACertificate.Certificate, etcdClientsCAPrivateKey)
 	if err != nil {
 		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)
 	}
 
-	certBytes := pkiutil.EncodeCertPEM(cert)
-
 	p := filepath.Join(dir, name)
 	{
-		if err := ioutil.WriteFile(p+".crt", certBytes, 0644); err != nil {
+		if err := cert.WriteToFile(p+".crt", 0644); err != nil {
 			return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
 		}
 	}
 
 	{
-		if err := ioutil.WriteFile(p+".key", privateKeyBytes, 0600); err != nil {
+		if err := privateKey.WriteToFile(p+".key", 0600); err != nil {
 			return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
 		}
 	}
