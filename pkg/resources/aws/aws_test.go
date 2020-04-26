@@ -23,8 +23,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -193,6 +195,64 @@ func TestSharedVolume(t *testing.T) {
 		}
 		if rt.ID == *ownedVolume.VolumeId && rt.Shared {
 			t.Fatalf("expected Shared: false, got: %v", rt.Shared)
+		}
+	}
+}
+
+func TestMatchesElbTags(t *testing.T) {
+	tc := []struct {
+		tags     map[string]string
+		actual   []*elb.Tag
+		expected bool
+	}{
+		{
+			tags: map[string]string{"tagkey1": "tagvalue1"},
+			actual: []*elb.Tag{
+				{
+					Key:   fi.String("tagkey1"),
+					Value: fi.String("tagvalue1"),
+				},
+				{
+					Key:   fi.String("tagkey2"),
+					Value: fi.String("tagvalue2"),
+				},
+			},
+			expected: true,
+		},
+		{
+			tags: map[string]string{"tagkey2": "tagvalue2"},
+			actual: []*elb.Tag{
+				{
+					Key:   fi.String("tagkey1"),
+					Value: fi.String("tagvalue1"),
+				},
+				{
+					Key:   fi.String("tagkey2"),
+					Value: fi.String("tagvalue2"),
+				},
+			},
+			expected: true,
+		},
+		{
+			tags: map[string]string{"tagkey3": "tagvalue3"},
+			actual: []*elb.Tag{
+				{
+					Key:   fi.String("tagkey1"),
+					Value: fi.String("tagvalue1"),
+				},
+				{
+					Key:   fi.String("tagkey2"),
+					Value: fi.String("tagvalue2"),
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for i, test := range tc {
+		got := matchesElbTags(test.tags, test.actual)
+		if got != test.expected {
+			t.Fatalf("unexpected result from testcase %d, expected %v, got %v", i, test.expected, got)
 		}
 	}
 }
