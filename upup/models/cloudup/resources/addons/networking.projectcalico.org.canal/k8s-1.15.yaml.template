@@ -797,7 +797,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 250m
+              cpu: {{ or .Networking.Canal.CPURequest "100m" }}
           livenessProbe:
             exec:
               command:
