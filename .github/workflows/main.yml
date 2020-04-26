@@ -18,6 +18,9 @@ jobs:
       matrix:
         os: [ubuntu-18.04, macos-10.15]
         go: [1.13, 1.14]
+        exclude:
+          - os: macos-10.15
+            go: 1.14
       fail-fast: true
 
     runs-on: ${{ matrix.os }}
