@@ -849,7 +849,7 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 90m
+              cpu: {{ or .Networking.Calico.CPURequest "100m" }}
           livenessProbe:
             exec:
               command:
