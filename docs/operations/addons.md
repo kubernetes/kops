@@ -164,7 +164,7 @@ the kubernetes API is functional.
 
 In addition, kops offers end-user management of addons via the `channels` tool (which is still experimental,
 but we are working on making it a recommended part of kubernetes addon management).  We ship some
-curated addons in the [addons directory](/addons), more information in the [addons document](addons.md).
+curated addons in the [addons directory](https://github.com/kubernetes/kops/tree/master/addons), more information in the [addons document](addons.md).
 
 
 kops uses the `channels` tool for system addon management also.  Because kops uses the same tool
