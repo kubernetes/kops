@@ -100,7 +100,10 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
-	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
+	// CPURequest CPU request of Calico container. Default: 100m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// CrossSubnet enables Calico's cross-subnet mode when set to true
+	CrossSubnet bool `json:"crossSubnet,omitempty"`
 	// LogSeverityScreen lets us set the desired log level. (Default: info)
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// MTU to be set in the cni-network-config for calico.
@@ -138,6 +141,8 @@ type CanalNetworkingSpec struct {
 	// appends to the bottom. Leaving the default option is safest to prevent accidentally
 	// breaking connectivity. Default: 'insert' (other options: 'append')
 	ChainInsertMode string `json:"chainInsertMode,omitempty"`
+	// CPURequest CPU request of Canal container. Default: 100m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// DefaultEndpointToHostAction allows users to configure the default behaviour
 	// for traffic between pod to host after calico rules have been processed.
 	// Default: ACCEPT (other options: DROP, RETURN)
