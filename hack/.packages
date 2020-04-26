@@ -112,7 +112,6 @@ k8s.io/kops/pkg/nodeidentity/gce
 k8s.io/kops/pkg/nodeidentity/openstack
 k8s.io/kops/pkg/nodelabels
 k8s.io/kops/pkg/pki
-k8s.io/kops/pkg/pkiutil
 k8s.io/kops/pkg/pretty
 k8s.io/kops/pkg/rbac
 k8s.io/kops/pkg/resources
