@@ -96,14 +96,17 @@ func SignNewCertificate(privateKey *PrivateKey, template *x509.Certificate, sign
 		return nil, fmt.Errorf("error creating certificate: %v", err)
 	}
 
-	c := &Certificate{}
-	c.PublicKey = template.PublicKey
-
 	cert, err := x509.ParseCertificate(certificateData)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing certificate: %v", err)
 	}
-	c.Certificate = cert
+
+	c := &Certificate{
+		Subject:     cert.Subject,
+		IsCA:        cert.IsCA,
+		Certificate: cert,
+		PublicKey:   cert.PublicKey,
+	}
 
 	return c, nil
 }
