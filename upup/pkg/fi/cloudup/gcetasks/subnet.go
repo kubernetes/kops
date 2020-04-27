@@ -193,7 +193,7 @@ func (_ *Subnet) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Subnet) error {
 
 func (e *Subnet) URL(project string, region string) string {
 	u := gce.GoogleCloudURL{
-		Version: "beta",
+		Version: "v1",
 		Project: project,
 		Name:    *e.GCEName,
 		Type:    "subnetworks",
