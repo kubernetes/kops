@@ -76,7 +76,7 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 
 func (e *Network) URL(project string) string {
 	u := gce.GoogleCloudURL{
-		Version: "beta",
+		Version: "v1",
 		Project: project,
 		Name:    *e.Name,
 		Type:    "networks",
