@@ -38,6 +38,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "aws_test.go",
+        "cluster_test.go",
         "instancegroup_test.go",
         "validation_test.go",
     ],
