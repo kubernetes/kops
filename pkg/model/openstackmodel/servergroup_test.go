@@ -136,6 +136,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master",
+						"Name":                      "master.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -184,6 +185,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -325,6 +327,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master",
+						"Name":                      "master.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -373,6 +376,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -415,6 +419,8 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/bastion":       "1",
 						"kops.k8s.io/instancegroup": "bastion",
+						"KubernetesCluster":         "cluster",
+						"Name":                      "bastion.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -598,6 +604,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-a",
+						"Name":                      "master-a.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -647,6 +654,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-b",
+						"Name":                      "master-b.masters.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -696,6 +704,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-c",
+						"Name":                      "master-c.masters.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -744,6 +753,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-a",
+						"Name":                      "node-a.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -792,6 +802,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-b",
+						"Name":                      "node-b.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -840,6 +851,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-c",
+						"Name":                      "node-c.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -1039,6 +1051,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-a",
+						"Name":                      "master-a.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -1082,6 +1095,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-b",
+						"Name":                      "master-b.masters.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -1125,6 +1139,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-c",
+						"Name":                      "master-c.masters.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -1168,6 +1183,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-a",
+						"Name":                      "node-a.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -1216,6 +1232,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-b",
+						"Name":                      "node-b.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -1264,6 +1281,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-c",
+						"Name":                      "node-c.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -1507,6 +1525,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-a",
+						"Name":                      "master-a.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -1551,6 +1570,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-b",
+						"Name":                      "master-b.masters.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -1595,6 +1615,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master-c",
+						"Name":                      "master-c.masters.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -1638,6 +1659,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-a",
+						"Name":                      "node-a.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -1681,6 +1703,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-b",
+						"Name":                      "node-b.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -1724,6 +1747,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsNetwork":               "cluster",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node-c",
+						"Name":                      "node-c.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -1869,6 +1893,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master",
+						"Name":                      "master.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -1910,6 +1935,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master",
+						"Name":                      "master.masters.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -1951,6 +1977,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master",
+						"Name":                      "master.masters.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -1999,6 +2026,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -2039,6 +2067,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-2"),
 				}
@@ -2079,6 +2108,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-3"),
 				}
@@ -2209,6 +2239,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsNetwork":               "cluster",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master",
+						"Name":                      "master.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -2252,6 +2283,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsNetwork":               "cluster",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -2389,6 +2421,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsNetwork":               "cluster",
 						"k8s.io/role/master":        "1",
 						"kops.k8s.io/instancegroup": "master",
+						"Name":                      "master.masters.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -2432,6 +2465,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsNetwork":               "cluster",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -2474,6 +2508,8 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/bastion":       "1",
 						"kops.k8s.io/instancegroup": "bastion",
+						"KubernetesCluster":         "cluster",
+						"Name":                      "bastion.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 				}
@@ -2573,6 +2609,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-1"),
 					SecurityGroups: []string{
@@ -2671,6 +2708,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("zone-a"),
 					SecurityGroups: []string{
@@ -2767,6 +2805,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"KopsNetwork":               "cluster",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 					},
 					AvailabilityZone: s("subnet"),
 					SecurityGroups: []string{
@@ -2860,6 +2899,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 						"some":                      "label",
 					},
 					AvailabilityZone: s("zone-1"),
@@ -2951,6 +2991,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 						"cluster_generation":        "0",
 						"k8s.io/role/node":          "1",
 						"kops.k8s.io/instancegroup": "node",
+						"Name":                      "node.cluster",
 						"some":                      "label",
 					},
 					AvailabilityZone: s("zone-1"),
