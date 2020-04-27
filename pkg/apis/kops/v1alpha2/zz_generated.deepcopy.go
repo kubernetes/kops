@@ -2131,6 +2131,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableProfiling != nil {
+		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
@@ -2262,6 +2267,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 	if in.KubeAPIBurst != nil {
 		in, out := &in.KubeAPIBurst, &out.KubeAPIBurst
 		*out = new(int32)
+		**out = **in
+	}
+	if in.EnableProfiling != nil {
+		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
 		**out = **in
 	}
 	return
@@ -2414,6 +2424,11 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 	if in.MaxPersistentVolumes != nil {
 		in, out := &in.MaxPersistentVolumes, &out.MaxPersistentVolumes
 		*out = new(int32)
+		**out = **in
+	}
+	if in.EnableProfiling != nil {
+		in, out := &in.EnableProfiling, &out.EnableProfiling
+		*out = new(bool)
 		**out = **in
 	}
 	return
@@ -2648,6 +2663,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 	if in.RegistryBurst != nil {
 		in, out := &in.RegistryBurst, &out.RegistryBurst
 		*out = new(int32)
+		**out = **in
+	}
+	if in.ProtectKernelDefaults != nil {
+		in, out := &in.ProtectKernelDefaults, &out.ProtectKernelDefaults
+		*out = new(bool)
 		**out = **in
 	}
 	return

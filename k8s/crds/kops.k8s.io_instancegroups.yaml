@@ -451,6 +451,12 @@ spec:
                   description: config is the path to the config file or directory
                     of files
                   type: string
+                protectKernelDefaults:
+                  description: 'Default kubelet behaviour for kernel tuning. If set,
+                    kubelet errors if any of kernel tunables is different than kubelet
+                    defaults. (DEPRECATED: This parameter should be set via the config
+                    file specified by the Kubelet''s --config flag.'
+                  type: boolean
                 readOnlyPort:
                   description: ReadOnlyPort is the port used by the kubelet api for
                     read-only access (default 10255)

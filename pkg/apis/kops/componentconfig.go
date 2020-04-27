@@ -196,6 +196,10 @@ type KubeletConfigSpec struct {
 	RegistryPullQPS *int32 `json:"registryPullQPS,omitempty" flag:"registry-qps"`
 	//RegistryBurst Maximum size of a bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registry-qps. Only used if --registry-qps > 0 (default 10)
 	RegistryBurst *int32 `json:"registryBurst,omitempty" flag:"registry-burst"`
+
+	// Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
+	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
+	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -458,6 +462,9 @@ type KubeAPIServerConfig struct {
 
 	// AuditDynamicConfiguration enables dynamic audit configuration via AuditSinks
 	AuditDynamicConfiguration *bool `json:"auditDynamicConfiguration,omitempty" flag:"audit-dynamic-configuration"`
+
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -545,6 +552,9 @@ type KubeControllerManagerConfig struct {
 	KubeAPIQPS *resource.Quantity `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
 	// KubeAPIBurst Burst to use while talking with kubernetes apiserver. (default 30)
 	KubeAPIBurst *int32 `json:"kubeAPIBurst,omitempty" flag:"kube-api-burst"`
+
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
@@ -593,6 +603,9 @@ type KubeSchedulerConfig struct {
 	// which has been supported as far back as Kubernetes 1.7. The default depends on the version and the cloud provider
 	// as outlined: https://kubernetes.io/docs/concepts/storage/storage-limits/
 	MaxPersistentVolumes *int32 `json:"maxPersistentVolumes,omitempty"`
+
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

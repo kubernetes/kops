@@ -3580,6 +3580,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.CPURequest = in.CPURequest
 	out.EventTTL = in.EventTTL
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -3680,6 +3681,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.CPURequest = in.CPURequest
 	out.EventTTL = in.EventTTL
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -3730,6 +3732,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
 	out.KubeAPIBurst = in.KubeAPIBurst
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -3780,6 +3783,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.MinResyncPeriod = in.MinResyncPeriod
 	out.KubeAPIQPS = in.KubeAPIQPS
 	out.KubeAPIBurst = in.KubeAPIBurst
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -3908,6 +3912,7 @@ func autoConvert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	out.FeatureGates = in.FeatureGates
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -3932,6 +3937,7 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *ko
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	out.FeatureGates = in.FeatureGates
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
+	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
 
@@ -4016,6 +4022,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.CpuManagerPolicy = in.CpuManagerPolicy
 	out.RegistryPullQPS = in.RegistryPullQPS
 	out.RegistryBurst = in.RegistryBurst
+	out.ProtectKernelDefaults = in.ProtectKernelDefaults
 	return nil
 }
 
@@ -4100,6 +4107,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.CpuManagerPolicy = in.CpuManagerPolicy
 	out.RegistryPullQPS = in.RegistryPullQPS
 	out.RegistryBurst = in.RegistryBurst
+	out.ProtectKernelDefaults = in.ProtectKernelDefaults
 	return nil
 }
 
