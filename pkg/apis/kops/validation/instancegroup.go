@@ -189,8 +189,12 @@ func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) field
 
 // CrossValidateInstanceGroup performs validation of the instance group, including that it is consistent with the Cluster
 // It calls ValidateInstanceGroup, so all that validation is included.
-func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, strict bool) field.ErrorList {
+func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {
 	allErrs := ValidateInstanceGroup(g)
+
+	if g.Spec.Role == kops.InstanceGroupRoleMaster {
+		allErrs = append(allErrs, ValidateMasterInstanceGroup(g, cluster)...)
+	}
 
 	// Check that instance groups are defined in subnets that are defined in the cluster
 	{
@@ -207,6 +211,23 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 		}
 	}
 
+	return allErrs
+}
+
+func ValidateMasterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {
+	allErrs := field.ErrorList{}
+	for _, etcd := range cluster.Spec.EtcdClusters {
+		hasEtcd := false
+		for _, m := range etcd.Members {
+			if fi.StringValue(m.InstanceGroup) == g.ObjectMeta.Name {
+				hasEtcd = true
+				break
+			}
+		}
+		if !hasEtcd {
+			allErrs = append(allErrs, field.NotFound(field.NewPath("spec", "etcdClusters").Key(etcd.Name), g.ObjectMeta.Name))
+		}
+	}
 	return allErrs
 }
 
