@@ -201,6 +201,10 @@ type KubeletConfigSpec struct {
 
 	// rotateCertificates enables client certificate rotation.
 	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
+
+	// Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
+	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
+	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -465,6 +469,9 @@ type KubeAPIServerConfig struct {
 
 	// AuditDynamicConfiguration enables dynamic audit configuration via AuditSinks
 	AuditDynamicConfiguration *bool `json:"auditDynamicConfiguration,omitempty" flag:"audit-dynamic-configuration"`
+
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -568,6 +575,9 @@ type KubeControllerManagerConfig struct {
 	ConcurrentServiceaccountTokenSyncs *int32 `json:"concurrentServiceaccountTokenSyncs,omitempty" flag:"concurrent-serviceaccount-token-syncs"`
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
 	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
+
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // CloudControllerManagerConfig is the configuration of the cloud controller
@@ -620,6 +630,9 @@ type KubeSchedulerConfig struct {
 	Qps *resource.Quantity `json:"qps,omitempty" configfile:"ClientConnection.QPS"`
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
 	Burst int32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
+
+	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
+	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

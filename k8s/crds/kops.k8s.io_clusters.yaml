@@ -1072,6 +1072,10 @@ spec:
                       in the 'kube-system' namespace to be used for TLS bootstrapping
                       authentication
                     type: boolean
+                  enableProfiling:
+                    description: EnableProfiling enables profiling via web interface
+                      host:port/debug/pprof/
+                    type: boolean
                   encryptionProviderConfig:
                     description: EncryptionProviderConfig enables encryption at rest
                       for secrets.
@@ -1391,6 +1395,10 @@ spec:
                     items:
                       type: string
                     type: array
+                  enableProfiling:
+                    description: EnableProfiling enables profiling via web interface
+                      host:port/debug/pprof/
+                    type: boolean
                   experimentalClusterSigningDuration:
                     description: ExperimentalClusterSigningDuration is the duration
                       that determines the length of duration that the signed certificates
@@ -1745,6 +1753,10 @@ spec:
                       the burst quota is exhausted
                     format: int32
                     type: integer
+                  enableProfiling:
+                    description: EnableProfiling enables profiling via web interface
+                      host:port/debug/pprof/
+                    type: boolean
                   featureGates:
                     additionalProperties:
                       type: string
@@ -2062,6 +2074,12 @@ spec:
                     description: config is the path to the config file or directory
                       of files
                     type: string
+                  protectKernelDefaults:
+                    description: 'Default kubelet behaviour for kernel tuning. If
+                      set, kubelet errors if any of kernel tunables is different than
+                      kubelet defaults. (DEPRECATED: This parameter should be set
+                      via the config file specified by the Kubelet''s --config flag.'
+                    type: boolean
                   readOnlyPort:
                     description: ReadOnlyPort is the port used by the kubelet api
                       for read-only access (default 10255)
@@ -2429,6 +2447,12 @@ spec:
                     description: config is the path to the config file or directory
                       of files
                     type: string
+                  protectKernelDefaults:
+                    description: 'Default kubelet behaviour for kernel tuning. If
+                      set, kubelet errors if any of kernel tunables is different than
+                      kubelet defaults. (DEPRECATED: This parameter should be set
+                      via the config file specified by the Kubelet''s --config flag.'
+                    type: boolean
                   readOnlyPort:
                     description: ReadOnlyPort is the port used by the kubelet api
                       for read-only access (default 10255)
