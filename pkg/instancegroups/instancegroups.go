@@ -322,6 +322,9 @@ func (c *RollingUpdateCluster) patchTaint(ctx context.Context, node *corev1.Node
 	}
 
 	_, err = c.K8sClient.CoreV1().Nodes().Patch(ctx, node.Name, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{})
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
 	return err
 }
 
@@ -557,10 +560,16 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstanceGroupMem
 	}
 
 	if err := drain.RunCordonOrUncordon(helper, u.Node, true); err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
 		return fmt.Errorf("error cordoning node: %v", err)
 	}
 
 	if err := drain.RunNodeDrain(helper, u.Node.Name); err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
 		return fmt.Errorf("error draining node: %v", err)
 	}
 
