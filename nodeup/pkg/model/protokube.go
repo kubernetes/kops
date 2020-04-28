@@ -361,7 +361,7 @@ type ProtokubeFlags struct {
 	GossipListen   *string `json:"gossip-listen" flag:"gossip-listen"`
 	GossipSecret   *string `json:"gossip-secret" flag:"gossip-secret"`
 
-	GossipProtocolSecondary *string `json:"gossip-protocol-secondary" flag:"gossip-protocol-secondary"`
+	GossipProtocolSecondary *string `json:"gossip-protocol-secondary" flag:"gossip-protocol-secondary" flag-include-empty:"true"`
 	GossipListenSecondary   *string `json:"gossip-listen-secondary" flag:"gossip-listen-secondary"`
 	GossipSecretSecondary   *string `json:"gossip-secret-secondary" flag:"gossip-secret-secondary"`
 }
