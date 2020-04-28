@@ -118,10 +118,12 @@ func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 		{Name: "mock1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*kopsapi.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b", "subnet-us-mock-1c"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1b"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1c"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b"))
 
-	expectErrorFromDeepValidate(t, c, groups, "[spec.subnets[0]: Not found: \"subnet-us-mock-1a\", spec.subnets[1]: Not found: \"subnet-us-mock-1b\", spec.subnets[2]: Not found: \"subnet-us-mock-1c\"]")
+	expectErrorFromDeepValidate(t, c, groups, "spec.subnets[0]: Not found: \"subnet-us-mock-1a\"")
 }
 
 func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
@@ -137,10 +139,36 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 	}
 
 	var groups []*kopsapi.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b", "subnet-us-mock-1c", "subnet-us-mock-1d"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1b"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1c"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
 
 	expectErrorFromDeepValidate(t, c, groups, "Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
+}
+
+func TestDeepValidate_MissingEtcdMember(t *testing.T) {
+	c := buildDefaultCluster(t)
+	c.Spec.EtcdClusters = []*kopsapi.EtcdClusterSpec{
+		{
+			Name: "main",
+			Members: []*kopsapi.EtcdMemberSpec{
+				{Name: "us-mock-1a", InstanceGroup: fi.String("us-mock-1a")},
+				{Name: "us-mock-1b", InstanceGroup: fi.String("us-mock-1b")},
+				{Name: "us-mock-1c", InstanceGroup: fi.String("us-mock-1c")},
+			},
+		},
+	}
+
+	var groups []*kopsapi.InstanceGroup
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1b"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1c"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1d"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
+
+	expectErrorFromDeepValidate(t, c, groups, "spec.metadata.name: Forbidden: InstanceGroup \"master-subnet-us-mock-1a\" with role Master must have a member in etcd cluster \"main\"")
 }
 
 func expectErrorFromDeepValidate(t *testing.T, c *kopsapi.Cluster, groups []*kopsapi.InstanceGroup, message string) {

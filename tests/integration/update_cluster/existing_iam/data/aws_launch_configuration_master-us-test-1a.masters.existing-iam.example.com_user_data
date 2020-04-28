@@ -153,7 +153,7 @@ etcdClusters:
 kubeAPIServer:
   allowPrivileged: true
   anonymousAuth: false
-  apiServerCount: 1
+  apiServerCount: 3
   authorizationMode: AlwaysAllow
   bindAddress: 0.0.0.0
   cloudProvider: aws
