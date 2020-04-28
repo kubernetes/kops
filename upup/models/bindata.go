@@ -3865,7 +3865,6 @@ rules:
   - crd.k8s.amazonaws.com
   resources:
   - "*"
-  - namespaces
   verbs:
   - "*"
 - apiGroups: [""]
@@ -3944,7 +3943,7 @@ spec:
       tolerations:
       - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.0" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.1" }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 61678
