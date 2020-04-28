@@ -47,6 +47,7 @@ type Ocean struct {
 	SpotPercentage           *float64
 	UtilizeReservedInstances *bool
 	FallbackToOnDemand       *bool
+	GracePeriod              *int64
 	InstanceTypesWhitelist   []string
 	InstanceTypesBlacklist   []string
 	Tags                     map[string]string
@@ -145,6 +146,10 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.SpotPercentage = strategy.SpotPercentage
 			actual.FallbackToOnDemand = strategy.FallbackToOnDemand
 			actual.UtilizeReservedInstances = strategy.UtilizeReservedInstances
+
+			if strategy.GracePeriod != nil {
+				actual.GracePeriod = fi.Int64(int64(fi.IntValue(strategy.GracePeriod)))
+			}
 		}
 	}
 
@@ -366,6 +371,10 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 		ocean.Strategy.SetSpotPercentage(e.SpotPercentage)
 		ocean.Strategy.SetFallbackToOnDemand(e.FallbackToOnDemand)
 		ocean.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
+
+		if e.GracePeriod != nil {
+			ocean.Strategy.SetGracePeriod(fi.Int(int(*e.GracePeriod)))
+		}
 	}
 
 	// Compute.
@@ -608,6 +617,17 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 			ocean.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
 			changes.UtilizeReservedInstances = nil
+			changed = true
+		}
+
+		// Grace period.
+		if changes.GracePeriod != nil {
+			if ocean.Strategy == nil {
+				ocean.Strategy = new(aws.Strategy)
+			}
+
+			ocean.Strategy.SetGracePeriod(fi.Int(int(*e.GracePeriod)))
+			changes.GracePeriod = nil
 			changed = true
 		}
 	}
@@ -977,6 +997,7 @@ type terraformOceanStrategy struct {
 	SpotPercentage           *float64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
 	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
 	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
+	GracePeriod              *int64   `json:"grace_period,omitempty" cty:"grace_period"`
 }
 
 type terraformOceanLaunchSpec struct {
@@ -1012,6 +1033,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 			SpotPercentage:           e.SpotPercentage,
 			FallbackToOnDemand:       e.FallbackToOnDemand,
 			UtilizeReservedInstances: e.UtilizeReservedInstances,
+			GracePeriod:              e.GracePeriod,
 		},
 		terraformOceanLaunchSpec: &terraformOceanLaunchSpec{},
 	}
