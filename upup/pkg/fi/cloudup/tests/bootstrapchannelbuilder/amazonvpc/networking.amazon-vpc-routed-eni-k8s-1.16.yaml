@@ -7,7 +7,6 @@ rules:
   - crd.k8s.amazonaws.com
   resources:
   - '*'
-  - namespaces
   verbs:
   - '*'
 - apiGroups:
@@ -100,7 +99,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.0
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.1
         imagePullPolicy: Always
         livenessProbe:
           exec:
