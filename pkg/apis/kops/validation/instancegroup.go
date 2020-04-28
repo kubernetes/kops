@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -225,7 +226,7 @@ func ValidateMasterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) f
 			}
 		}
 		if !hasEtcd {
-			allErrs = append(allErrs, field.NotFound(field.NewPath("spec", "etcdClusters").Key(etcd.Name), g.ObjectMeta.Name))
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "metadata", "name"), fmt.Sprintf("InstanceGroup \"%s\" with role Master must have a member in etcd cluster \"%s\"", g.ObjectMeta.Name, etcd.Name)))
 		}
 	}
 	return allErrs
