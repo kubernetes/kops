@@ -29,12 +29,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/instancegroups"
+	"k8s.io/kops/pkg/k8sclient"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -244,14 +244,14 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	}
 
 	var nodes []v1.Node
-	var k8sClient kubernetes.Interface
+	var k8sClient k8sclient.Interface
 	if !options.CloudOnly {
-		k8sClient, err = kubernetes.NewForConfig(config)
+		k8sClient, err = k8sclient.NewForConfig(config)
 		if err != nil {
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
 		}
 
-		nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+		nodeList, err := k8sClient.ListNodes(ctx)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
 			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the k8s API\n\n")

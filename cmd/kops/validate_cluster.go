@@ -31,11 +31,11 @@ import (
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/k8sclient"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 )
@@ -136,7 +136,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command
 		return nil, fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
 	}
 
-	k8sClient, err := kubernetes.NewForConfig(config)
+	k8sClient, err := k8sclient.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("cannot build kubernetes api client for %q: %v", contextName, err)
 	}

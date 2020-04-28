@@ -35,6 +35,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/k8sclient"
 )
 
 // ValidationCluster uses a cluster to validate.
@@ -60,7 +61,7 @@ type clusterValidatorImpl struct {
 	cluster        *kops.Cluster
 	cloud          fi.Cloud
 	instanceGroups []*kops.InstanceGroup
-	k8sClient      kubernetes.Interface
+	k8sClient      k8sclient.Interface
 }
 
 func (v *ValidationCluster) addError(failure *ValidationError) {
@@ -104,7 +105,7 @@ func hasPlaceHolderIP(clusterName string) (bool, error) {
 	return false, nil
 }
 
-func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, k8sClient k8sclient.Interface) (ClusterValidator, error) {
 	var instanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {
@@ -156,7 +157,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 		}
 	}
 
-	nodeList, err := v.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	nodeList, err := v.k8sClient.ListNodes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error listing nodes: %v", err)
 	}
@@ -168,11 +169,11 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	}
 	readyNodes := validation.validateNodes(cloudGroups, v.instanceGroups)
 
-	if err := validation.collectComponentFailures(ctx, v.k8sClient); err != nil {
+	if err := validation.collectComponentFailures(ctx, v.k8sClient.RawClient()); err != nil {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes); err != nil {
+	if err := validation.collectPodFailures(ctx, v.k8sClient.RawClient(), readyNodes); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 

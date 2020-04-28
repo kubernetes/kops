@@ -88,6 +88,8 @@ k8s.io/kops/pkg/flagbuilder
 k8s.io/kops/pkg/formatter
 k8s.io/kops/pkg/instancegroups
 k8s.io/kops/pkg/jsonutils
+k8s.io/kops/pkg/k8sclient
+k8s.io/kops/pkg/k8sclient/fakek8sclient
 k8s.io/kops/pkg/k8scodecs
 k8s.io/kops/pkg/k8sversion
 k8s.io/kops/pkg/kopscodecs

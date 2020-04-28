@@ -22,10 +22,10 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/k8sclient"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -46,7 +46,7 @@ type RollingUpdateCluster struct {
 	Force bool
 
 	// K8sClient is the kubernetes client, used for draining etc
-	K8sClient kubernetes.Interface
+	K8sClient k8sclient.Interface
 
 	// ClusterValidator is used for validating the cluster. Unused if CloudOnly
 	ClusterValidator validation.ClusterValidator
