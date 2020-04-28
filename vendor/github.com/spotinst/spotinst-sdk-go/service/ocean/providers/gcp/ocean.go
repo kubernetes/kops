@@ -66,8 +66,8 @@ type AutoScaler struct {
 }
 
 type AutoScalerDown struct {
-	EvaluationPeriods      *int `json:"evaluationPeriods,omitempty"`
-	MaxScaleDownPercentage *int `json:"maxScaleDownPercentage,omitempty"`
+	EvaluationPeriods      *int     `json:"evaluationPeriods,omitempty"`
+	MaxScaleDownPercentage *float64 `json:"maxScaleDownPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -196,6 +196,7 @@ type NetworkInterface struct {
 	AccessConfigs []*AccessConfig `json:"accessConfigs,omitempty"`
 	AliasIPRanges []*AliasIPRange `json:"aliasIpRanges,omitempty"`
 	Network       *string         `json:"network,omitempty"`
+	ProjectID     *string         `json:"projectId,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -970,6 +971,13 @@ func (o *NetworkInterface) SetNetwork(v *string) *NetworkInterface {
 	return o
 }
 
+func (o *NetworkInterface) SetProjectId(v *string) *NetworkInterface {
+	if o.ProjectID = v; o.ProjectID == nil {
+		o.nullFields = append(o.nullFields, "ProjectID")
+	}
+	return o
+}
+
 // endregion
 
 // region AliasIPRange
@@ -1153,6 +1161,13 @@ func (o AutoScalerDown) MarshalJSON() ([]byte, error) {
 func (o *AutoScalerDown) SetEvaluationPeriods(v *int) *AutoScalerDown {
 	if o.EvaluationPeriods = v; o.EvaluationPeriods == nil {
 		o.nullFields = append(o.nullFields, "EvaluationPeriods")
+	}
+	return o
+}
+
+func (o *AutoScalerDown) SetMaxScaleDownPercentage(v *float64) *AutoScalerDown {
+	if o.MaxScaleDownPercentage = v; o.MaxScaleDownPercentage == nil {
+		o.nullFields = append(o.nullFields, "MaxScaleDownPercentage")
 	}
 	return o
 }
