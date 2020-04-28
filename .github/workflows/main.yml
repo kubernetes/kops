@@ -39,7 +39,7 @@ jobs:
       - name: make nodeup examples test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
         run: |
-          make nodeup examples test
+          foo
 
   verify:
     strategy:
@@ -64,4 +64,4 @@ jobs:
       - name: make travis-ci
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
         run: |
-          make travis-ci
+          foo
