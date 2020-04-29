@@ -73,6 +73,7 @@ spec:
   instanceProtection: true
   maxPrice: "0.1"
   spotDurationInMinutes: 120
+  instanceInterruptionBehavior: "hibernate"
   subnets:
   - us-test-1b
 ---

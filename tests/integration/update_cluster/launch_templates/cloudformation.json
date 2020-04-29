@@ -606,6 +606,7 @@
             "MarketType": "spot",
             "SpotOptions": {
               "BlockDurationMinutes": 120,
+              "InstanceInterruptionBehavior": "hibernate",
               "MaxPrice": "0.1"
             }
           },

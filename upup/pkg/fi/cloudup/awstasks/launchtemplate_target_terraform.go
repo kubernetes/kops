@@ -61,8 +61,8 @@ type terraformLaunchTemplateIAMProfile struct {
 type terraformLaunchTemplateMarketOptionsSpotOptions struct {
 	// BlockDurationMinutes is required duration in minutes. This value must be a multiple of 60.
 	BlockDurationMinutes *int64 `json:"block_duration_minutes,omitempty" cty:"block_duration_minutes"`
-	// InstancesInterruptionBehavior is the behavior when a Spot Instance is interrupted. Can be hibernate, stop, or terminate
-	InstancesInterruptionBehavior *string `json:"instances_interruption_behavior,omitempty" cty:"instances_interruption_behavior"`
+	// InstanceInterruptionBehavior is the behavior when a Spot Instance is interrupted. Can be hibernate, stop, or terminate
+	InstanceInterruptionBehavior *string `json:"instance_interruption_behavior,omitempty" cty:"instance_interruption_behavior"`
 	// MaxPrice is the maximum hourly price you're willing to pay for the Spot Instances
 	MaxPrice *string `json:"max_price,omitempty" cty:"max_price"`
 	// SpotInstanceType is the Spot Instance request type. Can be one-time, or persistent
@@ -182,6 +182,9 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		marketSpotOptions := terraformLaunchTemplateMarketOptionsSpotOptions{MaxPrice: fi.String(e.SpotPrice)}
 		if e.SpotDurationInMinutes != nil {
 			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
+		}
+		if e.InstanceInterruptionBehavior != nil {
+			marketSpotOptions.InstanceInterruptionBehavior = e.InstanceInterruptionBehavior
 		}
 		tf.MarketOptions = []*terraformLaunchTemplateMarketOptions{
 			{

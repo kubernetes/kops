@@ -31,14 +31,15 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				IAMInstanceProfile: &IAMInstanceProfile{
 					Name: fi.String("nodes"),
 				},
-				ID:                     fi.String("test-11"),
-				InstanceMonitoring:     fi.Bool(true),
-				InstanceType:           fi.String("t2.medium"),
-				SpotPrice:              "0.1",
-				SpotDurationInMinutes:  fi.Int64(60),
-				RootVolumeOptimization: fi.Bool(true),
-				RootVolumeIops:         fi.Int64(100),
-				RootVolumeSize:         fi.Int64(64),
+				ID:                           fi.String("test-11"),
+				InstanceMonitoring:           fi.Bool(true),
+				InstanceType:                 fi.String("t2.medium"),
+				SpotPrice:                    "0.1",
+				SpotDurationInMinutes:        fi.Int64(60),
+				InstanceInterruptionBehavior: fi.String("hibernate"),
+				RootVolumeOptimization:       fi.Bool(true),
+				RootVolumeIops:               fi.Int64(100),
+				RootVolumeSize:               fi.Int64(64),
 				SSHKey: &SSHKey{
 					Name:      fi.String("newkey"),
 					PublicKey: fi.WrapResource(fi.NewStringResource("newkey")),
@@ -61,8 +62,9 @@ resource "aws_launch_template" "test" {
   instance_market_options {
     market_type = "spot"
     spot_options {
-      block_duration_minutes = 60
-      max_price              = "0.1"
+      block_duration_minutes 	     = 60
+	  instance_interruption_behavior = "hibernate"
+	  max_price              		 = "0.1"
     }
   }
   instance_type = "t2.medium"
