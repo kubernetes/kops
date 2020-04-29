@@ -51,6 +51,8 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup) field.ErrorList {
 
 	allErrs = append(allErrs, awsValidateSpotDurationInMinute(field.NewPath(ig.GetName(), "spec", "spotDurationInMinutes"), ig)...)
 
+	allErrs = append(allErrs, awsValidateInstanceInterruptionBehavior(field.NewPath(ig.GetName(), "spec", "instanceInterruptionBehavior"), ig)...)
+
 	return allErrs
 }
 
@@ -117,6 +119,16 @@ func awsValidateSpotDurationInMinute(fieldPath *field.Path, ig *kops.InstanceGro
 		validSpotDurations := []string{"60", "120", "180", "240", "300", "360"}
 		spotDurationStr := strconv.FormatInt(*ig.Spec.SpotDurationInMinutes, 10)
 		allErrs = append(allErrs, IsValidValue(fieldPath, &spotDurationStr, validSpotDurations)...)
+	}
+	return allErrs
+}
+
+func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.InstanceGroup) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if ig.Spec.InstanceInterruptionBehavior != nil {
+		validInterruptionBehaviors := []string{"terminate", "hibernate", "stop"}
+		instanceInterruptionBehavior := *ig.Spec.InstanceInterruptionBehavior
+		allErrs = append(allErrs, IsValidValue(fieldPath, &instanceInterruptionBehavior, validInterruptionBehaviors)...)
 	}
 	return allErrs
 }
