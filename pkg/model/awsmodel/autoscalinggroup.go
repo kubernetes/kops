@@ -134,6 +134,9 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	if ig.Spec.SpotDurationInMinutes != nil {
 		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
 	}
+	if ig.Spec.InstanceInterruptionBehavior != nil {
+		lt.InstanceInterruptionBehavior = ig.Spec.InstanceInterruptionBehavior
+	}
 	return lt, nil
 }
 

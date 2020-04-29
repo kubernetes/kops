@@ -31,14 +31,15 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
 				IAMInstanceProfile: &IAMInstanceProfile{
 					Name: fi.String("nodes"),
 				},
-				ID:                     fi.String("test-11"),
-				InstanceMonitoring:     fi.Bool(true),
-				InstanceType:           fi.String("t2.medium"),
-				RootVolumeOptimization: fi.Bool(true),
-				RootVolumeIops:         fi.Int64(100),
-				RootVolumeSize:         fi.Int64(64),
-				SpotPrice:              "10",
-				SpotDurationInMinutes:  fi.Int64(120),
+				ID:                           fi.String("test-11"),
+				InstanceMonitoring:           fi.Bool(true),
+				InstanceType:                 fi.String("t2.medium"),
+				RootVolumeOptimization:       fi.Bool(true),
+				RootVolumeIops:               fi.Int64(100),
+				RootVolumeSize:               fi.Int64(64),
+				SpotPrice:                    "10",
+				SpotDurationInMinutes:        fi.Int64(120),
+				InstanceInterruptionBehavior: fi.String("hibernate"),
 				SSHKey: &SSHKey{
 					Name: fi.String("mykey"),
 				},
@@ -67,6 +68,7 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
             "MarketType": "spot",
             "SpotOptions": {
               "BlockDurationMinutes": 120,
+              "InstanceInterruptionBehavior": "hibernate",
               "MaxPrice": "10"
             }
           },

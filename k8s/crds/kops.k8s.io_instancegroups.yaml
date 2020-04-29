@@ -217,6 +217,10 @@ spec:
               image:
                 description: Image is the instance (ami etc) we should use
                 type: string
+              instanceInterruptionBehavior:
+                description: InstanceInterrutionBehavior defines if a spot instance
+                  should be terminated, hibernated, or stopped after interruption
+                type: string
               instanceProtection:
                 description: InstanceProtection makes new instances in an autoscaling
                   group protected from scale in

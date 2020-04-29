@@ -134,6 +134,32 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 			},
 			ExpectedErrors: []string{},
 		},
+		{
+			Input: kops.InstanceGroupSpec{
+				InstanceInterruptionBehavior: fi.String("invalidValue"),
+			},
+			ExpectedErrors: []string{
+				"Unsupported value::test-nodes.spec.instanceInterruptionBehavior",
+			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				InstanceInterruptionBehavior: fi.String("terminate"),
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				InstanceInterruptionBehavior: fi.String("hibernate"),
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				InstanceInterruptionBehavior: fi.String("stop"),
+			},
+			ExpectedErrors: []string{},
+		},
 	}
 	for _, g := range grid {
 		ig := &kops.InstanceGroup{
