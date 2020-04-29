@@ -230,6 +230,9 @@ type Route53API interface {
 	ListQueryLoggingConfigsWithContext(aws.Context, *route53.ListQueryLoggingConfigsInput, ...request.Option) (*route53.ListQueryLoggingConfigsOutput, error)
 	ListQueryLoggingConfigsRequest(*route53.ListQueryLoggingConfigsInput) (*request.Request, *route53.ListQueryLoggingConfigsOutput)
 
+	ListQueryLoggingConfigsPages(*route53.ListQueryLoggingConfigsInput, func(*route53.ListQueryLoggingConfigsOutput, bool) bool) error
+	ListQueryLoggingConfigsPagesWithContext(aws.Context, *route53.ListQueryLoggingConfigsInput, func(*route53.ListQueryLoggingConfigsOutput, bool) bool, ...request.Option) error
+
 	ListResourceRecordSets(*route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error)
 	ListResourceRecordSetsWithContext(aws.Context, *route53.ListResourceRecordSetsInput, ...request.Option) (*route53.ListResourceRecordSetsOutput, error)
 	ListResourceRecordSetsRequest(*route53.ListResourceRecordSetsInput) (*request.Request, *route53.ListResourceRecordSetsOutput)
