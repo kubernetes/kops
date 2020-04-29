@@ -33,7 +33,7 @@ github.com/PuerkitoBio/urlesc
 github.com/aokoli/goutils
 # github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
 github.com/armon/go-metrics
-# github.com/aws/aws-sdk-go v1.29.21
+# github.com/aws/aws-sdk-go v1.30.16
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr
@@ -320,7 +320,7 @@ github.com/inconshreveable/mousetrap
 # github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 github.com/jacksontj/memberlistmesh
 github.com/jacksontj/memberlistmesh/clusterpb
-# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+# github.com/jmespath/go-jmespath v0.3.0
 github.com/jmespath/go-jmespath
 # github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 github.com/jpillora/backoff
@@ -426,7 +426,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.5.1
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/urfave/cli v1.20.0
