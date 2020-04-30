@@ -10,11 +10,6 @@ build --stamp
 build --workspace_status_command=./tools/get_workspace_status.sh
 build --verbose_failures
 
-# Workaround for rules_docker python compatibility
-# See https://github.com/bazelbuild/rules_docker/issues/842
-# and https://github.com/bazelbuild/rules_docker/issues/580
-build --host_force_python=PY2
-
 test --test_output=errors
 
 
