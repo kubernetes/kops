@@ -843,7 +843,7 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*resources.Resource, error) {
 
 			if d.isKopsManagedDNSName(record.Name) {
 				resource := resources.Resource{
-					Name:         zone.Name,
+					Name:         record.Name,
 					ID:           record.Name,
 					Type:         typeDNSRecord,
 					GroupDeleter: deleteDNSRecords,
@@ -865,7 +865,7 @@ func deleteDNSRecords(cloud fi.Cloud, r []*resources.Resource) error {
 
 	for _, record := range r {
 		r := record.Obj.(*clouddns.ResourceRecordSet)
-		zoneName = record.Name
+		zoneName = record.GroupKey
 		records = append(records, r)
 	}
 
