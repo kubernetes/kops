@@ -1,5 +1,7 @@
 ## kops Advisories
 
+- [etcd-manager certificate expiration](etcd-manager-certificate-expiration.md)
+
 - [Spectre/Meltdown: Kernel Update Required](spectre-meltdown-kernel-update.md)
   - CVE-2017-5715
   - CVE-2017-5753
