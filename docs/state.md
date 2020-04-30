@@ -106,7 +106,7 @@ Repeat for each cluster needing to be moved.
 #### Cross Account State-store
 
 Many enterprises prefer to run many AWS accounts. In these setups, having a shared cross-account S3 bucket for state may make inventory and management easier.
-In order to achieve this, you first need to let the other accounts access the s3 bucket. This is done by adding the following _bucket policy_ on the S3 bucket:
+Consider the S3 bucket living in Account B and the kops cluster living in Account A. In order to achieve this, you first need to let Account A access the s3 bucket. This is done by adding the following _bucket policy_ on the S3 bucket:
 
 ```
 {
