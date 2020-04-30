@@ -125,7 +125,7 @@ Consider the S3 bucket living in Account B and the kops cluster living in Accoun
             }
             "Principal": {
                 "AWS": [
-                    "arn:aws:iam::<remote-account>:root"
+                    "arn:aws:iam::<account-a>:root"
                 ]
             }
         }
