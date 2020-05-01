@@ -13,10 +13,18 @@ spec:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
+    - instanceGroup: master-us-test-1b
+      name: b
+    - instanceGroup: master-us-test-1c
+      name: c
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
+    - instanceGroup: master-us-test-1b
+      name: b
+    - instanceGroup: master-us-test-1c
+      name: c
     name: events
   kubelet:
     anonymousAuth: false

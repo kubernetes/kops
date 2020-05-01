@@ -227,7 +227,7 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Com
 			return fmt.Errorf("unexpected object type: %T", obj)
 		}
 
-		err = validation.ValidateInstanceGroup(group).ToAggregate()
+		err = validation.CrossValidateInstanceGroup(group, cluster).ToAggregate()
 		if err != nil {
 			return err
 		}

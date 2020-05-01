@@ -654,7 +654,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 	}
 
 	for _, g := range groups {
-		errs := CrossValidateInstanceGroup(g, c, strict)
+		errs := CrossValidateInstanceGroup(g, c)
 
 		// Additional cloud-specific validation rules,
 		// such as making sure that identifiers match the expected formats for the given cloud
