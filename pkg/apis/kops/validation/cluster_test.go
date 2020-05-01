@@ -39,6 +39,54 @@ func TestValidEtcdChanges(t *testing.T) {
 						Name:          "a",
 						InstanceGroup: fi.String("eu-central-1a"),
 					},
+					{
+						Name:          "b",
+						InstanceGroup: fi.String("eu-central-1b"),
+					},
+					{
+						Name:          "c",
+						InstanceGroup: fi.String("eu-central-1c"),
+					},
+				},
+			},
+
+			NewSpec: &kops.EtcdClusterSpec{
+				Name: "main",
+				Members: []*kops.EtcdMemberSpec{
+					{
+						Name:          "a",
+						InstanceGroup: fi.String("eu-central-1a"),
+					},
+					{
+						Name:          "b",
+						InstanceGroup: fi.String("eu-central-1b"),
+					},
+					{
+						Name:          "d",
+						InstanceGroup: fi.String("eu-central-1d"),
+					},
+				},
+			},
+
+			Status: &kops.ClusterStatus{
+				EtcdClusters: []kops.EtcdClusterStatus{
+					{
+						Name: "main",
+					},
+				},
+			},
+
+			Details: "Could not move master from one zone to another",
+		},
+
+		{
+			OldSpec: &kops.EtcdClusterSpec{
+				Name: "main",
+				Members: []*kops.EtcdMemberSpec{
+					{
+						Name:          "a",
+						InstanceGroup: fi.String("eu-central-1a"),
+					},
 				},
 			},
 
@@ -107,7 +155,7 @@ func TestValidEtcdChanges(t *testing.T) {
 	for _, g := range grid {
 		errorList := validateEtcdClusterUpdate(nil, g.NewSpec, g.Status, g.OldSpec)
 		if len(errorList) != 0 {
-			t.Error(g.Details)
+			t.Errorf("%v: %v", g.Details, errorList)
 		}
 	}
 }
