@@ -5,8 +5,8 @@ The default images for Kops clusters are based on Debian 9 (Stretch). These imag
 You can choose a different image for an instance group by editing it with `kops edit ig nodes`. You should see an `image` field in one of the following formats:
 
 * `ami-abcdef` - specifies an AMI by id directly
-* `<owner>/<name>` specifies an AMI by its owner and name properties
-* `<alias>/<name>` specifies an AMI by its owner alias and name properties
+* `<owner>/<name>` specifies an AMI by its owner's account ID  and name properties
+* `<alias>/<name>` specifies an AMI by its owner's alias and name properties
 
 Using the AMI id is precise, but ids vary by region. It is often more convenient to use the `<owner/alias>/<name>`, if equivalent images have been copied to various regions with the same name.
 
@@ -30,13 +30,13 @@ image: ami-00579fbb15b954340
 or
 
 ```yaml
-image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200423
+image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
 ```
 
 or
 
 ```yaml
-image: ubuntu/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20200423
+image: ubuntu/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
 ```
 
 You can find the name for an image using:
@@ -144,6 +144,8 @@ It is based on Kernel version **3.10** which has a considerable number of known 
 
 * https://github.com/kubernetes/kubernetes/issues/56903
 * https://github.com/kubernetes/kubernetes/issues/67577
+
+Before using CentOS images you must accept the agreement at https://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce.
 
 Available images can be listed using:
 
