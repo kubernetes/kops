@@ -181,7 +181,7 @@ func TestResourceRecordSetsAdditionVisible(t *testing.T) {
 }
 
 /* TestResourceRecordSetsAddDuplicateFail verifies that addition of a duplicate RRS fails */
-func TestResourceRecordSetsAddDuplicateFail(t *testing.T) {
+func TestResourceRecordSetsAddDuplicateFailure(t *testing.T) {
 	zone := firstZone(t)
 	sets := rrs(t, zone)
 	rrset := getExampleRrs(zone)
