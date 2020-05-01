@@ -103,11 +103,10 @@ The state store can easily be moved to a different s3 bucket. The steps for a si
 
 Repeat for each cluster needing to be moved.
 
-#### Cross Account State-store (AWS S3)
+#### Cross Account State-store
 
-There are situations in which the entity executing kops to create the cluster is not in the same account as the owner of the state store bucket. In this case, you must explicitly grant the permission: `s3:getBucketLocation` to the ARN that is running kops.
-
-You can use the following policy to guide your implementation:
+Many enterprises prefer to run many AWS accounts. In these setups, having a shared cross-account S3 bucket for state may make inventory and management easier.
+Consider the S3 bucket living in Account B and the kops cluster living in Account A. In order to achieve this, you first need to let Account A access the s3 bucket. This is done by adding the following _bucket policy_ on the S3 bucket:
 
 ```
 {
@@ -117,19 +116,25 @@ You can use the following policy to guide your implementation:
         {
             "Sid": "123",
             "Action": [
-                "s3:GetBucketLocation"
+                "s3:*"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:s3:::state-store-bucket",
+            "Resource": [
+                "arn:aws:s3:::<state-store-bucket>",
+                "arn:aws:s3:::<state-store-bucket>/*",
+            }
             "Principal": {
                 "AWS": [
-                    "arn:aws:iam::123456789:user/kopsuser"
+                    "arn:aws:iam::<account-a>:root"
                 ]
             }
         }
     ]
 }
 ```
+
+Kops will then use that bucket as if it was in the remote account, including creating appropriate IAM policies that limits nodes from doing bad things.
+Note that any user/role with full S3 access will be able to delete any cluster from the state store, but may not delete any instances or other things outside of S3.
 
 ## Digital Ocean (do://)
 
