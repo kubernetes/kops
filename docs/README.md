@@ -59,7 +59,7 @@ For a better viewing experience please check out our live documentation site at 
 * [`etcd` backup/restore](operations/etcd_backup_restore_encryption.md#backing-up-etcd)
 * [GPU setup](gpu.md)
 * [High Availability](operations/high_availability.md)
-* [InstanceGroup images](operations/images.md)
+* [InstanceGroup Images](operations/images.md)
     * how to use other image for cluster nodes, and information on available/tested images
 * [`k8s` upgrading](operations/updates_and_upgrades.md#upgrading-kubernetes)
 * [`kops` updating](operations/updates_and_upgrades.md#updating-kops)

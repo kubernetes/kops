@@ -1,167 +1,237 @@
 # Images
 
-Changing the image for an instance group
+The default images for Kops clusters are based on Debian 9 (Stretch). These images are built by the [kubernetes-sigs/image-builder](https://github.com/kubernetes-sigs/image-builder/tree/master/images/kube-deploy/imagebuilder) project for each Kubernetes release and are available for any other use under the `kope.io` account.
 
-You can choose a different AMI for an instance group.
+You can choose a different image for an instance group by editing it with `kops edit ig nodes`. You should see an `image` field in one of the following formats:
 
-If you `kops edit ig nodes`, you should see an `image` member of the spec.
+* `ami-abcdef` - specifies an AMI by id directly
+* `<owner>/<name>` specifies an AMI by its owner's account ID  and name properties
+* `<alias>/<name>` specifies an AMI by its owner's alias and name properties
 
-Various syntaxes are available:
+Using the AMI id is precise, but ids vary by region. It is often more convenient to use the `<owner/alias>/<name>`, if equivalent images have been copied to various regions with the same name.
 
-* `ami-abcdef` specifies an AMI by id directly.
-* `<owner>/<name>` specifies an AMI by its owner and Name properties
-
-The ami spec is precise, but AMIs vary by region.  So it is often more convenient to use the `<owner>/<name>`
-specifier, if equivalent images have been copied to various regions with the same name.
-
-For example, to use Ubuntu 16.04, you could specify:
-
-`image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180405`
-
-You can find the name for an image using e.g. `aws ec2 describe-images --image-id ami-493f2f29`
-
-(Please note that ubuntu is currently undergoing validation testing with k8s - use at your own risk!)
-
-If you are creating a new cluster you can use the `--image` flag when running `kops create cluster`,
-which should be easier than editing your instance groups.
-
-In addition, we support a few-well known aliases for the owner:
+Kops supports owner aliases for the official accounts of supported distros:
 
 * `kope.io` => `383156758163`
-* `redhat.com` => `309956199498`
-* `coreos.com` => `595879546273`
-* `amazon.com` => `137112412989`
+* `amazon` => `137112412989`
+* `centos` => `679593333241`
+* `debian9` => `379101102735`
+* `debian10` => `136693071363`
+* `flatcar` => `075585003325`
+* `redhat` => `309956199498`
+* `ubuntu` => `099720109477`
 
-## Debian
+For example, to use Ubuntu 20.04, you could specify:
 
-A Debian image with a custom kubernetes kernel is the primary (default) platform for kops.
-
-We run a Debian Jessie image, with a 4.4 (stable series) kernel that is built with kubernetes-specific settings.
-
-The tooling used to build these images is open source:
-
-* [imagebuilder](https://github.com/kubernetes/kube-deploy/tree/master/imagebuilder) is used to build an image
-  as defined by a bootstrap-vz [template](https://github.com/kubernetes/kube-deploy/tree/master/imagebuilder/templates)
-* The [kubernetes-kernel](https://github.com/kopeio/kubernetes-kernel) project has the build scripts / configuration
-  used for building the kernel.
-
-The latest image name is kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable),
-but an example is `kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  This means to look for an image published
-by `kope.io`, (which is a well-known alias to account `383156758163`), with the name
-`k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  By using a name instead of an AMI, we can reference an image
-irrespective of the region in which it is located.
-
-kops should also now work on stock Debian 9 (Stretch) images.  Stock Debian 8 (Jessie) images are not recommended,
-as they typically do not have a suitable kernel and kernel options configured.
-
-## Ubuntu
-
-Ubuntu is not the default platform, but is believed to be entirely functional.
-
-Ubuntu 16.04 or later is required (we require systemd).
-
-For example, to use Ubuntu 16.04, you could specify:
-
-`image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180405`
-
-You can find the name for an image by first consulting [Ubuntu's image finder](https://cloud-images.ubuntu.com/locator/),
-and then using e.g. `aws ec2 describe-images --image-id ami-493f2f29`
-
-## CentOS
-
-CentOS7 support is still experimental, but should work. Please report any issues.
-
-The following steps are known:
-
-* You must accept the agreement at http://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce
-* Specify the AMI by id (there are no tags): us-east-1: `ami-01ed306a12b7d1c96`
-* You may find public images from the [CentOS AWS page](https://wiki.centos.org/Cloud/AWS) but the table may not be up to date.
-* You can also query by product-code: `aws ec2 describe-images --region=us-west-2 --filters Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce Name=architecture,Values=x86_64 'Name=name,Values=CentOS*' --query 'sort_by(Images,&Name)'`
-
-Be aware of the following limitations:
-
-* CentOS 7.2 is the recommended minimum version
-* CentOS7 AMIs are running an older kernel than we prefer to run elsewhere
-
-
-## RHEL7
-
-RHEL7 support is still experimental, but should work. Please report any issues.
-
-The following steps are known:
-
-* Redhat AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=309956199498 --filters Name=virtualization-type,Values=hvm 'Name=name,Values=RHEL-*GA*' Name=architecture,Values=x86_64 --query 'sort_by(Images,&Name)'`
-* You can specify the name using the `redhat.com` owner alias, for example `redhat.com/RHEL-7.2_HVM-20161025-x86_64-1-Hourly2-GP2`
-
-Be aware of the following limitations:
-
-* RHEL 7.2 is the recommended minimum version
-* RHEL7 AMIs are running an older kernel than we prefer to run elsewhere
-
-## CoreOS
-
-CoreOS has been tested enough to be considered ready for production with kops, but if you encounter any problem please report it to us.
-
-The following steps are known:
-
-* The latest stable CoreOS AMI can be found using:
-```bash
-aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
-    --filters "Name=virtualization-type,Values=hvm" "Name=name,Values=CoreOS-stable*" \
-    --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
+```yaml
+image: ami-00579fbb15b954340
 ```
 
-Also, you can obtain the "AMI ID" from CoreOS web page too. They publish their AMI's using a json file at [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json). Using some scripting and a "json" parser (like jq) you can obtain the AMI ID from a specific availability zone:
+or
 
-```bash
-curl -s https://coreos.com/dist/aws/aws-stable.json | jq -r '.["us-east-1"].hvm'
-"ami-32705b49"
+```yaml
+image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
 ```
 
-* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1409.8.0-hvm` or leave it at `595879546273/CoreOS-stable-1409.8.0-hvm` if you prefer to do so.
+or
 
-As part of our documentation, you will find a practical exercise using CoreOS with KOPS. See the file ["coreos-kops-tests-multimaster.md"](../examples/coreos-kops-tests-multimaster.md) in the "examples" directory. This exercise covers not only using kops with CoreOS, but also a practical view of KOPS with a multi-master kubernetes setup.
+```yaml
+image: ubuntu/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
+```
 
-> Note: SSH username for CoreOS based instances will be `core`
+You can find the name for an image using:
+
+`aws ec2 describe-images --region us-east-1 --image-id ami-00579fbb15b954340`
+
+## Kope.io
+
+The default imagess from `kope.io` are based on Debian 9 (Stretch). These images include all the necessary files and packages to run Kubernetes, making node startup faster. Other than that, the changes to the official Debian images are (minimal)[https://github.com/kubernetes-sigs/image-builder/tree/master/images/kube-deploy/imagebuilder/templates].
+
+The latest image names are kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable), but all available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 383156758163 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=*-debian-stretch-*"
+```
+
+## Debian 9 (Stretch)
+
+Debian 9 (Stretch) is fully supported and functional.
+
+It is based on Kernel version **4.9** which has number of known bugs that affect it and may be noticed with larger clusters:
+
+* https://github.com/kubernetes/kubernetes/issues/56903
+* https://github.com/kubernetes/kubernetes/issues/67577
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 379101102735 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=debian-stretch-hvm-x86_64-gp2-*"
+```
+
+## Debian 10 (Buster)
+
+Debian 10 support was introduced in **Kops 1.13** and is fully functional as long as `iptables` is in `legacy` mode.
+
+It is based on Kernel version **4.19** which fixes some of the bugs present in Debian 9 and effects are less visible.
+
+One notable change is the addition of `iptables` NFT, which is by default. This is not yet supported by most CNI plugins and also seems to be [slower](https://youtu.be/KHMnC3kj3Js?t=771) than the legacy version. It is recommended to switch to `iptables` legacy by using the following script in `additionalUserData` for each instance group:
+
+```yaml
+additionalUserData:
+  - name: busterfix.sh
+    type: text/x-shellscript
+    content: |
+      #!/bin/sh
+      update-alternatives --set iptables /usr/sbin/iptables-legacy
+      update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+      update-alternatives --set arptables /usr/sbin/arptables-legacy
+      update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+```
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 136693071363 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=debian-10-amd64-*"
+```
+
+## Ubuntu 18.04 (Bionic)
+
+Ubuntu 18.04 is fully supported and functional.
+
+It is based on Kernel version **4.15** which has number of known bugs that affect it and may be noticed with larger clusters:
+
+* https://github.com/kubernetes/kubernetes/issues/56903
+* https://github.com/kubernetes/kubernetes/issues/67577
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 099720109477 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-*"
+```
+
+## Ubuntu 20.04 (Focal)
+
+Ubuntu 20.04 support was introduced in **Kops 1.16** and is fully functional. 
+
+It is based on Kernel version **5.4** which fixes all the know major Kernel bugs.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 099720109477 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-*"
+```
+
+## CentOS 7
+
+CentOS 7 is supported and functional. The minimum supported version is **7.4**.
+
+It is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
+
+* https://github.com/kubernetes/kubernetes/issues/56903
+* https://github.com/kubernetes/kubernetes/issues/67577
+
+Before using CentOS images you must accept the agreement at https://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 679593333241 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce" "Name=name,Values=CentOS*"
+```
+
+## RHEL 7
+
+RHEL 7 is supported and functional. The minimum supported version is **7.4**.
+
+It is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
+
+* https://github.com/kubernetes/kubernetes/issues/56903
+* https://github.com/kubernetes/kubernetes/issues/67577
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 309956199498 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=RHEL-7.*x86_64*"
+```
+
+## RHEL 8
+
+RHEL 8 support was introduced in **Kops 1.18** and is experimental. 
+
+It is based on Kernel version **4.18** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
+
+One notable change is the addition of `iptables` NFT, which is the only iptables backend available. This is not yet supported by most CNI plugins and should be used with care.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 309956199498 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=RHEL-8.*x86_64*"
+```
 
 ## Amazon Linux 2
 
-Amazon Linux 2 support is still experimental, but should work. Please report any issues.
+Amazon Linux 2 support is still experimental, but should work with **Kops 1.18** or newer. Please report any issues.
 
-The following steps are known:
+It is based on Kernel version **4.18** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
 
-* The latest Amazon Linux 2 AMI can be found using:
+Available images can be listed using:
+
 ```bash
-aws ec2 describe-images --region=us-east-1 --owner=137112412989 \
-    --filters "Name=name,Values=amzn2-ami-hvm-2*-gp2" \
-    --query 'sort_by(Images,&CreationDate)[-1].{name:Name}'
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 137112412989 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=amzn2-ami-hvm-2*-x86_64-gp2"
 ```
-* You can specify the name using the `amazon.com` owner alias, for example `amazon.com/amzn2-ami-hvm-2.0.20180622.1-x86_64-gp2`
-
-Be aware of the following limitations:
-
-* [Amazon Linux 2 LTS](https://aws.amazon.com/amazon-linux-2/release-notes/) is the recommended minimum version, a previous version called just "Amazon Linux AMI" is not supported.
-
-> Note: SSH username for Amazon Linux 2 based instances will be `ec2-user`
 
 ## Flatcar
 
-Flatcar is a friendly fork of CoreOS and as such, compatible with it. If some issues occurs with it, it is likely that also CoreOS might be affected. If you encounter any problem please report it to us.
+Flatcar is a friendly fork of CoreOS and as such, compatible with it.
 
-The following steps are known:
+Support was introduced in **Kops 1.15** and it is both supported and functional.
 
-* The latest stable Flatcar AMI can be found using:
-```bash
-aws ec2 describe-images --region=us-east-1 --owner=075585003325 \
-    --filters "Name=virtualization-type,Values=hvm" "Name=name,Values=Flatcar-stable*" \
-    --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
-```
-
-Also, you can obtain the "AMI ID" from Flatcar web page too. They publish their AMI's using a json file at [https://stable.release.flatcar-linux.net/amd64-usr/current/flatcar_production_ami_all.json](https://stable.release.flatcar-linux.net/amd64-usr/current/flatcar_production_ami_all.json). Using some scripting and a "json" parser (like jq) you can obtain the AMI ID from a specific region:
+Available images can be listed using:
 
 ```bash
-curl -s https://stable.release.flatcar-linux.net/amd64-usr/current/flatcar_production_ami_all.json | jq -r '.amis[] | select(.name == "us-east-1") | .hvm'
-"ami-096be41989ec7e569"
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 075585003325 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=Flatcar-stable-*-hvm"
 ```
 
-> Note: SSH username for Flatcar based instances will be `core`
+## Debian 8 (Jessie)
+
+Support for Debian 8 (Jessie) is deprecated and will be removed in future versions of Kops.
+
+## Ubuntu 16.04 (Xenial)
+
+Support for Ubuntu 16.04 (Xenial) is deprecated and will be removed in future versions of Kops.
+
+## CoreOS
+
+Support for CoreOS is deprecated and will be removed in future versions of Kops.
+
+You should consider using Flatcar as a replacement.
+
