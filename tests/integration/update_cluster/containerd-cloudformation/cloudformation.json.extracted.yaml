@@ -225,7 +225,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.2
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -243,7 +243,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -448,7 +448,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.0
+    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.2
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
