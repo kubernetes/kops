@@ -93,18 +93,18 @@ var containerdVersions = []packageVersion{
 		Hash:           "f4c941807310e3fa470dddfb068d599174a3daec",
 	},
 
-	// 1.2.10 - CentOS / Rhel 7
+	// 1.2.10 - CentOS7 / Rhel 7
 	{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
+		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "f6447e84479df3a58ce04a3da87ccc384663493b",
 	},
 
-	// 1.2.10 - CentOS / Rhel 8
+	// 1.2.10 - CentOS8 / Rhel 8
 	{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
@@ -113,6 +113,19 @@ var containerdVersions = []packageVersion{
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "f6447e84479df3a58ce04a3da87ccc384663493b",
+	},
+
+	// 1.2.10 - Linux Generic
+	//
+	// Used only on AmazonLinux2: the Centos7 package pulls in
+	// container-selinux, but selinux isn't used on amazonlinux2
+	{
+		PackageVersion: "1.2.10",
+		PlainBinary:    true,
+		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2},
+		Architectures:  []Architecture{ArchitectureAmd64},
+		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.10.linux-amd64.tar.gz",
+		Hash:           "c84c29dcd1867a6ee9899d2106ab4f28854945f6",
 	},
 
 	// 1.2.11 - Linux Generic
