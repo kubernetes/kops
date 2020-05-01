@@ -86,11 +86,15 @@ const TagNameKopsRole = "kubernetes.io/kops/role"
 const TagNameClusterOwnershipPrefix = "kubernetes.io/cluster/"
 
 const (
-	WellKnownAccountKopeio             = "383156758163"
-	WellKnownAccountRedhat             = "309956199498"
-	WellKnownAccountCoreOS             = "595879546273"
-	WellKnownAccountAmazonSystemLinux2 = "137112412989"
-	WellKnownAccountUbuntu             = "099720109477"
+	WellKnownAccountAmazonLinux2 = "137112412989"
+	WellKnownAccountCentOS       = "679593333241"
+	WellKnownAccountCoreOS       = "595879546273"
+	WellKnownAccountDebian9      = "379101102735"
+	WellKnownAccountDebian10     = "136693071363"
+	WellKnownAccountFlatcar      = "075585003325"
+	WellKnownAccountKopeio       = "383156758163"
+	WellKnownAccountRedhat       = "309956199498"
+	WellKnownAccountUbuntu       = "099720109477"
 )
 
 type AWSCloud interface {
@@ -1192,14 +1196,24 @@ func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 
 			// Check for well known owner aliases
 			switch owner {
-			case "kope.io":
-				owner = WellKnownAccountKopeio
-			case "coreos.com":
+			case "amazon", "amazon.com":
+				owner = WellKnownAccountAmazonLinux2
+			case "centos":
+				owner = WellKnownAccountCentOS
+			case "coreos", "coreos.com":
 				owner = WellKnownAccountCoreOS
-			case "redhat.com":
+			case "debian9":
+				owner = WellKnownAccountDebian9
+			case "debian10":
+				owner = WellKnownAccountDebian10
+			case "flatcar":
+				owner = WellKnownAccountFlatcar
+			case "kopeio", "kope.io":
+				owner = WellKnownAccountKopeio
+			case "redhat", "redhat.com":
 				owner = WellKnownAccountRedhat
-			case "amazon.com":
-				owner = WellKnownAccountAmazonSystemLinux2
+			case "ubuntu":
+				owner = WellKnownAccountUbuntu
 			}
 
 			request.Owners = []*string{&owner}
