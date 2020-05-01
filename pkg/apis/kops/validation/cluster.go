@@ -92,13 +92,6 @@ func validateEtcdClusterUpdate(fp *field.Path, obj *kops.EtcdClusterSpec, status
 				allErrs = append(allErrs, validateEtcdMemberUpdate(fp, newMember, etcdClusterStatus, oldMember)...)
 			}
 		}
-		for k := range oldMembers {
-			newCluster := newMembers[k]
-			if newCluster == nil {
-				fp := fp.Child("etcdMembers").Key(k)
-				allErrs = append(allErrs, field.Forbidden(fp, "EtcdCluster members cannot be removed"))
-			}
-		}
 	}
 
 	return allErrs

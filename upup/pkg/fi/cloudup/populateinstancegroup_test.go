@@ -33,11 +33,11 @@ func buildMinimalNodeInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
 	return g
 }
 
-func buildMinimalMasterInstanceGroup(subnets ...string) *kopsapi.InstanceGroup {
+func buildMinimalMasterInstanceGroup(subnet string) *kopsapi.InstanceGroup {
 	g := &kopsapi.InstanceGroup{}
-	g.ObjectMeta.Name = "master"
+	g.ObjectMeta.Name = "master-" + subnet
 	g.Spec.Role = kopsapi.InstanceGroupRoleMaster
-	g.Spec.Subnets = subnets
+	g.Spec.Subnets = []string{subnet}
 
 	return g
 }

@@ -217,7 +217,7 @@ resource "aws_ebs_volume" "a-etcd-events-existing-iam-example-com" {
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "a.etcd-events.existing-iam.example.com"
-    "k8s.io/etcd/events"                             = "a/a"
+    "k8s.io/etcd/events"                             = "a/a,b,c"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
@@ -231,7 +231,63 @@ resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
   tags = {
     "KubernetesCluster"                              = "existing-iam.example.com"
     "Name"                                           = "a.etcd-main.existing-iam.example.com"
-    "k8s.io/etcd/main"                               = "a/a"
+    "k8s.io/etcd/main"                               = "a/a,b,c"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+  }
+  type = "gp2"
+}
+
+resource "aws_ebs_volume" "b-etcd-events-existing-iam-example-com" {
+  availability_zone = "us-test-1b"
+  encrypted         = false
+  size              = 20
+  tags = {
+    "KubernetesCluster"                              = "existing-iam.example.com"
+    "Name"                                           = "b.etcd-events.existing-iam.example.com"
+    "k8s.io/etcd/events"                             = "b/a,b,c"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+  }
+  type = "gp2"
+}
+
+resource "aws_ebs_volume" "b-etcd-main-existing-iam-example-com" {
+  availability_zone = "us-test-1b"
+  encrypted         = false
+  size              = 20
+  tags = {
+    "KubernetesCluster"                              = "existing-iam.example.com"
+    "Name"                                           = "b.etcd-main.existing-iam.example.com"
+    "k8s.io/etcd/main"                               = "b/a,b,c"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+  }
+  type = "gp2"
+}
+
+resource "aws_ebs_volume" "c-etcd-events-existing-iam-example-com" {
+  availability_zone = "us-test-1c"
+  encrypted         = false
+  size              = 20
+  tags = {
+    "KubernetesCluster"                              = "existing-iam.example.com"
+    "Name"                                           = "c.etcd-events.existing-iam.example.com"
+    "k8s.io/etcd/events"                             = "c/a,b,c"
+    "k8s.io/role/master"                             = "1"
+    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+  }
+  type = "gp2"
+}
+
+resource "aws_ebs_volume" "c-etcd-main-existing-iam-example-com" {
+  availability_zone = "us-test-1c"
+  encrypted         = false
+  size              = 20
+  tags = {
+    "KubernetesCluster"                              = "existing-iam.example.com"
+    "Name"                                           = "c.etcd-main.existing-iam.example.com"
+    "k8s.io/etcd/main"                               = "c/a,b,c"
     "k8s.io/role/master"                             = "1"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }

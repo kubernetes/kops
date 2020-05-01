@@ -177,7 +177,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 		return err
 	}
 
-	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, true).ToAggregate()
+	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster).ToAggregate()
 	if err != nil {
 		return err
 	}
