@@ -66,7 +66,7 @@ resource "aws_launch_template" "test" {
       instance_interruption_behavior = "hibernate"
       max_price                      = "0.1"
     }
-  }
+  } 
   instance_type = "t2.medium"
   key_name      = aws_key_pair.newkey.id
   lifecycle {
