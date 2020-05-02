@@ -117,12 +117,12 @@ var containerdVersions = []packageVersion{
 
 	// 1.2.10 - Linux Generic
 	//
-	// Used only on AmazonLinux2: the Centos7 package pulls in
-	// container-selinux, but selinux isn't used on amazonlinux2
+	// * AmazonLinux2: the Centos7 package depends on container-selinux, but selinux isn't used on amazonlinux2
+	// * UbuntuFocal: no focal version available at download.docker.com
 	{
 		PackageVersion: "1.2.10",
 		PlainBinary:    true,
-		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2},
+		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2, distros.DistributionFocal},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.10.linux-amd64.tar.gz",
 		Hash:           "c84c29dcd1867a6ee9899d2106ab4f28854945f6",
