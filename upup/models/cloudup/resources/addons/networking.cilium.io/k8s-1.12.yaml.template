@@ -655,6 +655,7 @@ spec:
 {{ end }}
         livenessProbe:
           httpGet:
+            host: "127.0.0.1"
             path: /healthz
             port: 9234
             scheme: HTTP
