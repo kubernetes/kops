@@ -80,6 +80,11 @@ func Test_VFSPath(t *testing.T) {
 			ExpectError:    false,
 		},
 		{
+			Input:          "https://bucket-name.s3.us-east-1.amazonaws.com/path",
+			ExpectedResult: "s3://bucket-name/path",
+			ExpectError:    false,
+		},
+		{
 			Input:          "example.com/bucket",
 			ExpectedResult: "",
 			ExpectError:    true,
