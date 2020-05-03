@@ -171,7 +171,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	channel, err := ChannelForCluster(c.Cluster)
 	if err != nil {
-		return err
+		klog.Warningf("%v", err)
 	}
 	c.channel = channel
 
