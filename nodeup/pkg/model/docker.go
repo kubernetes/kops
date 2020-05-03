@@ -477,12 +477,12 @@ var dockerVersions = []packageVersion{
 
 	// 18.09.9 - Linux Generic
 	//
-	// Used only on AmazonLinux2: the Centos7 package pulls in
-	// container-selinux, but selinux isn't used on amazonlinux2
+	// * AmazonLinux2: the Centos7 package depends on container-selinux, but selinux isn't used on amazonlinux2
+	// * UbuntuFocal: no focal version available at download.docker.com
 	{
 		PackageVersion: "18.09.9",
 		PlainBinary:    true,
-		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2},
+		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2, distros.DistributionFocal},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-18.09.9.tgz",
 		Hash:           "1b1516253aa876f77193deb901e53977b3c84476",
@@ -490,11 +490,14 @@ var dockerVersions = []packageVersion{
 
 	// 19.03.4 - k8s 1.17 - https://github.com/kubernetes/kubernetes/pull/84476
 
-	// 19.03.4 - Linux Generic used only for Amazon Linux 2
+	// 19.03.4 - Linux Generic
+	//
+	// * AmazonLinux2: the Centos7 package depends on container-selinux, but selinux isn't used on amazonlinux2
+	// * UbuntuFocal: no focal version available at download.docker.com
 	{
 		PackageVersion: "19.03.4",
 		PlainBinary:    true,
-		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2},
+		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2, distros.DistributionFocal},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.4.tgz",
 		Hash:           "5b9aa113916cfdde3eaf2bd25d2b8c3da49e0268",
