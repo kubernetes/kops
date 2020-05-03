@@ -1317,13 +1317,16 @@ func FindNatGateways(cloud fi.Cloud, routeTables map[string]*resources.Resource,
 	}
 
 	var resourceTrackers []*resources.Resource
-	if len(natGatewayIds) != 0 {
-		request := &ec2.DescribeNatGatewaysInput{}
-		for natGatewayId := range natGatewayIds {
-			request.NatGatewayIds = append(request.NatGatewayIds, aws.String(natGatewayId))
+	for natGatewayId := range natGatewayIds {
+		request := &ec2.DescribeNatGatewaysInput{
+			NatGatewayIds: []*string{aws.String(natGatewayId)},
 		}
 		response, err := c.EC2().DescribeNatGateways(request)
 		if err != nil {
+			if awsup.AWSErrorCode(err) == "NatGatewayNotFound" {
+				klog.V(2).Infof("Got NatGatewayNotFound describing NatGateway %s; will treat as already-deleted", natGatewayId)
+				continue
+			}
 			return nil, fmt.Errorf("error from DescribeNatGateways: %v", err)
 		}
 
