@@ -856,7 +856,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "18.09.9",
 		Name:          "docker-ce",
-		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Distros:       []distros.Distribution{distros.DistributionBionic, distros.DistributionFocal},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "18.09.9~3-0~ubuntu-bionic",
 		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.09.9~3-0~ubuntu-bionic_amd64.deb",
@@ -1007,7 +1007,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "19.03.4",
 		Name:          "docker-ce",
-		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Distros:       []distros.Distribution{distros.DistributionBionic, distros.DistributionFocal},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "19.03.4~3-0~ubuntu-bionic",
 		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_19.03.4~3-0~ubuntu-bionic_amd64.deb",
