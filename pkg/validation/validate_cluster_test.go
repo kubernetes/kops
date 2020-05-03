@@ -374,7 +374,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 	}
 }
 
-func Test_ValidateMasterNoKubeControllerManager(t *testing.T) {
+func Test_ValidateMasterStaticPods(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -430,34 +430,43 @@ func Test_ValidateMasterNoKubeControllerManager(t *testing.T) {
 		},
 	}
 
-	v, err := testValidate(t, groups, makePodList(
-		[]map[string]string{
+	var podList []map[string]string
+	var expectedFailures []*ValidationError
+
+	for i, pod := range []string{
+		"kube-apiserver",
+		"kube-controller-manager",
+		"kube-scheduler",
+	} {
+		podList = append(podList, []map[string]string{
 			{
-				"name":              "pod1",
+				"name":              fmt.Sprintf("pod-a-%d", i),
 				"ready":             "true",
-				"k8s-app":           "kube-controller-manager",
+				"k8s-app":           pod,
 				"phase":             string(v1.PodRunning),
 				"priorityClassName": "system-cluster-critical",
 				"hostip":            "1.2.3.4",
 			},
 			{
-				"name":              "pod2",
+				"name":              fmt.Sprintf("pod-b-%d", i),
 				"namespace":         "other",
 				"ready":             "true",
-				"k8s-app":           "kube-controller-manager",
+				"k8s-app":           pod,
 				"phase":             string(v1.PodRunning),
 				"priorityClassName": "system-cluster-critical",
 				"hostip":            "5.6.7.8",
 			},
-		},
-	))
-	require.NoError(t, err)
-	if !assert.Len(t, v.Failures, 1) ||
-		!assert.Equal(t, &ValidationError{
+		}...)
+		expectedFailures = append(expectedFailures, &ValidationError{
 			Kind:    "Node",
 			Name:    "master-1b",
-			Message: "master \"master-1b\" is missing kube-controller-manager pod",
-		}, v.Failures[0]) {
+			Message: "master \"master-1b\" is missing " + pod + " pod",
+		})
+	}
+
+	v, err := testValidate(t, groups, makePodList(podList))
+	require.NoError(t, err)
+	if !assert.ElementsMatch(t, v.Failures, expectedFailures) {
 		printDebug(t, v)
 	}
 }
