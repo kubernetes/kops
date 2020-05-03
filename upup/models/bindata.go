@@ -16410,7 +16410,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.57
+        image: spotinst/kubernetes-cluster-controller:1.0.58
         livenessProbe:
           httpGet:
             path: /healthcheck
@@ -16484,7 +16484,6 @@ spec:
         tolerationSeconds: 150
       - key: node-role.kubernetes.io/master
         operator: Exists
----
 `)
 
 func cloudupResourcesAddonsSpotinstKubernetesClusterControllerAddonsK8sIoV1140YamlTemplateBytes() ([]byte, error) {
@@ -16639,7 +16638,6 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
----
 `)
 
 func cloudupResourcesAddonsSpotinstKubernetesClusterControllerAddonsK8sIoV190YamlTemplateBytes() ([]byte, error) {
