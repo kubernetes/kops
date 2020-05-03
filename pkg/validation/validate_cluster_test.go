@@ -427,11 +427,36 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 					},
 				},
 			},
+			{
+				ID: "i-00003",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   "master-1c",
+						Labels: map[string]string{"kubernetes.io/role": "master"},
+					},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionFalse},
+						},
+						Addresses: []v1.NodeAddress{
+							{
+								Address: "9.10.11.12",
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 
 	var podList []map[string]string
-	var expectedFailures []*ValidationError
+	expectedFailures := []*ValidationError{
+		{
+			Kind:    "Node",
+			Name:    "master-1c",
+			Message: "master \"master-1c\" is not ready",
+		},
+	}
 
 	for i, pod := range []string{
 		"kube-apiserver",
