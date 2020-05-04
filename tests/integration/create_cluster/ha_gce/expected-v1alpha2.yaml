@@ -9,6 +9,8 @@ spec:
   authorization:
     rbac: {}
   channel: stable
+  cloudConfig:
+    gceServiceAccount: default
   cloudProvider: gce
   configBase: memfs://tests/ha-gce.example.com
   containerRuntime: docker
@@ -33,7 +35,6 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: events
-  gceServiceAccount: default
   iam:
     allowContainerRegistry: true
     legacy: false
