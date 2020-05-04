@@ -195,6 +195,10 @@ spec:
                     type: boolean
                   elbSecurityGroup:
                     type: string
+                  gceServiceAccount:
+                    description: GCEServiceAccount specifies the service account with
+                      which the GCE VM runs
+                    type: string
                   multizone:
                     description: GCE cloud-config options
                     type: boolean
@@ -773,10 +777,6 @@ spec:
                       type: array
                   type: object
                 type: array
-              gceServiceAccount:
-                description: GCEServiceAccount specifies the service account with
-                  which the GCE VM runs
-                type: string
               gossipConfig:
                 description: GossipConfig for the cluster assuming the use of gossip
                   DNS
