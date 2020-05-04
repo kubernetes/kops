@@ -139,17 +139,17 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				t.CanIPForward = fi.Bool(true)
 			}
 
-			if b.Cluster.Spec.GCEServiceAccount != "" {
-				klog.Infof("VMs using Service Account: %v", b.Cluster.Spec.GCEServiceAccount)
+			if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+				klog.Infof("VMs using Service Account: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
 				// b.Cluster.Spec.GCEServiceAccount = c.GCEServiceAccount
 			} else {
 				klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
 				klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
-				b.Cluster.Spec.GCEServiceAccount = "default"
+				b.Cluster.Spec.CloudConfig.GCEServiceAccount = "default"
 			}
 
-			klog.Infof("gsa: %v", b.Cluster.Spec.GCEServiceAccount)
-			t.ServiceAccounts = []string{b.Cluster.Spec.GCEServiceAccount}
+			klog.Infof("gsa: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
+			t.ServiceAccounts = []string{b.Cluster.Spec.CloudConfig.GCEServiceAccount}
 			//labels, err := b.CloudTagsForInstanceGroup(ig)
 			//if err != nil {
 			//	return fmt.Errorf("error building cloud tags: %v", err)

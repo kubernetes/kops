@@ -986,6 +986,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.Project = c.Project
 	}
 	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		if cluster.Spec.CloudConfig == nil {
+			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+		}
 		if cluster.Spec.Project == "" {
 			project, err := gce.DefaultProject()
 			if err != nil {
@@ -997,16 +1000,13 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			}
 			cluster.Spec.Project = project
 		}
-	}
-
-	if c.GCEServiceAccount != "" {
-		klog.Infof("VMs will be configured to use specified Service Account: %v", c.GCEServiceAccount)
-		cluster.Spec.GCEServiceAccount = c.GCEServiceAccount
-	} else {
-		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		if c.GCEServiceAccount != "" {
+			klog.Infof("VMs will be configured to use specified Service Account: %v", c.GCEServiceAccount)
+			cluster.Spec.CloudConfig.GCEServiceAccount = c.GCEServiceAccount
+		} else {
 			klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
 			klog.Warning("Use a pre-create Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
-			cluster.Spec.GCEServiceAccount = "default"
+			cluster.Spec.CloudConfig.GCEServiceAccount = "default"
 		}
 	}
 
