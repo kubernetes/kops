@@ -692,11 +692,11 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
 		versions := map[string]string{
-			"pre-k8s-1.6": "2.3.0-kops.3",
-			"k8s-1.6":     "2.3.0-kops.3",
-			"k8s-1.7":     "2.5.2-kops.2",
-			"k8s-1.8":     "2.5.2-kops.2",
-			"k8s-1.12":    "2.5.2-kops.3",
+			"pre-k8s-1.6": "2.3.0-kops.4",
+			"k8s-1.6":     "2.3.0-kops.4",
+			"k8s-1.7":     "2.5.2-kops.4",
+			"k8s-1.8":     "2.5.2-kops.4",
+			"k8s-1.12":    "2.5.2-kops.4",
 		}
 
 		{
