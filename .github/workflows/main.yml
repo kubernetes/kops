@@ -2,11 +2,8 @@
 name: build
 
 'on':
-  push:
-    branches:
-      - master
-  pull_request:
-    branches: ["*"]
+  - push
+  - pull_request
 
 env:
   GOPROXY: https://proxy.golang.org
