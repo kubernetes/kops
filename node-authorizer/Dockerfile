@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM fedora:27
+FROM scratch
 LABEL Name=node-authorizer \
       Release=https://github.com/kubernetes/kops \
       Url=https://github.com/kubernetes/kops \
