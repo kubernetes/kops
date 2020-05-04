@@ -389,7 +389,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.2" }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.3" }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -484,7 +484,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.2" }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.3" }}"
 ## end of `with .Networking.Cilium`
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -664,7 +664,7 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
-        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.2{{- else -}}{{ .Version }}{{- end -}}"
+        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.3{{- else -}}{{ .Version }}{{- end -}}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
