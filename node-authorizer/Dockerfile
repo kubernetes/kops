@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM alpine:3.11 as ssl
+RUN apk --no-cache add ca-certificates && \
+    apk --no-cache upgrade
+
 FROM scratch
 LABEL Name=node-authorizer \
       Release=https://github.com/kubernetes/kops \
@@ -19,5 +23,6 @@ LABEL Name=node-authorizer \
       Help=https://github.com/kubernetes/kops\issues
 
 ADD bin/node-authorizer /node-authorizer
+COPY --from=ssl /etc/ssl /etc/ssl
 
 ENTRYPOINT ["/node-authorizer"]
