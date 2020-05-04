@@ -9,6 +9,8 @@ spec:
   authorization:
     rbac: {}
   channel: stable
+  cloudConfig:
+    gceServiceAccount: test-account@testproject.iam.gserviceaccount.com
   cloudProvider: gce
   configBase: memfs://tests/gce.example.com
   containerRuntime: docker
@@ -25,7 +27,6 @@ spec:
       name: a
     memoryRequest: 100Mi
     name: events
-  gceServiceAccount: test-account@testproject.iam.gserviceaccount.com
   iam:
     allowContainerRegistry: true
     legacy: false
