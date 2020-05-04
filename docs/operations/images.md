@@ -52,20 +52,20 @@ The following table provides the support status for various distros with regards
 | [Amazon Linux 2](#amazon-linux-2) | 1.10 | 1.18 | - | - |
 | [CentOS 7](#centos-7) | - | 1.5 | - | - |
 | [CentOS 8](#centos-8) | 1.15 | - | - | - |
-| [CoreOS](#coreos) | 1.6 | 1.9 | 1.17 | 1.19 |
-| [Debian 8](#debian-8-jessie) | - | 1.5 | 1.17 | 1.19 |
+| [CoreOS](#coreos) | 1.6 | 1.9 | 1.17 | 1.18 |
+| [Debian 8](#debian-8-jessie) | - | 1.5 | 1.17 | 1.18 |
 | [Debian 9](#debian-9-stretch) | 1.8 | 1.10 | - | - |
 | [Debian 10](#debian-10-buster) | 1.13 | 1.17 | - | - |
-| [Flatcar](#flatcar) | 1.15 | 1.17 | - | - |
+| [Flatcar](#flatcar) | 1.15.1 | 1.17 | - | - |
 | [RHEL 7](#rhel-7) | - | 1.5 | - | - |
 | [RHEL 8](#rhel-8) | 1.15 | 1.18 | - | - |
-| [Ubuntu 16.04](#ubuntu-1604-xenial) | 1.5.0 | 1.10 | 1.17 | - |
+| [Ubuntu 16.04](#ubuntu-1604-xenial) | 1.5 | 1.10 | 1.17 | 1.20 |
 | [Ubuntu 18.04](#ubuntu-1804-bionic) | 1.10 | 1.16 | - | - |
-| [Ubuntu 20.04](#ubuntu-2004-focal) | 1.16 | 1.18 | - | - |
+| [Ubuntu 20.04](#ubuntu-2004-focal) | 1.16.2 | 1.18 | - | - |
 
 ## Kope.io
 
-The default images from `kope.io` are based on Debian 9 (Stretch). These images include all the necessary files and packages to run Kubernetes, making node startup faster. Other than that, the changes to the official Debian images are (minimal)[https://github.com/kubernetes-sigs/image-builder/tree/master/images/kube-deploy/imagebuilder/templates].
+The default images from `kope.io` are based on Debian 9 (Stretch). These images include all the necessary files and packages to run Kubernetes, making node startup faster. Other than that, the changes to the official Debian images are [minimal](https://github.com/kubernetes-sigs/image-builder/tree/master/images/kube-deploy/imagebuilder/templates).
 
 The latest image names are kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable), but all available images can be listed using:
 
@@ -78,9 +78,7 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ## Debian 9 (Stretch)
 
-Debian 9 (Stretch) is supported and fully functional.
-
-It is based on Kernel version **4.9** which has number of known bugs that affect it and may be noticed with larger clusters:
+Debian 9 is based on Kernel version **4.9** which has number of known bugs that affect it and may be noticed with larger clusters:
 
 * [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
 * [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
@@ -98,7 +96,7 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 Debian 10 is based on Kernel version **4.19** which fixes some of the bugs present in Debian 9 and effects are less visible.
 
-One notable change is the addition of `iptables` NFT, which is by default. This is not yet supported by most CNI plugins and also seems to be [slower](https://youtu.be/KHMnC3kj3Js?t=771) than the legacy version. It is recommended to switch to `iptables` legacy by using the following script in `additionalUserData` for each instance group:
+One notable change is the addition of `iptables` NFT, which is by default. This is not yet supported by most CNI plugins and seems to be [slower](https://youtu.be/KHMnC3kj3Js?t=771) than the legacy version. It is recommended to switch to `iptables` legacy by using the following script in `additionalUserData` for each instance group:
 
 ```yaml
 additionalUserData:
@@ -139,9 +137,7 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ## Ubuntu 20.04 (Focal)
 
-Ubuntu 20.04 support was introduced in **Kops 1.17** and is fully functional.
-
-It is based on Kernel version **5.4** which fixes all the known major Kernel bugs.
+Ubuntu 20.04 is based on Kernel version **5.4** which fixes all the known major Kernel bugs.
 
 Available images can be listed using:
 
@@ -232,16 +228,16 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=Flatcar-stable-*-hvm"
 ```
 
+## CoreOS
+
+Support for CoreOS is deprecated and will be removed in Kops 1.18.
+
+You should consider using [Flatcar](#flatcar) as a replacement.
+
 ## Debian 8 (Jessie)
 
-Support for Debian 8 (Jessie) is deprecated and will be removed in future versions of Kops.
+Support for Debian 8 (Jessie) is deprecated and will be removed in Kops 1.18.
 
 ## Ubuntu 16.04 (Xenial)
 
-Support for Ubuntu 16.04 (Xenial) is deprecated and will be removed in future versions of Kops.
-
-## CoreOS
-
-Support for CoreOS is deprecated and will be removed in future versions of Kops.
-
-You should consider using [Flatcar](#flatcar) as a replacement.
+Support for Ubuntu 16.04 (Xenial) is deprecated and will be removed in Kops 1.20.
