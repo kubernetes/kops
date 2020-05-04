@@ -130,6 +130,7 @@ ensure-install-dir
 
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig:
+  gceServiceAccount: default
   multizone: true
   nodeTags: minimal-gce-example-com-k8s-io-role-node
 containerRuntime: docker
