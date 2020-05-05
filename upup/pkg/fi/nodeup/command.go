@@ -185,6 +185,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Architecture:  model.ArchitectureAmd64,
 		Assets:        assetStore,
 		Cluster:       c.cluster,
+		ConfigBase:    configBase,
 		Distribution:  distribution,
 		InstanceGroup: c.instanceGroup,
 		NodeupConfig:  c.config,
