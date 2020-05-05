@@ -233,8 +233,13 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	// We make sure to disable AnonymousAuth
 	c.AnonymousAuth = fi.Bool(false)
 
-	// FIXME : Disable the insecure port when kubernetes issue #43784 is fixed
-	c.InsecurePort = 8080
+	if b.IsKubernetesGTE("1.18") {
+		// We query via the kube-apiserver-healthcheck proxy, which listens on port 8080
+		c.InsecurePort = 0
+	} else {
+		// Older versions of kubernetes continue to rely on the insecure port: kubernetes issue #43784
+		c.InsecurePort = 8080
+	}
 
 	return nil
 }

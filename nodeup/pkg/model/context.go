@@ -45,6 +45,7 @@ type NodeupModelContext struct {
 	Architecture  Architecture
 	Assets        *fi.AssetStore
 	Cluster       *kops.Cluster
+	ConfigBase    vfs.Path
 	Distribution  distros.Distribution
 	InstanceGroup *kops.InstanceGroup
 	KeyStore      fi.CAStore
@@ -206,17 +207,17 @@ func (c *NodeupModelContext) CNIConfDir() string {
 
 // BuildPKIKubeconfig generates a kubeconfig
 func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
-	ca, err := c.FindCert(fi.CertificateId_CA)
+	ca, err := c.GetCert(fi.CertificateId_CA)
 	if err != nil {
 		return "", err
 	}
 
-	cert, err := c.FindCert(name)
+	cert, err := c.GetCert(name)
 	if err != nil {
 		return "", err
 	}
 
-	key, err := c.FindPrivateKey(name)
+	key, err := c.GetPrivateKey(name)
 	if err != nil {
 		return "", err
 	}
@@ -572,27 +573,27 @@ func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
 	return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 }
 
-// FindCert is a helper method to retrieving a certificate from the store
-func (c *NodeupModelContext) FindCert(name string) ([]byte, error) {
+// GetCert is a helper method to retrieve a certificate from the store
+func (c *NodeupModelContext) GetCert(name string) ([]byte, error) {
 	cert, err := c.KeyStore.FindCert(name)
 	if err != nil {
 		return []byte{}, fmt.Errorf("error fetching certificate: %v from keystore: %v", name, err)
 	}
 	if cert == nil {
-		return []byte{}, fmt.Errorf("unable to found certificate: %s", name)
+		return []byte{}, fmt.Errorf("unable to find certificate: %s", name)
 	}
 
 	return cert.AsBytes()
 }
 
-// FindPrivateKey is a helper method to retrieving a private key from the store
-func (c *NodeupModelContext) FindPrivateKey(name string) ([]byte, error) {
+// GetPrivateKey is a helper method to retrieve a private key from the store
+func (c *NodeupModelContext) GetPrivateKey(name string) ([]byte, error) {
 	key, err := c.KeyStore.FindPrivateKey(name)
 	if err != nil {
 		return []byte{}, fmt.Errorf("error fetching private key: %v from keystore: %v", name, err)
 	}
 	if key == nil {
-		return []byte{}, fmt.Errorf("unable to found private key: %s", name)
+		return []byte{}, fmt.Errorf("unable to find private key: %s", name)
 	}
 
 	return key.AsBytes()
