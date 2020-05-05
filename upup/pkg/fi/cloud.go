@@ -96,6 +96,8 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 
 	"ca-central-1a": kops.CloudProviderAWS,
 	"ca-central-1b": kops.CloudProviderAWS,
+	"ca-central-1c": kops.CloudProviderAWS,
+	"ca-central-1d": kops.CloudProviderAWS,
 
 	"eu-north-1a": kops.CloudProviderAWS,
 	"eu-north-1b": kops.CloudProviderAWS,
@@ -150,6 +152,12 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"ap-northeast-2c": kops.CloudProviderAWS,
 	"ap-northeast-2d": kops.CloudProviderAWS,
 	"ap-northeast-2e": kops.CloudProviderAWS,
+
+	"ap-northeast-3a": kops.CloudProviderAWS,
+	"ap-northeast-3b": kops.CloudProviderAWS,
+	"ap-northeast-3c": kops.CloudProviderAWS,
+	"ap-northeast-3d": kops.CloudProviderAWS,
+	"ap-northeast-3e": kops.CloudProviderAWS,
 
 	"ap-east-1a": kops.CloudProviderAWS,
 	"ap-east-1b": kops.CloudProviderAWS,
