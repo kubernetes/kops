@@ -56,30 +56,6 @@ var dockerVersions = []packageVersion{
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
-	// 17.03.2 - Jessie
-	{
-		PackageVersion: "17.03.2",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionJessie},
-		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "17.03.2~ce-0~debian-jessie",
-		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-jessie_amd64.deb",
-		Hash:           "a7ac54aaa7d33122ca5f7a2df817cbefb5cdbfc7",
-		MarkImmutable:  []string{"/usr/bin/docker-runc"},
-	},
-
-	// 17.03.2 - Jessie on ARM
-	{
-		PackageVersion: "17.03.2",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionJessie},
-		Architectures:  []Architecture{ArchitectureArm},
-		Version:        "17.03.2~ce-0~debian-jessie",
-		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.03.2~ce-0~debian-jessie_armhf.deb",
-		Hash:           "71e425b83ce0ef49d6298d61e61c4efbc76b9c65",
-		MarkImmutable:  []string{"/usr/bin/docker-runc"},
-	},
-
 	// 17.03.2 - Xenial
 	{
 		PackageVersion: "17.03.2",
@@ -122,28 +98,6 @@ var dockerVersions = []packageVersion{
 		MarkImmutable: []string{"/usr/bin/docker-runc"},
 	},
 	// 17.09.0 - k8s 1.8
-
-	// 17.09.0 - Jessie
-	{
-		PackageVersion: "17.09.0",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionJessie},
-		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "17.09.0~ce-0~debian",
-		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
-		Hash:           "430ba87f8aa36fedcac1a48e909cbe1830b53845",
-	},
-
-	// 17.09.0 - Jessie on ARM
-	{
-		PackageVersion: "17.09.0",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionJessie},
-		Architectures:  []Architecture{ArchitectureArm},
-		Version:        "17.09.0~ce-0~debian",
-		Source:         "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.09.0~ce-0~debian_armhf.deb",
-		Hash:           "5001a1defec7c33aa58ddebbd3eae6ebb5f36479",
-	},
 
 	// 17.09.0 - Debian9 (stretch)
 	{
@@ -257,17 +211,6 @@ var dockerVersions = []packageVersion{
 		Hash:           "05c9b098437bcf1b489c2a3a9764c3b779af7bc4",
 	},
 
-	// 18.06.2 - Jessie
-	{
-		PackageVersion: "18.06.2",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionJessie},
-		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "18.06.2~ce~3-0~debian",
-		Source:         "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
-		Hash:           "1a2500311230aff37aa81dd1292a88302fb0a2e1",
-	},
-
 	// 18.06.1 - CentOS / Rhel7 (two packages)
 	{
 		PackageVersion: "18.06.1",
@@ -331,17 +274,6 @@ var dockerVersions = []packageVersion{
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
 		Hash:           "93b5a055a39462867d79109b00db1367e3d9e32f",
-	},
-
-	// 18.06.3 - Jessie
-	{
-		PackageVersion: "18.06.3",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionJessie},
-		Architectures:  []Architecture{ArchitectureAmd64},
-		Version:        "18.06.3~ce~3-0~debian",
-		Source:         "https://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
-		Hash:           "058bcd4b055560866b8cad978c7aa224694602da",
 	},
 
 	// 18.06.3 - CentOS / Rhel7 (two packages)
@@ -645,13 +577,6 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// @check: neither coreos or containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
-	case distros.DistributionCoreOS:
-		klog.Infof("Detected CoreOS; won't install Docker")
-		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
-			return err
-		}
-		return nil
-
 	case distros.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install Docker")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {

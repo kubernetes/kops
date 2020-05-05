@@ -337,14 +337,8 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			var args []string
 			env := os.Environ()
 			if t.HasTag(tags.TagOSFamilyDebian) {
-				// Only Debian releases newer than Jessie can install .deb via apt-get
-				// TODO: Refactor this function when Jessie support is dropped (duplicated code)
-				if t.HasTag(tags.TagOSDebianJessie) {
-					args = []string{"dpkg", "-i"}
-				} else {
-					args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
-					env = append(env, "DEBIAN_FRONTEND=noninteractive")
-				}
+				args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
+				env = append(env, "DEBIAN_FRONTEND=noninteractive")
 			} else if t.HasTag(tags.TagOSFamilyRHEL) {
 				if t.HasTag(tags.TagOSCentOS8) || t.HasTag(tags.TagOSRHEL8) {
 					args = []string{"/usr/bin/dnf", "install", "-y", "--setopt=install_weak_deps=False"}
