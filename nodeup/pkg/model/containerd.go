@@ -207,13 +207,6 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// @check: neither coreos or containeros need provision containerd.service, just the containerd daemon options
 	switch b.Distribution {
-	case distros.DistributionCoreOS:
-		klog.Infof("Detected CoreOS; won't install containerd")
-		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
-			return err
-		}
-		return nil
-
 	case distros.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install containerd")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {

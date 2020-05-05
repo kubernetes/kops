@@ -79,11 +79,9 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 	paths := []string{"/etc/ssl", "/etc/pki/tls", "/etc/pki/ca-trust"}
 
 	switch c.Distribution {
-	case distros.DistributionCoreOS:
-		// Because /usr is read-only on CoreOS, we can't have any new directories; docker will try (and fail) to create them
-		// TODO: Just check if the directories exist?
-		paths = append(paths, "/usr/share/ca-certificates")
 	case distros.DistributionFlatcar:
+		// Because /usr is read-only on Flatcar, we can't have any new directories; docker will try (and fail) to create them
+		// TODO: Just check if the directories exist?
 		paths = append(paths, "/usr/share/ca-certificates")
 	case distros.DistributionContainerOS:
 		paths = append(paths, "/usr/share/ca-certificates")
@@ -410,9 +408,6 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 // KubectlPath returns distro based path for kubectl
 func (c *NodeupModelContext) KubectlPath() string {
 	kubeletCommand := "/usr/local/bin"
-	if c.Distribution == distros.DistributionCoreOS {
-		kubeletCommand = "/opt/bin"
-	}
 	if c.Distribution == distros.DistributionFlatcar {
 		kubeletCommand = "/opt/bin"
 	}

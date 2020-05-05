@@ -37,9 +37,6 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 	case distros.DistributionContainerOS:
 		klog.V(2).Infof("Detected ContainerOS; won't install misc. utils")
 		return nil
-	case distros.DistributionCoreOS:
-		klog.V(2).Infof("Detected CoreOS; won't install misc. utils")
-		return nil
 	case distros.DistributionFlatcar:
 		klog.V(2).Infof("Detected Flatcar; won't install misc. utils")
 		return nil

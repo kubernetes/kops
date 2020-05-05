@@ -52,38 +52,12 @@ func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.Distribution == distros.DistributionCoreOS {
-		klog.Infof("Detected OS %s; building %s service to disable update scheduler", ServiceName, b.Distribution)
-		c.AddTask(b.buildCoreOSSystemdService())
-	}
-
 	if b.Distribution == distros.DistributionFlatcar {
 		klog.Infof("Detected OS %s; building %s service to disable update scheduler", ServiceName, b.Distribution)
 		c.AddTask(b.buildFlatcarSystemdService())
 	}
 
 	return nil
-}
-
-func (b *UpdateServiceBuilder) buildCoreOSSystemdService() *nodetasks.Service {
-	manifest := &systemd.Manifest{}
-	manifest.Set("Unit", "Description", "Disable OS Update Scheduler")
-
-	manifest.Set("Unit", "Before", "locksmithd.service")
-	manifest.Set("Service", "Type", "oneshot")
-	manifest.Set("Service", "ExecStart", "/usr/bin/systemctl mask --now locksmithd.service")
-
-	manifestString := manifest.Render()
-	klog.V(8).Infof("Built service manifest %q\n%s", ServiceName, manifestString)
-
-	service := &nodetasks.Service{
-		Name:       ServiceName + ".service",
-		Definition: s(manifestString),
-	}
-
-	service.InitDefaults()
-
-	return service
 }
 
 func (b *UpdateServiceBuilder) buildFlatcarSystemdService() *nodetasks.Service {
