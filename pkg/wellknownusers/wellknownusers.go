@@ -26,4 +26,12 @@ const (
 
 	// AWSAuthenticator is the user-id for the aws-iam-authenticator (built externally)
 	AWSAuthenticator = 10000
+
+	// KubeApiserverHealthcheckID is the user id for kube-apiserver-healthcheck sidecar
+	// The user needs some extra permissions e.g. to read local secrets
+	// This should match the user in cmd/kube-apiserver-healthcheck/BUILD.bazel
+	KubeApiserverHealthcheckID = 10012
+
+	// KubeApiserverHealthcheckName is the username for the kube-apiserver-healthcheck user
+	KubeApiserverHealthcheckName = "kube-apiserver-healthcheck"
 )

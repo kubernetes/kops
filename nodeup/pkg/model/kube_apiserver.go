@@ -100,6 +100,13 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
+	// If we're using kube-apiserver-healthcheck, we need to set up the client cert etc
+	if b.findHealthcheckManifest() != nil {
+		if err := b.addHealthcheckSidecarTasks(c); err != nil {
+			return err
+		}
+	}
+
 	// @check if we are using secure client certificates for kubelet and grab the certificates
 	if b.UseSecureKubelet() {
 		name := "kubelet-api"
@@ -397,12 +404,16 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 
+	useHealthcheckProxy := b.findHealthcheckManifest() != nil
+
 	probeAction := &v1.HTTPGetAction{
 		Host: "127.0.0.1",
 		Path: "/healthz",
 		Port: intstr.FromInt(8080),
 	}
-	if kubeAPIServer.InsecurePort != 0 {
+	if useHealthcheckProxy {
+		// kube-apiserver-healthcheck sidecar container runs on port 8080
+	} else if kubeAPIServer.InsecurePort != 0 {
 		probeAction.Port = intstr.FromInt(int(kubeAPIServer.InsecurePort))
 	} else if kubeAPIServer.SecurePort != 0 {
 		probeAction.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
@@ -431,17 +442,20 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 				ContainerPort: b.Cluster.Spec.KubeAPIServer.SecurePort,
 				HostPort:      b.Cluster.Spec.KubeAPIServer.SecurePort,
 			},
-			{
-				Name:          "local",
-				ContainerPort: 8080,
-				HostPort:      8080,
-			},
 		},
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
 				v1.ResourceCPU: requestCPU,
 			},
 		},
+	}
+
+	if kubeAPIServer.InsecurePort != 0 {
+		container.Ports = append(container.Ports, v1.ContainerPort{
+			Name:          "local",
+			ContainerPort: kubeAPIServer.InsecurePort,
+			HostPort:      kubeAPIServer.InsecurePort,
+		})
 	}
 
 	// Log both to docker and to the logfile
@@ -516,6 +530,12 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 	kubemanifest.MarkPodAsCritical(pod)
 	kubemanifest.MarkPodAsClusterCritical(pod)
+
+	if useHealthcheckProxy {
+		if err := b.addHealthcheckSidecar(pod); err != nil {
+			return nil, err
+		}
+	}
 
 	return pod, nil
 }
