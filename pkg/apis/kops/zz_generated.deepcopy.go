@@ -2501,6 +2501,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.DisableAttachDetachReconcileSync != nil {
+		in, out := &in.DisableAttachDetachReconcileSync, &out.DisableAttachDetachReconcileSync
+		*out = new(bool)
+		**out = **in
+	}
 	if in.TerminatedPodGCThreshold != nil {
 		in, out := &in.TerminatedPodGCThreshold, &out.TerminatedPodGCThreshold
 		*out = new(int32)
