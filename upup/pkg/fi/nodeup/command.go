@@ -171,6 +171,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
+	switch distribution {
+	case distros.DistributionJessie, distros.DistributionXenial, distros.DistributionCoreOS:
+		if c.cluster.IsKubernetesGTE("1.18") {
+			return fmt.Errorf("os distribution %s not supported by kops as of Kubernetes 1.18", distribution)
+		}
+	}
 
 	osTags := distribution.BuildTags()
 
