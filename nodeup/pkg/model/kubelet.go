@@ -141,13 +141,6 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
-	if b.Distribution == distros.DistributionCoreOS {
-		// CoreOS does not ship with socat or conntrack. Install our own (statically linked) version
-		if err := b.addStaticUtils(c); err != nil {
-			return err
-		}
-	}
-
 	if err := b.addContainerizedMounter(c); err != nil {
 		return err
 	}
@@ -160,9 +153,6 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 // kubeletPath returns the path of the kubelet based on distro
 func (b *KubeletBuilder) kubeletPath() string {
 	kubeletCommand := "/usr/local/bin/kubelet"
-	if b.Distribution == distros.DistributionCoreOS {
-		kubeletCommand = "/opt/kubernetes/bin/kubelet"
-	}
 	if b.Distribution == distros.DistributionFlatcar {
 		kubeletCommand = "/opt/kubernetes/bin/kubelet"
 	}
@@ -277,10 +267,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 		klog.Warningf("unknown container runtime %q", b.Cluster.Spec.ContainerRuntime)
 	}
 
-	if b.Distribution == distros.DistributionCoreOS {
-		// We add /opt/kubernetes/bin for our utilities (socat, conntrack)
-		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
-	}
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
 
 	// @check if we are using bootstrap tokens and file checker
@@ -329,30 +315,6 @@ func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 
 	// TODO: Memoize if we reuse this
 	return kubeletConfigSpec, nil
-}
-
-func (b *KubeletBuilder) addStaticUtils(c *fi.ModelBuilderContext) error {
-	for _, binary := range []string{"socat", "conntrack"} {
-		assetName := binary
-		assetPath := ""
-		asset, err := b.Assets.Find(assetName, assetPath)
-		if err != nil {
-			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
-		}
-		if asset == nil {
-			return fmt.Errorf("unable to locate asset %q", assetName)
-		}
-
-		t := &nodetasks.File{
-			Path:     "/opt/kubernetes/bin/" + binary,
-			Contents: asset,
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0755"),
-		}
-		c.AddTask(t)
-	}
-
-	return nil
 }
 
 // usesContainerizedMounter returns true if we use the containerized mounter
@@ -552,10 +514,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		case distros.DistributionContainerOS:
 			// Default is different on ContainerOS, see https://github.com/kubernetes/kubernetes/pull/58171
 			c.VolumePluginDirectory = "/home/kubernetes/flexvolume/"
-
-		case distros.DistributionCoreOS:
-			// The /usr directory is read-only for CoreOS
-			c.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
 
 		case distros.DistributionFlatcar:
 			// The /usr directory is read-only for Flatcar

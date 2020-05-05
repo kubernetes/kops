@@ -51,7 +51,7 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	if err == nil {
 		debianVersion := strings.TrimSpace(string(debianVersionBytes))
 		if strings.HasPrefix(debianVersion, "8.") {
-			return DistributionJessie, nil
+			return "", fmt.Errorf("distribution Degian 8 (Jessie) is no longer supported")
 		} else if strings.HasPrefix(debianVersion, "9.") {
 			return DistributionDebian9, nil
 		} else if strings.HasPrefix(debianVersion, "10.") {
@@ -94,7 +94,7 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		for _, line := range strings.Split(string(usrLibOsRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "ID=coreos" {
-				return DistributionCoreOS, nil
+				return "", fmt.Errorf("distribution CoreOS is no longer supported")
 			} else if line == "ID=flatcar" {
 				return DistributionFlatcar, nil
 			}
