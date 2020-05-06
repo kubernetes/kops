@@ -143,9 +143,45 @@ which would end up in a drop-in file on nodes of the instance group in question.
 
 ## mixedInstancePolicy (AWS Only)
 
+### Example
+
+```
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  generation: 2
+  labels:
+    kops.k8s.io/cluster: <clustername>
+  name: spot-4vcpu-16gb
+spec:
+  cloudLabels:
+    autoscaler: enabled
+    cluster: kops-cluster
+  image: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2020-01-17
+  maxSize: 5
+  minSize: 1
+  machineType: m5.xlarge
+  mixedInstancesPolicy:
+    instances:
+    - m5.xlarge
+    - m5d.xlarge
+    - m4.xlarge
+    - t3.xlarge
+    - t3a.xlarge
+    - m5a.xlarge
+    - m5ad.xlarge
+    - m5n.xlarge    
+    - m5dn.xlarge
+    onDemandBase: 0
+    onDemandAboveBase: 0
+    spotAllocationStrategy: capacity-optimized
+  nodeLabels:
+    lifecycle: Ec2Spot
+```
+
 ### Instances
 
-Instances is a list of instance types which we are willing to run in the EC2 fleet
+Instances is a list of instance types which we are willing to run in the EC2 Auto Scaling group
 
 ### onDemandAllocationStrategy
 
