@@ -124,24 +124,26 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		HealthyThreshold:       5,
 	}
 
-	klog.V(10).Infof("Creating load balancer for DO")
+	if a == nil {
+		klog.V(10).Infof("Creating load balancer for DO")
 
-	loadBalancerService := t.Cloud.LoadBalancers()
-	loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{
-		Name:            fi.StringValue(e.Name),
-		Region:          fi.StringValue(e.Region),
-		Tag:             fi.StringValue(e.DropletTag),
-		ForwardingRules: Rules,
-		HealthCheck:     HealthCheck,
-	})
+		loadBalancerService := t.Cloud.LoadBalancers()
+		loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{
+			Name:            fi.StringValue(e.Name),
+			Region:          fi.StringValue(e.Region),
+			Tag:             fi.StringValue(e.DropletTag),
+			ForwardingRules: Rules,
+			HealthCheck:     HealthCheck,
+		})
 
-	if err != nil {
-		klog.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.StringValue(e.Name), err)
-		return err
+		if err != nil {
+			klog.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.StringValue(e.Name), err)
+			return err
+		}
+
+		e.ID = fi.String(loadbalancer.ID)
+		e.IPAddress = fi.String(loadbalancer.IP) // This will be empty on create, but will be filled later on FindIPAddress invokation.
 	}
-
-	e.ID = fi.String(loadbalancer.ID)
-	e.IPAddress = fi.String(loadbalancer.IP) // This will be empty on create, but will be filled later on FindIPAddress invokation.
 
 	return nil
 }
