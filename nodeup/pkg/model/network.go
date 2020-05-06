@@ -21,6 +21,8 @@ import (
 	"path/filepath"
 
 	"golang.org/x/sys/unix"
+	"k8s.io/klog"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -112,6 +114,13 @@ WantedBy=multi-user.target
 		}
 	}
 
+	// Tx checksum offloading is buggy for NAT-ed VXLAN endpoints, leading to an invalid checksum sent and causing
+	// Flannel to stop to working as the traffic is being discarded by the receiver.
+	// https://github.com/coreos/flannel/issues/1279
+	if networking != nil && (networking.Canal != nil || (networking.Flannel != nil && networking.Flannel.Backend == "vxlan")) {
+		c.AddTask(b.buildFlannelTxChecksumOffloadDisableService())
+	}
+
 	return nil
 }
 
@@ -133,4 +142,28 @@ func (b *NetworkBuilder) addCNIBinAsset(c *fi.ModelBuilderContext, assetName str
 	})
 
 	return nil
+}
+
+func (b *NetworkBuilder) buildFlannelTxChecksumOffloadDisableService() *nodetasks.Service {
+	const serviceName = "flannel-tx-checksum-offload-disable.service"
+
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Disable TX checksum offload on flannel.1")
+
+	manifest.Set("Unit", "After", "sys-devices-virtual-net-flannel.1.device")
+	manifest.Set("Install", "WantedBy", "sys-devices-virtual-net-flannel.1.device")
+	manifest.Set("Service", "Type", "oneshot")
+	manifest.Set("Service", "ExecStart", "/sbin/ethtool -K flannel.1 tx-checksum-ip-generic off")
+
+	manifestString := manifest.Render()
+	klog.V(8).Infof("Built service manifest %q\n%s", serviceName, manifestString)
+
+	service := &nodetasks.Service{
+		Name:       serviceName,
+		Definition: s(manifestString),
+	}
+
+	service.InitDefaults()
+
+	return service
 }
