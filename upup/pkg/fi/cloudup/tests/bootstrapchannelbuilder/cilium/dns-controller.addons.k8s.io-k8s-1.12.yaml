@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.16.1
+    version: v1.16.2
   name: dns-controller
   namespace: kube-system
 spec:
@@ -19,7 +19,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.16.1
+        version: v1.16.2
     spec:
       containers:
       - command:
@@ -29,7 +29,7 @@ spec:
         - --zone=*/Z1AFAKE1ZON3YO
         - --zone=*/*
         - -v=2
-        image: kope/dns-controller:1.16.1
+        image: kope/dns-controller:1.16.2
         name: dns-controller
         resources:
           requests:

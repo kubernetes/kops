@@ -56,9 +56,9 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.16.1
+DNS_CONTROLLER_TAG=1.16.2
 # Keep in sync with upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
-KOPS_CONTROLLER_TAG=1.16.1
+KOPS_CONTROLLER_TAG=1.16.2
 
 # Keep in sync with logic in get_workspace_status
 # TODO: just invoke tools/get_workspace_status.sh?
@@ -468,9 +468,15 @@ dns-controller-push: dns-controller-image
 
 .PHONY: utils-dist
 utils-dist:
-	docker build -t utils-builder images/utils-builder
-	mkdir -p ${DIST}/linux/amd64/
-	docker run -v `pwd`/.build/dist/linux/amd64/:/dist utils-builder /extract.sh
+	# Broken with deprecation of jessie; use bazel version instead
+	# (bazel version just copies an older version)
+	#docker build -t utils-builder images/utils-builder
+	#mkdir -p ${DIST}/linux/amd64/
+	#docker run -v `pwd`/.build/dist/linux/amd64/:/dist utils-builder /extract.sh
+	bazel build //images/utils-builder:utils
+	cp bazel-bin/images/utils-builder/utils.tar.gz ${DIST}/linux/amd64/utils.tar.gz
+	tools/sha1 ${DIST}/linux/amd64/utils.tar.gz ${DIST}/linux/amd64/utils.tar.gz.sha1
+	tools/sha256 ${DIST}/linux/amd64/utils.tar.gz ${DIST}/linux/amd64/utils.tar.gz.sha256
 
 .PHONY: bazel-utils-dist
 bazel-utils-dist:
