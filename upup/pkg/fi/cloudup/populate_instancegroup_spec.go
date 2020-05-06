@@ -117,6 +117,9 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	if ig.Spec.Image == "" {
 		ig.Spec.Image = defaultImage(cluster, channel)
+		if ig.Spec.Image == "" {
+			return nil, fmt.Errorf("unable to determine default image for InstanceGroup %s", ig.ObjectMeta.Name)
+		}
 	}
 
 	if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
