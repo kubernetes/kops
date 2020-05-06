@@ -1395,6 +1395,11 @@ spec:
                     items:
                       type: string
                     type: array
+                  disableAttachDetachReconcileSync:
+                    description: DisableAttachDetachReconcileSync disables the reconcile
+                      sync loop in the attach-detach controller. This can cause volumes
+                      to become mismatched with pods
+                    type: boolean
                   enableProfiling:
                     description: EnableProfiling enables profiling via web interface
                       host:port/debug/pprof/
