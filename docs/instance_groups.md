@@ -164,12 +164,11 @@ leave this parameter set to 100, the percentages are 100% for On-Demand Instance
 Spot Instances.
 
 ### spotAllocationStrategy
+SpotAllocationStrategy Indicates how to allocate instances across Spot Instance pools.
 
-SpotAllocationStrategy diversifies your Spot capacity across multiple instance types to
-find the best pricing. Higher Spot availability may result from a larger number of
-instance types to choose from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet.html#spot-fleet-allocation-strategy
+If the allocation strategy is lowest-price, the Auto Scaling group launches instances using the Spot pools with the lowest price, and evenly allocates your instances across the number of Spot pools that you specify in spotInstancePools. If the allocation strategy is [capacity-optimized](https://aws.amazon.com/blogs/compute/introducing-the-capacity-optimized-allocation-strategy-for-amazon-ec2-spot-instances/), the Auto Scaling group launches instances using Spot pools that are optimally chosen based on the available Spot capacity.
+https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html
 
 ### spotInstancePools
-
-SpotInstancePools is the number of Spot pools to use to allocate your Spot capacity (defaults to 2)
-pools are determined from the different instance types in the Overrides array of LaunchTemplate
+Used only when the Spot allocation strategy is lowest-price.
+The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.
