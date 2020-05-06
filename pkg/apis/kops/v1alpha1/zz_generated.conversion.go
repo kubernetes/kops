@@ -3444,6 +3444,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 		out.LeaderElection = nil
 	}
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
+	out.DisableAttachDetachReconcileSync = in.DisableAttachDetachReconcileSync
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.NodeMonitorPeriod = in.NodeMonitorPeriod
 	out.NodeMonitorGracePeriod = in.NodeMonitorGracePeriod
@@ -3495,6 +3496,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 		out.LeaderElection = nil
 	}
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
+	out.DisableAttachDetachReconcileSync = in.DisableAttachDetachReconcileSync
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.NodeMonitorPeriod = in.NodeMonitorPeriod
 	out.NodeMonitorGracePeriod = in.NodeMonitorGracePeriod
