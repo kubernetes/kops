@@ -348,8 +348,8 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
   }
   machine_type = "n1-standard-1"
   metadata = {
-    "cluster-name"                    = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_cluster-name")
-    "kops-k8s-io-instance-group-name" = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")
+    "cluster-name"                    = "ha-gce.example.com"
+    "kops-k8s-io-instance-group-name" = "master-us-test1-a"
     "ssh-keys"                        = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_ssh-keys")
     "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-ha-gce-example-com_metadata_startup-script")
   }
@@ -388,8 +388,8 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
   }
   machine_type = "n1-standard-1"
   metadata = {
-    "cluster-name"                    = file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_cluster-name")
-    "kops-k8s-io-instance-group-name" = file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")
+    "cluster-name"                    = "ha-gce.example.com"
+    "kops-k8s-io-instance-group-name" = "master-us-test1-b"
     "ssh-keys"                        = file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_ssh-keys")
     "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-b-ha-gce-example-com_metadata_startup-script")
   }
@@ -428,8 +428,8 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
   }
   machine_type = "n1-standard-1"
   metadata = {
-    "cluster-name"                    = file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_cluster-name")
-    "kops-k8s-io-instance-group-name" = file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")
+    "cluster-name"                    = "ha-gce.example.com"
+    "kops-k8s-io-instance-group-name" = "master-us-test1-c"
     "ssh-keys"                        = file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_ssh-keys")
     "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-c-ha-gce-example-com_metadata_startup-script")
   }
@@ -468,8 +468,8 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   }
   machine_type = "n1-standard-2"
   metadata = {
-    "cluster-name"                    = file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_cluster-name")
-    "kops-k8s-io-instance-group-name" = file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_kops-k8s-io-instance-group-name")
+    "cluster-name"                    = "ha-gce.example.com"
+    "kops-k8s-io-instance-group-name" = "nodes"
     "ssh-keys"                        = file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_ssh-keys")
     "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_startup-script")
   }
