@@ -40,6 +40,10 @@ type Config struct {
 
 	// Manifests for running etcd
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
+
+	// StaticManifests describes generic static manifests
+	// Using this allows us to keep complex logic out of nodeup
+	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
 }
 
 // Image is a docker image we should pre-load
@@ -50,4 +54,12 @@ type Image struct {
 	Sources []string `json:"sources,omitempty"`
 	// Hash is the hash of the file, to verify image integrity (even over http)
 	Hash string `json:"hash,omitempty"`
+}
+
+// StaticManifest is a generic static manifest
+type StaticManifest struct {
+	// Key identifies the static manifest
+	Key string `json:"key,omitempty"`
+	// Path is the path to the manifest
+	Path string `json:"path,omitempty"`
 }

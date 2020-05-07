@@ -14,6 +14,7 @@ k8s.io/kops/cmd/kops/util
 k8s.io/kops/cmd/kops-controller
 k8s.io/kops/cmd/kops-controller/controllers
 k8s.io/kops/cmd/kops-controller/pkg/config
+k8s.io/kops/cmd/kube-apiserver-healthcheck
 k8s.io/kops/cmd/nodeup
 k8s.io/kops/dns-controller/cmd/dns-controller
 k8s.io/kops/dns-controller/pkg/dns
@@ -96,6 +97,7 @@ k8s.io/kops/pkg/model/alimodel
 k8s.io/kops/pkg/model/awsmodel
 k8s.io/kops/pkg/model/components
 k8s.io/kops/pkg/model/components/etcdmanager
+k8s.io/kops/pkg/model/components/kubeapiserver
 k8s.io/kops/pkg/model/components/node-authorizer
 k8s.io/kops/pkg/model/defaults
 k8s.io/kops/pkg/model/domodel

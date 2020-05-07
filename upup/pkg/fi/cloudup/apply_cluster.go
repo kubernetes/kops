@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
+	"k8s.io/kops/pkg/model/components/kubeapiserver"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
@@ -611,6 +612,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 					templates:    templates,
 				},
 				&model.PKIModelBuilder{
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
+				},
+				&kubeapiserver.KubeApiserverBuilder{
+					AssetBuilder:     assetBuilder,
 					KopsModelContext: modelContext,
 					Lifecycle:        &clusterLifecycle,
 				},
@@ -1369,7 +1375,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	// `docker load` our images when using a KOPS_BASE_URL, so we
 	// don't need to push/pull from a registry
 	if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
-		for _, name := range []string{"kops-controller", "dns-controller"} {
+		for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
 			baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
 			if err != nil {
 				return nil, err
@@ -1412,6 +1418,24 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 				config.EtcdManifests = append(config.EtcdManifests, p)
 			}
 		}
+	}
+
+	for _, manifest := range assetBuilder.StaticManifests {
+		match := false
+		for _, r := range manifest.Roles {
+			if r == role {
+				match = true
+			}
+		}
+
+		if !match {
+			continue
+		}
+
+		config.StaticManifests = append(config.StaticManifests, &nodeup.StaticManifest{
+			Key:  manifest.Key,
+			Path: manifest.Path,
+		})
 	}
 
 	config.Images = images
