@@ -194,6 +194,12 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 			// If we ever need to support a map of strings to resource property references that can be added here
 			if literal.FilePath != "" {
 				tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(fmt.Sprintf("file(%q)", literal.FilePath))})
+			} else if literal.Value != "" {
+				tokens = append(tokens, []*hclwrite.Token{
+					{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
+					{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(literal.Value)},
+					{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},
+				}...)
 			}
 		} else {
 			tokens = append(tokens, []*hclwrite.Token{
