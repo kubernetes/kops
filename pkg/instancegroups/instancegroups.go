@@ -346,10 +346,16 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 	}
 
 	if err := drain.RunCordonOrUncordon(helper, u.Node, true); err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
 		return fmt.Errorf("error cordoning node: %v", err)
 	}
 
 	if err := drain.RunNodeDrain(helper, u.Node.Name); err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
 		return fmt.Errorf("error draining node: %v", err)
 	}
 
