@@ -11,6 +11,10 @@
 
 The easiest way to get a production grade Kubernetes cluster up and running.
 
+## 2020-05-06 etcd-manager Certificate Expiration Advisory
+
+kops versions released today contain a **critical fix** to etcd-manager: 1 year after creation (or first adopting etcd-manager), clusters will stop responding due to expiration of a TLS certificate. Upgrading kops to 1.15.3, 1.16.2, 1.17.0-beta.2, or 1.18.0-alpha.3 is highly recommended. Please see the [advisory](./advisories/etcd-manager-certificate-expiration.md) for the full details.
+
 ## What is kops?
 
 We like to think of it as `kubectl` for clusters.
