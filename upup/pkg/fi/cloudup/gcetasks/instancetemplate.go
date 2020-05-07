@@ -479,9 +479,7 @@ func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.
 		for _, gac := range g.AccessConfigs {
 			tac := &terraformAccessConfig{}
 			natIP := gac.NatIP
-			if strings.HasPrefix(natIP, "${") {
-				tac.NatIP = terraform.LiteralExpression(natIP)
-			} else if natIP != "" {
+			if natIP != "" {
 				tac.NatIP = terraform.LiteralFromStringValue(natIP)
 			}
 
