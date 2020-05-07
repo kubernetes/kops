@@ -57,6 +57,8 @@ git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/ad
 git grep -l kope/kops-controller | xargs -I {} sed -i -e "s@kops-controller:${KOPS_RELEASE_VERSION}@kops-controller:${NEW_RELEASE_VERSION}@g" {}
 git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/ | xargs -I {} sed -i -e "s@version: v${KOPS_RELEASE_VERSION}@version: v${NEW_RELEASE_VERSION}@g" {}
 
+git grep -l kope/kube-apiserver-healthcheck | xargs -I {} sed -i -e "s@kube-apiserver-healthcheck:${KOPS_RELEASE_VERSION}@kube-apiserver-healthcheck:${NEW_RELEASE_VERSION}@g" {}
+
 git grep -l "version..${KOPS_RELEASE_VERSION}" upup/pkg/fi/cloudup/tests/bootstrapchannelbuilder/ | xargs -I {} sed -i -e "s@version: ${KOPS_RELEASE_VERSION}@version: ${NEW_RELEASE_VERSION}@g" {}
 
 sed -i -e "s@${KOPS_CI_VERSION}@${NEW_CI_VERSION}@g" version.go
