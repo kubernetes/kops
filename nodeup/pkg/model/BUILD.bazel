@@ -18,6 +18,7 @@ go_library(
         "firewall.go",
         "hooks.go",
         "kube_apiserver.go",
+        "kube_apiserver_healthcheck.go",
         "kube_controller_manager.go",
         "kube_proxy.go",
         "kube_router.go",
@@ -80,6 +81,7 @@ go_library(
         "//vendor/k8s.io/klog:go_default_library",
         "//vendor/k8s.io/utils/exec:go_default_library",
         "//vendor/k8s.io/utils/mount:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 

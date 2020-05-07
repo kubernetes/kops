@@ -1,0 +1,70 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/kops/cmd/kube-apiserver-healthcheck",
+    visibility = ["//visibility:private"],
+    deps = ["//vendor/k8s.io/klog:go_default_library"],
+)
+
+go_binary(
+    name = "kube-apiserver-healthcheck",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+    "container_push",
+    "container_bundle",
+)
+
+container_image(
+    name = "image",
+    base = "@distroless_base//image",
+    cmd = ["/usr/bin/kube-apiserver-healthcheck"],
+    user = "10012",
+    directory = "/usr/bin/",
+    files = [
+        "//cmd/kube-apiserver-healthcheck",
+    ],
+    stamp = True,
+)
+
+container_push(
+    name = "push-image",
+    format = "Docker",
+    image = ":image",
+    registry = "{STABLE_DOCKER_REGISTRY}",
+    repository = "{STABLE_DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck",
+    tag = "{STABLE_KUBE_APISERVER_HEALTHCHECK_TAG}",
+)
+
+container_bundle(
+    name = "image-bundle",
+    images = {
+        "{STABLE_DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:{STABLE_KUBE_APISERVER_HEALTHCHECK_TAG}": "image",
+    },
+)
+
+load("//tools:gzip.bzl", "gzip")
+
+gzip(
+    name = "image-bundle.tar.gz",
+    src = "image-bundle.tar",
+)
+
+load("//tools:hashes.bzl", "hashes")
+
+hashes(
+    name = "image-bundle.tar.gz.hashes",
+    src = "image-bundle.tar.gz",
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["proxy_test.go"],
+    embed = [":go_default_library"],
+)
