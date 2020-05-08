@@ -16,6 +16,8 @@ go_library(
         "s3fs.go",
         "sshfs.go",
         "swiftfs.go",
+        "vaultcontext.go",
+        "vaultfs.go",
         "vfs.go",
         "writeoption.go",
     ],
@@ -32,6 +34,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/s3:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/sts:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/metadata:go_default_library",
         "//vendor/github.com/denverdino/aliyungo/oss:go_default_library",
         "//vendor/github.com/go-ini/ini:go_default_library",
@@ -40,6 +43,7 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/pagination:go_default_library",
+        "//vendor/github.com/hashicorp/vault/api:go_default_library",
         "//vendor/github.com/pkg/sftp:go_default_library",
         "//vendor/golang.org/x/crypto/ssh:go_default_library",
         "//vendor/google.golang.org/api/googleapi:go_default_library",
@@ -54,10 +58,13 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "context_test.go",
         "fs_test.go",
         "memfs_test.go",
         "s3context_test.go",
         "s3fs_test.go",
+        "vaultfs_test.go",
     ],
     embed = [":go_default_library"],
+    deps = ["//vendor/github.com/hashicorp/vault/api:go_default_library"],
 )

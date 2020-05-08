@@ -113,10 +113,13 @@ func (c *VFSSecretStore) DeleteSecret(name string) error {
 
 func (c *VFSSecretStore) ListSecrets() ([]string, error) {
 	files, err := c.basedir.ReadDir()
+	var ids []string
+	if os.IsNotExist(err) {
+		return ids, nil
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error listing secrets directory: %v", err)
 	}
-	var ids []string
 	for _, f := range files {
 		id := f.Base()
 		ids = append(ids, id)
