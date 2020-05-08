@@ -41,8 +41,8 @@ func (b *KubeApiserverBuilder) useHealthCheckSidecar(c *fi.ModelBuilderContext) 
 	// Should we use our health-check proxy, which allows us to
 	// query the secure port without enabling anonymous auth?
 	useHealthCheckSidecar := true
-	// We only turn on the proxy in k8s 1.18 and above
-	if b.IsKubernetesLT("1.18") {
+	// We only turn on the proxy in k8s 1.17 and above
+	if b.IsKubernetesLT("1.17") {
 		useHealthCheckSidecar = false
 	}
 
@@ -94,7 +94,7 @@ kind: Pod
 spec:
   containers:
   - name: healthcheck
-    image: kope/kube-apiserver-healthcheck:1.18.0-alpha.3
+    image: kope/kube-apiserver-healthcheck:1.17.0-beta.2
     livenessProbe:
       httpGet:
         # The sidecar serves a healthcheck on the same port,
