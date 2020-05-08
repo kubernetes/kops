@@ -80,6 +80,8 @@ var (
 	SpotinstHybrid = New("SpotinstHybrid", Bool(false))
 	// SpotinstController toggles the installation of the Spotinst controller addon.
 	SpotinstController = New("SpotinstController", Bool(true))
+	// VFSVaultSupport enables setting Vault as secret/keystore
+	VFSVaultSupport = New("VFSVaultSupport", Bool(false))
 	// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
 	VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version

@@ -356,6 +356,9 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
 			// Tests -ignore - nothing we can do in terms of IAM policy
 			klog.Warningf("ignoring memfs path %q for IAM policy builder", vfsPath)
+		} else if _, ok := vfsPath.(*vfs.VaultPath); ok {
+			// Vault access needs to come from somewhere else
+			klog.Warningf("ignoring valult path %q for IAM policy builder", vfsPath)
 		} else {
 			// We could implement this approach, but it seems better to
 			// get all clouds using cluster-readable storage
