@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/klog"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -75,30 +77,50 @@ func (c *VFSClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalvers
 }
 
 func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
-	configBase, err := registry.ConfigBase(cluster)
-	if err != nil {
-		return nil, err
+	if cluster.Spec.SecretStore == "" {
+		configBase, err := registry.ConfigBase(cluster)
+		if err != nil {
+			return nil, err
+		}
+		basedir := configBase.Join("secrets")
+		return secrets.NewVFSSecretStore(cluster, basedir), nil
+	} else {
+		storePath, err := vfs.Context.BuildVfsPath(cluster.Spec.SecretStore)
+		return secrets.NewVFSSecretStore(cluster, storePath), err
 	}
-	basedir := configBase.Join("secrets")
-	return secrets.NewVFSSecretStore(cluster, basedir), nil
 }
 
 func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
-	configBase, err := registry.ConfigBase(cluster)
+	basedir, err := pkiPath(cluster)
 	if err != nil {
 		return nil, err
 	}
-	basedir := configBase.Join("pki")
-	return fi.NewVFSCAStore(cluster, basedir), nil
+
+	klog.V(8).Infof("Using keystore path: %q", basedir)
+
+	return fi.NewVFSCAStore(cluster, basedir), err
+
 }
 
 func (c *VFSClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
-	configBase, err := registry.ConfigBase(cluster)
+	basedir, err := pkiPath(cluster)
 	if err != nil {
 		return nil, err
 	}
-	basedir := configBase.Join("pki")
 	return fi.NewVFSSSHCredentialStore(cluster, basedir), nil
+}
+
+func pkiPath(cluster *kops.Cluster) (vfs.Path, error) {
+	if cluster.Spec.KeyStore == "" {
+		configBase, err := registry.ConfigBase(cluster)
+		if err != nil {
+			return nil, err
+		}
+		return configBase.Join("pki"), nil
+	} else {
+		storePath, err := vfs.Context.BuildVfsPath(cluster.Spec.KeyStore)
+		return storePath, err
+	}
 }
 
 func DeleteAllClusterState(basePath vfs.Path) error {
@@ -153,7 +175,46 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 	return nil
 }
 
+func deleteAllPaths(basePath vfs.Path) error {
+	paths, err := basePath.ReadTree()
+	if err != nil {
+		return fmt.Errorf("error listing files in state store: %v", err)
+	}
+
+	for _, path := range paths {
+		err = path.Remove()
+		if err != nil {
+			return fmt.Errorf("error deleting cluster file %s: %v", path, err)
+		}
+	}
+
+	return nil
+}
 func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster) error {
+	secretStore := cluster.Spec.SecretStore
+	if secretStore != "" {
+		path, err := vfs.Context.BuildVfsPath(secretStore)
+		if err != nil {
+			return err
+		}
+		err = deleteAllPaths(path)
+		if err != nil {
+			return err
+		}
+	}
+
+	keyStore := cluster.Spec.KeyStore
+	if keyStore != "" && keyStore != secretStore {
+		path, err := vfs.Context.BuildVfsPath(keyStore)
+		if err != nil {
+			return err
+		}
+		err = deleteAllPaths(path)
+		if err != nil {
+			return err
+		}
+	}
+
 	configBase, err := registry.ConfigBase(cluster)
 	if err != nil {
 		return err
