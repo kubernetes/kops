@@ -193,7 +193,7 @@ func (t *ProtokubeBuilder) ProtokubeImagePullCommand() (string, error) {
 	if t.Cluster.Spec.ContainerRuntime == "docker" {
 		protokubeImagePullCommand = "-/usr/bin/docker pull " + sources[0]
 	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		protokubeImagePullCommand = "-/usr/bin/ctr images pull docker.io/" + sources[0]
+		protokubeImagePullCommand = "-/usr/bin/ctr --namespace k8s.io images pull docker.io/" + sources[0]
 	} else {
 		return "", fmt.Errorf("unable to create protokube image pull command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
 	}
@@ -219,7 +219,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRemoveCommand() (string, error) {
 	if t.Cluster.Spec.ContainerRuntime == "docker" {
 		containerRemoveCommand = "-/usr/bin/docker rm protokube"
 	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerRemoveCommand = "-/usr/bin/ctr container rm protokube"
+		containerRemoveCommand = "-/usr/bin/ctr --namespace k8s.io container rm protokube"
 	} else {
 		return "", fmt.Errorf("unable to create protokube remove command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
 	}
@@ -272,7 +272,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 
 	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
 		containerRunArgs = append(containerRunArgs, []string{
-			"/usr/bin/ctr run",
+			"/usr/bin/ctr --namespace k8s.io run",
 			"--net-host",
 			"--with-ns pid:/proc/1/ns/pid",
 			"--privileged",
