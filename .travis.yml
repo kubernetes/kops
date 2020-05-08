@@ -1,4 +1,6 @@
 language: go
+dist: bionic
+osx_image: xcode11.4
 os:
   - linux
   - osx
