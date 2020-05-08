@@ -232,7 +232,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 		actual.IAMInstanceProfile = &IAMInstanceProfile{Name: lt.LaunchTemplateData.IamInstanceProfile.Name}
 	}
 	// @step: add instanceInterruptionBehavior if there is one
-	if lt.LaunchTemplateData.InstanceMarketOptions.SpotOptions != nil {
+	if lt.LaunchTemplateData.InstanceMarketOptions != nil && lt.LaunchTemplateData.InstanceMarketOptions.SpotOptions != nil {
 		actual.InstanceInterruptionBehavior = lt.LaunchTemplateData.InstanceMarketOptions.SpotOptions.InstanceInterruptionBehavior
 	}
 
