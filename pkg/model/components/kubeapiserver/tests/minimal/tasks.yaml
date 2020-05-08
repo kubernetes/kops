@@ -13,7 +13,7 @@ Contents:
         - --client-key=/secrets/client.key
         command:
         - /usr/bin/kube-apiserver-healthcheck
-        image: kope/kube-apiserver-healthcheck:1.18.0-alpha.3
+        image: kope/kube-apiserver-healthcheck:1.17.0-beta.2
         livenessProbe:
           httpGet:
             host: 127.0.0.1
