@@ -388,6 +388,11 @@ func (m *KopsModelContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, m.KubernetesVersion())
 }
 
+// IsKubernetesLT checks if the kubernetes version is before the specified version, ignoring prereleases / patches
+func (m *KopsModelContext) IsKubernetesLT(version string) bool {
+	return !m.IsKubernetesGTE(version)
+}
+
 // WellKnownServiceIP returns a service ip with the service cidr
 func (m *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
 	return components.WellKnownServiceIP(&m.Cluster.Spec, id)

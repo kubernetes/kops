@@ -52,6 +52,20 @@ type AssetBuilder struct {
 
 	// KubernetesVersion is the version of kubernetes we are installing
 	KubernetesVersion semver.Version
+
+	// StaticManifests records static manifests
+	StaticManifests []*StaticManifest
+}
+
+type StaticManifest struct {
+	// Key is the unique identifier of the manifest
+	Key string
+
+	// Path is the path to the manifest
+	Path string
+
+	// The static manifest will only be applied to instances matching the specified role
+	Roles []kops.InstanceGroupRole
 }
 
 // ContainerAsset models a container's location.
@@ -159,6 +173,13 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		// 2. export KOPSCONTROLLER_IMAGE=[your docker hub repo]
 		// 3. make kops and create/apply cluster
 		override := os.Getenv("KOPSCONTROLLER_IMAGE")
+		if override != "" {
+			image = override
+		}
+	}
+
+	if strings.HasPrefix(image, "kope/kube-apiserver-healthcheck:") {
+		override := os.Getenv("KUBE_APISERVER_HEALTHCHECK_IMAGE")
 		if override != "" {
 			image = override
 		}
