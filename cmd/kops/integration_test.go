@@ -589,20 +589,16 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	h.SetupMockGCE()
 
 	expectedFilenames := []string{
-		"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_cluster-name",
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_startup-script",
 		"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_ssh-keys",
-		"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_kops-k8s-io-instance-group-name",
 	}
 
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
 		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
 
-		expectedFilenames = append(expectedFilenames, prefix+"cluster-name")
 		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
 		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
-		expectedFilenames = append(expectedFilenames, prefix+"kops-k8s-io-instance-group-name")
 	}
 
 	i.runTest(t, h, expectedFilenames, "", "", nil)

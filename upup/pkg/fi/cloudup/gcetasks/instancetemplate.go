@@ -479,9 +479,7 @@ func addNetworks(network *Network, subnet *Subnet, networkInterfaces []*compute.
 		for _, gac := range g.AccessConfigs {
 			tac := &terraformAccessConfig{}
 			natIP := gac.NatIP
-			if strings.HasPrefix(natIP, "${") {
-				tac.NatIP = terraform.LiteralExpression(natIP)
-			} else if natIP != "" {
+			if natIP != "" {
 				tac.NatIP = terraform.LiteralFromStringValue(natIP)
 			}
 
@@ -499,13 +497,17 @@ func addMetadata(target *terraform.TerraformTarget, name string, metadata *compu
 	}
 	m := make(map[string]*terraform.Literal)
 	for _, g := range metadata.Items {
-		v := fi.NewStringResource(fi.StringValue(g.Value))
-		tfResource, err := target.AddFile("google_compute_instance_template", name, "metadata_"+g.Key, v)
-		if err != nil {
-			return nil, err
+		val := fi.StringValue(g.Value)
+		if strings.Contains(val, "\n") {
+			v := fi.NewStringResource(val)
+			tfResource, err := target.AddFile("google_compute_instance_template", name, "metadata_"+g.Key, v)
+			if err != nil {
+				return nil, err
+			}
+			m[g.Key] = tfResource
+		} else {
+			m[g.Key] = terraform.LiteralFromStringValue(val)
 		}
-
-		m[g.Key] = tfResource
 	}
 	return m, nil
 }
