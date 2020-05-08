@@ -233,7 +233,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	// We make sure to disable AnonymousAuth
 	c.AnonymousAuth = fi.Bool(false)
 
-	if b.IsKubernetesGTE("1.18") {
+	if b.IsKubernetesGTE("1.17") {
 		// We query via the kube-apiserver-healthcheck proxy, which listens on port 8080
 		c.InsecurePort = 0
 	} else {
