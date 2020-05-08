@@ -70,7 +70,7 @@ type LaunchTemplate struct {
 	Tenancy *string
 	// UserData is the user data configuration
 	UserData *fi.ResourceHolder
-	// InstanceInterrutionBehavior defines if a spot instance should be terminated, hibernated,
+	// InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated,
 	// or stopped after interruption
 	InstanceInterruptionBehavior *string
 }
