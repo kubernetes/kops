@@ -1,3 +1,27 @@
+contents: |-
+  {
+      "cniVersion": "0.3.1",
+      "name": "kubenet",
+      "plugins": [
+          {
+              "type": "bridge",
+              "bridge": "cbr0",
+              "mtu": 1460,
+              "addIf": "eth0",
+              "isGateway": true,
+              "ipMasq": true,
+              "promiscMode": true,
+              "ipam": {
+                  "type": "host-local",
+                  "subnet": "{{.PodCIDR}}",
+                  "routes": [{ "dst": "0.0.0.0/0" }]
+              }
+          }
+      ]
+  }
+path: /etc/containerd/cni-config.template
+type: file
+---
 contents: ""
 path: /etc/containerd/config-kops.toml
 type: file

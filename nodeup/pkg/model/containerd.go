@@ -335,6 +335,13 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	// Using containerd with Kubenet requires special configuration. This is a temporary backwards-compatible solution
+	// and will be deprecated when Kubenet is deprecated:
+	// https://github.com/containerd/cri/blob/master/docs/config.md#cni-config-template
+	if b.Cluster.Spec.ContainerRuntime == "containerd" && b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
+		b.buildKubenetCNIConfigTemplate(c)
+	}
+
 	return nil
 }
 
@@ -389,7 +396,6 @@ func (b *ContainerdBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuild
 		"EnvironmentFile=/etc/environment",
 		"TasksMax=infinity",
 	}
-
 	contents := strings.Join(lines, "\n")
 
 	c.AddTask(&nodetasks.File{
@@ -439,6 +445,40 @@ func (b *ContainerdBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	})
 
 	return nil
+}
+
+// buildKubenetCNIConfigTemplate is responsible for creating a special template for setups using Kubenet
+func (b *ContainerdBuilder) buildKubenetCNIConfigTemplate(c *fi.ModelBuilderContext) {
+	lines := []string{
+		"{",
+		"    \"cniVersion\": \"0.3.1\",",
+		"    \"name\": \"kubenet\",",
+		"    \"plugins\": [",
+		"        {",
+		"            \"type\": \"bridge\",",
+		"            \"bridge\": \"cbr0\",",
+		"            \"mtu\": 1460,",
+		"            \"addIf\": \"eth0\",",
+		"            \"isGateway\": true,",
+		"            \"ipMasq\": true,",
+		"            \"promiscMode\": true,",
+		"            \"ipam\": {",
+		"                \"type\": \"host-local\",",
+		"                \"subnet\": \"{{.PodCIDR}}\",",
+		"                \"routes\": [{ \"dst\": \"0.0.0.0/0\" }]",
+		"            }",
+		"        }",
+		"    ]",
+		"}",
+	}
+	contents := strings.Join(lines, "\n")
+	klog.V(8).Infof("Built kubenet CNI config file\n%s", contents)
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/containerd/cni-config.template",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+	})
 }
 
 // skipInstall determines if kops should skip the installation and configuration of containerd
