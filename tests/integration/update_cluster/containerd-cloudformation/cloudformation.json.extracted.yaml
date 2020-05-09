@@ -134,7 +134,12 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configOverride: ""
+    configOverride: |-
+      version = 2
+      [plugins]
+        [plugins."io.containerd.grpc.v1.cri"]
+          [plugins."io.containerd.grpc.v1.cri".cni]
+            conf_template = "/etc/containerd/cni-config.template"
     logLevel: info
     version: 1.2.10
   docker:
@@ -421,7 +426,12 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configOverride: ""
+    configOverride: |-
+      version = 2
+      [plugins]
+        [plugins."io.containerd.grpc.v1.cri"]
+          [plugins."io.containerd.grpc.v1.cri".cni]
+            conf_template = "/etc/containerd/cni-config.template"
     logLevel: info
     version: 1.2.10
   docker:
