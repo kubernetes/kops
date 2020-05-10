@@ -86,10 +86,10 @@ spec:
         - "sg-***"
 ```
 
-### Access when using gossip (k8s.local)
+### Access when using gossip
 
-When using gossip mode, there is no DNS zone where we can configure a
-CNAME for the bastion.  Because bastions are fronted with a load
+When using [gossip mode](gossip.md), there is no DNS zone where we can configure a
+CNAME for the bastion. Because bastions are fronted with a load
 balancer, you can instead use the endpoint of the load balancer to
 reach your bastion.
 
