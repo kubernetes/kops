@@ -86,10 +86,6 @@ func (k fakeKeyStore) MirrorTo(basedir vfs.Path) error {
 	panic("implement me")
 }
 
-func (k fakeKeyStore) CertificatePool(name string, createIfMissing bool) (*fi.CertificatePool, error) {
-	panic("implement me")
-}
-
 func (k fakeKeyStore) FindCertificatePool(name string) (*fi.CertificatePool, error) {
 	panic("implement me")
 }
