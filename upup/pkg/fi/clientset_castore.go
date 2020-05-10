@@ -204,20 +204,6 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 	return primary
 }
 
-// CertificatePool implements CAStore::CertificatePool
-func (c *ClientsetCAStore) CertificatePool(id string, createIfMissing bool) (*CertificatePool, error) {
-	cert, err := c.FindCertificatePool(id)
-	if err == nil && cert == nil {
-		if !createIfMissing {
-			klog.Warningf("using empty certificate, because running with DryRun")
-			return &CertificatePool{}, err
-		}
-		return nil, fmt.Errorf("cannot find certificate pool %q", id)
-	}
-	return cert, err
-
-}
-
 // FindKeypair implements CAStore::FindKeypair
 func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error) {
 	ctx := context.TODO()

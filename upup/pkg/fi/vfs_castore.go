@@ -369,19 +369,6 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 	return cert, nil
 }
 
-func (c *VFSCAStore) CertificatePool(id string, createIfMissing bool) (*CertificatePool, error) {
-	cert, err := c.FindCertificatePool(id)
-	if err == nil && cert == nil {
-		if !createIfMissing {
-			klog.Warningf("using empty certificate pool for %q, because createIfMissing=false", id)
-			return &CertificatePool{}, err
-		}
-		return nil, fmt.Errorf("cannot find certificate pool %q", id)
-	}
-	return cert, err
-
-}
-
 func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error) {
 	cert, certFormat, err := c.findCert(id)
 	if err != nil {
