@@ -334,8 +334,7 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 	return items, nil
 }
 
-// IssueCert implements CAStore::IssueCert
-func (c *ClientsetCAStore) IssueCert(signer string, name string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
+func (c *ClientsetCAStore) issueCert(signer string, name string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
 	ctx := context.TODO()
 
 	klog.Infof("Issuing new certificate: %q", name)
@@ -449,7 +448,7 @@ func (c *ClientsetCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) 
 func (c *ClientsetCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	serial := c.buildSerial()
 
-	cert, err := c.IssueCert(signer, id, serial, privateKey, template)
+	cert, err := c.issueCert(signer, id, serial, privateKey, template)
 	if err != nil {
 		return nil, err
 	}
@@ -488,8 +487,8 @@ func (c *ClientsetCAStore) addKey(ctx context.Context, name string, keysetType k
 	return nil
 }
 
-// DeleteKeysetItem deletes the specified key from the registry; deleting the whole keyset if it was the last one
-func DeleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, keysetType kops.KeysetType, id string) error {
+// deleteKeysetItem deletes the specified key from the registry; deleting the whole keyset if it was the last one
+func deleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, keysetType kops.KeysetType, id string) error {
 	ctx := context.TODO()
 
 	keyset, err := client.Get(ctx, name, metav1.GetOptions{})
@@ -637,7 +636,7 @@ func (c *ClientsetCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error 
 	switch item.Spec.Type {
 	case kops.SecretTypeKeypair:
 		client := c.clientset.Keysets(c.namespace)
-		return DeleteKeysetItem(client, item.Name, kops.SecretTypeKeypair, id)
+		return deleteKeysetItem(client, item.Name, kops.SecretTypeKeypair, id)
 	default:
 		// Primarily because we need to make sure users can recreate them!
 		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Spec.Type)
