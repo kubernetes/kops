@@ -88,7 +88,17 @@ nav:
       - etcd3 Migration: "etcd3-migration.md"
 
   - Networking:
-    - Networking Overview including CNI: "networking.md"
+    - Networking Overview: "networking.md"
+    - CNI:
+      - AWS VPC: "networking/aws-vpc.md"
+      - Calico: "networking/calico.md"
+      - Canal: "networking/canal.md"
+      - Cilium: "networking/cilium.md"
+      - Flannel: "networking/flannel.md"
+      - Kube-Router: "networking/kube-router.md"
+      - Lyft VPC: "networking/lyft-vpc.md"
+      - Romana: "networking/romana.md"
+      - Weave: "networking/weave.md"
     - Run kops in an existing VPC: "run_in_existing_vpc.md"
     - Supported network topologies: "topology.md"
     - Subdomain setup: "creating_subdomain.md"
@@ -107,7 +117,6 @@ nav:
     - Philosophy: "philosophy.md"
     - State store: "state.md"
     - AWS China: "aws-china.md"
-    - Calico v3: "calico-v3.md"
     - Custom CA: "custom_ca.md"
     - Horizontal Pod Autoscaling: "horizontal_pod_autoscaling.md"
     - Egress Proxy: "http_proxy.md"
