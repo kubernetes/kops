@@ -73,10 +73,6 @@ type HasVFSPath interface {
 type CAStore interface {
 	Keystore
 
-	// CertificatePool returns all active certificates with the specified id
-	// Deprecated: prefer FindCertificatePool
-	CertificatePool(name string, createIfMissing bool) (*CertificatePool, error)
-
 	// FindCertificatePool returns the named CertificatePool, or (nil,nil) if not found
 	FindCertificatePool(name string) (*CertificatePool, error)
 
