@@ -24,5 +24,3 @@ If you are using [bastion hosts](bastion.md), it is a bit tricky to find the bas
 ```
 kops toolbox dump -ojson | grep 'bastion.*elb.amazonaws.com'
 ```
-
-
