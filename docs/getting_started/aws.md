@@ -64,16 +64,12 @@ export AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)
 
 ## Configure DNS
 
-Note: If you are using Kops 1.6.2 or later, then DNS configuration is
-optional. Instead, a gossip-based cluster can be easily created. The
-only requirement to trigger this is to have the cluster name end with
-`.k8s.local`. If a gossip-based cluster is created then you can skip
-this section.
-
 In order to build a Kubernetes cluster with `kops`, we need to prepare
 somewhere to build the required DNS records.  There are three scenarios
 below and you should choose the one that most closely matches your AWS
 situation.
+
+Note: if you want to use [gossip-based DNS](../gossip.md), you can skip this section.
 
 ### Scenario 1a: A Domain purchased/hosted via AWS
 
