@@ -19,7 +19,6 @@ package fi
 import (
 	"bytes"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"fmt"
 	"math/big"
 	"os"
@@ -130,21 +129,6 @@ func (s *VFSCAStore) readCAKeypairs(id string) (*keyset, *keyset, error) {
 
 	return cached.certificates, cached.privateKeys, nil
 
-}
-
-func BuildCAX509Template() *x509.Certificate {
-	subject := &pkix.Name{
-		CommonName: "kubernetes",
-	}
-
-	template := &x509.Certificate{
-		Subject:               *subject,
-		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-		ExtKeyUsage:           []x509.ExtKeyUsage{},
-		BasicConstraintsValid: true,
-		IsCA:                  true,
-	}
-	return template
 }
 
 func (c *VFSCAStore) buildCertificatePoolPath(name string) vfs.Path {
@@ -671,7 +655,7 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 	return nil
 }
 
-func (c *VFSCAStore) IssueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
+func (c *VFSCAStore) issueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
 	klog.Infof("Issuing new certificate: %q", id)
 
 	template.SerialNumber = serial
@@ -884,7 +868,7 @@ func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
 func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	serial := c.SerialGenerator()
 
-	cert, err := c.IssueCert(signer, id, serial, privateKey, template)
+	cert, err := c.issueCert(signer, id, serial, privateKey, template)
 	if err != nil {
 		return nil, err
 	}
