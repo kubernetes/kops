@@ -1,15 +1,15 @@
 # Gossip DNS
 
-Gossip-based clusters uses a peer-to-peer network for propagating the K8s API address instead of normal DNS.
-This means that no hosted zone is needed for the cluster.
+Gossip-based clusters use a peer-to-peer network instead of externally hosted DNS for propagating the K8s API address.
+This means that an externally hosted DNS service is not needed.
 
-Gossip does not suffer potential disruptions due to the DNS TTL as the propagation is almost instant.
+Gossip does not suffer potential disruptions due to out of date records in DNS caches as the propagation is almost instant.
 
-Gossip is also the only option if you want to deploy a cluster in any of the China of GovCloud AWS regions as Route 53 is not available there.
+Gossip is also the only option if you want to deploy a cluster in any of the AWS regions without Route 53, such as the China and GovCloud ones.
 
 ## Configuring a cluster to use Gossip
 
-The only thing you need to do in order to use gossip-based DNS is to use the `k8s.local` suffix for the cluster domain name.
+In order to use gossip-based DNS,  configure the cluster domain name to end with `.k8s.local`.
 
 ## Accessing the cluster
 
@@ -24,6 +24,5 @@ If you are using [bastion hosts](bastion.md), it is a bit tricky to find the bas
 ```
 kops toolbox dump -ojson | grep 'bastion.*elb.amazonaws.com'
 ```
-
 
 
