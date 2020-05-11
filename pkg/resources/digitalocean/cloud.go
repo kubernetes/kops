@@ -143,6 +143,10 @@ func (c *Cloud) LoadBalancers() godo.LoadBalancersService {
 	return c.Client.LoadBalancers
 }
 
+func (c *Cloud) GetAllLoadBalancers() ([]godo.LoadBalancer, error) {
+	return getAllLoadBalancers(c)
+}
+
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
 func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("not implemented")

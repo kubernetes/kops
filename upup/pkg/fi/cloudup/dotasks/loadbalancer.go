@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/digitalocean/godo"
@@ -49,6 +50,7 @@ func (lb *LoadBalancer) CompareWithID() *string {
 }
 
 func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
+	klog.V(10).Infof("load balancer FIND - ID=%s, name=%s", lb.ID, lb.Name)
 	if fi.StringValue(lb.ID) == "" {
 		// Loadbalancer = nil if not found
 		return nil, nil
@@ -97,7 +99,7 @@ func (_ *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 }
 
 func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) error {
-
+	klog.V(10).Infof("load balancer RENDER DO - LBNAME=%s", fi.StringValue(e.Name))
 	Rules := []godo.ForwardingRule{
 		{
 			EntryProtocol:  "https",
@@ -124,26 +126,44 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		HealthyThreshold:       5,
 	}
 
-	if a == nil {
-		klog.V(10).Infof("Creating load balancer for DO")
+	// check if load balancer exist.
+	loadBalancers, err := t.Cloud.GetAllLoadBalancers()
 
-		loadBalancerService := t.Cloud.LoadBalancers()
-		loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{
-			Name:            fi.StringValue(e.Name),
-			Region:          fi.StringValue(e.Region),
-			Tag:             fi.StringValue(e.DropletTag),
-			ForwardingRules: Rules,
-			HealthCheck:     HealthCheck,
-		})
-
-		if err != nil {
-			klog.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.StringValue(e.Name), err)
-			return err
-		}
-
-		e.ID = fi.String(loadbalancer.ID)
-		e.IPAddress = fi.String(loadbalancer.IP) // This will be empty on create, but will be filled later on FindIPAddress invokation.
+	if err != nil {
+		return fmt.Errorf("LoadBalancers.List returned error: %v", err)
 	}
+
+	klog.V(10).Infof("load balancer retrieved=%v", loadBalancers)
+
+	for _, loadbalancer := range loadBalancers {
+		klog.V(10).Infof("load balancer retrieved=%s, e.Name=%s", loadbalancer.Name, fi.StringValue(e.Name))
+		if strings.Contains(loadbalancer.Name, fi.StringValue(e.Name)) {
+			// load balancer already exists.
+			e.ID = fi.String(loadbalancer.ID)
+			e.IPAddress = fi.String(loadbalancer.IP) // This will be empty on create, but will be filled later on FindIPAddress invokation.
+			return nil
+		}
+	}
+
+	// load balancer doesn't exist. Create one.
+	klog.V(10).Infof("Creating load balancer for DO")
+
+	loadBalancerService := t.Cloud.LoadBalancers()
+	loadbalancer, _, err := loadBalancerService.Create(context.TODO(), &godo.LoadBalancerRequest{
+		Name:            fi.StringValue(e.Name),
+		Region:          fi.StringValue(e.Region),
+		Tag:             fi.StringValue(e.DropletTag),
+		ForwardingRules: Rules,
+		HealthCheck:     HealthCheck,
+	})
+
+	if err != nil {
+		klog.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.StringValue(e.Name), err)
+		return err
+	}
+
+	e.ID = fi.String(loadbalancer.ID)
+	e.IPAddress = fi.String(loadbalancer.IP) // This will be empty on create, but will be filled later on FindIPAddress invokation.
 
 	return nil
 }
@@ -152,18 +172,41 @@ func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {
 	cloud := c.Cloud.(*digitalocean.Cloud)
 	loadBalancerService := cloud.LoadBalancers()
 
-	klog.V(10).Infof("Find IP address for load balancer ID=%s", fi.StringValue(lb.ID))
-	loadBalancer, _, err := loadBalancerService.Get(context.TODO(), fi.StringValue(lb.ID))
-	if err != nil {
-		klog.Errorf("Error fetching load balancer with Name=%s", fi.StringValue(lb.Name))
-		return nil, err
-	}
+	if len(fi.StringValue(lb.ID)) > 0 {
+		// able to retrieve ID.
+		klog.V(10).Infof("Find IP address for load balancer ID=%s", fi.StringValue(lb.ID))
+		loadBalancer, _, err := loadBalancerService.Get(context.TODO(), fi.StringValue(lb.ID))
+		if err != nil {
+			klog.Errorf("Error fetching load balancer with Name=%s", fi.StringValue(lb.Name))
+			return nil, err
+		}
 
-	address := loadBalancer.IP
+		address := loadBalancer.IP
 
-	if isIPv4(address) {
-		klog.V(10).Infof("load balancer address=%s", address)
-		return &address, nil
+		if isIPv4(address) {
+			klog.V(10).Infof("load balancer address=%s", address)
+			return &address, nil
+		}
+	} else {
+		// check with the name.
+		// check if load balancer exist.
+		loadBalancers, err := cloud.GetAllLoadBalancers()
+
+		if err != nil {
+			return nil, fmt.Errorf("LoadBalancers.List returned error: %v", err)
+		}
+
+		for _, loadbalancer := range loadBalancers {
+			klog.V(10).Infof("load balancer retrieved=%s, e.Name=%s", loadbalancer.Name, fi.StringValue(lb.Name))
+			if strings.Contains(loadbalancer.Name, fi.StringValue(lb.Name)) {
+				// load balancer already exists.
+				address := loadbalancer.IP
+				if isIPv4(address) {
+					klog.V(10).Infof("load balancer address=%s", address)
+					return &address, nil
+				}
+			}
+		}
 	}
 
 	const lbWaitTime = 10 * time.Second
