@@ -200,8 +200,6 @@ func (c *Cloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, e
 // findEtcdStatus discovers the status of etcd, by looking for the tagged etcd volumes
 func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
-	klog.V(2).Infof("Querying DO for etcd volumes")
-
 	volumes, err := getAllVolumesByRegion(c, c.RegionName)
 
 	if err != nil {
@@ -220,7 +218,7 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 			// tag will be in the format "KubernetesCluster:dev5-k8s-local" (where clusterName is dev5.k8s.local)
 			clusterName := strings.Replace(cluster.Name, ".", "-", -1)
 			if strings.Contains(myTag, fmt.Sprintf("%s, %s", TagKubernetesClusterNamePrefix, ":", clusterName)) {
-				klog.V(2).Infof("findEtcdStatus cluster comparison matched for tag: %v", myTag)
+				klog.V(10).Infof("findEtcdStatus cluster comparison matched for tag: %v", myTag)
 				// this volume belongs to our cluster, add this to our etcdClusterSpec.
 				// loop through the tags again and
 				for _, volumeTag := range volume.Tags {
@@ -230,7 +228,7 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 						}
 						dropletIndex := strings.Split(volumeTag, ":")[1]
 						etcdClusterSpec, err = c.getEtcdClusterSpec(volume.Name, dropletIndex)
-						klog.V(2).Infof("findEtcdStatus etcdClusterSpec: %v", fi.DebugAsJsonString(etcdClusterSpec))
+						klog.V(10).Infof("findEtcdStatus etcdClusterSpec: %v", fi.DebugAsJsonString(etcdClusterSpec))
 						if err != nil {
 							return nil, fmt.Errorf("error parsing etcd cluster tag %q on volume %q: %v", volumeTag, volumeID, err)
 						}
