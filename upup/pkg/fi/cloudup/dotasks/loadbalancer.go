@@ -99,7 +99,6 @@ func (_ *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 }
 
 func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) error {
-	klog.V(10).Infof("load balancer RENDER DO - LBNAME=%s", fi.StringValue(e.Name))
 	Rules := []godo.ForwardingRule{
 		{
 			EntryProtocol:  "https",
@@ -132,8 +131,6 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 	if err != nil {
 		return fmt.Errorf("LoadBalancers.List returned error: %v", err)
 	}
-
-	klog.V(10).Infof("load balancer retrieved=%v", loadBalancers)
 
 	for _, loadbalancer := range loadBalancers {
 		klog.V(10).Infof("load balancer retrieved=%s, e.Name=%s", loadbalancer.Name, fi.StringValue(e.Name))
@@ -197,7 +194,6 @@ func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {
 		}
 
 		for _, loadbalancer := range loadBalancers {
-			klog.V(10).Infof("load balancer retrieved=%s, e.Name=%s", loadbalancer.Name, fi.StringValue(lb.Name))
 			if strings.Contains(loadbalancer.Name, fi.StringValue(lb.Name)) {
 				// load balancer already exists.
 				address := loadbalancer.IP
