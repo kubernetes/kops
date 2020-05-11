@@ -534,7 +534,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 				ExternalNetwork: fi.String(c.OpenstackExternalNet),
 			},
 			BlockStorage: &api.OpenstackBlockStorageConfig{
-				Version:  fi.String("v2"),
+				Version:  fi.String("v3"),
 				IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
 			},
 			Monitor: &api.OpenstackMonitor{
