@@ -25,7 +25,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
-	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -355,9 +355,8 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
 
-	//TODO: maybe try v2, and v3?
-	cinderClient, err := os.NewBlockStorageV2(provider, gophercloud.EndpointOpts{
-		Type:   "volumev2",
+	cinderClient, err := os.NewBlockStorageV3(provider, gophercloud.EndpointOpts{
+		Type:   "volumev3",
 		Region: region,
 	})
 	if err != nil {

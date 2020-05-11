@@ -19,7 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 
-	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -44,7 +44,7 @@ func (c *Volume) CompareWithID() *string {
 
 func (c *Volume) Find(context *fi.Context) (*Volume, error) {
 	cloud := context.Cloud.(openstack.OpenstackCloud)
-	opt := cinderv2.ListOpts{
+	opt := cinderv3.ListOpts{
 		Name:     fi.StringValue(c.Name),
 		Metadata: c.Tags,
 	}
@@ -126,7 +126,7 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("Failed to get storage availability zone: %s", err)
 		}
 
-		opt := cinderv2.CreateOpts{
+		opt := cinderv3.CreateOpts{
 			Size:             int(*e.SizeGB),
 			AvailabilityZone: storageAZ.ZoneName,
 			Metadata:         e.Tags,

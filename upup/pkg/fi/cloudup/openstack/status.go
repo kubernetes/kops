@@ -33,7 +33,7 @@ import (
 	"fmt"
 	"strings"
 
-	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
@@ -57,7 +57,7 @@ func (c *openstackCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.Cluster
 func findEtcdStatus(c *openstackCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
 	klog.V(2).Infof("Querying Openstack for etcd volumes")
-	opt := cinderv2.ListOpts{
+	opt := cinderv3.ListOpts{
 		Metadata: c.tags,
 	}
 	volumes, err := c.ListVolumes(opt)
