@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//cmd/kops-controller/controllers:go_default_library",
+        "//cmd/kops-controller/controllers/jwks:go_default_library",
         "//cmd/kops-controller/pkg/config:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",

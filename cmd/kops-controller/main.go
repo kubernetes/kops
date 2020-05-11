@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/klog/klogr"
 	"k8s.io/kops/cmd/kops-controller/controllers"
+	"k8s.io/kops/cmd/kops-controller/controllers/jwks"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
@@ -51,6 +53,8 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+
 	klog.InitFlags(nil)
 
 	// Disable metrics by default (avoid port conflicts, also risky because we are host network)
@@ -103,6 +107,11 @@ func main() {
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
+
+	if err := jwks.ConfigurePublisher(ctx, mgr, &opt); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "JWKSPublisher")
+		os.Exit(1)
+	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

@@ -385,6 +385,11 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		ConfigBase: tf.cluster.Spec.ConfigBase,
 	}
 
+	config.PublicDiscovery = &kopscontrollerconfig.PublicDiscovery{
+		PublishBase: "s3://discovery.justinsb.clusters",
+		PublishACL:  "public-read",
+	}
+
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
 	b, err := json.Marshal(config)
 	if err != nil {

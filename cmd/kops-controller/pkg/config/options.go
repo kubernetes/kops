@@ -19,6 +19,17 @@ package config
 type Options struct {
 	Cloud      string `json:"cloud,omitempty"`
 	ConfigBase string `json:"configBase,omitempty"`
+
+	// PublicDiscovery configures our jwks publishing
+	PublicDiscovery *PublicDiscovery `json:"publicDiscovery,omitempty"`
+}
+
+type PublicDiscovery struct {
+	// PublishBase is the base path we should our jwks discovery information to
+	PublishBase string `json:"publishBase,omitempty"`
+
+	// PublishACL sets the permissions we should use to publish with (likely world-readable)
+	PublishACL string `json:"publishACL,omitempty"`
 }
 
 func (o *Options) PopulateDefaults() {
