@@ -9,8 +9,8 @@ go_library(
         "urls.go",
         "util.go",
     ],
-    importmap = "k8s.io/kops/vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes",
-    importpath = "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes",
+    importmap = "k8s.io/kops/vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes",
+    importpath = "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
