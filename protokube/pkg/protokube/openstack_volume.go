@@ -25,7 +25,7 @@ import (
 	"os"
 	"strings"
 
-	cinderv2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
 	"k8s.io/klog"
 	"k8s.io/kops/protokube/pkg/etcd"
@@ -192,7 +192,7 @@ func (a *OpenstackVolumes) discoverTags() error {
 	return nil
 }
 
-func (v *OpenstackVolumes) buildOpenstackVolume(d *cinderv2.Volume) (*Volume, error) {
+func (v *OpenstackVolumes) buildOpenstackVolume(d *cinderv3.Volume) (*Volume, error) {
 	volumeName := d.Name
 	vol := &Volume{
 		ID: d.ID,
@@ -231,7 +231,7 @@ func (v *OpenstackVolumes) FindVolumes() ([]*Volume, error) {
 
 	klog.V(2).Infof("Listing Openstack disks in %s/%s", v.project, v.meta.AvailabilityZone)
 
-	vols, err := v.cloud.ListVolumes(cinderv2.ListOpts{
+	vols, err := v.cloud.ListVolumes(cinderv3.ListOpts{
 		TenantID: v.project,
 	})
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
+// Attachment represents a Volume Attachment record
 type Attachment struct {
 	AttachedAt   time.Time `json:"-"`
 	AttachmentID string    `json:"attachment_id"`
@@ -18,6 +19,7 @@ type Attachment struct {
 	VolumeID     string    `json:"volume_id"`
 }
 
+// UnmarshalJSON is our unmarshalling helper
 func (r *Attachment) UnmarshalJSON(b []byte) error {
 	type tmp Attachment
 	var s struct {
@@ -61,6 +63,9 @@ type Volume struct {
 	SnapshotID string `json:"snapshot_id"`
 	// The ID of another block storage volume from which the current volume was created
 	SourceVolID string `json:"source_volid"`
+	// The backup ID, from which the volume was restored
+	// This field is supported since 3.47 microversion
+	BackupID *string `json:"backup_id"`
 	// Arbitrary key-value pairs defined by the user.
 	Metadata map[string]string `json:"metadata"`
 	// UserID is the id of the user who created the volume.
@@ -75,8 +80,11 @@ type Volume struct {
 	ConsistencyGroupID string `json:"consistencygroup_id"`
 	// Multiattach denotes if the volume is multi-attach capable.
 	Multiattach bool `json:"multiattach"`
+	// Image metadata entries, only included for volumes that were created from an image, or from a snapshot of a volume originally created from an image.
+	VolumeImageMetadata map[string]string `json:"volume_image_metadata"`
 }
 
+// UnmarshalJSON another unmarshalling function
 func (r *Volume) UnmarshalJSON(b []byte) error {
 	type tmp Volume
 	var s struct {
@@ -107,13 +115,11 @@ func (r VolumePage) IsEmpty() (bool, error) {
 	return len(volumes) == 0, err
 }
 
-// NextPageURL uses the response's embedded link reference to navigate to the
-// next page of results.
-func (r VolumePage) NextPageURL() (string, error) {
+func (page VolumePage) NextPageURL() (string, error) {
 	var s struct {
 		Links []gophercloud.Link `json:"volumes_links"`
 	}
-	err := r.ExtractInto(&s)
+	err := page.ExtractInto(&s)
 	if err != nil {
 		return "", err
 	}
@@ -138,10 +144,12 @@ func (r commonResult) Extract() (*Volume, error) {
 	return &s, err
 }
 
+// ExtractInto converts our response data into a volume struct
 func (r commonResult) ExtractInto(v interface{}) error {
 	return r.Result.ExtractIntoStructPtr(v, "volume")
 }
 
+// ExtractVolumesInto similar to ExtractInto but operates on a `list` of volumes
 func ExtractVolumesInto(r pagination.Page, v interface{}) error {
 	return r.(VolumePage).Result.ExtractIntoSlicePtr(v, "volumes")
 }

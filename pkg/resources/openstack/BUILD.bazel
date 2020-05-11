@@ -21,7 +21,7 @@ go_library(
         "//pkg/resources:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",
-        "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/servers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/dns/v2/zones:go_default_library",

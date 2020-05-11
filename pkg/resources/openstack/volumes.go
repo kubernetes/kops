@@ -17,7 +17,7 @@ limitations under the License.
 package openstack
 
 import (
-	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
