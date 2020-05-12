@@ -76,6 +76,8 @@ var (
 	Spotinst = New("Spotinst", Bool(false))
 	// SpotinstOcean toggles the use of Spotinst Ocean instance group implementation.
 	SpotinstOcean = New("SpotinstOcean", Bool(false))
+	// SpotinstController toggles the installation of the Spotinst controller addon.
+	SpotinstController = New("SpotinstController", Bool(true))
 	// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
 	VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
 	// VSphereCloudProvider enables the vsphere cloud provider
