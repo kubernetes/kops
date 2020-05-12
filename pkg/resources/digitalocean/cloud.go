@@ -217,7 +217,7 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 			// check if volume belongs to this cluster.
 			// tag will be in the format "KubernetesCluster:dev5-k8s-local" (where clusterName is dev5.k8s.local)
 			clusterName := strings.Replace(cluster.Name, ".", "-", -1)
-			if strings.Contains(myTag, fmt.Sprintf("%s, %s", TagKubernetesClusterNamePrefix, ":", clusterName)) {
+			if strings.Contains(myTag, fmt.Sprintf("%s:%s", TagKubernetesClusterNamePrefix, clusterName)) {
 				klog.V(10).Infof("findEtcdStatus cluster comparison matched for tag: %v", myTag)
 				// this volume belongs to our cluster, add this to our etcdClusterSpec.
 				// loop through the tags again and
