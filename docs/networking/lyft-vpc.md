@@ -40,7 +40,7 @@ You can specify which subnets to use for allocating Pod IPs by specifying
         KubernetesCluster: myclustername.mydns.io
 ```
 
-In this example, new interfaces will be attached to subnets tagged with `kubernetes_kubelet = true`.
+In this example, new interfaces will be attached to subnets tagged with `KubernetesCluster = myclustername.mydns.io`.
 
 ## Troubleshooting
 
