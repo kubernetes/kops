@@ -73,6 +73,34 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 	}
 
+	if len(groups) == 0 {
+		groups = make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["master-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "master-1",
+				},
+				Spec: kopsapi.InstanceGroupSpec{
+					Role: kopsapi.InstanceGroupRoleMaster,
+				},
+			},
+			MinSize: 1,
+			Ready: []*cloudinstances.CloudInstanceGroupMember{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "master-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
 	instanceGroups := make([]kopsapi.InstanceGroup, 0, len(groups))
 	objects = append([]runtime.Object(nil), objects...)
 	for _, g := range groups {
@@ -91,19 +119,6 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 		}
 	}
 
-	if len(instanceGroups) == 0 {
-		instanceGroups = []kopsapi.InstanceGroup{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "master-1",
-				},
-				Spec: kopsapi.InstanceGroupSpec{
-					Role: kopsapi.InstanceGroupRoleMaster,
-				},
-			},
-		}
-	}
-
 	mockcloud := BuildMockCloud(t, groups, cluster, instanceGroups)
 
 	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, fake.NewSimpleClientset(objects...))
@@ -111,6 +126,37 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 		return nil, err
 	}
 	return validator.Validate()
+}
+
+func Test_ValidateCloudGroupMissing(t *testing.T) {
+	cluster := &kopsapi.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
+	}
+	instanceGroups := []kopsapi.InstanceGroup{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+	}
+
+	mockcloud := BuildMockCloud(t, nil, cluster, instanceGroups)
+
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, fake.NewSimpleClientset())
+	require.NoError(t, err)
+	v, err := validator.Validate()
+	require.NoError(t, err)
+	if !assert.Len(t, v.Failures, 1) ||
+		!assert.Equal(t, &ValidationError{
+			Kind:    "InstanceGroup",
+			Name:    "node-1",
+			Message: "InstanceGroup \"node-1\" is missing from the cloud provider",
+		}, v.Failures[0]) {
+		printDebug(t, v)
+	}
 }
 
 func Test_ValidateNodesNotEnough(t *testing.T) {
