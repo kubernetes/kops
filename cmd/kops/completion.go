@@ -190,13 +190,7 @@ __kops_compgen() {
 __kops_compopt() {
 	true # don't do anything. Not supported by bashcompinit in zsh
 }
-__kops_declare() {
-	if [ "$1" == "-F" ]; then
-		whence -w "$@"
-	else
-		builtin declare "$@"
-	fi
-}
+
 __kops_ltrim_colon_completions()
 {
 	if [[ "$1" == *:* && "$COMP_WORDBREAKS" == *:* ]]; then
@@ -274,7 +268,7 @@ __kops_convert_bash_to_zsh() {
 	-e "s/${LWORD}__ltrim_colon_completions${RWORD}/__kops_ltrim_colon_completions/g" \
 	-e "s/${LWORD}compgen${RWORD}/__kops_compgen/g" \
 	-e "s/${LWORD}compopt${RWORD}/__kops_compopt/g" \
-	-e "s/${LWORD}declare${RWORD}/__kops_declare/g" \
+	-e "s/${LWORD}declare${RWORD}/builtin declare/g" \
 	-e "s/\\\$(type${RWORD}/\$(__kops_type/g" \
 	<<'BASH_COMPLETION_EOF'
 `
