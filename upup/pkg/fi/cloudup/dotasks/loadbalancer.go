@@ -50,7 +50,7 @@ func (lb *LoadBalancer) CompareWithID() *string {
 }
 
 func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
-	klog.V(10).Infof("load balancer FIND - ID=%s, name=%s", lb.ID, lb.Name)
+	klog.V(10).Infof("load balancer FIND - ID=%s, name=%s", fi.StringValue(lb.ID), fi.StringValue(lb.Name))
 	if fi.StringValue(lb.ID) == "" {
 		// Loadbalancer = nil if not found
 		return nil, nil
