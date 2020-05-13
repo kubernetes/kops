@@ -15,3 +15,7 @@ spec:
     selector:
       k8s-addon: kube-state-metrics.addons.k8s.io
     manifest: v1.1.0.yaml
+  - version: v1.9.5
+    selector:
+      k8s-addon: kube-state-metrics.addons.k8s.io
+    manifest: v1.9.5.yaml
