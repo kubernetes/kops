@@ -25,6 +25,7 @@ import (
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -96,7 +97,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 
 	channel, err := cloudup.ChannelForCluster(cluster)
 	if err != nil {
-		return err
+		klog.Warningf("%v", err)
 	}
 
 	clientset, err := rootCommand.Clientset()
