@@ -166,7 +166,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	if err != nil {
 		return nil, err
 	}
-	readyNodes := validation.validateNodes(cloudGroups)
+	readyNodes := validation.validateNodes(cloudGroups, v.instanceGroups)
 
 	if err := validation.collectComponentFailures(ctx, v.k8sClient); err != nil {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
@@ -286,13 +286,16 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 	return nil
 }
 
-func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup) []v1.Node {
+func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup) []v1.Node {
 	var readyNodes []v1.Node
+	groupsSeen := map[string]bool{}
+
 	for _, cloudGroup := range cloudGroups {
 		var allMembers []*cloudinstances.CloudInstanceGroupMember
 		allMembers = append(allMembers, cloudGroup.Ready...)
 		allMembers = append(allMembers, cloudGroup.NeedUpdate...)
 
+		groupsSeen[cloudGroup.InstanceGroup.Name] = true
 		numNodes := 0
 		for _, m := range allMembers {
 			if !m.Detached {
@@ -371,6 +374,16 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 			} else {
 				klog.Warningf("ignoring node with role %q", n.Role)
 			}
+		}
+	}
+
+	for _, ig := range groups {
+		if !groupsSeen[ig.Name] {
+			v.addError(&ValidationError{
+				Kind:    "InstanceGroup",
+				Name:    ig.Name,
+				Message: fmt.Sprintf("InstanceGroup %q is missing from the cloud provider", ig.Name),
+			})
 		}
 	}
 
