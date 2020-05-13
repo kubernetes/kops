@@ -279,6 +279,7 @@ func buildCloudInstanceGroupFromInstanceGroup(cloud Cloud, ig *kops.InstanceGrou
 		HumanName:     group.Name(),
 		InstanceGroup: ig,
 		MinSize:       group.MinSize(),
+		TargetSize:    group.MinSize(), // TODO: Retrieve the target size from the cloud provider
 		MaxSize:       group.MaxSize(),
 		Raw:           group,
 	}
