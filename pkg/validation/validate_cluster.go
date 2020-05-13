@@ -299,14 +299,14 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 				numNodes++
 			}
 		}
-		if numNodes < cloudGroup.MinSize {
+		if numNodes < cloudGroup.TargetSize {
 			v.addError(&ValidationError{
 				Kind: "InstanceGroup",
 				Name: cloudGroup.InstanceGroup.Name,
 				Message: fmt.Sprintf("InstanceGroup %q did not have enough nodes %d vs %d",
 					cloudGroup.InstanceGroup.Name,
 					numNodes,
-					cloudGroup.MinSize),
+					cloudGroup.TargetSize),
 			})
 		}
 
