@@ -169,6 +169,7 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 					HumanName:     mig.Name,
 					InstanceGroup: ig,
 					MinSize:       int(mig.TargetSize),
+					TargetSize:    int(mig.TargetSize),
 					MaxSize:       int(mig.TargetSize),
 					Raw:           mig,
 				}
