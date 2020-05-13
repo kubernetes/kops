@@ -246,6 +246,7 @@ func buildCloudInstanceGroup(c ALICloud, ig *kops.InstanceGroup, g ess.ScalingGr
 		HumanName:     g.ScalingGroupName,
 		InstanceGroup: ig,
 		MinSize:       g.MinSize,
+		TargetSize:    g.MinSize, // TODO: Which is the appropriate field? Need to add DesiredCapacity field to ScalingGroupItemType?
 		MaxSize:       g.MaxSize,
 		Raw:           g,
 	}

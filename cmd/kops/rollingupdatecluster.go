@@ -369,6 +369,9 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		t.AddColumn("MIN", func(r *cloudinstances.CloudInstanceGroup) string {
 			return strconv.Itoa(r.MinSize)
 		})
+		t.AddColumn("TARGET", func(r *cloudinstances.CloudInstanceGroup) string {
+			return strconv.Itoa(r.TargetSize)
+		})
 		t.AddColumn("MAX", func(r *cloudinstances.CloudInstanceGroup) string {
 			return strconv.Itoa(r.MaxSize)
 		})
@@ -391,7 +394,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 			l = append(l, v)
 		}
 
-		columns := []string{"NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX"}
+		columns := []string{"NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "TARGET", "MAX"}
 		if !options.CloudOnly {
 			columns = append(columns, "NODES")
 		}

@@ -107,6 +107,7 @@ func (c *openstackCloud) osBuildCloudInstanceGroup(cluster *kops.Cluster, ig *ko
 		HumanName:     newLaunchConfigName,
 		InstanceGroup: ig,
 		MinSize:       int(fi.Int32Value(ig.Spec.MinSize)),
+		TargetSize:    int(fi.Int32Value(ig.Spec.MinSize)), // TODO: Retrieve the target size from OpenStack?
 		MaxSize:       int(fi.Int32Value(ig.Spec.MaxSize)),
 		Raw:           g,
 	}
