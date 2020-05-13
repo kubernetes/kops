@@ -713,6 +713,7 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
 		MinSize:       int(aws.Int64Value(g.MinSize)),
+		TargetSize:    int(aws.Int64Value(g.DesiredCapacity)),
 		MaxSize:       int(aws.Int64Value(g.MaxSize)),
 		Raw:           g,
 	}

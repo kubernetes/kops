@@ -33,6 +33,7 @@ type CloudInstanceGroup struct {
 	Ready         []*CloudInstanceGroupMember
 	NeedUpdate    []*CloudInstanceGroupMember
 	MinSize       int
+	TargetSize    int
 	MaxSize       int
 
 	// Raw allows for the implementer to attach an object, for tracking additional state
