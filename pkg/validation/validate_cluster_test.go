@@ -124,7 +124,8 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		MinSize: 3,
+		MinSize:    2,
+		TargetSize: 3,
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID: "i-00001",
@@ -176,7 +177,8 @@ func Test_ValidateDetachedNodesDontCount(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		MinSize: 2,
+		MinSize:    2,
+		TargetSize: 2,
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID: "i-00001",
@@ -229,7 +231,8 @@ func Test_ValidateNodeNotReady(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		MinSize: 2,
+		MinSize:    2,
+		TargetSize: 2,
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID: "i-00001",
@@ -281,7 +284,8 @@ func Test_ValidateMastersNotEnough(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		MinSize: 3,
+		MinSize:    2,
+		TargetSize: 3,
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID: "i-00001",
@@ -333,7 +337,8 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		MinSize: 2,
+		MinSize:    2,
+		TargetSize: 2,
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID: "i-00001",
@@ -385,7 +390,8 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		MinSize: 1,
+		MinSize:    1,
+		TargetSize: 1,
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID: "i-00001",
