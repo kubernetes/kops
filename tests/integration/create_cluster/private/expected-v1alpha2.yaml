@@ -80,7 +80,7 @@ spec:
     kops.k8s.io/instancegroup: bastions
   role: Bastion
   subnets:
-  - utility-us-test-1a
+  - us-test-1a
 
 ---
 
