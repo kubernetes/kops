@@ -203,7 +203,7 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 	volumes, err := getAllVolumesByRegion(c, c.RegionName)
 
 	if err != nil {
-		return nil, fmt.Errorf("error describing volumes: %v", err)
+		return nil, fmt.Errorf("failed to get all volumes by region from %s: %v", c.RegionName, err)
 	}
 
 	for _, volume := range volumes {
@@ -213,7 +213,7 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 		var etcdClusterSpec *etcd.EtcdClusterSpec
 
 		for _, myTag := range volume.Tags {
-			klog.V(2).Infof("findEtcdStatus status (from cloud): %v", myTag)
+			klog.V(8).Infof("findEtcdStatus status (from cloud): checking if volume with tag %q belongs to cluster", myTag)
 			// check if volume belongs to this cluster.
 			// tag will be in the format "KubernetesCluster:dev5-k8s-local" (where clusterName is dev5.k8s.local)
 			clusterName := strings.Replace(cluster.Name, ".", "-", -1)
@@ -223,16 +223,17 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 				// loop through the tags again and
 				for _, volumeTag := range volume.Tags {
 					if strings.Contains(volumeTag, TagKubernetesClusterIndex) {
-						if len(strings.Split(volumeTag, ":")) < 2 {
-							return nil, fmt.Errorf("error splitting the volume tag %q on volume %q", volumeTag, volume)
+						volumeTagParts := strings.Split(volumeTag, ":")
+						if len(volumeTagParts) < 2 {
+							return nil, fmt.Errorf("volume tag split failed, too few components for tag %q on volume %q", volumeTag, volume)
 						}
-						dropletIndex := strings.Split(volumeTag, ":")[1]
+						dropletIndex := volumeTagParts[1]
 						etcdClusterSpec, err = c.getEtcdClusterSpec(volume.Name, dropletIndex)
-						klog.V(10).Infof("findEtcdStatus etcdClusterSpec: %v", fi.DebugAsJsonString(etcdClusterSpec))
 						if err != nil {
 							return nil, fmt.Errorf("error parsing etcd cluster tag %q on volume %q: %v", volumeTag, volumeID, err)
 						}
 
+						klog.V(10).Infof("findEtcdStatus etcdClusterSpec: %v", fi.DebugAsJsonString(etcdClusterSpec))
 						etcdClusterName = etcdClusterSpec.ClusterKey
 						status := statusMap[etcdClusterName]
 						if status == nil {
@@ -253,7 +254,7 @@ func findEtcdStatus(c *Cloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, 
 		}
 	}
 
-	var status []kops.EtcdClusterStatus
+	status := make([]kops.EtcdClusterStatus, 0, len(statusMap))
 	for _, v := range statusMap {
 		status = append(status, *v)
 	}
