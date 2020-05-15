@@ -18,6 +18,7 @@ package fitasks
 
 import (
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"fmt"
 	"math/big"
 	"net"
@@ -170,11 +171,6 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		return fi.RequiredField("Name")
 	}
 
-	template, err := e.buildCertificateTemplate()
-	if err != nil {
-		return err
-	}
-
 	changeStoredFormat := false
 	createCertificate := false
 	if a == nil {
@@ -225,7 +221,35 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 
 		serial := pki.BuildPKISerial(time.Now().UnixNano())
 
+		subjectPkix, err := parsePkixName(e.Subject)
+		if err != nil {
+			return fmt.Errorf("error parsing Subject: %v", err)
+		}
+
+		if len(subjectPkix.ToRDNSequence()) == 0 {
+			return fmt.Errorf("subject name was empty for SSL keypair %q", *e.Name)
+		}
+
+		req := issueCertRequest{
+			Type:           e.Type,
+			Subject:        *subjectPkix,
+			AlternateNames: e.AlternateNames,
+		}
+		template, err := buildCertificateTemplate(&req)
+		if err != nil {
+			return err
+		}
 		cert, err := e.issueCert(c.Keystore, signer, name, serial, privateKey, template)
+		if err != nil {
+			return err
+		}
+		err = c.Keystore.StoreKeypair(name, cert, privateKey)
+		if err != nil {
+			return err
+		}
+
+		// Make double-sure it round-trips
+		_, _, _, err = c.Keystore.FindKeypair(name)
 		if err != nil {
 			return err
 		}
@@ -253,43 +277,22 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	return nil
 }
 
-// BuildCertificateTemplate is responsible for constructing a certificate template
-func (e *Keypair) buildCertificateTemplate() (*x509.Certificate, error) {
-	template, err := buildCertificateTemplateForType(e.Type)
-	if err != nil {
-		return nil, err
-	}
+type issueCertRequest struct {
+	// Signer is the keypair to use to sign.
+	// Signer string
+	// Type is the type of certificate i.e. CA, server, client etc.
+	Type string
+	// Subject is the certificate subject.
+	Subject pkix.Name
+	// AlternateNames is a list of alternative names for this certificate.
+	AlternateNames []string
 
-	subjectPkix, err := parsePkixName(e.Subject)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing Subject: %v", err)
-	}
-
-	if len(subjectPkix.ToRDNSequence()) == 0 {
-		return nil, fmt.Errorf("Subject name was empty for SSL keypair %q", *e.Name)
-	}
-
-	template.Subject = *subjectPkix
-
-	var alternateNames []string
-	alternateNames = append(alternateNames, e.AlternateNames...)
-
-	for _, san := range alternateNames {
-		san = strings.TrimSpace(san)
-		if san == "" {
-			continue
-		}
-		if ip := net.ParseIP(san); ip != nil {
-			template.IPAddresses = append(template.IPAddresses, ip)
-		} else {
-			template.DNSNames = append(template.DNSNames, san)
-		}
-	}
-
-	return template, nil
+	// Serial is the certificate serial number. If nil, a random number will be generated.
+	// Serial *big.Int
 }
 
-func buildCertificateTemplateForType(certificateType string) (*x509.Certificate, error) {
+func buildCertificateTemplate(request *issueCertRequest) (*x509.Certificate, error) {
+	certificateType := request.Type
 	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
 		certificateType = expanded
 	}
@@ -317,6 +320,23 @@ func buildCertificateTemplateForType(certificateType string) (*x509.Certificate,
 			template.IsCA = true
 		} else {
 			return nil, fmt.Errorf("unrecognized certificate option: %q", t)
+		}
+	}
+
+	template.Subject = request.Subject
+
+	var alternateNames []string
+	alternateNames = append(alternateNames, request.AlternateNames...)
+
+	for _, san := range alternateNames {
+		san = strings.TrimSpace(san)
+		if san == "" {
+			continue
+		}
+		if ip := net.ParseIP(san); ip != nil {
+			template.IPAddresses = append(template.IPAddresses, ip)
+		} else {
+			template.DNSNames = append(template.DNSNames, san)
 		}
 	}
 
@@ -354,36 +374,23 @@ func (e *Keypair) issueCert(keystore fi.Keystore, signer string, id string, seri
 
 	template.SerialNumber = serial
 
-	var cert *pki.Certificate
-	if template.IsCA {
+	var caCertificate *x509.Certificate
+	var caPrivateKey *pki.PrivateKey
+	if !template.IsCA {
 		var err error
-		cert, err = pki.SignNewCertificate(privateKey, template, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		caCertificate, caPrivateKey, _, err := keystore.FindKeypair(signer)
+		var caCert *pki.Certificate
+		caCert, caPrivateKey, _, err = keystore.FindKeypair(signer)
 		if err != nil {
 			return nil, err
 		}
 		if caPrivateKey == nil {
 			return nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", signer)
 		}
-		if caCertificate == nil {
+		if caCert == nil {
 			return nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", signer)
 		}
-		cert, err = pki.SignNewCertificate(privateKey, template, caCertificate.Certificate, caPrivateKey)
-		if err != nil {
-			return nil, err
-		}
+		caCertificate = caCert.Certificate
 	}
 
-	err := keystore.StoreKeypair(id, cert, privateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Make double-sure it round-trips
-	certificate, _, _, err := keystore.FindKeypair(id)
-	return certificate, err
+	return pki.SignNewCertificate(privateKey, template, caCertificate, caPrivateKey)
 }
