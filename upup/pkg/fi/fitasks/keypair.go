@@ -19,9 +19,11 @@ package fitasks
 import (
 	"crypto/x509"
 	"fmt"
+	"math/big"
 	"net"
 	"sort"
 	"strings"
+	"time"
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/pki"
@@ -168,7 +170,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		return fi.RequiredField("Name")
 	}
 
-	template, err := e.BuildCertificateTemplate()
+	template, err := e.buildCertificateTemplate()
 	if err != nil {
 		return err
 	}
@@ -221,7 +223,9 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			signer = fi.StringValue(e.Signer.Name)
 		}
 
-		cert, err := c.Keystore.CreateKeypair(signer, name, template, privateKey)
+		serial := pki.BuildPKISerial(time.Now().UnixNano())
+
+		cert, err := e.issueCert(c.Keystore, signer, name, serial, privateKey, template)
 		if err != nil {
 			return err
 		}
@@ -250,7 +254,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 }
 
 // BuildCertificateTemplate is responsible for constructing a certificate template
-func (e *Keypair) BuildCertificateTemplate() (*x509.Certificate, error) {
+func (e *Keypair) buildCertificateTemplate() (*x509.Certificate, error) {
 	template, err := buildCertificateTemplateForType(e.Type)
 	if err != nil {
 		return nil, err
@@ -343,4 +347,43 @@ func buildTypeDescription(cert *x509.Certificate) string {
 	}
 
 	return s
+}
+
+func (e *Keypair) issueCert(keystore fi.Keystore, signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
+	klog.Infof("Issuing new certificate: %q", id)
+
+	template.SerialNumber = serial
+
+	var cert *pki.Certificate
+	if template.IsCA {
+		var err error
+		cert, err = pki.SignNewCertificate(privateKey, template, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		caCertificate, caPrivateKey, _, err := keystore.FindKeypair(signer)
+		if err != nil {
+			return nil, err
+		}
+		if caPrivateKey == nil {
+			return nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", signer)
+		}
+		if caCertificate == nil {
+			return nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", signer)
+		}
+		cert, err = pki.SignNewCertificate(privateKey, template, caCertificate.Certificate, caPrivateKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err := keystore.StoreKeypair(id, cert, privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make double-sure it round-trips
+	certificate, _, _, err := keystore.FindKeypair(id)
+	return certificate, err
 }
