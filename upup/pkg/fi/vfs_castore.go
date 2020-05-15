@@ -18,13 +18,11 @@ package fi
 
 import (
 	"bytes"
-	"crypto/x509"
 	"fmt"
 	"math/big"
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog"
@@ -43,10 +41,6 @@ type VFSCAStore struct {
 
 	mutex     sync.Mutex
 	cachedCAs map[string]*cachedEntry
-
-	// SerialGenerator is the function for generating certificate serial numbers
-	// It can be replaced for testing purposes.
-	SerialGenerator func() *big.Int
 }
 
 type cachedEntry struct {
@@ -62,11 +56,6 @@ func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) *VFSCAStore {
 		basedir:   basedir,
 		cluster:   cluster,
 		cachedCAs: make(map[string]*cachedEntry),
-	}
-
-	c.SerialGenerator = func() *big.Int {
-		t := time.Now().UnixNano()
-		return pki.BuildPKISerial(t)
 	}
 
 	return c
@@ -586,46 +575,6 @@ func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential 
 	return nil
 }
 
-func (c *VFSCAStore) issueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
-	klog.Infof("Issuing new certificate: %q", id)
-
-	template.SerialNumber = serial
-
-	var cert *pki.Certificate
-	if template.IsCA {
-		var err error
-		cert, err = pki.SignNewCertificate(privateKey, template, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		caCertificates, caPrivateKeys, err := c.readCAKeypairs(signer)
-		if err != nil {
-			return nil, err
-		}
-
-		if caPrivateKeys == nil || caPrivateKeys.primary == nil || caPrivateKeys.primary.privateKey == nil {
-			return nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", signer)
-		}
-		if caCertificates == nil || caCertificates.primary == nil || caCertificates.primary.certificate == nil {
-			return nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", signer)
-		}
-		cert, err = pki.SignNewCertificate(privateKey, template, caCertificates.primary.certificate.Certificate, caPrivateKeys.primary.privateKey)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err := c.StoreKeypair(id, cert, privateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Make double-sure it round-trips
-	p := c.buildCertificatePath(id, serial.String())
-	return c.loadOneCertificate(p)
-}
-
 func (c *VFSCAStore) StoreKeypair(name string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
 	serial := cert.Certificate.SerialNumber.String()
 
@@ -727,17 +676,6 @@ func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
 	}
 
 	return o, nil
-}
-
-func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
-	serial := c.SerialGenerator()
-
-	cert, err := c.issueCert(signer, id, serial, privateKey, template)
-	if err != nil {
-		return nil, err
-	}
-
-	return cert, nil
 }
 
 func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
