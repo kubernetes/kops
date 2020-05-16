@@ -70,7 +70,7 @@ type fakeKeyStore struct {
 	T *testing.T
 }
 
-func (k fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
+func (k fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 	panic("implement me")
 }
 

@@ -32,8 +32,7 @@ import (
 )
 
 type VFSClientset struct {
-	basePath  vfs.Path
-	allowList bool
+	basePath vfs.Path
 }
 
 var _ simple.Clientset = &VFSClientset{}
@@ -90,7 +89,7 @@ func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 		return nil, err
 	}
 	basedir := configBase.Join("pki")
-	return fi.NewVFSCAStore(cluster, basedir, c.allowList), nil
+	return fi.NewVFSCAStore(cluster, basedir), nil
 }
 
 func (c *VFSClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
@@ -163,10 +162,9 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 	return DeleteAllClusterState(configBase)
 }
 
-func NewVFSClientset(basePath vfs.Path, allowList bool) simple.Clientset {
+func NewVFSClientset(basePath vfs.Path) simple.Clientset {
 	vfsClientset := &VFSClientset{
-		basePath:  basePath,
-		allowList: allowList,
+		basePath: basePath,
 	}
 	return vfsClientset
 }

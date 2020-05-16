@@ -30,8 +30,7 @@ import (
 )
 
 func up(ctx context.Context) error {
-	allowList := true
-	clientset := vfsclientset.NewVFSClientset(registryBase, allowList)
+	clientset := vfsclientset.NewVFSClientset(registryBase)
 
 	cluster := &api.Cluster{}
 	cluster.ObjectMeta.Name = clusterName
