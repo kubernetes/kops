@@ -97,8 +97,6 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		format := string(fi.KeysetFormatV1Alpha2)
-
 		c.AddTask(&fitasks.ManagedFile{
 			Contents:  fi.WrapResource(fi.NewBytesResource(d)),
 			Lifecycle: b.Lifecycle,
@@ -112,7 +110,6 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:    fi.String("etcd-manager-ca-" + etcdCluster.Name),
 			Subject: "cn=etcd-manager-ca-" + etcdCluster.Name,
 			Type:    "ca",
-			Format:  format,
 		})
 
 		// We create a CA for etcd peers and a separate one for clients
@@ -120,7 +117,6 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:    fi.String("etcd-peers-ca-" + etcdCluster.Name),
 			Subject: "cn=etcd-peers-ca-" + etcdCluster.Name,
 			Type:    "ca",
-			Format:  format,
 		})
 
 		// Because API server can only have a single client-cert, we need to share a client CA
@@ -128,7 +124,6 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:    fi.String("etcd-clients-ca"),
 			Subject: "cn=etcd-clients-ca",
 			Type:    "ca",
-			Format:  format,
 		}); err != nil {
 			return err
 		}
@@ -138,7 +133,6 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:    fi.String("etcd-clients-ca-cilium"),
 				Subject: "cn=etcd-clients-ca-cilium",
 				Type:    "ca",
-				Format:  format,
 			})
 		}
 	}

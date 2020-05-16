@@ -24,8 +24,7 @@ import (
 )
 
 func apply(ctx context.Context) error {
-	allowList := true
-	clientset := vfsclientset.NewVFSClientset(registryBase, allowList)
+	clientset := vfsclientset.NewVFSClientset(registryBase)
 
 	cluster, err := clientset.GetCluster(ctx, clusterName)
 	if err != nil {
