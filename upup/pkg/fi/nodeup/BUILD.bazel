@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//nodeup/pkg/distros:go_default_library",
         "//nodeup/pkg/model:go_default_library",
+        "//nodeup/pkg/model/networking:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
@@ -24,8 +25,6 @@ go_library(
         "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/ec2metadata:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",

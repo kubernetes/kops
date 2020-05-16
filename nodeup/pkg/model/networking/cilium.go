@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package networking
 
 import (
 	"crypto/x509"
@@ -23,6 +23,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"k8s.io/kops/nodeup/pkg/model"
 
 	"golang.org/x/sys/unix"
 	"k8s.io/klog"
@@ -33,7 +35,7 @@ import (
 
 // CiliumBuilder writes Cilium's assets
 type CiliumBuilder struct {
-	*NodeupModelContext
+	*model.NodeupModelContext
 }
 
 var _ fi.ModelBuilder = &CiliumBuilder{}
@@ -76,7 +78,7 @@ func (b *CiliumBuilder) buildBPFMount(c *fi.ModelBuilderContext) error {
 	alreadyMounted := uint32(fsdata.Type) == BPF_FS_MAGIC
 
 	if !alreadyMounted {
-		unit := s(`
+		unit := `
 [Unit]
 Description=Cilium BPF mounts
 Documentation=http://docs.cilium.io/
@@ -90,13 +92,12 @@ Type=bpf
 
 [Install]
 WantedBy=multi-user.target
-`)
+`
 
-		service := &nodetasks.Service{
-			Name:       "sys-fs-bpf.mount",
-			Definition: unit,
+		service, err := nodetasks.NewService("sys-fs-bpf.mount", unit, "")
+		if err != nil {
+			return err
 		}
-		service.InitDefaults()
 		c.AddTask(service)
 	}
 

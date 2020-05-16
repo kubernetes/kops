@@ -368,6 +368,9 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		if optionTaken {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kuberouter"), "only one networking option permitted"))
 		}
+		if c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "kube-router requires kubeProxy to be disabled"))
+		}
 		optionTaken = true
 	}
 
