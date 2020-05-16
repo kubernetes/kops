@@ -17,11 +17,8 @@ limitations under the License.
 package fitasks
 
 import (
-	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"math/big"
-	"net"
 	"sort"
 	"strings"
 	"time"
@@ -30,13 +27,6 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 )
-
-var wellKnownCertificateTypes = map[string]string{
-	"ca":           "CA,KeyUsageCRLSign,KeyUsageCertSign",
-	"client":       "ExtKeyUsageClientAuth,KeyUsageDigitalSignature",
-	"clientServer": "ExtKeyUsageClientAuth,ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
-	"server":       "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
-}
 
 //go:generate fitask -type=Keypair
 type Keypair struct {
@@ -100,12 +90,12 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	actual := &Keypair{
 		Name:           &name,
 		AlternateNames: alternateNames,
-		Subject:        pkixNameToString(&cert.Subject),
-		Type:           buildTypeDescription(cert.Certificate),
+		Subject:        pki.PkixNameToString(&cert.Subject),
+		Type:           pki.BuildTypeDescription(cert.Certificate),
 		LegacyFormat:   legacyFormat,
 	}
 
-	actual.Signer = &Keypair{Subject: pkixNameToString(&cert.Certificate.Issuer)}
+	actual.Signer = &Keypair{Subject: pki.PkixNameToString(&cert.Certificate.Issuer)}
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
@@ -227,7 +217,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return fmt.Errorf("subject name was empty for SSL keypair %q", *e.Name)
 		}
 
-		req := issueCertRequest{
+		req := pki.IssueCertRequest{
 			Signer:         signer,
 			Type:           e.Type,
 			Subject:        *subjectPkix,
@@ -235,7 +225,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			PrivateKey:     privateKey,
 			Serial:         serial,
 		}
-		cert, privateKey, err := issueCert(&req, c.Keystore)
+		cert, privateKey, err := pki.IssueCert(&req, c.Keystore)
 		if err != nil {
 			return err
 		}
@@ -273,130 +263,28 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	return nil
 }
 
-type issueCertRequest struct {
-	// Signer is the keypair to use to sign.
-	Signer string
-	// Type is the type of certificate i.e. CA, server, client etc.
-	Type string
-	// Subject is the certificate subject.
-	Subject pkix.Name
-	// AlternateNames is a list of alternative names for this certificate.
-	AlternateNames []string
+func parsePkixName(s string) (*pkix.Name, error) {
+	name := new(pkix.Name)
 
-	// PrivateKey is the private key for this certificate. If nil, a new private key will be generated.
-	PrivateKey *pki.PrivateKey
+	tokens := strings.Split(s, ",")
+	for _, token := range tokens {
+		token = strings.TrimSpace(token)
+		kv := strings.SplitN(token, "=", 2)
+		if len(kv) != 2 {
+			return nil, fmt.Errorf("unrecognized token (expected k=v): %q", token)
+		}
+		k := strings.ToLower(kv[0])
+		v := kv[1]
 
-	// Serial is the certificate serial number. If nil, a random number will be generated.
-	Serial *big.Int
-}
-
-func issueCert(request *issueCertRequest, keystore fi.Keystore) (*pki.Certificate, *pki.PrivateKey, error) {
-	certificateType := request.Type
-	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
-		certificateType = expanded
-	}
-
-	template := &x509.Certificate{
-		BasicConstraintsValid: true,
-		IsCA:                  false,
-		SerialNumber:          request.Serial,
-	}
-
-	tokens := strings.Split(certificateType, ",")
-	for _, t := range tokens {
-		if strings.HasPrefix(t, "KeyUsage") {
-			ku, found := parseKeyUsage(t)
-			if !found {
-				return nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
-			}
-			template.KeyUsage |= ku
-		} else if strings.HasPrefix(t, "ExtKeyUsage") {
-			ku, found := parseExtKeyUsage(t)
-			if !found {
-				return nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
-			}
-			template.ExtKeyUsage = append(template.ExtKeyUsage, ku)
-		} else if t == "CA" {
-			template.IsCA = true
-		} else {
-			return nil, nil, fmt.Errorf("unrecognized certificate option: %q", t)
+		switch k {
+		case "cn":
+			name.CommonName = v
+		case "o":
+			name.Organization = append(name.Organization, v)
+		default:
+			return nil, fmt.Errorf("unrecognized key %q in token %q", k, token)
 		}
 	}
 
-	template.Subject = request.Subject
-
-	var alternateNames []string
-	alternateNames = append(alternateNames, request.AlternateNames...)
-
-	for _, san := range alternateNames {
-		san = strings.TrimSpace(san)
-		if san == "" {
-			continue
-		}
-		if ip := net.ParseIP(san); ip != nil {
-			template.IPAddresses = append(template.IPAddresses, ip)
-		} else {
-			template.DNSNames = append(template.DNSNames, san)
-		}
-	}
-
-	var caCertificate *x509.Certificate
-	var caPrivateKey *pki.PrivateKey
-	if !template.IsCA {
-		var err error
-		var caCert *pki.Certificate
-		caCert, caPrivateKey, _, err = keystore.FindKeypair(request.Signer)
-		if err != nil {
-			return nil, nil, err
-		}
-		if caPrivateKey == nil {
-			return nil, nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", request.Signer)
-		}
-		if caCert == nil {
-			return nil, nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", request.Signer)
-		}
-		caCertificate = caCert.Certificate
-	}
-
-	privateKey := request.PrivateKey
-	if privateKey == nil {
-		var err error
-		privateKey, err = pki.GeneratePrivateKey()
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	certificate, err := pki.SignNewCertificate(privateKey, template, caCertificate, caPrivateKey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return certificate, privateKey, err
-}
-
-// buildTypeDescription extracts the type based on the certificate extensions
-func buildTypeDescription(cert *x509.Certificate) string {
-	var options []string
-
-	if cert.IsCA {
-		options = append(options, "CA")
-	}
-
-	options = append(options, keyUsageToString(cert.KeyUsage)...)
-
-	for _, extKeyUsage := range cert.ExtKeyUsage {
-		options = append(options, extKeyUsageToString(extKeyUsage))
-	}
-
-	sort.Strings(options)
-	s := strings.Join(options, ",")
-
-	for k, v := range wellKnownCertificateTypes {
-		if v == s {
-			s = k
-		}
-	}
-
-	return s
+	return name, nil
 }
