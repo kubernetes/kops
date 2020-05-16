@@ -33,11 +33,8 @@ const (
 	SecretNameSSHPrimary = "admin"
 )
 
-type KeysetFormat string
-
 const (
-	KeysetFormatLegacy   KeysetFormat = "legacy"
-	KeysetFormatV1Alpha2 KeysetFormat = "v1alpha2"
+	keysetFormatLatest = "v1alpha2"
 )
 
 type KeystoreItem struct {
@@ -51,10 +48,10 @@ type KeystoreItem struct {
 type Keystore interface {
 	// FindKeypair finds a cert & private key, returning nil where either is not found
 	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned).
-	// This func returns a cert, private key and a string.  The string value is the Format of the keystore which is either
-	// an empty string, which denotes a Legacy Keypair, or a value of "Keypair".  This string is used by a keypair
-	// task convert a Legacy Keypair to the new Keypair API format.
-	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error)
+	// This func returns a cert, private key and a bool.  The bool value is whether the keypair is stored
+	// in a legacy format. This bool is used by a keypair
+	// task to convert a Legacy Keypair to the new Keypair API format.
+	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
 
 	CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 
