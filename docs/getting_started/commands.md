@@ -6,7 +6,7 @@ Please refer to the kops [cli reference](../cli/kops.md) for full documentation.
 
 `kops create` registers a cluster. There are two ways of registering a cluster: using a cluster spec file or using cli arguments.
 
-### `kops create -f <cluser spec>`
+### `kops create -f <cluster spec>`
 
 `kops create -f <cluster spec>` will register a cluster using a kops spec yaml file. After the cluster has been registered you need to run `kops update cluster --yes` to create the cloud resources.
 
