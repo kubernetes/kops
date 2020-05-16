@@ -14,19 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package fitasks
+package pki
 
 import (
 	"bytes"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
+	"sort"
 	"strings"
 
 	"k8s.io/klog"
 )
 
-func pkixNameToString(name *pkix.Name) string {
+func PkixNameToString(name *pkix.Name) string {
 	seq := name.ToRDNSequence()
 	var s bytes.Buffer
 	for _, rdnSet := range seq {
@@ -59,32 +60,6 @@ func pkixNameToString(name *pkix.Name) string {
 		}
 	}
 	return s.String()
-}
-
-func parsePkixName(s string) (*pkix.Name, error) {
-	name := new(pkix.Name)
-
-	tokens := strings.Split(s, ",")
-	for _, token := range tokens {
-		token = strings.TrimSpace(token)
-		kv := strings.SplitN(token, "=", 2)
-		if len(kv) != 2 {
-			return nil, fmt.Errorf("unrecognized token (expected k=v): %q", token)
-		}
-		k := strings.ToLower(kv[0])
-		v := kv[1]
-
-		switch k {
-		case "cn":
-			name.CommonName = v
-		case "o":
-			name.Organization = append(name.Organization, v)
-		default:
-			return nil, fmt.Errorf("unrecognized key %q in token %q", k, token)
-		}
-	}
-
-	return name, nil
 }
 
 var keyUsageStrings = map[x509.KeyUsage]string{
@@ -152,4 +127,30 @@ func parseExtKeyUsage(s string) (x509.ExtKeyUsage, bool) {
 		}
 	}
 	return 0, false
+}
+
+// BuildTypeDescription extracts the type based on the certificate extensions
+func BuildTypeDescription(cert *x509.Certificate) string {
+	var options []string
+
+	if cert.IsCA {
+		options = append(options, "CA")
+	}
+
+	options = append(options, keyUsageToString(cert.KeyUsage)...)
+
+	for _, extKeyUsage := range cert.ExtKeyUsage {
+		options = append(options, extKeyUsageToString(extKeyUsage))
+	}
+
+	sort.Strings(options)
+	s := strings.Join(options, ",")
+
+	for k, v := range wellKnownCertificateTypes {
+		if v == s {
+			s = k
+		}
+	}
+
+	return s
 }
