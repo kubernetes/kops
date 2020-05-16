@@ -207,17 +207,14 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		// TODO: Eventually rotate keys / don't always reuse?
 		if privateKey == nil {
 			klog.V(2).Infof("Creating privateKey %q", name)
-
-			privateKey, err = pki.GeneratePrivateKey()
-			if err != nil {
-				return err
-			}
 		}
 
 		signer := fi.CertificateId_CA
 		if e.Signer != nil {
 			signer = fi.StringValue(e.Signer.Name)
 		}
+
+		klog.Infof("Issuing new certificate: %q", *e.Name)
 
 		serial := pki.BuildPKISerial(time.Now().UnixNano())
 
@@ -231,15 +228,14 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		}
 
 		req := issueCertRequest{
+			Signer:         signer,
 			Type:           e.Type,
 			Subject:        *subjectPkix,
 			AlternateNames: e.AlternateNames,
+			PrivateKey:     privateKey,
+			Serial:         serial,
 		}
-		template, err := buildCertificateTemplate(&req)
-		if err != nil {
-			return err
-		}
-		cert, err := e.issueCert(c.Keystore, signer, name, serial, privateKey, template)
+		cert, privateKey, err := issueCert(&req, c.Keystore)
 		if err != nil {
 			return err
 		}
@@ -279,7 +275,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 
 type issueCertRequest struct {
 	// Signer is the keypair to use to sign.
-	// Signer string
+	Signer string
 	// Type is the type of certificate i.e. CA, server, client etc.
 	Type string
 	// Subject is the certificate subject.
@@ -287,11 +283,14 @@ type issueCertRequest struct {
 	// AlternateNames is a list of alternative names for this certificate.
 	AlternateNames []string
 
+	// PrivateKey is the private key for this certificate. If nil, a new private key will be generated.
+	PrivateKey *pki.PrivateKey
+
 	// Serial is the certificate serial number. If nil, a random number will be generated.
-	// Serial *big.Int
+	Serial *big.Int
 }
 
-func buildCertificateTemplate(request *issueCertRequest) (*x509.Certificate, error) {
+func issueCert(request *issueCertRequest, keystore fi.Keystore) (*pki.Certificate, *pki.PrivateKey, error) {
 	certificateType := request.Type
 	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
 		certificateType = expanded
@@ -300,6 +299,7 @@ func buildCertificateTemplate(request *issueCertRequest) (*x509.Certificate, err
 	template := &x509.Certificate{
 		BasicConstraintsValid: true,
 		IsCA:                  false,
+		SerialNumber:          request.Serial,
 	}
 
 	tokens := strings.Split(certificateType, ",")
@@ -307,19 +307,19 @@ func buildCertificateTemplate(request *issueCertRequest) (*x509.Certificate, err
 		if strings.HasPrefix(t, "KeyUsage") {
 			ku, found := parseKeyUsage(t)
 			if !found {
-				return nil, fmt.Errorf("unrecognized certificate option: %v", t)
+				return nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
 			}
 			template.KeyUsage |= ku
 		} else if strings.HasPrefix(t, "ExtKeyUsage") {
 			ku, found := parseExtKeyUsage(t)
 			if !found {
-				return nil, fmt.Errorf("unrecognized certificate option: %v", t)
+				return nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
 			}
 			template.ExtKeyUsage = append(template.ExtKeyUsage, ku)
 		} else if t == "CA" {
 			template.IsCA = true
 		} else {
-			return nil, fmt.Errorf("unrecognized certificate option: %q", t)
+			return nil, nil, fmt.Errorf("unrecognized certificate option: %q", t)
 		}
 	}
 
@@ -340,7 +340,39 @@ func buildCertificateTemplate(request *issueCertRequest) (*x509.Certificate, err
 		}
 	}
 
-	return template, nil
+	var caCertificate *x509.Certificate
+	var caPrivateKey *pki.PrivateKey
+	if !template.IsCA {
+		var err error
+		var caCert *pki.Certificate
+		caCert, caPrivateKey, _, err = keystore.FindKeypair(request.Signer)
+		if err != nil {
+			return nil, nil, err
+		}
+		if caPrivateKey == nil {
+			return nil, nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", request.Signer)
+		}
+		if caCert == nil {
+			return nil, nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", request.Signer)
+		}
+		caCertificate = caCert.Certificate
+	}
+
+	privateKey := request.PrivateKey
+	if privateKey == nil {
+		var err error
+		privateKey, err = pki.GeneratePrivateKey()
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	certificate, err := pki.SignNewCertificate(privateKey, template, caCertificate, caPrivateKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return certificate, privateKey, err
 }
 
 // buildTypeDescription extracts the type based on the certificate extensions
@@ -367,30 +399,4 @@ func buildTypeDescription(cert *x509.Certificate) string {
 	}
 
 	return s
-}
-
-func (e *Keypair) issueCert(keystore fi.Keystore, signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
-	klog.Infof("Issuing new certificate: %q", id)
-
-	template.SerialNumber = serial
-
-	var caCertificate *x509.Certificate
-	var caPrivateKey *pki.PrivateKey
-	if !template.IsCA {
-		var err error
-		var caCert *pki.Certificate
-		caCert, caPrivateKey, _, err = keystore.FindKeypair(signer)
-		if err != nil {
-			return nil, err
-		}
-		if caPrivateKey == nil {
-			return nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", signer)
-		}
-		if caCert == nil {
-			return nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", signer)
-		}
-		caCertificate = caCert.Certificate
-	}
-
-	return pki.SignNewCertificate(privateKey, template, caCertificate, caPrivateKey)
 }
