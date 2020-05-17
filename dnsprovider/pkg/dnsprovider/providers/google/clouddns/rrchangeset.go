@@ -17,6 +17,7 @@ limitations under the License.
 package clouddns
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -49,7 +50,12 @@ func (c *ResourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 	return c
 }
 
-func (c *ResourceRecordChangeset) Apply() error {
+func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
+	// Empty changesets should be a relatively quick no-op
+	if c.IsEmpty() {
+		return nil
+	}
+
 	rrsets := c.rrsets
 
 	service := rrsets.zone.zones.interface_.service.Changes()
@@ -115,7 +121,7 @@ func (c *ResourceRecordChangeset) Apply() error {
 }
 
 func (c *ResourceRecordChangeset) IsEmpty() bool {
-	return len(c.additions) == 0 && len(c.removals) == 0
+	return len(c.additions) == 0 && len(c.removals) == 0 && len(c.upserts) == 0
 }
 
 // ResourceRecordSets returns the parent ResourceRecordSets

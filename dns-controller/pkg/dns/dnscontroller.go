@@ -17,6 +17,7 @@ limitations under the License.
 package dns
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -189,6 +190,8 @@ type recordKey struct {
 }
 
 func (c *DNSController) runOnce() error {
+	ctx := context.TODO()
+
 	snapshot := c.snapshotIfChangedAndReady()
 	if snapshot == nil {
 		// Unchanged / not ready
@@ -302,8 +305,12 @@ func (c *DNSController) runOnce() error {
 	}
 
 	for key, changeset := range op.changesets {
+		if changeset.IsEmpty() {
+			continue
+		}
+
 		klog.V(2).Infof("applying DNS changeset for zone %s", key)
-		if err := changeset.Apply(); err != nil {
+		if err := changeset.Apply(ctx); err != nil {
 			klog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
 		}
@@ -321,6 +328,8 @@ func (c *DNSController) runOnce() error {
 }
 
 func (c *DNSController) RemoveRecordsImmediate(records []Record) error {
+	ctx := context.TODO()
+
 	op, err := newDNSOp(c.zoneRules, c.dnsCache)
 	if err != nil {
 		return err
@@ -344,7 +353,7 @@ func (c *DNSController) RemoveRecordsImmediate(records []Record) error {
 
 	for key, changeset := range op.changesets {
 		klog.V(2).Infof("applying DNS changeset for zone %s", key)
-		if err := changeset.Apply(); err != nil {
+		if err := changeset.Apply(ctx); err != nil {
 			klog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
 		}
