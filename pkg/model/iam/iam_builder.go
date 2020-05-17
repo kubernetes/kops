@@ -435,6 +435,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 					"s3:DeleteObject",
 					"s3:DeleteObjectVersion",
 					"s3:PutObject",
+					"s3:PutObjectAcl",
 				}),
 				Resource: stringorslice.Of(
 					strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
