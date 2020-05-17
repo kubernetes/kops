@@ -369,6 +369,8 @@ func TestNewResourceRecordSet(t *testing.T) {
 }
 
 func TestResourceRecordChangeset(t *testing.T) {
+	ctx := context.Background()
+
 	fake := &fakeDomainService{}
 	fake.recordsFunc = func(ctx context.Context, domain string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error) {
 		domainRecords := []godo.DomainRecord{
@@ -456,7 +458,7 @@ func TestResourceRecordChangeset(t *testing.T) {
 	record = rrset.New("to-upsert", []string{"127.0.0.1"}, 3600, rrstype.A)
 	changeset.Upsert(record)
 
-	err = changeset.Apply()
+	err = changeset.Apply(ctx)
 	if err != nil {
 		t.Errorf("error applying changeset: %v", err)
 	}

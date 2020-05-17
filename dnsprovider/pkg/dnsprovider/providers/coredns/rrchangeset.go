@@ -69,8 +69,12 @@ func (c *ResourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 	return c
 }
 
-func (c *ResourceRecordChangeset) Apply() error {
-	ctx := context.Background()
+func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
+	// Empty changesets should be a relatively quick no-op
+	if c.IsEmpty() {
+		return nil
+	}
+
 	etcdPathPrefix := c.zone.zones.intf.etcdPathPrefix
 	getOpts := &etcdc.GetOptions{}
 	setOpts := &etcdc.SetOptions{}

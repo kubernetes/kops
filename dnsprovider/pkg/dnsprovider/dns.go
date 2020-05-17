@@ -17,6 +17,7 @@ limitations under the License.
 package dnsprovider
 
 import (
+	"context"
 	"reflect"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
@@ -79,7 +80,8 @@ type ResourceRecordChangeset interface {
 	// If you have the pre-image, it will likely be more efficient to call Remove and Add.
 	Upsert(ResourceRecordSet) ResourceRecordChangeset
 	// Apply applies the accumulated operations to the Zone.
-	Apply() error
+	// Implementations should tolerate an empty changeset, and be a relatively quick no-op.
+	Apply(ctx context.Context) error
 	// IsEmpty returns true if there are no accumulated operations.
 	IsEmpty() bool
 	// ResourceRecordSets returns the parent ResourceRecordSets
