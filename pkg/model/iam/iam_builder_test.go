@@ -18,14 +18,12 @@ package iam
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/pkg/util/stringorslice"
 )
 
@@ -185,19 +183,7 @@ func TestPolicyGeneration(t *testing.T) {
 			t.Errorf("case %d failed to convert generated IAM Policy to JSON. Error: %v", i, err)
 			continue
 		}
-		actualPolicy = strings.TrimSpace(actualPolicy)
 
-		expectedPolicyBytes, err := ioutil.ReadFile(x.Policy)
-		if err != nil {
-			t.Fatalf("unexpected error reading IAM Policy from file %q: %v", x.Policy, err)
-		}
-		expectedPolicy := strings.TrimSpace(string(expectedPolicyBytes))
-
-		if expectedPolicy != actualPolicy {
-			diffString := diff.FormatDiff(expectedPolicy, actualPolicy)
-			t.Logf("diff:\n%s\n", diffString)
-			t.Errorf("case %d failed, policy output differed from expected (%s).", i, x.Policy)
-			continue
-		}
+		golden.AssertMatchesFile(t, actualPolicy, x.Policy)
 	}
 }

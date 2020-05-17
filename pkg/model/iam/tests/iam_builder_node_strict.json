@@ -14,18 +14,6 @@
     {
       "Effect": "Allow",
       "Action": [
-        "s3:GetBucketLocation",
-        "s3:GetEncryptionConfiguration",
-        "s3:ListBucket",
-        "s3:ListBucketVersions"
-      ],
-      "Resource": [
-        "arn:aws:s3:::kops-tests"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
         "s3:Get*"
       ],
       "Resource": [
@@ -38,6 +26,18 @@
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kubelet/*",
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/ssh/*",
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket",
+        "s3:ListBucketVersions"
+      ],
+      "Resource": [
+        "arn:aws:s3:::kops-tests"
       ]
     }
   ]
