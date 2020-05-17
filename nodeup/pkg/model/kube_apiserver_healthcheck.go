@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
 	"path/filepath"
@@ -86,7 +85,17 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.ModelBuilderCont
 		})
 	}
 
-	clientKey, clientCert, err := b.buildClientKeypair(id)
+	req := &pki.IssueCertRequest{
+		Signer: fi.CertificateId_CA,
+		Type:   "client",
+		Subject: pkix.Name{
+			CommonName: id,
+		},
+		MinValidDays: 455,
+	}
+
+	klog.Infof("signing certificate for %q", id)
+	clientCert, clientKey, _, err := pki.IssueCert(req, b.KeyStore)
 	if err != nil {
 		return err
 	}
@@ -135,69 +144,4 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.ModelBuilderCont
 	})
 
 	return nil
-}
-
-func (b *KubeAPIServerBuilder) buildClientKeypair(commonName string) (*pki.PrivateKey, *pki.Certificate, error) {
-	signerID := fi.CertificateId_CA
-
-	var signerKey *pki.PrivateKey
-	{
-		k, err := b.KeyStore.FindPrivateKey(signerID)
-		if err != nil {
-			return nil, nil, err
-		}
-		if k == nil {
-			return nil, nil, fmt.Errorf("private key %q not found", signerID)
-		}
-		signerKey = k
-	}
-
-	var signerCertificate *pki.Certificate
-	{
-		cert, err := b.KeyStore.FindCert(signerID)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if cert == nil {
-			return nil, nil, fmt.Errorf("certificate %q not found", signerID)
-		}
-
-		signerCertificate = cert
-	}
-
-	privateKey, err := pki.GeneratePrivateKey()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	template := &x509.Certificate{
-		BasicConstraintsValid: true,
-		IsCA:                  false,
-
-		Subject: pkix.Name{
-			CommonName: commonName,
-		},
-	}
-
-	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3
-	//
-	// Digital signature allows the certificate to be used to verify
-	// digital signatures used during TLS negotiation.
-	template.KeyUsage = template.KeyUsage | x509.KeyUsageDigitalSignature
-	// KeyEncipherment allows the cert/key pair to be used to encrypt
-	// keys, including the symmetric keys negotiated during TLS setup
-	// and used for data transfer.
-	template.KeyUsage = template.KeyUsage | x509.KeyUsageKeyEncipherment
-	// ClientAuth allows the cert to be used by a TLS client to
-	// authenticate itself to the TLS server.
-	template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
-
-	klog.Infof("signing certificate for %q", commonName)
-	cert, err := pki.SignNewCertificate(privateKey, template, signerCertificate.Certificate, signerKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error signing certificate for %q: %v", commonName, err)
-	}
-
-	return privateKey, cert, nil
 }
