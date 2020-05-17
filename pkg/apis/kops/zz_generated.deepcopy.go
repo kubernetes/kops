@@ -2430,6 +2430,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ServiceAccountJWKSURI != nil {
+		in, out := &in.ServiceAccountJWKSURI, &out.ServiceAccountJWKSURI
+		*out = new(string)
+		**out = **in
+	}
 	if in.APIAudiences != nil {
 		in, out := &in.APIAudiences, &out.APIAudiences
 		*out = make([]string, len(*in))
