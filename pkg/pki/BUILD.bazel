@@ -22,6 +22,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "certificate_test.go",
+        "issue_test.go",
         "privatekey_test.go",
         "sshkey_test.go",
     ],
