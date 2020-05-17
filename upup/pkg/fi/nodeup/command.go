@@ -491,6 +491,21 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		return *(result.Reservations[0].Instances[0].PrivateDnsName), nil
 	}
 
+	if k == "@gce" {
+		// We recognize @gce as meaning the hostname from the GCE metadata service
+		// This lets us tolerate broken hostnames (i.e. systemd)
+		b, err := vfs.Context.ReadFile("metadata://gce/instance/hostname")
+		if err != nil {
+			return "", fmt.Errorf("error reading hostname from GCE metadata: %v", err)
+		}
+
+		// We only want to use the first portion of the fully-qualified name
+		// e.g. foo.c.project.internal => foo
+		fullyQualified := string(b)
+		bareHostname := strings.Split(fullyQualified, ".")[0]
+		return bareHostname, nil
+	}
+
 	if k == "@digitalocean" {
 		// @digitalocean means to use the private ipv4 address of a droplet as the hostname override
 		vBytes, err := vfs.Context.ReadFile("metadata://digitalocean/interfaces/private/0/ipv4/address")
