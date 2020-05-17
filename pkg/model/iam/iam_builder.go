@@ -312,6 +312,8 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 	sort.Strings(roots)
 
+	s3Buckets := sets.NewString()
+
 	for _, root := range roots {
 		vfsPath, err := vfs.Context.BuildVfsPath(root)
 		if err != nil {
@@ -322,18 +324,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
 			iamS3Path = strings.TrimSuffix(iamS3Path, "/")
 
-			p.Statement = append(p.Statement, &Statement{
-				Effect: StatementEffectAllow,
-				Action: stringorslice.Of(
-					"s3:GetBucketLocation",
-					"s3:GetEncryptionConfiguration",
-					"s3:ListBucket",
-					"s3:ListBucketVersions",
-				),
-				Resource: stringorslice.Slice([]string{
-					strings.Join([]string{b.IAMPrefix(), ":s3:::", s3Path.Bucket()}, ""),
-				}),
-			})
+			s3Buckets.Insert(s3Path.Bucket())
 
 			if b.Cluster.Spec.IAM.Legacy {
 				p.Statement = append(p.Statement, &Statement{
@@ -449,9 +440,27 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 					strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/*"}, ""),
 				),
 			})
+
+			s3Buckets.Insert(s3Path.Bucket())
 		} else {
 			klog.Warningf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
 		}
+	}
+
+	// We need some permissions on the buckets themselves
+	for _, s3Bucket := range s3Buckets.List() {
+		p.Statement = append(p.Statement, &Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"s3:GetBucketLocation",
+				"s3:GetEncryptionConfiguration",
+				"s3:ListBucket",
+				"s3:ListBucketVersions",
+			),
+			Resource: stringorslice.Slice([]string{
+				strings.Join([]string{b.IAMPrefix(), ":s3:::", s3Bucket}, ""),
+			}),
+		})
 	}
 
 	return p, nil
