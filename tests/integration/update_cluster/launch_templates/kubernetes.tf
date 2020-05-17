@@ -530,8 +530,9 @@ resource "aws_launch_template" "nodes-launchtemplates-example-com" {
   instance_market_options {
     market_type = "spot"
     spot_options {
-      block_duration_minutes = 120
-      max_price              = "0.1"
+      block_duration_minutes         = 120
+      instance_interruption_behavior = "hibernate"
+      max_price                      = "0.1"
     }
   }
   instance_type = "t3.medium"
