@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -31,9 +30,6 @@ import (
 
 const (
 	CloudConfigFilePath = "/etc/kubernetes/cloud.config"
-
-	// Required for vSphere CloudProvider
-	MinimumVersionForVMUUID = "1.5.3"
 
 	// VM UUID is set by cloud-init
 	VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
@@ -179,31 +175,16 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 // We need this for vSphere CloudProvider
 // getVMUUID gets instance uuid of the VM from the file written by cloud-init
 func getVMUUID(kubernetesVersion string) (string, error) {
-
-	actualKubernetesVersion, err := util.ParseKubernetesVersion(kubernetesVersion)
-	if err != nil {
-		return "", err
-	}
-	minimumVersionForUUID, err := util.ParseKubernetesVersion(MinimumVersionForVMUUID)
+	file, err := os.Open(VM_UUID_FILE_PATH)
 	if err != nil {
 		return "", err
 	}
 
-	// VM UUID is required only for Kubernetes version greater than 1.5.3
-	if actualKubernetesVersion.GTE(*minimumVersionForUUID) {
-		file, err := os.Open(VM_UUID_FILE_PATH)
-		if err != nil {
-			return "", err
-		}
+	defer try.CloseFile(file)
 
-		defer try.CloseFile(file)
-
-		VMUUID, err := bufio.NewReader(file).ReadString('\n')
-		if err != nil {
-			return "", err
-		}
-		return VMUUID, err
+	VMUUID, err := bufio.NewReader(file).ReadString('\n')
+	if err != nil {
+		return "", err
 	}
-
-	return "", err
+	return VMUUID, err
 }
