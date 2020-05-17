@@ -153,6 +153,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
 		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.Context.ClusterName, kops.InstanceGroupRoleNode))
+
+		// Use the hostname from the GCE metadata service
+		// if hostnameOverride is not set.
+		if clusterSpec.Kubelet.HostnameOverride == "" {
+			clusterSpec.Kubelet.HostnameOverride = "@gce"
+		}
 	}
 
 	if cloudProvider == kops.CloudProviderVSphere {
