@@ -1963,6 +1963,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(RollingUpdate)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.InstanceInterruptionBehavior != nil {
+		in, out := &in.InstanceInterruptionBehavior, &out.InstanceInterruptionBehavior
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

@@ -161,6 +161,9 @@ type InstanceGroupSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the rolling-update behavior
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	// InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated,
+	// or stopped after interruption
+	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
 }
 
 const (

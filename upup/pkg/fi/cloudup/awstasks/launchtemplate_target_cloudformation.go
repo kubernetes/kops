@@ -64,8 +64,8 @@ type cloudformationLaunchTemplateIAMProfile struct {
 type cloudformationLaunchTemplateMarketOptionsSpotOptions struct {
 	// BlockDurationMinutes is required duration in minutes. This value must be a multiple of 60.
 	BlockDurationMinutes *int64 `json:"BlockDurationMinutes,omitempty"`
-	// InstancesInterruptionBehavior is the behavior when a Spot Instance is interrupted. Can be hibernate, stop, or terminate
-	InstancesInterruptionBehavior *string `json:"InstancesInterruptionBehavior,omitempty"`
+	// InstanceInterruptionBehavior is the behavior when a Spot Instance is interrupted. Can be hibernate, stop, or terminate
+	InstanceInterruptionBehavior *string `json:"InstanceInterruptionBehavior,omitempty"`
 	// MaxPrice is the maximum hourly price you're willing to pay for the Spot Instances
 	MaxPrice *string `json:"MaxPrice,omitempty"`
 	// SpotInstanceType is the Spot Instance request type. Can be one-time, or persistent
@@ -184,6 +184,9 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		marketSpotOptions := cloudformationLaunchTemplateMarketOptionsSpotOptions{MaxPrice: fi.String(e.SpotPrice)}
 		if e.SpotDurationInMinutes != nil {
 			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
+		}
+		if e.InstanceInterruptionBehavior != nil {
+			marketSpotOptions.InstanceInterruptionBehavior = e.InstanceInterruptionBehavior
 		}
 		launchTemplateData.MarketOptions = &cloudformationLaunchTemplateMarketOptions{MarketType: fi.String("spot"), SpotOptions: &marketSpotOptions}
 	}
