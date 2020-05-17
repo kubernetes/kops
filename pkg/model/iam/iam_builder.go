@@ -489,6 +489,17 @@ func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vf
 			backupStores.Insert(backupStore)
 		}
 	}
+
+	{
+		p := "s3://justinsb-discovery/clusters/cd.awsdata.com"
+		vfsPath, err := vfs.Context.BuildVfsPath(p)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse VFS path %q: %v", p, err)
+		}
+
+		paths = append(paths, vfsPath)
+	}
+
 	return paths, nil
 }
 
