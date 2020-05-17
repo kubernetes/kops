@@ -87,7 +87,19 @@ func TestIssueCert(t *testing.T) {
 			expectedSubject:     pkix.Name{CommonName: "Test client", Organization: []string{"system:masters"}},
 		},
 		{
-			name: "clientServer",
+			name: "clientOneYear",
+			req: IssueCertRequest{
+				Type: "client",
+				Subject: pkix.Name{
+					CommonName: "Test client",
+				},
+				MinValidDays: 365,
+			},
+			expectedKeyUsage:    x509.KeyUsageDigitalSignature,
+			expectedExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+			expectedSubject:     pkix.Name{CommonName: "Test client"},
+		},
+		{
 			req: IssueCertRequest{
 				Type: "clientServer",
 				Subject: pkix.Name{
@@ -120,7 +132,12 @@ func TestIssueCert(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			minExpectedValidity := time.Now().Add(time.Hour * 10 * 365 * 24).Unix()
+			var minExpectedValidity int64
+			if tc.req.MinValidDays == 0 {
+				minExpectedValidity = time.Now().Add(time.Hour * 10 * 365 * 24).Unix()
+			} else {
+				minExpectedValidity = time.Now().Add(time.Hour * 24 * time.Duration(tc.req.MinValidDays)).Unix()
+			}
 
 			var keystore Keystore
 			if tc.req.Type != "ca" {
@@ -132,16 +149,18 @@ func TestIssueCert(t *testing.T) {
 					key:    caPrivateKey,
 				}
 			}
-			certificate, key, err := IssueCert(&tc.req, keystore)
+			certificate, key, caCert, err := IssueCert(&tc.req, keystore)
 			require.NoError(t, err)
 
 			cert := certificate.Certificate
 			if tc.req.Signer == "" {
 				assert.Equal(t, cert.Issuer, cert.Subject, "self-signed")
 				assert.NoError(t, cert.CheckSignatureFrom(cert), "check signature")
+				assert.Equal(t, certificate, caCert, "returned CA cert")
 			} else {
 				assert.Equal(t, cert.Issuer, caCertificate.Certificate.Subject, "cert signer")
 				assert.NoError(t, cert.CheckSignatureFrom(caCertificate.Certificate), "check signature")
+				assert.Equal(t, caCertificate, caCert, "returned CA cert")
 			}
 
 			// type
@@ -182,8 +201,15 @@ func TestIssueCert(t *testing.T) {
 			}
 
 			// validity
+			var maxExpectedValidity int64
+			if tc.req.MinValidDays == 0 {
+				maxExpectedValidity = time.Now().Add(time.Hour * 10 * 365 * 24).Unix()
+			} else {
+				maxExpectedValidity = time.Now().Add(time.Hour * 24 * time.Duration(tc.req.MinValidDays+30)).Unix()
+			}
 			assert.Less(t, cert.NotBefore.Unix(), time.Now().Add(time.Hour*-47).Unix(), "NotBefore")
 			assert.GreaterOrEqual(t, cert.NotAfter.Unix(), minExpectedValidity, "NotAfter")
+			assert.LessOrEqual(t, cert.NotAfter.Unix(), maxExpectedValidity, "NotAfter")
 		})
 	}
 

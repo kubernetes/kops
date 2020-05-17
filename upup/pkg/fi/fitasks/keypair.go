@@ -225,7 +225,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			PrivateKey:     privateKey,
 			Serial:         serial,
 		}
-		cert, privateKey, err := pki.IssueCert(&req, c.Keystore)
+		cert, privateKey, _, err := pki.IssueCert(&req, c.Keystore)
 		if err != nil {
 			return err
 		}
