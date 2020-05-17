@@ -20,9 +20,12 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
+	"hash/fnv"
 	"math/big"
 	"net"
+	"sort"
 	"strings"
+	"time"
 )
 
 var wellKnownCertificateTypes = map[string]string{
@@ -44,6 +47,10 @@ type IssueCertRequest struct {
 
 	// PrivateKey is the private key for this certificate. If nil, a new private key will be generated.
 	PrivateKey *PrivateKey
+	// MinValidDays is the lower bound on the certificate validity, in days. If specified, up to 30 days
+	// will be added so that certificate generated at the same time on different hosts will be unlikely to
+	// expire at the same time. The default is 10 years (without the up to 30 day skew).
+	MinValidDays int
 
 	// Serial is the certificate serial number. If nil, a random number will be generated.
 	Serial *big.Int
@@ -58,7 +65,7 @@ type Keystore interface {
 	FindKeypair(name string) (*Certificate, *PrivateKey, bool, error)
 }
 
-func IssueCert(request *IssueCertRequest, keystore Keystore) (*Certificate, *PrivateKey, error) {
+func IssueCert(request *IssueCertRequest, keystore Keystore) (*Certificate, *PrivateKey, *Certificate, error) {
 	certificateType := request.Type
 	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
 		certificateType = expanded
@@ -75,19 +82,19 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (*Certificate, *Pri
 		if strings.HasPrefix(t, "KeyUsage") {
 			ku, found := parseKeyUsage(t)
 			if !found {
-				return nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
+				return nil, nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
 			}
 			template.KeyUsage |= ku
 		} else if strings.HasPrefix(t, "ExtKeyUsage") {
 			ku, found := parseExtKeyUsage(t)
 			if !found {
-				return nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
+				return nil, nil, nil, fmt.Errorf("unrecognized certificate option: %v", t)
 			}
 			template.ExtKeyUsage = append(template.ExtKeyUsage, ku)
 		} else if t == "CA" {
 			template.IsCA = true
 		} else {
-			return nil, nil, fmt.Errorf("unrecognized certificate option: %q", t)
+			return nil, nil, nil, fmt.Errorf("unrecognized certificate option: %q", t)
 		}
 	}
 
@@ -108,22 +115,22 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (*Certificate, *Pri
 		}
 	}
 
-	var caCertificate *x509.Certificate
+	var caCertificate *Certificate
 	var caPrivateKey *PrivateKey
+	var signer *x509.Certificate
 	if !template.IsCA {
 		var err error
-		var caCert *Certificate
-		caCert, caPrivateKey, _, err = keystore.FindKeypair(request.Signer)
+		caCertificate, caPrivateKey, _, err = keystore.FindKeypair(request.Signer)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		if caPrivateKey == nil {
-			return nil, nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", request.Signer)
+			return nil, nil, nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", request.Signer)
 		}
-		if caCert == nil {
-			return nil, nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", request.Signer)
+		if caCertificate == nil {
+			return nil, nil, nil, fmt.Errorf("ca certificate for %q was not found; cannot issue certificates", request.Signer)
 		}
-		caCertificate = caCert.Certificate
+		signer = caCertificate.Certificate
 	}
 
 	privateKey := request.PrivateKey
@@ -131,14 +138,32 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (*Certificate, *Pri
 		var err error
 		privateKey, err = GeneratePrivateKey()
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 	}
 
-	certificate, err := SignNewCertificate(privateKey, template, caCertificate, caPrivateKey)
-	if err != nil {
-		return nil, nil, err
+	if request.MinValidDays != 0 {
+		hash := fnv.New32()
+		addrs, err := net.InterfaceAddrs()
+		sort.Slice(addrs, func(i, j int) bool {
+			return addrs[i].String() < addrs[j].String()
+		})
+		if err == nil {
+			for _, addr := range addrs {
+				_, _ = hash.Write([]byte(addr.String()))
+			}
+		}
+		template.NotAfter = time.Now().Add(time.Hour * 24 * time.Duration(request.MinValidDays)).Add(time.Hour * time.Duration(hash.Sum32()%(30*24))).UTC()
 	}
 
-	return certificate, privateKey, err
+	certificate, err := signNewCertificate(privateKey, template, signer, caPrivateKey)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	if signer == nil {
+		caCertificate = certificate
+	}
+
+	return certificate, privateKey, caCertificate, err
 }

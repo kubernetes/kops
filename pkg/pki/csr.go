@@ -45,7 +45,7 @@ func BuildPKISerial(timestamp int64) *big.Int {
 	return serial
 }
 
-func SignNewCertificate(privateKey *PrivateKey, template *x509.Certificate, signer *x509.Certificate, signerPrivateKey *PrivateKey) (*Certificate, error) {
+func signNewCertificate(privateKey *PrivateKey, template *x509.Certificate, signer *x509.Certificate, signerPrivateKey *PrivateKey) (*Certificate, error) {
 	if template.PublicKey == nil {
 		rsaPrivateKey, ok := privateKey.Key.(*rsa.PrivateKey)
 		if ok {
