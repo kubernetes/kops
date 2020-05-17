@@ -1,3 +1,0 @@
-* Your cluster's kube-controller-manager must be properly configured to sign certificate requests. You can verify this by validating that the --cluster-signing-cert-file and --cluster-signing-key-file parameters point to valid TLS certificate and key files. See this document for details. https://github.com/aws/amazon-eks-pod-identity-webhook/blob/master/SELF_HOSTED_SETUP.md
-
-* I think the first doc (oidc-discovery is going to have the wrong relative url)

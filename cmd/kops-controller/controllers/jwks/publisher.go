@@ -20,12 +20,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/pkg/client/clientset_generated/clientset/scheme"
 	"k8s.io/kops/util/pkg/vfs"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -45,9 +49,9 @@ func ConfigurePublisher(ctx context.Context, mgr manager.Manager, options *confi
 		return nil
 	}
 
-	publisher, err := NewJWKSPublisher(mgr, options.PublicDiscovery.PublishBase, options.PublicDiscovery.PublishACL)
+	publisher, err := newJWKSPublisher(mgr, options.PublicDiscovery.PublishBase, options.PublicDiscovery.PublishACL)
 	if err != nil {
-		return fmt.Errorf("failed to build jwks published: %v", err)
+		return fmt.Errorf("failed to build jwks publisher: %v", err)
 	}
 
 	go publisher.runForever(ctx)
@@ -55,9 +59,18 @@ func ConfigurePublisher(ctx context.Context, mgr manager.Manager, options *confi
 	return nil
 }
 
-// NewJWKSPublisher is the constructor for a JWKSPublisher
-func NewJWKSPublisher(mgr manager.Manager, publishPath string, publishACL string) (*publisher, error) {
-	restClient, err := rest.RESTClientFor(mgr.GetConfig())
+// newJWKSPublisher is the constructor for a JWKSPublisher
+func newJWKSPublisher(mgr manager.Manager, publishPath string, publishACL string) (*publisher, error) {
+	config := *mgr.GetConfig()
+
+	// Keep UnversionedRESTClientFor happy by initializing some fields
+	// this matches e.g. setDiscoveryDefaults in client-go discovery/discovery_client.go
+	config.APIPath = ""
+	config.GroupVersion = nil
+	codec := runtime.NoopEncoder{Decoder: scheme.Codecs.UniversalDecoder()}
+	config.NegotiatedSerializer = serializer.NegotiatedSerializerWrapper(runtime.SerializerInfo{Serializer: codec})
+
+	restClient, err := rest.UnversionedRESTClientFor(&config)
 	if err != nil {
 		return nil, fmt.Errorf("error building client for apiserver: %v", err)
 	}
@@ -129,10 +142,10 @@ func (c *publisher) republish(ctx context.Context) error {
 	for p, b := range expected {
 		actual, err := c.cache.Read(p, recheckDestinationInterval)
 		if err != nil {
-			return fmt.Errorf("error reading %s: %v", p, err)
-		}
-
-		if bytes.Equal(actual, b) {
+			if !os.IsNotExist(err) {
+				return fmt.Errorf("error reading %s: %v", p, err)
+			}
+		} else if bytes.Equal(actual, b) {
 			klog.V(4).Infof("file %s is up to date", p)
 			continue
 		}
@@ -140,7 +153,7 @@ func (c *publisher) republish(ctx context.Context) error {
 		if err := p.WriteFile(bytes.NewReader(b), c.publishACL); err != nil {
 			return fmt.Errorf("error writing file %s: %v", p, err)
 		}
-		klog.Infof("updated jwks file %s")
+		klog.Infof("updated jwks file %s", p)
 		changed = true
 	}
 
@@ -160,8 +173,11 @@ func (c *publisher) getJWKSDocuments(ctx context.Context) (map[vfs.Path][]byte, 
 
 	expected := make(map[vfs.Path][]byte)
 	for _, p := range paths {
-		contents, err := c.restClient.Get().RequestURI(p).DoRaw(ctx)
+		// Do().Raw() gets us a nicer error message than DoRaw()
+		contents, err := c.restClient.Get().AbsPath("/" + p).Do(ctx).Raw()
 		if err != nil {
+			klog.Warningf("error is of type %T", err)
+			klog.Warningf("error details %+v", err)
 			return nil, fmt.Errorf("error fetching %s: %v", p, err)
 		}
 

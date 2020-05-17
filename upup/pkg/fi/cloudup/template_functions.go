@@ -386,7 +386,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	}
 
 	config.PublicDiscovery = &kopscontrollerconfig.PublicDiscovery{
-		PublishBase: "s3://discovery.justinsb.clusters",
+		PublishBase: "s3://justinsb-discovery/clusters/cd.awsdata.com",
 		PublishACL:  "public-read",
 	}
 
