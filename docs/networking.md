@@ -1,4 +1,25 @@
-## Kubernetes Networking Options
+# Kubernetes Networking Options
+
+## Supported networking options
+
+The following table provides the support status for various networking providers with regards to Kops version: 
+
+| Network provider | Experimental | Stable | Deprecated | Removed | 
+| ------------ | -----------: | -----: | ---------: | ------: |
+| AWS VPC | ? | ? | - | - |
+| Calico | 1.6 | 1.11 | - | - |
+| Canal  | 1.12 | - | - | - |
+| Cilium | 1.9 | 1.15 | - | - |
+| Classic | ? | ? | 1.17 | 1.18 |
+| Flannel udp | ? | - | - | - |
+| Flannel vxlan | ? | - | - | - |
+| Kopeio | ? | - | 1.17 | 1.18 |
+| Kube-router | 1.6.2 | - | - | - |
+| Kubenet | ? | ? | - | - |
+| Lyft VPC | 1.11 | - | - | - |
+| Romana | ? | - | 1.17 | 1.18 |
+| Weave | ? | ? | - | - |
+
 
 The networking options determines how the pod and service networking is implemented and managed.
 
