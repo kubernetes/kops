@@ -18,6 +18,7 @@ package networking
 
 import (
 	"k8s.io/kops/nodeup/pkg/model"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -30,11 +31,15 @@ var _ fi.ModelBuilder = &KubenetBuilder{}
 
 // Build is responsible for configuring the kube-router
 func (b *KubenetBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Cluster.Spec.Networking.Kubenet == nil && b.Cluster.Spec.Networking.Kopeio == nil {
+	usesKubenet, err := components.UsesKubenet(&b.Cluster.Spec)
+	if err != nil {
+		return err
+	}
+	if !usesKubenet {
 		return nil
 	}
 
-	b.AddCNIBinAssets(c, []string{"loopback", "host-local", "bridge", "portmap"})
+	b.AddCNIBinAssets(c, []string{"loopback", "host-local", "bridge"})
 
 	return nil
 }
