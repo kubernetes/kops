@@ -14,6 +14,7 @@ go_library(
     deps = [
         "//nodeup/pkg/model:go_default_library",
         "//pkg/apis/kops:go_default_library",
+        "//pkg/model/components:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/systemd:go_default_library",
         "//upup/pkg/fi:go_default_library",
