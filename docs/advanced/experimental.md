@@ -18,7 +18,9 @@ The following experimental features are currently available:
 * `+EnableNodeAuthorization` - Enable support of Node Authorization, see [node_authorization.md](../node_authorization.md).
 * `+GoogleCloudBucketAcl` - Enables setting the ACL on the state store bucket when using GCS
 * `+KeepLaunchConfigurations` - Prevents garbage collection of old launch configurations
-* `+Spotinst` - Enables the use of the Spotinst cloud provider
-* `+SpotinstOcean` - Enables the use of Spotinst Ocean instance groups
+* `+Spotinst` - Enables the use of the Spot integration
+* `+SpotinstOcean` - Enables the use of the Spot Ocean integration
+* `+SpotinstHybrid` - Toogles between hybrid and full instance group implementations
+* `-SpotinstController` - Toggles the installation of the Spot controller addon off
 * `+SkipEtcdVersionCheck` - Bypasses the check that etcd-manager is using a supported etcd version
 * `+TerraformJSON` - Produce kubernetes.ts.json file instead of writing HCL v1 syntax. Can be consumed by terraform 0.12
