@@ -2,11 +2,10 @@
 
 The networking options determines how the pod and service networking is implemented and managed.
 
-Kubernetes Operations (kops) currently supports 4 networking modes:
+Kubernetes Operations (kops) currently supports 3 networking modes:
 
 * `kubenet` Kubernetes native networking via a CNI plugin.  This is the default.
 * `cni` Container Network Interface(CNI) style networking, often installed via a Daemonset.
-* `classic` Kubernetes native networking, done in-process.
 * `external` networking is done via a Daemonset. This is used in some custom implementations.
 
 ### Specifying network option for cluster creation
@@ -30,11 +29,11 @@ with other infrastructure (but not a second cluster!), but this is not really re
 
 Users running `--topology private` will not be able to choose `kubenet` networking because `kubenet`
 requires a single routing table. These advanced users are usually running in multiple availability zones
-and NAT gateways are single AZ, multiple route tables are needed to use each NAT gateway.
+and as NAT gateways are single AZ, multiple route tables are needed to use each NAT gateway.
 
 ### CNI
 
-[Container Network Interface](https://github.com/containernetworking/cni)  provides a specification
+[Container Network Interface](https://github.com/containernetworking/cni) provides a specification
 and libraries for writing plugins to configure network interfaces in Linux containers.  Kubernetes
 has built in support for CNI networking components.
 
@@ -62,12 +61,12 @@ kops create cluster --networking calico
 
 When using the flag `--networking cni` on `kops create cluster`  or `spec.networking: cni {}` Kops will not install any CNI at all, but expect that you install it.
 
-When launching a cluster in this mode, the master nodes will come up in `not ready` state. You will then be able to deploy any CNI daemonset by following vanilla kubernetes install instructions. Once the CNI daemonset has been deployed, the master nodes should enter `ready` state and the remaining nodes should join the cluster shortly after.
+When launching a cluster in this mode, the master nodes will come up in `not ready` state. You will then be able to deploy any CNI daemonset by following vanilla kubernetes install instructions. Once the CNI daemonset has been deployed, the master nodes should enter `ready` state and the remaining nodes should join the cluster shortly thereafter.
 
 
 ## Validating CNI Installation
 
-You will notice that `kube-dns` and similar pods that depend on pod networks fails to start properly until you deploy your CNI provider.
+You will notice that `kube-dns` and similar pods that depend on pod networks fail to start properly until you deploy your CNI provider.
 
 Here are some steps items that will confirm a good CNI install:
 
@@ -87,6 +86,6 @@ We do recommended something other than `kubenet` for production clusters due to 
 
 ## Switching between networking providers
 
-Switching between from `classic` and `kubenet` providers to a CNI provider is considered safe. Just update the config and roll the cluster.
+Switching from `kubenet` providers to a CNI provider is considered safe. Just update the config and roll the cluster.
 
-It is also possible to switch between CNI providers, but this usually is a distruptive change. Kops will also not clean up any resources left behind by the previous CNI, _including_ then CNI daemonset.
+It is also possible to switch between CNI providers, but this usually is a disruptive change. Kops will also not clean up any resources left behind by the previous CNI, _including_ the CNI daemonset.
