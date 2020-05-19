@@ -130,7 +130,6 @@ nav:
     - Building: "development/building.md"
     - Adding a feature: "development/adding_a_feature.md"
     - Testing: "development/testing.md"
-    - Releasing: "development/release.md"
     - New Kubernetes Version: "development/new_kubernetes_version.md"
     - Developing using Docker: "development/Docker.md"
     - Development with vSphere: "vsphere-dev.md"
