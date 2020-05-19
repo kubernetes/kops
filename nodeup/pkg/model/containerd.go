@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -338,7 +339,11 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Using containerd with Kubenet requires special configuration. This is a temporary backwards-compatible solution
 	// and will be deprecated when Kubenet is deprecated:
 	// https://github.com/containerd/cri/blob/master/docs/config.md#cni-config-template
-	if b.Cluster.Spec.ContainerRuntime == "containerd" && b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
+	usesKubenet, err := components.UsesKubenet(&b.Cluster.Spec)
+	if err != nil {
+		return err
+	}
+	if b.Cluster.Spec.ContainerRuntime == "containerd" && usesKubenet {
 		b.buildKubenetCNIConfigTemplate(c)
 	}
 
