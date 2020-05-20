@@ -18,6 +18,7 @@ package model
 
 import (
 	"path"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -76,5 +77,5 @@ func runProtokubeBuilderTest(t *testing.T, key string) {
 		context.AddTask(task)
 	}
 
-	testutils.ValidateTasks(t, basedir, context)
+	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }

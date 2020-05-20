@@ -76,7 +76,7 @@ func LoadModel(basedir string) (*Model, error) {
 	return spec, nil
 }
 
-func ValidateTasks(t *testing.T, basedir string, context *fi.ModelBuilderContext) {
+func ValidateTasks(t *testing.T, expectedFile string, context *fi.ModelBuilderContext) {
 	var keys []string
 	for key := range context.Tasks {
 		keys = append(keys, key)
@@ -96,7 +96,5 @@ func ValidateTasks(t *testing.T, basedir string, context *fi.ModelBuilderContext
 	actualTasksYaml := strings.Join(yamls, "\n---\n")
 	actualTasksYaml = strings.TrimSpace(actualTasksYaml)
 
-	tasksYamlPath := path.Join(basedir, "tasks.yaml")
-
-	golden.AssertMatchesFile(t, actualTasksYaml, tasksYamlPath)
+	golden.AssertMatchesFile(t, actualTasksYaml, expectedFile)
 }
