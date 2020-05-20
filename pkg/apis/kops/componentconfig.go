@@ -455,6 +455,9 @@ type KubeAPIServerConfig struct {
 	// in "iss" claim of issued tokens. This value is a string or URI.
 	ServiceAccountIssuer *string `json:"serviceAccountIssuer,omitempty" flag:"service-account-issuer"`
 
+	// ServiceAccountJWKSURI overrides the path for the jwks document; this is useful when we are republishing the service account discovery information elsewhere.
+	ServiceAccountJWKSURI *string `json:"serviceAccountJWKSURI,omitempty" flag:"service-account-jwks-uri"`
+
 	// Identifiers of the API. The service account token authenticator will validate that
 	// tokens used against the API are bound to at least one of these audiences. If the
 	// --service-account-issuer flag is configured and this flag is not, this field
