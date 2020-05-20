@@ -110,7 +110,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		var subnets []*openstacktasks.Subnet
 		if len(ig.Spec.Subnets) > 0 {
 			subnet := ig.Spec.Subnets[int(i)%len(ig.Spec.Subnets)]
-			// bastion subnet name is not actual zone name, it contains "utility-" prefix
+			// bastion subnet name might contain a "utility-" prefix
 			if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 				az = fi.String(strings.Replace(subnet, "utility-", "", 1))
 			} else {
