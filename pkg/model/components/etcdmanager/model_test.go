@@ -18,6 +18,7 @@ package etcdmanager
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/kops/pkg/assets"
@@ -56,7 +57,7 @@ func Test_RunEtcdManagerBuilder(t *testing.T) {
 				return
 			}
 
-			testutils.ValidateTasks(t, basedir, context)
+			testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 		})
 	}
 }

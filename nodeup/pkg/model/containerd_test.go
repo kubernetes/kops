@@ -19,6 +19,7 @@ package model
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -169,5 +170,5 @@ func runContainerdBuilderTest(t *testing.T, key string) {
 		return
 	}
 
-	testutils.ValidateTasks(t, basedir, context)
+	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }

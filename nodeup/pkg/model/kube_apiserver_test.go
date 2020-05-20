@@ -238,3 +238,10 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		}
 	}
 }
+
+func TestKubeAPIServerBuilder(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/minimal", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
