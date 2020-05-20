@@ -1,0 +1,64 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: minimal.example.com
+spec:
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/minimal.example.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    memoryRequest: 100Mi
+    name: main
+    provider: Manager
+    backups:
+      backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    memoryRequest: 100Mi
+    name: events
+    provider: Manager
+    backups:
+      backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
+  kubernetesVersion: v1.18.0
+  masterInternalName: api.internal.minimal.example.com
+  masterPublicName: api.minimal.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+    - 0.0.0.0/0
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: minimal.example.com
+spec:
+  associatePublicIp: true
+  image: ami-1234
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a

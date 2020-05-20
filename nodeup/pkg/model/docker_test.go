@@ -262,5 +262,5 @@ func runDockerBuilderTest(t *testing.T, key string) {
 		return
 	}
 
-	testutils.ValidateTasks(t, basedir, context)
+	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }
