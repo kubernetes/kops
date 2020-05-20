@@ -47,9 +47,11 @@ go_test(
         "//cloudmock/aws/mockec2:go_default_library",
         "//pkg/resources:go_default_library",
         "//pkg/testutils:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
     ],
 )
