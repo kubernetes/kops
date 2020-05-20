@@ -48,7 +48,7 @@ func (f fakeStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 
 // mock a fake key store
 type fakeKeyStore struct {
-	FindKeypairFn func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error)
+	FindKeypairFn func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
 
 	CreateKeypairFn func(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 
@@ -59,7 +59,7 @@ type fakeKeyStore struct {
 	MirrorToFn func(basedir vfs.Path) error
 }
 
-func (f fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
+func (f fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 	return f.FindKeypairFn(name)
 }
 
@@ -144,10 +144,10 @@ func TestBuildKubecfg(t *testing.T) {
 			args{
 				publiccluster,
 				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
+					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 						return fakeCertificate(),
 							fakePrivateKey(),
-							fi.KeysetFormatLegacy,
+							true,
 							nil
 					},
 				},
@@ -169,10 +169,10 @@ func TestBuildKubecfg(t *testing.T) {
 			args{
 				emptyMasterPublicNameCluster,
 				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
+					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 						return fakeCertificate(),
 							fakePrivateKey(),
-							fi.KeysetFormatLegacy,
+							true,
 							nil
 					},
 				},
@@ -194,10 +194,10 @@ func TestBuildKubecfg(t *testing.T) {
 			args{
 				gossipCluster,
 				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, fi.KeysetFormat, error) {
+					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 						return fakeCertificate(),
 							fakePrivateKey(),
-							fi.KeysetFormatLegacy,
+							true,
 							nil
 					},
 				},
