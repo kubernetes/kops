@@ -27,5 +27,6 @@ type Identifier interface {
 }
 
 type Info struct {
-	InstanceGroup string
+	InstanceGroup     string
+	InstanceLifecycle string
 }
