@@ -1268,6 +1268,11 @@ spec:
                       issuer will assert this identifier in "iss" claim of issued
                       tokens. This value is a string or URI.
                     type: string
+                  serviceAccountJWKSURI:
+                    description: ServiceAccountJWKSURI overrides the path for the
+                      jwks document; this is useful when we are republishing the service
+                      account discovery information elsewhere.
+                    type: string
                   serviceAccountKeyFile:
                     description: File containing PEM-encoded x509 RSA or ECDSA private
                       or public keys, used to verify ServiceAccount tokens. The specified
