@@ -98,9 +98,9 @@ func (c *ClientsetCAStore) readCAKeypairs(ctx context.Context, id string) (*keys
 
 // keyset is a parsed Keyset
 type keyset struct {
-	format  KeysetFormat
-	items   map[string]*keysetItem
-	primary *keysetItem
+	legacyFormat bool
+	items        map[string]*keysetItem
+	primary      *keysetItem
 }
 
 // keysetItem is a parsed KeysetItem
@@ -160,7 +160,6 @@ func (c *ClientsetCAStore) loadKeyset(ctx context.Context, name string) (*keyset
 	if err != nil {
 		return nil, err
 	}
-	keyset.format = KeysetFormatV1Alpha2
 	return keyset, nil
 }
 
@@ -205,18 +204,18 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 }
 
 // FindKeypair implements CAStore::FindKeypair
-func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error) {
+func (c *ClientsetCAStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 	ctx := context.TODO()
 	keyset, err := c.loadKeyset(ctx, name)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, nil, false, err
 	}
 
 	if keyset != nil && keyset.primary != nil {
-		return keyset.primary.certificate, keyset.primary.privateKey, keyset.format, nil
+		return keyset.primary.certificate, keyset.primary.privateKey, keyset.legacyFormat, nil
 	}
 
-	return nil, nil, "", nil
+	return nil, nil, false, nil
 }
 
 // FindCert implements CAStore::FindCert

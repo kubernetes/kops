@@ -38,9 +38,8 @@ import (
 )
 
 type VFSCAStore struct {
-	basedir   vfs.Path
-	cluster   *kops.Cluster
-	allowList bool
+	basedir vfs.Path
+	cluster *kops.Cluster
 
 	mutex     sync.Mutex
 	cachedCAs map[string]*cachedEntry
@@ -58,12 +57,11 @@ type cachedEntry struct {
 var _ CAStore = &VFSCAStore{}
 var _ SSHCredentialStore = &VFSCAStore{}
 
-func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path, allowList bool) *VFSCAStore {
+func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) *VFSCAStore {
 	c := &VFSCAStore{
 		basedir:   basedir,
 		cluster:   cluster,
 		cachedCAs: make(map[string]*cachedEntry),
-		allowList: allowList,
 	}
 
 	c.SerialGenerator = func() *big.Int {
@@ -100,7 +98,7 @@ func (s *VFSCAStore) readCAKeypairs(id string) (*keyset, *keyset, error) {
 		return cached.certificates, cached.privateKeys, nil
 	}
 
-	caCertificates, err := s.loadCertificates(s.buildCertificatePoolPath(id), true)
+	caCertificates, err := s.loadCertificates(s.buildCertificatePoolPath(id))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -108,7 +106,7 @@ func (s *VFSCAStore) readCAKeypairs(id string) (*keyset, *keyset, error) {
 	var caPrivateKeys *keyset
 
 	if caCertificates != nil {
-		caPrivateKeys, err = s.loadPrivateKeys(s.buildPrivateKeyPoolPath(id), true)
+		caPrivateKeys, err = s.loadPrivateKeys(s.buildPrivateKeyPoolPath(id))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -147,24 +145,24 @@ func (c *VFSCAStore) buildPrivateKeyPath(name string, id string) vfs.Path {
 	return c.basedir.Join("private", name, id+".key")
 }
 
-func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, KeysetFormat, error) {
+func (c *VFSCAStore) parseKeysetYaml(data []byte) (*kops.Keyset, bool, error) {
 	defaultReadVersion := v1alpha2.SchemeGroupVersion.WithKind("Keyset")
 
 	object, gvk, err := kopscodecs.Decode(data, &defaultReadVersion)
 	if err != nil {
-		return nil, "", fmt.Errorf("error parsing keyset: %v", err)
+		return nil, false, fmt.Errorf("error parsing keyset: %v", err)
 	}
 
 	keyset, ok := object.(*kops.Keyset)
 	if !ok {
-		return nil, "", fmt.Errorf("object was not a keyset, was a %T", object)
+		return nil, false, fmt.Errorf("object was not a keyset, was a %T", object)
 	}
 
 	if gvk == nil {
-		return nil, "", fmt.Errorf("object did not have GroupVersionKind: %q", keyset.Name)
+		return nil, false, fmt.Errorf("object did not have GroupVersionKind: %q", keyset.Name)
 	}
 
-	return keyset, KeysetFormat(gvk.Version), nil
+	return keyset, gvk.Version != keysetFormatLatest, nil
 }
 
 // loadCertificatesBundle loads a keyset from the path
@@ -179,7 +177,7 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 		return nil, fmt.Errorf("unable to read bundle %q: %v", p, err)
 	}
 
-	o, format, err := c.parseKeysetYaml(data)
+	o, legacyFormat, err := c.parseKeysetYaml(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing bundle %q: %v", p, err)
 	}
@@ -189,7 +187,7 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 		return nil, fmt.Errorf("error mapping bundle %q: %v", p, err)
 	}
 
-	keyset.format = format
+	keyset.legacyFormat = legacyFormat
 	return keyset, nil
 }
 
@@ -291,64 +289,10 @@ func SerializeKeyset(o *kops.Keyset) ([]byte, error) {
 	return objectData.Bytes(), nil
 }
 
-func (c *VFSCAStore) loadCertificates(p vfs.Path, useBundle bool) (*keyset, error) {
-	// Attempt to load prebuilt bundle, which avoids having to list files, which is a permission that can be hard to
-	// give on GCE / other clouds
-	if useBundle {
-		bundlePath := p.Join("keyset.yaml")
-		bundle, err := c.loadKeysetBundle(bundlePath)
-		if !c.allowList {
-			return bundle, err
-		}
-
-		if err != nil {
-			klog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
-		} else if bundle == nil {
-			klog.V(2).Infof("no certificate bundle %q, falling back to directory-list method", bundlePath)
-		} else {
-			return bundle, nil
-		}
-	}
-
-	keyset := &keyset{
-		items: make(map[string]*keysetItem),
-	}
-
-	files, err := p.ReadDir()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	for _, f := range files {
-		id := f.Base()
-		if strings.HasSuffix(id, ".yaml") {
-			// ignore bundle
-			continue
-		}
-		id = strings.TrimSuffix(id, ".crt")
-
-		cert, err := c.loadOneCertificate(f)
-		if err != nil {
-			return nil, fmt.Errorf("error loading certificate %q: %v", f, err)
-		}
-
-		keyset.items[id] = &keysetItem{
-			id:          id,
-			certificate: cert,
-		}
-	}
-
-	if len(keyset.items) == 0 {
-		return nil, nil
-	}
-
-	keyset.format = KeysetFormatLegacy
-	keyset.primary = keyset.findPrimary()
-
-	return keyset, nil
+func (c *VFSCAStore) loadCertificates(p vfs.Path) (*keyset, error) {
+	bundlePath := p.Join("keyset.yaml")
+	bundle, err := c.loadKeysetBundle(bundlePath)
+	return bundle, err
 }
 
 func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
@@ -369,32 +313,32 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 	return cert, nil
 }
 
-func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, KeysetFormat, error) {
-	cert, certFormat, err := c.findCert(id)
+func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+	cert, legacyFormat, err := c.findCert(id)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, nil, false, err
 	}
 
 	key, err := c.FindPrivateKey(id)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, nil, false, err
 	}
 
-	return cert, key, certFormat, nil
+	return cert, key, legacyFormat, nil
 }
 
-func (c *VFSCAStore) findCert(name string) (*pki.Certificate, KeysetFormat, error) {
+func (c *VFSCAStore) findCert(name string) (*pki.Certificate, bool, error) {
 	p := c.buildCertificatePoolPath(name)
-	certs, err := c.loadCertificates(p, true)
+	certs, err := c.loadCertificates(p)
 	if err != nil {
-		return nil, "", fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", name, err)
+		return nil, false, fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", name, err)
 	}
 
 	if certs != nil && certs.primary != nil {
-		return certs.primary.certificate, certs.format, nil
+		return certs.primary.certificate, certs.legacyFormat, nil
 	}
 
-	return nil, "", nil
+	return nil, false, nil
 }
 
 func (c *VFSCAStore) FindCert(name string) (*pki.Certificate, error) {
@@ -407,7 +351,7 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 
 	var err error
 	p := c.buildCertificatePoolPath(name)
-	certs, err = c.loadCertificates(p, true)
+	certs, err = c.loadCertificates(p)
 	if err != nil {
 		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", name, err)
 	}
@@ -434,7 +378,7 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 
 func (c *VFSCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
 	p := c.buildCertificatePoolPath(name)
-	certs, err := c.loadCertificates(p, true)
+	certs, err := c.loadCertificates(p)
 	if err != nil {
 		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", name, err)
 	}
@@ -731,78 +675,11 @@ func (c *VFSCAStore) AddCert(name string, cert *pki.Certificate) error {
 	return err
 }
 
-func (c *VFSCAStore) loadPrivateKeys(p vfs.Path, useBundle bool) (*keyset, error) {
-	// Attempt to load prebuilt bundle, which avoids having to list files, which is a permission that can be hard to
-	// give on GCE / other clouds
-	if useBundle {
-		bundlePath := p.Join("keyset.yaml")
-		bundle, err := c.loadKeysetBundle(bundlePath)
+func (c *VFSCAStore) loadPrivateKeys(p vfs.Path) (*keyset, error) {
+	bundlePath := p.Join("keyset.yaml")
+	bundle, err := c.loadKeysetBundle(bundlePath)
 
-		if !c.allowList {
-			return bundle, err
-		}
-
-		if err != nil {
-			klog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
-		} else if bundle == nil {
-			klog.V(2).Infof("no private key bundle %q, falling back to directory-list method", bundlePath)
-		} else {
-			return bundle, nil
-		}
-	}
-
-	files, err := p.ReadDir()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	keys := &keyset{
-		items: make(map[string]*keysetItem),
-	}
-
-	for _, f := range files {
-		id := f.Base()
-		if strings.HasSuffix(id, ".yaml") {
-			// ignore bundle
-			continue
-		}
-		id = strings.TrimSuffix(id, ".key")
-
-		privateKey, err := c.loadOnePrivateKey(f)
-		if err != nil {
-			return nil, fmt.Errorf("error loading private key %q: %v", f, err)
-		}
-		keys.items[id] = &keysetItem{
-			id:         id,
-			privateKey: privateKey,
-		}
-	}
-
-	if len(keys.items) == 0 {
-		return nil, nil
-	}
-
-	keys.primary = keys.findPrimary()
-
-	return keys, nil
-}
-
-func (c *VFSCAStore) loadOnePrivateKey(p vfs.Path) (*pki.PrivateKey, error) {
-	data, err := p.ReadFile()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	k, err := pki.ParsePEMPrivateKey(data)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing private key from %q: %v", p, err)
-	}
-	return k, err
+	return bundle, err
 }
 
 func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
@@ -816,7 +693,7 @@ func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
 	} else {
 		var err error
 		p := c.buildPrivateKeyPoolPath(id)
-		keys, err = c.loadPrivateKeys(p, true)
+		keys, err = c.loadPrivateKeys(p)
 		if err != nil {
 			return nil, err
 		}
@@ -871,7 +748,7 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 	// Write the bundle
 	{
 		p := c.buildPrivateKeyPoolPath(name)
-		ks, err := c.loadPrivateKeys(p, false)
+		ks, err := c.loadPrivateKeys(p)
 		if err != nil {
 			return err
 		}
@@ -889,6 +766,7 @@ func (c *VFSCAStore) storePrivateKey(name string, ki *keysetItem) error {
 		}
 	}
 
+	// TODO stop writing and remove legacy format files after rollback to pre-kops 1.18 not needed
 	// Write the data
 	{
 		var data bytes.Buffer
@@ -913,7 +791,7 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 	// Write the bundle
 	{
 		p := c.buildCertificatePoolPath(name)
-		ks, err := c.loadCertificates(p, false)
+		ks, err := c.loadCertificates(p)
 		if err != nil {
 			return err
 		}
@@ -931,6 +809,7 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 		}
 	}
 
+	// TODO stop writing and remove legacy format files after rollback to pre-kops 1.18 not needed
 	// Write the data
 	{
 		var data bytes.Buffer
@@ -948,10 +827,19 @@ func (c *VFSCAStore) storeCertificate(name string, ki *keysetItem) error {
 }
 
 func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
+	// Delete the file itself
+	{
+
+		p := c.buildPrivateKeyPath(name, id)
+		if err := p.Remove(); err != nil && !os.IsNotExist(err) {
+			return false, err
+		}
+	}
+
 	// Update the bundle
 	{
 		p := c.buildPrivateKeyPoolPath(name)
-		ks, err := c.loadPrivateKeys(p, false)
+		ks, err := c.loadPrivateKeys(p)
 		if err != nil {
 			return false, err
 		}
@@ -966,22 +854,22 @@ func (c *VFSCAStore) deletePrivateKey(name string, id string) (bool, error) {
 		}
 	}
 
-	// Delete the file itself
-	{
-
-		p := c.buildPrivateKeyPath(name, id)
-		if err := p.Remove(); err != nil {
-			return false, err
-		}
-		return true, nil
-	}
+	return true, nil
 }
 
 func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
+	// Delete the file itself
+	{
+		p := c.buildCertificatePath(name, id)
+		if err := p.Remove(); err != nil && !os.IsNotExist(err) {
+			return false, err
+		}
+	}
+
 	// Update the bundle
 	{
 		p := c.buildCertificatePoolPath(name)
-		ks, err := c.loadCertificates(p, false)
+		ks, err := c.loadCertificates(p)
 		if err != nil {
 			return false, err
 		}
@@ -996,14 +884,7 @@ func (c *VFSCAStore) deleteCertificate(name string, id string) (bool, error) {
 		}
 	}
 
-	// Delete the file itself
-	{
-		p := c.buildCertificatePath(name, id)
-		if err := p.Remove(); err != nil {
-			return false, err
-		}
-		return true, nil
-	}
+	return true, nil
 }
 
 // AddSSHPublicKey stores an SSH public key

@@ -51,9 +51,8 @@ type Keypair struct {
 	Subject string `json:"subject"`
 	// Type the type of certificate i.e. CA, server, client etc
 	Type string `json:"type"`
-	// Format stores the api version of kops.Keyset.  We are using this info in order to determine if kops
-	// is accessing legacy secrets that do not use keyset.yaml.
-	Format string `json:"format"`
+	// LegacyFormat is whether the keypair is stored in a legacy format.
+	LegacyFormat bool `json:"oldFormat"`
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -76,7 +75,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		return nil, nil
 	}
 
-	cert, key, format, err := c.Keystore.FindKeypair(name)
+	cert, key, legacyFormat, err := c.Keystore.FindKeypair(name)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +99,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		AlternateNames: alternateNames,
 		Subject:        pkixNameToString(&cert.Subject),
 		Type:           buildTypeDescription(cert.Certificate),
-		Format:         string(format),
+		LegacyFormat:   legacyFormat,
 	}
 
 	actual.Signer = &Keypair{Subject: pkixNameToString(&cert.Certificate.Issuer)}
@@ -190,7 +189,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		} else if changes.Type != "" {
 			createCertificate = true
 			klog.V(8).Infof("creating certificate new Type")
-		} else if changes.Format != "" {
+		} else if changes.LegacyFormat {
 			changeStoredFormat = true
 		} else {
 			klog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
@@ -244,7 +243,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 
-		klog.Infof("updated Keypair %q to API format %q", name, e.Format)
+		klog.Infof("updated Keypair %q to new format", name)
 	}
 
 	return nil

@@ -113,10 +113,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				return nil, field.Invalid(field.NewPath("State Store"), registryPath, INVALID_STATE_ERROR)
 			}
 
-			// For kops CLI / controller, we do allow vfs list (unlike nodeup!)
-			allowVFSList := true
-
-			f.clientset = vfsclientset.NewVFSClientset(basePath, allowVFSList)
+			f.clientset = vfsclientset.NewVFSClientset(basePath)
 		}
 		if strings.HasPrefix(registryPath, "file://") {
 			klog.Warning("The local filesystem state store is not functional for running clusters")
