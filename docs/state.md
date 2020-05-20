@@ -121,8 +121,8 @@ Consider the S3 bucket living in Account B and the kops cluster living in Accoun
             "Effect": "Allow",
             "Resource": [
                 "arn:aws:s3:::<state-store-bucket>",
-                "arn:aws:s3:::<state-store-bucket>/*",
-            }
+                "arn:aws:s3:::<state-store-bucket>/*"
+            ],
             "Principal": {
                 "AWS": [
                     "arn:aws:iam::<account-a>:root"
