@@ -3132,7 +3132,7 @@ spec:
                     type: object
                   classic:
                     description: ClassicNetworkingSpec is the specification of classic
-                      networking mode, integrated into kubernetes Support been removed
+                      networking mode, integrated into kubernetes. Support been removed
                       since kops 1.4.
                     type: object
                   cni:
