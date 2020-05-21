@@ -8,6 +8,7 @@ go_library(
         "create_cluster.go",
         "create_ig.go",
         "create_secret.go",
+        "create_secret_cilium_encryptionconfig.go",
         "create_secret_dockerconfig.go",
         "create_secret_encryptionconfig.go",
         "create_secret_keypair.go",

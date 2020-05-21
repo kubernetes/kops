@@ -58,6 +58,7 @@ func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateSecretEncryptionConfig(f, out))
 	cmd.AddCommand(NewCmdCreateKeypairSecret(f, out))
 	cmd.AddCommand(NewCmdCreateSecretWeaveEncryptionConfig(f, out))
+	cmd.AddCommand(NewCmdCreateSecretCiliumEncryptionConfig(f, out))
 
 	return cmd
 }

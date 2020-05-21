@@ -165,6 +165,20 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["WeaveSecret"] = func() string { return weavesecretString }
 	}
 
+	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Cilium != nil {
+		ciliumsecretString := ""
+		ciliumsecret, _ := secretStore.Secret("ciliumpassword")
+		if ciliumsecret != nil {
+			ciliumsecretString, err = ciliumsecret.AsString()
+			if err != nil {
+				return err
+			}
+			klog.V(4).Info("Cilium secret function successfully registered")
+		}
+
+		dest["CiliumSecret"] = func() string { return ciliumsecretString }
+	}
+
 	return nil
 }
 
