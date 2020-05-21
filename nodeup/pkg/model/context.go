@@ -343,16 +343,6 @@ func (c *NodeupModelContext) UseEtcdTLSAuth() bool {
 	return false
 }
 
-// UsesCNI checks if the cluster has CNI configured
-func (c *NodeupModelContext) UsesCNI() bool {
-	networking := c.Cluster.Spec.Networking
-	if networking == nil || networking.Classic != nil {
-		return false
-	}
-
-	return true
-}
-
 // UseNodeAuthorization checks if have a node authorization policy
 func (c *NodeupModelContext) UseNodeAuthorization() bool {
 	return c.Cluster.Spec.NodeAuthorization != nil
