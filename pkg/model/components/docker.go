@@ -17,7 +17,6 @@ limitations under the License.
 package components
 
 import (
-	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -84,12 +83,6 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 		docker.Storage = fi.String("overlay2,overlay,aufs")
 	} else {
 		docker.Storage = fi.String("overlay,aufs")
-	}
-
-	networking := clusterSpec.Networking
-	if networking == nil || networking.Classic != nil {
-		klog.Warningf("using deprecated (classic) networking")
-		docker.Bridge = fi.String("cbr0")
 	}
 
 	return nil
