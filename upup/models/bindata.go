@@ -4286,7 +4286,17 @@ func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplate() (*ass
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate = []byte(`apiVersion: v1
+var _cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate = []byte(`{{- if CiliumSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cilium-ipsec-keys
+  namespace: kube-system
+stringData:
+  {{ CiliumSecret }}
+---
+{{- end }}
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cilium-config
@@ -4331,6 +4341,10 @@ data:
   # NOTE that this will open the port on ALL nodes where Cilium pods are
   # scheduled.
   prometheus-serve-addr: ":{{- or .AgentPrometheusPort "9090" }}"
+  {{ end }}
+  {{ if .EnableEncryption }}
+  enable-ipsec: "true"
+  ipsec-key-file: /etc/ipsec/keys
   {{ end }}
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
@@ -4787,6 +4801,10 @@ spec:
           readOnly: true
         - mountPath: /run/xtables.lock
           name: xtables-lock
+{{ if CiliumSecret }}
+        - mountPath: /etc/ipsec
+          name: cilium-ipsec-secrets
+{{ end }}
       hostNetwork: true
       initContainers:
       - command:
@@ -4887,6 +4905,11 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
+{{ if CiliumSecret }}
+      - name: cilium-ipsec-secrets
+        secret:
+          secretName: cilium-ipsec-keys
+{{ end }}
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 2
