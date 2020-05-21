@@ -1200,14 +1200,12 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
 	}
 
-	if usesCNI(c.Cluster) {
-		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder)
-		if err != nil {
-			return err
-		}
-
-		c.Assets = append(c.Assets, BuildMirroredAsset(cniAsset, cniAssetHash))
+	cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder)
+	if err != nil {
+		return err
 	}
+
+	c.Assets = append(c.Assets, BuildMirroredAsset(cniAsset, cniAssetHash))
 
 	if c.Cluster.Spec.Networking.LyftVPC != nil {
 		var hash *hashing.Hash
