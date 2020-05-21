@@ -3132,21 +3132,21 @@ spec:
                     type: object
                   classic:
                     description: ClassicNetworkingSpec is the specification of classic
-                      networking mode, integrated into kubernetes
+                      networking mode, integrated into kubernetes Support been removed
+                      since kops 1.4.
                     type: object
                   cni:
                     description: CNINetworkingSpec is the specification for networking
-                      that is implemented by a Daemonset Networking is not managed
-                      by kops - we can create options here that directly configure
-                      e.g. weave but this is useful for arbitrary network modes or
-                      for modes that don't need additional configuration.
+                      that is implemented by a Daemonset. Uses the CNI networking
+                      interface.
                     properties:
                       usesSecondaryIP:
                         type: boolean
                     type: object
                   external:
                     description: ExternalNetworkingSpec is the specification for networking
-                      that is implemented by a Daemonset It also uses kubenet
+                      that is implemented by a Daemonset. Uses the kubenet networking
+                      provider.
                     type: object
                   flannel:
                     description: FlannelNetworkingSpec declares that we want Flannel
