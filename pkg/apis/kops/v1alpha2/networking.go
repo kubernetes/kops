@@ -37,7 +37,7 @@ type NetworkingSpec struct {
 	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`
 }
 
-// ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
+// ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
 // Support been removed since kops 1.4.
 type ClassicNetworkingSpec struct {
 }
