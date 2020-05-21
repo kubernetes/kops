@@ -255,6 +255,9 @@ type CiliumNetworkingSpec struct {
 	EnableTracing bool `json:"enableTracing,omitempty"`
 	// EnablePrometheusMetrics enables the Cilium "/metrics" endpoint for both the agent and the operator.
 	EnablePrometheusMetrics bool `json:"enablePrometheusMetrics,omitempty"`
+	// EnableEncryption enables Cilium Encryption.
+	// Default: false
+	EnableEncryption bool `json:"enableEncryption"`
 	// EnvoyLog is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	EnvoyLog string `json:"envoyLog,omitempty"`
@@ -350,7 +353,7 @@ type CiliumNetworkingSpec struct {
 	// TracePayloadLen is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	TracePayloadLen int `json:"tracePayloadlen,omitempty"`
-	// Tunnel specifies the Cilium tunelling mode. Possible values are "vxlan", "geneve", or "disabled".
+	// Tunnel specifies the Cilium tunnelling mode. Possible values are "vxlan", "geneve", or "disabled".
 	// Default: vxlan
 	Tunnel string `json:"tunnel,omitempty"`
 	// EnableIpv6 enables cluster IPv6 traffic. If both EnableIpv6 and EnableIpv4 are set to false
