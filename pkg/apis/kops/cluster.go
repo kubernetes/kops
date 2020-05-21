@@ -605,9 +605,7 @@ func (c *Cluster) FillDefaults() error {
 
 // fillClusterSpecNetworking provides default value if c.Spec.NetworkingSpec is nil
 func (c *Cluster) fillClusterSpecNetworkingSpec() {
-	if c.Spec.Networking.Classic != nil {
-		// OK
-	} else if c.Spec.Networking.Kubenet != nil {
+	if c.Spec.Networking.Kubenet != nil {
 		// OK
 	} else if c.Spec.Networking.CNI != nil {
 		// OK

@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/kops/pkg/model/components"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
@@ -129,7 +127,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	kcm.ConfigureCloudRoutes = fi.Bool(false)
 
 	networking := clusterSpec.Networking
-	if networking == nil || networking.Classic != nil {
+	if networking == nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else if networking.Kubenet != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
@@ -142,7 +140,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		}
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
-	} else if components.UsesCNI(networking) {
+	} else if UsesCNI(networking) {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
