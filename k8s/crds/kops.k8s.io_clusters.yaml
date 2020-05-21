@@ -3133,20 +3133,20 @@ spec:
                   classic:
                     description: ClassicNetworkingSpec is the specification of classic
                       networking mode, integrated into kubernetes. Support been removed
-                      since kops 1.4.
+                      since kubernetes 1.4.
                     type: object
                   cni:
                     description: CNINetworkingSpec is the specification for networking
                       that is implemented by a Daemonset. Uses the CNI networking
-                      interface.
+                      plugin.
                     properties:
                       usesSecondaryIP:
                         type: boolean
                     type: object
                   external:
                     description: ExternalNetworkingSpec is the specification for networking
-                      that is implemented by a Daemonset. Uses the kubenet networking
-                      provider.
+                      that is implemented by a Daemonset. Uses the kubenet kubelet
+                      networking plugin.
                     type: object
                   flannel:
                     description: FlannelNetworkingSpec declares that we want Flannel
