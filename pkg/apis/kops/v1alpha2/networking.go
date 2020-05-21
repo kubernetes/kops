@@ -38,7 +38,7 @@ type NetworkingSpec struct {
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
-// Support been removed since kops 1.4.
+// Support been removed since kubernetes 1.4.
 type ClassicNetworkingSpec struct {
 }
 
@@ -47,12 +47,12 @@ type KubenetNetworkingSpec struct {
 }
 
 // ExternalNetworkingSpec is the specification for networking that is implemented by a Daemonset.
-// Uses the kubenet networking provider.
+// Uses the kubenet kubelet networking plugin.
 type ExternalNetworkingSpec struct {
 }
 
 // CNINetworkingSpec is the specification for networking that is implemented by a Daemonset.
-// Uses the CNI networking interface.
+// Uses the CNI networking plugin.
 type CNINetworkingSpec struct {
 	UsesSecondaryIP bool `json:"usesSecondaryIP,omitempty"`
 }
