@@ -18,6 +18,7 @@ package components
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
@@ -62,7 +63,26 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 
 		// Apply defaults for containerd running in container runtime mode
 		containerd.LogLevel = fi.String("info")
-		containerd.ConfigOverride = fi.String("")
+		usesKubenet, err := UsesKubenet(clusterSpec)
+		if err != nil {
+			return err
+		}
+		if clusterSpec.Networking != nil && usesKubenet {
+			// Using containerd with Kubenet requires special configuration. This is a temporary backwards-compatible solution
+			// and will be deprecated when Kubenet is deprecated:
+			// https://github.com/containerd/cri/blob/master/docs/config.md#cni-config-template
+			lines := []string{
+				"version = 2",
+				"[plugins]",
+				"  [plugins.\"io.containerd.grpc.v1.cri\"]",
+				"    [plugins.\"io.containerd.grpc.v1.cri\".cni]",
+				"      conf_template = \"/etc/containerd/cni-config.template\"",
+			}
+			contents := strings.Join(lines, "\n")
+			containerd.ConfigOverride = fi.String(contents)
+		} else {
+			containerd.ConfigOverride = fi.String("")
+		}
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
 		if fi.StringValue(containerd.Version) == "" {
