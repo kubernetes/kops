@@ -3137,16 +3137,16 @@ spec:
                     type: object
                   cni:
                     description: CNINetworkingSpec is the specification for networking
-                      that is implemented by a Daemonset. Uses the CNI networking
-                      plugin.
+                      that is implemented by a user-provided Daemonset, which uses
+                      the CNI kubelet networking plugin.
                     properties:
                       usesSecondaryIP:
                         type: boolean
                     type: object
                   external:
                     description: ExternalNetworkingSpec is the specification for networking
-                      that is implemented by a Daemonset. Uses the kubenet kubelet
-                      networking plugin.
+                      that is implemented by a user-provided Daemonset that uses the
+                      kubelet networking plugin.
                     type: object
                   flannel:
                     description: FlannelNetworkingSpec declares that we want Flannel
