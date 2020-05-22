@@ -25,6 +25,8 @@ func TestParse(t *testing.T) {
 		Input    string
 		Expected string
 	}{
+		{Input: "", Expected: "unable to parse kubernetes version \"\""},
+		{Input: "abc", Expected: "unable to parse kubernetes version \"abc\""},
 		{Input: "1.1.0", Expected: "1.1.0"},
 		{Input: "1.2.0", Expected: "1.2.0"},
 		{Input: "1.3.0", Expected: "1.3.0"},
@@ -48,7 +50,9 @@ func TestParse(t *testing.T) {
 	for _, g := range grid {
 		actual, err := Parse(g.Input)
 		if err != nil {
-			t.Errorf("error parsing %q: %v", g.Input, err)
+			if err.Error() != g.Expected {
+				t.Errorf("error parsing %q: %v", g.Input, err)
+			}
 			continue
 		}
 		if actual.String() != g.Expected {
