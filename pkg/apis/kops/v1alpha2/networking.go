@@ -46,13 +46,11 @@ type ClassicNetworkingSpec struct {
 type KubenetNetworkingSpec struct {
 }
 
-// ExternalNetworkingSpec is the specification for networking that is implemented by a Daemonset.
-// Uses the kubenet kubelet networking plugin.
+// ExternalNetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset that uses the kubelet networking plugin.
 type ExternalNetworkingSpec struct {
 }
 
-// CNINetworkingSpec is the specification for networking that is implemented by a Daemonset.
-// Uses the CNI networking plugin.
+// CNINetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset, which uses the CNI kubelet networking plugin.
 type CNINetworkingSpec struct {
 	UsesSecondaryIP bool `json:"usesSecondaryIP,omitempty"`
 }

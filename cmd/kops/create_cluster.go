@@ -330,7 +330,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode to use.  kubenet (default), external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazon-vpc-routed-eni, cilium, cni, lyftvpc.")
+	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazon-vpc-routed-eni, cilium, cni, lyftvpc.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
