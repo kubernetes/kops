@@ -143,7 +143,7 @@ etcdClusters:
   manager:
     env:
     - name: ETCD_LISTEN_METRICS_URLS
-      value: http://__address__:8081
+      value: http://0.0.0.0:8081
     - name: ETCD_METRICS
       value: basic
 ```
