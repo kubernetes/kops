@@ -465,23 +465,6 @@ func (c *RollingUpdateCluster) tryValidateCluster(ctx context.Context) bool {
 	}
 }
 
-// validateCluster runs our validation methods on the K8s Cluster.
-func (c *RollingUpdateCluster) validateCluster() error {
-	result, err := c.ClusterValidator.Validate()
-	if err != nil {
-		return fmt.Errorf("cluster %q did not validate: %v", c.ClusterName, err)
-	}
-	if len(result.Failures) > 0 {
-		messages := []string{}
-		for _, failure := range result.Failures {
-			messages = append(messages, failure.Message)
-		}
-		return fmt.Errorf("cluster %q did not pass validation: %s", c.ClusterName, strings.Join(messages, ", "))
-	}
-
-	return nil
-}
-
 // detachInstance detaches a Cloud Instance
 func (c *RollingUpdateCluster) detachInstance(u *cloudinstances.CloudInstanceGroupMember) error {
 	id := u.ID
