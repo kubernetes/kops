@@ -22,7 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// KuberouterBuilder installs kube-router
+// Kubenet installs kube-router
 type KubenetBuilder struct {
 	*model.NodeupModelContext
 }
