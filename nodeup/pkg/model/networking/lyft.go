@@ -37,7 +37,7 @@ type LyftVPCBuilder struct {
 	*model.NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &CiliumBuilder{}
+var _ fi.ModelBuilder = &LyftVPCBuilder{}
 
 // Build is responsible for configuring the network cni
 func (b *LyftVPCBuilder) Build(c *fi.ModelBuilderContext) error {

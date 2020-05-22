@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// CiliumBuilder writes Cilium's assets
+// FlannelBuilder writes Flannel's assets
 type FlannelBuilder struct {
 	*model.NodeupModelContext
 }
