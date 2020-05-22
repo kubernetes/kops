@@ -118,15 +118,6 @@ func (r *NodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, fmt.Errorf("unable to build config for node %s: %v", node.Name, err)
 	}
 
-	lifecycle, err := r.getInstanceLifecycle(ctx, node)
-	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("unable to get instance lifecycle %s: %v", node.Name, err)
-	}
-
-	if len(lifecycle) > 0 {
-		labels[fmt.Sprintf("node-role.kubernetes.io/%s-worker", lifecycle)] = "true"
-	}
-
 	updateLabels := make(map[string]string)
 	for k, v := range labels {
 		actual, found := node.Labels[k]
@@ -194,17 +185,6 @@ func (r *NodeReconciler) getClusterForNode(node *corev1.Node) (*kops.Cluster, er
 		return nil, err
 	}
 	return cluster, nil
-}
-
-// getInstanceLifecycle returns InstanceLifecycle string object
-func (r *NodeReconciler) getInstanceLifecycle(ctx context.Context, node *corev1.Node) (string, error) {
-
-	identity, err := r.identifier.IdentifyNode(ctx, node)
-	if err != nil {
-		return "", fmt.Errorf("error identifying node %q: %v", node.Name, err)
-	}
-
-	return identity.InstanceLifecycle, nil
 }
 
 // getInstanceGroupForNode returns the kops.InstanceGroup object for the node
