@@ -10,6 +10,7 @@ go_library(
         "createsdir.go",
         "file.go",
         "group.go",
+        "issue_cert.go",
         "load_image.go",
         "package.go",
         "service.go",
@@ -20,6 +21,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/backoff:go_default_library",
+        "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",
@@ -37,9 +39,13 @@ go_test(
         "archive_test.go",
         "bindmount_test.go",
         "file_test.go",
+        "issue_cert_test.go",
         "loadimage_test.go",
         "service_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//upup/pkg/fi:go_default_library"],
+    deps = [
+        "//upup/pkg/fi:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+    ],
 )

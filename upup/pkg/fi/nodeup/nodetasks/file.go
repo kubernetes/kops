@@ -98,6 +98,10 @@ func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// Requires parent directories to be created
 	deps = append(deps, findCreatesDirParents(e.Path, tasks)...)
 
+	if hasDep, ok := e.Contents.(fi.HasDependencies); ok {
+		deps = append(deps, hasDep.GetDependencies(tasks)...)
+	}
+
 	// Requires other files to be created first
 	for _, f := range e.AfterFiles {
 		for _, v := range tasks {

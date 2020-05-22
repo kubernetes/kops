@@ -18,13 +18,10 @@ package model
 
 import (
 	"crypto/x509/pkix"
-	"fmt"
-	"os"
-	"path/filepath"
 
 	"k8s.io/klog"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // EtcdManagerTLSBuilder configures TLS support for etcd-manager
@@ -69,48 +66,24 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 	}
 
 	// We also dynamically generate the client keypair for apiserver
-	if err := b.buildKubeAPIServerKeypair(); err != nil {
+	if err := b.buildKubeAPIServerKeypair(ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
-	req := &pki.IssueCertRequest{
+func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair(c *fi.ModelBuilderContext) error {
+	name := "etcd-client"
+	issueCert := &nodetasks.IssueCert{
+		Name:   name,
 		Signer: "etcd-clients-ca",
 		Type:   "client",
 		Subject: pkix.Name{
 			CommonName: "kube-apiserver",
 		},
-		MinValidDays: 455,
 	}
-	dir := "/etc/kubernetes/pki/kube-apiserver"
-	name := "etcd-client"
-	humanName := dir + "/" + name
-	klog.Infof("signing certificate for %q", humanName)
-	cert, privateKey, etcdClientsCACertificate, err := pki.IssueCert(req, b.KeyStore)
-	if err != nil {
-		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)
-	}
-
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("error creating directories %q: %v", dir, err)
-	}
-
-	{
-		p := filepath.Join(dir, "etcd-ca.crt")
-		if err := etcdClientsCACertificate.WriteToFile(p, 0644); err != nil {
-			return fmt.Errorf("error writing certificate key file %q: %v", p, err)
-		}
-	}
-
-	p := filepath.Join(dir, name)
-	if err := cert.WriteToFile(p+".crt", 0644); err != nil {
-		return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
-	}
-	if err := privateKey.WriteToFile(p+".key", 0600); err != nil {
-		return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
-	}
+	c.AddTask(issueCert)
+	issueCert.AddFileTasks(c, "/etc/kubernetes/pki/kube-apiserver", name, "etcd-ca", nil)
 
 	return nil
 }
