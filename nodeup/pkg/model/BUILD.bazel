@@ -54,6 +54,7 @@ go_library(
         "//pkg/k8scodecs:go_default_library",
         "//pkg/kubeconfig:go_default_library",
         "//pkg/kubemanifest:go_default_library",
+        "//pkg/model/components:go_default_library",
         "//pkg/nodelabels:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/rbac:go_default_library",
