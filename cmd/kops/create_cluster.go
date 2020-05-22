@@ -1108,7 +1108,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 
 	case api.TopologyPrivate:
-		if !supportsPrivateTopology(cluster.Spec.Networking) {
+		if cluster.Spec.Networking.Kubenet != nil {
 			return fmt.Errorf("invalid networking option %s. Kubenet does not support private topology", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
@@ -1449,10 +1449,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	return nil
-}
-
-func supportsPrivateTopology(n *api.NetworkingSpec) bool {
-	return n.Kubenet == nil
 }
 
 func trimCommonPrefix(names []string) []string {
