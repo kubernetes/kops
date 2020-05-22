@@ -19,14 +19,10 @@ package networking
 import (
 	"crypto/x509/pkix"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"k8s.io/kops/nodeup/pkg/model"
 
 	"golang.org/x/sys/unix"
-	"k8s.io/klog"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -127,41 +123,17 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		}
 	}
 
-	req := &pki.IssueCertRequest{
+	name := "etcd-client-cilium"
+	issueCert := &nodetasks.IssueCert{
+		Name:   name,
 		Signer: "etcd-clients-ca-cilium",
 		Type:   "client",
 		Subject: pkix.Name{
 			CommonName: "cilium",
 		},
-		MinValidDays: 455,
 	}
-	dir := "/etc/kubernetes/pki/cilium"
-	name := "etcd-client-cilium"
-	humanName := dir + "/" + name
-	klog.Infof("signing certificate for %q", humanName)
-	cert, privateKey, etcdClientsCACertificate, err := pki.IssueCert(req, b.KeyStore)
-	if err != nil {
-		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)
-	}
-
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("error creating directories %q: %v", dir, err)
-	}
-
-	{
-		p := filepath.Join(dir, "etcd-ca.crt")
-		if err := etcdClientsCACertificate.WriteToFile(p, 0644); err != nil {
-			return fmt.Errorf("error writing certificate key file %q: %v", p, err)
-		}
-	}
-
-	p := filepath.Join(dir, name)
-	if err := cert.WriteToFile(p+".crt", 0644); err != nil {
-		return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
-	}
-	if err := privateKey.WriteToFile(p+".key", 0600); err != nil {
-		return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
-	}
+	c.AddTask(issueCert)
+	issueCert.AddFileTasks(c, "/etc/kubernetes/pki/cilium", name, "etcd-ca", nil)
 
 	return nil
 }
