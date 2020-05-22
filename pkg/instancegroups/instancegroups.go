@@ -91,7 +91,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 	} else if c.CloudOnly {
 		klog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
 	} else {
-		if err = c.validateClusterWithDuration(c.validationTimeout); err != nil {
+		if err = c.validateClusterWithDuration(c.ValidationTimeout); err != nil {
 			if c.FailOnValidate {
 				return err
 			}
