@@ -102,11 +102,6 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, fmt.Errorf("found instance %q, but state is %q", instanceID, instanceState)
 	}
 
-	lifecycle := ""
-	if instance.InstanceLifecycle != nil {
-		lifecycle = *instance.InstanceLifecycle
-	}
-
 	// TODO: Should we traverse to the ASG to confirm the tags there?
 	igName := getTag(instance.Tags, CloudTagInstanceGroupName)
 	if igName == "" {
@@ -115,7 +110,6 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	info := &nodeidentity.Info{}
 	info.InstanceGroup = igName
-	info.InstanceLifecycle = lifecycle
 
 	return info, nil
 }
