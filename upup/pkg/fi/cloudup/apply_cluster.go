@@ -741,24 +741,32 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		awsModelContext := &awsmodel.AWSModelContext{
-			KopsModelContext: modelContext,
-		}
+		{
+			awsModelContext := &awsmodel.AWSModelContext{
+				KopsModelContext: modelContext,
+			}
 
-		if featureflag.Spotinst.Enabled() {
-			l.Builders = append(l.Builders, &spotinstmodel.InstanceGroupModelBuilder{
+			awsModelBuilder := &awsmodel.AutoscalingGroupModelBuilder{
 				AWSModelContext:   awsModelContext,
 				BootstrapScript:   bootstrapScriptBuilder,
 				Lifecycle:         &clusterLifecycle,
 				SecurityLifecycle: &securityLifecycle,
-			})
-		} else {
-			l.Builders = append(l.Builders, &awsmodel.AutoscalingGroupModelBuilder{
-				AWSModelContext:   awsModelContext,
-				BootstrapScript:   bootstrapScriptBuilder,
-				Lifecycle:         &clusterLifecycle,
-				SecurityLifecycle: &securityLifecycle,
-			})
+			}
+
+			if featureflag.Spotinst.Enabled() {
+				l.Builders = append(l.Builders, &spotinstmodel.InstanceGroupModelBuilder{
+					KopsModelContext:  modelContext,
+					BootstrapScript:   bootstrapScriptBuilder,
+					Lifecycle:         &clusterLifecycle,
+					SecurityLifecycle: &securityLifecycle,
+				})
+
+				if featureflag.SpotinstHybrid.Enabled() {
+					l.Builders = append(l.Builders, awsModelBuilder)
+				}
+			} else {
+				l.Builders = append(l.Builders, awsModelBuilder)
+			}
 		}
 	case kops.CloudProviderDO:
 		doModelContext := &domodel.DOModelContext{
