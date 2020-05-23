@@ -87,7 +87,6 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		klog.Warningf("error reading /etc/redhat-release: %v", err)
 	}
 
-	// CoreOS uses /usr/lib/os-release
 	// Flatcar uses /usr/lib/os-release
 	usrLibOsRelease, err := ioutil.ReadFile(path.Join(rootfs, "usr/lib/os-release"))
 	if err == nil {

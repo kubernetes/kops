@@ -41,8 +41,6 @@ const (
 	// package (protokube, kubelet).  Maybe we should have the idea of a "system" package.
 	centosSystemdSystemPath = "/usr/lib/systemd/system"
 
-	coreosSystemdSystemPath = "/etc/systemd/system"
-
 	flatcarSystemdSystemPath = "/etc/systemd/system"
 
 	containerosSystemdSystemPath = "/etc/systemd/system"
@@ -150,8 +148,6 @@ func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
 		return debianSystemdSystemPath, nil
 	} else if target.HasTag(tags.TagOSFamilyRHEL) {
 		return centosSystemdSystemPath, nil
-	} else if target.HasTag("_coreos") {
-		return coreosSystemdSystemPath, nil
 	} else if target.HasTag("_flatcar") {
 		return flatcarSystemdSystemPath, nil
 	} else if target.HasTag("_containeros") {
