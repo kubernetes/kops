@@ -36,7 +36,7 @@ var wellKnownCertificateTypes = map[string]string{
 }
 
 type IssueCertRequest struct {
-	// Signer is the keypair to use to sign.
+	// Signer is the keypair to use to sign. Ignored if Type is "CA", in which case the cert will be self-signed.
 	Signer string
 	// Type is the type of certificate i.e. CA, server, client etc.
 	Type string
@@ -65,7 +65,8 @@ type Keystore interface {
 	FindKeypair(name string) (*Certificate, *PrivateKey, bool, error)
 }
 
-func IssueCert(request *IssueCertRequest, keystore Keystore) (*Certificate, *PrivateKey, *Certificate, error) {
+// IssueCert issues a certificate, either a self-signed CA or from a CA in a keystore.
+func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate *Certificate, issuedKey *PrivateKey, caCertificate *Certificate, err error) {
 	certificateType := request.Type
 	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
 		certificateType = expanded
@@ -115,7 +116,6 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (*Certificate, *Pri
 		}
 	}
 
-	var caCertificate *Certificate
 	var caPrivateKey *PrivateKey
 	var signer *x509.Certificate
 	if !template.IsCA {
