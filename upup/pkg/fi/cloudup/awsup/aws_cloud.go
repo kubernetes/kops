@@ -344,6 +344,12 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 // DeleteGroup deletes an aws autoscaling group
 func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	if c.spotinst != nil {
+		if featureflag.SpotinstHybrid.Enabled() {
+			if _, ok := g.Raw.(*autoscaling.Group); ok {
+				return deleteGroup(c, g)
+			}
+		}
+
 		return spotinst.DeleteInstanceGroup(c.spotinst, g)
 	}
 
@@ -425,6 +431,12 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 // DeleteInstance deletes an aws instance
 func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
 	if c.spotinst != nil {
+		if featureflag.SpotinstHybrid.Enabled() {
+			if _, ok := i.CloudInstanceGroup.Raw.(*autoscaling.Group); ok {
+				return deleteInstance(c, i)
+			}
+		}
+
 		return spotinst.DeleteInstance(c.spotinst, i)
 	}
 
@@ -490,8 +502,23 @@ func detachInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 // GetCloudGroups returns a groups of instances that back a kops instance groups
 func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	if c.spotinst != nil {
-		return spotinst.GetCloudGroups(c.spotinst, cluster,
-			instancegroups, warnUnmatched, nodes)
+		sgroups, err := spotinst.GetCloudGroups(c.spotinst, cluster, instancegroups, warnUnmatched, nodes)
+		if err != nil {
+			return nil, err
+		}
+
+		if featureflag.SpotinstHybrid.Enabled() {
+			agroups, err := getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+			if err != nil {
+				return nil, err
+			}
+
+			for name, group := range agroups {
+				sgroups[name] = group
+			}
+		}
+
+		return sgroups, nil
 	}
 
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
