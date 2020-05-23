@@ -470,7 +470,7 @@ An optional flag can be provided within the KubeletSpec to set a volume plugin d
 
 Kops will set this for you based off the Operating System in use:
 - ContainerOS: `/home/kubernetes/flexvolume/`
-- CoreOS: `/var/lib/kubelet/volumeplugins/`
+- Flatcar: `/var/lib/kubelet/volumeplugins/`
 - Default (in-line with upstream k8s): `/usr/libexec/kubernetes/kubelet-plugins/volume/exec/`
 
 If you wish to override this value, it can be done so with the following addition to the kubelet spec:

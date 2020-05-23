@@ -409,7 +409,7 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
 		// Load the proxy environment variables
 		buffer.WriteString("while read in; do export $in; done < /etc/environment\n")
 
-		// Set env variables for package manager depending on OS Distribution (N/A for CoreOS)
+		// Set env variables for package manager depending on OS Distribution (N/A for Flatcar)
 		// Note: Nodeup will source the `/etc/environment` file within docker config in the correct location
 		buffer.WriteString("case `cat /proc/version` in\n")
 		buffer.WriteString("*[Dd]ebian*)\n")
