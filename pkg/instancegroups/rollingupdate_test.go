@@ -979,8 +979,10 @@ func (c *concurrentTest) TerminateInstances(input *ec2.TerminateInstancesInput) 
 	return c.EC2API.TerminateInstances(input)
 }
 
+const postTerminationValidationDelay = 100 * time.Millisecond // NodeInterval plus some
+
 func (c *concurrentTest) delayThenWakeValidation() {
-	time.Sleep(20 * time.Millisecond) // NodeInterval plus some
+	time.Sleep(postTerminationValidationDelay)
 	select {
 	case c.validationChan <- true:
 	default:
@@ -1245,7 +1247,7 @@ func (t *alreadyDetachedTest) Validate() (*validation.ValidationCluster, error) 
 		assert.Equal(t.t, t.numValidations, len(t.detached), "numnber of detached instances")
 	case 4:
 		t.mutex.Unlock()
-		time.Sleep(20 * time.Millisecond) // NodeInterval plus some
+		time.Sleep(postTerminationValidationDelay)
 		t.mutex.Lock()
 		assert.Equal(t.t, 1, t.terminationRequestsLeft, "terminations left")
 	case 5:
