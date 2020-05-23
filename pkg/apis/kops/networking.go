@@ -46,7 +46,7 @@ type ClassicNetworkingSpec struct {
 type KubenetNetworkingSpec struct {
 }
 
-// ExternalNetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset that uses the kubelet networking plugin.
+// ExternalNetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset that uses the Kubenet kubelet networking plugin.
 type ExternalNetworkingSpec struct {
 }
 
