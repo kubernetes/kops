@@ -205,7 +205,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	// @check: neither coreos or containeros need provision containerd.service, just the containerd daemon options
+	// @check: neither flatcar nor containeros need provision containerd.service, just the containerd daemon options
 	switch b.Distribution {
 	case distros.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install containerd")

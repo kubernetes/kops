@@ -245,9 +245,9 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		for i := range list.Items {
 			instanceGroups = append(instanceGroups, &list.Items[i])
 
-			// Try to guess the path for additional third party volume plugins in CoreOS and Flatcar
+			// Try to guess the path for additional third party volume plugins in Flatcar
 			image := strings.ToLower(list.Items[i].Spec.Image)
-			if strings.Contains(image, "coreos") || strings.Contains(image, "flatcar") {
+			if strings.Contains(image, "flatcar") {
 				if cluster.Spec.Kubelet == nil {
 					cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
 				}
