@@ -97,7 +97,7 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 		case "metadata":
 			switch u.Host {
 			case "gce":
-				httpURL := "http://169.254.169.254/computeMetadata/v1/instance/attributes/" + u.Path
+				httpURL := "http://169.254.169.254/computeMetadata/v1/" + u.Path
 				httpHeaders := make(map[string]string)
 				httpHeaders["Metadata-Flavor"] = "Google"
 				return c.readHTTPLocation(httpURL, httpHeaders, opts)

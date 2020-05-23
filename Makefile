@@ -357,7 +357,7 @@ push: crossbuild-nodeup
 
 .PHONY: push-gce-dry
 push-gce-dry: push
-	ssh ${TARGET} sudo /tmp/nodeup --conf=metadata://gce/config --dryrun --v=8
+	ssh ${TARGET} sudo /tmp/nodeup --conf=metadata://gce/instance/attributes/config --dryrun --v=8
 
 .PHONY: push-gce-dry
 push-aws-dry: push
