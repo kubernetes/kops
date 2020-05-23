@@ -3146,7 +3146,7 @@ spec:
                   external:
                     description: ExternalNetworkingSpec is the specification for networking
                       that is implemented by a user-provided Daemonset that uses the
-                      kubelet networking plugin.
+                      Kubenet kubelet networking plugin.
                     type: object
                   flannel:
                     description: FlannelNetworkingSpec declares that we want Flannel
