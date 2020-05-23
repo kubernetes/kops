@@ -162,6 +162,7 @@ kubelet:
   featureGates:
     ExperimentalCriticalPodAnnotation: "true"
   hairpinMode: promiscuous-bridge
+  hostnameOverride: '@gce'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginMTU: 9001
