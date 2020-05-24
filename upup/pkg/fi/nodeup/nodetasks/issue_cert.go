@@ -110,6 +110,9 @@ func (e *IssueCert) Run(c *fi.Context) error {
 	}
 
 	klog.Infof("signing certificate for %q", e.Name)
+	if c.Keystore == nil { // TODO remove testing code
+		klog.Fatalf("c.Keystore is nil")
+	}
 	certificate, privateKey, caCertificate, err := pki.IssueCert(req, c.Keystore)
 	if err != nil {
 		return err

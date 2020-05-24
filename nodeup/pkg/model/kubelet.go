@@ -34,7 +34,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/nodelabels"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -113,11 +112,10 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			if b.IsMaster {
 				klog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
 
-				task, err := b.buildMasterKubeletKubeconfig()
+				err := b.buildMasterKubeletKubeconfig(c)
 				if err != nil {
 					return err
 				}
-				c.AddTask(task)
 			}
 		} else {
 			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
@@ -545,49 +543,86 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 }
 
 // buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
-func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error) {
+func (b *KubeletBuilder) buildMasterKubeletKubeconfig(c *fi.ModelBuilderContext) error {
 	nodeName, err := b.NodeName()
 	if err != nil {
-		return nil, fmt.Errorf("error getting NodeName: %v", err)
+		return fmt.Errorf("error getting NodeName: %v", err)
 	}
 
-	req := &pki.IssueCertRequest{
+	issueCert := &nodetasks.IssueCert{
+		Name:   "master-kubelet",
 		Signer: fi.CertificateId_CA,
 		Type:   "client",
 		Subject: pkix.Name{
 			CommonName:   fmt.Sprintf("system:node:%s", nodeName),
 			Organization: []string{rbac.NodesGroup},
 		},
-		MinValidDays: 455,
 	}
+	c.AddTask(issueCert)
 
-	certificate, privateKey, caCert, err := pki.IssueCert(req, b.KeyStore)
-	if err != nil {
-		return nil, fmt.Errorf("error signing certificate for master kubelet: %v", err)
+	kubeConfigTask := &buildKubeConfigTask{
+		NodeupModelContext: b.NodeupModelContext,
+		IssueCert:          issueCert,
 	}
+	kubeConfigTask.Resource.Task = kubeConfigTask
+	c.AddTask(kubeConfigTask)
 
-	caBytes, err := caCert.AsBytes()
+	c.AddTask(&nodetasks.File{
+		Path:     b.KubeletKubeConfig(),
+		Contents: &kubeConfigTask.Resource,
+		Type:     nodetasks.FileType_File,
+		Mode:     s("600"),
+	})
+
+	return nil
+}
+
+type buildKubeConfigTask struct {
+	*NodeupModelContext
+	IssueCert *nodetasks.IssueCert
+	Resource  fi.TaskDependentResource
+}
+
+var _ fi.HasDependencies = &buildKubeConfigTask{}
+var _ fi.HasName = &buildKubeConfigTask{}
+
+func (b *buildKubeConfigTask) GetDependencies(map[string]fi.Task) []fi.Task {
+	return []fi.Task{b.IssueCert}
+}
+
+func (b *buildKubeConfigTask) GetName() *string {
+	return fi.String("BuildKubeConfigTask")
+}
+
+func (b *buildKubeConfigTask) SetName(string) {
+}
+
+// String returns a string representation, implementing the Stringer interface
+func (b *buildKubeConfigTask) String() string {
+	return fmt.Sprintf("BuildKubeConfigTask")
+}
+
+func (b *buildKubeConfigTask) Run(c *fi.Context) error {
+	certResource, keyResource, caResource := b.IssueCert.GetResources()
+
+	certBytes, err := fi.ResourceAsBytes(certResource)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get certificate authority data: %s", err)
+		return fmt.Errorf("failed to get certificate data: %s", err)
 	}
-	certBytes, err := certificate.AsBytes()
+	keyBytes, err := fi.ResourceAsBytes(keyResource)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get certificate data: %s", err)
+		return fmt.Errorf("failed to get private key data: %s", err)
 	}
-	keyBytes, err := privateKey.AsBytes()
+	caBytes, err := fi.ResourceAsBytes(caResource)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get private key data: %s", err)
+		return fmt.Errorf("failed to get certificate authority data: %s", err)
 	}
 
 	content, err := b.BuildKubeConfig("kubelet", caBytes, certBytes, keyBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &nodetasks.File{
-		Path:     b.KubeletKubeConfig(),
-		Contents: fi.NewStringResource(content),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("600"),
-	}, nil
+	b.Resource.Resource = fi.NewStringResource(content)
+	return nil
 }
