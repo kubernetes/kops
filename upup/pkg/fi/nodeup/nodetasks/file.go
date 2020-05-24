@@ -95,15 +95,6 @@ func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		}
 	}
 
-	// Depend on disk mounts
-	// For simplicity, we just depend on _all_ disk mounts
-	// We could check the mountpath, but that feels excessive...
-	for _, v := range tasks {
-		if _, ok := v.(*MountDiskTask); ok {
-			deps = append(deps, v)
-		}
-	}
-
 	// Requires parent directories to be created
 	deps = append(deps, findCreatesDirParents(e.Path, tasks)...)
 
