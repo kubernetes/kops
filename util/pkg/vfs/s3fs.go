@@ -119,8 +119,6 @@ func (p *S3Path) Remove() error {
 
 		_, err = client.DeleteObject(request)
 		if err != nil {
-			// TODO: Check for not-exists, return os.NotExist
-
 			return fmt.Errorf("error deleting %s version %q: %v", p, aws.StringValue(version.VersionId), err)
 		}
 	}
