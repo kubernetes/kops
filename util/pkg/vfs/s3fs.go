@@ -103,7 +103,9 @@ func (p *S3Path) Remove() error {
 	}
 
 	if len(response.Versions) == 0 {
-		return os.ErrNotExist
+		// TODO: Check why cluster teardown fails when files are not found and replace warning with error
+		// return os.ErrNotExist
+		klog.Warningf("error removing file (not found): %s", p)
 	}
 
 	// Sometimes S3 will return paginated results if there are too many versions for an object.
@@ -123,7 +125,7 @@ func (p *S3Path) Remove() error {
 
 		_, err = client.DeleteObject(request)
 		if err != nil {
-			return fmt.Errorf("error deleting %s version %q: %v", p, aws.StringValue(version.VersionId), err)
+			return fmt.Errorf("error removing %s version %q: %v", p, aws.StringValue(version.VersionId), err)
 		}
 	}
 
