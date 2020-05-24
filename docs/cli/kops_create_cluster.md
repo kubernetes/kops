@@ -37,7 +37,7 @@ kops create cluster [flags]
   --node-size $NODE_SIZE \
   --master-size $MASTER_SIZE \
   --master-zones $ZONES \
-  --networking weave \
+  --networking cilium \
   --topology private \
   --bastion="true" \
   --yes
@@ -94,7 +94,7 @@ kops create cluster [flags]
       --master-zones strings             Zones in which to run masters (must be an odd number)
       --model string                     Models to apply (separate multiple models with commas) (default "proto,cloudup")
       --network-cidr string              Set to override the default network CIDR
-      --networking string                Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium, cni. (default "kubenet")
+      --networking string                Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazon-vpc-routed-eni, cilium, cni, lyftvpc. (default "kubenet")
       --node-count int32                 Set the number of nodes
       --node-security-groups strings     Add precreated additional security groups to nodes.
       --node-size string                 Set instance size for nodes

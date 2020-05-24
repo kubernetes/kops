@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"fmt"
 	"strings"
 
 	"k8s.io/klog"
@@ -179,11 +180,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}
 
-	usesKubenet, err := UsesKubenet(clusterSpec)
-	if err != nil {
-		return err
+	networking := clusterSpec.Networking
+	if networking == nil {
+		return fmt.Errorf("no networking mode set")
+
 	}
-	if usesKubenet {
+	if UsesKubenet(networking) {
 		clusterSpec.Kubelet.NetworkPluginName = "kubenet"
 
 		// AWS MTU is 9001

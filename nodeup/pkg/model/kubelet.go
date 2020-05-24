@@ -25,6 +25,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/kops/pkg/model/components"
+
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 
@@ -134,7 +136,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.UsesCNI() {
+	if components.UsesCNI(b.Cluster.Spec.Networking) {
 		c.AddTask(&nodetasks.File{
 			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,
@@ -212,10 +214,8 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --cloud-config=" + CloudConfigFilePath
 	}
 
-	if b.UsesCNI() {
-		flags += " --cni-bin-dir=" + b.CNIBinDir()
-		flags += " --cni-conf-dir=" + b.CNIConfDir()
-	}
+	flags += " --cni-bin-dir=" + b.CNIBinDir()
+	flags += " --cni-conf-dir=" + b.CNIConfDir()
 
 	if b.UsesSecondaryIP() {
 		sess := session.Must(session.NewSession())

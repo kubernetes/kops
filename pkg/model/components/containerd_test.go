@@ -29,6 +29,9 @@ func buildContainerdCluster(version string) *kopsapi.Cluster {
 		Spec: kopsapi.ClusterSpec{
 			CloudProvider:     "aws",
 			KubernetesVersion: version,
+			Networking: &kopsapi.NetworkingSpec{
+				Kubenet: &kopsapi.KubenetNetworkingSpec{},
+			},
 		},
 	}
 }

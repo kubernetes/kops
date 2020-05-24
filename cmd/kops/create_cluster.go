@@ -221,7 +221,7 @@ var (
 		--node-size $NODE_SIZE \
 		--master-size $MASTER_SIZE \
 		--master-zones $ZONES \
-		--networking weave \
+		--networking cilium \
 		--topology private \
 		--bastion="true" \
 		--yes
@@ -330,7 +330,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana, amazon-vpc-routed-eni, cilium, cni.")
+	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazon-vpc-routed-eni, cilium, cni, lyftvpc.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -1020,8 +1020,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	cluster.Spec.Networking = &api.NetworkingSpec{}
 	switch c.Networking {
-	case "classic":
-		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
 	case "kubenet":
 		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
 	case "external":
@@ -1110,8 +1108,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 
 	case api.TopologyPrivate:
-		if !supportsPrivateTopology(cluster.Spec.Networking) {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router', '--networking romana', '--networking amazon-vpc-routed-eni', '--networking cilium', '--networking lyftvpc', '--networking cni' are supported for private topologies", c.Networking)
+		if cluster.Spec.Networking.Kubenet != nil {
+			return fmt.Errorf("invalid networking option %s. Kubenet does not support private topology", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
@@ -1451,14 +1449,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	return nil
-}
-
-func supportsPrivateTopology(n *api.NetworkingSpec) bool {
-
-	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil || n.Romana != nil || n.AmazonVPC != nil || n.Cilium != nil || n.LyftVPC != nil || n.GCE != nil {
-		return true
-	}
-	return false
 }
 
 func trimCommonPrefix(names []string) []string {

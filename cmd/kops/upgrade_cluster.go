@@ -168,28 +168,6 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 		proposedKubernetesVersion = currentKubernetesVersion
 	}
 
-	// Prompt to upgrade addins?
-
-	// Prompt to upgrade to kubenet
-	if channelClusterSpec.Networking != nil {
-		if cluster.Spec.Networking == nil {
-			cluster.Spec.Networking = &kopsapi.NetworkingSpec{}
-		}
-		// TODO: make this less hard coded
-		if channelClusterSpec.Networking.Kubenet != nil && channelClusterSpec.Networking.Classic != nil {
-			actions = append(actions, &upgradeAction{
-				Item:     "Cluster",
-				Property: "Networking",
-				Old:      "classic",
-				New:      "kubenet",
-				apply: func() {
-					cluster.Spec.Networking.Classic = nil
-					cluster.Spec.Networking.Kubenet = channelClusterSpec.Networking.Kubenet
-				},
-			})
-		}
-	}
-
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
 		return err
