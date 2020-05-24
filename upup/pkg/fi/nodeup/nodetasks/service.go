@@ -17,7 +17,6 @@ limitations under the License.
 package nodetasks
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -71,7 +70,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		// launching a custom Kubernetes build), they all depend on
 		// the "docker.service" Service task.
 		switch v.(type) {
-		case *File, *Package, *UpdatePackages, *UserTask, *GroupTask, *MountDiskTask, *Chattr, *BindMount, *Archive:
+		case *File, *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive:
 			deps = append(deps, v)
 		case *Service, *LoadImageTask:
 			// ignore
@@ -85,22 +84,6 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 
 func (s *Service) String() string {
 	return fmt.Sprintf("Service: %s", s.Name)
-}
-
-func NewService(name string, contents string, meta string) (fi.Task, error) {
-	s := &Service{Name: name}
-	s.Definition = fi.String(contents)
-
-	if meta != "" {
-		err := json.Unmarshal([]byte(meta), s)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing json for service %q: %v", name, err)
-		}
-	}
-
-	s.InitDefaults()
-
-	return s, nil
 }
 
 func (s *Service) InitDefaults() *Service {
