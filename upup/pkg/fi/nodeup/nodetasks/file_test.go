@@ -27,10 +27,39 @@ func TestFileDependencies(t *testing.T) {
 	childFileName := "/dependent"
 
 	grid := []struct {
+		name   string
 		parent fi.Task
 		child  fi.Task
 	}{
 		{
+			name: "user",
+			parent: &UserTask{
+				Name:  "owner",
+				UID:   3,
+				Shell: "/bin/shell",
+				Home:  "/home/owner",
+			},
+			child: &File{
+				Owner:    fi.String("owner"),
+				Path:     childFileName,
+				Contents: fi.NewStringResource("I depend on an owner"),
+				Type:     FileType_File,
+			},
+		},
+		{
+			name: "parentDir",
+			parent: &File{
+				Path: parentFileName,
+				Type: FileType_Directory,
+			},
+			child: &File{
+				Path:     parentFileName + "/" + childFileName,
+				Contents: fi.NewStringResource("I depend on my parent directory"),
+				Type:     FileType_File,
+			},
+		},
+		{
+			name: "afterFiles",
 			parent: &File{
 				Path:     parentFileName,
 				Contents: fi.NewStringResource("I am depended on by " + childFileName),
@@ -46,18 +75,24 @@ func TestFileDependencies(t *testing.T) {
 	}
 
 	for _, g := range grid {
-		allTasks := make(map[string]fi.Task)
-		allTasks["parent"] = g.parent
-		allTasks["child"] = g.child
+		t.Run(g.name, func(t *testing.T) {
+			context := &fi.ModelBuilderContext{
+				Tasks: make(map[string]fi.Task),
+			}
+			context.AddTask(g.parent)
+			context.AddTask(g.child)
 
-		deps := g.parent.(fi.HasDependencies).GetDependencies(allTasks)
-		if len(deps) != 0 {
-			t.Errorf("found unexpected dependencies for parent: %v %v", g.parent, deps)
-		}
+			if _, ok := g.parent.(fi.HasDependencies); ok {
+				deps := g.parent.(fi.HasDependencies).GetDependencies(context.Tasks)
+				if len(deps) != 0 {
+					t.Errorf("found unexpected dependencies for parent: %v %v", g.parent, deps)
+				}
+			}
 
-		childDeps := g.child.(fi.HasDependencies).GetDependencies(allTasks)
-		if len(childDeps) != 1 {
-			t.Errorf("found unexpected dependencies for child: %v %v", g.child, childDeps)
-		}
+			childDeps := g.child.(fi.HasDependencies).GetDependencies(context.Tasks)
+			if len(childDeps) != 1 {
+				t.Errorf("found unexpected dependencies for child: %v %v", g.child, childDeps)
+			}
+		})
 	}
 }
