@@ -92,15 +92,37 @@ func (p *S3Path) Remove() error {
 
 	klog.V(8).Infof("removing file %s", p)
 
-	request := &s3.DeleteObjectInput{}
-	request.Bucket = aws.String(p.bucket)
-	request.Key = aws.String(p.key)
+	request := &s3.ListObjectVersionsInput{
+		Bucket: aws.String(p.bucket),
+		Prefix: aws.String(p.key),
+	}
 
-	_, err = client.DeleteObject(request)
+	response, err := client.ListObjectVersions(request)
 	if err != nil {
-		// TODO: Check for not-exists, return os.NotExist
+		return fmt.Errorf("error listing versions %s: %v", p, err)
+	}
 
-		return fmt.Errorf("error deleting %s: %v", p, err)
+	// Sometimes S3 will return paginated results if there are too many versions for an object.
+	// This is unlikely with current use cases, but a warning should be triggered in case it ever occurs.
+	if aws.BoolValue(response.IsTruncated) {
+		klog.Warningf("too many versions for %s", p)
+	}
+
+	for _, version := range response.Versions {
+		klog.V(8).Infof("removing file %s version %q", p, aws.StringValue(version.VersionId))
+
+		request := &s3.DeleteObjectInput{
+			Bucket:    aws.String(p.bucket),
+			Key:       aws.String(p.key),
+			VersionId: version.VersionId,
+		}
+
+		_, err = client.DeleteObject(request)
+		if err != nil {
+			// TODO: Check for not-exists, return os.NotExist
+
+			return fmt.Errorf("error deleting %s version %q: %v", p, aws.StringValue(version.VersionId), err)
+		}
 	}
 
 	return nil
