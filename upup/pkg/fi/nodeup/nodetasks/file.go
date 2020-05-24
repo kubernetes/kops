@@ -86,10 +86,10 @@ var _ fi.HasDependencies = &File{}
 func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	if e.Owner != nil {
-		ownerTask := tasks["user/"+*e.Owner]
+		ownerTask := tasks["UserTask/"+*e.Owner]
 		if ownerTask == nil {
 			// The user might be a pre-existing user (e.g. admin)
-			klog.Warningf("Unable to find task %q", "user/"+*e.Owner)
+			klog.Warningf("Unable to find task %q", "UserTask/"+*e.Owner)
 		} else {
 			deps = append(deps, ownerTask)
 		}
