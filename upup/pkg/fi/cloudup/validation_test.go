@@ -139,16 +139,6 @@ func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 	expectErrorFromValidate(t, c, "spec.updatePolicy")
 }
 
-func Test_Validate_No_Classic_With_14(t *testing.T) {
-	c := buildDefaultCluster(t)
-	c.Spec.KubernetesVersion = "1.4.1"
-	c.Spec.Networking = &api.NetworkingSpec{
-		Classic: &api.ClassicNetworkingSpec{},
-	}
-
-	expectErrorFromValidate(t, c, "spec.networking")
-}
-
 func Test_Validate_Kubenet_With_14(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.KubernetesVersion = "1.4.1"

@@ -339,10 +339,7 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Using containerd with Kubenet requires special configuration. This is a temporary backwards-compatible solution
 	// and will be deprecated when Kubenet is deprecated:
 	// https://github.com/containerd/cri/blob/master/docs/config.md#cni-config-template
-	usesKubenet, err := components.UsesKubenet(&b.Cluster.Spec)
-	if err != nil {
-		return err
-	}
+	usesKubenet := components.UsesKubenet(b.Cluster.Spec.Networking)
 	if b.Cluster.Spec.ContainerRuntime == "containerd" && usesKubenet {
 		b.buildKubenetCNIConfigTemplate(c)
 	}

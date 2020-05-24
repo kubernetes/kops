@@ -43,7 +43,7 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		return fmt.Errorf("networking not set")
 	}
 
-	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil || networking.LyftVPC != nil {
+	if UsesCNI(networking) {
 		options.Kubelet.NetworkPluginName = "cni"
 
 		// ConfigureCBR0 flag removed from 1.5

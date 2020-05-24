@@ -37,7 +37,8 @@ type NetworkingSpec struct {
 	GCE        *GCENetworkingSpec        `json:"gce,omitempty"`
 }
 
-// ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
+// ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
+// Support been removed since Kubernetes 1.4.
 type ClassicNetworkingSpec struct {
 }
 
@@ -45,14 +46,11 @@ type ClassicNetworkingSpec struct {
 type KubenetNetworkingSpec struct {
 }
 
-// ExternalNetworkingSpec is the specification for networking that is implemented by a Daemonset
-// It also uses kubenet
+// ExternalNetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset that uses the Kubenet kubelet networking plugin.
 type ExternalNetworkingSpec struct {
 }
 
-// CNINetworkingSpec is the specification for networking that is implemented by a Daemonset
-// Networking is not managed by kops - we can create options here that directly configure e.g. weave
-// but this is useful for arbitrary network modes or for modes that don't need additional configuration.
+// CNINetworkingSpec is the specification for networking that is implemented by a user-provided Daemonset, which uses the CNI kubelet networking plugin.
 type CNINetworkingSpec struct {
 	UsesSecondaryIP bool `json:"usesSecondaryIP,omitempty"`
 }

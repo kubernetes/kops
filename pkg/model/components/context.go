@@ -76,26 +76,31 @@ func KubernetesVersion(clusterSpec *kops.ClusterSpec) (*semver.Version, error) {
 }
 
 // UsesKubenet returns true if our networking is derived from kubenet
-func UsesKubenet(clusterSpec *kops.ClusterSpec) (bool, error) {
-	networking := clusterSpec.Networking
-	if networking == nil || networking.Classic != nil {
-		return false, nil
-	} else if networking.Kubenet != nil {
-		return true, nil
+func UsesKubenet(networking *kops.NetworkingSpec) bool {
+	if networking == nil {
+		panic("no networking mode set")
+	}
+	if networking.Kubenet != nil {
+		return true
 	} else if networking.GCE != nil {
 		// GCE IP Alias networking is based on kubenet
-		return true, nil
+		return true
 	} else if networking.External != nil {
 		// external is based on kubenet
-		return true, nil
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil || networking.AmazonVPC != nil || networking.Cilium != nil || networking.LyftVPC != nil {
-		return false, nil
+		return true
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
-		return true, nil
-	} else {
-		return false, fmt.Errorf("no networking mode set")
+		return true
 	}
+
+	return false
+
+}
+
+// UsesCNI returns true if the networking provider is a CNI plugin
+func UsesCNI(networking *kops.NetworkingSpec) bool {
+	// Kubenet and CNI are the only kubelet networking plugins right now.
+	return !UsesKubenet(networking)
 }
 
 func WellKnownServiceIP(clusterSpec *kops.ClusterSpec, id int) (net.IP, error) {
