@@ -102,6 +102,10 @@ func (p *S3Path) Remove() error {
 		return fmt.Errorf("error listing versions %s: %v", p, err)
 	}
 
+	if len(response.Versions) == 0 {
+		return os.ErrNotExist
+	}
+
 	// Sometimes S3 will return paginated results if there are too many versions for an object.
 	// This is unlikely with current use cases, but a warning should be triggered in case it ever occurs.
 	if aws.BoolValue(response.IsTruncated) {
@@ -113,7 +117,7 @@ func (p *S3Path) Remove() error {
 
 		request := &s3.DeleteObjectInput{
 			Bucket:    aws.String(p.bucket),
-			Key:       aws.String(p.key),
+			Key:       version.Key,
 			VersionId: version.VersionId,
 		}
 
