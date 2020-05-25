@@ -132,6 +132,10 @@ func (p *GSPath) Remove() error {
 	}
 }
 
+func (p *GSPath) RemoveAll() error {
+	return p.Remove()
+}
+
 func (p *GSPath) Join(relativePath ...string) Path {
 	args := []string{p.key}
 	args = append(args, relativePath...)
