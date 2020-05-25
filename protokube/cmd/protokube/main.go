@@ -176,18 +176,6 @@ func run() error {
 		if internalIP == nil {
 			internalIP = gceVolumes.InternalIP()
 		}
-	} else if cloud == "vsphere" {
-		klog.Info("Initializing vSphere volumes")
-		vsphereVolumes, err := protokube.NewVSphereVolumes()
-		if err != nil {
-			klog.Errorf("Error initializing vSphere: %q", err)
-			os.Exit(1)
-		}
-		volumes = vsphereVolumes
-		if internalIP == nil {
-			internalIP = vsphereVolumes.InternalIp()
-		}
-
 	} else if cloud == "baremetal" {
 		if internalIP == nil {
 			ip, err := findInternalIP()

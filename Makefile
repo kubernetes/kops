@@ -50,7 +50,7 @@ UPLOAD_CMD=$(KOPS_ROOT)/hack/upload
 # Unexport environment variables that can affect tests and are not used in builds
 unexport AWS_ACCESS_KEY_ID AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CNI_VERSION_URL DNS_IGNORE_NS_CHECK DNSCONTROLLER_IMAGE DO_ACCESS_TOKEN GOOGLE_APPLICATION_CREDENTIALS
 unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_STORE KOPS_STATE_S3_ACL KUBE_API_VERSIONS NODEUP_URL OPENSTACK_CREDENTIAL_FILE PROTOKUBE_IMAGE SKIP_PACKAGE_UPDATE
-unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY VSPHERE_USERNAME VSPHERE_PASSWORD
+unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.18.0-alpha.3
@@ -290,32 +290,6 @@ version-dist: nodeup-dist kops-dist protokube-export utils-dist
 	cp ${DIST}/linux/amd64/utils.tar.gz ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
 	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 	cp ${DIST}/linux/amd64/utils.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha256
-
-.PHONY: vsphere-version-dist
-vsphere-version-dist: nodeup-dist protokube-export
-	rm -rf ${UPLOAD}
-	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
-	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
-	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
-	mkdir -p ${UPLOAD}/utils/${VERSION}/linux/amd64/
-	cp ${DIST}/nodeup ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup
-	cp ${DIST}/nodeup.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
-	cp ${DIST}/nodeup.sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	cp ${IMAGES}/protokube.tar.gz ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz
-	cp ${IMAGES}/protokube.tar.gz.sha1 ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
-	cp ${IMAGES}/protokube.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
-	scp -r .build/dist/nodeup* ${TARGET}:${TARGET_PATH}/nodeup
-	scp -r .build/dist/images/protokube.tar.gz* ${TARGET}:${TARGET_PATH}/protokube/
-	make kops-dist
-	cp ${DIST}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops
-	cp ${DIST}/linux/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
-	cp ${DIST}/linux/amd64/kops.sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
-	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
-	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
-	cp ${DIST}/darwin/amd64/kops.sha256 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
-	cp ${DIST}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
-	cp ${DIST}/windows/amd64/kops.exe.sha1 ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
-	cp ${DIST}/windows/amd64/kops.exe.sha256 ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
 
 .PHONY: upload
 upload: version-dist # Upload kops to S3

@@ -32,23 +32,19 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeGCE     = "n1-standard-2"
-	defaultNodeMachineTypeVSphere = "vsphere_node"
-	defaultNodeMachineTypeDO      = "s-2vcpu-4gb"
-	defaultNodeMachineTypeALI     = "ecs.n2.medium"
+	defaultNodeMachineTypeGCE = "n1-standard-2"
+	defaultNodeMachineTypeDO  = "s-2vcpu-4gb"
+	defaultNodeMachineTypeALI = "ecs.n2.medium"
 
-	defaultBastionMachineTypeGCE     = "f1-micro"
-	defaultBastionMachineTypeVSphere = "vsphere_bastion"
-	defaultBastionMachineTypeALI     = "ecs.n2.small"
+	defaultBastionMachineTypeGCE = "f1-micro"
+	defaultBastionMachineTypeALI = "ecs.n2.small"
 
-	defaultMasterMachineTypeGCE     = "n1-standard-1"
-	defaultMasterMachineTypeVSphere = "vsphere_master"
-	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
-	defaultMasterMachineTypeALI     = "ecs.n2.medium"
+	defaultMasterMachineTypeGCE = "n1-standard-1"
+	defaultMasterMachineTypeDO  = "s-2vcpu-4gb"
+	defaultMasterMachineTypeALI = "ecs.n2.medium"
 
-	defaultVSphereNodeImage = "kops_ubuntu_16_04.ova"
-	defaultDONodeImage      = "debian-9-x64"
-	defaultALINodeImage     = "centos_7_04_64_20G_alibase_201701015.vhd"
+	defaultDONodeImage  = "debian-9-x64"
+	defaultALINodeImage = "centos_7_04_64_20G_alibase_201701015.vhd"
 )
 
 var awsDedicatedInstanceExceptions = map[string]bool{
@@ -191,18 +187,6 @@ func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, 
 
 		}
 
-	case kops.CloudProviderVSphere:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleMaster:
-			return defaultMasterMachineTypeVSphere, nil
-
-		case kops.InstanceGroupRoleNode:
-			return defaultNodeMachineTypeVSphere, nil
-
-		case kops.InstanceGroupRoleBastion:
-			return defaultBastionMachineTypeVSphere, nil
-		}
-
 	case kops.CloudProviderOpenstack:
 		cloud, err := BuildCloud(cluster)
 		if err != nil {
@@ -254,8 +238,6 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderDO:
 		return defaultDONodeImage
-	case kops.CloudProviderVSphere:
-		return defaultVSphereNodeImage
 	case kops.CloudProviderALI:
 		return defaultALINodeImage
 	}

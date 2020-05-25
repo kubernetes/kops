@@ -721,13 +721,19 @@ type CloudConfiguration struct {
 	// AWS cloud-config options
 	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
 	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
-	// vSphere cloud-config specs
-	VSphereUsername      *string `json:"vSphereUsername,omitempty"`
-	VSpherePassword      *string `json:"vSpherePassword,omitempty"`
-	VSphereServer        *string `json:"vSphereServer,omitempty"`
-	VSphereDatacenter    *string `json:"vSphereDatacenter,omitempty"`
-	VSphereResourcePool  *string `json:"vSphereResourcePool,omitempty"`
-	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
+	// VSphereUsername is deprecated and will be removed in a later version
+	VSphereUsername *string `json:"vSphereUsername,omitempty"`
+	// VSpherePassword is deprecated and will be removed in a later version
+	VSpherePassword *string `json:"vSpherePassword,omitempty"`
+	// VSphereServer is deprecated and will be removed in a later version
+	VSphereServer *string `json:"vSphereServer,omitempty"`
+	// VShpereDatacenter is deprecated and will be removed in a later version
+	VSphereDatacenter *string `json:"vSphereDatacenter,omitempty"`
+	// VSphereResourcePool is deprecated and will be removed in a later version
+	VSphereResourcePool *string `json:"vSphereResourcePool,omitempty"`
+	// VSphereDatastore is deprecated and will be removed in a later version
+	VSphereDatastore *string `json:"vSphereDatastore,omitempty"`
+	// VSphereCoreDNSServer is deprecated and will be removed in a later version
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
 	// Spotinst cloud-config specs
 	SpotinstProduct     *string `json:"spotinstProduct,omitempty"`

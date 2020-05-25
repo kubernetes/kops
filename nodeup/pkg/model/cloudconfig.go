@@ -17,13 +17,11 @@ limitations under the License.
 package model
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -71,37 +69,6 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if cloudConfig.ElbSecurityGroup != nil {
 			lines = append(lines, "ElbSecurityGroup = "+*cloudConfig.ElbSecurityGroup)
 		}
-	case "vsphere":
-		VMUUID, err := getVMUUID(b.Cluster.Spec.KubernetesVersion)
-		if err != nil {
-			return err
-		}
-		// Note: Segregate configuration for different sections as below
-		// Global Config for vSphere CloudProvider
-		if cloudConfig.VSphereUsername != nil {
-			lines = append(lines, "user = "+*cloudConfig.VSphereUsername)
-		}
-		if cloudConfig.VSpherePassword != nil {
-			lines = append(lines, "password = "+*cloudConfig.VSpherePassword)
-		}
-		if cloudConfig.VSphereServer != nil {
-			lines = append(lines, "server = "+*cloudConfig.VSphereServer)
-			lines = append(lines, "port = 443")
-			lines = append(lines, fmt.Sprintf("insecure-flag = %t", true))
-		}
-		if cloudConfig.VSphereDatacenter != nil {
-			lines = append(lines, "datacenter = "+*cloudConfig.VSphereDatacenter)
-		}
-		if cloudConfig.VSphereDatastore != nil {
-			lines = append(lines, "datastore = "+*cloudConfig.VSphereDatastore)
-		}
-		if VMUUID != "" {
-			lines = append(lines, "vm-uuid = "+strings.Trim(VMUUID, "\n"))
-		}
-		// Disk Config for vSphere CloudProvider
-		// We need this to support Kubernetes vSphere CloudProvider < v1.5.3
-		lines = append(lines, "[disk]")
-		lines = append(lines, "scsicontrollertype = pvscsi")
 	case "openstack":
 		osc := cloudConfig.Openstack
 		if osc == nil {
@@ -170,21 +137,4 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(t)
 
 	return nil
-}
-
-// We need this for vSphere CloudProvider
-// getVMUUID gets instance uuid of the VM from the file written by cloud-init
-func getVMUUID(kubernetesVersion string) (string, error) {
-	file, err := os.Open(VM_UUID_FILE_PATH)
-	if err != nil {
-		return "", err
-	}
-
-	defer try.CloseFile(file)
-
-	VMUUID, err := bufio.NewReader(file).ReadString('\n')
-	if err != nil {
-		return "", err
-	}
-	return VMUUID, err
 }

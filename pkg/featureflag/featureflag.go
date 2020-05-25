@@ -82,8 +82,6 @@ var (
 	SpotinstController = New("SpotinstController", Bool(true))
 	// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
 	VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
-	// VSphereCloudProvider enables the vsphere cloud provider
-	VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
 	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
 	// TerraformJSON outputs terraform in JSON instead of hcl output. JSON output can be also parsed by terraform 0.12
