@@ -379,8 +379,6 @@ github.com/modern-go/reflect2
 github.com/oklog/ulid
 # github.com/opencontainers/go-digest v1.0.0-rc1
 github.com/opencontainers/go-digest
-# github.com/pborman/uuid v1.2.0
-github.com/pborman/uuid
 # github.com/pelletier/go-toml v1.4.0
 github.com/pelletier/go-toml
 # github.com/peterbourgon/diskv v2.0.1+incompatible
@@ -448,23 +446,6 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/urfave/cli v1.20.0
 github.com/urfave/cli
-# github.com/vmware/govmomi v0.20.3
-github.com/vmware/govmomi
-github.com/vmware/govmomi/find
-github.com/vmware/govmomi/list
-github.com/vmware/govmomi/nfc
-github.com/vmware/govmomi/object
-github.com/vmware/govmomi/property
-github.com/vmware/govmomi/session
-github.com/vmware/govmomi/task
-github.com/vmware/govmomi/vim25
-github.com/vmware/govmomi/vim25/debug
-github.com/vmware/govmomi/vim25/methods
-github.com/vmware/govmomi/vim25/mo
-github.com/vmware/govmomi/vim25/progress
-github.com/vmware/govmomi/vim25/soap
-github.com/vmware/govmomi/vim25/types
-github.com/vmware/govmomi/vim25/xml
 # github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 github.com/weaveworks/mesh
 # github.com/zclconf/go-cty v1.3.1
