@@ -187,6 +187,10 @@ func (p *FSPath) Remove() error {
 	return os.Remove(p.location)
 }
 
+func (p *FSPath) RemoveAll() error {
+	return p.Remove()
+}
+
 func (p *FSPath) PreferredHash() (*hashing.Hash, error) {
 	return p.Hash(hashing.HashAlgorithmSHA256)
 }

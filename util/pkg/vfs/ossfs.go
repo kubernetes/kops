@@ -217,6 +217,10 @@ func (p *OSSPath) Remove() error {
 	}
 }
 
+func (p *OSSPath) RemoveAll() error {
+	return p.Remove()
+}
+
 func (p *OSSPath) Base() string {
 	return path.Base(p.key)
 }
