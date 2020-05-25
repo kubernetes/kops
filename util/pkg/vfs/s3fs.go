@@ -92,6 +92,28 @@ func (p *S3Path) Remove() error {
 
 	klog.V(8).Infof("removing file %s", p)
 
+	request := &s3.DeleteObjectInput{}
+	request.Bucket = aws.String(p.bucket)
+	request.Key = aws.String(p.key)
+
+	_, err = client.DeleteObject(request)
+	if err != nil {
+		// TODO: Check for not-exists, return os.NotExist
+
+		return fmt.Errorf("error deleting %s: %v", p, err)
+	}
+
+	return nil
+}
+
+func (p *S3Path) RemoveAll() error {
+	client, err := p.client()
+	if err != nil {
+		return err
+	}
+
+	klog.V(8).Infof("removing file %s", p)
+
 	request := &s3.ListObjectVersionsInput{
 		Bucket: aws.String(p.bucket),
 		Prefix: aws.String(p.key),
@@ -102,45 +124,47 @@ func (p *S3Path) Remove() error {
 		return fmt.Errorf("error listing versions %s: %v", p, err)
 	}
 
-	if len(response.Versions) == 0 {
-		// TODO: Check why cluster teardown fails when files are not found and replace warning with error
-		// return os.ErrNotExist
-		klog.Warningf("error removing file/marker (not found): %s", p)
+	if len(response.Versions) == 0 && len(response.DeleteMarkers) == 0 {
+		return os.ErrNotExist
 	}
 
-	// Sometimes S3 will return paginated results if there are too many versions for an object.
-	// This is unlikely with current use cases, but a warning should be triggered in case it ever occurs.
+	// Sometimes S3 will return paginated results if there are too many versions and markers for an object.
+	// This happens at about entries 1000, so it is unlikely with current use cases.
 	if aws.BoolValue(response.IsTruncated) {
 		klog.Warningf("too many versions for %s", p)
 	}
 
+	objects := []*s3.ObjectIdentifier{}
 	for _, version := range response.Versions {
 		klog.V(8).Infof("removing file %s version %q", p, aws.StringValue(version.VersionId))
-
-		request := &s3.DeleteObjectInput{
-			Bucket:    aws.String(p.bucket),
+		file := s3.ObjectIdentifier{
 			Key:       version.Key,
 			VersionId: version.VersionId,
 		}
-
-		_, err = client.DeleteObject(request)
-		if err != nil {
-			return fmt.Errorf("error removing file %s version %q: %v", p, aws.StringValue(version.VersionId), err)
-		}
+		objects = append(objects, &file)
 	}
-
 	for _, version := range response.DeleteMarkers {
 		klog.V(8).Infof("removing marker %s version %q", p, aws.StringValue(version.VersionId))
-
-		request := &s3.DeleteObjectInput{
-			Bucket:    aws.String(p.bucket),
+		marker := s3.ObjectIdentifier{
 			Key:       version.Key,
 			VersionId: version.VersionId,
 		}
+		objects = append(objects, &marker)
+	}
 
-		_, err = client.DeleteObject(request)
+	if len(objects) > 0 {
+		klog.V(8).Infof("removing %d file/marker versions\n", len(objects))
+
+		request := &s3.DeleteObjectsInput{
+			Bucket: aws.String(p.bucket),
+			Delete: &s3.Delete{
+				Objects: objects,
+			},
+		}
+
+		_, err = client.DeleteObjects(request)
 		if err != nil {
-			return fmt.Errorf("error removing marker %s version %q: %v", p, aws.StringValue(version.VersionId), err)
+			return fmt.Errorf("error removing %d file/marker versions: %v", len(objects), err)
 		}
 	}
 
