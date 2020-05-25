@@ -71,8 +71,6 @@ For a better viewing experience please check out our live documentation site at 
 * [Moving from a Single Master to Multiple HA Masters](single-to-multi-master.md)
 * [Upgrading Kubernetes](tutorial/upgrading-kubernetes.md)
 * [Working with Instance Groups](tutorial/working-with-instancegroups.md)
-* [Developers guide for vSphere support](vsphere-dev.md)
-* [vSphere support status](vsphere-development-status.md)
 * [Running `kops` in a CI environment](continuous_integration.md)
 
 ## Networking
@@ -110,7 +108,6 @@ For a better viewing experience please check out our live documentation site at 
 ## Development
 
 * [Developing using Docker](development/Docker.md)
-* [Development with vSphere](vsphere-dev.md)
 * [Documentation Guidelines](development/documentation.md)
 * [E2E testing with `kops` clusters](development/testing.md)
 * [Example on how to add a feature](development/adding_a_feature.md)
