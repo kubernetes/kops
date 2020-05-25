@@ -111,6 +111,10 @@ func (p *SSHPath) Remove() error {
 	return nil
 }
 
+func (p *SSHPath) RemoveAll() error {
+	return p.Remove()
+}
+
 func (p *SSHPath) Join(relativePath ...string) Path {
 	args := []string{p.path}
 	args = append(args, relativePath...)

@@ -291,6 +291,10 @@ func (p *SwiftPath) Remove() error {
 	}
 }
 
+func (p *SwiftPath) RemoveAll() error {
+	return p.Remove()
+}
+
 func (p *SwiftPath) Join(relativePath ...string) Path {
 	args := []string{p.key}
 	args = append(args, relativePath...)
