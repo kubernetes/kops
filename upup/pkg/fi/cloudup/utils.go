@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
 func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
@@ -95,14 +94,6 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				return nil, err
 			}
 			cloud = awsCloud
-		}
-	case kops.CloudProviderVSphere:
-		{
-			vsphereCloud, err := vsphere.NewVSphereCloud(&cluster.Spec)
-			if err != nil {
-				return nil, err
-			}
-			cloud = vsphereCloud
 		}
 	case kops.CloudProviderDO:
 		{

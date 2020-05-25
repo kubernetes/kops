@@ -340,9 +340,6 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 			argv = append(argv, "--dns=google-clouddns")
 		case kops.CloudProviderDO:
 			argv = append(argv, "--dns=digitalocean")
-		case kops.CloudProviderVSphere:
-			argv = append(argv, "--dns=coredns")
-			argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 
 		default:
 			return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)

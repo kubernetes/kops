@@ -64,13 +64,6 @@ func (t *TerraformTarget) finish011(taskMap map[string]fi.Task) error {
 			providerAWS[k] = v
 		}
 		providersByName["aws"] = providerAWS
-	} else if t.Cloud.ProviderID() == kops.CloudProviderVSphere {
-		providerVSphere := make(map[string]interface{})
-		providerVSphere["region"] = t.Region
-		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
-			providerVSphere[k] = v
-		}
-		providersByName["vsphere"] = providerVSphere
 	}
 
 	outputVariables := make(map[string]interface{})
