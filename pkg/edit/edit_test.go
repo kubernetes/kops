@@ -21,19 +21,18 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc/v2"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 var testTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
-var testObj = v1alpha2.Cluster{
+var testObj = kops.Cluster{
 	ObjectMeta: metav1.ObjectMeta{
 		CreationTimestamp: testTimestamp,
 		Name:              "hello",
 	},
-	Spec: v1alpha2.ClusterSpec{
+	Spec: kops.ClusterSpec{
 		KubernetesVersion: "1.2.3",
 	},
 }

@@ -25,7 +25,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 )
 
@@ -38,12 +38,12 @@ func TestToVersionedYaml(t *testing.T) {
 		expected string
 	}{
 		{
-			obj: &v1alpha2.Cluster{
+			obj: &kops.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					CreationTimestamp: testTimestamp,
 					Name:              "hello",
 				},
-				Spec: v1alpha2.ClusterSpec{
+				Spec: kops.ClusterSpec{
 					KubernetesVersion: "1.2.3",
 				},
 			},
@@ -82,12 +82,12 @@ func TestToVersionedJSON(t *testing.T) {
 		expected string
 	}{
 		{
-			obj: &v1alpha2.Cluster{
+			obj: &kops.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					CreationTimestamp: testTimestamp,
 					Name:              "hello",
 				},
-				Spec: v1alpha2.ClusterSpec{
+				Spec: kops.ClusterSpec{
 					KubernetesVersion: "1.2.3",
 				},
 			},
