@@ -21,6 +21,7 @@ import (
 
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -42,7 +43,7 @@ func (b *ConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		Contents:  fi.NewStringResource(kopsbase.Version),
 	})
 
-	versionedYaml, err := kopscodecs.ToVersionedYaml(b.Cluster)
+	versionedYaml, err := kopscodecs.ToVersionedYamlWithVersion(b.Cluster, v1alpha2.SchemeGroupVersion)
 	if err != nil {
 		return fmt.Errorf("serializing completed cluster spec: %w", err)
 	}
