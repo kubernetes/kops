@@ -21,6 +21,7 @@ go_library(
         "//pkg/apis/kops/model:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
+        "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/model/components:go_default_library",
