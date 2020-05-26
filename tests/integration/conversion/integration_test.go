@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/kops/v1alpha3"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/text"
@@ -33,71 +34,77 @@ import (
 // TestConversionMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestConversionMinimal(t *testing.T) {
 	runTest(t, "minimal", "legacy-v1alpha2", "v1alpha2")
+	runTest(t, "minimal", "v1alpha2", "v1alpha3")
+	runTest(t, "minimal", "v1alpha3", "v1alpha2")
 }
 
 func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) {
-	sourcePath := path.Join(srcDir, fromVersion+".yaml")
-	sourceBytes, err := ioutil.ReadFile(sourcePath)
-	if err != nil {
-		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
-	}
-
-	expectedPath := path.Join(srcDir, toVersion+".yaml")
-	expectedBytes, err := ioutil.ReadFile(expectedPath)
-	if err != nil {
-		t.Fatalf("unexpected error reading expectedPath %q: %v", expectedPath, err)
-	}
-
-	yaml, ok := runtime.SerializerInfoForMediaType(kopscodecs.Codecs.SupportedMediaTypes(), "application/yaml")
-	if !ok {
-		t.Fatalf("no YAML serializer registered")
-	}
-	var encoder runtime.Encoder
-
-	switch toVersion {
-	case "v1alpha2":
-		encoder = kopscodecs.Codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
-
-	default:
-		t.Fatalf("unknown version %q", toVersion)
-	}
-
-	var actual []string
-
-	sections := text.SplitContentToSections(sourceBytes)
-	for _, s := range sections {
-		o, gvk, err := kopscodecs.Decode([]byte(s), nil)
+	t.Run(fromVersion+"-"+toVersion, func(t *testing.T) {
+		sourcePath := path.Join(srcDir, fromVersion+".yaml")
+		sourceBytes, err := ioutil.ReadFile(sourcePath)
 		if err != nil {
-			t.Fatalf("error parsing file %q: %v", sourcePath, err)
+			t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
 		}
 
-		expectVersion := strings.TrimPrefix(fromVersion, "legacy-")
-		if expectVersion == "v1alpha0" {
-			// Our version before we had v1alpha1
-			expectVersion = "v1alpha1"
-		}
-		if gvk.Version != expectVersion {
-			t.Fatalf("unexpected version: %q vs %q", gvk.Version, expectVersion)
+		expectedPath := path.Join(srcDir, toVersion+".yaml")
+		expectedBytes, err := ioutil.ReadFile(expectedPath)
+		if err != nil {
+			t.Fatalf("unexpected error reading expectedPath %q: %v", expectedPath, err)
 		}
 
-		var b bytes.Buffer
-		if err := encoder.Encode(o, &b); err != nil {
-			t.Fatalf("error encoding object: %v", err)
+		yaml, ok := runtime.SerializerInfoForMediaType(kopscodecs.Codecs.SupportedMediaTypes(), "application/yaml")
+		if !ok {
+			t.Fatalf("no YAML serializer registered")
+		}
+		var encoder runtime.Encoder
+
+		switch toVersion {
+		case "v1alpha2":
+			encoder = kopscodecs.Codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
+		case "v1alpha3":
+			encoder = kopscodecs.Codecs.EncoderForVersion(yaml.Serializer, v1alpha3.SchemeGroupVersion)
+
+		default:
+			t.Fatalf("unknown version %q", toVersion)
 		}
 
-		actual = append(actual, b.String())
-	}
+		var actual []string
 
-	actualString := strings.TrimSpace(strings.Join(actual, "\n---\n\n"))
-	expectedString := strings.TrimSpace(string(expectedBytes))
+		sections := text.SplitContentToSections(sourceBytes)
+		for _, s := range sections {
+			o, gvk, err := kopscodecs.Decode([]byte(s), nil)
+			if err != nil {
+				t.Fatalf("error parsing file %q: %v", sourcePath, err)
+			}
 
-	actualString = strings.Replace(actualString, "\r", "", -1)
-	expectedString = strings.Replace(expectedString, "\r", "", -1)
+			expectVersion := strings.TrimPrefix(fromVersion, "legacy-")
+			if expectVersion == "v1alpha0" {
+				// Our version before we had v1alpha1
+				expectVersion = "v1alpha1"
+			}
+			if gvk.Version != expectVersion {
+				t.Fatalf("unexpected version: %q vs %q", gvk.Version, expectVersion)
+			}
 
-	if actualString != expectedString {
-		diffString := diff.FormatDiff(expectedString, actualString)
-		t.Logf("diff:\n%s\n", diffString)
+			var b bytes.Buffer
+			if err := encoder.Encode(o, &b); err != nil {
+				t.Fatalf("error encoding object: %v", err)
+			}
 
-		t.Fatalf("%s->%s converted output differed from expected", fromVersion, toVersion)
-	}
+			actual = append(actual, b.String())
+		}
+
+		actualString := strings.TrimSpace(strings.Join(actual, "\n---\n\n"))
+		expectedString := strings.TrimSpace(string(expectedBytes))
+
+		actualString = strings.Replace(actualString, "\r", "", -1)
+		expectedString = strings.Replace(expectedString, "\r", "", -1)
+
+		if actualString != expectedString {
+			diffString := diff.FormatDiff(expectedString, actualString)
+			t.Logf("diff:\n%s\n", diffString)
+
+			t.Fatalf("%s->%s converted output differed from expected", fromVersion, toVersion)
+		}
+	})
 }
