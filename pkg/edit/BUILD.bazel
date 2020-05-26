@@ -18,7 +18,7 @@ go_test(
     srcs = ["edit_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//pkg/apis/kops/v1alpha2:go_default_library",
+        "//pkg/apis/kops:go_default_library",
         "//vendor/github.com/MakeNowJust/heredoc/v2:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
