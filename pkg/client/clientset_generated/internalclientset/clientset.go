@@ -26,12 +26,14 @@ import (
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/internalversion"
 	kopsv1alpha2 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2"
+	kopsv1beta1 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1beta1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	Kops() kopsinternalversion.KopsInterface
 	KopsV1alpha2() kopsv1alpha2.KopsV1alpha2Interface
+	KopsV1beta1() kopsv1beta1.KopsV1beta1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -40,6 +42,7 @@ type Clientset struct {
 	*discovery.DiscoveryClient
 	kops         *kopsinternalversion.KopsClient
 	kopsV1alpha2 *kopsv1alpha2.KopsV1alpha2Client
+	kopsV1beta1  *kopsv1beta1.KopsV1beta1Client
 }
 
 // Kops retrieves the KopsClient
@@ -50,6 +53,11 @@ func (c *Clientset) Kops() kopsinternalversion.KopsInterface {
 // KopsV1alpha2 retrieves the KopsV1alpha2Client
 func (c *Clientset) KopsV1alpha2() kopsv1alpha2.KopsV1alpha2Interface {
 	return c.kopsV1alpha2
+}
+
+// KopsV1beta1 retrieves the KopsV1beta1Client
+func (c *Clientset) KopsV1beta1() kopsv1beta1.KopsV1beta1Interface {
+	return c.kopsV1beta1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -81,6 +89,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.kopsV1beta1, err = kopsv1beta1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
@@ -95,6 +107,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.kops = kopsinternalversion.NewForConfigOrDie(c)
 	cs.kopsV1alpha2 = kopsv1alpha2.NewForConfigOrDie(c)
+	cs.kopsV1beta1 = kopsv1beta1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -105,6 +118,7 @@ func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.kops = kopsinternalversion.New(c)
 	cs.kopsV1alpha2 = kopsv1alpha2.New(c)
+	cs.kopsV1beta1 = kopsv1beta1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs
