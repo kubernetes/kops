@@ -25,7 +25,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 )
 
@@ -38,17 +38,17 @@ func TestToVersionedYaml(t *testing.T) {
 		expected string
 	}{
 		{
-			obj: &v1alpha2.Cluster{
+			obj: &kops.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					CreationTimestamp: testTimestamp,
 					Name:              "hello",
 				},
-				Spec: v1alpha2.ClusterSpec{
+				Spec: kops.ClusterSpec{
 					KubernetesVersion: "1.2.3",
 				},
 			},
 			expected: heredoc.Doc(`
-			apiVersion: kops.k8s.io/v1alpha2
+			apiVersion: kops.k8s.io/v1beta1
 			kind: Cluster
 			metadata:
 			  creationTimestamp: "2017-01-01T00:00:00Z"
@@ -82,16 +82,16 @@ func TestToVersionedJSON(t *testing.T) {
 		expected string
 	}{
 		{
-			obj: &v1alpha2.Cluster{
+			obj: &kops.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					CreationTimestamp: testTimestamp,
 					Name:              "hello",
 				},
-				Spec: v1alpha2.ClusterSpec{
+				Spec: kops.ClusterSpec{
 					KubernetesVersion: "1.2.3",
 				},
 			},
-			expected: "{\"kind\":\"Cluster\",\"apiVersion\":\"kops.k8s.io/v1alpha2\",\"metadata\":{\"name\":\"hello\",\"creationTimestamp\":\"2017-01-01T00:00:00Z\"},\"spec\":{\"kubernetesVersion\":\"1.2.3\"}}",
+			expected: "{\"kind\":\"Cluster\",\"apiVersion\":\"kops.k8s.io/v1beta1\",\"metadata\":{\"name\":\"hello\",\"creationTimestamp\":\"2017-01-01T00:00:00Z\"},\"spec\":{\"kubernetesVersion\":\"1.2.3\"}}",
 		},
 	}
 	for _, g := range grid {

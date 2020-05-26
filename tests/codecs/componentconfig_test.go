@@ -19,22 +19,22 @@ package codecs
 import (
 	"testing"
 
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/kops/v1beta1"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 )
 
 func TestSerializeEmptyCluster(t *testing.T) {
-	cluster := &v1alpha2.Cluster{}
-	cluster.Spec.Kubelet = &v1alpha2.KubeletConfigSpec{}
-	cluster.Spec.KubeControllerManager = &v1alpha2.KubeControllerManagerConfig{}
-	yaml, err := kopscodecs.ToVersionedYamlWithVersion(cluster, v1alpha2.SchemeGroupVersion)
+	cluster := &v1beta1.Cluster{}
+	cluster.Spec.Kubelet = &v1beta1.KubeletConfigSpec{}
+	cluster.Spec.KubeControllerManager = &v1beta1.KubeControllerManagerConfig{}
+	yaml, err := kopscodecs.ToVersionedYamlWithVersion(cluster, v1beta1.SchemeGroupVersion)
 	if err != nil {
 		t.Errorf("unexpected error marshaling Cluster: %v", err)
 	}
 
 	yamlString := string(yaml)
-	expected := `apiVersion: kops.k8s.io/v1alpha2
+	expected := `apiVersion: kops.k8s.io/v1beta1
 kind: Cluster
 metadata:
   creationTimestamp: null
