@@ -23,11 +23,14 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
+	"golang.org/x/net/ipv4"
+	"golang.org/x/net/ipv6"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"k8s.io/apimachinery/pkg/api/validation"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/components"
@@ -601,17 +604,17 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 	}
 
 	if v.IPv4AutoDetectionMethod != "" {
-		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), &v.IPv4AutoDetectionMethod)...)
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), &v.IPv4AutoDetectionMethod, ipv4.Version)...)
 	}
 
 	if v.IPv6AutoDetectionMethod != "" {
-		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv6AutoDetectionMethod"), &v.IPv6AutoDetectionMethod)...)
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv6AutoDetectionMethod"), &v.IPv6AutoDetectionMethod, ipv6.Version)...)
 	}
 
 	return allErrs
 }
 
-func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string) field.ErrorList {
+func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string, version int) field.ErrorList {
 	methodFirstFound := "first-found"
 	methodCanReach := "can-reach="
 	methodInterface := "interface="
@@ -629,18 +632,25 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string) fie
 
 	} else if strings.HasPrefix(*runtime, methodCanReach) {
 		destStr := strings.TrimPrefix(*runtime, methodCanReach)
-		regex := regexp.MustCompile("\\s*").MatchString(destStr)
-		if !regex {
-			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'can-reach=<DEST>'"))
+		if version == ipv4.Version {
+			return utilvalidation.IsValidIPv4Address(fldPath, destStr)
+		} else if version == ipv6.Version {
+			return utilvalidation.IsValidIPv6Address(fldPath, destStr)
 		}
-		return validationError
+
+		return field.ErrorList{field.Invalid(fldPath, runtime, "Invalid; IP version in incorrect")}
 
 	} else if strings.HasPrefix(*runtime, methodInterface) {
 		ifStr := strings.TrimPrefix(*runtime, methodInterface)
 		ifRegexes := regexp.MustCompile("\\s*,\\s*").Split(ifStr, -1)
-		fmt.Printf("%+v %d\n", ifRegexes, len(ifRegexes))
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
 			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'interface=<COMMA-SEPARATED-LIST>'"))
+		}
+		for _, r := range ifRegexes {
+			_, e := regexp.Compile(r)
+			if e != nil {
+				validationError = append(validationError, field.Invalid(fldPath, runtime, "Invalid regexp: "+e.Error()))
+			}
 		}
 		return validationError
 
@@ -650,6 +660,13 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string) fie
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
 			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'skip-interface=<COMMA-SEPARATED-LIST>'"))
 		}
+		for _, r := range ifRegexes {
+			_, e := regexp.Compile(r)
+			if e != nil {
+				validationError = append(validationError, field.Invalid(fldPath, runtime, "Invalid regexp: "+e.Error()))
+			}
+		}
+
 		return validationError
 	}
 	return field.ErrorList{field.Invalid(fldPath, runtime, "Invalid autodetection method")}
