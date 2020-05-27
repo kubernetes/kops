@@ -106,6 +106,71 @@ func (p *S3Path) Remove() error {
 	return nil
 }
 
+func (p *S3Path) RemoveAll() error {
+	client, err := p.client()
+	if err != nil {
+		return err
+	}
+
+	klog.V(8).Infof("removing file %s", p)
+
+	request := &s3.ListObjectVersionsInput{
+		Bucket: aws.String(p.bucket),
+		Prefix: aws.String(p.key),
+	}
+
+	response, err := client.ListObjectVersions(request)
+	if err != nil {
+		return fmt.Errorf("error listing versions %s: %v", p, err)
+	}
+
+	if len(response.Versions) == 0 && len(response.DeleteMarkers) == 0 {
+		return os.ErrNotExist
+	}
+
+	// Sometimes S3 will return paginated results if there are too many versions and markers for an object.
+	// This happens at about entries 1000, so it is unlikely with current use cases.
+	if aws.BoolValue(response.IsTruncated) {
+		klog.Warningf("too many versions for %s", p)
+	}
+
+	objects := []*s3.ObjectIdentifier{}
+	for _, version := range response.Versions {
+		klog.V(8).Infof("removing file %s version %q", p, aws.StringValue(version.VersionId))
+		file := s3.ObjectIdentifier{
+			Key:       version.Key,
+			VersionId: version.VersionId,
+		}
+		objects = append(objects, &file)
+	}
+	for _, version := range response.DeleteMarkers {
+		klog.V(8).Infof("removing marker %s version %q", p, aws.StringValue(version.VersionId))
+		marker := s3.ObjectIdentifier{
+			Key:       version.Key,
+			VersionId: version.VersionId,
+		}
+		objects = append(objects, &marker)
+	}
+
+	if len(objects) > 0 {
+		klog.V(8).Infof("removing %d file/marker versions\n", len(objects))
+
+		request := &s3.DeleteObjectsInput{
+			Bucket: aws.String(p.bucket),
+			Delete: &s3.Delete{
+				Objects: objects,
+			},
+		}
+
+		_, err = client.DeleteObjects(request)
+		if err != nil {
+			return fmt.Errorf("error removing %d file/marker versions: %v", len(objects), err)
+		}
+	}
+
+	return nil
+}
+
 func (p *S3Path) Join(relativePath ...string) Path {
 	args := []string{p.key}
 	args = append(args, relativePath...)
