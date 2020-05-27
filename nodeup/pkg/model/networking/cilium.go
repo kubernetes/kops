@@ -94,9 +94,9 @@ Type=bpf
 WantedBy=multi-user.target
 `
 
-		service, err := nodetasks.NewService("sys-fs-bpf.mount", unit, "")
-		if err != nil {
-			return err
+		service := &nodetasks.Service{
+			Name:       "sys-fs-bpf.mount",
+			Definition: fi.String(unit),
 		}
 		c.AddTask(service)
 	}
