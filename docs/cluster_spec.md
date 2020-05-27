@@ -148,6 +148,24 @@ etcdClusters:
       value: basic
 ```
 
+### etcd backups retention
+
+You can set the retention duration for the hourly and yearly backups by defining env vars:
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master-us-east-1a
+    name: a
+  name: main
+  manager:
+    env:
+    - name: ETCD_MANAGER_HOURLY_BACKUPS_RETENTION
+      value: 7d
+    - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+      value: 1y
+```
+
 ## sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
