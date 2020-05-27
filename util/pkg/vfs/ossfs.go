@@ -217,7 +217,7 @@ func (p *OSSPath) Remove() error {
 	}
 }
 
-func (p *OSSPath) RemoveAll() error {
+func (p *OSSPath) RemoveAllVersions() error {
 	return p.Remove()
 }
 
