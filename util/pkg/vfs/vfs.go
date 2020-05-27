@@ -59,8 +59,8 @@ type Path interface {
 	// Remove deletes the file
 	Remove() error
 
-	// RemoveAll completely deletes the file (with all its versions and markers)
-	RemoveAll() error
+	// RemoveAllVersions completely deletes the file (with all its versions and markers).
+	RemoveAllVersions() error
 
 	// Base returns the base name (last element)
 	Base() string
