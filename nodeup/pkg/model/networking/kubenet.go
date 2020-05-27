@@ -31,10 +31,7 @@ var _ fi.ModelBuilder = &KubenetBuilder{}
 
 // Build is responsible for configuring the kube-router
 func (b *KubenetBuilder) Build(c *fi.ModelBuilderContext) error {
-	usesKubenet, err := components.UsesKubenet(&b.Cluster.Spec)
-	if err != nil {
-		return err
-	}
+	usesKubenet := components.UsesKubenet(b.Cluster.Spec.Networking)
 	if !usesKubenet {
 		return nil
 	}

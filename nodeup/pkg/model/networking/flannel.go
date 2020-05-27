@@ -63,10 +63,9 @@ func (b *FlannelBuilder) buildFlannelTxChecksumOffloadDisableService(c *fi.Model
 	manifestString := manifest.Render()
 	klog.V(8).Infof("Built service manifest %q\n%s", serviceName, manifestString)
 
-	service, err := nodetasks.NewService(serviceName, manifestString, "")
-
-	if err != nil {
-		return err
+	service := &nodetasks.Service{
+		Name:       serviceName,
+		Definition: fi.String(manifestString),
 	}
 
 	c.AddTask(service)
