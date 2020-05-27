@@ -34,7 +34,7 @@ In the following examples, `example.com` should be replaced with the DigitalOcea
 Note that you kops will only be able to successfully provision clusters in regions that support block storage (AMS3, BLR1, FRA1, LON1, NYC1, NYC3, SFO2, SGP1 and TOR1).
 
 ```bash
-# coreos (the default) + flannel overlay cluster in tor1
+# debian (the default) + flannel overlay cluster in tor1
 kops create cluster --cloud=digitalocean --name=my-cluster.example.com --networking=flannel --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub
 kops update cluster my-cluster.example.com --yes
 
@@ -56,7 +56,7 @@ In the below example, `dev5.k8s.local` should be replaced with any cluster name 
 Ensure the master-count is odd-numbered. A load balancer is created dynamically front-facing the master instances.
 
 ```bash
-# coreos (the default) + flannel overlay cluster in tor1 with 3 master setup and a public load balancer.
+# debian (the default) + flannel overlay cluster in tor1 with 3 master setup and a public load balancer.
 kops create cluster --cloud=digitalocean --name=dev5.k8s.local --networking=cilium --api-loadbalancer-type=public --master-count=3 --zones=tor1 --ssh-public-key=~/.ssh/id_rsa.pub --yes
 
 # to delete a cluster - this will also delete the load balancer associated with the cluster.
