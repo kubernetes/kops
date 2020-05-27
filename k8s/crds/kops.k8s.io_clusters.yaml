@@ -2655,6 +2655,22 @@ spec:
                           binary Felix uses Default: Auto (other options: Legacy,
                           NFT)'
                         type: string
+                      ipv4AutoDetectionMethod:
+                        description: 'IPv4AutoDetectionMethod configures how Calico
+                          chooses the IP address used to route between nodes.  This
+                          should be set when the host has multiple interfaces and
+                          it is important to select the interface used. Options: "first-found"
+                          (default), "can-reach=DESTINATION", "interface=INTERFACE-REGEX",
+                          or "skip-interface=INTERFACE-REGEX"'
+                        type: string
+                      ipv6AutoDetectionMethod:
+                        description: 'IPv6AutoDetectionMethod configures how Calico
+                          chooses the IP address used to route between nodes.  This
+                          should be set when the host has multiple interfaces and
+                          it is important to select the interface used. Options: "first-found"
+                          (default), "can-reach=DESTINATION", "interface=INTERFACE-REGEX",
+                          or "skip-interface=INTERFACE-REGEX"'
+                        type: string
                       logSeverityScreen:
                         description: 'LogSeverityScreen lets us set the desired log
                           level. (Default: info)'

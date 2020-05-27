@@ -1292,6 +1292,8 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.MajorVersion = in.MajorVersion
 	out.IptablesBackend = in.IptablesBackend
 	out.IPIPMode = in.IPIPMode
+	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
+	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas
@@ -1313,6 +1315,8 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	out.MajorVersion = in.MajorVersion
+	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
+	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
 	out.IptablesBackend = in.IptablesBackend
 	out.IPIPMode = in.IPIPMode
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
