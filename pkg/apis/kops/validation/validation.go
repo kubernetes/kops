@@ -642,7 +642,7 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string, ver
 
 	} else if strings.HasPrefix(*runtime, methodInterface) {
 		ifStr := strings.TrimPrefix(*runtime, methodInterface)
-		ifRegexes := regexp.MustCompile("\\s*,\\s*").Split(ifStr, -1)
+		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(ifStr, -1)
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
 			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'interface=<COMMA-SEPARATED-LIST>'"))
 		}
@@ -656,7 +656,7 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string, ver
 
 	} else if strings.HasPrefix(*runtime, methodSkipInterface) {
 		ifStr := strings.TrimPrefix(*runtime, methodSkipInterface)
-		ifRegexes := regexp.MustCompile("\\s*,\\s*").Split(ifStr, -1)
+		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(ifStr, -1)
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
 			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'skip-interface=<COMMA-SEPARATED-LIST>'"))
 		}
