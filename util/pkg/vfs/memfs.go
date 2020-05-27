@@ -121,15 +121,6 @@ func (p *MemFSPath) ReadFile() ([]byte, error) {
 	return p.contents, nil
 }
 
-// WriteTo implements io.WriterTo
-func (p *MemFSPath) WriteTo(out io.Writer) (int64, error) {
-	if p.contents == nil {
-		return 0, os.ErrNotExist
-	}
-	n, err := out.Write(p.contents)
-	return int64(n), err
-}
-
 func (p *MemFSPath) ReadDir() ([]Path, error) {
 	var paths []Path
 	for _, f := range p.children {

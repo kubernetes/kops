@@ -43,8 +43,6 @@ type ACLOracle func(Path) (ACL, error)
 
 // Path is a path in the VFS space, which we can read, write, list etc
 type Path interface {
-	io.WriterTo
-
 	Join(relativePath ...string) Path
 
 	// ReadFile returns the contents of the file, or an error if the file could not be read.

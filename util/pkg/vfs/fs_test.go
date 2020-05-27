@@ -60,39 +60,3 @@ func TestCreateFile(t *testing.T) {
 		}
 	}
 }
-
-func TestWriteTo(t *testing.T) {
-	var TempDir, _ = ioutil.TempDir("", "test")
-	defer os.Remove(TempDir)
-	tests := []struct {
-		path string
-		data []byte
-	}{
-		{
-			path: path.Join(TempDir, "SubDir", "test1.tmp"),
-			data: []byte("test data\nline 1\r\nline 2"),
-		},
-	}
-	for _, test := range tests {
-		var buf bytes.Buffer
-
-		fspath := NewFSPath(test.path)
-		// Create file
-		err := fspath.CreateFile(bytes.NewReader(test.data), nil)
-		if err != nil {
-			t.Fatalf("Error writing file %s, error: %v", test.path, err)
-		}
-
-		// Write file to buf
-		_, err = fspath.WriteTo(&buf)
-		if err != nil {
-			t.Fatalf("Error reading %s to buf, error: %v", test.path, err)
-		}
-
-		// Check buf content
-		actually_bytes := buf.Bytes()
-		if !bytes.Equal(test.data, actually_bytes) {
-			t.Errorf("Expected %v, actually %v", test.data, actually_bytes)
-		}
-	}
-}

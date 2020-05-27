@@ -396,7 +396,7 @@ func (p *SwiftPath) ReadFile() ([]byte, error) {
 	var b bytes.Buffer
 	done, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
 		b.Reset()
-		_, err := p.WriteTo(&b)
+		_, err := p.writeTo(&b)
 		if err != nil {
 			if os.IsNotExist(err) {
 				// Not recoverable
@@ -417,8 +417,7 @@ func (p *SwiftPath) ReadFile() ([]byte, error) {
 	}
 }
 
-// WriteTo implements io.WriterTo
-func (p *SwiftPath) WriteTo(out io.Writer) (int64, error) {
+func (p *SwiftPath) writeTo(out io.Writer) (int64, error) {
 	klog.V(4).Infof("Reading file %q", p)
 
 	opt := swiftobject.DownloadOpts{}

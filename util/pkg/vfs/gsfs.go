@@ -219,7 +219,7 @@ func (p *GSPath) ReadFile() ([]byte, error) {
 	var b bytes.Buffer
 	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
 		b.Reset()
-		_, err := p.WriteTo(&b)
+		_, err := p.writeTo(&b)
 		if err != nil {
 			if os.IsNotExist(err) {
 				// Not recoverable
@@ -240,8 +240,7 @@ func (p *GSPath) ReadFile() ([]byte, error) {
 	}
 }
 
-// WriteTo implements io.WriterTo::WriteTo
-func (p *GSPath) WriteTo(out io.Writer) (int64, error) {
+func (p *GSPath) writeTo(out io.Writer) (int64, error) {
 	klog.V(4).Infof("Reading file %q", p)
 
 	response, err := p.client.Objects.Get(p.bucket, p.key).Download()

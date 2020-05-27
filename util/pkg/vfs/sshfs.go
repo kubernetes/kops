@@ -250,15 +250,14 @@ func (p *SSHPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 // ReadFile implements Path::ReadFile
 func (p *SSHPath) ReadFile() ([]byte, error) {
 	var b bytes.Buffer
-	_, err := p.WriteTo(&b)
+	_, err := p.writeTo(&b)
 	if err != nil {
 		return nil, err
 	}
 	return b.Bytes(), nil
 }
 
-// WriteTo implements io.WriterTo
-func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
+func (p *SSHPath) writeTo(out io.Writer) (int64, error) {
 	sftpClient, err := p.newClient()
 	if err != nil {
 		return 0, err

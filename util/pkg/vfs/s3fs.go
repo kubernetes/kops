@@ -267,15 +267,14 @@ func (p *S3Path) CreateFile(data io.ReadSeeker, acl ACL) error {
 // ReadFile implements Path::ReadFile
 func (p *S3Path) ReadFile() ([]byte, error) {
 	var b bytes.Buffer
-	_, err := p.WriteTo(&b)
+	_, err := p.writeTo(&b)
 	if err != nil {
 		return nil, err
 	}
 	return b.Bytes(), nil
 }
 
-// WriteTo implements io.WriterTo
-func (p *S3Path) WriteTo(out io.Writer) (int64, error) {
+func (p *S3Path) writeTo(out io.Writer) (int64, error) {
 	client, err := p.client()
 	if err != nil {
 		return 0, err

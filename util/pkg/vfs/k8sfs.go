@@ -17,7 +17,6 @@ limitations under the License.
 package vfs
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"path"
@@ -93,17 +92,7 @@ func (p *KubernetesPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 
 // ReadFile implements Path::ReadFile
 func (p *KubernetesPath) ReadFile() ([]byte, error) {
-	var b bytes.Buffer
-	_, err := p.WriteTo(&b)
-	if err != nil {
-		return nil, err
-	}
-	return b.Bytes(), nil
-}
-
-// WriteTo implements io.WriterTo
-func (p *KubernetesPath) WriteTo(out io.Writer) (int64, error) {
-	return 0, fmt.Errorf("KubernetesPath::WriteTo not supported")
+	return nil, fmt.Errorf("KubernetesPath::ReadFile not supported")
 }
 
 func (p *KubernetesPath) ReadDir() ([]Path, error) {

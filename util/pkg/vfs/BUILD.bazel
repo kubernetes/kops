@@ -22,7 +22,6 @@ go_library(
     importpath = "k8s.io/kops/util/pkg/vfs",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/try:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",

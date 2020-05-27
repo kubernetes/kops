@@ -25,7 +25,6 @@ import (
 	"sync"
 
 	"k8s.io/klog"
-	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -113,17 +112,6 @@ func (p *FSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 // ReadFile implements Path::ReadFile
 func (p *FSPath) ReadFile() ([]byte, error) {
 	return ioutil.ReadFile(p.location)
-}
-
-// WriteTo implements io.WriterTo
-func (p *FSPath) WriteTo(out io.Writer) (int64, error) {
-	f, err := os.Open(p.location)
-	if err != nil {
-		return 0, err
-	}
-	defer try.CloseFile(f)
-
-	return io.Copy(out, f)
 }
 
 func (p *FSPath) ReadDir() ([]Path, error) {
