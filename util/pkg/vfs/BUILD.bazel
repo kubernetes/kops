@@ -17,7 +17,6 @@ go_library(
         "sshfs.go",
         "swiftfs.go",
         "vfs.go",
-        "vfssync.go",
         "writeoption.go",
     ],
     importpath = "k8s.io/kops/util/pkg/vfs",
