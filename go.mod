@@ -100,6 +100,7 @@ require (
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 	golang.org/x/tools v0.0.0-20191203134012-c197fd4bf371
