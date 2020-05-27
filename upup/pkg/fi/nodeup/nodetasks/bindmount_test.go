@@ -117,16 +117,6 @@ func TestBindMountDependencies(t *testing.T) {
 		child  fi.Task
 	}{
 		{
-			parent: &MountDiskTask{
-				Mountpoint: "/",
-			},
-			child: &BindMount{
-				Source:     containerizedMounterHome,
-				Mountpoint: containerizedMounterHome,
-				Options:    []string{"exec"},
-			},
-		},
-		{
 			parent: &File{
 				Path: containerizedMounterHome,
 				Type: FileType_Directory,
