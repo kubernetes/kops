@@ -19,6 +19,7 @@ package validation
 import (
 	"fmt"
 	"net"
+	"regexp"
 	"strings"
 
 	"github.com/blang/semver"
@@ -599,7 +600,59 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
 	}
 
+	if v.IPv4AutoDetectionMethod != "" {
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), &v.IPv4AutoDetectionMethod)...)
+	}
+
+	if v.IPv6AutoDetectionMethod != "" {
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv6AutoDetectionMethod"), &v.IPv6AutoDetectionMethod)...)
+	}
+
 	return allErrs
+}
+
+func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string) field.ErrorList {
+	methodFirstFound := "first-found"
+	methodCanReach := "can-reach="
+	methodInterface := "interface="
+	methodSkipInterface := "skip-interface="
+	validationError := field.ErrorList{}
+
+	// validation code is based on the checks in calico/node startup code
+	// valid formats are "first-found", "can-reach=DEST", or
+	// "(skip-)interface=<COMMA-SEPARATED LIST OF INTERFACES>"
+	//
+	// We won't do deep validation of the values in this check, since they can
+	// be actual interface names or regexes
+	if *runtime == methodFirstFound {
+		return field.ErrorList{}
+
+	} else if strings.HasPrefix(*runtime, methodCanReach) {
+		destStr := strings.TrimPrefix(*runtime, methodCanReach)
+		regex := regexp.MustCompile("\\s*").MatchString(destStr)
+		if !regex {
+			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'can-reach=<DEST>'"))
+		}
+		return validationError
+
+	} else if strings.HasPrefix(*runtime, methodInterface) {
+		ifStr := strings.TrimPrefix(*runtime, methodInterface)
+		ifRegexes := regexp.MustCompile("\\s*,\\s*").Split(ifStr, -1)
+		fmt.Printf("%+v %d\n", ifRegexes, len(ifRegexes))
+		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
+			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'interface=<COMMA-SEPARATED-LIST>'"))
+		}
+		return validationError
+
+	} else if strings.HasPrefix(*runtime, methodSkipInterface) {
+		ifStr := strings.TrimPrefix(*runtime, methodSkipInterface)
+		ifRegexes := regexp.MustCompile("\\s*,\\s*").Split(ifStr, -1)
+		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
+			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'skip-interface=<COMMA-SEPARATED-LIST>'"))
+		}
+		return validationError
+	}
+	return field.ErrorList{field.Invalid(fldPath, runtime, "Invalid autodetection method")}
 }
 
 func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {

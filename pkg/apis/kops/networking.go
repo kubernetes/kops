@@ -118,18 +118,18 @@ type CalicoNetworkingSpec struct {
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
 	// MajorVersion is the version of Calico to use
 	MajorVersion string `json:"majorVersion,omitempty"`
-	// IPAutoDetectionMethod configures how Calico chooses the IP address used to route
+	// IPv4AutoDetectionMethod configures how Calico chooses the IP address used to route
 	// between nodes.  This should be set when the host has multiple interfaces
 	// and it is important to select the interface used.
 	// Options: "first-found" (default), "can-reach=DESTINATION",
 	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
-	IPAutoDetectionMethod string `json:"ipAutoDetectionMethod,omitempty"`
-	// IP6AutoDetectionMethod configures how Calico chooses the IP address used to route
+	IPv4AutoDetectionMethod string `json:"ipv4AutoDetectionMethod,omitempty"`
+	// IPv6AutoDetectionMethod configures how Calico chooses the IP address used to route
 	// between nodes.  This should be set when the host has multiple interfaces
 	// and it is important to select the interface used.
 	// Options: "first-found" (default), "can-reach=DESTINATION",
 	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
-	IP6AutoDetectionMethod string `json:"ip6AutoDetectionMethod,omitempty"`
+	IPv6AutoDetectionMethod string `json:"ipv6AutoDetectionMethod,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
 	// Default: Auto (other options: Legacy, NFT)
 	IptablesBackend string `json:"iptablesBackend,omitempty"`

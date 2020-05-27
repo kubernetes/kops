@@ -801,9 +801,9 @@ spec:
             - name: IP
               value: "autodetect"
             - name: IP_AUTODETECTION_METHOD
-              value: "{{- or .Networking.Calico.IPAutoDetectionMethod "first-found" }}"
+              value: "{{- or .Networking.Calico.IPv4AutoDetectionMethod "first-found" }}"
             - name: IP6_AUTODETECTION_METHOD
-              value: "{{- or .Networking.Calico.IP6AutoDetectionMethod "first-found" }}"
+              value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "first-found" }}"
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}CrossSubnet{{- else -}} {{- or .Networking.Calico.IPIPMode "Always" -}} {{- end -}}"
