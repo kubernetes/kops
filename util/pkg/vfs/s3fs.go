@@ -106,13 +106,13 @@ func (p *S3Path) Remove() error {
 	return nil
 }
 
-func (p *S3Path) RemoveAll() error {
+func (p *S3Path) RemoveAllVersions() error {
 	client, err := p.client()
 	if err != nil {
 		return err
 	}
 
-	klog.V(8).Infof("removing file %s", p)
+	klog.V(8).Infof("removing all versions of file %s", p)
 
 	request := &s3.ListObjectVersionsInput{
 		Bucket: aws.String(p.bucket),
@@ -121,7 +121,7 @@ func (p *S3Path) RemoveAll() error {
 
 	response, err := client.ListObjectVersions(request)
 	if err != nil {
-		return fmt.Errorf("error listing versions %s: %v", p, err)
+		return fmt.Errorf("error listing all versions of file %s: %v", p, err)
 	}
 
 	if len(response.Versions) == 0 && len(response.DeleteMarkers) == 0 {

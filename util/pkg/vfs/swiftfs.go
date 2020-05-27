@@ -291,7 +291,7 @@ func (p *SwiftPath) Remove() error {
 	}
 }
 
-func (p *SwiftPath) RemoveAll() error {
+func (p *SwiftPath) RemoveAllVersions() error {
 	return p.Remove()
 }
 

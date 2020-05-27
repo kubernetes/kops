@@ -187,7 +187,7 @@ func (p *FSPath) Remove() error {
 	return os.Remove(p.location)
 }
 
-func (p *FSPath) RemoveAll() error {
+func (p *FSPath) RemoveAllVersions() error {
 	return p.Remove()
 }
 
