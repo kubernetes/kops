@@ -43,11 +43,11 @@ const (
 
 	defaultMasterMachineTypeGCE     = "n1-standard-1"
 	defaultMasterMachineTypeVSphere = "vsphere_master"
-	defaultMasterMachineTypeDO      = "s-2vcpu-2gb"
+	defaultMasterMachineTypeDO      = "s-2vcpu-4gb"
 	defaultMasterMachineTypeALI     = "ecs.n2.medium"
 
 	defaultVSphereNodeImage = "kops_ubuntu_16_04.ova"
-	defaultDONodeImage      = "coreos-stable"
+	defaultDONodeImage      = "debian-9-x64"
 	defaultALINodeImage     = "centos_7_04_64_20G_alibase_201701015.vhd"
 )
 
