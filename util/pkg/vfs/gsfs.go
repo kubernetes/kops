@@ -123,7 +123,7 @@ func (p *GSPath) Remove() error {
 	}
 }
 
-func (p *GSPath) RemoveAll() error {
+func (p *GSPath) RemoveAllVersions() error {
 	return p.Remove()
 }
 

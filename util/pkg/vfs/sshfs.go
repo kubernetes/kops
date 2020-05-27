@@ -113,7 +113,7 @@ func (p *SSHPath) Remove() error {
 	return nil
 }
 
-func (p *SSHPath) RemoveAll() error {
+func (p *SSHPath) RemoveAllVersions() error {
 	return p.Remove()
 }
 
