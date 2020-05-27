@@ -97,10 +97,7 @@ func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 		DefaultHandler: ignoreHandler,
 		Contexts: map[string]loader.Handler{
 			"files":    ignoreHandler,
-			"disks":    ignoreHandler,
 			"packages": ignoreHandler,
-			"services": ignoreHandler,
-			"users":    ignoreHandler,
 		},
 		Tags: l.tags,
 	}
@@ -115,10 +112,7 @@ func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 		DefaultHandler: l.handleFile,
 		Contexts: map[string]loader.Handler{
 			"files":    l.handleFile,
-			"disks":    l.newTaskHandler("disk/", nodetasks.NewMountDiskTask),
 			"packages": l.newTaskHandler("package/", nodetasks.NewPackage),
-			"services": l.newTaskHandler("service/", nodetasks.NewService),
-			"users":    l.newTaskHandler("user/", nodetasks.NewUserTask),
 		},
 		Tags: l.tags,
 	}
