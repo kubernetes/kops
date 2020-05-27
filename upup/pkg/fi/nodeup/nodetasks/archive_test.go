@@ -28,8 +28,9 @@ func TestArchiveDependencies(t *testing.T) {
 		child  fi.Task
 	}{
 		{
-			parent: &MountDiskTask{
-				Mountpoint: "/",
+			parent: &File{
+				Path: "/var",
+				Type: FileType_Directory,
 			},
 			child: &Archive{
 				TargetDir: "/var/something",
@@ -39,8 +40,9 @@ func TestArchiveDependencies(t *testing.T) {
 			parent: &Archive{
 				TargetDir: "/var/something",
 			},
-			child: &MountDiskTask{
-				Mountpoint: "/var/something/subdir",
+			child: &File{
+				Path: "/var/something/subdir",
+				Type: FileType_Directory,
 			},
 		},
 	}
