@@ -98,7 +98,7 @@ Contents:
           value: http://proxy.example.com
         - name: no_proxy
           value: noproxy.example.com
-        image: kopeio/etcd-manager:3.0.20200429
+        image: kopeio/etcd-manager:3.0.20200527
         name: etcd-manager
         resources:
           requests:
@@ -178,7 +178,7 @@ Contents:
           value: http://proxy.example.com
         - name: no_proxy
           value: noproxy.example.com
-        image: kopeio/etcd-manager:3.0.20200429
+        image: kopeio/etcd-manager:3.0.20200527
         name: etcd-manager
         resources:
           requests:
