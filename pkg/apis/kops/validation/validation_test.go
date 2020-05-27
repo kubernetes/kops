@@ -458,7 +458,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
-					IPv4AutoDetectionMethod: "interface=en*,eth0",
+					IPv4AutoDetectionMethod: "interface=en.*,eth0",
 				},
 				Etcd: &kops.EtcdClusterSpec{},
 			},
@@ -466,7 +466,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
-					IPv6AutoDetectionMethod: "skip-interface=en*,eth0",
+					IPv6AutoDetectionMethod: "skip-interface=en.*,eth0",
 				},
 				Etcd: &kops.EtcdClusterSpec{},
 			},
