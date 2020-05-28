@@ -152,10 +152,6 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			// Default is different on ContainerOS, see https://github.com/kubernetes/kubernetes/pull/58171
 			volumePluginDir = "/home/kubernetes/flexvolume/"
 
-		case distros.DistributionCoreOS:
-			// The /usr directory is read-only for CoreOS
-			volumePluginDir = "/var/lib/kubelet/volumeplugins/"
-
 		case distros.DistributionFlatcar:
 			// The /usr directory is read-only for Flatcar
 			volumePluginDir = "/var/lib/kubelet/volumeplugins/"

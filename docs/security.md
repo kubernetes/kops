@@ -11,7 +11,7 @@ the private key corresponding to the public key in `kops get secrets --type sshp
 creating a new cluster, the SSH public key can be specified with the `--ssh-public-key` option, and it
 defaults to `~/.ssh/id_rsa.pub`.
 
-> Note: In CoreOS, SSH username will be `core`.
+> Note: In Flatcar, SSH username will be `core`.
 
 To change the SSH public key on an existing cluster:
 

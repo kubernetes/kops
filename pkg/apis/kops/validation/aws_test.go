@@ -81,28 +81,10 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		},
 		{
 			Input: kops.InstanceGroupSpec{
-				MachineType: "m5.large",
-				Image:       "k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-03-11",
-			},
-			ExpectedErrors: []string{
-				"Forbidden::test-nodes.spec.machineType",
-			},
-		},
-		{
-			Input: kops.InstanceGroupSpec{
 				MachineType: "c5.large",
 				Image:       "k8s-1.9-debian-stretch-amd64-hvm-ebs-2018-03-11",
 			},
 			ExpectedErrors: []string{},
-		},
-		{
-			Input: kops.InstanceGroupSpec{
-				MachineType: "c5.large",
-				Image:       "k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-03-11",
-			},
-			ExpectedErrors: []string{
-				"Forbidden::test-nodes.spec.machineType",
-			},
 		},
 		{
 			Input: kops.InstanceGroupSpec{
