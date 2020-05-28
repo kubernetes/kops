@@ -46,7 +46,10 @@ func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	if b.Distribution.IsDebianFamily() {
+	if b.Distribution == distros.DistributionFocal {
+		c.AddTask(&nodetasks.Package{Name: "systemd-timesyncd"})
+		c.AddTask((&nodetasks.Service{Name: "systemd-timesyncd"}).InitDefaults())
+	} else if b.Distribution.IsDebianFamily() {
 		c.AddTask(&nodetasks.Package{Name: "ntp"})
 		c.AddTask((&nodetasks.Service{Name: "ntp"}).InitDefaults())
 	} else if b.Distribution.IsRHELFamily() {
