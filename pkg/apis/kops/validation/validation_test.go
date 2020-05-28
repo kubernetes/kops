@@ -332,12 +332,24 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 	}
 	for _, g := range grid {
 		clusterSpec := &kops.ClusterSpec{
+			KubernetesVersion:  "1.17.0",
 			AdditionalPolicies: &g.Input,
 			Subnets: []kops.ClusterSubnetSpec{
 				{Name: "subnet1"},
 			},
+			EtcdClusters: []*kops.EtcdClusterSpec{
+				{
+					Name: "main",
+					Members: []*kops.EtcdMemberSpec{
+						{
+							Name:          "us-test-1a",
+							InstanceGroup: fi.String("master-us-test-1a"),
+						},
+					},
+				},
+			},
 		}
-		errs := validateClusterSpec(clusterSpec, field.NewPath("spec"))
+		errs := validateClusterSpec(clusterSpec, &kops.Cluster{Spec: *clusterSpec}, field.NewPath("spec"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
