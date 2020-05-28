@@ -107,5 +107,8 @@ func (s *CloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*k
 	if osCloud, ok := cloud.(openstack.OpenstackCloud); ok {
 		return osCloud.FindClusterStatus(cluster)
 	}
-	return nil, fmt.Errorf("Etcd Status not implemented for %T", cloud)
+	if doCloud, ok := cloud.(*digitalocean.Cloud); ok {
+		return doCloud.FindClusterStatus(cluster)
+	}
+	return nil, fmt.Errorf("etcd Status not implemented for %T", cloud)
 }

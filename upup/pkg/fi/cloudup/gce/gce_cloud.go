@@ -43,7 +43,6 @@ type GCECloud interface {
 	Storage() *storage.Service
 	IAM() *iam.Service
 
-	Region() string
 	Project() string
 	WaitForOp(op *compute.Operation) error
 	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)

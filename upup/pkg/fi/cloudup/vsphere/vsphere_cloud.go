@@ -69,6 +69,13 @@ func (c *VSphereCloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderVSphere
 }
 
+// Region returns the region bound to the VsphereCloud.
+func (c *VSphereCloud) Region() string {
+	// TODO: map region with vCenter cluster, or datacenter, or datastore?
+	region := c.Cluster
+	return region
+}
+
 // NewVSphereCloud returns VSphereCloud instance for given ClusterSpec.
 func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 	server := *spec.CloudConfig.VSphereServer

@@ -99,9 +99,6 @@ type OpenstackCloud interface {
 	UseOctavia() bool
 	UseZones([]string)
 
-	// Region returns the region which cloud will run on
-	Region() string
-
 	// GetInstance will return a openstack server provided its ID
 	GetInstance(id string) (*servers.Server, error)
 
