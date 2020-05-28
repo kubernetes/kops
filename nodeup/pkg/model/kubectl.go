@@ -104,7 +104,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 	var users []string
 	switch b.Distribution {
-	case distros.DistributionJessie, distros.DistributionDebian9, distros.DistributionDebian10:
+	case distros.DistributionDebian9, distros.DistributionDebian10:
 		users = []string{"admin", "root"}
 	case distros.DistributionXenial, distros.DistributionBionic, distros.DistributionFocal:
 		users = []string{"ubuntu"}
@@ -112,7 +112,7 @@ func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 		users = []string{"centos"}
 	case distros.DistributionAmazonLinux2, distros.DistributionRhel7, distros.DistributionRhel8:
 		users = []string{"ec2-user"}
-	case distros.DistributionCoreOS, distros.DistributionFlatcar:
+	case distros.DistributionFlatcar:
 		users = []string{"core"}
 	default:
 		klog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)

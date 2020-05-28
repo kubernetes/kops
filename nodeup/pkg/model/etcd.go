@@ -38,10 +38,6 @@ func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	switch b.Distribution {
-	case distros.DistributionCoreOS:
-		klog.Infof("Detected CoreOS; skipping etcd user installation")
-		return nil
-
 	case distros.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; skipping etcd user installation")
 		return nil
