@@ -604,21 +604,17 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 	}
 
 	if v.IPv4AutoDetectionMethod != "" {
-		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), &v.IPv4AutoDetectionMethod, ipv4.Version)...)
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), v.IPv4AutoDetectionMethod, ipv4.Version)...)
 	}
 
 	if v.IPv6AutoDetectionMethod != "" {
-		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv6AutoDetectionMethod"), &v.IPv6AutoDetectionMethod, ipv6.Version)...)
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv6AutoDetectionMethod"), v.IPv6AutoDetectionMethod, ipv6.Version)...)
 	}
 
 	return allErrs
 }
 
-func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string, version int) field.ErrorList {
-	methodFirstFound := "first-found"
-	methodCanReach := "can-reach="
-	methodInterface := "interface="
-	methodSkipInterface := "skip-interface="
+func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime string, version int) field.ErrorList {
 	validationError := field.ErrorList{}
 
 	// validation code is based on the checks in calico/node startup code
@@ -627,49 +623,54 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string, ver
 	//
 	// We won't do deep validation of the values in this check, since they can
 	// be actual interface names or regexes
-	if *runtime == methodFirstFound {
-		return field.ErrorList{}
+	method := strings.Split(runtime, "=")
+	if len(method) == 0 {
+		return field.ErrorList{field.Invalid(fldPath, runtime, "missing autodetection method")}
+	}
+	if len(method) > 2 {
+		return field.ErrorList{field.Invalid(fldPath, runtime, "malformed autodetection method")}
+	}
 
-	} else if strings.HasPrefix(*runtime, methodCanReach) {
-		destStr := strings.TrimPrefix(*runtime, methodCanReach)
+	// 'method' should contain something like "[interface eth0,en.*]" or "[first-found]"
+	switch method[0] {
+	case "first-found":
+		return nil
+	case "can-reach":
+		destStr := method[1]
 		if version == ipv4.Version {
 			return utilvalidation.IsValidIPv4Address(fldPath, destStr)
 		} else if version == ipv6.Version {
 			return utilvalidation.IsValidIPv6Address(fldPath, destStr)
 		}
 
-		return field.ErrorList{field.InternalError(fldPath, runtime, "IP version is incorrect")}
-
-	} else if strings.HasPrefix(*runtime, methodInterface) {
-		ifStr := strings.TrimPrefix(*runtime, methodInterface)
-		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(ifStr, -1)
+		return field.ErrorList{field.Invalid(fldPath, runtime, "IP version is incorrect")}
+	case "interface":
+		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(method[1], -1)
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
 			validationError = append(validationError, field.Invalid(fldPath, runtime, "'interface=' must be followed by a comma separated list of interface regular expressions"))
 		}
 		for _, r := range ifRegexes {
 			_, e := regexp.Compile(r)
 			if e != nil {
-				validationError = append(validationError, field.Invalid(fldPath, runtime, "Invalid regexp: "+e.Error()))
+				validationError = append(validationError, field.Invalid(fldPath, runtime, fmt.Sprintf("regexp %s does not compile: %s", r, e.Error())))
 			}
 		}
 		return validationError
-
-	} else if strings.HasPrefix(*runtime, methodSkipInterface) {
-		ifStr := strings.TrimPrefix(*runtime, methodSkipInterface)
-		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(ifStr, -1)
+	case "skip-interface":
+		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(method[1], -1)
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
-			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'skip-interface=<COMMA-SEPARATED-LIST>'"))
+			validationError = append(validationError, field.Invalid(fldPath, runtime, "'skip-interface=' must be followed by a comma separated list of interface regular expressions"))
 		}
 		for _, r := range ifRegexes {
 			_, e := regexp.Compile(r)
 			if e != nil {
-				validationError = append(validationError, field.Invalid(fldPath, runtime, "Invalid regexp: "+e.Error()))
+				validationError = append(validationError, field.Invalid(fldPath, runtime, fmt.Sprintf("regexp %s does not compile: %s", r, e.Error())))
 			}
 		}
-
 		return validationError
+	default:
+		return field.ErrorList{field.Invalid(fldPath, runtime, "unsupported autodetection method")}
 	}
-	return field.ErrorList{field.Invalid(fldPath, runtime, "unsupported autodetection method")}
 }
 
 func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {

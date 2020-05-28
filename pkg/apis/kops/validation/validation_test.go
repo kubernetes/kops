@@ -480,6 +480,24 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "interface=foo=bar",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "=en0,eth.*",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
+		},
 	}
 	for _, g := range grid {
 		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("calico"))
