@@ -170,6 +170,6 @@ func (p *MemFSPath) Remove() error {
 	return nil
 }
 
-func (p *MemFSPath) RemoveAll() error {
+func (p *MemFSPath) RemoveAllVersions() error {
 	return p.Remove()
 }
