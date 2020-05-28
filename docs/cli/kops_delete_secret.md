@@ -16,7 +16,9 @@ kops delete secret [flags]
 ### Examples
 
 ```
-  
+  # Syntax: kops delete secret <type> <name>
+  # or kops delete secret <type> <name> <id>
+  kops delete secret sshpublickey admin
 ```
 
 ### Options

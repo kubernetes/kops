@@ -34,8 +34,11 @@ var (
 		Delete a secret.`))
 
 	deleteSecretExample = templates.Examples(i18n.T(`
+	# Syntax: kops delete secret <type> <name>
+	# or kops delete secret <type> <name> <id>
+	kops delete secret sshpublickey admin
 
-		`))
+	`))
 
 	deleteSecretShort = i18n.T(`Delete a secret`)
 )
