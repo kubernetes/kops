@@ -638,13 +638,13 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string, ver
 			return utilvalidation.IsValidIPv6Address(fldPath, destStr)
 		}
 
-		return field.ErrorList{field.Invalid(fldPath, runtime, "Invalid; IP version in incorrect")}
+		return field.ErrorList{field.InternalError(fldPath, runtime, "IP version is incorrect")}
 
 	} else if strings.HasPrefix(*runtime, methodInterface) {
 		ifStr := strings.TrimPrefix(*runtime, methodInterface)
 		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(ifStr, -1)
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
-			validationError = append(validationError, field.Invalid(fldPath, runtime, "Expected 'interface=<COMMA-SEPARATED-LIST>'"))
+			validationError = append(validationError, field.Invalid(fldPath, runtime, "'interface=' must be followed by a comma separated list of interface regular expressions"))
 		}
 		for _, r := range ifRegexes {
 			_, e := regexp.Compile(r)
@@ -669,7 +669,7 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime *string, ver
 
 		return validationError
 	}
-	return field.ErrorList{field.Invalid(fldPath, runtime, "Invalid autodetection method")}
+	return field.ErrorList{field.Invalid(fldPath, runtime, "unsupported autodetection method")}
 }
 
 func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {
