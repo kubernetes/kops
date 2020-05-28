@@ -269,7 +269,7 @@ kops-dist: crossbuild-in-docker
 	tools/sha256 ${DIST}/windows/amd64/kops.exe ${DIST}/windows/amd64/kops.exe.sha256
 
 .PHONY: version-dist
-version-dist: nodeup-dist kops-dist protokube-export utils-dist
+version-dist: nodeup-dist kops-dist protokube-export
 	rm -rf ${UPLOAD}
 	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
@@ -287,9 +287,6 @@ version-dist: nodeup-dist kops-dist protokube-export utils-dist
 	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
 	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 	cp ${DIST}/darwin/amd64/kops.sha256 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
-	cp ${DIST}/linux/amd64/utils.tar.gz ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
-	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
-	cp ${DIST}/linux/amd64/utils.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha256
 
 .PHONY: upload
 upload: version-dist # Upload kops to S3
@@ -407,25 +404,6 @@ bazel-crossbuild-dns-controller:
 .PHONY: dns-controller-push
 dns-controller-push:
 	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image
-
-# --------------------------------------------------
-# static utils
-
-.PHONY: utils-dist
-utils-dist:
-	# Broken with deprecation of jessie; use bazel version instead
-	# (bazel version just copies an older version)
-	#docker build -t utils-builder images/utils-builder
-	#mkdir -p ${DIST}/linux/amd64/
-	#docker run -v `pwd`/.build/dist/linux/amd64/:/dist utils-builder /extract.sh
-	bazel build //images/utils-builder:utils
-	cp bazel-bin/images/utils-builder/utils.tar.gz ${DIST}/linux/amd64/utils.tar.gz
-	tools/sha1 ${DIST}/linux/amd64/utils.tar.gz ${DIST}/linux/amd64/utils.tar.gz.sha1
-	tools/sha256 ${DIST}/linux/amd64/utils.tar.gz ${DIST}/linux/amd64/utils.tar.gz.sha256
-
-.PHONY: bazel-utils-dist
-bazel-utils-dist:
-	bazel build ${BAZEL_CONFIG} //images/utils-builder:utils
 
 # --------------------------------------------------
 # development targets
@@ -736,7 +714,7 @@ bazel-dns-controller-export:
 	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/dns-controller.tar.gz.sha256
 
 .PHONY: bazel-version-dist
-bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-controller-export bazel-kube-apiserver-healthcheck-export bazel-dns-controller-export bazel-protokube-export bazel-utils-dist
+bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-controller-export bazel-kube-apiserver-healthcheck-export bazel-dns-controller-export bazel-protokube-export
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
@@ -766,9 +744,6 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-con
 	cp bazel-bin/cmd/kops/windows_amd64_pure_stripped/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha1
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
-	cp bazel-bin/images/utils-builder/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
-	tools/sha1 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
-	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha256
 	cp -fr ${BAZELUPLOAD}/kops/${VERSION}/* ${BAZELDIST}/
 
 .PHONY: bazel-upload
@@ -853,20 +828,9 @@ dev-upload-kube-apiserver-healthcheck: bazel-kube-apiserver-healthcheck-export #
 	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck.tar.gz.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
-# dev-copy-utils copies utils from a recent release
-# We don't currently have a bazel build for them, and the build is pretty slow, but they change rarely.
-.PHONE: dev-copy-utils
-dev-copy-utils:
-	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
-	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz
-	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha1
-	cd ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/; wget -N https://kubeupv2.s3.amazonaws.com/kops/1.15.0-alpha.1/linux/amd64/utils.tar.gz.sha256
-	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
-
 # dev-upload does a faster build and uploads to GCS / S3
-# It copies utils instead of building it
 .PHONY: dev-upload
-dev-upload: dev-upload-nodeup dev-upload-protokube dev-upload-dns-controller dev-upload-kops-controller dev-copy-utils dev-upload-kube-apiserver-healthcheck
+dev-upload: dev-upload-nodeup dev-upload-protokube dev-upload-dns-controller dev-upload-kops-controller dev-upload-kube-apiserver-healthcheck
 	echo "Done"
 
 .PHONY: crds
