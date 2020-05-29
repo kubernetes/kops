@@ -382,7 +382,7 @@ func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int
 	} else {
 		klog.Info("Validating the cluster.")
 
-		if err := c.validateClusterWithDuration(validateCount); err != nil {
+		if err := c.validateClusterWithTimeout(validateCount); err != nil {
 
 			if c.FailOnValidate {
 				klog.Errorf("Cluster did not validate within %s", c.ValidationTimeout)
@@ -395,22 +395,14 @@ func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int
 	return nil
 }
 
-// validateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
-func (c *RollingUpdateCluster) validateClusterWithDuration(validateCount int) error {
+// validateClusterWithTimeout runs validation.ValidateCluster until either we get positive result or the timeout expires
+func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), c.ValidationTimeout)
 	defer cancel()
 
-	if c.tryValidateCluster(ctx, validateCount) {
-		return nil
-	}
-
-	return fmt.Errorf("cluster did not validate within a duration of %q", c.ValidationTimeout)
-}
-
-func (c *RollingUpdateCluster) tryValidateCluster(ctx context.Context, validateCount int) bool {
 	if validateCount == 0 {
 		klog.Warningf("skipping cluster validation because validate-count was 0")
-		return true
+		return nil
 	}
 
 	successCount := 0
@@ -422,7 +414,7 @@ func (c *RollingUpdateCluster) tryValidateCluster(ctx context.Context, validateC
 			successCount++
 			if successCount >= validateCount {
 				klog.Info("Cluster validated.")
-				return true
+				return nil
 			} else {
 				klog.Infof("Cluster validated; revalidating in %s to make sure it does not flap.", c.ValidateSuccessDuration)
 				time.Sleep(c.ValidateSuccessDuration)
@@ -433,7 +425,7 @@ func (c *RollingUpdateCluster) tryValidateCluster(ctx context.Context, validateC
 		if err != nil {
 			if ctx.Err() != nil {
 				klog.Infof("Cluster did not validate within deadline: %v.", err)
-				return false
+				break
 			}
 			klog.Infof("Cluster did not validate, will retry in %q: %v.", c.ValidateTickDuration, err)
 		} else if len(result.Failures) > 0 {
@@ -443,7 +435,7 @@ func (c *RollingUpdateCluster) tryValidateCluster(ctx context.Context, validateC
 			}
 			if ctx.Err() != nil {
 				klog.Infof("Cluster did not pass validation within deadline: %s.", strings.Join(messages, ", "))
-				return false
+				break
 			}
 			klog.Infof("Cluster did not pass validation, will retry in %q: %s.", c.ValidateTickDuration, strings.Join(messages, ", "))
 		}
@@ -455,6 +447,8 @@ func (c *RollingUpdateCluster) tryValidateCluster(ctx context.Context, validateC
 		// TODO: Should we check if we have enough time left before the deadline?
 		time.Sleep(c.ValidateTickDuration)
 	}
+
+	return fmt.Errorf("cluster did not validate within a duration of %q", c.ValidationTimeout)
 }
 
 // detachInstance detaches a Cloud Instance
