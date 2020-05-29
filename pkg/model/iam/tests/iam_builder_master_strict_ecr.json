@@ -142,7 +142,8 @@
       "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
-        "s3:ListBucket"
+        "s3:ListBucket",
+        "s3:ListBucketVersions"
       ],
       "Resource": [
         "arn:aws:s3:::kops-tests"
