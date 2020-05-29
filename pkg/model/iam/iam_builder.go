@@ -324,7 +324,12 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 
 			p.Statement = append(p.Statement, &Statement{
 				Effect: StatementEffectAllow,
-				Action: stringorslice.Of("s3:GetBucketLocation", "s3:GetEncryptionConfiguration", "s3:ListBucket"),
+				Action: stringorslice.Of(
+					"s3:GetBucketLocation",
+					"s3:GetEncryptionConfiguration",
+					"s3:ListBucket",
+					"s3:ListBucketVersions",
+				),
 				Resource: stringorslice.Slice([]string{
 					strings.Join([]string{b.IAMPrefix(), ":s3:::", s3Path.Bucket()}, ""),
 				}),
