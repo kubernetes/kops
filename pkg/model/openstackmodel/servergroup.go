@@ -18,6 +18,7 @@ package openstackmodel
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -38,6 +39,9 @@ type ServerGroupModelBuilder struct {
 
 var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
 
+// See https://specs.openstack.org/openstack/nova-specs/specs/newton/approved/lowercase-metadata-keys.html for details
+var instanceMetadataNotAllowedCharacters = regexp.MustCompile("[^a-zA-Z0-9-_:. ]")
+
 func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *openstacktasks.ServerGroup, ig *kops.InstanceGroup) error {
 
 	sshKeyNameFull, err := b.SSHKeyName()
@@ -50,7 +54,16 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	clusterTag := "KubernetesCluster:" + strings.Replace(b.ClusterName(), ".", "-", -1)
 
 	igMeta := make(map[string]string)
-
+	cloudTags, err := b.KopsModelContext.CloudTagsForInstanceGroup(ig)
+	if err != nil {
+		return fmt.Errorf("could not get cloud tags for instance group %s: %v", ig.Name, err)
+	}
+	for label, labelVal := range cloudTags {
+		sanitizedLabel := strings.ToLower(
+			instanceMetadataNotAllowedCharacters.ReplaceAllLiteralString(label, "_"),
+		)
+		igMeta[sanitizedLabel] = labelVal
+	}
 	if ig.Spec.Role != kops.InstanceGroupRoleBastion {
 		// Bastion does not belong to the cluster and will not be running protokube.
 
