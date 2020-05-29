@@ -177,7 +177,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
 
-		err = c.maybeValidate("after terminating instance", c.ValidateCount)
+		err = c.maybeValidate(" after terminating instance", c.ValidateCount)
 		if err != nil {
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
