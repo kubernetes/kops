@@ -297,7 +297,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 	if a == nil || changes.Version != nil {
 		klog.Infof("Installing package %q (dependencies: %v)", e.Name, e.Deps)
-		var localPkgs []string
+		var pkgs []string
 
 		if e.Source != nil {
 			// Install a deb or rpm.
@@ -317,10 +317,10 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			}
 
 			// Download all the debs/rpms.
-			localPkgs = make([]string, 1+len(e.Deps))
+			pkgs = make([]string, 1+len(e.Deps))
 			for i, pkg := range append([]*Package{e}, e.Deps...) {
 				local := path.Join(localPackageDir, pkg.Name+ext)
-				localPkgs[i] = local
+				pkgs[i] = local
 				var hash *hashing.Hash
 				if fi.StringValue(pkg.Hash) != "" {
 					parsed, err := hashing.FromString(fi.StringValue(pkg.Hash))
@@ -334,6 +334,8 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 					return err
 				}
 			}
+		} else {
+			pkgs = append(pkgs, e.Name)
 		}
 
 		var args []string
@@ -350,7 +352,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		} else {
 			return fmt.Errorf("unsupported package system")
 		}
-		args = append(args, localPkgs...)
+		args = append(args, pkgs...)
 
 		klog.Infof("running command %s", args)
 		cmd := exec.Command(args[0], args[1:]...)
