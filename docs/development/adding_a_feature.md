@@ -1,84 +1,142 @@
 This is an overview of how we added a feature:
 
-To make auto-upgrading on the nodes an option.
+To add an option for Cilium to use the ENI IPAM mode.
 
-Auto-upgrades are configured by nodeup.  nodeup is driven by the nodeup model (which is at [upup/models/nodeup/](https://github.com/kubernetes/kops/tree/master/upup/models/nodeup) )
+## Adding a field to the API
 
-Inside the nodeup model there are folders which serve three roles:
-
-1) A folder with a well-known name means that items under that folder are treated as items of that type:
-
-* files
-* packages
-* services
-
-2) A folder starting with an underscore is a tag: nodeup will only descend into that folder if a tag with
-the same name is configured.
-
-3) Remaining folders are just structural, for organization.
-
-So auto-upgrades are currently always enabled, so the folder `auto-upgrades` configures them.
-
-To make auto-upgrades option, we will rename it to a "tag" folder (`_automatic_upgrades`), and then plumb through
-the tag.  The rename is a simple file rename.
-
-## Passing the `_automatic_upgrades` tag to nodeup
-
-Tags reach nodeup from the `NodeUpConfig`.  And this is in turn populated by the `RenderNodeUpConfig` template function,
-in `apply_cluster.go`.
-
-(`RenderNodeUpConfig` is called inline from the instance startup script on AWS, in a heredoc.  On GCE,
-it is rendered into its own resource, because GCE supports multiple resources for an instance)
-
-If you look at the code for RenderNodeUpConfig, you can see that it in turn gets the tags by calling `buildNodeupTags`.
-
-We want to make this optional, and it doesn't really make sense to have automatic upgrades at the instance group level:
-either you trust upgrades or you don't.  At least that's a working theory; if we need to go the other way later we can
-easily use the cluster value as the default.
-
-So we need to add a field to ClusterSpec:
+We want to make this an option, so we need to add a field to CiliumNetworkingSpec:
 
 ```
-	// UpdatePolicy determines the policy for applying upgrades automatically.
-	// Valid values:
-	//   'external' do not apply upgrades
-	//   missing: default policy (currently OS security upgrades that do not require a reboot)
-	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+	// Ipam specifies the IP address allocation mode to use.
+	// Possible values are "crd" and "eni".
+	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
+	// "crd" will use CRDs for controlling IP address management.
+	// Empty value will use host-scope address management.
+	Ipam string `json:"ipam,omitempty"`
 ```
 
 A few things to note here:
 
 * We could probably use a boolean for today's needs, but we want to leave some flexibility, so we use a string.
 
-* We use a `*string` instead of a `string` so we can know if the value is actually set.  This is less important
-for strings than it is for booleans, where false can be very different from unset.
+* We define a value `crd` for Cilium's current default mode,
+so we leave the default "" value as meaning "default mode, whatever it may be in future".
 
-* We only define the value we care about for no - `external` to disable upgrades.  We could probably define an
-actual value for enabled upgrades, but it isn't yet clear what that policy should be or what it should be called,
-so we leave the nil value as meaning "default policy, whatever it may be in future".
-
-
-So, we just need to check if `UpdatePolicy` is not nil and == `external`; we add the tag `_automatic_upgrades`,
-which enabled automatic upgrades, only if that is _not_ the case!
+So, we just need to check if `Ipam` is `eni` when determining which mode to configure.
 
 ## Validation
 
-We should add some validation that the value entered is valid.  We only accept nil or `external` right now.
+We should add some validation that the value entered is valid.  We only accept `eni`, `crd` or the empty string right now.
 
-Validation is done in validation.go, and is fairly simple - we just return an error if something is not valid:
+Validation is done in validation.go, and is fairly simple - we just add an error to a slice if something is not valid:
 
 ```
-	// UpdatePolicy
-	if c.Spec.UpdatePolicy != nil {
-		switch (*c.Spec.UpdatePolicy) {
-		case UpdatePolicyExternal:
-			// Valid
-		default:
-			return fmt.Errorf("unrecognized value for UpdatePolicy: %v", *c.Spec.UpdatePolicy)
+	if v.Ipam != "" {
+		// "azure" not supported by kops
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni"})...)
+
+		if v.Ipam == kops.CiliumIpamEni {
+			if c.CloudProvider != string(kops.CloudProviderAWS) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("ipam"), "Cilum ENI IPAM is supported only in AWS"))
+			}
+			if !v.DisableMasquerade {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableMasquerade"), "Masquerade must be disabled when ENI IPAM is used"))
+			}
 		}
 	}
 ```
 
+## Configuring Cilium
+
+Cilium is deployed as a "bootstrap addon", a set of resource template files under upup/models/cloudup/resources/addons/networking.cilium.io,
+one file per range of Kubernetes versions. These files are referenced by upup/pkg/fi/cloudup/bootstrapchannelbuilder.go
+
+First we add to the `cilium-config` ConfigMap:
+
+```
+  {{ with .Ipam }}
+  ipam: {{ . }}
+  {{ if eq . "eni" }}
+  enable-endpoint-routes: "true"
+  auto-create-cilium-node-resource: "true"
+  blacklist-conflicting-routes: "false"
+  {{ end }}
+  {{ end }}
+```
+
+Then we conditionally move cilium-operator to masters:
+
+```
+      {{ if eq .Ipam "eni" }}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+      {{ end }}
+```
+
+## Configuring kubelet
+
+When Cilium is in ENI mode `kubelet` needs to be configured with the local IP address, so that it can distinguish it
+from the secondary IP address used by ENI. Kubelet is configured by nodeup, in nodeup/pkg/model/kubelet.go. That code
+passes the local IP address to `kubelet` when the `UsesSecondaryIP()` receiver of the `NodeupModelContext` returns true.
+
+So we modify `UsesSecondaryIP()` to also return `true` when Cilium is in ENI mode:
+
+```
+return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil || c.Cluster.Spec.Networking.LyftVPC != nil ||
+    (c.Cluster.Spec.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni)
+```
+
+## Configuring IAM
+
+When Cilium is in ENI mode, `cilium-operator` on the master nodes needs additional IAM permissions. The masters' IAM permissions
+are built by `BuildAWSPolicyMaster()` in pkg/model/iam/iam_builder.go:
+
+```
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
+		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+	}
+```
+
+```
+func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
+	if legacyIAM {
+		// Legacy IAM provides ec2:*, so no additional permissions required
+		return
+	}
+
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Slice([]string{
+				"ec2:DescribeSubnets",
+				"ec2:AttachNetworkInterface",
+				"ec2:AssignPrivateIpAddresses",
+				"ec2:UnassignPrivateIpAddresses",
+				"ec2:CreateNetworkInterface",
+				"ec2:DescribeNetworkInterfaces",
+				"ec2:DescribeVpcPeeringConnections",
+				"ec2:DescribeSecurityGroups",
+				"ec2:DetachNetworkInterface",
+				"ec2:DeleteNetworkInterface",
+				"ec2:ModifyNetworkInterfaceAttribute",
+				"ec2:DescribeVpcs",
+			}),
+			Resource: resource,
+		},
+	)
+}
+```
 ## Tests
 
 Prior to testing this for real, it can be handy to write a few unit tests.
@@ -86,88 +144,79 @@ Prior to testing this for real, it can be handy to write a few unit tests.
 We should test that validation works as we expect (in validation_test.go):
 
 ```
-func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
-	c := buildDefaultCluster(t)
-	c.Spec.UpdatePolicy = fi.String(api.UpdatePolicyExternal)
-	expectNoErrorFromValidate(t, c)
-}
-
-func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
-	c := buildDefaultCluster(t)
-	c.Spec.UpdatePolicy = fi.String("not-a-real-value")
-	expectErrorFromValidate(t, c, "UpdatePolicy")
-}
-```
-
-
-And we should test the nodeup tag building:
-
-```
-func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
-	c := &api.Cluster{
-		Spec: api.ClusterSpec{
-			UpdatePolicy: nil,
+func Test_Validate_Cilium(t *testing.T) {
+	grid := []struct {
+		Cilium         kops.CiliumNetworkingSpec
+		Spec           kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Cilium: kops.CiliumNetworkingSpec{},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Ipam: "crd",
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				DisableMasquerade: true,
+				Ipam:              "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "aws",
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				DisableMasquerade: true,
+				Ipam:              "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "aws",
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Ipam: "foo",
+			},
+			ExpectedErrors: []string{"Unsupported value::cilium.ipam"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Ipam: "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "aws",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.disableMasquerade"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				DisableMasquerade: true,
+				Ipam:              "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "gce",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.ipam"},
 		},
 	}
-
-	tags, err := buildCloudupTags(c)
-	if err != nil {
-		t.Fatalf("buildCloudupTags error: %v", err)
-	}
-
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !stringSliceContains(nodeUpTags, "_automatic_upgrades") {
-		t.Fatalf("nodeUpTag _automatic_upgrades not found")
-	}
-}
-
-func TestBuildTags_UpdatePolicy_External(t *testing.T) {
-	c := &api.Cluster{
-		Spec: api.ClusterSpec{
-			UpdatePolicy: fi.String("external"),
-		},
-	}
-
-	tags, err := buildCloudupTags(c)
-	if err != nil {
-		t.Fatalf("buildCloudupTags error: %v", err)
-	}
-
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if stringSliceContains(nodeUpTags, "_automatic_upgrades") {
-		t.Fatalf("nodeUpTag _automatic_upgrades found unexpectedly")
+	for _, g := range grid {
+		g.Spec.Networking = &kops.NetworkingSpec{
+			Cilium: &g.Cilium,
+		}
+		errs := validateNetworkingCilium(&g.Spec, g.Spec.Networking.Cilium, field.NewPath("cilium"))
+		testErrors(t, g.Spec, errs, g.ExpectedErrors)
 	}
 }
 ```
 
 ## Documentation
 
-Add some documentation on your new field:
-
-```
-## UpdatePolicy
-
-Cluster.Spec.UpdatePolicy
-
-Values:
-
-* `external` do not enable automatic software updates
-
-* unset means to use the default policy, which is currently to apply OS security updates unless they require a reboot
-```
-
-Additionally, consider adding documentation of your new feature to the docs in [/docs](/). If your feature touches configuration options in `config` or `cluster.spec`, document them in [cluster_spec.md](../cluster_spec.md).
+If your feature touches important configuration options in `config` or `cluster.spec`, document them in [cluster_spec.md](../cluster_spec.md).
 
 ## Testing
-
 
 You can `make` and run `kops` locally.  But `nodeup` is pulled from an S3 bucket.
 
@@ -223,7 +272,10 @@ export KOPSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_VERSION
 Users would simply `kops edit cluster`, and add a value like:
 ```
   spec:
-    updatePolicy: external
+    networking:
+      cilium:
+        disableMasquerade: true
+        ipam: eni
 ```
 
 Then `kops update cluster --yes` would create the new NodeUpConfig, which is included in the instance startup script
@@ -233,5 +285,4 @@ very often.
 
 ## Other steps
 
-* We could also create a CLI flag on `create cluster`.  This doesn't seem worth it in this case; this is a relatively advanced option
-for people that already have an external software update mechanism.  All the flag would do is save the default.
+* We could also create a CLI flag on `create cluster`.  This doesn't seem worth it in this case; this is a relatively advanced option.
