@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"regexp"
@@ -643,7 +644,7 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime string, vers
 			return utilvalidation.IsValidIPv6Address(fldPath, destStr)
 		}
 
-		return field.ErrorList{field.Invalid(fldPath, runtime, "IP version is incorrect")}
+		return field.ErrorList{field.InternalError(fldPath, errors.New("IP version is incorrect"))}
 	case "interface":
 		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(method[1], -1)
 		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
