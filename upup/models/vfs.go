@@ -143,3 +143,7 @@ func (p *AssetPath) String() string {
 func (p *AssetPath) Remove() error {
 	return ReadOnlyError
 }
+
+func (p *AssetPath) RemoveAllVersions() error {
+	return p.Remove()
+}
