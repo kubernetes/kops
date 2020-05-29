@@ -97,7 +97,9 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	if useConfigFile {
 		var config *SchedulerConfig
-		if b.IsKubernetesGTE("1.18") {
+		if b.IsKubernetesGTE("1.19") {
+			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta1")
+		} else if b.IsKubernetesGTE("1.18") {
 			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1alpha2")
 		} else {
 			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1alpha1")
