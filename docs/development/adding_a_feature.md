@@ -24,6 +24,9 @@ so we leave the default "" value as meaning "default mode, whatever it may be in
 
 So, we just need to check if `Ipam` is `eni` when determining which mode to configure.
 
+We will need to update both the versioned and unversioned APIs and regenerate the generated code,
+per [the documentation on updating the API](api_updates.md).
+
 ## Validation
 
 We should add some validation that the value entered is valid.  We only accept `eni`, `crd` or the empty string right now.
