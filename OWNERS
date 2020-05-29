@@ -1,5 +1,9 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
+# These OWNERS files should stay in sync:
+# https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/OWNERS
+# https://github.com/kubernetes/test-infra/blob/master/config/testgrids/kubernetes/kops/OWNERS
+
 emeritus_approvers:
   - chrislovecnm
   - chrisz100
