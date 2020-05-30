@@ -71,15 +71,15 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "beta.kubernetes.io/os"
+              - key: "kubernetes.io/os"
                 operator: In
                 values:
                 - linux
-              - key: "beta.kubernetes.io/arch"
+              - key: "kubernetes.io/arch"
                 operator: In
                 values:
                 - amd64
-              - key: eks.amazonaws.com/compute-type
+              - key: "eks.amazonaws.com/compute-type"
                 operator: NotIn
                 values:
                 - fargate
@@ -88,7 +88,7 @@ spec:
       tolerations:
       - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.1" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.2" }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 61678
