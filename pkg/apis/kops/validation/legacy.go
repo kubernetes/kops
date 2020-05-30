@@ -376,48 +376,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		}
 	}
 
-	// NodeAuthorization
-	if c.Spec.NodeAuthorization != nil {
-		// @check the feature gate is enabled for this
-		if !featureflag.EnableNodeAuthorization.Enabled() {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "nodeAuthorization"), "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`"))
-		} else {
-			if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
-				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "nodeAuthorization"), "no node authorization policy has been set"))
-			} else {
-				path := field.NewPath("spec", "nodeAuthorization").Child("nodeAuthorizer")
-				if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || c.Spec.NodeAuthorization.NodeAuthorizer.Port >= 65535 {
-					allErrs = append(allErrs, field.Invalid(path.Child("port"), c.Spec.NodeAuthorization.NodeAuthorizer.Port, "invalid port"))
-				}
-				if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && c.Spec.NodeAuthorization.NodeAuthorizer.Timeout.Duration <= 0 {
-					allErrs = append(allErrs, field.Invalid(path.Child("timeout"), c.Spec.NodeAuthorization.NodeAuthorizer.Timeout, "must be greater than zero"))
-				}
-				if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL.Duration < 0 {
-					allErrs = append(allErrs, field.Invalid(path.Child("tokenTTL"), c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
-				}
-
-				// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
-				if c.Spec.KubeAPIServer == nil {
-					allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer"), "bootstrap token authentication is not enabled in the kube-apiserver"))
-				} else if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
-					allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "kube-apiserver has not been configured to use bootstrap tokens"))
-				} else if !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
-					allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "bootstrap tokens in the kube-apiserver has been disabled"))
-				}
-			}
-		}
-	}
-
-	// UpdatePolicy
-	if c.Spec.UpdatePolicy != nil {
-		switch *c.Spec.UpdatePolicy {
-		case kops.UpdatePolicyExternal:
-		// Valid
-		default:
-			allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("updatePolicy"), *c.Spec.UpdatePolicy, []string{kops.UpdatePolicyExternal}))
-		}
-	}
-
 	allErrs = append(allErrs, newValidateCluster(c)...)
 
 	return allErrs
