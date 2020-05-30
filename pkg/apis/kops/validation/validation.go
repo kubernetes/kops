@@ -95,7 +95,11 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.KubeAPIServer != nil {
-		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, fieldPath.Child("kubeAPIServer"))...)
+		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"))...)
+	}
+
+	if spec.KubeProxy != nil {
+		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
 	}
 
 	if spec.Kubelet != nil {
@@ -328,8 +332,15 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 	return allErrs
 }
 
-func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) field.ErrorList {
+func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	if len(v.AdmissionControl) > 0 {
+		if len(v.DisableAdmissionPlugins) > 0 {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableAdmissionPlugins"),
+				"disableAdmissionPlugins is mutually exclusive, you cannot use both admissionControl and disableAdmissionPlugins together"))
+		}
+	}
 
 	proxyClientCertIsNil := v.ProxyClientCertFile == nil
 	proxyClientKeyIsNil := v.ProxyClientKeyFile == nil
@@ -350,6 +361,24 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 		if v.AuthorizationWebhookConfigFile == nil {
 			allErrs = append(allErrs, field.Required(fldPath.Child("authorizationWebhookConfigFile"), "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified"))
 		}
+	}
+
+	return allErrs
+}
+
+func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	master := k.Master
+
+	for i, x := range k.IPVSExcludeCIDRS {
+		if _, _, err := net.ParseCIDR(x); err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("ipvsExcludeCidrs").Index(i), x, "Invalid network CIDR"))
+		}
+	}
+
+	if master != "" && !isValidAPIServersURL(master) {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("master"), master, "Not a valid APIServer URL"))
 	}
 
 	return allErrs

@@ -208,7 +208,12 @@ func TestValidateKubeAPIServer(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateKubeAPIServer(&g.Input, field.NewPath("KubeAPIServer"))
+		cluster := &kops.Cluster{
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.16.0",
+			},
+		}
+		errs := validateKubeAPIServer(&g.Input, cluster, field.NewPath("KubeAPIServer"))
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 
