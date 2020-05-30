@@ -47,7 +47,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		config.CPURequest = "100m"
 	}
 
-	image, err := Image("kube-proxy", b.Context.Architecture(), clusterSpec, b.Context.AssetBuilder)
+	image, err := Image("kube-proxy", clusterSpec, b.Context.AssetBuilder)
 	if err != nil {
 		return err
 	}
