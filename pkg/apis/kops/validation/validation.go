@@ -27,6 +27,7 @@ import (
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/apimachinery/pkg/api/validation"
@@ -83,6 +84,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateTopology(spec.Topology, fieldPath.Child("topology"))...)
 	}
 
+	// UpdatePolicy
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("updatePolicy"), spec.UpdatePolicy, []string{kops.UpdatePolicyExternal})...)
+
 	// Hooks
 	for i := range spec.Hooks {
 		allErrs = append(allErrs, validateHookSpec(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
@@ -115,6 +119,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if spec.Networking.Calico != nil {
 			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking", "calico"))...)
 		}
+	}
+
+	if spec.NodeAuthorization != nil {
+		allErrs = append(allErrs, validateNodeAuthorization(spec.NodeAuthorization, c, fieldPath.Child("nodeAuthorization"))...)
 	}
 
 	// IAM additionalPolicies
@@ -421,6 +429,41 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		}
 
 	}
+	return allErrs
+}
+
+func validateNodeAuthorization(n *kops.NodeAuthorizationSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// @check the feature gate is enabled for this
+	if !featureflag.EnableNodeAuthorization.Enabled() {
+		return field.ErrorList{field.Forbidden(fldPath, "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`")}
+	}
+
+	if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "no node authorization policy has been set"))
+	} else {
+		path := fldPath.Child("nodeAuthorizer")
+		if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || n.NodeAuthorizer.Port >= 65535 {
+			allErrs = append(allErrs, field.Invalid(path.Child("port"), n.NodeAuthorizer.Port, "invalid port"))
+		}
+		if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && n.NodeAuthorizer.Timeout.Duration <= 0 {
+			allErrs = append(allErrs, field.Invalid(path.Child("timeout"), n.NodeAuthorizer.Timeout, "must be greater than zero"))
+		}
+		if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && n.NodeAuthorizer.TokenTTL.Duration < 0 {
+			allErrs = append(allErrs, field.Invalid(path.Child("tokenTTL"), n.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
+		}
+
+		// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
+		if c.Spec.KubeAPIServer == nil {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer"), "bootstrap token authentication is not enabled in the kube-apiserver"))
+		} else if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "kube-apiserver has not been configured to use bootstrap tokens"))
+		} else if !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "bootstrap tokens in the kube-apiserver has been disabled"))
+		}
+	}
+
 	return allErrs
 }
 
