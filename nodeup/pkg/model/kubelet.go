@@ -370,7 +370,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 	c.AddTask(&nodetasks.Archive{
 		Name:      "containerized_mounter",
 		Source:    "https://storage.googleapis.com/kubernetes-release/gci-mounter/mounter.tar",
-		Hash:      "8003b798cf33c7f91320cd6ee5cec4fa22244571",
+		Hash:      "6a9f5f52e0b066183e6b90a3820b8c2c660d30f6ac7aeafb5064355bf0a5b6dd",
 		TargetDir: path.Join(containerizedMounterHome, "rootfs"),
 	})
 

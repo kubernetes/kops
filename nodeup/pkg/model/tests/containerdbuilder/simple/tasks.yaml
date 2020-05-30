@@ -227,7 +227,7 @@ path: /usr/share/doc/containerd/apache.txt
 type: file
 ---
 Name: containerd.io
-hash: b64e7170d9176bc38967b2e12147c69b65bdd0fc
+hash: ec7f4698df82c4dc683a8835ef5a3ecce4df1e41c5d65b4e17558cdccf44952b
 preventStart: true
 source: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb
 version: 1.2.10-3

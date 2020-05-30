@@ -114,7 +114,7 @@ func verifyPackageHash(u string, hash string, expectedVersion string) error {
 		return err
 	}
 
-	actualHash, err := hashing.HashAlgorithmSHA1.HashFile(p)
+	actualHash, err := hashing.HashAlgorithmSHA256.HashFile(p)
 	if err != nil {
 		return fmt.Errorf("error hashing file: %v", err)
 	}
