@@ -26,6 +26,11 @@ var SupportedTopologies = []string{
 	TopologyPrivate,
 }
 
+var SupportedDnsTypes = []string{
+	string(DNSTypePublic),
+	string(DNSTypePrivate),
+}
+
 type TopologySpec struct {
 	// The environment to launch the Kubernetes masters in public|private
 	Masters string `json:"masters,omitempty"`

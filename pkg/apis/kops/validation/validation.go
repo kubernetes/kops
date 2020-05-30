@@ -98,6 +98,14 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, fieldPath.Child("kubeAPIServer"))...)
 	}
 
+	if spec.Kubelet != nil {
+		allErrs = append(allErrs, validateKubelet(spec.Kubelet, c, fieldPath.Child("kubelet"))...)
+	}
+
+	if spec.MasterKubelet != nil {
+		allErrs = append(allErrs, validateKubelet(spec.MasterKubelet, c, fieldPath.Child("masterKubelet"))...)
+	}
+
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(spec, spec.Networking, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
@@ -166,11 +174,16 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 func validateTopology(topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if topology.Masters != "" && topology.Nodes != "" {
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("masters"), &topology.Masters, kops.SupportedTopologies)...)
-		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
+	if topology.Masters == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("masters"), ""))
 	} else {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("masters"), "topology requires non-nil values for masters and nodes"))
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("masters"), &topology.Masters, kops.SupportedTopologies)...)
+	}
+
+	if topology.Nodes == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("nodes"), ""))
+	} else {
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
 	}
 
 	if topology.Bastion != nil {
@@ -184,6 +197,11 @@ func validateTopology(topology *kops.TopologySpec, fieldPath *field.Path) field.
 		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds > 3600 {
 			allErrs = append(allErrs, field.Invalid(fieldPath.Child("bastion", "idleTimeoutSeconds"), *bastion.IdleTimeoutSeconds, "bastion idleTimeoutSeconds cannot be greater than one hour"))
 		}
+	}
+
+	if topology.DNS != nil {
+		value := string(topology.DNS.Type)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &value, kops.SupportedDnsTypes)...)
 	}
 
 	return allErrs
@@ -334,6 +352,46 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 		}
 	}
 
+	return allErrs
+}
+
+func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if k != nil {
+
+		{
+			// Flag removed in 1.6
+			if k.APIServers != "" {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("apiServers"),
+					"api-servers flag was removed in 1.6"))
+			}
+		}
+
+		{
+			// Flag removed in 1.10
+			if k.RequireKubeconfig != nil {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("requireKubeconfig"),
+					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)"))
+			}
+		}
+
+		if k.BootstrapKubeconfig != "" {
+			if c.Spec.KubeAPIServer == nil {
+				allErrs = append(allErrs, field.Required(kubeletPath.Root().Child("spec").Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
+			}
+		}
+
+		if k.TopologyManagerPolicy != "" {
+			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("topologyManagerPolicy"), &k.TopologyManagerPolicy, []string{"none", "best-effort", "restricted", "single-numa-node"})...)
+			if !c.IsKubernetesGTE("1.18") {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("topologyManagerPolicy"), "topologyManagerPolicy requires at least Kubernetes 1.18"))
+			}
+		}
+
+	}
 	return allErrs
 }
 
