@@ -42,6 +42,23 @@ import (
 
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, false, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
+
+	clusterName := cluster.ObjectMeta.Name
+	if clusterName == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("objectMeta", "name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)"))
+	} else {
+		// Must be a dns name
+		errs := utilvalidation.IsDNS1123Subdomain(clusterName)
+		if len(errs) != 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), clusterName, fmt.Sprintf("Cluster Name must be a valid DNS name (e.g. --name=mycluster.myzone.com) errors: %s", strings.Join(errs, ", "))))
+		} else if !strings.Contains(clusterName, ".") {
+			// Tolerate if this is a cluster we are importing for upgrade
+			if cluster.ObjectMeta.Annotations[kops.AnnotationNameManagement] != kops.AnnotationValueManagementImported {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), clusterName, "Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)"))
+			}
+		}
+	}
+
 	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, cluster, field.NewPath("spec"))...)
 
 	// Additional cloud-specific validation rules
@@ -153,6 +170,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.Docker != nil {
 		allErrs = append(allErrs, validateDockerConfig(spec.Docker, fieldPath.Child("docker"))...)
+	}
+
+	if spec.Assets != nil {
+		if spec.Assets.ContainerProxy != nil && spec.Assets.ContainerRegistry != nil {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("assets", "containerProxy"), "containerProxy cannot be used in conjunction with containerRegistry"))
+		}
 	}
 
 	if spec.RollingUpdate != nil {
@@ -440,18 +463,18 @@ func validateNodeAuthorization(n *kops.NodeAuthorizationSpec, c *kops.Cluster, f
 		return field.ErrorList{field.Forbidden(fldPath, "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`")}
 	}
 
+	authorizerPath := fldPath.Child("nodeAuthorizer")
 	if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "no node authorization policy has been set"))
+		allErrs = append(allErrs, field.Required(authorizerPath, "no node authorization policy has been set"))
 	} else {
-		path := fldPath.Child("nodeAuthorizer")
 		if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || n.NodeAuthorizer.Port >= 65535 {
-			allErrs = append(allErrs, field.Invalid(path.Child("port"), n.NodeAuthorizer.Port, "invalid port"))
+			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("port"), n.NodeAuthorizer.Port, "invalid port"))
 		}
 		if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && n.NodeAuthorizer.Timeout.Duration <= 0 {
-			allErrs = append(allErrs, field.Invalid(path.Child("timeout"), n.NodeAuthorizer.Timeout, "must be greater than zero"))
+			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("timeout"), n.NodeAuthorizer.Timeout, "must be greater than zero"))
 		}
 		if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && n.NodeAuthorizer.TokenTTL.Duration < 0 {
-			allErrs = append(allErrs, field.Invalid(path.Child("tokenTTL"), n.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
+			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("tokenTTL"), n.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
 		}
 
 		// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
