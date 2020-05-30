@@ -418,32 +418,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		}
 	}
 
-	// KubeProxy
-	if c.Spec.KubeProxy != nil {
-		kubeProxyPath := fieldSpec.Child("kubeProxy")
-		master := c.Spec.KubeProxy.Master
-
-		for i, x := range c.Spec.KubeProxy.IPVSExcludeCIDRS {
-			if _, _, err := net.ParseCIDR(x); err != nil {
-				allErrs = append(allErrs, field.Invalid(kubeProxyPath.Child("ipvsExcludeCidrs").Index(i), x, "Invalid network CIDR"))
-			}
-		}
-
-		if master != "" && !isValidAPIServersURL(master) {
-			allErrs = append(allErrs, field.Invalid(kubeProxyPath.Child("master"), master, "Not a valid APIServer URL"))
-		}
-	}
-
-	// KubeAPIServer
-	if c.Spec.KubeAPIServer != nil {
-		if len(c.Spec.KubeAPIServer.AdmissionControl) > 0 {
-			if len(c.Spec.KubeAPIServer.DisableAdmissionPlugins) > 0 {
-				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "disableAdmissionPlugins"),
-					"disableAdmissionPlugins is mutually exclusive, you cannot use both admissionControl and disableAdmissionPlugins together"))
-			}
-		}
-	}
-
 	allErrs = append(allErrs, newValidateCluster(c)...)
 
 	return allErrs
