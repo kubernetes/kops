@@ -134,7 +134,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		return nil
 	}
 
-	image, err := Image("kube-apiserver", b.Architecture(), clusterSpec, b.AssetBuilder)
+	image, err := Image("kube-apiserver", clusterSpec, b.AssetBuilder)
 	if err != nil {
 		return err
 	}
