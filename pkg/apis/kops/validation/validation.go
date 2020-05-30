@@ -79,6 +79,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("additionalNetworkCIDRs").Index(i))...)
 	}
 
+	if spec.Topology != nil {
+		allErrs = append(allErrs, validateTopology(spec.Topology, fieldPath.Child("topology"))...)
+	}
+
 	// Hooks
 	for i := range spec.Hooks {
 		allErrs = append(allErrs, validateHookSpec(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
@@ -159,6 +163,32 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 	return allErrs
 }
 
+func validateTopology(topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if topology.Masters != "" && topology.Nodes != "" {
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("masters"), &topology.Masters, kops.SupportedTopologies)...)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
+	} else {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("masters"), "topology requires non-nil values for masters and nodes"))
+	}
+
+	if topology.Bastion != nil {
+		bastion := topology.Bastion
+		if topology.Masters == kops.TopologyPublic || topology.Nodes == kops.TopologyPublic {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("bastion"), "bastion requires masters and nodes to have private topology"))
+		}
+		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("bastion", "idleTimeoutSeconds"), *bastion.IdleTimeoutSeconds, "bastion idleTimeoutSeconds should be greater than zero"))
+		}
+		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds > 3600 {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("bastion", "idleTimeoutSeconds"), *bastion.IdleTimeoutSeconds, "bastion idleTimeoutSeconds cannot be greater than one hour"))
+		}
+	}
+
+	return allErrs
+}
+
 func validateSubnets(subnets []kops.ClusterSubnetSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
@@ -210,6 +240,14 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("cidr"))...)
 	}
 
+	if subnet.Egress != "" {
+		if !strings.HasPrefix(subnet.Egress, "nat-") && !strings.HasPrefix(subnet.Egress, "i-") && subnet.Egress != kops.EgressExternal {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress, "egress must be of type NAT Gateway or NAT EC2 Instance or 'External'"))
+		}
+		if subnet.Egress != kops.EgressExternal && subnet.Type != "Private" {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private subnets"))
+		}
+	}
 	return allErrs
 }
 
