@@ -38,29 +38,31 @@ var _ fi.ModelBuilder = &UpdateServiceBuilder{}
 
 // Build is responsible for creating the relevant systemd service based on OS
 func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	if b.Distribution == distros.DistributionFlatcar {
+		b.buildFlatcarSystemdService(c)
+	}
+
+	return nil
+}
+
+func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.ModelBuilderContext) {
 	if b.Cluster.Spec.UpdatePolicy == nil || *b.Cluster.Spec.UpdatePolicy != kops.UpdatePolicyExternal {
 		klog.Infof("UpdatePolicy not set in Cluster Spec; skipping creation of %s", ServiceName)
-		return nil
+		return
 	}
 
 	for _, spec := range [][]kops.HookSpec{b.InstanceGroup.Spec.Hooks, b.Cluster.Spec.Hooks} {
 		for _, hook := range spec {
 			if hook.Name == ServiceName || hook.Name == ServiceName+".service" {
 				klog.Infof("Detected kops Hook for '%s'; skipping creation", ServiceName)
-				return nil
+				return
 			}
 		}
 	}
 
-	if b.Distribution == distros.DistributionFlatcar {
-		klog.Infof("Detected OS %s; building %s service to disable update scheduler", ServiceName, b.Distribution)
-		c.AddTask(b.buildFlatcarSystemdService())
-	}
+	klog.Infof("Detected OS %s; building %s service to disable update scheduler", ServiceName, b.Distribution)
 
-	return nil
-}
-
-func (b *UpdateServiceBuilder) buildFlatcarSystemdService() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Disable OS Update Scheduler")
 
@@ -77,6 +79,5 @@ func (b *UpdateServiceBuilder) buildFlatcarSystemdService() *nodetasks.Service {
 	}
 
 	service.InitDefaults()
-
-	return service
+	c.AddTask(service)
 }
