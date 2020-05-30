@@ -52,7 +52,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.03.2~ce-0~debian-stretch",
 		Source:         "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-stretch_amd64.deb",
-		Hash:           "36773361cf44817371770cb4e6e6823590d10297",
+		Hash:           "6f19489aba744dc02ce5fd9a65c0a2e3049b9f7a61cf70747ce33752094b0961",
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -64,7 +64,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.03.2~ce-0~ubuntu-xenial",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
-		Hash:           "4dcee1a05ec592e8a76e53e5b464ea43085a2849",
+		Hash:           "68851f4a395c63b79b34e17ba5582379621389bbc9ea53cf34f70ea9839888fb",
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -75,7 +75,7 @@ var dockerVersions = []packageVersion{
 		Distros:        []distros.Distribution{distros.DistributionBionic},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "http://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz",
-		Hash:           "141716ae046016a1792ce232a0f4c8eed7fe37d1",
+		Hash:           "183b31b001e7480f3c691080486401aa519101a5cfe6e05ad01b9f5521c4112d",
 		MarkImmutable:  []string{"/usr/bin/docker-runc"},
 	},
 
@@ -87,12 +87,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.03.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
-		Hash:           "494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5",
+		Hash:           "0ead9d0db5c15e3123d3194f71f716a1d6e2a70c984b12a5dde4a72e6e483aca",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-selinux": {
 				Version: "17.03.2.ce",
 				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm",
-				Hash:    "4659c937b66519c88ef2a82a906bb156db29d191",
+				Hash:    "07e6cbaf0133468769f5bc7b8b14b2ef72b812ce62948be0989a2ea28463e4df",
 			},
 		},
 		MarkImmutable: []string{"/usr/bin/docker-runc"},
@@ -107,7 +107,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.09.0~ce-0~debian",
 		Source:         "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
-		Hash:           "70aa5f96cf00f11374b6593ccf4ed120a65375d2",
+		Hash:           "80aa1429dc4d57eb6d73c291ab5feff5005f21d8402b1979e1e49db06eef52b0",
 	},
 
 	// 17.09.0 - Xenial
@@ -118,7 +118,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.09.0~ce-0~ubuntu",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb",
-		Hash:           "94f6e89be6d45d9988269a237eb27c7d6a844d7f",
+		Hash:           "d33f6eb134f0ab0876148bd96de95ea47d583d7f2cddfdc6757979453f9bd9bf",
 	},
 
 	// 18.06.2 - Xenial
@@ -129,7 +129,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
-		Hash:           "03e5eaae9c84b144e1140d9b418e43fce0311892",
+		Hash:           "1c52a80430d4dda213a01e6859e7c403b4bebe642accaa6358f5c75f5f2ba682",
 	},
 
 	// 18.06.3 - Xenial
@@ -140,7 +140,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
-		Hash:           "c06eda4e934cce6a7941a6af6602d4315b500a22",
+		Hash:           "6e9da7303cfa7ef7d4d8035bdc205229dd84e572f29957a9fb36e1351fe88a24",
 	},
 
 	// 17.09.0 - Centos / Rhel7 (two packages)
@@ -151,7 +151,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "17.09.0.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
-		Hash:           "b4ce72e80ff02926de943082821bbbe73958f87a",
+		Hash:           "be342f205c3fc99258e3903bfd3c79dc7f7c337c9321b217f4789dfdfbcac8f9",
 	},
 
 	// 18.03.1 - Bionic
@@ -162,7 +162,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.03.1~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.03.1~ce~3-0~ubuntu_amd64.deb",
-		Hash:           "b55b32bd0e9176dd32b1e6128ad9fda10a65cc8b",
+		Hash:           "a8d69913a38df46d768f5d4e87e1230d6a1b7ccb4f9098a4fd9357a518f34be0",
 	},
 
 	// 18.06.2 - Bionic
@@ -173,7 +173,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
-		Hash:           "9607c67644e3e1ad9661267c99499004f2e84e05",
+		Hash:           "056afb4440b8f2ae52841ee228d7794176fcb81aae0ba5614ecb7b4de6e4db9d",
 	},
 
 	// 18.06.1 - Debian Stretch
@@ -184,7 +184,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.1~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
-		Hash:           "18473b80e61b6d4eb8b52d87313abd71261287e5",
+		Hash:           "00a09a8993efd8095bd1817442db86c27de9720d7d5ade36aa52cd91198fa83d",
 	},
 
 	// 18.06.2 - Debian Stretch
@@ -196,7 +196,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
-		Hash:           "aad1efd2c90725034e996c6a368ccc2bf41ca5b8",
+		Hash:           "cbbd2afc85b2a46d55abfd5d362595e39a54022b6c6baab0a5ddc4a85a74e318",
 	},
 
 	// 18.06.3 - Debian Buster
@@ -208,7 +208,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
-		Hash:           "05c9b098437bcf1b489c2a3a9764c3b779af7bc4",
+		Hash:           "0c8ca09635553f0c6cb70a08bdef6f3b8d89b1247e4dab54896c93aad3bf3f25",
 	},
 
 	// 18.06.1 - CentOS / Rhel7 (two packages)
@@ -219,7 +219,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.1.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
-		Hash:           "0a1325e570c5e54111a79623c9fd0c0c714d3a11",
+		Hash:           "352909b3df327d10a6ee27e2c6ee8638d90481ee93580ae79c9d1ff7530a196e",
 	},
 
 	// 18.09.3 - Debian Stretch
@@ -230,12 +230,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:18.09.3~3-0~debian-stretch",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.09.3~3-0~debian-stretch_amd64.deb",
-		Hash:           "009b9a2d8bfaa97c74773fe4ec25b6bb396b10d0",
+		Hash:           "a941c03d0e7027481e4ff6cd5c77b871c4bf97df76e6444396e004adb759795d",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:18.09.3~3-0~debian-stretch",
 				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce-cli_18.09.3~3-0~debian-stretch_amd64.deb",
-				Hash:    "557f868ec63e5251639ebd1d8669eb0c61dd555c",
+				Hash:    "6102a5de3d1039226fd3d7ec44316371455efb211cfaacda8346d8d5155ffb0c",
 			},
 		},
 	},
@@ -248,7 +248,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
-		Hash:           "456eb7c5bfb37fac342e9ade21b602c076c5b367",
+		Hash:           "0e5d98c359d93e8a892a07ab1f8eb8153964b535cadda61a8791ca2db3c6b76c",
 	},
 
 	// 18.06.3 (contains fix for CVE-2019-5736)
@@ -261,7 +261,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
-		Hash:           "b396678a8b70f0503a7b944fa6e3297ab27b345b",
+		Hash:           "f8cc02112a125007f5c70f009ce9a91dd536018f139131074ee55cea555ba85d",
 	},
 
 	// 18.06.3 - Debian Stretch
@@ -273,7 +273,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
-		Hash:           "93b5a055a39462867d79109b00db1367e3d9e32f",
+		Hash:           "0de184cc79d9f9c99b2a6fa4fdd8b29645e9a858106a9814bb11047073a4e8cb",
 	},
 
 	// 18.06.3 - CentOS / Rhel7 (two packages)
@@ -284,7 +284,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
-		Hash:           "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
+		Hash:           "f3703698cab918ab41b1244f699c8718a5e3bf4070fdf4894b5b6e8d92545a62",
 	},
 	// 18.06.3 - CentOS / Rhel8 (two packages)
 	{
@@ -294,7 +294,7 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.06.3.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
-		Hash:           "5369602f88406d4fb9159dc1d3fd44e76fb4cab8",
+		Hash:           "f3703698cab918ab41b1244f699c8718a5e3bf4070fdf4894b5b6e8d92545a62",
 	},
 
 	// 18.09.9 - k8s 1.14 - https://github.com/kubernetes/kubernetes/pull/72823
@@ -307,12 +307,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:18.09.9~3-0~debian-stretch",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.09.9~3-0~debian-stretch_amd64.deb",
-		Hash:           "9d564b56f5531a08e24c8c7724445d128742572e",
+		Hash:           "53d9d25bb7d55c05a6c5829606122257ada8863ccb222ff0293fcf1d75990058",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:18.09.9~3-0~debian-stretch",
 				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce-cli_18.09.9~3-0~debian-stretch_amd64.deb",
-				Hash:    "88f8f3103d2e5011e2f1a73b9e6dbf03d6e6698a",
+				Hash:    "1cc46c8634704e192f402844747a82b986b2461beb3da748f4ca6a36918e6442",
 			},
 		},
 	},
@@ -325,12 +325,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:18.09.9~3-0~debian-buster",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_18.09.9~3-0~debian-buster_amd64.deb",
-		Hash:           "97620eede9ca9fd379eef41b9d14347fe1d82ded",
+		Hash:           "b0f4ce24089593ef6335e53e4c78d619a58539492121340da963c1a88687a059",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:18.09.9~3-0~debian-buster",
 				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce-cli_18.09.9~3-0~debian-buster_amd64.deb",
-				Hash:    "510eee5b6884867be0d2b360f8ff8cf7f0c0d11a",
+				Hash:    "e2b0543de09206072691c0c09fc2ad64acea988eb56e31e3bd02889f1435befd",
 			},
 		},
 	},
@@ -343,12 +343,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:18.09.9~3-0~ubuntu-xenial",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.09.9~3-0~ubuntu-xenial_amd64.deb",
-		Hash:           "959a1193ff148cbf98c357e096dafca44f497520",
+		Hash:           "30885e58747eff619dc22b074307e21bc176c71396c5d54a32764ffcc359beaf",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:18.09.9~3-0~ubuntu-xenial",
 				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_18.09.9~3-0~ubuntu-xenial_amd64.deb",
-				Hash:    "b79b8958f041249bbff0afbfeded794a9e42463f",
+				Hash:    "927c6df4fd2bc380be4f315169114cfd34d53856df004eeac3de35360f3eca9f",
 			},
 		},
 	},
@@ -361,12 +361,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:18.09.9~3-0~ubuntu-bionic",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.09.9~3-0~ubuntu-bionic_amd64.deb",
-		Hash:           "edabe6602521927b6e9ad70fc7650329333b51a3",
+		Hash:           "95160362599c506375c36f324f00404ad066ab4d94c840336781b5930d893467",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:18.09.9~3-0~ubuntu-bionic",
 				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_18.09.9~3-0~ubuntu-bionic_amd64.deb",
-				Hash:    "bca089a50ea22f02abe88f68d7ca35c26be9967b",
+				Hash:    "10abf1e3c25882d5a099ffda2a5a54168f600eb3e056b67c4fa4e20ecf5a03df",
 			},
 		},
 	},
@@ -379,12 +379,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.09.9",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.09.9-3.el7.x86_64.rpm",
-		Hash:           "0b656dcdbddfc231f871ae78e3f5ac76716b5914",
+		Hash:           "f4be41bf8093c076462a9a2d7669d1b3158e4c3799759dbf9689b77de49385a8",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "18.09.9",
 				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-18.09.9-3.el7.x86_64.rpm",
-				Hash:    "0c51b1339a95bd732ca305f07b7bcc95f132b9c8",
+				Hash:    "b1658ece6b8524a9c23a8623a7485b361c61a49ba887b51d9cc4ef58cfeb878a",
 			},
 		},
 	},
@@ -397,12 +397,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "18.09.9",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.09.9-3.el7.x86_64.rpm",
-		Hash:           "0b656dcdbddfc231f871ae78e3f5ac76716b5914",
+		Hash:           "f4be41bf8093c076462a9a2d7669d1b3158e4c3799759dbf9689b77de49385a8",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "18.09.9",
 				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-18.09.9-3.el7.x86_64.rpm",
-				Hash:    "0c51b1339a95bd732ca305f07b7bcc95f132b9c8",
+				Hash:    "b1658ece6b8524a9c23a8623a7485b361c61a49ba887b51d9cc4ef58cfeb878a",
 			},
 		},
 	},
@@ -417,7 +417,7 @@ var dockerVersions = []packageVersion{
 		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2, distros.DistributionFocal},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-18.09.9.tgz",
-		Hash:           "1b1516253aa876f77193deb901e53977b3c84476",
+		Hash:           "82a362af7689038c51573e0fd0554da8703f0d06f4dfe95dd5bda5acf0ae45fb",
 	},
 
 	// 19.03.4 - k8s 1.17 - https://github.com/kubernetes/kubernetes/pull/84476
@@ -432,7 +432,7 @@ var dockerVersions = []packageVersion{
 		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2, distros.DistributionFocal},
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.4.tgz",
-		Hash:           "5b9aa113916cfdde3eaf2bd25d2b8c3da49e0268",
+		Hash:           "efef2ad32d262674501e712351be0df9dd31d6034b175d0020c8f5d5c9c3fd10",
 	},
 
 	// 19.03.4 - Debian Stretch
@@ -443,12 +443,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:19.03.4~3-0~debian-stretch",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_19.03.4~3-0~debian-stretch_amd64.deb",
-		Hash:           "2b8dcb2d75334fab29242ac069d1fbcfb65e88e3",
+		Hash:           "a5fedef212914c443ed71c9ba2fbe0cdf39e0a6e2da8dfcc29881c6c536877ce",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:19.03.4~3-0~debian-stretch",
 				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~debian-stretch_amd64.deb",
-				Hash:    "57f71ee764abb19a0b4c580ff14b1eb3de3a9e08",
+				Hash:    "f0f3c9c91a9482b0fe120cd9e404c3ade342ce01d0d98a7f6bce3e16b7c57a11",
 			},
 		},
 	},
@@ -461,12 +461,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:19.03.4~3-0~debian-buster",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_19.03.4~3-0~debian-buster_amd64.deb",
-		Hash:           "492a70f29ceffd315ee9712b33004491c6f59e49",
+		Hash:           "cdd9d2147a6f6c9c38a6addfdd56d7d65d688a83f44ff3a289de7e15c796b87c",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:19.03.4~3-0~debian-buster",
 				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~debian-buster_amd64.deb",
-				Hash:    "2549a364f0e5ce489c79b292b78e349751385dd5",
+				Hash:    "92c681c324f3d24517dc25daf9f4cd52034a24a72bb98827a4bcf4f6b56e6088",
 			},
 		},
 	},
@@ -479,12 +479,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:19.03.4~3-0~ubuntu-xenial",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_19.03.4~3-0~ubuntu-xenial_amd64.deb",
-		Hash:           "d9f5855413a5efcca4e756613dafb744b6cae8d2",
+		Hash:           "7bf9d7c3127dc910b8364c5799c667ff8a45e4c8bd859f908ea4a66944312ff3",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:19.03.4~3-0~ubuntu-xenial",
 				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~ubuntu-xenial_amd64.deb",
-				Hash:    "3e0164dfef612b533c12dec6cd39da93bedd7e8c",
+				Hash:    "00622505c8f47e0b711ba7f7582473d55b38dd8d7bae20d286aa473595c5f6cf",
 			},
 		},
 	},
@@ -497,12 +497,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "5:19.03.4~3-0~ubuntu-bionic",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_19.03.4~3-0~ubuntu-bionic_amd64.deb",
-		Hash:           "ee640d9258fd4d3f4c7017ab2a71da63cbbead55",
+		Hash:           "31ee4b40cc6b76966318e007a1c7cedd64c6a3dd957de1de40734eb06320b8d3",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "5:19.03.4~3-0~ubuntu-bionic",
 				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_19.03.4~3-0~ubuntu-bionic_amd64.deb",
-				Hash:    "09402bf5dac40f0c50f1071b17f38f6584a42ad1",
+				Hash:    "d364ba24b3756c5e1f7b860cef5361ce717a99bb982aa76dbd6d8a928a2de056",
 			},
 		},
 	},
@@ -515,12 +515,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "19.03.4",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.4-3.el7.x86_64.rpm",
-		Hash:           "02a9db54fa40b8d94e2a4c1b5572ad911873a4c8",
+		Hash:           "46ebc08b3740bfb532f686a143e144a4c73ddcd600e83104ae4617b301b83f42",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "19.03.4",
 				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.4-3.el7.x86_64.rpm",
-				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
+				Hash:    "1b34e1dd1ec5af7e0e37e80bb1ddf0e36006639e8964cf8fc308683f90d38b7a",
 			},
 		},
 	},
@@ -533,12 +533,12 @@ var dockerVersions = []packageVersion{
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Version:        "19.03.4",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.4-3.el7.x86_64.rpm",
-		Hash:           "02a9db54fa40b8d94e2a4c1b5572ad911873a4c8",
+		Hash:           "46ebc08b3740bfb532f686a143e144a4c73ddcd600e83104ae4617b301b83f42",
 		ExtraPackages: map[string]packageInfo{
 			"docker-ce-cli": {
 				Version: "19.03.4",
 				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.4-3.el7.x86_64.rpm",
-				Hash:    "1fffcc716e74a59f753f8898ba96693a00e79e26",
+				Hash:    "1b34e1dd1ec5af7e0e37e80bb1ddf0e36006639e8964cf8fc308683f90d38b7a",
 			},
 		},
 	},
@@ -549,7 +549,7 @@ var dockerVersions = []packageVersion{
 		PlainBinary:    true,
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.8.tgz",
-		Hash:           "b1e783804b3436f6153bce9ed7465f4aebe0b8de",
+		Hash:           "7f4115dc6a3c19c917f8b9664d7b51c904def1c984e082c4600097433323cf6f",
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
