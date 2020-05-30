@@ -415,6 +415,73 @@ func Test_Validate_Calico(t *testing.T) {
 	}
 }
 
+func Test_Validate_Cilium(t *testing.T) {
+	grid := []struct {
+		Cilium         kops.CiliumNetworkingSpec
+		Spec           kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Cilium: kops.CiliumNetworkingSpec{},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Ipam: "crd",
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				DisableMasquerade: true,
+				Ipam:              "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "aws",
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				DisableMasquerade: true,
+				Ipam:              "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "aws",
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Ipam: "foo",
+			},
+			ExpectedErrors: []string{"Unsupported value::cilium.ipam"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Ipam: "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "aws",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.disableMasquerade"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				DisableMasquerade: true,
+				Ipam:              "eni",
+			},
+			Spec: kops.ClusterSpec{
+				CloudProvider: "gce",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.ipam"},
+		},
+	}
+	for _, g := range grid {
+		g.Spec.Networking = &kops.NetworkingSpec{
+			Cilium: &g.Cilium,
+		}
+		errs := validateNetworkingCilium(&g.Spec, g.Spec.Networking.Cilium, field.NewPath("cilium"))
+		testErrors(t, g.Spec, errs, g.ExpectedErrors)
+	}
+}
+
 func Test_Validate_RollingUpdate(t *testing.T) {
 	grid := []struct {
 		Input          kops.RollingUpdate
