@@ -19,9 +19,7 @@ package validation
 import (
 	"fmt"
 	"net"
-	"strings"
 
-	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -46,25 +44,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	} else if _, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion); err != nil {
 		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version"))
 		return allErrs
-	}
-
-	if c.ObjectMeta.Name == "" {
-		allErrs = append(allErrs, field.Required(field.NewPath("objectMeta", "name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)"))
-	} else {
-		// Must be a dns name
-		errs := validation.IsDNS1123Subdomain(c.ObjectMeta.Name)
-		if len(errs) != 0 {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), c.ObjectMeta.Name, fmt.Sprintf("Cluster Name must be a valid DNS name (e.g. --name=mycluster.myzone.com) errors: %s", strings.Join(errs, ", "))))
-		} else if !strings.Contains(c.ObjectMeta.Name, ".") {
-			// Tolerate if this is a cluster we are importing for upgrade
-			if c.ObjectMeta.Annotations[kops.AnnotationNameManagement] != kops.AnnotationValueManagementImported {
-				allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), c.ObjectMeta.Name, "Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)"))
-			}
-		}
-	}
-
-	if c.Spec.Assets != nil && c.Spec.Assets.ContainerProxy != nil && c.Spec.Assets.ContainerRegistry != nil {
-		allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("Assets", "ContainerProxy"), "ContainerProxy cannot be used in conjunction with ContainerRegistry as represent mutually exclusive concepts. Please consult the documentation for details."))
 	}
 
 	requiresSubnets := true
