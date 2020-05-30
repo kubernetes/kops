@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 // ContainerdBuilder install containerd (just the packages at the moment)
@@ -44,7 +45,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.4",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionDebian9},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.4-1",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.4-1_amd64.deb",
 		Hash:           "5d4eeec093bc6f0b35921b88c3939b480acc619c790f4eab001a66efb957e6c1",
@@ -55,7 +56,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionDebian9},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "786a625f773ec5ac5dc4ebd9463ba7deb6926da890fa57a9ac79be7a6839865c",
@@ -66,7 +67,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionDebian10},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "355973b23d3d172b5cfb05bc605f2b0cd7145f2fcc572264225d8910701c650d",
@@ -77,7 +78,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionXenial},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "ec7f4698df82c4dc683a8835ef5a3ecce4df1e41c5d65b4e17558cdccf44952b",
@@ -88,7 +89,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionBionic},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10-3",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb",
 		Hash:           "ffa99f3f4b3a76c66f04ad327b8eb6b437e311887e3e0330447fbf5ea2ddd827",
@@ -99,7 +100,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "8f29304480a197343fb6fb0fd28e8753aed4e177545568cb4ea3b0f0c02ebf82",
@@ -110,7 +111,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		Name:           "containerd.io",
 		Distros:        []distros.Distribution{distros.DistributionRhel8, distros.DistributionCentos8},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.10",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.10-3.2.el7.x86_64.rpm",
 		Hash:           "8f29304480a197343fb6fb0fd28e8753aed4e177545568cb4ea3b0f0c02ebf82",
@@ -124,7 +125,7 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.10",
 		PlainBinary:    true,
 		Distros:        []distros.Distribution{distros.DistributionAmazonLinux2, distros.DistributionFocal},
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.10.linux-amd64.tar.gz",
 		Hash:           "9125a6ae5a89dfe9403fea7d03a8d8ba9fa97b6863ee8698c4e6c258fb14f1fd",
 	},
@@ -133,7 +134,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.11",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.11.linux-amd64.tar.gz",
 		Hash:           "df89b00e927115f1f21eec139e55668a6284abb2f378512677c99a3751579e51",
 	},
@@ -142,7 +143,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.12",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.12.linux-amd64.tar.gz",
 		Hash:           "291c26f97546ad92ce51e1584c002b286a82a64f1138cf11f78ef7c91adf5c80",
 	},
@@ -151,7 +152,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.13",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.13.linux-amd64.tar.gz",
 		Hash:           "92d6ae6c60f6b068652b31811ce23d650ec0f6cc1e618ec9ae23db9321956258",
 	},
@@ -160,7 +161,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.3.2",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.2.linux-amd64.tar.gz",
 		Hash:           "95cf4d2cfa23c7a586980c51f8c283a9f0717e09d1a3cc54fc6ed7984923b7aa",
 	},
@@ -169,7 +170,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.3.3",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.3.linux-amd64.tar.gz",
 		Hash:           "24ce7ad6b489fb25d07d2a3bb50e443fcce1ac3318f8cc0831e00668c2c9fd86",
 	},
@@ -178,7 +179,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.3.4",
 		PlainBinary:    true,
-		Architectures:  []Architecture{ArchitectureAmd64},
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.4.linux-amd64.tar.gz",
 		Hash:           "4616971c3ad21c24f2f2320fa1c085577a91032a068dd56a41c7c4b71a458087",
 	},
