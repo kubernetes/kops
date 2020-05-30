@@ -64,6 +64,7 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
+        "//util/pkg/architectures:go_default_library",
         "//util/pkg/exec:go_default_library",
         "//util/pkg/proxy:go_default_library",
         "//util/pkg/reflectutils:go_default_library",
