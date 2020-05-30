@@ -17,7 +17,6 @@ limitations under the License.
 package nodetasks
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -130,23 +129,6 @@ func (p *Package) isOSPackage() bool {
 // String returns a string representation, implementing the Stringer interface
 func (p *Package) String() string {
 	return fmt.Sprintf("Package: %s", p.Name)
-}
-
-func NewPackage(name string, contents string, meta string) (fi.Task, error) {
-	p := &Package{Name: name}
-	if contents != "" {
-		err := json.Unmarshal([]byte(contents), p)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing json for package %q: %v", name, err)
-		}
-	}
-
-	// Default values: we want to install a package so that it is healthy
-	if p.Healthy == nil {
-		p.Healthy = fi.Bool(true)
-	}
-
-	return p, nil
 }
 
 func (e *Package) Find(c *fi.Context) (*Package, error) {
