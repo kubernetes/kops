@@ -86,14 +86,6 @@ spec:
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 1.15.0
-  - id: k8s-1.8
-    kubernetesVersion: <1.10.0
-    manifest: networking.amazon-vpc-routed-eni/k8s-1.8.yaml
-    manifestHash: c477ea0c2e8764c3a7366976ce8bdb15fe26fe7f
-    name: networking.amazon-vpc-routed-eni
-    selector:
-      role.kubernetes.io/networking: "1"
-    version: 1.5.0-kops.1
   - id: k8s-1.10
     kubernetesVersion: '>=1.10.0 <1.12.0'
     manifest: networking.amazon-vpc-routed-eni/k8s-1.10.yaml

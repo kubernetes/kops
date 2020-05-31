@@ -20,8 +20,8 @@ kops set cluster [flags]
 ### Examples
 
 ```
-  # Set cluster to run kubernetes version 1.10.0
-  kops set cluster k8s.cluster.site spec.kubernetesVersion=1.10.0
+  # Set cluster to run kubernetes version 1.17.0
+  kops set cluster k8s.cluster.site spec.kubernetesVersion=1.17.0
 ```
 
 ### Options
