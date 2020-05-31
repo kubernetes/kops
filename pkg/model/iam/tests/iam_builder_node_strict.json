@@ -24,7 +24,7 @@
       "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
-        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/cluster.spec",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/cluster-completed.spec",
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/igconfig/node/*",
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/issued/*",
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kube-proxy/*",

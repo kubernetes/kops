@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -283,12 +284,21 @@ func fullClusterSpecs(clusters []*kopsapi.Cluster) ([]*kopsapi.Cluster, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 		}
-		fullSpec := &kopsapi.Cluster{}
-		err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
+		configPath := configBase.Join(registry.PathClusterCompleted)
+		b, err := configPath.ReadFile()
 		if err != nil {
-			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
+			return nil, fmt.Errorf("error loading Cluster %q: %v", configPath, err)
 		}
-		fullSpecs = append(fullSpecs, fullSpec)
+
+		o, _, err := kopscodecs.Decode(b, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing Cluster %q: %v", configPath, err)
+		}
+		if fullSpec, ok := o.(*kopsapi.Cluster); ok {
+			fullSpecs = append(fullSpecs, fullSpec)
+		} else {
+			return nil, fmt.Errorf("unexpected object type for Cluster %q: %T", configPath, o)
+		}
 	}
 	return fullSpecs, nil
 }

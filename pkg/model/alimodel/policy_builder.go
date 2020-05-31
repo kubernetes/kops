@@ -276,7 +276,7 @@ func (b *PolicyBuilder) AddOSSPermissions(p *Policy) (*Policy, error) {
 			} else if b.Role == kops.InstanceGroupRoleNode {
 				resources := []string{
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/addons/*"}, ""),
-					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/cluster.spec"}, ""),
+					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/cluster-completed.spec"}, ""),
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/config"}, ""),
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/instancegroup/*"}, ""),
 					strings.Join([]string{b.RAMPrefix(), ":oss:*:*:", ramOSSPath, "/pki/issued/*"}, ""),
