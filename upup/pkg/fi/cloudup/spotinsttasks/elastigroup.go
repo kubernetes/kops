@@ -50,6 +50,7 @@ type Elastigroup struct {
 	SpotPercentage           *float64
 	UtilizeReservedInstances *bool
 	FallbackToOnDemand       *bool
+	DrainingTimeout          *int64
 	HealthCheckType          *string
 	Product                  *string
 	Orientation              *string
@@ -186,6 +187,10 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		actual.Orientation = group.Strategy.AvailabilityVsCost
 		actual.FallbackToOnDemand = group.Strategy.FallbackToOnDemand
 		actual.UtilizeReservedInstances = group.Strategy.UtilizeReservedInstances
+
+		if group.Strategy.DrainingTimeout != nil {
+			actual.DrainingTimeout = fi.Int64(int64(fi.IntValue(group.Strategy.DrainingTimeout)))
+		}
 	}
 
 	// Compute.
@@ -479,6 +484,10 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 		group.Strategy.SetAvailabilityVsCost(fi.String(string(normalizeOrientation(e.Orientation))))
 		group.Strategy.SetFallbackToOnDemand(e.FallbackToOnDemand)
 		group.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
+
+		if e.DrainingTimeout != nil {
+			group.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+		}
 	}
 
 	// Compute.
@@ -780,6 +789,17 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 			group.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
 			changes.UtilizeReservedInstances = nil
+			changed = true
+		}
+
+		// Draining timeout.
+		if changes.DrainingTimeout != nil {
+			if group.Strategy == nil {
+				group.Strategy = new(aws.Strategy)
+			}
+
+			group.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+			changes.DrainingTimeout = nil
 			changed = true
 		}
 	}
@@ -1275,6 +1295,7 @@ type terraformElastigroupStrategy struct {
 	Orientation              *string  `json:"orientation,omitempty" cty:"orientation"`
 	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
 	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
+	DrainingTimeout          *int64   `json:"draining_timeout,omitempty" cty:"draining_timeout"`
 }
 
 type terraformElastigroupInstanceTypes struct {
@@ -1365,6 +1386,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 			Orientation:              fi.String(string(normalizeOrientation(e.Orientation))),
 			FallbackToOnDemand:       e.FallbackToOnDemand,
 			UtilizeReservedInstances: e.UtilizeReservedInstances,
+			DrainingTimeout:          e.DrainingTimeout,
 		},
 		terraformElastigroupInstanceTypes: &terraformElastigroupInstanceTypes{
 			OnDemand: e.OnDemandInstanceType,
