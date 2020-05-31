@@ -27,6 +27,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/denverdino/aliyungo/oss"
 	"github.com/gophercloud/gophercloud"
 	"google.golang.org/api/option"
@@ -69,11 +71,13 @@ func WithBackoff(backoff wait.Backoff) VFSOption {
 	}
 }
 
-// ReadLocation reads a file from a vfs URL
+// ReadFile reads a file from a vfs URL
 // It supports additional schemes which don't (yet) have full VFS implementations:
 //   metadata: reads from instance metadata on GCE/AWS
 //   http / https: reads from HTTP
 func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, error) {
+	ctx := context.TODO()
+
 	var opts vfsOptions
 	// Exponential backoff, starting with 500 milliseconds, doubling each time, 5 steps
 	opts.backoff = wait.Backoff{
@@ -102,8 +106,7 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 				httpHeaders["Metadata-Flavor"] = "Google"
 				return c.readHTTPLocation(httpURL, httpHeaders, opts)
 			case "aws":
-				httpURL := "http://169.254.169.254/latest/" + u.Path
-				return c.readHTTPLocation(httpURL, nil, opts)
+				return c.readAWSMetadata(ctx, u.Path)
 			case "digitalocean":
 				httpURL := "http://169.254.169.254/metadata/v1" + u.Path
 				return c.readHTTPLocation(httpURL, nil, opts)
@@ -167,6 +170,24 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
+}
+
+// readAWSMetadata reads the specified path from the AWS EC2 metadata service
+func (c *VFSContext) readAWSMetadata(ctx context.Context, path string) ([]byte, error) {
+	awsSession, err := session.NewSession()
+	if err != nil {
+		return nil, fmt.Errorf("error building AWS session: %v", err)
+	}
+	client := ec2metadata.New(awsSession)
+	if strings.HasPrefix(path, "/meta-data/") {
+		s, err := client.GetMetadataWithContext(ctx, strings.TrimPrefix(path, "/meta-data/"))
+		if err != nil {
+			return nil, fmt.Errorf("error reading from AWS metadata service: %v", err)
+		}
+		return []byte(s), nil
+	}
+	// There are others (e.g. user-data), but as we don't use them yet let's not expose them
+	return nil, fmt.Errorf("unhandled aws metadata path %q", path)
 }
 
 // readHTTPLocation reads an http (or https) url.
