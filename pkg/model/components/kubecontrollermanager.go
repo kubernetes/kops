@@ -152,10 +152,8 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	// @check if the node authorization is enabled and if so enable the tokencleaner controller (disabled by default)
 	// This is responsible for cleaning up bootstrap tokens which have expired
-	if b.Context.IsKubernetesGTE("1.10") {
-		if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) && len(kcm.Controllers) <= 0 {
-			kcm.Controllers = []string{"*", "tokencleaner"}
-		}
+	if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) && len(kcm.Controllers) <= 0 {
+		kcm.Controllers = []string{"*", "tokencleaner"}
 	}
 
 	return nil

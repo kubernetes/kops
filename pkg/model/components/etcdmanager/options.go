@@ -57,12 +57,7 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		if etcdCluster.Version == "" {
-			if b.IsKubernetesGTE("1.11") {
-				etcdCluster.Version = "3.2.18"
-			} else {
-				// Preserve existing default etcd version
-				etcdCluster.Version = "2.2.1"
-			}
+			etcdCluster.Version = "3.2.18"
 		}
 
 		if !etcdVersionIsSupported(etcdCluster.Version) {

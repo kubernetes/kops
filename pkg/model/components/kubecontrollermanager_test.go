@@ -31,12 +31,13 @@ func buildCluster() *api.Cluster {
 		Spec: api.ClusterSpec{
 			CloudProvider:     "aws",
 			KubernetesVersion: "v1.14.0",
+			KubeAPIServer:     &api.KubeAPIServerConfig{},
 		},
 	}
 }
 
 func Test_Build_KCM_Builder(t *testing.T) {
-	versions := []string{"v1.9.0", "v2.4.0"}
+	versions := []string{"v1.11.0", "v2.4.0"}
 	for _, v := range versions {
 
 		c := buildCluster()
