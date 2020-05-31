@@ -80,6 +80,8 @@ make ci
 # For versions prior to 1.18: make dns-controller-push DOCKER_REGISTRY=kope
 make dns-controller-push DOCKER_IMAGE_PREFIX=kope/  DOCKER_REGISTRY=index.docker.io
 
+make kube-apiserver-healthcheck-push DOCKER_IMAGE_PREFIX=kope/  DOCKER_REGISTRY=index.docker.io
+
 make kops-controller-push DOCKER_IMAGE_PREFIX=kope/  DOCKER_REGISTRY=index.docker.io
 ```
 
