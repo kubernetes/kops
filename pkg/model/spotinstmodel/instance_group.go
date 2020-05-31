@@ -57,6 +57,11 @@ const (
 	// be enabled.
 	InstanceGroupLabelFallbackToOnDemand = "spotinst.io/fallback-to-ondemand"
 
+	// InstanceGroupLabelDrainingTimeout is the metadata label used on the
+	// instance group to specify a period of time, in seconds, after a node
+	// is marked for termination during which on running pods remains active.
+	InstanceGroupLabelDrainingTimeout = "spotinst.io/draining-timeout"
+
 	// InstanceGroupLabelGracePeriod is the metadata label used on the
 	// instance group to specify a period of time, in seconds, that Ocean
 	// should wait before applying instance health checks.
@@ -198,6 +203,12 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 
 		case InstanceGroupLabelFallbackToOnDemand:
 			group.FallbackToOnDemand, err = parseBool(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelDrainingTimeout:
+			group.DrainingTimeout, err = parseInt(v)
 			if err != nil {
 				return err
 			}
@@ -374,6 +385,12 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 
 		case InstanceGroupLabelGracePeriod:
 			ocean.GracePeriod, err = parseInt(v)
+			if err != nil {
+				return err
+			}
+
+		case InstanceGroupLabelDrainingTimeout:
+			ocean.DrainingTimeout, err = parseInt(v)
 			if err != nil {
 				return err
 			}
