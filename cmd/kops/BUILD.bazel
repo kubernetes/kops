@@ -75,7 +75,6 @@ go_library(
         "//pkg/featureflag:go_default_library",
         "//pkg/formatter:go_default_library",
         "//pkg/instancegroups:go_default_library",
-        "//pkg/k8sversion:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/kubeconfig:go_default_library",
         "//pkg/model/components:go_default_library",
