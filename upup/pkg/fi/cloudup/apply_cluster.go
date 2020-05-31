@@ -89,9 +89,9 @@ var (
 	// CloudupModels a list of supported models
 	CloudupModels = []string{"proto", "cloudup"}
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
-	OldestSupportedKubernetesVersion = "1.9.0"
+	OldestSupportedKubernetesVersion = "1.11.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
-	OldestRecommendedKubernetesVersion = "1.11.0"
+	OldestRecommendedKubernetesVersion = "1.13.0"
 )
 
 type ApplyClusterCmd struct {
