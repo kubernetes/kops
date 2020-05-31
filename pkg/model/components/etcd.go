@@ -83,10 +83,8 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 				c.Version = DefaultEtcd3Version_1_14
 			} else if b.IsKubernetesGTE("1.13") {
 				c.Version = DefaultEtcd3Version_1_13
-			} else if b.IsKubernetesGTE("1.11") {
-				c.Version = DefaultEtcd3Version_1_11
 			} else {
-				c.Version = DefaultEtcd2Version
+				c.Version = DefaultEtcd3Version_1_11
 			}
 		}
 

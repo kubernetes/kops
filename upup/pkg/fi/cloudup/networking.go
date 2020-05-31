@@ -34,10 +34,6 @@ import (
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	// defaultCNIAssetK8s1_9 is the CNI tarball for 1.9.x k8s.
-	defaultCNIAssetK8s1_9           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.6.0.tgz"
-	defaultCNIAssetHashStringK8s1_9 = "d595d3ded6499a64e8dac02466e2f5f2ce257c9f"
-
 	// defaultCNIAssetK8s1_11 is the CNI tarball for k8s >= 1.11
 	defaultCNIAssetK8s1_11           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz"
 	defaultCNIAssetSHA1StringK8s1_11 = "52e9d2de8a5f927307d9397308735658ee44ab8d"
@@ -85,14 +81,10 @@ func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder) (*url.
 		cniAsset = defaultCNIAssetK8s1_15
 		cniAssetHash = defaultCNIAssetSHA256StringK8s1_15
 		klog.V(2).Infof("Adding default CNI asset for k8s >= 1.15: %s", cniAsset)
-	} else if util.IsKubernetesGTE("1.11", *sv) {
+	} else {
 		cniAsset = defaultCNIAssetK8s1_11
 		cniAssetHash = defaultCNIAssetSHA1StringK8s1_11
 		klog.V(2).Infof("Adding default CNI asset for 1.18 > k8s >= 1.11: %s", cniAsset)
-	} else {
-		cniAsset = defaultCNIAssetK8s1_9
-		cniAssetHash = defaultCNIAssetHashStringK8s1_9
-		klog.V(2).Infof("Adding default CNI asset for 1.11 > k8s >= 1.9: %s", cniAsset)
 	}
 
 	u, err := url.Parse(cniAsset)
