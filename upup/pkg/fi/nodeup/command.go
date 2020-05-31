@@ -38,6 +38,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/configserver"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
@@ -124,33 +125,41 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("ConfigBase or ConfigServer is required")
 	}
 
-	c.cluster = &api.Cluster{}
-	if nodeConfig != nil {
-		if err := utils.YamlUnmarshal([]byte(nodeConfig.ClusterFullConfig), c.cluster); err != nil {
-			return fmt.Errorf("error parsing Cluster config response: %w", err)
-		}
-	} else {
-		clusterLocation := fi.StringValue(c.config.ClusterLocation)
-
-		var p vfs.Path
-		if clusterLocation != "" {
-			var err error
-			p, err = vfs.Context.BuildVfsPath(clusterLocation)
-			if err != nil {
-				return fmt.Errorf("error parsing ClusterLocation %q: %v", clusterLocation, err)
-			}
+	{
+		var b []byte
+		var clusterDescription string
+		if nodeConfig != nil {
+			b = []byte(nodeConfig.ClusterFullConfig)
+			clusterDescription = "config response"
 		} else {
-			p = configBase.Join(registry.PathClusterCompleted)
+			clusterLocation := fi.StringValue(c.config.ClusterLocation)
+
+			var p vfs.Path
+			if clusterLocation != "" {
+				var err error
+				p, err = vfs.Context.BuildVfsPath(clusterLocation)
+				if err != nil {
+					return fmt.Errorf("error parsing ClusterLocation %q: %v", clusterLocation, err)
+				}
+			} else {
+				p = configBase.Join(registry.PathClusterCompleted)
+			}
+
+			var err error
+			b, err = p.ReadFile()
+			if err != nil {
+				return fmt.Errorf("error loading Cluster %q: %v", p, err)
+			}
+			clusterDescription = fmt.Sprintf("%q", p)
 		}
 
-		b, err := p.ReadFile()
+		o, _, err := kopscodecs.Decode(b, nil)
 		if err != nil {
-			return fmt.Errorf("error loading Cluster %q: %v", p, err)
+			return fmt.Errorf("error parsing Cluster %s: %v", clusterDescription, err)
 		}
-
-		err = utils.YamlUnmarshal(b, c.cluster)
-		if err != nil {
-			return fmt.Errorf("error parsing Cluster %q: %v", p, err)
+		var ok bool
+		if c.cluster, ok = o.(*api.Cluster); !ok {
+			return fmt.Errorf("unexpected object type for Cluster %s: %T", clusterDescription, o)
 		}
 	}
 

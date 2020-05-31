@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/nodeidentity"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -205,12 +206,14 @@ func (r *LegacyNodeReconciler) loadCluster(p vfs.Path) (*kops.Cluster, error) {
 		return nil, fmt.Errorf("error loading Cluster %q: %v", p, err)
 	}
 
-	cluster := &kops.Cluster{}
-	if err := utils.YamlUnmarshal(b, cluster); err != nil {
+	o, _, err := kopscodecs.Decode(b, nil)
+	if err != nil {
 		return nil, fmt.Errorf("error parsing Cluster %q: %v", p, err)
 	}
-
-	return cluster, nil
+	if cluster, ok := o.(*kops.Cluster); ok {
+		return cluster, nil
+	}
+	return nil, fmt.Errorf("unexpected object type for Cluster %q: %T", p, o)
 }
 
 // loadInstanceGroup loads a kops.InstanceGroup object from the vfs backing store

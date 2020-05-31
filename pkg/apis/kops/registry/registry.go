@@ -27,8 +27,8 @@ import (
 const (
 	// Path for the user-specified cluster spec
 	PathCluster = "config"
-	// Path for completed cluster spec in the state store
-	PathClusterCompleted = "cluster.spec"
+	// PathClusterCompleted is the path for completed cluster spec in the state store.
+	PathClusterCompleted = "cluster-completed.spec"
 	// PathKopsVersionUpdated is the path for the version of kops last used to apply the cluster.
 	PathKopsVersionUpdated = "kops-version.txt"
 )
