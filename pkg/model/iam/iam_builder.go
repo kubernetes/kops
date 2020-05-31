@@ -586,7 +586,7 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 	case *NodeRoleNode:
 		paths = append(paths,
 			"/addons/*",
-			"/cluster.spec",
+			"/cluster-completed.spec",
 			"/igconfig/node/*",
 			"/pki/issued/*",
 			"/pki/ssh/*",
