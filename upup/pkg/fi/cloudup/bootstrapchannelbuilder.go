@@ -157,21 +157,6 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		version := "0.0.4"
 
 		{
-			location := key + "/k8s-1.9.yaml"
-			id := "k8s-1.9"
-
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.9.0 <1.10.0",
-				Id:                id,
-			})
-		}
-
-		// In k8s v1.10, the PodSecurityPolicy API has been moved to the policy/v1beta1 API group
-		{
 			location := key + "/k8s-1.10.yaml"
 			id := "k8s-1.10"
 
@@ -890,24 +875,9 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		key := "networking.amazon-vpc-routed-eni"
 
 		versions := map[string]string{
-			"k8s-1.8":  "1.5.0-kops.1",
 			"k8s-1.10": "1.5.0-kops.2",
 			"k8s-1.12": "1.5.5-kops.1",
 			"k8s-1.16": "1.6.0-kops.1",
-		}
-
-		{
-			id := "k8s-1.8"
-			location := key + "/" + id + ".yaml"
-
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
-				Manifest:          fi.String(location),
-				KubernetesVersion: "<1.10.0",
-				Id:                id,
-			})
 		}
 
 		{
@@ -1070,7 +1040,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 					Version:           fi.String(version),
 					Manifest:          fi.String(location),
 					Selector:          map[string]string{"k8s-addon": key},
-					KubernetesVersion: ">=1.11.0 <1.13.0",
+					KubernetesVersion: "<1.13.0",
 					Id:                id,
 				})
 			}

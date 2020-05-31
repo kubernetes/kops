@@ -86,11 +86,9 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	} else if clusterSpec.Authorization.RBAC != nil {
 		var modes []string
 
-		if b.IsKubernetesGTE("1.10") {
-			if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
-				// Enable the Node authorizer, used for special per-node RBAC policies
-				modes = append(modes, "Node")
-			}
+		if fi.BoolValue(clusterSpec.KubeAPIServer.EnableBootstrapAuthToken) {
+			// Enable the Node authorizer, used for special per-node RBAC policies
+			modes = append(modes, "Node")
 		}
 		modes = append(modes, "RBAC")
 
@@ -164,12 +162,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.LogLevel = 2
 	c.SecurePort = 443
 
-	if b.IsKubernetesGTE("1.10") {
-		c.BindAddress = "0.0.0.0"
-		c.InsecureBindAddress = "127.0.0.1"
-	} else {
-		c.Address = "127.0.0.1"
-	}
+	c.BindAddress = "0.0.0.0"
+	c.InsecureBindAddress = "127.0.0.1"
 
 	c.AllowPrivileged = fi.Bool(true)
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
@@ -177,24 +171,9 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.EtcdServersOverrides = []string{"/events#http://127.0.0.1:4002"}
 
 	// TODO: We can probably rewrite these more clearly in descending order
-	if b.IsKubernetesLT("1.10") {
-		c.AdmissionControl = []string{
-			"Initializers",
-			"NamespaceLifecycle",
-			"LimitRanger",
-			"ServiceAccount",
-			"PersistentVolumeLabel",
-			"DefaultStorageClass",
-			"DefaultTolerationSeconds",
-			"MutatingAdmissionWebhook",
-			"ValidatingAdmissionWebhook",
-			"NodeRestriction",
-			"ResourceQuota",
-		}
-	}
 	// Based on recommendations from:
 	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
-	if b.IsKubernetesGTE("1.10") && b.IsKubernetesLT("1.12") {
+	if b.IsKubernetesLT("1.12") {
 		c.EnableAdmissionPlugins = []string{
 			"Initializers",
 			"NamespaceLifecycle",

@@ -194,15 +194,6 @@ func Image(component string, architecture string, clusterSpec *kops.ClusterSpec,
 
 	image := "k8s.gcr.io/" + imageName + ":" + tag
 
-	// When we're using a docker load-ed image, we are likely a CI build.
-	// But the k8s.gcr.io prefix is an alias, and we only double-tagged from 1.10 onwards.
-	// For versions prior to 1.10, remap k8s.gcr.io to the old name.
-	// This also means that we won't start using the aliased names on existing clusters,
-	// which could otherwise be surprising to users.
-	if !kubernetesVersion.IsGTE("1.10") {
-		image = "gcr.io/google_containers/" + strings.TrimPrefix(image, "k8s.gcr.io/")
-	}
-
 	return image, nil
 }
 

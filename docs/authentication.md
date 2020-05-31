@@ -33,10 +33,6 @@ spec:
 
 ## AWS IAM Authenticator
 
-
-:exclamation:AWS IAM Authenticator requires Kops 1.10 or newer and Kubernetes 1.10 or newer
-
-
 To turn on AWS IAM Authenticator, you'll need to add the stanza bellow
 to your cluster configuration.
 

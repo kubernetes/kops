@@ -44,11 +44,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 	containerd := clusterSpec.Containerd
 
 	if clusterSpec.ContainerRuntime == "containerd" {
-		if b.IsKubernetesLT("1.11") {
-			// Containerd 1.2 is validated against Kubernetes v1.11+
-			// https://github.com/containerd/containerd/blob/master/releases/v1.2.0.toml#L34
-			return fmt.Errorf("kubernetes %s is not compatible with containerd", clusterSpec.KubernetesVersion)
-		} else if b.IsKubernetesLT("1.18") {
+		if b.IsKubernetesLT("1.18") {
 			klog.Warningf("kubernetes %s is untested with containerd", clusterSpec.KubernetesVersion)
 		}
 
@@ -56,7 +52,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		if fi.StringValue(containerd.Version) == "" {
 			if b.IsKubernetesGTE("1.18") {
 				containerd.Version = fi.String("1.3.4")
-			} else if b.IsKubernetesGTE("1.11") {
+			} else {
 				return fmt.Errorf("containerd version is required")
 			}
 		}

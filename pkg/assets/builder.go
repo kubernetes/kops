@@ -147,15 +147,6 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 	asset.DockerImage = image
 
-	// The k8s.gcr.io prefix is an alias, but for CI builds we run from a docker load,
-	// and we only double-tag from 1.10 onwards.
-	// For versions prior to 1.10, remap k8s.gcr.io to the old name.
-	// This also means that we won't start using the aliased names on existing clusters,
-	// which could otherwise be surprising to users.
-	if !util.IsKubernetesGTE("1.10", a.KubernetesVersion) && strings.HasPrefix(image, "k8s.gcr.io/") {
-		image = "gcr.io/google_containers/" + strings.TrimPrefix(image, "k8s.gcr.io/")
-	}
-
 	if strings.HasPrefix(image, "kope/dns-controller:") {
 		// To use user-defined DNS Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
@@ -210,11 +201,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		normalized := image
 
 		// Remove the 'standard' kubernetes image prefix, just for sanity
-		if !util.IsKubernetesGTE("1.10", a.KubernetesVersion) && strings.HasPrefix(normalized, "gcr.io/google_containers/") {
-			normalized = strings.TrimPrefix(normalized, "gcr.io/google_containers/")
-		} else {
-			normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
-		}
+		normalized = strings.TrimPrefix(normalized, "k8s.gcr.io/")
 
 		// When assembling the cluster spec, kops may call the option more then once until the config converges
 		// This means that this function may me called more than once on the same image
