@@ -153,7 +153,7 @@ func findFile(p string) (*File, error) {
 	actual.Mode = fi.String(fi.FileModeToString(stat.Mode() & os.ModePerm))
 
 	uid := int(stat.Sys().(*syscall.Stat_t).Uid)
-	owner, err := fi.LookupUserById(uid)
+	owner, err := fi.LookupUserByID(uid)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func findFile(p string) (*File, error) {
 	}
 
 	gid := int(stat.Sys().(*syscall.Stat_t).Gid)
-	group, err := fi.LookupGroupById(gid)
+	group, err := fi.LookupGroupByID(gid)
 	if err != nil {
 		return nil, err
 	}

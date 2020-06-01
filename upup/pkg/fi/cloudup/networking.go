@@ -66,9 +66,8 @@ func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder) (*url.
 				return nil, nil, fmt.Errorf("unable to parse CNI asset hash %q", cniAssetHashString)
 			}
 			return u, hash, nil
-		} else {
-			return u, nil, nil
 		}
+		return u, nil, nil
 	}
 
 	sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)

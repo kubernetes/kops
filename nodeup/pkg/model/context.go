@@ -195,7 +195,7 @@ func (c *NodeupModelContext) KubeletKubeConfig() string {
 
 // BuildPKIKubeconfig generates a kubeconfig
 func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
-	ca, err := c.GetCert(fi.CertificateId_CA)
+	ca, err := c.GetCert(fi.CertificateIDCA)
 	if err != nil {
 		return "", err
 	}

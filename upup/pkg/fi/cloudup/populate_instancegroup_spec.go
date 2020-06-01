@@ -66,7 +66,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	ig := &kops.InstanceGroup{}
-	reflectutils.JsonMergeStruct(ig, input)
+	reflectutils.JSONMergeStruct(ig, input)
 
 	// TODO: Clean up
 	if ig.IsMaster() {

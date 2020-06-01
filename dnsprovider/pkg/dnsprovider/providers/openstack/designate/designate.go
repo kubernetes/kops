@@ -34,7 +34,7 @@ const (
 )
 
 func init() {
-	dnsprovider.RegisterDnsProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
+	dnsprovider.RegisterDNSProvider(ProviderName, func(config io.Reader) (dnsprovider.Interface, error) {
 		return newDesignate(config)
 	})
 }

@@ -83,7 +83,7 @@ func Uint64Value(v *uint64) uint64 {
 	return *v
 }
 
-func DebugAsJsonString(v interface{}) string {
+func DebugAsJSONString(v interface{}) string {
 	data, err := json.Marshal(v)
 	if err != nil {
 		return fmt.Sprintf("error marshaling: %v", err)

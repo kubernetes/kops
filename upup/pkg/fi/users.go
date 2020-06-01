@@ -91,7 +91,7 @@ func LookupUser(name string) (*User, error) {
 	return users[name], nil
 }
 
-func LookupUserById(uid int) (*User, error) {
+func LookupUserByID(uid int) (*User, error) {
 	users, err := parseUsers()
 	if err != nil {
 		return nil, fmt.Errorf("error reading users: %v", err)
@@ -155,7 +155,7 @@ func LookupGroup(name string) (*Group, error) {
 	return groups[name], nil
 }
 
-func LookupGroupById(gid int) (*Group, error) {
+func LookupGroupByID(gid int) (*Group, error) {
 	users, err := parseGroups()
 	if err != nil {
 		return nil, fmt.Errorf("error reading groups: %v", err)
