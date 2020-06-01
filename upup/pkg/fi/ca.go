@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-const CertificateId_CA = "ca"
+const CertificateIDCA = "ca"
 
 const (
 	// SecretNameSSHPrimary is the Name for the primary SSH key
@@ -39,7 +39,7 @@ const (
 type KeystoreItem struct {
 	Type kops.KeysetType
 	Name string
-	Id   string
+	ID   string
 	Data []byte
 }
 

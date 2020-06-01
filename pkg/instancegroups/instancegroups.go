@@ -39,13 +39,13 @@ import (
 const rollingUpdateTaintKey = "kops.k8s.io/scheduled-for-update"
 
 // promptInteractive asks the user to continue, mostly copied from vendor/google.golang.org/api/examples/gmail.go.
-func promptInteractive(upgradedHostId, upgradedHostName string) (stopPrompting bool, err error) {
+func promptInteractive(upgradedHostID, upgradedHostName string) (stopPrompting bool, err error) {
 	stopPrompting = false
 	scanner := bufio.NewScanner(os.Stdin)
 	if upgradedHostName != "" {
-		klog.Infof("Pausing after finished %q, node %q", upgradedHostId, upgradedHostName)
+		klog.Infof("Pausing after finished %q, node %q", upgradedHostID, upgradedHostName)
 	} else {
-		klog.Infof("Pausing after finished %q", upgradedHostId)
+		klog.Infof("Pausing after finished %q", upgradedHostID)
 	}
 	fmt.Print("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
 	scanner.Scan()
@@ -321,7 +321,7 @@ func (c *RollingUpdateCluster) patchTaint(ctx context.Context, node *corev1.Node
 }
 
 func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *cloudinstances.CloudInstanceGroupMember, isBastion bool, sleepAfterTerminate time.Duration) error {
-	instanceId := u.ID
+	instanceID := u.ID
 
 	nodeName := ""
 	if u.Node != nil {
@@ -346,7 +346,7 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *clo
 				klog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 			}
 		} else {
-			klog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceId)
+			klog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceID)
 		}
 	}
 
@@ -354,7 +354,7 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *clo
 	// (It often seems like GCE tries to re-use names)
 	if !isBastion && !c.CloudOnly {
 		if u.Node == nil {
-			klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceId)
+			klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceID)
 		} else {
 			klog.Infof("deleting node %q from kubernetes", nodeName)
 			if err := c.deleteNode(ctx, u.Node); err != nil {
@@ -364,7 +364,7 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *clo
 	}
 
 	if err := c.deleteInstance(u); err != nil {
-		klog.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
+		klog.Errorf("error deleting instance %q, node %q: %v", instanceID, nodeName, err)
 		return err
 	}
 
@@ -415,11 +415,10 @@ func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int) err
 			if successCount >= validateCount {
 				klog.Info("Cluster validated.")
 				return nil
-			} else {
-				klog.Infof("Cluster validated; revalidating in %s to make sure it does not flap.", c.ValidateSuccessDuration)
-				time.Sleep(c.ValidateSuccessDuration)
-				continue
 			}
+			klog.Infof("Cluster validated; revalidating in %s to make sure it does not flap.", c.ValidateSuccessDuration)
+			time.Sleep(c.ValidateSuccessDuration)
+			continue
 		}
 
 		if err != nil {
@@ -467,9 +466,8 @@ func (c *RollingUpdateCluster) detachInstance(u *cloudinstances.CloudInstanceGro
 	if err := c.Cloud.DetachInstance(u); err != nil {
 		if nodeName != "" {
 			return fmt.Errorf("error detaching instance %q, node %q: %v", id, nodeName, err)
-		} else {
-			return fmt.Errorf("error detaching instance %q: %v", id, err)
 		}
+		return fmt.Errorf("error detaching instance %q: %v", id, err)
 	}
 
 	return nil
@@ -491,9 +489,8 @@ func (c *RollingUpdateCluster) deleteInstance(u *cloudinstances.CloudInstanceGro
 	if err := c.Cloud.DeleteInstance(u); err != nil {
 		if nodeName != "" {
 			return fmt.Errorf("error deleting instance %q, node %q: %v", id, nodeName, err)
-		} else {
-			return fmt.Errorf("error deleting instance %q: %v", id, err)
 		}
+		return fmt.Errorf("error deleting instance %q: %v", id, err)
 	}
 
 	return nil

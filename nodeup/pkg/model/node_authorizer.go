@@ -47,7 +47,7 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 		// creates /src/kubernetes/node-authorizer/ca.pem
-		if err := b.BuildCertificateTask(c, fi.CertificateId_CA, filepath.Join(name, "ca.pem")); err != nil {
+		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, filepath.Join(name, "ca.pem")); err != nil {
 			return err
 		}
 	}
@@ -58,7 +58,7 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := b.BuildCertificatePairTask(c, "node-authorizer-client", authorizerDir, "tls"); err != nil {
 			return err
 		}
-		if err := b.BuildCertificateTask(c, fi.CertificateId_CA, authorizerDir+"/ca.pem"); err != nil {
+		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, authorizerDir+"/ca.pem"); err != nil {
 			return err
 		}
 	}

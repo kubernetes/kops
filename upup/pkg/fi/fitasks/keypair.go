@@ -199,7 +199,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			klog.V(2).Infof("Creating privateKey %q", name)
 		}
 
-		signer := fi.CertificateId_CA
+		signer := fi.CertificateIDCA
 		if e.Signer != nil {
 			signer = fi.StringValue(e.Signer.Name)
 		}

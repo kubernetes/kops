@@ -39,7 +39,7 @@ const (
 )
 
 func init() {
-	dnsprovider.RegisterDnsProvider(providerName, func(config io.Reader) (dnsprovider.Interface, error) {
+	dnsprovider.RegisterDNSProvider(providerName, func(config io.Reader) (dnsprovider.Interface, error) {
 		client, err := newClient()
 		if err != nil {
 			return nil, err
@@ -54,7 +54,7 @@ type TokenSource struct {
 	AccessToken string
 }
 
-// Token() returns oauth2.Token
+// Token returns oauth2.Token
 func (t *TokenSource) Token() (*oauth2.Token, error) {
 	token := &oauth2.Token{
 		AccessToken: t.AccessToken,

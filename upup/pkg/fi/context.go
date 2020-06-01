@@ -159,10 +159,9 @@ func (c *Context) Render(a, e, changes Task) error {
 
 				if *lifecycle == LifecycleExistsAndValidates {
 					return fmt.Errorf("lifecycle set to ExistsAndValidates, but object did not match")
-				} else {
-					// Warn, but then we continue
-					return nil
 				}
+				// Warn, but then we continue
+				return nil
 			}
 		}
 	}

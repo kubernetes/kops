@@ -102,7 +102,7 @@ func ValueAsString(value reflect.Value) string {
 
 			if !done {
 				klog.V(4).Infof("Unhandled kind in asString for %q: %T", path, v.Interface())
-				fmt.Fprint(b, values.DebugAsJsonString(intf))
+				fmt.Fprint(b, values.DebugAsJSONString(intf))
 			}
 
 			return SkipReflection

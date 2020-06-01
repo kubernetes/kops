@@ -64,7 +64,7 @@ type DNSController struct {
 // DNSController is a Context
 var _ Context = &DNSController{}
 
-// scope is a group of record objects
+// DNSControllerScope is a group of record objects
 type DNSControllerScope struct {
 	// ScopeName is the string id for this scope
 	ScopeName string
@@ -84,7 +84,7 @@ type DNSControllerScope struct {
 // DNSControllerScope is a Scope
 var _ Scope = &DNSControllerScope{}
 
-// NewDnsController creates a DnsController
+// NewDNSController creates a DnsController
 func NewDNSController(dnsProviders []dnsprovider.Interface, zoneRules *ZoneRules, updateInterval int) (*DNSController, error) {
 	dnsCache, err := newDNSCache(dnsProviders)
 	if err != nil {
