@@ -553,6 +553,10 @@ verify-terraform:
 verify-bindata:
 	./hack/verify-bindata.sh
 
+.PHONY: verify-hashes
+verify-hashes:
+	./hack/verify-hashes.sh
+
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
