@@ -316,11 +316,9 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 
 // ProtokubeFlags are the flags for protokube
 type ProtokubeFlags struct {
-	ApplyTaints *bool    `json:"applyTaints,omitempty" flag:"apply-taints"`
-	Channels    []string `json:"channels,omitempty" flag:"channels"`
-	Cloud       *string  `json:"cloud,omitempty" flag:"cloud"`
-	// ClusterID flag is required only for vSphere cloud type, to pass cluster id information to protokube. AWS and GCE workflows ignore this flag.
-	ClusterID                 *string  `json:"cluster-id,omitempty" flag:"cluster-id"`
+	ApplyTaints               *bool    `json:"applyTaints,omitempty" flag:"apply-taints"`
+	Channels                  []string `json:"channels,omitempty" flag:"channels"`
+	Cloud                     *string  `json:"cloud,omitempty" flag:"cloud"`
 	Containerized             *bool    `json:"containerized,omitempty" flag:"containerized"`
 	DNSInternalSuffix         *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
 	DNSProvider               *string  `json:"dnsProvider,omitempty" flag:"dns"`
@@ -495,10 +493,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.DNSProvider = fi.String("digitalocean")
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
-			case kops.CloudProviderVSphere:
-				f.DNSProvider = fi.String("coredns")
-				f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
-				f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 			default:
 				klog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
 			}

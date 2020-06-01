@@ -162,11 +162,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	if cloudProvider == kops.CloudProviderVSphere {
-		clusterSpec.Kubelet.CloudProvider = "vsphere"
-		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
-	}
-
 	if cloudProvider == kops.CloudProviderOpenstack {
 		clusterSpec.Kubelet.CloudProvider = "openstack"
 	}
