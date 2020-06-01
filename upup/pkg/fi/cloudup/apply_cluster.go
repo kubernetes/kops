@@ -50,7 +50,6 @@ import (
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/spotinstmodel"
-	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
@@ -69,8 +68,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
-	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
@@ -87,8 +84,6 @@ var (
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
-	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
-	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
 	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
 	// CloudupModels a list of supported models
@@ -498,21 +493,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 		}
 
-	case kops.CloudProviderVSphere:
-		{
-			if !AlphaAllowVsphere.Enabled() {
-				return fmt.Errorf("vsphere support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowVsphere")
-			}
-
-			vsphereCloud := cloud.(*vsphere.VSphereCloud)
-			// TODO: map region with vCenter cluster, or datacenter, or datastore?
-			region = vsphereCloud.Cluster
-
-			l.AddTypes(map[string]interface{}{
-				"instance": &vspheretasks.VirtualMachine{},
-			})
-		}
-
 	case kops.CloudProviderBareMetal:
 		{
 			if !AlphaAllowBareMetal.Enabled() {
@@ -697,9 +677,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 					&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 				)
 
-			case kops.CloudProviderVSphere:
-				// No special settings (yet!)
-
 			case kops.CloudProviderBareMetal:
 				// No special settings (yet!)
 
@@ -804,19 +781,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			})
 		}
 
-	case kops.CloudProviderVSphere:
-		{
-			vsphereModelContext := &vspheremodel.VSphereModelContext{
-				KopsModelContext: modelContext,
-			}
-
-			l.Builders = append(l.Builders, &vspheremodel.AutoscalingGroupModelBuilder{
-				VSphereModelContext: vsphereModelContext,
-				BootstrapScript:     bootstrapScriptBuilder,
-				Lifecycle:           &clusterLifecycle,
-			})
-		}
-
 	case kops.CloudProviderBareMetal:
 		// BareMetal tasks will go here
 
@@ -862,8 +826,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
 		case kops.CloudProviderDO:
 			target = do.NewDOAPITarget(cloud.(*digitalocean.Cloud))
-		case kops.CloudProviderVSphere:
-			target = vsphere.NewVSphereAPITarget(cloud.(*vsphere.VSphereCloud))
 		case kops.CloudProviderBareMetal:
 			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
 		case kops.CloudProviderOpenstack:

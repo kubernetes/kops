@@ -269,19 +269,32 @@ spec:
                     description: Spotinst cloud-config specs
                     type: string
                   vSphereCoreDNSServer:
+                    description: VSphereCoreDNSServer is deprecated and will be removed
+                      in a later version
                     type: string
                   vSphereDatacenter:
+                    description: VShpereDatacenter is deprecated and will be removed
+                      in a later version
                     type: string
                   vSphereDatastore:
+                    description: VSphereDatastore is deprecated and will be removed
+                      in a later version
                     type: string
                   vSpherePassword:
+                    description: VSpherePassword is deprecated and will be removed
+                      in a later version
                     type: string
                   vSphereResourcePool:
+                    description: VSphereResourcePool is deprecated and will be removed
+                      in a later version
                     type: string
                   vSphereServer:
+                    description: VSphereServer is deprecated and will be removed in
+                      a later version
                     type: string
                   vSphereUsername:
-                    description: vSphere cloud-config specs
+                    description: VSphereUsername is deprecated and will be removed
+                      in a later version
                     type: string
                 type: object
               cloudControllerManager:

@@ -6,7 +6,6 @@ Enable experimental features with:
 
 The following experimental features are currently available:
 
-* `+VSphereCloudProvider` - Enable vSphere cloud provider.
 * `+EnableExternalDNS` - Enable external-dns with default settings (ingress sources only).
 * `+EnableLaunchTemplates` - Enable using launch templates rather than launchconfigurations (AWS only)
 * `+VPCSkipEnableDNSSupport` - Enables creation of a VPC that does not need DNSSupport enabled.
