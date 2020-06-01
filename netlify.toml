@@ -2,3 +2,4 @@
 [build]
 publish = "site"
 command = "make build-docs-netlify"
+ignore = "git diff --quiet HEAD^ HEAD netlify.toml Makefile mkdocs.yml docs/ images/"
