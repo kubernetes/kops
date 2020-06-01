@@ -1005,7 +1005,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			cluster.Spec.CloudConfig.GCEServiceAccount = c.GCEServiceAccount
 		} else {
 			klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
-			klog.Warning("Use a pre-create Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
+			klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
 			cluster.Spec.CloudConfig.GCEServiceAccount = "default"
 		}
 	}
