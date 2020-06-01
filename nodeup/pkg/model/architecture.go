@@ -21,4 +21,5 @@ type Architecture string
 var (
 	ArchitectureAmd64 Architecture = "amd64"
 	ArchitectureArm   Architecture = "arm"
+	ArchitectureArm64 Architecture = "arm64"
 )
