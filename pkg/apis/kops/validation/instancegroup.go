@@ -125,9 +125,6 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 func validatedMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup) field.ErrorList {
 	var errs field.ErrorList
 
-	if len(spec.Instances) < 2 {
-		errs = append(errs, field.Invalid(path.Child("instances"), spec.Instances, "must be 2 or more instance types"))
-	}
 	// @step: check the instances are validate
 	for i, x := range spec.Instances {
 		errs = append(errs, awsValidateMachineType(path.Child("instances").Index(i).Child("instanceType"), x)...)
