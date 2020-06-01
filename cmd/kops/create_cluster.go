@@ -138,16 +138,6 @@ type CreateClusterOptions struct {
 	// Allow custom public master name
 	MasterPublicName string
 
-	// vSphere options
-	VSphereServer        string
-	VSphereDatacenter    string
-	VSphereResourcePool  string
-	VSphereCoreDNSServer string
-	// Note: We need open-vm-tools to be installed for vSphere Cloud Provider to work
-	// We need VSphereDatastore to support Kubernetes vSphere Cloud Provider (v1.5.3)
-	// We can remove this once we support higher versions.
-	VSphereDatastore string
-
 	// Spotinst options
 	SpotinstProduct     string
 	SpotinstOrientation string
@@ -299,7 +289,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "A cluster-readable location where we mirror configuration information, separate from the state store.  Allows for a state store that is not accessible from the cluster.")
 	}
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere, openstack")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, openstack")
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
@@ -381,15 +371,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// GCE flags
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.GCEServiceAccount, "gce-service-account", options.GCEServiceAccount, "Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.")
-
-	if featureflag.VSphereCloudProvider.Enabled() {
-		// vSphere flags
-		cmd.Flags().StringVar(&options.VSphereServer, "vsphere-server", options.VSphereServer, "vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
-		cmd.Flags().StringVar(&options.VSphereDatacenter, "vsphere-datacenter", options.VSphereDatacenter, "vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
-		cmd.Flags().StringVar(&options.VSphereResourcePool, "vsphere-resource-pool", options.VSphereDatacenter, "vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
-		cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
-		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
-	}
 
 	if featureflag.Spotinst.Enabled() {
 		// Spotinst flags
@@ -933,41 +914,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if c.Cloud != "" {
-		if c.Cloud == "vsphere" {
-			if !featureflag.VSphereCloudProvider.Enabled() {
-				return fmt.Errorf("Feature flag VSphereCloudProvider is not set. Cloud vSphere will not be supported.")
-			}
-
-			if cluster.Spec.CloudConfig == nil {
-				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-			}
-
-			if c.VSphereServer == "" {
-				return fmt.Errorf("vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
-			}
-			cluster.Spec.CloudConfig.VSphereServer = fi.String(c.VSphereServer)
-
-			if c.VSphereDatacenter == "" {
-				return fmt.Errorf("vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
-			}
-			cluster.Spec.CloudConfig.VSphereDatacenter = fi.String(c.VSphereDatacenter)
-
-			if c.VSphereResourcePool == "" {
-				return fmt.Errorf("vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
-			}
-			cluster.Spec.CloudConfig.VSphereResourcePool = fi.String(c.VSphereResourcePool)
-
-			if c.VSphereCoreDNSServer == "" {
-				return fmt.Errorf("A coredns server is required for vSphere.")
-			}
-			cluster.Spec.CloudConfig.VSphereCoreDNSServer = fi.String(c.VSphereCoreDNSServer)
-
-			if c.VSphereDatastore == "" {
-				return fmt.Errorf("vsphere-datastore is required for vSphere. Set a valid datastore in which to store dynamic provision volumes.")
-			}
-			cluster.Spec.CloudConfig.VSphereDatastore = fi.String(c.VSphereDatastore)
-		}
-
 		if featureflag.Spotinst.Enabled() {
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}

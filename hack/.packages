@@ -106,7 +106,6 @@ k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/openstackmodel
 k8s.io/kops/pkg/model/resources
 k8s.io/kops/pkg/model/spotinstmodel
-k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/nodeidentity
 k8s.io/kops/pkg/nodeidentity/aws
 k8s.io/kops/pkg/nodeidentity/do
@@ -178,8 +177,6 @@ k8s.io/kops/upup/pkg/fi/cloudup/openstack
 k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks
 k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
-k8s.io/kops/upup/pkg/fi/cloudup/vsphere
-k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks
 k8s.io/kops/upup/pkg/fi/fitasks
 k8s.io/kops/upup/pkg/fi/loader
 k8s.io/kops/upup/pkg/fi/nodeup

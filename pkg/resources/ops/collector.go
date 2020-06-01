@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	cloudopenstack "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
 // ListResources collects the resources from the specified cloud
@@ -45,8 +44,6 @@ func ListResources(cloud fi.Cloud, clusterName string, region string) (map[strin
 		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterName, region)
 	case kops.CloudProviderOpenstack:
 		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterName)
-	case kops.CloudProviderVSphere:
-		return resources.ListResourcesVSphere(cloud.(*vsphere.VSphereCloud), clusterName)
 	case kops.CloudProviderALI:
 		return ali.ListResourcesALI(cloud.(cloudali.ALICloud), clusterName, region)
 	default:

@@ -104,7 +104,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresSubnetCIDR = false
 		requiresNetworkCIDR = false
 	case kops.CloudProviderAWS:
-	case kops.CloudProviderVSphere:
 	case kops.CloudProviderOpenstack:
 		requiresNetworkCIDR = false
 		requiresSubnetCIDR = false
@@ -116,7 +115,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			string(kops.CloudProviderDO),
 			string(kops.CloudProviderALI),
 			string(kops.CloudProviderAWS),
-			string(kops.CloudProviderVSphere),
 			string(kops.CloudProviderOpenstack),
 		}))
 	}
@@ -324,8 +322,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			k8sCloudProvider = "gce"
 		case kops.CloudProviderDO:
 			k8sCloudProvider = "external"
-		case kops.CloudProviderVSphere:
-			k8sCloudProvider = "vsphere"
 		case kops.CloudProviderBareMetal:
 			k8sCloudProvider = ""
 		case kops.CloudProviderOpenstack:
