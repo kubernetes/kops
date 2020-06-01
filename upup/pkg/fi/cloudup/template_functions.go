@@ -61,7 +61,7 @@ type TemplateFunctions struct {
 	tags           sets.String
 }
 
-// This will define the available functions we can use in our YAML models
+// AddTo defines the available functions we can use in our YAML models.
 // If we are trying to get a new function implemented it MUST
 // be defined here.
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretStore) (err error) {
@@ -100,22 +100,20 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["NodeLocalDNSClusterIP"] = func() string {
 		if tf.cluster.Spec.KubeProxy.ProxyMode == "ipvs" {
 			return tf.cluster.Spec.KubeDNS.ServerIP
-		} else {
-			return "__PILLAR__CLUSTER__DNS__"
 		}
+		return "__PILLAR__CLUSTER__DNS__"
 	}
 	dest["NodeLocalDNSServerIP"] = func() string {
 		if tf.cluster.Spec.KubeProxy.ProxyMode == "ipvs" {
 			return ""
-		} else {
-			return tf.cluster.Spec.KubeDNS.ServerIP
 		}
+		return tf.cluster.Spec.KubeDNS.ServerIP
 	}
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
-	dest["DnsControllerArgv"] = tf.DnsControllerArgv
-	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
+	dest["DnsControllerArgv"] = tf.DNSControllerArgv
+	dest["ExternalDnsArgv"] = tf.ExternalDNSArgv
 	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
@@ -268,8 +266,8 @@ func (tf *TemplateFunctions) CloudControllerConfigArgv() ([]string, error) {
 	return argv, nil
 }
 
-// DnsControllerArgv returns the args to the DNS controller
-func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
+// DNSControllerArgv returns the args to the DNS controller
+func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 	var argv []string
 
 	argv = append(argv, "/usr/bin/dns-controller")
@@ -409,7 +407,7 @@ func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
-func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
+func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	var argv []string
 
 	cloudProvider := tf.cluster.Spec.CloudProvider

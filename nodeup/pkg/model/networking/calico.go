@@ -50,7 +50,7 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err := b.BuildPrivateKeyTask(c, name, key); err != nil {
 			return err
 		}
-		if err := b.BuildCertificateTask(c, fi.CertificateId_CA, ca); err != nil {
+		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, ca); err != nil {
 			return err
 		}
 	}

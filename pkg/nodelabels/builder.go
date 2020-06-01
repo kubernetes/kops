@@ -39,13 +39,13 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
 	if isMaster {
-		reflectutils.JsonMergeStruct(c, cluster.Spec.MasterKubelet)
+		reflectutils.JSONMergeStruct(c, cluster.Spec.MasterKubelet)
 	} else {
-		reflectutils.JsonMergeStruct(c, cluster.Spec.Kubelet)
+		reflectutils.JSONMergeStruct(c, cluster.Spec.Kubelet)
 	}
 
 	if instanceGroup.Spec.Kubelet != nil {
-		reflectutils.JsonMergeStruct(c, instanceGroup.Spec.Kubelet)
+		reflectutils.JSONMergeStruct(c, instanceGroup.Spec.Kubelet)
 	}
 
 	nodeLabels := c.NodeLabels

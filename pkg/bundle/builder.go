@@ -231,7 +231,7 @@ func (b *Builder) Build(cluster *kops.Cluster, ig *kops.InstanceGroup) (*Data, e
 func (b *Builder) buildPKIFiles(cluster *kops.Cluster, ig *kops.InstanceGroup, keyStore fi.CAStore) ([]*DataFile, error) {
 	var files []*DataFile
 
-	certs := []string{fi.CertificateId_CA, "kubelet"}
+	certs := []string{fi.CertificateIDCA, "kubelet"}
 	keys := []string{"kubelet"}
 
 	// Used by kube-proxy to auth to API

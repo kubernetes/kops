@@ -42,8 +42,8 @@ func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *kopsapi.ClusterSpec) (*kops
 
 	// Master kubelet config = (base kubelet config + master kubelet config)
 	masterKubelet := &kopsapi.KubeletConfigSpec{}
-	reflectutils.JsonMergeStruct(masterKubelet, completed.Kubelet)
-	reflectutils.JsonMergeStruct(masterKubelet, completed.MasterKubelet)
+	reflectutils.JSONMergeStruct(masterKubelet, completed.Kubelet)
+	reflectutils.JSONMergeStruct(masterKubelet, completed.MasterKubelet)
 	completed.MasterKubelet = masterKubelet
 
 	klog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
