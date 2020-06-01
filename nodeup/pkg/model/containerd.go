@@ -180,7 +180,7 @@ var containerdVersions = []packageVersion{
 		PlainBinary:    true,
 		Architectures:  []Architecture{ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.4.linux-amd64.tar.gz",
-		Hash:           "4616971c3ad21c24f2f2320fa1c085577a91032a068dd56a41c7c4b71a458087",
+		Hash:           "4616971c3ad21c24f2f2320fa1c085577a91032a068dd56a41c7c4b71a458088",
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
