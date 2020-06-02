@@ -16,7 +16,8 @@ kops describe secrets [flags]
 ### Examples
 
 ```
-  
+  # Describe a secret
+  kops describe secrets admin
 ```
 
 ### Options
