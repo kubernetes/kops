@@ -46,10 +46,10 @@ data:
   {{ end }}
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
-  enable-ipv4: "{{- if or  (.EnableIpv4) (and (not (.EnableIpv4)) (not (.EnableIpv6))) -}}true{{- else -}}false{{- end -}}"
+  enable-ipv4: "true"
   # Enable IPv6 addressing. If enabled, all endpoints are allocated an IPv6
   # address.
-  enable-ipv6: "{{- if .EnableIpv6 -}}true{{- else -}}false{{- end -}}"
+  enable-ipv6: "false"
   # If you want cilium monitor to aggregate tracing for packets, set this level
   # to "low", "medium", or "maximum". The higher the level, the less packets
   # that will be seen in monitor output.
