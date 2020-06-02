@@ -4154,14 +4154,14 @@ data:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: "{{- if eq .Tunnel "" -}}vxlan{{- else -}}{{ .Tunnel }}{{- end -}}"
+  tunnel: "{{ .Tunnel }}"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
-  cluster-name: "{{- if eq .ClusterName "" -}}default{{- else -}}{{ .ClusterName}}{{- end -}}"
+  cluster-name: "{{ .ClusterName }}"
 
   # DNS response code for rejecting DNS requests,
   # available options are "nameError" and "refused"
-  tofqdns-dns-reject-response-code: "{{- if eq .ToFqdnsDNSRejectResponseCode  "" -}}refused{{- else -}}{{ .ToFqdnsDNSRejectResponseCode }}{{- end -}}"
+  tofqdns-dns-reject-response-code: "{{ .ToFqdnsDNSRejectResponseCode }}"
   # This option is disabled by default starting from version 1.4.x in favor
   # of a more powerful DNS proxy-based implementation, see [0] for details.
   # Enable this option if you want to use FQDN policies but do not want to use
