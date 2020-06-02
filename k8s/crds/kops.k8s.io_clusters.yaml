@@ -3142,25 +3142,7 @@ spec:
                           the Cilium Operator.
                         type: string
                     required:
-                    - IPTablesRulesNoinstall
-                    - autoDirectNodeRoutes
-                    - bpfCTGlobalAnyMax
-                    - bpfCTGlobalTCPMax
-                    - clusterName
-                    - cniBinPath
                     - enableEncryption
-                    - enableNodePort
-                    - enableRemoteNodeIdentity
-                    - enableipv4
-                    - enableipv6
-                    - monitorAggregation
-                    - nodeInitBootstrapFile
-                    - preallocateBPFMaps
-                    - reconfigureKubelet
-                    - removeCbrBridge
-                    - restartPods
-                    - sidecarIstioProxyImage
-                    - toFqdnsEnablePoller
                     type: object
                   classic:
                     description: ClassicNetworkingSpec is the specification of classic

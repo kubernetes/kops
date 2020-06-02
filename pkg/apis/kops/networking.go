@@ -371,28 +371,28 @@ type CiliumNetworkingSpec struct {
 	Tunnel string `json:"tunnel,omitempty"`
 	// EnableIpv6 is not implemented and may be removed in the future.
 	// Setting this has no effect.
-	EnableIpv6 bool `json:"enableipv6"`
+	EnableIpv6 bool `json:"enableipv6,omitempty"`
 	// EnableIpv4 is not implemented and may be removed in the future.
 	// Setting this has no effect.
-	EnableIpv4 bool `json:"enableipv4"`
+	EnableIpv4 bool `json:"enableipv4,omitempty"`
 	// MonitorAggregation sets the level of packet monitoring. Possible values are "low", "medium", or "maximum".
 	// Default: medium
-	MonitorAggregation string `json:"monitorAggregation"`
+	MonitorAggregation string `json:"monitorAggregation,omitempty"`
 	// BPFCTGlobalTCPMax is the maximum number of entries in the TCP CT table.
 	// Default: 524288
-	BPFCTGlobalTCPMax int `json:"bpfCTGlobalTCPMax"`
+	BPFCTGlobalTCPMax int `json:"bpfCTGlobalTCPMax,omitempty"`
 	// BPFCTGlobalAnyMax is the maximum number of entries in the non-TCP CT table.
 	// Default: 262144
-	BPFCTGlobalAnyMax int `json:"bpfCTGlobalAnyMax"`
+	BPFCTGlobalAnyMax int `json:"bpfCTGlobalAnyMax,omitempty"`
 	// PreallocateBPFMaps reduces the per-packet latency at the expense of up-front memory allocation.
 	// Default: true
-	PreallocateBPFMaps bool `json:"preallocateBPFMaps"`
+	PreallocateBPFMaps bool `json:"preallocateBPFMaps,omitempty"`
 	// SidecarIstioProxyImage is the regular expression matching compatible Istio sidecar istio-proxy
 	// container image names.
 	// Default: cilium/istio_proxy
-	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage"`
+	SidecarIstioProxyImage string `json:"sidecarIstioProxyImage,omitempty"`
 	// ClusterName is the name of the cluster. It is only relevant when building a mesh of clusters.
-	ClusterName string `json:"clusterName"`
+	ClusterName string `json:"clusterName,omitempty"`
 	// ToFqdnsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
 	// Possible values are "nameError" or "refused".
 	// Default: refused
@@ -400,7 +400,7 @@ type CiliumNetworkingSpec struct {
 	// ToFqdnsEnablePoller replaces the DNS proxy-based implementation of FQDN policies
 	// with the less powerful legacy implementation.
 	// Default: false
-	ToFqdnsEnablePoller bool `json:"toFqdnsEnablePoller"`
+	ToFqdnsEnablePoller bool `json:"toFqdnsEnablePoller,omitempty"`
 	// ContainerRuntimeLabels enables fetching of container-runtime labels from the specified container runtime and associating them with endpoints.
 	// Supported values are: "none", "containerd", "crio", "docker", "auto"
 	// As of Cilium 1.7.0, Cilium no longer fetches information from the
@@ -415,37 +415,37 @@ type CiliumNetworkingSpec struct {
 	Ipam string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
 	// Default: false
-	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall"`
+	IPTablesRulesNoinstall bool `json:"IPTablesRulesNoinstall,omitempty"`
 	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
 	// Default: false
-	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes"`
+	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes,omitempty"`
 	// EnableNodePort replaces kube-proxy with Cilium's BPF implementation.
 	// Requires spec.kubeProxy.enabled be set to false.
 	// Default: false
-	EnableNodePort bool `json:"enableNodePort"`
+	EnableNodePort bool `json:"enableNodePort,omitempty"`
 	// EtcdManagd installs an additional etcd cluster that is used for Cilium state change.
 	// The cluster is operated by cilium-etcd-operator.
 	// Default: false
 	EtcdManaged bool `json:"etcdManaged,omitempty"`
 	// EnableRemoteNodeIdentity enables the remote-node-identity added in Cilium 1.7.0.
 	// Default: false
-	EnableRemoteNodeIdentity bool `json:"enableRemoteNodeIdentity"`
+	EnableRemoteNodeIdentity bool `json:"enableRemoteNodeIdentity,omitempty"`
 
 	// RemoveCbrBridge is not implemented and may be removed in the future.
 	// Setting this has no effect.
-	RemoveCbrBridge bool `json:"removeCbrBridge"`
+	RemoveCbrBridge bool `json:"removeCbrBridge,omitempty"`
 	// RestartPods is not implemented and may be removed in the future.
 	// Setting this has no effect.
-	RestartPods bool `json:"restartPods"`
+	RestartPods bool `json:"restartPods,omitempty"`
 	// ReconfigureKubelet is not implemented and may be removed in the future.
 	// Setting this has no effect.
-	ReconfigureKubelet bool `json:"reconfigureKubelet"`
+	ReconfigureKubelet bool `json:"reconfigureKubelet,omitempty"`
 	// NodeInitBootstrapFile is not implemented and may be removed in the future.
 	// Setting this has no effect.
-	NodeInitBootstrapFile string `json:"nodeInitBootstrapFile"`
+	NodeInitBootstrapFile string `json:"nodeInitBootstrapFile,omitempty"`
 	// CniBinPath is not implemented and may be removed in the future.
 	// Setting this has no effect.
-	CniBinPath string `json:"cniBinPath"`
+	CniBinPath string `json:"cniBinPath,omitempty"`
 }
 
 // LyftVPCNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking.
