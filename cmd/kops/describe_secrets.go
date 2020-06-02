@@ -38,9 +38,9 @@ var (
 	Get additional information about cluster secrets.
 	`))
 
-	// TODO: what is an example??
 	describeSecretExample = templates.Examples(i18n.T(`
-
+	# Describe a secret
+	kops describe secrets admin
 	`))
 	describeSecretShort = i18n.T(`Describe a cluster secret`)
 )
