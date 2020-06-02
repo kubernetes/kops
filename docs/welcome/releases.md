@@ -26,7 +26,7 @@ supports Kubernetes 1.16.5, 1.15.2, and several previous Kubernetes versions.
 
 Use the latest version of kops for all releases of Kubernetes, with the caveat
 that higher versions of Kubernetes are not _officially_ supported by kops.
-Releases who are ~~crossed out~~ _should_ work, but we suggest they be upgraded soon.
+Releases which are ~~crossed out~~ _should_ work, but we suggest they be upgraded soon.
 
 ## Release Schedule
 
