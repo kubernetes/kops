@@ -886,39 +886,6 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
-	if b.cluster.Spec.Networking.Romana != nil {
-		key := "networking.romana"
-		version := "v2.0.2-kops.3"
-
-		{
-			location := key + "/k8s-1.7.yaml"
-			id := "k8s-1.7"
-
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          networkingSelector,
-				Manifest:          fi.String(location),
-				KubernetesVersion: "<1.12.0",
-				Id:                id,
-			})
-		}
-
-		{
-			location := key + "/k8s-1.12.yaml"
-			id := "k8s-1.12"
-
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          networkingSelector,
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.12.0",
-				Id:                id,
-			})
-		}
-	}
-
 	if b.cluster.Spec.Networking.AmazonVPC != nil {
 		key := "networking.amazon-vpc-routed-eni"
 
