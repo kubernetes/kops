@@ -173,7 +173,12 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 		return err
 	}
 
-	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster).ToAggregate()
+	cloud, err := cloudup.BuildCloud(fullCluster)
+	if err != nil {
+		return err
+	}
+
+	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, cloud).ToAggregate()
 	if err != nil {
 		return err
 	}
