@@ -28,7 +28,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/install"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/kops/v1beta1"
 )
 
 var Scheme = runtime.NewScheme()
@@ -57,7 +57,7 @@ func decoder() runtime.Decoder {
 
 // ToVersionedYaml encodes the object to YAML
 func ToVersionedYaml(obj runtime.Object) ([]byte, error) {
-	return ToVersionedYamlWithVersion(obj, v1alpha2.SchemeGroupVersion)
+	return ToVersionedYamlWithVersion(obj, v1beta1.SchemeGroupVersion)
 }
 
 // ToVersionedYamlWithVersion encodes the object to YAML, in a specified API version
@@ -72,7 +72,7 @@ func ToVersionedYamlWithVersion(obj runtime.Object, version runtime.GroupVersion
 
 // ToVersionedJSON encodes the object to JSON
 func ToVersionedJSON(obj runtime.Object) ([]byte, error) {
-	return ToVersionedJSONWithVersion(obj, v1alpha2.SchemeGroupVersion)
+	return ToVersionedJSONWithVersion(obj, v1beta1.SchemeGroupVersion)
 }
 
 // ToVersionedJSONWithVersion encodes the object to JSON, in a specified API version

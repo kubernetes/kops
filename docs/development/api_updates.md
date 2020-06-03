@@ -6,7 +6,7 @@ jump through some hoops to use it.
 Recommended reading: [kubernetes API convention doc](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) and [kubernetes API changes doc](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md).
 
 The kops APIs live in [pkg/apis/kops](https://github.com/kubernetes/kops/tree/master/pkg/apis/kops), both in
-that directory directly (the unversioned API) and in the versioned subdirectory (`v1alpha2`).
+that directory directly (the unversioned API) and in the versioned subdirectories (`v1alpha2`, `v1beta1`).
 
 ## Updating the generated API code
 
@@ -19,7 +19,7 @@ need for `&& make`.
 The most common task you will do will be to add a new field.  This is relatively straightforward, because
 it is backwards compatible (you have to make sure that the field is optional).
 
-* Add the field to pkg/apis/kops, and then also to each versioned copy: pkg/apis/kops/v1alpha2, etc
+* Add the field to pkg/apis/kops, and then also to each versioned copy: pkg/apis/kops/v1alpha2, pkg/apis/kops/v1beta1, etc
 * Run the apimachinery update as above (`make apimachinery && make crds && make`)
 * You likely want to update the validation logic
 * You likely want to update the defaulting logic

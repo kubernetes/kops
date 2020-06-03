@@ -1,14 +1,14 @@
-apiVersion: kops.k8s.io/v1alpha2
+apiVersion: kops.k8s.io/v1beta1
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
-  name: additionalcidr.example.com
+  name: launchtemplates.example.com
 spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
-  configBase: memfs://clusters.example.com/additionalcidr.example.com
+  configBase: memfs://clusters.example.com/launchtemplates.example.com
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -28,12 +28,10 @@ spec:
     name: events
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.14.0
-  masterInternalName: api.internal.additionalcidr.example.com
-  masterPublicName: api.additionalcidr.example.com
+  kubernetesVersion: v1.12.9
+  masterInternalName: api.internal.launchtemplates.example.com
+  masterPublicName: api.launchtemplates.example.com
   networkCIDR: 10.0.0.0/16
-  additionalNetworkCIDRs:
-  - 10.1.0.0/16
   networking:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
@@ -47,47 +45,50 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
-  - cidr: 10.1.1.0/24
+  - cidr: 10.0.2.0/24
     name: us-test-1b
     type: Public
     zone: us-test-1b
-  - cidr: 10.1.2.0/24
+  - cidr: 10.0.3.0/24
     name: us-test-1c
     type: Public
     zone: us-test-1c
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha2
+apiVersion: kops.k8s.io/v1beta1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: nodes
   labels:
-    kops.k8s.io/cluster: additionalcidr.example.com
+    kops.k8s.io/cluster: launchtemplates.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: t2.medium
+  machineType: t3.medium
   maxSize: 2
   minSize: 2
   role: Node
+  instanceProtection: true
+  maxPrice: "0.1"
+  spotDurationInMinutes: 120
+  instanceInterruptionBehavior: "hibernate"
   subnets:
   - us-test-1b
-
 ---
 
-apiVersion: kops.k8s.io/v1alpha2
+apiVersion: kops.k8s.io/v1beta1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1a
   labels:
-    kops.k8s.io/cluster: additionalcidr.example.com
+    kops.k8s.io/cluster: launchtemplates.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: m3.medium
+  machineType: t3.medium
   maxSize: 1
   minSize: 1
   role: Master
@@ -96,17 +97,17 @@ spec:
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha2
+apiVersion: kops.k8s.io/v1beta1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1b
   labels:
-    kops.k8s.io/cluster: additionalcidr.example.com
+    kops.k8s.io/cluster: launchtemplates.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: m3.medium
+  machineType: t3.medium
   maxSize: 1
   minSize: 1
   role: Master
@@ -115,17 +116,17 @@ spec:
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha2
+apiVersion: kops.k8s.io/v1beta1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1c
   labels:
-    kops.k8s.io/cluster: additionalcidr.example.com
+    kops.k8s.io/cluster: launchtemplates.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
-  machineType: m3.medium
+  machineType: t3.medium
   maxSize: 1
   minSize: 1
   role: Master

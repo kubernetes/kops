@@ -1,0 +1,81 @@
+apiVersion: kops.k8s.io/v1beta1
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-10T22:42:27Z"
+  name: restrictaccess.example.com
+spec:
+  kubernetesApiAccess:
+  - 1.1.1.0/24
+  - 2001:0:8500::/40
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/restrictaccess.example.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: events
+  kubelet:
+    anonymousAuth: false
+  kubernetesVersion: v1.14.0
+  masterInternalName: api.internal.restrictaccess.example.com
+  masterPublicName: api.restrictaccess.example.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 1.1.1.1/32
+  - 2001:0:85a3::/48
+  topology:
+    masters: public
+    nodes: public
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1beta1
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: nodes
+  labels:
+    kops.k8s.io/cluster: restrictaccess.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1beta1
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: restrictaccess.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+
+

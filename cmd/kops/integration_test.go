@@ -54,7 +54,7 @@ const updateClusterTestBase = "../../tests/integration/update_cluster/"
 type integrationTest struct {
 	clusterName        string
 	srcDir             string
-	version            string
+	versions           []string
 	private            bool
 	zones              int
 	expectPolicies     bool
@@ -69,15 +69,15 @@ func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 	return &integrationTest{
 		clusterName:    clusterName,
 		srcDir:         srcDir,
-		version:        "v1alpha2",
+		versions:       []string{"v1alpha2", "v1beta1"},
 		zones:          1,
 		expectPolicies: true,
 		sshKey:         true,
 	}
 }
 
-func (i *integrationTest) withVersion(version string) *integrationTest {
-	i.version = version
+func (i *integrationTest) withVersions(version ...string) *integrationTest {
+	i.versions = version
 	return i
 }
 
@@ -151,7 +151,7 @@ func TestHighAvailabilityGCE(t *testing.T) {
 func TestComplex(t *testing.T) {
 	newIntegrationTest("complex.example.com", "complex").runTestTerraformAWS(t)
 	newIntegrationTest("complex.example.com", "complex").runTestCloudformation(t)
-	newIntegrationTest("complex.example.com", "complex").withVersion("legacy-v1alpha2").runTestTerraformAWS(t)
+	newIntegrationTest("complex.example.com", "complex").withVersions("legacy-v1alpha2").runTestTerraformAWS(t)
 }
 
 // TestExternalPolicies tests external policies output
@@ -288,8 +288,12 @@ func TestExistingIAM(t *testing.T) {
 
 // TestAdditionalCIDR runs the test on a configuration with a shared VPC
 func TestAdditionalCIDR(t *testing.T) {
-	newIntegrationTest("additionalcidr.example.com", "additional_cidr").withVersion("v1alpha3").withZones(3).runTestTerraformAWS(t)
-	newIntegrationTest("additionalcidr.example.com", "additional_cidr").runTestCloudformation(t)
+	newIntegrationTest("additionalcidr.example.com", "additional_cidr").withZones(3).runTestTerraformAWS(t)
+}
+
+// TestAdditionalCIDR runs the test on a configuration with a shared VPC
+func TestAdditionalCIDRCloudformation(t *testing.T) {
+	newIntegrationTest("additionalcidr.example.com", "additional_cidr_cloudformation").runTestCloudformation(t)
 }
 
 // TestPhaseNetwork tests the output of tf for the network phase
@@ -344,13 +348,13 @@ func TestLaunchTemplatesASG(t *testing.T) {
 	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchTemplate().runTestCloudformation(t)
 }
 
-func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
+func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, version string, phase *cloudup.Phase) {
 	ctx := context.Background()
 
 	var stdout bytes.Buffer
 
-	i.srcDir = updateClusterTestBase + i.srcDir
-	inputYAML := "in-" + i.version + ".yaml"
+	srcDir := updateClusterTestBase + i.srcDir
+	inputYAML := "in-" + version + ".yaml"
 	testDataTFPath := "kubernetes.tf"
 	actualTFPath := "kubernetes.tf"
 
@@ -369,7 +373,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 
 	{
 		options := &CreateOptions{}
-		options.Filenames = []string{path.Join(i.srcDir, inputYAML)}
+		options.Filenames = []string{path.Join(srcDir, inputYAML)}
 
 		err := RunCreate(ctx, factory, &stdout, options)
 		if err != nil {
@@ -381,7 +385,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		options := &CreateSecretPublickeyOptions{}
 		options.ClusterName = i.clusterName
 		options.Name = "admin"
-		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
+		options.PublicKeyPath = path.Join(srcDir, "id_rsa.pub")
 
 		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
 		if err != nil {
@@ -439,7 +443,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 			t.Fatalf("unexpected error reading actual terraform output: %v", err)
 		}
 
-		golden.AssertMatchesFile(t, string(actualTF), path.Join(i.srcDir, testDataTFPath))
+		golden.AssertMatchesFile(t, string(actualTF), path.Join(srcDir, testDataTFPath))
 	}
 
 	// Compare data files if they are provided
@@ -469,7 +473,7 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 		// Some tests might provide _some_ tf data files (not necessarily all that
 		// are actually produced), validate that the provided expected data file
 		// contents match actual data file content
-		expectedDataPath := path.Join(i.srcDir, "data")
+		expectedDataPath := path.Join(srcDir, "data")
 		{
 			for _, dataFileName := range expectedDataFilenames {
 				actualDataContent, err :=
@@ -484,266 +488,282 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 }
 
 func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
-	tfFileName := ""
-	h := testutils.NewIntegrationTestHarness(t)
-	defer h.Close()
+	for _, version := range i.versions {
+		t.Run(version, func(t *testing.T) {
+			tfFileName := ""
+			h := testutils.NewIntegrationTestHarness(t)
+			defer h.Close()
 
-	if i.jsonOutput {
-		tfFileName = "kubernetes.tf.json"
-	}
-
-	h.MockKopsVersion("1.15.0")
-	h.SetupMockAWS()
-
-	expectedFilenames := []string{}
-
-	if i.launchTemplate {
-		expectedFilenames = append(expectedFilenames, "aws_launch_template_nodes."+i.clusterName+"_user_data")
-	} else {
-		expectedFilenames = append(expectedFilenames, "aws_launch_configuration_nodes."+i.clusterName+"_user_data")
-	}
-	if i.sshKey {
-		expectedFilenames = append(expectedFilenames, "aws_key_pair_kubernetes."+i.clusterName+"-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
-	}
-
-	for j := 0; j < i.zones; j++ {
-		zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
-		if featureflag.EnableLaunchTemplates.Enabled() {
-			expectedFilenames = append(expectedFilenames, "aws_launch_template_master-"+zone+".masters."+i.clusterName+"_user_data")
-		} else {
-			expectedFilenames = append(expectedFilenames, "aws_launch_configuration_master-"+zone+".masters."+i.clusterName+"_user_data")
-		}
-	}
-
-	if i.expectPolicies {
-		expectedFilenames = append(expectedFilenames, []string{
-			"aws_iam_role_masters." + i.clusterName + "_policy",
-			"aws_iam_role_nodes." + i.clusterName + "_policy",
-			"aws_iam_role_policy_masters." + i.clusterName + "_policy",
-			"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
-		}...)
-		if i.private {
-			expectedFilenames = append(expectedFilenames, []string{
-				"aws_iam_role_bastions." + i.clusterName + "_policy",
-				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-			}...)
-			if i.bastionUserData {
-				expectedFilenames = append(expectedFilenames, "aws_launch_configuration_bastion."+i.clusterName+"_user_data")
+			if i.jsonOutput {
+				tfFileName = "kubernetes.tf.json"
 			}
-		}
+
+			h.MockKopsVersion("1.15.0")
+			h.SetupMockAWS()
+
+			expectedFilenames := []string{}
+
+			if i.launchTemplate {
+				expectedFilenames = append(expectedFilenames, "aws_launch_template_nodes."+i.clusterName+"_user_data")
+			} else {
+				expectedFilenames = append(expectedFilenames, "aws_launch_configuration_nodes."+i.clusterName+"_user_data")
+			}
+			if i.sshKey {
+				expectedFilenames = append(expectedFilenames, "aws_key_pair_kubernetes."+i.clusterName+"-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
+			}
+
+			for j := 0; j < i.zones; j++ {
+				zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
+				if featureflag.EnableLaunchTemplates.Enabled() {
+					expectedFilenames = append(expectedFilenames, "aws_launch_template_master-"+zone+".masters."+i.clusterName+"_user_data")
+				} else {
+					expectedFilenames = append(expectedFilenames, "aws_launch_configuration_master-"+zone+".masters."+i.clusterName+"_user_data")
+				}
+			}
+
+			if i.expectPolicies {
+				expectedFilenames = append(expectedFilenames, []string{
+					"aws_iam_role_masters." + i.clusterName + "_policy",
+					"aws_iam_role_nodes." + i.clusterName + "_policy",
+					"aws_iam_role_policy_masters." + i.clusterName + "_policy",
+					"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
+				}...)
+				if i.private {
+					expectedFilenames = append(expectedFilenames, []string{
+						"aws_iam_role_bastions." + i.clusterName + "_policy",
+						"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
+					}...)
+					if i.bastionUserData {
+						expectedFilenames = append(expectedFilenames, "aws_launch_configuration_bastion."+i.clusterName+"_user_data")
+					}
+				}
+			}
+			i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, version, nil)
+		})
 	}
-	i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, nil)
 }
 
 func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
-	h := testutils.NewIntegrationTestHarness(t)
-	defer h.Close()
+	for _, version := range i.versions {
+		t.Run(version, func(t *testing.T) {
+			h := testutils.NewIntegrationTestHarness(t)
+			defer h.Close()
 
-	h.MockKopsVersion("1.15.0")
-	h.SetupMockAWS()
-	phaseName := string(phase)
-	if phaseName == "" {
-		t.Fatalf("phase must be set")
+			h.MockKopsVersion("1.15.0")
+			h.SetupMockAWS()
+			phaseName := string(phase)
+			if phaseName == "" {
+				t.Fatalf("phase must be set")
+			}
+			tfFileName := phaseName + "-kubernetes.tf"
+
+			expectedFilenames := []string{}
+
+			if phase == cloudup.PhaseSecurity {
+				expectedFilenames = []string{
+					"aws_iam_role_masters." + i.clusterName + "_policy",
+					"aws_iam_role_nodes." + i.clusterName + "_policy",
+					"aws_iam_role_policy_masters." + i.clusterName + "_policy",
+					"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
+					"aws_key_pair_kubernetes." + i.clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
+				}
+				if i.private {
+					expectedFilenames = append(expectedFilenames, []string{
+						"aws_iam_role_bastions." + i.clusterName + "_policy",
+						"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
+						"aws_launch_configuration_bastion." + i.clusterName + "_user_data",
+					}...)
+				}
+			} else if phase == cloudup.PhaseCluster {
+				expectedFilenames = []string{
+					"aws_launch_configuration_nodes." + i.clusterName + "_user_data",
+				}
+
+				for j := 0; j < i.zones; j++ {
+					zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
+					s := "aws_launch_configuration_master-" + zone + ".masters." + i.clusterName + "_user_data"
+					expectedFilenames = append(expectedFilenames, s)
+				}
+			}
+
+			i.runTest(t, h, expectedFilenames, tfFileName, "", version, &phase)
+		})
 	}
-	tfFileName := phaseName + "-kubernetes.tf"
-
-	expectedFilenames := []string{}
-
-	if phase == cloudup.PhaseSecurity {
-		expectedFilenames = []string{
-			"aws_iam_role_masters." + i.clusterName + "_policy",
-			"aws_iam_role_nodes." + i.clusterName + "_policy",
-			"aws_iam_role_policy_masters." + i.clusterName + "_policy",
-			"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
-			"aws_key_pair_kubernetes." + i.clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
-		}
-		if i.private {
-			expectedFilenames = append(expectedFilenames, []string{
-				"aws_iam_role_bastions." + i.clusterName + "_policy",
-				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-				"aws_launch_configuration_bastion." + i.clusterName + "_user_data",
-			}...)
-		}
-	} else if phase == cloudup.PhaseCluster {
-		expectedFilenames = []string{
-			"aws_launch_configuration_nodes." + i.clusterName + "_user_data",
-		}
-
-		for j := 0; j < i.zones; j++ {
-			zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
-			s := "aws_launch_configuration_master-" + zone + ".masters." + i.clusterName + "_user_data"
-			expectedFilenames = append(expectedFilenames, s)
-		}
-	}
-
-	i.runTest(t, h, expectedFilenames, tfFileName, "", &phase)
 }
 
 func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	featureflag.ParseFlags("+AlphaAllowGCE")
 
-	h := testutils.NewIntegrationTestHarness(t)
-	defer h.Close()
+	for _, version := range i.versions {
+		t.Run(version, func(t *testing.T) {
+			h := testutils.NewIntegrationTestHarness(t)
+			defer h.Close()
 
-	h.MockKopsVersion("1.15.0")
-	h.SetupMockGCE()
+			h.MockKopsVersion("1.15.0")
+			h.SetupMockGCE()
 
-	expectedFilenames := []string{
-		"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_startup-script",
-		"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_ssh-keys",
+			expectedFilenames := []string{
+				"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_startup-script",
+				"google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_ssh-keys",
+			}
+
+			for j := 0; j < i.zones; j++ {
+				zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
+				prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
+
+				expectedFilenames = append(expectedFilenames, prefix+"startup-script")
+				expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
+			}
+
+			i.runTest(t, h, expectedFilenames, "", "", version, nil)
+		})
 	}
-
-	for j := 0; j < i.zones; j++ {
-		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
-		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
-
-		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
-		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
-	}
-
-	i.runTest(t, h, expectedFilenames, "", "", nil)
 }
 
 func (i *integrationTest) runTestCloudformation(t *testing.T) {
 	ctx := context.Background()
 
-	i.srcDir = updateClusterTestBase + i.srcDir
-	var stdout bytes.Buffer
+	srcDir := updateClusterTestBase + i.srcDir
+	for _, version := range i.versions {
+		t.Run(version, func(t *testing.T) {
+			var stdout bytes.Buffer
 
-	inputYAML := "in-" + i.version + ".yaml"
-	expectedCfPath := "cloudformation.json"
+			inputYAML := "in-" + version + ".yaml"
+			expectedCfPath := "cloudformation.json"
 
-	factoryOptions := &util.FactoryOptions{}
-	factoryOptions.RegistryPath = "memfs://tests"
+			factoryOptions := &util.FactoryOptions{}
+			factoryOptions.RegistryPath = "memfs://tests"
 
-	h := testutils.NewIntegrationTestHarness(t)
-	defer h.Close()
+			h := testutils.NewIntegrationTestHarness(t)
+			defer h.Close()
 
-	h.MockKopsVersion("1.15.0")
-	h.SetupMockAWS()
+			h.MockKopsVersion("1.15.0")
+			h.SetupMockAWS()
 
-	factory := util.NewFactory(factoryOptions)
+			factory := util.NewFactory(factoryOptions)
 
-	{
-		options := &CreateOptions{}
-		options.Filenames = []string{path.Join(i.srcDir, inputYAML)}
+			{
+				options := &CreateOptions{}
+				options.Filenames = []string{path.Join(srcDir, inputYAML)}
 
-		err := RunCreate(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	if i.sshKey {
-		options := &CreateSecretPublickeyOptions{}
-		options.ClusterName = i.clusterName
-		options.Name = "admin"
-		options.PublicKeyPath = path.Join(i.srcDir, "id_rsa.pub")
-
-		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
-		}
-	}
-
-	{
-		options := &UpdateClusterOptions{}
-		options.InitDefaults()
-		options.Target = "cloudformation"
-		options.OutDir = path.Join(h.TempDir, "out")
-		options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
-
-		// We don't test it here, and it adds a dependency on kubectl
-		options.CreateKubecfg = false
-		options.LifecycleOverrides = i.lifecycleOverrides
-
-		_, err := RunUpdateCluster(ctx, factory, i.clusterName, &stdout, options)
-		if err != nil {
-			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
-		}
-	}
-
-	// Compare main files
-	{
-		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out"))
-		if err != nil {
-			t.Fatalf("failed to read dir: %v", err)
-		}
-
-		var fileNames []string
-		for _, f := range files {
-			fileNames = append(fileNames, f.Name())
-		}
-		sort.Strings(fileNames)
-
-		actualFilenames := strings.Join(fileNames, ",")
-		expectedFilenames := "kubernetes.json"
-		if actualFilenames != expectedFilenames {
-			t.Fatalf("unexpected files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
-		}
-
-		actualPath := path.Join(h.TempDir, "out", "kubernetes.json")
-		actualCF, err := ioutil.ReadFile(actualPath)
-		if err != nil {
-			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
-		}
-
-		// Expand out the UserData base64 blob, as otherwise testing is painful
-		extracted := make(map[string]string)
-		var buf bytes.Buffer
-		out := jsonutils.NewJSONStreamWriter(&buf)
-		in := json.NewDecoder(bytes.NewReader(actualCF))
-		for {
-			token, err := in.Token()
-			if err != nil {
-				if err == io.EOF {
-					break
-				} else {
-					t.Fatalf("unexpected error parsing cloudformation output: %v", err)
+				err := RunCreate(ctx, factory, &stdout, options)
+				if err != nil {
+					t.Fatalf("error running %q create: %v", inputYAML, err)
 				}
 			}
 
-			if strings.HasSuffix(out.Path(), ".UserData") {
-				if s, ok := token.(string); ok {
-					vBytes, err := base64.StdEncoding.DecodeString(s)
+			if i.sshKey {
+				options := &CreateSecretPublickeyOptions{}
+				options.ClusterName = i.clusterName
+				options.Name = "admin"
+				options.PublicKeyPath = path.Join(srcDir, "id_rsa.pub")
+
+				err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
+				if err != nil {
+					t.Fatalf("error running %q create: %v", inputYAML, err)
+				}
+			}
+
+			{
+				options := &UpdateClusterOptions{}
+				options.InitDefaults()
+				options.Target = "cloudformation"
+				options.OutDir = path.Join(h.TempDir, "out")
+				options.RunTasksOptions.MaxTaskDuration = 30 * time.Second
+
+				// We don't test it here, and it adds a dependency on kubectl
+				options.CreateKubecfg = false
+				options.LifecycleOverrides = i.lifecycleOverrides
+
+				_, err := RunUpdateCluster(ctx, factory, i.clusterName, &stdout, options)
+				if err != nil {
+					t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
+				}
+			}
+
+			// Compare main files
+			{
+				files, err := ioutil.ReadDir(path.Join(h.TempDir, "out"))
+				if err != nil {
+					t.Fatalf("failed to read dir: %v", err)
+				}
+
+				var fileNames []string
+				for _, f := range files {
+					fileNames = append(fileNames, f.Name())
+				}
+				sort.Strings(fileNames)
+
+				actualFilenames := strings.Join(fileNames, ",")
+				expectedFilenames := "kubernetes.json"
+				if actualFilenames != expectedFilenames {
+					t.Fatalf("unexpected files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
+				}
+
+				actualPath := path.Join(h.TempDir, "out", "kubernetes.json")
+				actualCF, err := ioutil.ReadFile(actualPath)
+				if err != nil {
+					t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
+				}
+
+				// Expand out the UserData base64 blob, as otherwise testing is painful
+				extracted := make(map[string]string)
+				var buf bytes.Buffer
+				out := jsonutils.NewJSONStreamWriter(&buf)
+				in := json.NewDecoder(bytes.NewReader(actualCF))
+				for {
+					token, err := in.Token()
 					if err != nil {
-						t.Fatalf("error decoding UserData: %v", err)
-					} else {
-						extracted[out.Path()] = string(vBytes)
-						token = json.Token("extracted")
+						if err == io.EOF {
+							break
+						} else {
+							t.Fatalf("unexpected error parsing cloudformation output: %v", err)
+						}
+					}
+
+					if strings.HasSuffix(out.Path(), ".UserData") {
+						if s, ok := token.(string); ok {
+							vBytes, err := base64.StdEncoding.DecodeString(s)
+							if err != nil {
+								t.Fatalf("error decoding UserData: %v", err)
+							} else {
+								extracted[out.Path()] = string(vBytes)
+								token = json.Token("extracted")
+							}
+						}
+					}
+
+					if err := out.WriteToken(token); err != nil {
+						t.Fatalf("error writing json: %v", err)
 					}
 				}
+				actualCF = buf.Bytes()
+
+				golden.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
+
+				// test extracted values
+				{
+					actual := make(map[string]string)
+
+					for k, v := range extracted {
+						// Strip carriage return as expectedValue is stored in a yaml string literal
+						// and yaml block quoting doesn't seem to support \r in a string
+						v = strings.Replace(v, "\r", "", -1)
+
+						actual[k] = v
+					}
+
+					actualExtracted, err := yaml.Marshal(actual)
+					if err != nil {
+						t.Fatalf("error serializing yaml: %v", err)
+					}
+
+					golden.AssertMatchesFile(t, string(actualExtracted), path.Join(srcDir, expectedCfPath+".extracted.yaml"))
+				}
+
+				golden.AssertMatchesFile(t, string(actualCF), path.Join(srcDir, expectedCfPath))
 			}
-
-			if err := out.WriteToken(token); err != nil {
-				t.Fatalf("error writing json: %v", err)
-			}
-		}
-		actualCF = buf.Bytes()
-
-		golden.AssertMatchesFile(t, string(actualCF), path.Join(i.srcDir, expectedCfPath))
-
-		// test extracted values
-		{
-			actual := make(map[string]string)
-
-			for k, v := range extracted {
-				// Strip carriage return as expectedValue is stored in a yaml string literal
-				// and yaml block quoting doesn't seem to support \r in a string
-				v = strings.Replace(v, "\r", "", -1)
-
-				actual[k] = v
-			}
-
-			actualExtracted, err := yaml.Marshal(actual)
-			if err != nil {
-				t.Fatalf("error serializing yaml: %v", err)
-			}
-
-			golden.AssertMatchesFile(t, string(actualExtracted), path.Join(i.srcDir, expectedCfPath+".extracted.yaml"))
-		}
-
-		golden.AssertMatchesFile(t, string(actualCF), path.Join(i.srcDir, expectedCfPath))
+		})
 	}
 }
 

@@ -29,6 +29,8 @@ import (
 	fakekopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/internalversion/fake"
 	kopsv1alpha2 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2"
 	fakekopsv1alpha2 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2/fake"
+	kopsv1beta1 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1beta1"
+	fakekopsv1beta1 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1beta1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -86,4 +88,9 @@ func (c *Clientset) Kops() kopsinternalversion.KopsInterface {
 // KopsV1alpha2 retrieves the KopsV1alpha2Client
 func (c *Clientset) KopsV1alpha2() kopsv1alpha2.KopsV1alpha2Interface {
 	return &fakekopsv1alpha2.FakeKopsV1alpha2{Fake: &c.Fake}
+}
+
+// KopsV1beta1 retrieves the KopsV1beta1Client
+func (c *Clientset) KopsV1beta1() kopsv1beta1.KopsV1beta1Interface {
+	return &fakekopsv1beta1.FakeKopsV1beta1{Fake: &c.Fake}
 }

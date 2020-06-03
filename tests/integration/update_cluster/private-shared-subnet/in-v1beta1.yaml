@@ -1,0 +1,105 @@
+apiVersion: kops.k8s.io/v1beta1
+kind: Cluster
+metadata:
+  creationTimestamp: "2016-12-12T04:13:14Z"
+  name: private-shared-subnet.example.com
+spec:
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/private-shared-subnet.example.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    name: events
+  kubelet:
+    anonymousAuth: false
+  kubernetesVersion: v1.14.0
+  masterInternalName: api.internal.private-shared-subnet.example.com
+  masterPublicName: api.private-shared-subnet.example.com
+  networkCIDR: 172.20.0.0/16
+  networkID: vpc-12345678
+  networking:
+    weave: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  topology:
+    masters: private
+    nodes: private
+  subnets:
+  - cidr: 172.20.32.0/19
+    id: subnet-12345678
+    name: us-test-1a
+    type: Private
+    egress: nat-a2345678
+    zone: us-test-1a
+  - cidr: 172.20.4.0/22
+    id: subnet-abcdef
+    name: utility-us-test-1a
+    type: Utility
+    zone: us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1beta1
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-12T04:13:15Z"
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: private-shared-subnet.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1beta1
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-12T04:13:15Z"
+  name: nodes
+  labels:
+    kops.k8s.io/cluster: private-shared-subnet.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test-1a
+
+
+---
+
+apiVersion: kops.k8s.io/v1beta1
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-14T15:32:41Z"
+  name: bastion
+  labels:
+    kops.k8s.io/cluster: private-shared-subnet.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2019-08-16
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  role: Bastion
+  subnets:
+  - utility-us-test-1a

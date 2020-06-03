@@ -23,10 +23,13 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/kops/v1beta1"
 )
 
 func Install(scheme *runtime.Scheme) {
 	utilruntime.Must(kops.AddToScheme(scheme))
 	utilruntime.Must(v1alpha2.AddToScheme(scheme))
-	utilruntime.Must(scheme.SetVersionPriority(v1alpha2.SchemeGroupVersion))
+	utilruntime.Must(v1beta1.AddToScheme(scheme))
+	// TODO: change this to v1beta1 first in kops 1.20
+	utilruntime.Must(scheme.SetVersionPriority(v1alpha2.SchemeGroupVersion, v1beta1.SchemeGroupVersion))
 }

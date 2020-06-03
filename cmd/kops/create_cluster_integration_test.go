@@ -45,72 +45,87 @@ var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UT
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1beta1")
 }
 
 // TestCreateClusterOverride tests the override flag
 func TestCreateClusterOverride(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/overrides", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/overrides", "v1beta1")
 }
 
 // TestCreateClusterComplex runs kops create cluster, with a grab-bag of edge cases
 func TestCreateClusterComplex(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/complex", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/complex", "v1beta1")
 }
 
 // TestCreateClusterHA runs kops create cluster ha.example.com --zones us-test-1a,us-test-1b,us-test-1c --master-zones us-test-1a,us-test-1b,us-test-1c
 func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1beta1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1beta1")
 }
 
 // TestCreateClusterHAGCE runs kops create cluster ha-gce.example.com --cloud gce --zones us-test1-a,us-test1-b,us-test1-c --master-zones us-test1-a,us-test1-b,us-test1-c
 func TestCreateClusterHAGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_gce", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_gce", "v1beta1")
 }
 
 // TestCreateClusterGCE runs kops create cluster gce.example.com --cloud gce --zones us-test1-a --gce-service-account=test-account@testproject.iam.gserviceaccounts.com
 func TestCreateClusterGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/gce_byo_sa", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/gce_byo_sa", "v1beta1")
 }
 
 // TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the number of zones
 func TestCreateClusterHASharedZones(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1beta1")
 }
 
 // TestCreateClusterPrivate runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterPrivate(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1beta1")
 }
 
 // TestCreateClusterWithNGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterWithNGWSpecified(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1beta1")
 }
 
 // TestCreateClusterWithINGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterWithINGWSpecified(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ingwspecified", "v1beta1")
 }
 
 // TestCreateClusterSharedVPC runs kops create cluster vpc.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678
 func TestCreateClusterSharedVPC(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1beta1")
 }
 
 // TestCreateClusterSharedSubnets runs kops create cluster subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678 --subnets subnet-1
 func TestCreateClusterSharedSubnets(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets", "v1beta1")
 }
 
 // TestCreateClusterSharedSubnetsVpcLookup runs kops create cluster subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc --subnets subnet-1
 func TestCreateClusterSharedSubnetsVpcLookup(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets_vpc_lookup", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets_vpc_lookup", "v1beta1")
 }
 
 // TestCreateClusterPrivateSharedSubnets runs kops create cluster private-subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678 --subnets subnet-1 --utility-subnets subnet-2
 func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1beta1")
 }
 
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {

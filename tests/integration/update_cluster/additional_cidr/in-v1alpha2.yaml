@@ -11,12 +11,20 @@ spec:
   configBase: memfs://clusters.example.com/additionalcidr.example.com
   etcdClusters:
   - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
     - instanceGroup: master-us-test-1b
       name: us-test-1b
+    - instanceGroup: master-us-test-1c
+      name: us-test-1c
     name: main
   - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
     - instanceGroup: master-us-test-1b
       name: us-test-1b
+    - instanceGroup: master-us-test-1c
+      name: us-test-1c
     name: events
   kubelet:
     anonymousAuth: false
@@ -43,6 +51,10 @@ spec:
     name: us-test-1b
     type: Public
     zone: us-test-1b
+  - cidr: 10.1.2.0/24
+    name: us-test-1c
+    type: Public
+    zone: us-test-1c
 
 ---
 
@@ -69,6 +81,25 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
+  name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: additionalcidr.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1b
   labels:
     kops.k8s.io/cluster: additionalcidr.example.com
@@ -82,4 +113,21 @@ spec:
   subnets:
   - us-test-1b
 
+---
 
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-10T22:42:28Z"
+  name: master-us-test-1c
+  labels:
+    kops.k8s.io/cluster: additionalcidr.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1c

@@ -26,6 +26,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	kopsinternalversion "k8s.io/kops/pkg/apis/kops"
 	kopsv1alpha2 "k8s.io/kops/pkg/apis/kops/v1alpha2"
+	kopsv1beta1 "k8s.io/kops/pkg/apis/kops/v1beta1"
 )
 
 var scheme = runtime.NewScheme()
@@ -34,6 +35,7 @@ var parameterCodec = runtime.NewParameterCodec(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	kopsinternalversion.AddToScheme,
 	kopsv1alpha2.AddToScheme,
+	kopsv1beta1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

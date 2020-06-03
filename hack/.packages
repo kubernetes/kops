@@ -54,6 +54,7 @@ k8s.io/kops/pkg/apis/kops/model
 k8s.io/kops/pkg/apis/kops/registry
 k8s.io/kops/pkg/apis/kops/util
 k8s.io/kops/pkg/apis/kops/v1alpha2
+k8s.io/kops/pkg/apis/kops/v1beta1
 k8s.io/kops/pkg/apis/kops/validation
 k8s.io/kops/pkg/apis/nodeup
 k8s.io/kops/pkg/assets
@@ -66,6 +67,8 @@ k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion
 k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion/fake
 k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/v1alpha2
 k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/v1alpha2/fake
+k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/v1beta1
+k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/v1beta1/fake
 k8s.io/kops/pkg/client/clientset_generated/internalclientset
 k8s.io/kops/pkg/client/clientset_generated/internalclientset/fake
 k8s.io/kops/pkg/client/clientset_generated/internalclientset/scheme
@@ -73,6 +76,8 @@ k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/internal
 k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/internalversion/fake
 k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2
 k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2/fake
+k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1beta1
+k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1beta1/fake
 k8s.io/kops/pkg/client/simple
 k8s.io/kops/pkg/client/simple/api
 k8s.io/kops/pkg/client/simple/vfsclientset

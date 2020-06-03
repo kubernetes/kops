@@ -48,7 +48,7 @@ func TestToVersionedYaml(t *testing.T) {
 				},
 			},
 			expected: heredoc.Doc(`
-			apiVersion: kops.k8s.io/v1alpha2
+			apiVersion: kops.k8s.io/v1beta1
 			kind: Cluster
 			metadata:
 			  creationTimestamp: "2017-01-01T00:00:00Z"
