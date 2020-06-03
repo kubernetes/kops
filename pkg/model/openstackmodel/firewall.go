@@ -163,8 +163,7 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.ModelBuilderContext, sgMap map
 		addDirectionalGroupRule(c, masterSG, masterSG, etcdMgmrRule)
 	}
 
-	if b.Cluster.Spec.Networking.Romana != nil ||
-		b.Cluster.Spec.Networking.Calico != nil {
+	if b.Cluster.Spec.Networking.Calico != nil {
 
 		etcdCNIRule := &openstacktasks.SecurityGroupRule{
 			Lifecycle:    b.Lifecycle,
@@ -389,10 +388,6 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 		if b.Cluster.Spec.Networking.Calico != nil {
 			tcpPorts = append(tcpPorts, 179)
 			protocols = append(protocols, ProtocolIPEncap)
-		}
-
-		if b.Cluster.Spec.Networking.Romana != nil {
-			tcpPorts = append(tcpPorts, 9600)
 		}
 
 		if b.Cluster.Spec.Networking.Kuberouter != nil {
