@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -48,6 +49,10 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup) field.ErrorList {
 	allErrs = append(allErrs, awsValidateSpotDurationInMinute(field.NewPath(ig.GetName(), "spec", "spotDurationInMinutes"), ig)...)
 
 	allErrs = append(allErrs, awsValidateInstanceInterruptionBehavior(field.NewPath(ig.GetName(), "spec", "instanceInterruptionBehavior"), ig)...)
+
+	if ig.Spec.MixedInstancesPolicy != nil {
+		allErrs = append(allErrs, awsValidateMixedInstancesPolicy(field.NewPath("spec", "mixedInstancesPolicy"), ig.Spec.MixedInstancesPolicy, ig)...)
+	}
 
 	return allErrs
 }
@@ -105,4 +110,37 @@ func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.Ins
 		allErrs = append(allErrs, IsValidValue(fieldPath, &instanceInterruptionBehavior, validInterruptionBehaviors)...)
 	}
 	return allErrs
+}
+
+// awsValidateMixedInstancesPolicy is responsible for validating the user input of a mixed instance policy
+func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup) field.ErrorList {
+	var errs field.ErrorList
+
+	// @step: check the instances are validate
+	if cloud != nil {
+		for i, x := range spec.Instances {
+			errs = append(errs, awsValidateInstanceType(path.Child("instances").Index(i).Child("instanceType"), x)...)
+		}
+	}
+	if spec.OnDemandBase != nil {
+		if fi.Int64Value(spec.OnDemandBase) < 0 {
+			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be less than zero"))
+		}
+		if fi.Int64Value(spec.OnDemandBase) > int64(fi.Int32Value(ig.Spec.MaxSize)) {
+			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be greater than max size"))
+		}
+	}
+
+	if spec.OnDemandAboveBase != nil {
+		if fi.Int64Value(spec.OnDemandAboveBase) < 0 {
+			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be less than 0"))
+		}
+		if fi.Int64Value(spec.OnDemandAboveBase) > 100 {
+			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be greater than 100"))
+		}
+	}
+
+	errs = append(errs, IsValidValue(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, kops.SpotAllocationStrategies)...)
+
+	return errs
 }

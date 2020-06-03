@@ -75,10 +75,6 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 		allErrs = append(allErrs, validateFileAssetSpec(&g.Spec.FileAssets[i], field.NewPath("spec", "fileAssets").Index(i))...)
 	}
 
-	if g.Spec.MixedInstancesPolicy != nil {
-		allErrs = append(allErrs, validatedMixedInstancesPolicy(field.NewPath("spec", "mixedInstancesPolicy"), g.Spec.MixedInstancesPolicy, g)...)
-	}
-
 	for _, UserDataInfo := range g.Spec.AdditionalUserData {
 		allErrs = append(allErrs, validateExtraUserData(&UserDataInfo)...)
 	}
@@ -119,38 +115,6 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 	}
 
 	return allErrs
-}
-
-// validatedMixedInstancesPolicy is responsible for validating the user input of a mixed instance policy
-func validatedMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup) field.ErrorList {
-	var errs field.ErrorList
-
-	// @step: check the instances are validate
-	for i, x := range spec.Instances {
-		errs = append(errs, awsValidateMachineType(path.Child("instances").Index(i).Child("instanceType"), x)...)
-	}
-
-	if spec.OnDemandBase != nil {
-		if fi.Int64Value(spec.OnDemandBase) < 0 {
-			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be less than zero"))
-		}
-		if fi.Int64Value(spec.OnDemandBase) > int64(fi.Int32Value(ig.Spec.MaxSize)) {
-			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be greater than max size"))
-		}
-	}
-
-	if spec.OnDemandAboveBase != nil {
-		if fi.Int64Value(spec.OnDemandAboveBase) < 0 {
-			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be less than 0"))
-		}
-		if fi.Int64Value(spec.OnDemandAboveBase) > 100 {
-			errs = append(errs, field.Invalid(path.Child("onDemandAboveBase"), spec.OnDemandAboveBase, "cannot be greater than 100"))
-		}
-	}
-
-	errs = append(errs, IsValidValue(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, kops.SpotAllocationStrategies)...)
-
-	return errs
 }
 
 // validateVolumeSpec is responsible for checking a volume spec is ok
