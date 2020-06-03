@@ -155,11 +155,6 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}
 
-	err = validation.ValidateInstanceGroup(newGroup).ToAggregate()
-	if err != nil {
-		return err
-	}
-
 	fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup, channel)
 	if err != nil {
 		return err
