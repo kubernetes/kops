@@ -65,10 +65,6 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0"))
 	}
 
-	if g.Spec.RootVolumeType != nil {
-		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"gp2", "io1"})...)
-	}
-
 	// @check all the hooks are valid in this instancegroup
 	for i := range g.Spec.Hooks {
 		allErrs = append(allErrs, validateHookSpec(&g.Spec.Hooks[i], field.NewPath("spec", "hooks").Index(i))...)
@@ -211,6 +207,10 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) fi
 				allErrs = append(allErrs, field.NotFound(field.NewPath("spec", "subnets").Index(i), z))
 			}
 		}
+	}
+
+	if g.Spec.RootVolumeType != nil && kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"gp2", "io1"})...)
 	}
 
 	return allErrs
