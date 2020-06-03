@@ -1200,19 +1200,6 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
 	}
 
-	// TODO figure out if we can only do this for Flatcar only and GCE Container OS
-	// TODO It is very difficult to pre-determine what OS an ami is, and if that OS needs socat
-	// At this time we just copy the socat and conntrack binaries to all distros.
-	// Most distros will have their own socat and conntrack binary.
-	// Container operating systems like Flatcar need to have socat and conntrack added to them.
-	{
-		utilsLocation, hash, err := KopsFileUrl("linux/amd64/utils.tar.gz", assetBuilder)
-		if err != nil {
-			return err
-		}
-		c.Assets = append(c.Assets, BuildMirroredAsset(utilsLocation, hash))
-	}
-
 	asset, err := NodeUpAsset(assetBuilder)
 	if err != nil {
 		return err

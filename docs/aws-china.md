@@ -241,7 +241,6 @@ done
 KOPS_ASSETS=(
   "images/protokube.tar.gz"
   "linux/amd64/nodeup"
-  "linux/amd64/utils.tar.gz"
 )
 for asset in "${KOPS_ASSETS[@]}"; do
   kops_path="kops/$KOPS_VERSION/$asset"

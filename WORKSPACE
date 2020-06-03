@@ -128,15 +128,6 @@ dpkg_list(
     ],
 )
 
-# We use the prebuilt utils.tar.gz containing socat & conntrack, building it in bazel is really painful
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
-
-http_file(
-    name = "utils_tar_gz",
-    sha256 = "5c956247241dd94300ba13c6dd9cb5843382d4255125a7a6639d2aad68b9050c",
-    urls = ["https://kubeupv2.s3.amazonaws.com/kops/1.12.1/linux/amd64/utils.tar.gz"],
-)
-
 # TODO(fejta): use load.bzl, repos.bzl from repo-infra
 git_repository(
     name = "io_k8s_repo_infra",
