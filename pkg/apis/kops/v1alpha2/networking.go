@@ -123,6 +123,18 @@ type CalicoNetworkingSpec struct {
 	IptablesBackend string `json:"iptablesBackend,omitempty"`
 	// IPIPMode is mode for CALICO_IPV4POOL_IPIP
 	IPIPMode string `json:"ipipMode,omitempty"`
+	// IPv4AutoDetectionMethod configures how Calico chooses the IP address used to route
+	// between nodes.  This should be set when the host has multiple interfaces
+	// and it is important to select the interface used.
+	// Options: "first-found" (default), "can-reach=DESTINATION",
+	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
+	IPv4AutoDetectionMethod string `json:"ipv4AutoDetectionMethod,omitempty"`
+	// IPv6AutoDetectionMethod configures how Calico chooses the IP address used to route
+	// between nodes.  This should be set when the host has multiple interfaces
+	// and it is important to select the interface used.
+	// Options: "first-found" (default), "can-reach=DESTINATION",
+	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
+	IPv6AutoDetectionMethod string `json:"ipv6AutoDetectionMethod,omitempty"`
 	// TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha
 	// (default: false)
 	TyphaPrometheusMetricsEnabled bool `json:"typhaPrometheusMetricsEnabled,omitempty"`

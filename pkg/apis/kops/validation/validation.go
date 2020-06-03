@@ -17,17 +17,22 @@ limitations under the License.
 package validation
 
 import (
+	"errors"
 	"fmt"
 	"net"
+	"regexp"
 	"strings"
 
 	"github.com/blang/semver"
+	"golang.org/x/net/ipv4"
+	"golang.org/x/net/ipv6"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/apimachinery/pkg/api/validation"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
+	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/components"
@@ -699,7 +704,74 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterS
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
 	}
 
+	if v.IPv4AutoDetectionMethod != "" {
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), v.IPv4AutoDetectionMethod, ipv4.Version)...)
+	}
+
+	if v.IPv6AutoDetectionMethod != "" {
+		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv6AutoDetectionMethod"), v.IPv6AutoDetectionMethod, ipv6.Version)...)
+	}
+
 	return allErrs
+}
+
+func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime string, version int) field.ErrorList {
+	validationError := field.ErrorList{}
+
+	// validation code is based on the checks in calico/node startup code
+	// valid formats are "first-found", "can-reach=DEST", or
+	// "(skip-)interface=<COMMA-SEPARATED LIST OF INTERFACES>"
+	//
+	// We won't do deep validation of the values in this check, since they can
+	// be actual interface names or regexes
+	method := strings.Split(runtime, "=")
+	if len(method) == 0 {
+		return field.ErrorList{field.Invalid(fldPath, runtime, "missing autodetection method")}
+	}
+	if len(method) > 2 {
+		return field.ErrorList{field.Invalid(fldPath, runtime, "malformed autodetection method")}
+	}
+
+	// 'method' should contain something like "[interface eth0,en.*]" or "[first-found]"
+	switch method[0] {
+	case "first-found":
+		return nil
+	case "can-reach":
+		destStr := method[1]
+		if version == ipv4.Version {
+			return utilvalidation.IsValidIPv4Address(fldPath, destStr)
+		} else if version == ipv6.Version {
+			return utilvalidation.IsValidIPv6Address(fldPath, destStr)
+		}
+
+		return field.ErrorList{field.InternalError(fldPath, errors.New("IP version is incorrect"))}
+	case "interface":
+		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(method[1], -1)
+		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
+			validationError = append(validationError, field.Invalid(fldPath, runtime, "'interface=' must be followed by a comma separated list of interface regular expressions"))
+		}
+		for _, r := range ifRegexes {
+			_, e := regexp.Compile(r)
+			if e != nil {
+				validationError = append(validationError, field.Invalid(fldPath, runtime, fmt.Sprintf("regexp %s does not compile: %s", r, e.Error())))
+			}
+		}
+		return validationError
+	case "skip-interface":
+		ifRegexes := regexp.MustCompile(`\s*,\s*`).Split(method[1], -1)
+		if len(ifRegexes) == 0 || ifRegexes[0] == "" {
+			validationError = append(validationError, field.Invalid(fldPath, runtime, "'skip-interface=' must be followed by a comma separated list of interface regular expressions"))
+		}
+		for _, r := range ifRegexes {
+			_, e := regexp.Compile(r)
+			if e != nil {
+				validationError = append(validationError, field.Invalid(fldPath, runtime, fmt.Sprintf("regexp %s does not compile: %s", r, e.Error())))
+			}
+		}
+		return validationError
+	default:
+		return field.ErrorList{field.Invalid(fldPath, runtime, "unsupported autodetection method")}
+	}
 }
 
 func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {
