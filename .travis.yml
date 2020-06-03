@@ -19,7 +19,10 @@ jobs:
   # Exclude GO 1.14 for OSX until it becomes the default because of limited availability
   exclude:
     - os: osx
-      go: 1.14.x
+      go: 1.13.x
+    - os: linux
+      go: 1.13.x
+      arch: arm64
 
   include:
     - name: Verify
