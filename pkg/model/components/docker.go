@@ -73,12 +73,8 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	docker.IPMasq = fi.Bool(false)
 
 	// Note the alternative syntax... with a comma nodeup will try each of the filesystems in turn
-	// TODO(justinsb): figure out whether to use overlay2 on AWS jessie:
-	// The ContainerOS image now has docker configured to use overlay2 out-of-the-box
+	// TODO(justinsb): The ContainerOS image now has docker configured to use overlay2 out-of-the-box
 	// and it is an error to specify the flag twice.
-	// But Jessie (still our default AWS image) isn't recommended by docker with overlay2
-	// (though that may be a kernel issue, and we run a custom kernel on our default image)
-	// But we still need to worry about users running generic AMIs (e.g. stock jessie)
 	docker.Storage = fi.String("overlay2,overlay,aufs")
 
 	return nil
