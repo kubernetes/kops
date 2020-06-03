@@ -11,7 +11,7 @@ install the AWS CLI tools, and have API credentials for an account that has
 the permissions to create a new IAM account for `kops` later in the guide.
 
 
-Once you've [installed the AWS CLI tools](install.md) and have correctly setup
+Once you've [installed the AWS CLI tools](https://aws.amazon.com/cli/) and have correctly setup
 your system to use the official AWS methods of registering security credentials
 as [defined here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) we'll be ready to run `kops`, as it uses the Go AWS SDK.
 
