@@ -155,6 +155,9 @@ type AWSCloud interface {
 	// DefaultInstanceType determines a suitable instance type for the specified instance group
 	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
 
+	// DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
+	DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error)
+
 	// FindClusterStatus gets the status of the cluster as it exists in AWS, inferred from volumes
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 }
@@ -174,6 +177,8 @@ type awsCloudImplementation struct {
 	tags map[string]string
 
 	regionDelayers *RegionDelayers
+
+	instanceTypes map[string]*ec2.InstanceTypeInfo
 }
 
 type RegionDelayers struct {
@@ -282,6 +287,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 				return c, err
 			}
 		}
+		c.instanceTypes = make(map[string]*ec2.InstanceTypeInfo)
 
 		awsCloudInstances[region] = c
 		raw = c
@@ -1536,4 +1542,31 @@ func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (set
 	}
 
 	return zones, nil
+}
+
+// DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
+func (c *awsCloudImplementation) DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error) {
+	if info, ok := c.instanceTypes[instanceType]; ok {
+		return info, nil
+	}
+	info, err := describeInstanceType(c, instanceType)
+	if err != nil {
+		return nil, err
+	}
+	c.instanceTypes[instanceType] = info
+	return info, nil
+}
+
+func describeInstanceType(c AWSCloud, instanceType string) (*ec2.InstanceTypeInfo, error) {
+	req := &ec2.DescribeInstanceTypesInput{
+		InstanceTypes: aws.StringSlice([]string{instanceType}),
+	}
+	resp, err := c.EC2().DescribeInstanceTypes(req)
+	if err != nil {
+		return nil, err
+	}
+	if len(resp.InstanceTypes) != 1 {
+		return nil, fmt.Errorf("invalid instance type specified: %v", instanceType)
+	}
+	return resp.InstanceTypes[0], nil
 }
