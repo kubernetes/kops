@@ -623,8 +623,6 @@ func (c *Cluster) fillClusterSpecNetworkingSpec() {
 		// OK
 	} else if c.Spec.Networking.Kuberouter != nil {
 		// OK
-	} else if c.Spec.Networking.Romana != nil {
-		// OK
 	} else if c.Spec.Networking.AmazonVPC != nil {
 		// OK
 	} else if c.Spec.Networking.Cilium != nil {
