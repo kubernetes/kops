@@ -193,6 +193,7 @@ type KuberouterNetworkingSpec struct {
 }
 
 // RomanaNetworkingSpec declares that we want Romana networking
+// Romana is deprecated as of kops 1.18 and removed as of kops 1.19
 type RomanaNetworkingSpec struct {
 	// DaemonServiceIP is the Kubernetes Service IP for the romana-daemon pod
 	DaemonServiceIP string `json:"daemonServiceIP,omitempty"`
