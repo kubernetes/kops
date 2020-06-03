@@ -1,5 +1,7 @@
 # Romana
 
+Support for Romana is deprecated as of kops 1.18 and removed in kops 1.19.
+
 ## Installing
 
 To use Romana, specify the following in the cluster spec:
