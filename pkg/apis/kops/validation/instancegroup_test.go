@@ -181,6 +181,12 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 }
 
 func TestValidBootDevice(t *testing.T) {
+
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: "aws",
+		},
+	}
 	grid := []struct {
 		volumeType string
 		expected   []string
@@ -211,7 +217,7 @@ func TestValidBootDevice(t *testing.T) {
 				RootVolumeType: fi.String(g.volumeType),
 			},
 		}
-		errs := ValidateInstanceGroup(ig)
+		errs := CrossValidateInstanceGroup(ig, cluster)
 		testErrors(t, g.volumeType, errs, g.expected)
 	}
 }
