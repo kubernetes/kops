@@ -180,10 +180,6 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addECRPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Romana != nil {
-		addRomanaCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
-	}
-
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName(), b.IAMPrefix())
 	}
@@ -824,40 +820,6 @@ func addRoute53ListHostedZonesPermission(p *Policy) {
 		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
 		Resource: wildcard,
 	})
-}
-
-func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {
-	if legacyIAM {
-		// Legacy IAM provides ec2:*, so no additional permissions required
-		return
-	}
-
-	// Romana requires additional Describe permissions
-	// Comments are which Romana component makes the call
-	p.Statement = append(p.Statement,
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:DescribeAvailabilityZones", // vpcrouter
-				"ec2:DescribeVpcs",              // vpcrouter
-			}),
-			Resource: resource,
-		},
-		&Statement{
-			Effect: StatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"ec2:CreateRoute",  // vpcrouter
-				"ec2:DeleteRoute",  // vpcrouter
-				"ec2:ReplaceRoute", // vpcrouter
-			}),
-			Resource: resource,
-			Condition: Condition{
-				"StringEquals": map[string]string{
-					"ec2:ResourceTag/KubernetesCluster": clusterName,
-				},
-			},
-		},
-	)
 }
 
 func addLyftVPCPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool, clusterName string) {

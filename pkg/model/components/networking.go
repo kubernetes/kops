@@ -59,18 +59,5 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		return fmt.Errorf("classic networking not supported")
 	}
 
-	if networking.Romana != nil {
-		daemonIP, err := WellKnownServiceIP(clusterSpec, 99)
-		if err != nil {
-			return err
-		}
-		networking.Romana.DaemonServiceIP = daemonIP.String()
-		etcdIP, err := WellKnownServiceIP(clusterSpec, 88)
-		if err != nil {
-			return err
-		}
-		networking.Romana.EtcdServiceIP = etcdIP.String()
-	}
-
 	return nil
 }

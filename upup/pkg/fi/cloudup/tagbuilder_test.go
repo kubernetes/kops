@@ -167,32 +167,6 @@ func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
 	}
 }
 
-func TestBuildTags_CloudProvider_AWS_Romana(t *testing.T) {
-
-	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Romana: &api.RomanaNetworkingSpec{}}
-
-	c.Spec.Networking = networking
-
-	tags, err := buildCloudupTags(c)
-	if err != nil {
-		t.Fatalf("buildCloudupTags error: %v", err)
-	}
-
-	if !tags.Has("_aws") {
-		t.Fatal("tag _aws not found")
-	}
-
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_aws") {
-		t.Fatal("nodeUpTag _aws not found")
-	}
-}
-
 func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 
 	c := buildCluster(nil)
