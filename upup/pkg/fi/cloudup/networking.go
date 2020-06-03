@@ -39,13 +39,12 @@ const (
 	defaultCNIAssetHashStringK8s1_9 = "d595d3ded6499a64e8dac02466e2f5f2ce257c9f"
 
 	// defaultCNIAssetK8s1_11 is the CNI tarball for k8s >= 1.11
-	defaultCNIAssetK8s1_11             = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz"
-	defaultCNIAssetSHA1StringK8s1_11   = "52e9d2de8a5f927307d9397308735658ee44ab8d"
-	defaultCNIAssetSHA256StringK8s1_11 = "3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64"
+	defaultCNIAssetK8s1_11           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz"
+	defaultCNIAssetSHA1StringK8s1_11 = "52e9d2de8a5f927307d9397308735658ee44ab8d"
 
-	// defaultCNIAssetK8s1_18 is the CNI tarball for k8s >= 1.18
-	defaultCNIAssetK8s1_18             = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz"
-	defaultCNIAssetSHA256StringK8s1_18 = "bd682ffcf701e8f83283cdff7281aad0c83b02a56084d6e601216210732833f9"
+	// defaultCNIAssetK8s1_15 is the CNI tarball for k8s >= 1.15
+	defaultCNIAssetK8s1_15             = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz"
+	defaultCNIAssetSHA256StringK8s1_15 = "994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5"
 
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_VERSION_URL       = "CNI_VERSION_URL"
@@ -82,15 +81,10 @@ func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder) (*url.
 	}
 
 	var cniAsset, cniAssetHash string
-	if util.IsKubernetesGTE("1.18", *sv) {
-		cniAsset = defaultCNIAssetK8s1_18
-		cniAssetHash = defaultCNIAssetSHA256StringK8s1_18
-		klog.V(2).Infof("Adding default CNI asset for k8s >= 1.18: %s", cniAsset)
-	} else if util.IsKubernetesGTE("1.15", *sv) {
-		// We're still on the same asset, but we use sha256
-		cniAsset = defaultCNIAssetK8s1_11
-		cniAssetHash = defaultCNIAssetSHA256StringK8s1_11
-		klog.V(2).Infof("Adding default CNI asset for 1.18 > k8s >= 1.11: %s", cniAsset)
+	if util.IsKubernetesGTE("1.15", *sv) {
+		cniAsset = defaultCNIAssetK8s1_15
+		cniAssetHash = defaultCNIAssetSHA256StringK8s1_15
+		klog.V(2).Infof("Adding default CNI asset for k8s >= 1.15: %s", cniAsset)
 	} else if util.IsKubernetesGTE("1.11", *sv) {
 		cniAsset = defaultCNIAssetK8s1_11
 		cniAssetHash = defaultCNIAssetSHA1StringK8s1_11
