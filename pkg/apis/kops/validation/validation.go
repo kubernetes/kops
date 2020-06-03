@@ -368,10 +368,6 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 
 	if v.Romana != nil {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("romana"), "support for Romana has been removed"))
-		if optionTaken {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("romana"), "only one networking option permitted"))
-		}
-		optionTaken = true
 	}
 
 	if v.AmazonVPC != nil {
