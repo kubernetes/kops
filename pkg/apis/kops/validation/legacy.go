@@ -507,7 +507,7 @@ func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IP
 }
 
 // DeepValidate is responsible for validating the instancegroups within the cluster spec
-func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) error {
+func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, cloud fi.Cloud) error {
 	if errs := ValidateCluster(c, strict); len(errs) != 0 {
 		return errs.ToAggregate()
 	}
@@ -535,17 +535,11 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 	}
 
 	for _, g := range groups {
-		errs := CrossValidateInstanceGroup(g, c)
+		errs := CrossValidateInstanceGroup(g, c, cloud)
 
-		// Additional cloud-specific validation rules,
-		// such as making sure that identifiers match the expected formats for the given cloud
-		switch kops.CloudProviderID(c.Spec.CloudProvider) {
-		case kops.CloudProviderAWS:
-			errs = append(errs, awsValidateInstanceGroup(g)...)
-		default:
-			if len(g.Spec.Volumes) > 0 {
-				errs = append(errs, field.Forbidden(field.NewPath("spec", "volumes"), "instancegroup volumes are only available with aws at present"))
-			}
+		// Additional cloud-specific validation rules
+		if kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderAWS && len(g.Spec.Volumes) > 0 {
+			errs = append(errs, field.Forbidden(field.NewPath("spec", "volumes"), "instancegroup volumes are only available with aws at present"))
 		}
 
 		if len(errs) != 0 {

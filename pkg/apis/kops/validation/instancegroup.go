@@ -24,10 +24,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 // ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
-func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
+func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if g.ObjectMeta.Name == "" {
@@ -114,6 +115,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) field.ErrorList {
 		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleMaster)...)
 	}
 
+	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
+		allErrs = append(allErrs, awsValidateInstanceGroup(g, awsCloud)...)
+	}
+
 	return allErrs
 }
 
@@ -151,8 +156,8 @@ func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) field
 
 // CrossValidateInstanceGroup performs validation of the instance group, including that it is consistent with the Cluster
 // It calls ValidateInstanceGroup, so all that validation is included.
-func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {
-	allErrs := ValidateInstanceGroup(g)
+func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cloud fi.Cloud) field.ErrorList {
+	allErrs := ValidateInstanceGroup(g, cloud)
 
 	if g.Spec.Role == kops.InstanceGroupRoleMaster {
 		allErrs = append(allErrs, ValidateMasterInstanceGroup(g, cluster)...)

@@ -39,19 +39,21 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	return allErrs
 }
 
-func awsValidateInstanceGroup(ig *kops.InstanceGroup) field.ErrorList {
+func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "additionalSecurityGroups"), ig.Spec.AdditionalSecurityGroups)...)
 
-	allErrs = append(allErrs, awsValidateMachineType(field.NewPath(ig.GetName(), "spec", "machineType"), ig.Spec.MachineType)...)
+	if cloud != nil {
+		allErrs = append(allErrs, awsValidateInstanceType(field.NewPath(ig.GetName(), "spec", "machineType"), ig.Spec.MachineType, cloud)...)
+	}
 
 	allErrs = append(allErrs, awsValidateSpotDurationInMinute(field.NewPath(ig.GetName(), "spec", "spotDurationInMinutes"), ig)...)
 
 	allErrs = append(allErrs, awsValidateInstanceInterruptionBehavior(field.NewPath(ig.GetName(), "spec", "instanceInterruptionBehavior"), ig)...)
 
 	if ig.Spec.MixedInstancesPolicy != nil {
-		allErrs = append(allErrs, awsValidateMixedInstancesPolicy(field.NewPath("spec", "mixedInstancesPolicy"), ig.Spec.MixedInstancesPolicy, ig)...)
+		allErrs = append(allErrs, awsValidateMixedInstancesPolicy(field.NewPath("spec", "mixedInstancesPolicy"), ig.Spec.MixedInstancesPolicy, ig, cloud)...)
 	}
 
 	return allErrs
@@ -78,12 +80,11 @@ func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string)
 	return allErrs
 }
 
-func awsValidateMachineType(fieldPath *field.Path, machineType string) field.ErrorList {
+func awsValidateInstanceType(fieldPath *field.Path, instanceType string, cloud awsup.AWSCloud) field.ErrorList {
 	allErrs := field.ErrorList{}
-
-	if machineType != "" {
-		for _, typ := range strings.Split(machineType, ",") {
-			if _, err := awsup.GetMachineTypeInfo(typ); err != nil {
+	if instanceType != "" {
+		for _, typ := range strings.Split(instanceType, ",") {
+			if _, err := cloud.DescribeInstanceType(typ); err != nil {
 				allErrs = append(allErrs, field.Invalid(fieldPath, typ, "machine type specified is invalid"))
 			}
 		}
@@ -113,13 +114,13 @@ func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.Ins
 }
 
 // awsValidateMixedInstancesPolicy is responsible for validating the user input of a mixed instance policy
-func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup) field.ErrorList {
+func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup, cloud awsup.AWSCloud) field.ErrorList {
 	var errs field.ErrorList
 
 	// @step: check the instances are validate
 	if cloud != nil {
 		for i, x := range spec.Instances {
-			errs = append(errs, awsValidateInstanceType(path.Child("instances").Index(i).Child("instanceType"), x)...)
+			errs = append(errs, awsValidateInstanceType(path.Child("instances").Index(i).Child("instanceType"), x, cloud)...)
 		}
 	}
 	if spec.OnDemandBase != nil {

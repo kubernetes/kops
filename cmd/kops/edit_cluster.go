@@ -222,7 +222,12 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 			continue
 		}
 
-		err = validation.DeepValidate(fullCluster, instanceGroups, true)
+		cloud, err := cloudup.BuildCloud(fullCluster)
+		if err != nil {
+			return err
+		}
+
+		err = validation.DeepValidate(fullCluster, instanceGroups, true, cloud)
 		if err != nil {
 			results = editResults{
 				file: file,

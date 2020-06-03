@@ -41,7 +41,7 @@ func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kop
 		return err
 	}
 
-	err = validation.DeepValidate(fullCluster, instanceGroups, true)
+	err = validation.DeepValidate(fullCluster, instanceGroups, true, nil)
 	if err != nil {
 		return err
 	}

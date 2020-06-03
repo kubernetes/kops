@@ -528,7 +528,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 					return err
 				}
 
-				ephemeralDevices, err := e.buildEphemeralDevices(e.OnDemandInstanceType)
+				ephemeralDevices, err := e.buildEphemeralDevices(cloud, e.OnDemandInstanceType)
 				if err != nil {
 					return err
 				}
@@ -956,7 +956,7 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 								return err
 							}
 
-							ephemeralDevices, err := e.buildEphemeralDevices(e.OnDemandInstanceType)
+							ephemeralDevices, err := e.buildEphemeralDevices(cloud, e.OnDemandInstanceType)
 							if err != nil {
 								return err
 							}
@@ -1494,7 +1494,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 					return err
 				}
 
-				ephemeralDevices, err := e.buildEphemeralDevices(e.OnDemandInstanceType)
+				ephemeralDevices, err := e.buildEphemeralDevices(cloud, e.OnDemandInstanceType)
 				if err != nil {
 					return err
 				}
@@ -1638,12 +1638,12 @@ func (e *Elastigroup) buildAutoScaleLabels(labelsMap map[string]string) []*aws.A
 	return labels
 }
 
-func (e *Elastigroup) buildEphemeralDevices(instanceTypeName *string) (map[string]*awstasks.BlockDeviceMapping, error) {
+func (e *Elastigroup) buildEphemeralDevices(c awsup.AWSCloud, instanceTypeName *string) (map[string]*awstasks.BlockDeviceMapping, error) {
 	if instanceTypeName == nil {
 		return nil, fi.RequiredField("InstanceType")
 	}
 
-	instanceType, err := awsup.GetMachineTypeInfo(*instanceTypeName)
+	instanceType, err := awsup.GetMachineTypeInfo(c, *instanceTypeName)
 	if err != nil {
 		return nil, err
 	}
