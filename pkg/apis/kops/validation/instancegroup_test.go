@@ -179,3 +179,39 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 	}
 
 }
+
+func TestValidBootDevice(t *testing.T) {
+	grid := []struct {
+		volumeType string
+		expected   []string
+	}{
+		{
+			volumeType: "gp2",
+		},
+		{
+			volumeType: "io1",
+		},
+		{
+			volumeType: "st1",
+			expected:   []string{"Unsupported value::spec.rootVolumeType"},
+		},
+		{
+			volumeType: "sc1",
+			expected:   []string{"Unsupported value::spec.rootVolumeType"},
+		},
+	}
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "some-ig",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role:           "Node",
+				RootVolumeType: fi.String(g.volumeType),
+			},
+		}
+		errs := ValidateInstanceGroup(ig)
+		testErrors(t, g.volumeType, errs, g.expected)
+	}
+}
