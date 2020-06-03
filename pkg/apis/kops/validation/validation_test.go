@@ -408,6 +408,108 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Forbidden::calico.majorVersion"},
 		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "first-found",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv6AutoDetectionMethod: "first-found",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "can-reach=8.8.8.8",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv6AutoDetectionMethod: "can-reach=2001:4860:4860::8888",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "bogus",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv6AutoDetectionMethod: "bogus",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv6AutoDetectionMethod"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv6AutoDetectionMethod: "interface=",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv6AutoDetectionMethod"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "interface=en.*,eth0",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv6AutoDetectionMethod: "skip-interface=en.*,eth0",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "interface=(,en1",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "interface=foo=bar",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPv4AutoDetectionMethod: "=en0,eth.*",
+				},
+				Etcd: &kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
+		},
 	}
 	for _, g := range grid {
 		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("calico"))
