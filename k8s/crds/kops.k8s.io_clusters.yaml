@@ -3218,7 +3218,8 @@ spec:
                     type: object
                   romana:
                     description: RomanaNetworkingSpec declares that we want Romana
-                      networking
+                      networking Romana is deprecated as of kops 1.18 and removed
+                      as of kops 1.19
                     properties:
                       daemonServiceIP:
                         description: DaemonServiceIP is the Kubernetes Service IP
