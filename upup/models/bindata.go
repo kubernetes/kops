@@ -66,8 +66,6 @@
 // upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml
 // upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml
 // upup/models/cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml
-// upup/models/nodeup/_automatic_upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades
-// upup/models/nodeup/_automatic_upgrades/_debian_family/packages/unattended-upgrades
 // upup/models/nodeup/resources/_lyft_vpc_cni/files/etc/cni/net.d/10-cni-ipvlan-vpc-k8s.conflist.template
 package models
 
@@ -16842,44 +16840,6 @@ func cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml() (*asset, error) {
 	return a, nil
 }
 
-var _nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades = []byte(`APT::Periodic::Update-Package-Lists "1";
-APT::Periodic::Unattended-Upgrade "1";
-
-APT::Periodic::AutocleanInterval "7";
-`)
-
-func nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgradesBytes() ([]byte, error) {
-	return _nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades, nil
-}
-
-func nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades() (*asset, error) {
-	bytes, err := nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgradesBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "nodeup/_automatic_upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
-var _nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades = []byte(``)
-
-func nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgradesBytes() ([]byte, error) {
-	return _nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades, nil
-}
-
-func nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades() (*asset, error) {
-	bytes, err := nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgradesBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "nodeup/_automatic_upgrades/_debian_family/packages/unattended-upgrades", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
 var _nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplate = []byte(`{
   "cniVersion": "0.3.1",
   "name": "cni-ipvlan-vpc-k8s",
@@ -17041,8 +17001,6 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml":                                     cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml,
 	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml,
 	"cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml,
-	"nodeup/_automatic_upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades":                  nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades,
-	"nodeup/_automatic_upgrades/_debian_family/packages/unattended-upgrades":                              nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades,
 	"nodeup/resources/_lyft_vpc_cni/files/etc/cni/net.d/10-cni-ipvlan-vpc-k8s.conflist.template":          nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplate,
 }
 
@@ -17220,22 +17178,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		}},
 	}},
 	"nodeup": {nil, map[string]*bintree{
-		"_automatic_upgrades": {nil, map[string]*bintree{
-			"_debian_family": {nil, map[string]*bintree{
-				"files": {nil, map[string]*bintree{
-					"etc": {nil, map[string]*bintree{
-						"apt": {nil, map[string]*bintree{
-							"apt.conf.d": {nil, map[string]*bintree{
-								"20auto-upgrades": {nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades, map[string]*bintree{}},
-							}},
-						}},
-					}},
-				}},
-				"packages": {nil, map[string]*bintree{
-					"unattended-upgrades": {nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades, map[string]*bintree{}},
-				}},
-			}},
-		}},
 		"resources": {nil, map[string]*bintree{
 			"_lyft_vpc_cni": {nil, map[string]*bintree{
 				"files": {nil, map[string]*bintree{
