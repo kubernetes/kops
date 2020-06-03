@@ -12,11 +12,11 @@ The following table provides the support status for various networking providers
 | Cilium | 1.9 | 1.15 | - | - |
 | Flannel udp | 1.5.2 | - | - | - |
 | Flannel vxlan | 1.8.0 | - | - | - |
-| Kopeio | 1.5 | - | 1.17 | 1.18 |
+| Kopeio | 1.5 | - | - | - |
 | Kube-router | 1.6.2 | - | - | - |
 | Kubenet | 1.5 | 1.5 | - | - |
 | Lyft VPC | 1.11 | - | - | - |
-| Romana | 1.8 | - | 1.17 | 1.18 |
+| Romana | 1.8 | - | 1.18 | 1.19 |
 | Weave | 1.5 | - | - | - |
 
 
