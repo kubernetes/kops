@@ -226,7 +226,7 @@ You can `make` and run `kops` locally.  But `nodeup` is pulled from an S3 bucket
 To rapidly test a nodeup change, you can build it, scp it to a running machine, and
 run it over SSH with the output viewable locally:
 
-`make push-aws-run TARGET=admin@<publicip>`
+`make push-aws-run-amd64 TARGET=admin@<publicip>`
 
 
 For more complete testing though, you will likely want to do a private build of
