@@ -62,3 +62,35 @@ func TestNameMatch(t *testing.T) {
 		}
 	}
 }
+
+func TestIsKopsManagedDNSName(t *testing.T) {
+	grid := []struct {
+		name     string
+		expected bool
+	}{
+		{
+			name:     "api.cluster.example.com.",
+			expected: true,
+		},
+		{
+			name:     "api.internal.cluster.example.com.",
+			expected: true,
+		},
+		{
+			name:     "foobastion.cluster.example.com.",
+			expected: false,
+		},
+		{
+			name:     "bastion.cluster.example.",
+			expected: false,
+		},
+	}
+
+	for _, g := range grid {
+		d := &clusterDiscoveryGCE{clusterName: "cluster.example.com"}
+		got := d.isKopsManagedDNSName(g.name)
+		if got != g.expected {
+			t.Errorf("unexpected return value, got %v, expected %v", got, g.expected)
+		}
+	}
+}
