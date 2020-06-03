@@ -228,7 +228,12 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Com
 			return fmt.Errorf("unexpected object type: %T", obj)
 		}
 
-		err = validation.CrossValidateInstanceGroup(group, cluster).ToAggregate()
+		cloud, err := cloudup.BuildCloud(cluster)
+		if err != nil {
+			return err
+		}
+
+		err = validation.CrossValidateInstanceGroup(group, cluster, cloud).ToAggregate()
 		if err != nil {
 			return err
 		}

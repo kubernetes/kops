@@ -232,12 +232,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 
-	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true)
+	cluster := c.Cluster
+
+	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
 	}
 
-	cluster := c.Cluster
+	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true, cloud)
+	if err != nil {
+		return err
+	}
 
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
@@ -322,11 +327,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		"mirrorKeystore": &fitasks.MirrorKeystore{},
 		"mirrorSecrets":  &fitasks.MirrorSecrets{},
 	})
-
-	cloud, err := BuildCloud(cluster)
-	if err != nil {
-		return err
-	}
 
 	region := ""
 	project := ""
@@ -446,8 +446,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			if len(sshPublicKeys) > 1 {
 				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
 			}
-
-			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
 
 	case kops.CloudProviderALI:

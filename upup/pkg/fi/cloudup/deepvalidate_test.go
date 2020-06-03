@@ -31,7 +31,7 @@ func TestDeepValidate_OK(t *testing.T) {
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
-	err := validation.DeepValidate(c, groups, true)
+	err := validation.DeepValidate(c, groups, true, nil)
 	if err != nil {
 		t.Fatalf("Expected no error from DeepValidate, got %v", err)
 	}
@@ -172,7 +172,7 @@ func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 }
 
 func expectErrorFromDeepValidate(t *testing.T, c *kopsapi.Cluster, groups []*kopsapi.InstanceGroup, message string) {
-	err := validation.DeepValidate(c, groups, true)
+	err := validation.DeepValidate(c, groups, true, nil)
 	if err == nil {
 		t.Fatalf("Expected error %q from DeepValidate (strict=true), not no error raised", message)
 	}
