@@ -2937,14 +2937,12 @@ spec:
                           in the future. Setting this has no effect.
                         type: boolean
                       enableipv4:
-                        description: 'EnableIpv4 enables cluster IPv4 traffic. If
-                          both EnableIpv6 and EnableIpv4 are set to false then IPv4
-                          will be enabled. Default: false'
+                        description: EnableIpv4 is not implemented and may be removed
+                          in the future. Setting this has no effect.
                         type: boolean
                       enableipv6:
-                        description: 'EnableIpv6 enables cluster IPv6 traffic. If
-                          both EnableIpv6 and EnableIpv4 are set to false then IPv4
-                          will be enabled. Default: false'
+                        description: EnableIpv6 is not implemented and may be removed
+                          in the future. Setting this has no effect.
                         type: boolean
                       envoyLog:
                         description: EnvoyLog is not implemented and may be removed

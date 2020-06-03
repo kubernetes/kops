@@ -366,13 +366,11 @@ type CiliumNetworkingSpec struct {
 	// Tunnel specifies the Cilium tunelling mode. Possible values are "vxlan", "geneve", or "disabled".
 	// Default: vxlan
 	Tunnel string `json:"tunnel,omitempty"`
-	// EnableIpv6 enables cluster IPv6 traffic. If both EnableIpv6 and EnableIpv4 are set to false
-	// then IPv4 will be enabled.
-	// Default: false
+	// EnableIpv6 is not implemented and may be removed in the future.
+	// Setting this has no effect.
 	EnableIpv6 bool `json:"enableipv6"`
-	// EnableIpv4 enables cluster IPv4 traffic. If both EnableIpv6 and EnableIpv4 are set to false
-	// then IPv4 will be enabled.
-	// Default: false
+	// EnableIpv4 is not implemented and may be removed in the future.
+	// Setting this has no effect.
 	EnableIpv4 bool `json:"enableipv4"`
 	// MonitorAggregation sets the level of packet monitoring. Possible values are "low", "medium", or "maximum".
 	// Default: medium
