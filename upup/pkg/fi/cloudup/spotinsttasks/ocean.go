@@ -47,6 +47,7 @@ type Ocean struct {
 	SpotPercentage           *float64
 	UtilizeReservedInstances *bool
 	FallbackToOnDemand       *bool
+	DrainingTimeout          *int64
 	GracePeriod              *int64
 	InstanceTypesWhitelist   []string
 	InstanceTypesBlacklist   []string
@@ -146,6 +147,10 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.SpotPercentage = strategy.SpotPercentage
 			actual.FallbackToOnDemand = strategy.FallbackToOnDemand
 			actual.UtilizeReservedInstances = strategy.UtilizeReservedInstances
+
+			if strategy.DrainingTimeout != nil {
+				actual.DrainingTimeout = fi.Int64(int64(fi.IntValue(strategy.DrainingTimeout)))
+			}
 
 			if strategy.GracePeriod != nil {
 				actual.GracePeriod = fi.Int64(int64(fi.IntValue(strategy.GracePeriod)))
@@ -371,6 +376,10 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 		ocean.Strategy.SetSpotPercentage(e.SpotPercentage)
 		ocean.Strategy.SetFallbackToOnDemand(e.FallbackToOnDemand)
 		ocean.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
+
+		if e.DrainingTimeout != nil {
+			ocean.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+		}
 
 		if e.GracePeriod != nil {
 			ocean.Strategy.SetGracePeriod(fi.Int(int(*e.GracePeriod)))
@@ -617,6 +626,17 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 			ocean.Strategy.SetUtilizeReservedInstances(e.UtilizeReservedInstances)
 			changes.UtilizeReservedInstances = nil
+			changed = true
+		}
+
+		// Draining timeout.
+		if changes.DrainingTimeout != nil {
+			if ocean.Strategy == nil {
+				ocean.Strategy = new(aws.Strategy)
+			}
+
+			ocean.Strategy.SetDrainingTimeout(fi.Int(int(*e.DrainingTimeout)))
+			changes.DrainingTimeout = nil
 			changed = true
 		}
 
@@ -997,6 +1017,7 @@ type terraformOceanStrategy struct {
 	SpotPercentage           *float64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
 	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
 	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
+	DrainingTimeout          *int64   `json:"draining_timeout,omitempty" cty:"draining_timeout"`
 	GracePeriod              *int64   `json:"grace_period,omitempty" cty:"grace_period"`
 }
 
@@ -1033,6 +1054,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 			SpotPercentage:           e.SpotPercentage,
 			FallbackToOnDemand:       e.FallbackToOnDemand,
 			UtilizeReservedInstances: e.UtilizeReservedInstances,
+			DrainingTimeout:          e.DrainingTimeout,
 			GracePeriod:              e.GracePeriod,
 		},
 		terraformOceanLaunchSpec: &terraformOceanLaunchSpec{},
