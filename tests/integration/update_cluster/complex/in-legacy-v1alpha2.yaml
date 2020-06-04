@@ -42,6 +42,10 @@ spec:
   - 1.2.3.4/32
   - 10.20.30.0/24
   nonMasqueradeCIDR: 100.64.0.0/10
+  serviceOIDCProvider:
+    issuer: https://oidc.example.com/foo
+    issuerCAThumbprints:
+      - 990F4193972F2BECF12DDEDA5237F9C952F20D9E
   sshAccess:
   - 0.0.0.0/0
   topology:

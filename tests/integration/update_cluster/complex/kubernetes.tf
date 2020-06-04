@@ -247,6 +247,13 @@ resource "aws_iam_instance_profile" "nodes-complex-example-com" {
   role = aws_iam_role.nodes-complex-example-com.name
 }
 
+resource "aws_iam_openid_connect_provider" "complex-example-com" {
+  client_id_list  = ["sts.amazonaws.com"]
+  name            = "complex.example.com"
+  thumbprint_list = ["990F4193972F2BECF12DDEDA5237F9C952F20D9E"]
+  url             = "https://oidc.example.com/foo"
+}
+
 resource "aws_iam_role_policy" "masters-complex-example-com" {
   name   = "masters.complex.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.complex.example.com_policy")
