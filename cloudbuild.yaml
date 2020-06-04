@@ -26,8 +26,9 @@ steps:
   - DOCKER_REGISTRY=$_DOCKER_REGISTRY
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
   - GCS_LOCATION=$_GCS_LOCATION
+  - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
   args:
-  - gcs-upload
+  - gcs-upload-and-tag
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
