@@ -14,35 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package networking
 
 import (
+	"k8s.io/kops/nodeup/pkg/model"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// KubeRouterBuilder installs kube-router
-type KubeRouterBuilder struct {
-	*NodeupModelContext
+// KubenetBuilder installs Kubenet networking provider
+type KubenetBuilder struct {
+	*model.NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &KubeRouterBuilder{}
+var _ fi.ModelBuilder = &KubenetBuilder{}
 
 // Build is responsible for configuring the kube-router
-func (b *KubeRouterBuilder) Build(c *fi.ModelBuilderContext) error {
-	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kube-router")
-		if err != nil {
-			return err
-		}
-
-		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kube-router/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0400"),
-		})
+func (b *KubenetBuilder) Build(c *fi.ModelBuilderContext) error {
+	usesKubenet := components.UsesKubenet(b.Cluster.Spec.Networking)
+	if !usesKubenet {
+		return nil
 	}
+
+	b.AddCNIBinAssets(c, []string{"loopback", "host-local", "bridge"})
 
 	return nil
 }

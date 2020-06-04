@@ -170,12 +170,6 @@ func (c *NodeupModelContext) PathSrvSshproxy() string {
 	}
 }
 
-// CNIBinDir returns the path for the CNI binaries
-func (c *NodeupModelContext) CNIBinDir() string {
-	// We used to map this on a per-distro basis, but this can require CNI manifests to be distro aware
-	return "/opt/cni/bin/"
-}
-
 // KubeletBootstrapKubeconfig is the path the bootstrap config file
 func (c *NodeupModelContext) KubeletBootstrapKubeconfig() string {
 	path := c.Cluster.Spec.Kubelet.BootstrapKubeconfig
@@ -196,11 +190,6 @@ func (c *NodeupModelContext) KubeletBootstrapKubeconfig() string {
 // KubeletKubeConfig is the path of the kubelet kubeconfig file
 func (c *NodeupModelContext) KubeletKubeConfig() string {
 	return "/var/lib/kubelet/kubeconfig"
-}
-
-// CNIConfDir returns the CNI directory
-func (c *NodeupModelContext) CNIConfDir() string {
-	return "/etc/cni/net.d/"
 }
 
 // BuildPKIKubeconfig generates a kubeconfig
@@ -583,4 +572,54 @@ func (c *NodeupModelContext) GetPrivateKey(name string) ([]byte, error) {
 	}
 
 	return key.AsBytes()
+}
+
+func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
+	for _, assetName := range assetNames {
+		if err := b.addCNIBinAsset(c, assetName); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *NodeupModelContext) addCNIBinAsset(c *fi.ModelBuilderContext, assetName string) error {
+	assetPath := ""
+	asset, err := b.Assets.Find(assetName, assetPath)
+	if err != nil {
+		return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
+	}
+	if asset == nil {
+		return fmt.Errorf("unable to locate asset %q", assetName)
+	}
+
+	c.AddTask(&nodetasks.File{
+		Path:     filepath.Join(b.CNIBinDir(), assetName),
+		Contents: asset,
+		Type:     nodetasks.FileType_File,
+		Mode:     fi.String("0755"),
+	})
+
+	return nil
+}
+
+// UsesCNI checks if the cluster has CNI configured
+func (c *NodeupModelContext) UsesCNI() bool {
+	networking := c.Cluster.Spec.Networking
+	if networking == nil || networking.Classic != nil {
+		return false
+	}
+
+	return true
+}
+
+// CNIBinDir returns the path for the CNI binaries
+func (c *NodeupModelContext) CNIBinDir() string {
+	// We used to map this on a per-distro basis, but this can require CNI manifests to be distro aware
+	return "/opt/cni/bin/"
+}
+
+// CNIConfDir returns the CNI directory
+func (c *NodeupModelContext) CNIConfDir() string {
+	return "/etc/cni/net.d/"
 }
