@@ -407,6 +407,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				// IAM
 				"iamInstanceProfile":     &awstasks.IAMInstanceProfile{},
 				"iamInstanceProfileRole": &awstasks.IAMInstanceProfileRole{},
+				"iamOIDCProvider":        &awstasks.IAMOIDCProvider{},
 				"iamRole":                &awstasks.IAMRole{},
 				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
 
@@ -621,6 +622,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 				l.Builders = append(l.Builders,
 					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+					&awsmodel.OIDCProviderBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
 				)
 			case kops.CloudProviderDO:
 				doModelContext := &domodel.DOModelContext{

@@ -83,7 +83,6 @@ go_library(
         "//pkg/diff:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/pki:go_default_library",
-        "//pkg/sshcredentials:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/cloudformation:go_default_library",
