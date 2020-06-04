@@ -161,6 +161,12 @@ func TestHighAvailabilityGCE(t *testing.T) {
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
+	featureflag.ParseFlags("-PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("+PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().runTestTerraformAWS(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().runTestCloudformation(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").runTestTerraformAWS(t)

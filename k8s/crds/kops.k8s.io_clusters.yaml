@@ -2787,6 +2787,20 @@ spec:
               serviceClusterIPRange:
                 description: ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
                 type: string
+              serviceOIDCProvider:
+                description: ServiceOIDCProvider defines the OIDC provider setup for the cluster (AWS only)
+                properties:
+                  issuerCAThumbprints:
+                    description: IssuerCAThumbprints are the thumbprints of the CAs signing the Issuer URL's server certificate.
+                    items:
+                      type: string
+                    type: array
+                  issuerURL:
+                    description: IssuerURL is the URL to the discovery and key documents.
+                    type: string
+                required:
+                - issuerCAThumbprints
+                type: object
               sshAccess:
                 description: SSHAccess determines the permitted access to SSH Currently only a single CIDR is supported (though a richer grammar could be added in future)
                 items:

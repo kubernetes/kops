@@ -17,6 +17,7 @@ limitations under the License.
 package awsmodel
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"k8s.io/kops/pkg/featureflag"
@@ -35,6 +36,16 @@ type OIDCProviderBuilder struct {
 	Lifecycle *fi.Lifecycle
 }
 
+type oidcDiscovery struct {
+	Issuer                string   `json:"issuer"`
+	JWKSURI               string   `json:"jwks_uri"`
+	AuthorizationEndpoint string   `json:"authorization_endpoint"`
+	ResponseTypes         []string `json:"response_types_supported"`
+	SubjectTypes          []string `json:"subject_types_supported"`
+	SigningAlgs           []string `json:"id_token_signing_alg_values_supported"`
+	ClaimsSupported       []string `json:"claims_supported"`
+}
+
 var _ fi.ModelBuilder = &OIDCProviderBuilder{}
 
 const (
@@ -46,21 +57,52 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	var issuerURL string
 
 	if featureflag.PublicJWKS.Enabled() {
-		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
-		if err != nil {
-			return err
+		provider := b.Cluster.Spec.ServiceOIDCProvider
+		if provider != nil {
+			issuerURL = provider.IssuerURL
+			for _, tp := range provider.IssuerCAThumbprints {
+				thumbprints = append(thumbprints, fi.NewStringResource(tp))
+			}
+
+			discovery, err := buildDicoveryJSON(issuerURL)
+			if err != nil {
+				return err
+			}
+			keysContents := ""
+			keysFile := &fitasks.ManagedFile{
+				Contents:  fi.WrapResource(fi.NewStringResource(keysContents)),
+				Lifecycle: b.Lifecycle,
+				Location:  fi.String("keys.json"),
+				Name:      fi.String("keys.json"),
+			}
+			c.AddTask(keysFile)
+
+			discoveryFile := &fitasks.ManagedFile{
+				Contents:  fi.WrapResource(fi.NewBytesResource(discovery)),
+				Lifecycle: b.Lifecycle,
+				Location:  fi.String("discovery.json"),
+				Name:      fi.String("discovery.json"),
+			}
+			c.AddTask(discoveryFile)
+
+		} else {
+
+			serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
+			if err != nil {
+				return err
+			}
+			issuerURL = serviceAccountIssuer
+
+			caTaskObject, found := c.Tasks["Keypair/ca"]
+			if !found {
+				return fmt.Errorf("keypair/ca task not found")
+			}
+
+			caTask := caTaskObject.(*fitasks.Keypair)
+			fingerprint := caTask.CertificateSHA1Fingerprint()
+
+			thumbprints = []fi.Resource{fingerprint}
 		}
-		issuerURL = serviceAccountIssuer
-
-		caTaskObject, found := c.Tasks["Keypair/ca"]
-		if !found {
-			return fmt.Errorf("keypair/ca task not found")
-		}
-
-		caTask := caTaskObject.(*fitasks.Keypair)
-		fingerprint := caTask.CertificateSHA1Fingerprint()
-
-		thumbprints = []fi.Resource{fingerprint}
 	}
 
 	if issuerURL == "" {
@@ -76,4 +118,17 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	})
 
 	return nil
+}
+
+func buildDicoveryJSON(issuerURL string) ([]byte, error) {
+	d := oidcDiscovery{
+		Issuer:                fmt.Sprintf("%v/", issuerURL),
+		JWKSURI:               fmt.Sprintf("%v/keys.json", issuerURL),
+		AuthorizationEndpoint: "urn:kubernetes:programmatic_authorization",
+		ResponseTypes:         []string{"id_token"},
+		SubjectTypes:          []string{"public"},
+		SigningAlgs:           []string{"RS256"},
+		ClaimsSupported:       []string{"sub", "iss"},
+	}
+	return json.MarshalIndent(d, "", "")
 }

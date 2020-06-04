@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -229,6 +230,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork && spec.API.LoadBalancer.UseForInternalApi && spec.API.LoadBalancer.Type == kops.LoadBalancerTypeInternal {
 			allErrs = append(allErrs, field.Forbidden(fieldPath, "useForInternalApi cannot be used with internal NLB due lack of hairpinning support"))
 		}
+	}
+	if spec.ServiceOIDCProvider != nil {
+		allErrs = append(allErrs, validateServiceOIDCProvider(spec, fieldPath.Child("serviceOIDCProvider"))...)
 	}
 
 	return allErrs
@@ -1193,5 +1197,44 @@ func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTermin
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Node Termination Handler supports only AWS"))
 	}
+	return allErrs
+}
+
+func validateServiceOIDCProvider(c *kops.ClusterSpec, path *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	thumbprintFormat := regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
+	provider := c.ServiceOIDCProvider
+
+	if kops.CloudProviderID(c.CloudProvider) != kops.CloudProviderAWS {
+		allErrs = append(allErrs, field.Forbidden(path, "serviceOIDCProvider is supported only in AWS"))
+		return allErrs
+	}
+
+	if provider.IssuerURL == "" {
+		allErrs = append(allErrs, field.Required(path.Child("issuerURL"), ""))
+	} else {
+		// Based on these requirements https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html#manage-oidc-provider-console
+		url, err := url.ParseRequestURI(provider.IssuerURL)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(path.Child("issuerURL"), provider.IssuerURL, err.Error()))
+		} else {
+			if url.Scheme != "https" {
+				allErrs = append(allErrs, field.Invalid(path.Child("issuerURL"), provider.IssuerURL, "must use HTTPS"))
+			}
+			if url.Port() != "" {
+				allErrs = append(allErrs, field.Invalid(path.Child("issuerURL"), provider.IssuerURL, "must not specify a port"))
+			}
+		}
+	}
+
+	if len(provider.IssuerCAThumbprints) == 0 {
+		allErrs = append(allErrs, field.Required(path.Child("issuerCAThumbprints"), ""))
+	}
+	for i, tp := range provider.IssuerCAThumbprints {
+		if !thumbprintFormat.MatchString(tp) {
+			allErrs = append(allErrs, field.Invalid(path.Child("issuerCAThumbprints").Index(i), tp, "must be a SHA1 thumbprint"))
+		}
+	}
+
 	return allErrs
 }
