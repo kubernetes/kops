@@ -152,6 +152,7 @@ metadata:
 | `spotinst.io/spot-percentage` | Specify the percentage of Spot instances that should spin up from the target capacity. | `100` |
 | `spotinst.io/utilize-reserved-instances` | Specify whether reserved instances should be utilized. | `true` |
 | `spotinst.io/fallback-to-ondemand` | Specify whether fallback to on-demand instances should be enabled. | `true` |
+| `spotinst.io/draining-timeout` | Specify a period of time, in seconds, after a node is marked for termination during which on running pods remains active. | none |
 | `spotinst.io/grace-period` | Specify a period of time, in seconds, that Ocean should wait before applying instance health checks. | none |
 | `spotinst.io/ocean-default-launchspec` | Specify whether to use the InstanceGroup's spec as the default Launch Spec for the Ocean cluster. | none |
 | `spotinst.io/ocean-instance-types-whitelist` | Specify whether to whitelist specific instance types. | none |
