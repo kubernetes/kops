@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
@@ -49,13 +51,32 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 		kubeAPIServer.APIAudiences = []string{"kubernetes.svc.default"}
 	}
 
-	if kubeAPIServer.ServiceAccountIssuer == nil {
-		serviceAccountIssuer := iam.ServiceAccountIssuer(b.ClusterName, clusterSpec)
-		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
+	serviceAccountIssuer, err := iam.ServiceAccountIssuer(clusterSpec)
+	if err != nil {
+		return err
 	}
+	kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 
-	if kubeAPIServer.ServiceAccountJWKSURI == nil {
-		kubeAPIServer.ServiceAccountJWKSURI = fi.String(iam.ServiceAccountIssuer(b.ClusterName, clusterSpec) + "/openid/v1/jwks")
+	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
+
+	if useJWKS {
+		if kubeAPIServer.FeatureGates == nil {
+			kubeAPIServer.FeatureGates = make(map[string]string)
+		}
+		kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
+
+		if kubeAPIServer.ServiceAccountJWKSURI == nil {
+			jwksURL := *kubeAPIServer.ServiceAccountIssuer
+			jwksURL = strings.TrimSuffix(jwksURL, "/") + "/keys.json"
+
+			kubeAPIServer.ServiceAccountJWKSURI = &jwksURL
+		}
+	} else if kubeAPIServer.ServiceAccountJWKSURI == nil {
+		jwksURI, err := iam.ServiceAccountIssuer(clusterSpec)
+		if err != nil {
+			return err
+		}
+		kubeAPIServer.ServiceAccountJWKSURI = fi.String(jwksURI + "/openid/v1/jwks")
 	}
 
 	return nil
