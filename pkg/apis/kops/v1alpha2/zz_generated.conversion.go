@@ -1395,6 +1395,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableTracing = in.EnableTracing
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
+	out.EnableEncryption = in.EnableEncryption
 	out.EnvoyLog = in.EnvoyLog
 	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
 	out.Ipv4Node = in.Ipv4Node
@@ -1477,6 +1478,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableTracing = in.EnableTracing
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
+	out.EnableEncryption = in.EnableEncryption
 	out.EnvoyLog = in.EnvoyLog
 	out.Ipv4ClusterCIDRMaskSize = in.Ipv4ClusterCIDRMaskSize
 	out.Ipv4Node = in.Ipv4Node
