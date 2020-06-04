@@ -26,6 +26,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"k8s.io/klog"
 )
 
 var wellKnownCertificateTypes = map[string]string{
@@ -142,6 +144,9 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate 
 		}
 	}
 
+	// Skew the certificate lifetime by up to 30 days based on information about the generating node.
+	// This is so that different nodes created at the same time have the certificates they generated
+	// expire at different times, but all certificates on a given node expire around the same time.
 	if request.MinValidDays != 0 {
 		hash := fnv.New32()
 		addrs, err := net.InterfaceAddrs()
@@ -152,6 +157,8 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate 
 			for _, addr := range addrs {
 				_, _ = hash.Write([]byte(addr.String()))
 			}
+		} else {
+			klog.Warningf("cannot skew certificate lifetime: failed to get interface addresses: %v", err)
 		}
 		template.NotAfter = time.Now().Add(time.Hour * 24 * time.Duration(request.MinValidDays)).Add(time.Hour * time.Duration(hash.Sum32()%(30*24))).UTC()
 	}
