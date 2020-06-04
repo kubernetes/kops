@@ -38,8 +38,8 @@ var (
         kops set does not update the cloud resources; to apply the changes use "kops update cluster".`))
 
 	setClusterExample = templates.Examples(i18n.T(`
-		# Set cluster to run kubernetes version 1.10.0
-		kops set cluster k8s.cluster.site spec.kubernetesVersion=1.10.0
+		# Set cluster to run kubernetes version 1.17.0
+		kops set cluster k8s.cluster.site spec.kubernetesVersion=1.17.0
 	`))
 )
 

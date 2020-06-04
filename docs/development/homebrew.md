@@ -17,8 +17,8 @@ Note: if you already have kops installed, you need to substitute `upgrade` for `
 
 You can switch between installed releases with:
 ```bash
-brew switch kops 1.9.0
-brew switch kops 1.10.0
+brew switch kops 1.17.0
+brew switch kops 1.18.0
 ```
 
 # Releasing kops to Brew
