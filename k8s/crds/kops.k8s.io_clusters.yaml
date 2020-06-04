@@ -3916,6 +3916,10 @@ spec:
                 description: Project is the cloud project we should use, required
                   on GCE
                 type: string
+              publicDataStore:
+                description: PublicDataStore is the VFS path to where public data
+                  is stored
+                type: string
               rollingUpdate:
                 description: RollingUpdate defines the default rolling-update settings
                   for instance groups
