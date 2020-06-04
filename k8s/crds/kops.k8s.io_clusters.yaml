@@ -2911,6 +2911,10 @@ spec:
                         description: DisableMasquerade disables masquerading traffic
                           to external destinations behind the node IP.
                         type: boolean
+                      enableEncryption:
+                        description: 'EnableEncryption enables Cilium Encryption.
+                          Default: false'
+                        type: boolean
                       enableNodePort:
                         description: 'EnableNodePort replaces kube-proxy with Cilium''s
                           BPF implementation. Requires spec.kubeProxy.enabled be set
@@ -3129,7 +3133,7 @@ spec:
                           removed in the future. Setting this has no effect.
                         type: integer
                       tunnel:
-                        description: 'Tunnel specifies the Cilium tunelling mode.
+                        description: 'Tunnel specifies the Cilium tunnelling mode.
                           Possible values are "vxlan", "geneve", or "disabled". Default:
                           vxlan'
                         type: string
@@ -3144,6 +3148,7 @@ spec:
                     - bpfCTGlobalTCPMax
                     - clusterName
                     - cniBinPath
+                    - enableEncryption
                     - enableNodePort
                     - enableRemoteNodeIdentity
                     - enableipv4

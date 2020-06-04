@@ -85,6 +85,23 @@ Note that since Cilium Operator is the entity that interacts with the EC2 API to
 
 Also note that this feature has only been tested on the default kops AMIs.
 
+#### Enabling Encryption in Cilium
+As of Kops 1.19, it is possible to enable encryption for Cilium agent.
+In order to enable encryption, you must first generate the pre-shared key using this command:
+```bash
+cat <<EOF | kops create secret ciliumpassword -f -
+keys: $(echo "3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null| xxd -p -c 64)) 128")
+EOF
+```
+The above command will create a dedicated secret for cilium and store it in the Kops secret store.
+Once the secret has been created, encryption can be enabled by setting `enableEncryption` option in `spec.networking.cilium` to `true`:
+```yaml
+  networking:
+    cilium:
+      enableEncryption: true
+```
+
+
 ## Getting help
 
 For problems with deploying Cilium please post an issue to Github:
