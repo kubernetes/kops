@@ -303,6 +303,12 @@ gcs-upload: bazel-version-dist
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${BAZELUPLOAD}/kops/* ${GCS_LOCATION}
 
+# gcs-upload-tag runs gcs-upload to upload, then uploads a version-marker to LATEST_FILE
+.PHONY: gcs-upload-and-tag
+gcs-upload-and-tag: gcs-upload
+	echo "${GCS_URL}${VERSION}" > ${BAZELUPLOAD}/latest.txt
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+
 # gcs-publish-ci is the entry point for CI testing
 # In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
