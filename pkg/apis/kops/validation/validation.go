@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -133,6 +134,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
+	}
+
+	if spec.ServiceOIDCProvider != nil {
+		allErrs = append(allErrs, validateServiceOIDCProvider(spec, fieldPath.Child("serviceOIDCProvider"))...)
 	}
 
 	return allErrs
@@ -853,6 +858,43 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 
 		if spec.MasterKubelet != nil && spec.MasterKubelet.ClusterDNS != spec.KubeDNS.NodeLocalDNS.LocalIP {
 			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "MasterKubelet ClusterDNS must be set to the default IP address for LocalIP"))
+		}
+	}
+
+	return allErrs
+}
+
+func validateServiceOIDCProvider(c *kops.ClusterSpec, path *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	thumbprintFormat := regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
+	provider := c.ServiceOIDCProvider
+
+	if kops.CloudProviderID(c.CloudProvider) != kops.CloudProviderAWS {
+		allErrs = append(allErrs, field.Forbidden(path, "serviceOIDCProvider is supported only in AWS"))
+	}
+
+	if provider.Issuer == "" {
+		allErrs = append(allErrs, field.Required(path.Child("issuer"), ""))
+	} else {
+		// Based on these requirements https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html#manage-oidc-provider-console
+		url, err := url.ParseRequestURI(provider.Issuer)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(path.Child("issuer"), provider.Issuer, "must be a URL"))
+		}
+		if url.Scheme != "https" {
+			allErrs = append(allErrs, field.Invalid(path.Child("issuer"), provider.Issuer, "must use HTTPS"))
+		}
+		if url.Port() != "" {
+			allErrs = append(allErrs, field.Invalid(path.Child("issuer"), provider.Issuer, "must not specify a port"))
+		}
+	}
+
+	if len(provider.IssuerCAThumbprints) == 0 {
+		allErrs = append(allErrs, field.Required(path.Child("issuerCAThumbprints"), ""))
+	}
+	for i, tp := range provider.IssuerCAThumbprints {
+		if !thumbprintFormat.MatchString(tp) {
+			allErrs = append(allErrs, field.Invalid(path.Child("issuerCAThumbprints").Index(i), tp, "must be a SHA1 thumbprint"))
 		}
 	}
 

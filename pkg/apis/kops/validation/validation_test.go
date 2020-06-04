@@ -801,3 +801,69 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func TestValidateServiceOIDCProvider(t *testing.T) {
+	validIssuer := "https://example.com/foo"
+	validThumbprint := "990F4193972F2BECF12DDEDA5237F9C952F20D9E"
+	grid := []struct {
+		Input          kops.ServiceOIDCProviderSpec
+		CloudProvider  string
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ServiceOIDCProviderSpec{
+				Issuer:              validIssuer,
+				IssuerCAThumbprints: []string{validThumbprint},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ServiceOIDCProviderSpec{
+				Issuer:              validIssuer,
+				IssuerCAThumbprints: []string{validThumbprint},
+			},
+			CloudProvider:  "gce",
+			ExpectedErrors: []string{"Forbidden::testField"},
+		},
+		{
+			Input: kops.ServiceOIDCProviderSpec{},
+			ExpectedErrors: []string{
+				"Required value::testField.issuer",
+				"Required value::testField.issuerCAThumbprints",
+			},
+		},
+		{
+			Input: kops.ServiceOIDCProviderSpec{
+				Issuer:              "http://example.com/foo",
+				IssuerCAThumbprints: []string{validThumbprint},
+			},
+			ExpectedErrors: []string{"Invalid value::testField.issuer"},
+		},
+		{
+			Input: kops.ServiceOIDCProviderSpec{
+				Issuer:              "https://example.com:443/foo",
+				IssuerCAThumbprints: []string{validThumbprint},
+			},
+			ExpectedErrors: []string{"Invalid value::testField.issuer"},
+		},
+		{
+			Input: kops.ServiceOIDCProviderSpec{
+				Issuer:              validIssuer,
+				IssuerCAThumbprints: []string{"foo"},
+			},
+			ExpectedErrors: []string{"Invalid value::testField.issuerCAThumbprints[0]"},
+		},
+	}
+	for _, g := range grid {
+		spec := &kops.ClusterSpec{
+			ServiceOIDCProvider: &g.Input,
+		}
+		if g.CloudProvider != "" {
+			spec.CloudProvider = g.CloudProvider
+		} else {
+			spec.CloudProvider = "aws"
+		}
+		errs := validateServiceOIDCProvider(spec, field.NewPath("testField"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

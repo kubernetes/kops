@@ -191,6 +191,8 @@ type ClusterSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the default rolling-update settings for instance groups
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+	// ServiceOIDCProvider defines the OIDC provider setup for the cluster (AWS only)
+	ServiceOIDCProvider *ServiceOIDCProviderSpec `json:"serviceOIDCProvider,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization
@@ -547,6 +549,14 @@ type HTTPProxy struct {
 	// TODO #3070
 	// User     string `json:"user,omitempty"`
 	// Password string `json:"password,omitempty"`
+}
+
+// ServiceOIDCProviderSpec defines the OIDC provider setup for the cluster (AWS only)
+type ServiceOIDCProviderSpec struct {
+	// Issuer is the URL to the discovery and key documents.
+	Issuer string `json:"issuer,omitempty"`
+	// IssuerCAThumbprint is the thumbprint of the CA serving the Issuer URL's certificate
+	IssuerCAThumbprints []string `json:"issuerCAThumbprints"`
 }
 
 // TargetSpec allows for specifying target config in an extensible way
