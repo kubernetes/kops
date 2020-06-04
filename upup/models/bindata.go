@@ -7385,7 +7385,7 @@ spec:
       serviceAccountName: calico-node
       priorityClassName: system-cluster-critical
       containers:
-      - image: calico/typha:v3.9.5
+      - image: calico/typha:v3.9.6
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -7501,7 +7501,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.9.5
+          image: calico/cni:v3.9.6
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -7521,7 +7521,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.9.5
+          image: calico/cni:v3.9.6
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -7555,7 +7555,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.9.5
+          image: calico/pod2daemon-flexvol:v3.9.6
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -7564,7 +7564,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.9.5
+          image: calico/node:v3.9.6
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -7771,7 +7771,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.9.5
+          image: calico/kube-controllers:v3.9.6
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
@@ -8501,7 +8501,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.13.3
+      - image: calico/typha:v3.13.4
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -8613,7 +8613,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.13.3
+          image: calico/cni:v3.13.4
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -8635,7 +8635,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.13.3
+          image: calico/cni:v3.13.4
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -8671,7 +8671,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.13.3
+          image: calico/pod2daemon-flexvol:v3.13.4
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -8682,7 +8682,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.13.3
+          image: calico/node:v3.13.4
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -8890,7 +8890,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.13.3
+          image: calico/kube-controllers:v3.13.4
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
@@ -11545,7 +11545,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.12.1
+      - image: calico/typha:v3.12.2
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -11662,7 +11662,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.12.1
+          image: calico/cni:v3.12.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -11698,7 +11698,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.12.1
+          image: calico/pod2daemon-flexvol:v3.12.2
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -11709,7 +11709,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.12.1
+          image: calico/node:v3.12.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -12469,7 +12469,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.13.3
+      - image: calico/typha:v3.13.4
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -12580,7 +12580,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.13.3
+          image: calico/cni:v3.13.4
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -12616,7 +12616,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.13.3
+          image: calico/pod2daemon-flexvol:v3.13.4
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -12627,7 +12627,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.13.3
+          image: calico/node:v3.13.4
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
