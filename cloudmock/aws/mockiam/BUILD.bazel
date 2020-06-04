@@ -7,6 +7,7 @@ go_library(
         "iaminstanceprofile.go",
         "iamrole.go",
         "iamrolepolicy.go",
+        "oidcprovider.go",
     ],
     importpath = "k8s.io/kops/cloudmock/aws/mockiam",
     visibility = ["//visibility:public"],

@@ -82,6 +82,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		// IAM
 		ListIAMInstanceProfiles,
 		ListIAMRoles,
+		ListIAMOIDCProviders,
 	}
 
 	if featureflag.Spotinst.Enabled() {
@@ -2100,6 +2101,68 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*resources.R
 	}
 
 	return resourceTrackers, nil
+}
+
+func ListIAMOIDCProviders(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(awsup.AWSCloud)
+
+	var providers []*string
+	{
+		request := &iam.ListOpenIDConnectProvidersInput{}
+		response, err := c.IAM().ListOpenIDConnectProviders(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing IAM OIDC Providers: %v", err)
+		}
+		for _, provider := range response.OpenIDConnectProviderList {
+			arn := provider.Arn
+			descReq := &iam.GetOpenIDConnectProviderInput{
+				OpenIDConnectProviderArn: arn,
+			}
+			_, err := c.IAM().GetOpenIDConnectProvider(descReq)
+			if err != nil {
+				return nil, fmt.Errorf("error getting IAM OIDC Provider: %v", err)
+			}
+			// TODO: only delete oidc providers if they're owned by the cluster.
+			// We need to figure out how we can determine that given only a cluster name.
+			// Providers dont support tagging or naming.
+
+			// providers = append(providers, arn)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error listing IAM roles: %v", err)
+		}
+	}
+
+	var resourceTrackers []*resources.Resource
+
+	for _, arn := range providers {
+		resourceTracker := &resources.Resource{
+			Name:    aws.StringValue(arn),
+			ID:      aws.StringValue(arn),
+			Type:    "oidc-provider",
+			Deleter: DeleteIAMOIDCProvider,
+		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
+	}
+
+	return resourceTrackers, nil
+}
+
+func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
+	c := cloud.(awsup.AWSCloud)
+	arn := r.Obj.(*string)
+	{
+		klog.V(2).Infof("Deleting IAM OIDC Provider %v", arn)
+		request := &iam.DeleteOpenIDConnectProviderInput{
+			OpenIDConnectProviderArn: arn,
+		}
+		_, err := c.IAM().DeleteOpenIDConnectProvider(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM OIDC Provider %v: %v", arn, err)
+		}
+	}
+
+	return nil
 }
 
 func ListSpotinstResources(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
