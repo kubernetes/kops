@@ -44,6 +44,7 @@ k8s.io/kops/node-authorizer/pkg/utils
 k8s.io/kops/nodeup/pkg/bootstrap
 k8s.io/kops/nodeup/pkg/distros
 k8s.io/kops/nodeup/pkg/model
+k8s.io/kops/nodeup/pkg/model/networking
 k8s.io/kops/nodeup/pkg/model/resources
 k8s.io/kops/pkg/acls
 k8s.io/kops/pkg/acls/gce
