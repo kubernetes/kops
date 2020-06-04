@@ -22,32 +22,37 @@ spec:
   - version: 1.6.1
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
-    manifest: v1.6.1.yaml 
+    manifest: v1.6.1.yaml
   - version: 1.6.3
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
-    manifest: v1.6.3.yaml 
+    manifest: v1.6.3.yaml
   - version: 1.7.1
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
     manifest: v1.7.1.yaml
   - version: 1.8.0
-    kubernetesVersion: ">=1.8.0" 
+    kubernetesVersion: ">=1.8.0"
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
     manifest: v1.8.0.yaml
   - version: 1.8.1
-    kubernetesVersion: ">=1.8.0" 
+    kubernetesVersion: ">=1.8.0"
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
     manifest: v1.8.1.yaml
   - version: 1.8.3
-    kubernetesVersion: ">=1.8.0" 
+    kubernetesVersion: ">=1.8.0"
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
     manifest: v1.8.3.yaml
   - version: 1.10.1
-    kubernetesVersion: ">=1.10.0" 
+    kubernetesVersion: ">=1.10.0"
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
     manifest: v1.10.1.yaml
+  - version: 2.0.1
+    kubernetesVersion: ">=1.18.0"
+    selector:
+      k8s-addon: kubernetes-dashboard.addons.k8s.io
+    manifest: v2.0.1.yaml
