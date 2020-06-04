@@ -1,30 +1,37 @@
 #!/bin/bash -e
 
+PUBLIC=
+
+if [[ "$1" == "--public" ]]; then
+  PUBLIC=1
+  shift
+fi
+
 SRC=$1
 DEST=$2
 
 if [[ -z "${SRC}" ]]; then
-  echo "syntax: $0 <src> <dest>"
+  echo "syntax: $0 [--public] <src> <dest>"
   exit 1
 fi
 
 if [[ -z "${DEST}" ]]; then
-  echo "syntax: $0 <src> <dest>"
+  echo "syntax: $0 [--public] <src> <dest>"
   exit 1
 fi
 
 if [[ "${DEST:0:5}" == "s3://" ]]; then
-  aws s3 sync --acl public-read ${SRC} ${DEST}
+  aws s3 sync ${PUBLIC:+--acl public-read} ${SRC} ${DEST}
   exit 0
 fi
 
 if [[ "${DEST:0:5}" == "gs://" ]]; then
-  gsutil -h "Cache-Control:private,max-age=0" rsync -r -a public-read ${SRC} ${DEST}
+  gsutil -h "Cache-Control:private,max-age=0" rsync -r ${PUBLIC:+-a public-read} ${SRC} ${DEST}
   exit 0
 fi
 
 if [[ "${DEST:0:6}" == "oss://" ]]; then
-	aliyun oss cp --acl public-read -r -f --include "*" ${SRC}/ ${DEST}
+	aliyun oss cp ${PUBLIC:+--acl public-read} -r -f --include "*" ${SRC}/ ${DEST}
   exit 0
 fi
 
