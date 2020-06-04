@@ -14,23 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package networking
 
 import (
 	"path/filepath"
 
+	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// EtcdTLSBuilder configures the etcd TLS support
-type EtcdTLSBuilder struct {
-	*NodeupModelContext
+// CalicoBuilder configures the etcd TLS support for Calico
+type CalicoBuilder struct {
+	*model.NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &EtcdTLSBuilder{}
+var _ fi.ModelBuilder = &CalicoBuilder{}
 
 // Build is responsible for performing setup for CNIs that need etcd TLS support
-func (b *EtcdTLSBuilder) Build(c *fi.ModelBuilderContext) error {
+func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.Cluster.Spec.Networking.Calico == nil {
+		return nil
+	}
+
 	// @check if tls is enabled and if so, we need to download the client certificates
 	if !b.UseEtcdManager() && b.UseEtcdTLS() {
 		name := "calico-client"

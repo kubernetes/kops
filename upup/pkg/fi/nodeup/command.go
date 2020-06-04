@@ -17,7 +17,6 @@ limitations under the License.
 package nodeup
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -30,6 +29,7 @@ import (
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
+	"k8s.io/kops/nodeup/pkg/model/networking"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -43,8 +43,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -244,62 +242,23 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.PackagesBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.SecretBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.FirewallBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.NetworkBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
 
-	if c.cluster.Spec.Networking.Cilium != nil {
-		loader.Builders = append(loader.Builders, &model.CiliumBuilder{NodeupModelContext: modelContext})
-	}
-	if c.cluster.Spec.Networking.Kuberouter == nil {
-		loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
-	} else {
-		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
-	}
-	if c.cluster.Spec.Networking.Calico != nil {
-		loader.Builders = append(loader.Builders, &model.EtcdTLSBuilder{NodeupModelContext: modelContext})
-	}
+	loader.Builders = append(loader.Builders, &networking.CalicoBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &networking.CiliumBuilder{NodeupModelContext: modelContext})
+	// Canal = Flannel + Calico, so use this builder for both CNIs
+	loader.Builders = append(loader.Builders, &networking.FlannelBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &networking.LyftVPCBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &networking.KuberouterBuilder{NodeupModelContext: modelContext})
+	// Also handles kopeio as kopeio is based on kubenet
+	loader.Builders = append(loader.Builders, &networking.KubenetBuilder{NodeupModelContext: modelContext})
 
-	if c.cluster.Spec.Networking.LyftVPC != nil {
-
-		loader.TemplateFunctions["SubnetTags"] = func() (string, error) {
-			var tags map[string]string
-			if c.cluster.IsKubernetesGTE("1.18") {
-				tags = map[string]string{
-					"KubernetesCluster": c.cluster.Name,
-				}
-			} else {
-				tags = map[string]string{
-					"Type": "pod",
-				}
-			}
-			if len(c.cluster.Spec.Networking.LyftVPC.SubnetTags) > 0 {
-				tags = c.cluster.Spec.Networking.LyftVPC.SubnetTags
-			}
-
-			bytes, err := json.Marshal(tags)
-			if err != nil {
-				return "", err
-			}
-			return string(bytes), nil
-		}
-
-		loader.TemplateFunctions["NodeSecurityGroups"] = func() (string, error) {
-			// use the same security groups as the node
-			ids, err := evaluateSecurityGroups(c.cluster.Spec.NetworkID)
-			if err != nil {
-				return "", err
-			}
-			bytes, err := json.Marshal(ids)
-			if err != nil {
-				return "", err
-			}
-			return string(bytes), nil
-		}
-	}
+	networking.LoadLyftTemplateFunctions(loader.TemplateFunctions, c.cluster)
 
 	taskMap, err := loader.Build(c.ModelDir)
 	if err != nil {
@@ -391,57 +350,6 @@ func evaluateSpec(c *api.Cluster) error {
 	}
 
 	return nil
-}
-
-func evaluateSecurityGroups(vpcId string) ([]string, error) {
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
-
-	s, err := session.NewSession(config)
-	if err != nil {
-		return nil, fmt.Errorf("error starting new AWS session: %v", err)
-	}
-	s.Handlers.Send.PushFront(func(r *request.Request) {
-		// Log requests
-		klog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
-	})
-
-	metadata := ec2metadata.New(s, config)
-
-	region, err := metadata.Region()
-	if err != nil {
-		return nil, fmt.Errorf("error querying ec2 metadata service (for az/region): %v", err)
-	}
-
-	sgNames, err := metadata.GetMetadata("security-groups")
-	if err != nil {
-		return nil, fmt.Errorf("error querying ec2 metadata service (for security-groups): %v", err)
-	}
-	svc := ec2.New(s, config.WithRegion(region))
-
-	result, err := svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
-		Filters: []*ec2.Filter{
-			{
-				Name:   aws.String("group-name"),
-				Values: aws.StringSlice(strings.Fields(sgNames)),
-			},
-			{
-				Name:   aws.String("vpc-id"),
-				Values: []*string{aws.String(vpcId)},
-			},
-		},
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("error looking up instance security group ids: %v", err)
-	}
-	var sgIds []string
-	for _, group := range result.SecurityGroups {
-		sgIds = append(sgIds, *group.GroupId)
-	}
-
-	return sgIds, nil
-
 }
 
 func evaluateHostnameOverride(hostnameOverride string) (string, error) {
