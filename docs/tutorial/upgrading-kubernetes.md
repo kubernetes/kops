@@ -1,12 +1,12 @@
 # Upgrading kubernetes
 
 Upgrading kubernetes is very easy with kops, as long as you are using a compatible version of kops.
-The kops `1.8.x` series (for example) supports the kubernetes 1.6, 1.7 and 1.8 series,
+The kops `1.18.x` series (for example) supports the kubernetes 1.16, 1.17 and 1.18 series,
 as per the kubernetes deprecation policy.  Older versions of kubernetes will likely still work, but these
-are on a best-effort basis and will have little if any testing.  kops `1.8` will not support the kubernetes
-`1.9` series, and for full support of kubernetes `1.9` it is best to wait for the kops `1.9` series release.
+are on a best-effort basis and will have little if any testing.  kops `1.18` will not support the kubernetes
+`1.19` series, and for full support of kubernetes `1.19` it is best to wait for the kops `1.19` series release.
 We aim to release the next major version of kops within a few weeks of the equivalent major release of kubernetes,
-so kops `1.9.0` will be released within a few weeks of kubernetes `1.9.0`.  We try to ensure that a 1.9 pre-release
+so kops `1.19.0` will be released within a few weeks of kubernetes `1.19.0`.  We try to ensure that a 1.19 pre-release
 (alpha or beta) is available at the kubernetes release, for early adopters.
 
 Upgrading kubernetes is similar to changing the image on an InstanceGroup, except that the kubernetes version is
@@ -45,7 +45,7 @@ spec:
     legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.7.2
+  kubernetesVersion: 1.17.2
   masterInternalName: api.internal.simple.k8s.local
   masterPublicName: api.simple.k8s.local
   networking:
@@ -65,7 +65,7 @@ spec:
     nodes: public
 ```
 
-Edit `kubernetesVersion`, changing it to `1.7.7` for example.
+Edit `kubernetesVersion`, changing it to `1.17.7` for example.
 
 
 Apply the changes to the cloud infrastructure using `kops update cluster` and `kops update cluster --yes`:
@@ -118,10 +118,10 @@ Restart the instances with `kops rolling-update cluster --yes`.
 ```
 > kubectl get nodes -owide
 NAME                        STATUS    AGE       VERSION   EXTERNAL-IP     OS-IMAGE                             KERNEL-VERSION
-master-us-central1-a-8fcc   Ready     26m       v1.7.7    35.194.56.129   Container-Optimized OS from Google   4.4.35+
-nodes-9cml                  Ready     16m       v1.7.7    35.193.12.73    Ubuntu 16.04.3 LTS                   4.10.0-35-generic
-nodes-km98                  Ready     10m       v1.7.7    35.194.25.144   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
-nodes-wbb2                  Ready     2m        v1.7.7    35.188.177.16   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
+master-us-central1-a-8fcc   Ready     26m       v1.17.7   35.194.56.129   Container-Optimized OS from Google   4.4.35+
+nodes-9cml                  Ready     16m       v1.17.7   35.193.12.73    Ubuntu 16.04.3 LTS                   4.10.0-35-generic
+nodes-km98                  Ready     10m       v1.17.7   35.194.25.144   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
+nodes-wbb2                  Ready     2m        v1.17.7   35.188.177.16   Ubuntu 16.04.3 LTS                   4.10.0-35-generic
 ```
 
 <!-- TODO: Do we drain, validate and then restart -->

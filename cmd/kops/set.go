@@ -32,8 +32,8 @@ var (
     `))
 
 	setExample = templates.Examples(i18n.T(`
-    # Set cluster to run kubernetes version 1.10.0
-    kops set cluster k8s-cluster.example.com spec.kubernetesVersion=1.10.0
+    # Set cluster to run kubernetes version 1.17.0
+    kops set cluster k8s-cluster.example.com spec.kubernetesVersion=1.17.0
 	`))
 )
 
