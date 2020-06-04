@@ -39,52 +39,22 @@ func TestImage(t *testing.T) {
 			Component: "kube-apiserver",
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					KubernetesVersion: "v1.9.0",
+					KubernetesVersion: "v1.11.0",
 				},
 			},
-			Expected: "gcr.io/google_containers/kube-apiserver:v1.9.0",
+			Expected: "k8s.gcr.io/kube-apiserver:v1.11.0",
 		},
 		{
 			Component: "kube-apiserver",
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					KubernetesVersion: "v1.10.0",
-				},
-			},
-			Expected: "k8s.gcr.io/kube-apiserver:v1.10.0",
-		},
-		{
-			Component: "kube-apiserver",
-			Cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					KubernetesVersion: "1.10.0",
-				},
-			},
-			Expected: "k8s.gcr.io/kube-apiserver:v1.10.0",
-		},
-		{
-			Component: "kube-apiserver",
-			Cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					KubernetesVersion: "memfs://v1.9.0-download/",
+					KubernetesVersion: "memfs://v1.11.0-download/",
 				},
 			},
 			VFS: map[string]string{
-				"memfs://v1.9.0-download/bin/linux/amd64/kube-apiserver.docker_tag": "1-9-0dockertag",
+				"memfs://v1.11.0-download/bin/linux/amd64/kube-apiserver.docker_tag": "1-11-0dockertag",
 			},
-			Expected: "gcr.io/google_containers/kube-apiserver:1-9-0dockertag",
-		},
-		{
-			Component: "kube-apiserver",
-			Cluster: &kops.Cluster{
-				Spec: kops.ClusterSpec{
-					KubernetesVersion: "memfs://v1.10.0-download/",
-				},
-			},
-			VFS: map[string]string{
-				"memfs://v1.10.0-download/bin/linux/amd64/kube-apiserver.docker_tag": "1-10-0dockertag",
-			},
-			Expected: "k8s.gcr.io/kube-apiserver:1-10-0dockertag",
+			Expected: "k8s.gcr.io/kube-apiserver:1-11-0dockertag",
 		},
 		{
 			Component: "kube-apiserver",

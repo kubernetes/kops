@@ -824,10 +824,8 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersio
 	//# Uncomment TasksMax if your systemd version supports it.
 	//# Only systemd 226 and above support this version.
 	//#TasksMax=infinity
-	if b.IsKubernetesGTE("1.10") {
-		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
-		manifest.Set("Service", "TasksMax", "infinity")
-	}
+	// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
+	manifest.Set("Service", "TasksMax", "infinity")
 
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
@@ -913,10 +911,8 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 		"EnvironmentFile=/etc/environment",
 	}
 
-	if b.IsKubernetesGTE("1.10") {
-		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
-		lines = append(lines, "TasksMax=infinity")
-	}
+	// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
+	lines = append(lines, "TasksMax=infinity")
 
 	contents := strings.Join(lines, "\n")
 

@@ -29,7 +29,6 @@
 // upup/models/cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.16.yaml.template
-// upup/models/cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.8.yaml.template
 // upup/models/cloudup/resources/addons/networking.cilium.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/networking.cilium.io/k8s-1.7.yaml.template
 // upup/models/cloudup/resources/addons/networking.flannel/k8s-1.12.yaml.template
@@ -56,7 +55,6 @@
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template
 // upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.12.yaml.template
-// upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.9.yaml.template
 // upup/models/cloudup/resources/addons/rbac.addons.k8s.io/k8s-1.8.yaml
 // upup/models/cloudup/resources/addons/scheduler.addons.k8s.io/v1.7.0.yaml
 // upup/models/cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.14.0.yaml.template
@@ -4043,252 +4041,6 @@ func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate() (*as
 	}
 
 	info := bindataFileInfo{name: "cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.16.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
-var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplate = []byte(`# Vendored from https://github.com/aws/amazon-vpc-cni-k8s/blob/v1.3.3/config/v1.3/aws-k8s-cni.yaml
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: aws-node
-rules:
-- apiGroups:
-  - crd.k8s.amazonaws.com
-  resources:
-  - "*"
-  - namespaces
-  verbs:
-  - "*"
-- apiGroups: [""]
-  resources:
-  - pods
-  - nodes
-  - namespaces
-  verbs: ["list", "watch", "get"]
-- apiGroups: ["extensions"]
-  resources:
-  - daemonsets
-  verbs: ["list", "watch"]
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: aws-node
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: aws-node
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: aws-node
-subjects:
-- kind: ServiceAccount
-  name: aws-node
-  namespace: kube-system
----
-kind: DaemonSet
-apiVersion: extensions/v1beta1
-metadata:
-  name: aws-node
-  namespace: kube-system
-  labels:
-    k8s-app: aws-node
-spec:
-  updateStrategy:
-    type: RollingUpdate
-  selector:
-    matchLabels:
-      k8s-app: aws-node
-  template:
-    metadata:
-      labels:
-        k8s-app: aws-node
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-    spec:
-      serviceAccountName: aws-node
-      hostNetwork: true
-      tolerations:
-      - operator: Exists
-      containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:1.3.3" }}"
-        ports:
-        - containerPort: 61678
-          name: metrics
-        name: aws-node
-        env:
-          - name: CLUSTER_NAME
-            value: {{ ClusterName }}
-          - name: AWS_VPC_K8S_CNI_LOGLEVEL
-            value: DEBUG
-          - name: MY_NODE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: WATCH_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          {{- range .Networking.AmazonVPC.Env }}
-          - name: {{ .Name }}
-            value: "{{ .Value }}"
-          {{- end }}
-        resources:
-          requests:
-            cpu: 10m
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /host/opt/cni/bin
-          name: cni-bin-dir
-        - mountPath: /host/etc/cni/net.d
-          name: cni-net-dir
-        - mountPath: /host/var/log
-          name: log-dir
-        - mountPath: /var/run/docker.sock
-          name: dockersock
-      volumes:
-      - name: cni-bin-dir
-        hostPath:
-          path: /opt/cni/bin
-      - name: cni-net-dir
-        hostPath:
-          path: /etc/cni/net.d
-      - name: log-dir
-        hostPath:
-          path: /var/log
-      - name: dockersock
-        hostPath:
-          path: /var/run/docker.sock
----
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: eniconfigs.crd.k8s.amazonaws.com
-spec:
-  scope: Cluster
-  group: crd.k8s.amazonaws.com
-  version: v1alpha1
-  names:
-    plural: eniconfigs
-    singular: eniconfig
-    kind: ENIConfig
-
----
-
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: k8s-ec2-srcdst
-  labels:
-    role.kubernetes.io/networking: "1"
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-  - patch
-
----
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: k8s-ec2-srcdst
-  namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
----
-
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: k8s-ec2-srcdst
-  labels:
-    role.kubernetes.io/networking: "1"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: k8s-ec2-srcdst
-subjects:
-- kind: ServiceAccount
-  name: k8s-ec2-srcdst
-  namespace: kube-system
-
----
-
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: k8s-ec2-srcdst
-  namespace: kube-system
-  labels:
-    k8s-app: k8s-ec2-srcdst
-    role.kubernetes.io/networking: "1"
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      k8s-app: k8s-ec2-srcdst
-  template:
-    metadata:
-      labels:
-        k8s-app: k8s-ec2-srcdst
-        role.kubernetes.io/networking: "1"
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-    spec:
-      hostNetwork: true
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
-      - key: CriticalAddonsOnly
-        operator: Exists
-      serviceAccountName: k8s-ec2-srcdst
-      containers:
-        - image: ottoyiu/k8s-ec2-srcdst:v0.2.0-3-gc0c26eca
-          name: k8s-ec2-srcdst
-          resources:
-            requests:
-              cpu: 10m
-              memory: 64Mi
-          env:
-            - name: AWS_REGION
-              value: {{ Region }}
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: "/etc/ssl/certs/ca-certificates.crt"
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
-`)
-
-func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplateBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplate, nil
-}
-
-func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplate() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplateBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.8.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -15329,101 +15081,6 @@ func cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s112YamlTemplate() (*as
 	return a, nil
 }
 
-var _cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s19YamlTemplate = []byte(`---
-apiVersion: extensions/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: kube-system
-spec:
-  allowedCapabilities:
-  - '*'
-  fsGroup:
-    rule: RunAsAny
-  hostPID: true
-  hostIPC: true
-  hostNetwork: true
-  hostPorts:
-  - min: 1
-    max: 65536
-  privileged: true
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  volumes:
-  - '*'
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRole
-metadata:
-  name: kops:kube-system:psp
-rules:
-- apiGroups:
-  - extensions
-  resources:
-  - podsecuritypolicies
-  resourceNames:
-  - kube-system
-  verbs:
-  - use
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: kops:kube-system:psp
-roleRef:
-  kind: ClusterRole
-  name: kops:kube-system:psp
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-# permit the cluster wise admin to use this policy
-- kind: Group
-  name: system:masters
-  apiGroup: rbac.authorization.k8s.io
-# permit the kubelets to access this policy (used for manifests)
-- kind: User
-  name: kubelet
-  apiGroup: rbac.authorization.k8s.io
-## TODO: need to question whether this can move into a rolebinding?
-{{- if UseBootstrapTokens }}
-- kind: Group
-  name: system:nodes
-  apiGroup: rbac.authorization.k8s.io
-{{- end }}
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: kops:kube-system:psp
-  namespace: kube-system
-roleRef:
-  kind: ClusterRole
-  name: kops:kube-system:psp
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-# permit the cluster wise admin to use this policy
-- kind: Group
-  name: system:serviceaccounts:kube-system
-  apiGroup: rbac.authorization.k8s.io
-`)
-
-func cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s19YamlTemplateBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s19YamlTemplate, nil
-}
-
-func cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s19YamlTemplate() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s19YamlTemplateBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.9.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
 var _cloudupResourcesAddonsRbacAddonsK8sIoK8s18Yaml = []byte(`# Source: https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/rbac/kubelet-binding.yaml
 # The GKE environments don't have kubelets with certificates that
 # identify the system:nodes group.  They use the kubelet identity
@@ -16223,7 +15880,6 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.10.yaml.template":                    cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s110YamlTemplate,
 	"cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.12.yaml.template":                    cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s112YamlTemplate,
 	"cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.16.yaml.template":                    cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate,
-	"cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.8.yaml.template":                     cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplate,
 	"cloudup/resources/addons/networking.cilium.io/k8s-1.12.yaml.template":                                cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate,
 	"cloudup/resources/addons/networking.cilium.io/k8s-1.7.yaml.template":                                 cloudupResourcesAddonsNetworkingCiliumIoK8s17YamlTemplate,
 	"cloudup/resources/addons/networking.flannel/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsNetworkingFlannelK8s112YamlTemplate,
@@ -16250,7 +15906,6 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate,
 	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template":                     cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s110YamlTemplate,
 	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.12.yaml.template":                     cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s112YamlTemplate,
-	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.9.yaml.template":                      cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s19YamlTemplate,
 	"cloudup/resources/addons/rbac.addons.k8s.io/k8s-1.8.yaml":                                            cloudupResourcesAddonsRbacAddonsK8sIoK8s18Yaml,
 	"cloudup/resources/addons/scheduler.addons.k8s.io/v1.7.0.yaml":                                        cloudupResourcesAddonsSchedulerAddonsK8sIoV170Yaml,
 	"cloudup/resources/addons/spotinst-kubernetes-cluster-controller.addons.k8s.io/v1.14.0.yaml.template": cloudupResourcesAddonsSpotinstKubernetesClusterControllerAddonsK8sIoV1140YamlTemplate,
@@ -16359,7 +16014,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 					"k8s-1.10.yaml.template": {cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s110YamlTemplate, map[string]*bintree{}},
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s112YamlTemplate, map[string]*bintree{}},
 					"k8s-1.16.yaml.template": {cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate, map[string]*bintree{}},
-					"k8s-1.8.yaml.template":  {cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s18YamlTemplate, map[string]*bintree{}},
 				}},
 				"networking.cilium.io": {nil, map[string]*bintree{
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate, map[string]*bintree{}},
@@ -16408,7 +16062,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				"podsecuritypolicy.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.10.yaml.template": {cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s110YamlTemplate, map[string]*bintree{}},
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s112YamlTemplate, map[string]*bintree{}},
-					"k8s-1.9.yaml.template":  {cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s19YamlTemplate, map[string]*bintree{}},
 				}},
 				"rbac.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.8.yaml": {cloudupResourcesAddonsRbacAddonsK8sIoK8s18Yaml, map[string]*bintree{}},

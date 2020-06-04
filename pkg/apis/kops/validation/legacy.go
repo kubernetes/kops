@@ -436,12 +436,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	// KubeAPIServer
 	if c.Spec.KubeAPIServer != nil {
-		if c.IsKubernetesGTE("1.10") {
-			if len(c.Spec.KubeAPIServer.AdmissionControl) > 0 {
-				if len(c.Spec.KubeAPIServer.DisableAdmissionPlugins) > 0 {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "disableAdmissionPlugins"),
-						"disableAdmissionPlugins is mutually exclusive, you cannot use both admissionControl and disableAdmissionPlugins together"))
-				}
+		if len(c.Spec.KubeAPIServer.AdmissionControl) > 0 {
+			if len(c.Spec.KubeAPIServer.DisableAdmissionPlugins) > 0 {
+				allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "disableAdmissionPlugins"),
+					"disableAdmissionPlugins is mutually exclusive, you cannot use both admissionControl and disableAdmissionPlugins together"))
 			}
 		}
 	}
@@ -572,7 +570,7 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			}
 		}
 
-		if c.IsKubernetesGTE("1.10") {
+		{
 			// Flag removed in 1.10
 			if k.RequireKubeconfig != nil {
 				allErrs = append(allErrs, field.Forbidden(

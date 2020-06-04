@@ -359,7 +359,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	// most people will still have c.Spec.KubeAPIServer.AdmissionControl references into their configuration we need
 	// to fix up. A PR https://github.com/kubernetes/kops/pull/5221/ introduced the issue and since the command line
 	// flags are mutually exclusive the API refuses to come up.
-	if b.IsKubernetesGTE("1.10") {
+	{
 		// @note: note sure if this is the best place to put it, I could place into the validation.go which has the benefit of
 		// fixing up the manifests itself, but that feels VERY hacky
 		// @note: it's fine to use AdmissionControl here and it's not populated by the model, thus the only data could have come from the cluster spec

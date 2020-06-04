@@ -24,8 +24,6 @@ import (
 	"path"
 	"strings"
 
-	"k8s.io/kops/pkg/k8sversion"
-
 	"github.com/blang/semver"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
@@ -89,9 +87,9 @@ var (
 	// CloudupModels a list of supported models
 	CloudupModels = []string{"proto", "cloudup"}
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
-	OldestSupportedKubernetesVersion = "1.9.0"
+	OldestSupportedKubernetesVersion = "1.11.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
-	OldestRecommendedKubernetesVersion = "1.11.0"
+	OldestRecommendedKubernetesVersion = "1.13.0"
 )
 
 type ApplyClusterCmd struct {
@@ -280,14 +278,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
-	kv, err := k8sversion.Parse(cluster.Spec.KubernetesVersion)
-	if err != nil {
-		return err
-	}
-
-	// check if we should recommend turning off anonymousAuth on k8s versions gte than 1.10
-	// we do 1.10 since this is a really critical issues and 1.10 has it
-	if kv.IsGTE("1.10") {
+	// check if we should recommend turning off anonymousAuth
+	{
 		// we do a check here because setting modifying the kubelet object messes with the output
 		warn := false
 		if cluster.Spec.Kubelet == nil {
