@@ -22,8 +22,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // Subject represents an IAM identity, to which permissions are granted.
@@ -82,14 +84,23 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
 }
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
-func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) string {
-	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.ServiceAccountIssuer != nil {
-		return *clusterSpec.KubeAPIServer.ServiceAccountIssuer
+func ServiceAccountIssuer(clusterSpec *kops.ClusterSpec) (string, error) {
+	if featureflag.PublicJWKS.Enabled() {
+		base, err := vfs.Context.BuildVfsPath(clusterSpec.PublicDataStore)
+		if err != nil {
+			return "", err
+		}
+		baseURL, err := base.(*vfs.S3Path).GetHTTPsUrl()
+		if err != nil {
+			return "", err
+		}
+		return baseURL + "/oidc", nil
+	} else {
+		if supportsPublicJWKS(clusterSpec) {
+			return "https://" + clusterSpec.MasterPublicName, nil
+		}
+		return "https://" + clusterSpec.MasterInternalName, nil
 	}
-	if supportsPublicJWKS(clusterSpec) {
-		return "https://api." + clusterName
-	}
-	return "https://api.internal." + clusterName
 }
 
 func supportsPublicJWKS(clusterSpec *kops.ClusterSpec) bool {

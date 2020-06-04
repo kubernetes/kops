@@ -439,6 +439,17 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
 }
 
+func (p *S3Path) GetHTTPsUrl() (string, error) {
+	if p.bucketDetails == nil {
+		bucketDetails, err := p.s3Context.getDetailsForBucket(p.bucket)
+		if err != nil {
+			return "", fmt.Errorf("failed to get bucket details for %q: %w", p.String(), err)
+		}
+		p.bucketDetails = bucketDetails
+	}
+	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", p.bucketDetails.name, p.bucketDetails.region, p.Key()), nil
+}
+
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
 func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
