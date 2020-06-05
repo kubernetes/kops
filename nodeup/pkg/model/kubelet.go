@@ -17,13 +17,11 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"k8s.io/kops/pkg/model/components"
 
@@ -553,54 +551,17 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error)
 		return nil, fmt.Errorf("error getting NodeName: %v", err)
 	}
 
-	caCert, err := b.KeyStore.FindCert(fi.CertificateId_CA)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching CA certificate from keystore: %v", err)
-	}
-	if caCert == nil {
-		return nil, fmt.Errorf("unable to find CA certificate %q in keystore", fi.CertificateId_CA)
-	}
-
-	caKey, err := b.KeyStore.FindPrivateKey(fi.CertificateId_CA)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching CA certificate from keystore: %v", err)
-	}
-	if caKey == nil {
-		return nil, fmt.Errorf("unable to find CA key %q in keystore", fi.CertificateId_CA)
+	req := &pki.IssueCertRequest{
+		Signer: fi.CertificateId_CA,
+		Type:   "client",
+		Subject: pkix.Name{
+			CommonName:   fmt.Sprintf("system:node:%s", nodeName),
+			Organization: []string{rbac.NodesGroup},
+		},
+		MinValidDays: 455,
 	}
 
-	privateKey, err := pki.GeneratePrivateKey()
-	if err != nil {
-		return nil, err
-	}
-
-	template := &x509.Certificate{
-		BasicConstraintsValid: true,
-		IsCA:                  false,
-	}
-
-	template.Subject = pkix.Name{
-		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
-		Organization: []string{rbac.NodesGroup},
-	}
-
-	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3
-	//
-	// Digital signature allows the certificate to be used to verify
-	// digital signatures used during TLS negotiation.
-	template.KeyUsage = template.KeyUsage | x509.KeyUsageDigitalSignature
-	// KeyEncipherment allows the cert/key pair to be used to encrypt
-	// keys, including the symmetric keys negotiated during TLS setup
-	// and used for data transfer.
-	template.KeyUsage = template.KeyUsage | x509.KeyUsageKeyEncipherment
-	// ClientAuth allows the cert to be used by a TLS client to
-	// authenticate itself to the TLS server.
-	template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
-
-	t := time.Now().UnixNano()
-	template.SerialNumber = pki.BuildPKISerial(t)
-
-	certificate, err := pki.SignNewCertificate(privateKey, template, caCert.Certificate, caKey)
+	certificate, privateKey, caCert, err := pki.IssueCert(req, b.KeyStore)
 	if err != nil {
 		return nil, fmt.Errorf("error signing certificate for master kubelet: %v", err)
 	}

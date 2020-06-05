@@ -35,7 +35,6 @@ go_library(
         "import.go",
         "import_cluster.go",
         "main.go",
-        "pkix.go",
         "replace.go",
         "rollingupdate.go",
         "rollingupdatecluster.go",
