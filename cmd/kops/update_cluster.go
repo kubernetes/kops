@@ -52,7 +52,7 @@ var (
 
 	updateClusterExample = templates.Examples(i18n.T(`
 	# After cluster has been edited or upgraded, configure it with:
-	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
+	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes --admin
 	`))
 
 	updateClusterShort = i18n.T("Update a cluster.")
@@ -65,7 +65,10 @@ type UpdateClusterOptions struct {
 	OutDir          string
 	SSHPublicKey    string
 	RunTasksOptions fi.RunTasksOptions
-	CreateKubecfg   bool
+
+	CreateKubecfg bool
+	admin         bool
+	user          string
 
 	Phase string
 
@@ -80,7 +83,7 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.Models = strings.Join(cloudup.CloudupModels, ",")
 	o.SSHPublicKey = ""
 	o.OutDir = ""
-	o.CreateKubecfg = true
+	o.CreateKubecfg = false
 	o.RunTasksOptions.InitDefaults()
 }
 
@@ -115,6 +118,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
+	cmd.Flags().BoolVar(&options.admin, "admin", options.admin, "Also export the admin user. Implies --create-kube-config")
+	cmd.Flags().StringVar(&options.user, "user", options.user, "Existing user to add to the cluster context. Implies --create-kube-config")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
 	cmd.Flags().StringSliceVar(&options.LifecycleOverrides, "lifecycle-overrides", options.LifecycleOverrides, "comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges")
 	viper.BindPFlag("lifecycle-overrides", cmd.Flags().Lookup("lifecycle-overrides"))
@@ -136,6 +141,24 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 
 	isDryrun := false
 	targetName := c.Target
+
+	if c.admin && c.user != "" {
+		return nil, fmt.Errorf("cannot use both --admin and --user")
+	}
+
+	if c.CreateKubecfg && !c.admin && c.user == "" {
+		return nil, fmt.Errorf("--create-kube-config requires that either --admin or --user is set")
+	}
+
+	if c.admin && !c.CreateKubecfg {
+		klog.Info("--admin implies --create-kube-config")
+		c.CreateKubecfg = true
+	}
+
+	if c.user != "" && !c.CreateKubecfg {
+		klog.Info("--user implies --create-kube-config")
+		c.CreateKubecfg = true
+	}
 
 	// direct requires --yes (others do not, because they don't do anything!)
 	if c.Target == cloudup.TargetDirect {
@@ -282,10 +305,11 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		}
 		if kubecfgCert != nil {
 			klog.Infof("Exporting kubecfg for cluster")
-			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions())
+			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions(), c.admin, c.user)
 			if err != nil {
 				return nil, err
 			}
+
 			err = conf.WriteKubecfg()
 			if err != nil {
 				return nil, err

@@ -19,13 +19,14 @@ kops update cluster [flags]
 
 ```
   # After cluster has been edited or upgraded, configure it with:
-  kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
+  kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes --admin
 ```
 
 ### Options
 
 ```
-      --create-kube-config            Will control automatically creating the kube config file on your local filesystem (default true)
+      --admin                         Also export the admin user. Implies --create-kube-config
+      --create-kube-config            Will control automatically creating the kube config file on your local filesystem
   -h, --help                          help for cluster
       --lifecycle-overrides strings   comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges
       --model string                  Models to apply (separate multiple models with commas) (default "proto,cloudup")
@@ -33,6 +34,7 @@ kops update cluster [flags]
       --phase string                  Subset of tasks to run: assets, cluster, network, security
       --ssh-public-key string         SSH public key to use (deprecated: use kops create secret instead)
       --target string                 Target - direct, terraform, cloudformation (default "direct")
+      --user string                   Existing user to add to the cluster context. Implies --create-kube-config
   -y, --yes                           Create cloud resources, without --yes update is in dry run mode
 ```
 
