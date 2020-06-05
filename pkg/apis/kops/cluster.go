@@ -553,9 +553,9 @@ type HTTPProxy struct {
 
 // ServiceOIDCProviderSpec defines the OIDC provider setup for the cluster (AWS only)
 type ServiceOIDCProviderSpec struct {
-	// Issuer is the URL to the discovery and key documents.
-	Issuer string `json:"issuer,omitempty"`
-	// IssuerCAThumbprint is the thumbprint of the CA serving the Issuer URL's certificate
+	// IssuerURL is the URL to the discovery and key documents.
+	IssuerURL string `json:"issuerURL,omitempty"`
+	// IssuerCAThumbprints are the thumbprints of the CAs signing the Issuer URL's server certificate.
 	IssuerCAThumbprints []string `json:"issuerCAThumbprints"`
 }
 

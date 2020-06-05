@@ -873,19 +873,20 @@ func validateServiceOIDCProvider(c *kops.ClusterSpec, path *field.Path) field.Er
 		allErrs = append(allErrs, field.Forbidden(path, "serviceOIDCProvider is supported only in AWS"))
 	}
 
-	if provider.Issuer == "" {
-		allErrs = append(allErrs, field.Required(path.Child("issuer"), ""))
+	if provider.IssuerURL == "" {
+		allErrs = append(allErrs, field.Required(path.Child("issuerURL"), ""))
 	} else {
 		// Based on these requirements https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html#manage-oidc-provider-console
-		url, err := url.ParseRequestURI(provider.Issuer)
+		url, err := url.ParseRequestURI(provider.IssuerURL)
 		if err != nil {
-			allErrs = append(allErrs, field.Invalid(path.Child("issuer"), provider.Issuer, "must be a URL"))
-		}
-		if url.Scheme != "https" {
-			allErrs = append(allErrs, field.Invalid(path.Child("issuer"), provider.Issuer, "must use HTTPS"))
-		}
-		if url.Port() != "" {
-			allErrs = append(allErrs, field.Invalid(path.Child("issuer"), provider.Issuer, "must not specify a port"))
+			allErrs = append(allErrs, field.Invalid(path.Child("issuerURL"), provider.IssuerURL, err.Error()))
+		} else {
+			if url.Scheme != "https" {
+				allErrs = append(allErrs, field.Invalid(path.Child("issuerURL"), provider.IssuerURL, "must use HTTPS"))
+			}
+			if url.Port() != "" {
+				allErrs = append(allErrs, field.Invalid(path.Child("issuerURL"), provider.IssuerURL, "must not specify a port"))
+			}
 		}
 	}
 

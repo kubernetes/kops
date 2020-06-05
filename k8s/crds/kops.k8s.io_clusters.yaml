@@ -3403,15 +3403,15 @@ spec:
                 description: ServiceOIDCProvider defines the OIDC provider setup for
                   the cluster (AWS only)
                 properties:
-                  issuer:
-                    description: Issuer is the URL to the discovery and key documents.
-                    type: string
                   issuerCAThumbprints:
-                    description: IssuerCAThumbprint is the thumbprint of the CA serving
-                      the Issuer URL's certificate
+                    description: IssuerCAThumbprints are the thumbprints of the CAs
+                      signing the Issuer URL's server certificate.
                     items:
                       type: string
                     type: array
+                  issuerURL:
+                    description: IssuerURL is the URL to the discovery and key documents.
+                    type: string
                 required:
                 - issuerCAThumbprints
                 type: object

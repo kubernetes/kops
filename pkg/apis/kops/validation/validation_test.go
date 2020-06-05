@@ -812,14 +812,14 @@ func TestValidateServiceOIDCProvider(t *testing.T) {
 	}{
 		{
 			Input: kops.ServiceOIDCProviderSpec{
-				Issuer:              validIssuer,
+				IssuerURL:           validIssuer,
 				IssuerCAThumbprints: []string{validThumbprint},
 			},
 			ExpectedErrors: []string{},
 		},
 		{
 			Input: kops.ServiceOIDCProviderSpec{
-				Issuer:              validIssuer,
+				IssuerURL:           validIssuer,
 				IssuerCAThumbprints: []string{validThumbprint},
 			},
 			CloudProvider:  "gce",
@@ -828,27 +828,36 @@ func TestValidateServiceOIDCProvider(t *testing.T) {
 		{
 			Input: kops.ServiceOIDCProviderSpec{},
 			ExpectedErrors: []string{
-				"Required value::testField.issuer",
+				"Required value::testField.issuerURL",
 				"Required value::testField.issuerCAThumbprints",
 			},
 		},
 		{
 			Input: kops.ServiceOIDCProviderSpec{
-				Issuer:              "http://example.com/foo",
+				IssuerURL:           "not_a_url",
 				IssuerCAThumbprints: []string{validThumbprint},
 			},
-			ExpectedErrors: []string{"Invalid value::testField.issuer"},
+			ExpectedErrors: []string{
+				"Invalid value::testField.issuerURL",
+			},
 		},
 		{
 			Input: kops.ServiceOIDCProviderSpec{
-				Issuer:              "https://example.com:443/foo",
+				IssuerURL:           "http://example.com/foo",
 				IssuerCAThumbprints: []string{validThumbprint},
 			},
-			ExpectedErrors: []string{"Invalid value::testField.issuer"},
+			ExpectedErrors: []string{"Invalid value::testField.issuerURL"},
 		},
 		{
 			Input: kops.ServiceOIDCProviderSpec{
-				Issuer:              validIssuer,
+				IssuerURL:           "https://example.com:443/foo",
+				IssuerCAThumbprints: []string{validThumbprint},
+			},
+			ExpectedErrors: []string{"Invalid value::testField.issuerURL"},
+		},
+		{
+			Input: kops.ServiceOIDCProviderSpec{
+				IssuerURL:           validIssuer,
 				IssuerCAThumbprints: []string{"foo"},
 			},
 			ExpectedErrors: []string{"Invalid value::testField.issuerCAThumbprints[0]"},

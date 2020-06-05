@@ -64,7 +64,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	issuerURL := provider.Issuer
+	issuerURL := provider.IssuerURL
 
 	saSigner := &fitasks.Keypair{
 		Name:      fi.String("service-account-signer"),
