@@ -26,7 +26,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",
-        "//pkg/diff:go_default_library",
+        "//pkg/testutils/golden:go_default_library",
         "//pkg/util/stringorslice:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
     ],
