@@ -41,7 +41,7 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 // Build creates the tasks that set up storage acls
 func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
-	serviceAccount, err := b.Cloud.ServiceAccount()
+	serviceAccount, err := b.Cloud.InstanceServiceAccount()
 	if err != nil {
 		return fmt.Errorf("error fetching ServiceAccount: %v", err)
 	}

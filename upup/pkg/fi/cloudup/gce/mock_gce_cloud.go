@@ -137,8 +137,8 @@ func (c *mockGCECloud) Project() string {
 	return c.region
 }
 
-// ServiceAccount implements GCECloud::ServiceAccount
-func (c *mockGCECloud) ServiceAccount() (string, error) {
+// InstanceServiceAccount implements GCECloud::InstanceServiceAccount
+func (c *mockGCECloud) InstanceServiceAccount() (string, error) {
 	return "12345678-compute@developer.gserviceaccount.com", nil
 }
 

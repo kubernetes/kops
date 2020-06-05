@@ -69,7 +69,7 @@ func (s *gcsAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL, err
 		return nil, err
 	}
 
-	serviceAccount, err := cloud.(gce.GCECloud).ServiceAccount()
+	serviceAccount, err := cloud.(gce.GCECloud).InstanceServiceAccount()
 	if err != nil {
 		return nil, err
 	}

@@ -58,7 +58,12 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 
 			labels := map[string]string{gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(cluster.ObjectMeta.Name)}
 
-			gceCloud, err := gce.NewGCECloud(region, project, labels)
+			instanceServiceAccount := ""
+			if cluster.Spec.CloudConfig != nil {
+				instanceServiceAccount = cluster.Spec.CloudConfig.GCEServiceAccount
+			}
+
+			gceCloud, err := gce.NewGCECloud(region, project, labels, instanceServiceAccount)
 			if err != nil {
 				return nil, err
 			}

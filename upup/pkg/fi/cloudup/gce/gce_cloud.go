@@ -54,8 +54,8 @@ type GCECloud interface {
 
 	Zones() ([]string, error)
 
-	// ServiceAccount returns the email for the service account that the instances will run under
-	ServiceAccount() (string, error)
+	// InstanceServiceAccount returns the email for the service account that the instances will run under
+	InstanceServiceAccount() (string, error)
 }
 
 type gceCloudImplementation struct {
@@ -71,6 +71,10 @@ type gceCloudImplementation struct {
 	projectInfo *compute.Project
 
 	labels map[string]string
+
+	// instanceServiceAccount holds the serviceAccount email to use for running instances
+	// If empty, we should use the default
+	instanceServiceAccount string
 }
 
 var _ fi.Cloud = &gceCloudImplementation{}
@@ -112,13 +116,18 @@ func DefaultProject() (string, error) {
 	return projectID, err
 }
 
-func NewGCECloud(region string, project string, labels map[string]string) (GCECloud, error) {
+// NewGCECloud builds a GCECloud instance
+func NewGCECloud(region string, project string, labels map[string]string, serviceAccount string) (GCECloud, error) {
 	i := gceCloudInstances[region+"::"+project]
 	if i != nil {
 		return i.(gceCloudInternal).WithLabels(labels), nil
 	}
 
-	c := &gceCloudImplementation{region: region, project: project}
+	c := &gceCloudImplementation{
+		region:                 region,
+		project:                project,
+		instanceServiceAccount: serviceAccount,
+	}
 
 	ctx := context.Background()
 
@@ -211,7 +220,11 @@ func (c *gceCloudImplementation) Project() string {
 }
 
 // ServiceAccount returns the email address for the service account that the instances will run under.
-func (c *gceCloudImplementation) ServiceAccount() (string, error) {
+func (c *gceCloudImplementation) InstanceServiceAccount() (string, error) {
+	if c.instanceServiceAccount != "" {
+		return c.instanceServiceAccount, nil
+	}
+
 	if c.projectInfo == nil {
 		// Find the project info from the compute API, which includes the default service account
 		klog.V(2).Infof("fetching project %q from compute API", c.project)
