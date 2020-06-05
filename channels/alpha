@@ -43,7 +43,10 @@ spec:
       kubernetesVersion: ">=1.16.0 <1.17.0"
     - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2020-01-17
       providerID: aws
-      kubernetesVersion: ">=1.17.0"
+      kubernetesVersion: ">=1.17.0 <1.18.0"
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528
+      providerID: aws
+      kubernetesVersion: ">=1.18.0"
     - providerID: gce
       kubernetesVersion: "<1.16.0-alpha.1"
       name: "cos-cloud/cos-stable-65-10323-99-0"
