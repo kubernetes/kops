@@ -18,7 +18,6 @@ package model
 
 import (
 	"bytes"
-	"crypto/x509"
 	"strings"
 	"testing"
 
@@ -71,10 +70,6 @@ type fakeKeyStore struct {
 }
 
 func (k fakeKeyStore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-	panic("implement me")
-}
-
-func (k fakeKeyStore) CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	panic("implement me")
 }
 

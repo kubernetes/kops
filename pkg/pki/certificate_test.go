@@ -97,8 +97,8 @@ func TestGenerateCertificate(t *testing.T) {
 				CommonName: tc.name,
 			}
 
-			cert, err := SignNewCertificate(key, &tc.template, tc.signer, tc.signerKey)
-			require.NoError(t, err, "SignNewCertificate")
+			cert, err := signNewCertificate(key, &tc.template, tc.signer, tc.signerKey)
+			require.NoError(t, err, "signNewCertificate")
 
 			{
 				subject := cert.Certificate.Subject

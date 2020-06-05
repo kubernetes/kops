@@ -17,12 +17,10 @@ limitations under the License.
 package networking
 
 import (
-	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"k8s.io/kops/nodeup/pkg/model"
 
@@ -129,17 +127,22 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		}
 	}
 
-	etcdClientsCACertificate, err := b.KeyStore.FindCert("etcd-clients-ca-cilium")
-	if err != nil {
-		return err
+	req := &pki.IssueCertRequest{
+		Signer: "etcd-clients-ca-cilium",
+		Type:   "client",
+		Subject: pkix.Name{
+			CommonName: "cilium",
+		},
+		MinValidDays: 455,
 	}
-
-	etcdClientsCAPrivateKey, err := b.KeyStore.FindPrivateKey("etcd-clients-ca-cilium")
-	if err != nil {
-		return err
-	}
-
 	dir := "/etc/kubernetes/pki/cilium"
+	name := "etcd-client-cilium"
+	humanName := dir + "/" + name
+	klog.Infof("signing certificate for %q", humanName)
+	cert, privateKey, etcdClientsCACertificate, err := pki.IssueCert(req, b.KeyStore)
+	if err != nil {
+		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)
+	}
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("error creating directories %q: %v", dir, err)
@@ -152,39 +155,12 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		}
 	}
 
-	name := "etcd-client"
-
-	humanName := dir + "/" + name
-	privateKey, err := pki.GeneratePrivateKey()
-	if err != nil {
-		return fmt.Errorf("unable to create private key %q: %v", humanName, err)
-	}
-
-	certTmpl := &x509.Certificate{
-		Subject: pkix.Name{
-			CommonName: "cilium",
-		},
-		NotAfter:    time.Now().Add(time.Hour * 24 * 365).UTC(),
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-
-	klog.Infof("signing certificate for %q", humanName)
-	cert, err := pki.SignNewCertificate(privateKey, certTmpl, etcdClientsCACertificate.Certificate, etcdClientsCAPrivateKey)
-	if err != nil {
-		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)
-	}
-
 	p := filepath.Join(dir, name)
-	{
-		if err := cert.WriteToFile(p+".crt", 0644); err != nil {
-			return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
-		}
+	if err := cert.WriteToFile(p+".crt", 0644); err != nil {
+		return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
 	}
-
-	{
-		if err := privateKey.WriteToFile(p+".key", 0600); err != nil {
-			return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
-		}
+	if err := privateKey.WriteToFile(p+".key", 0600); err != nil {
+		return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
 	}
 
 	return nil

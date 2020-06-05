@@ -19,11 +19,8 @@ package fi
 import (
 	"bytes"
 	"context"
-	"crypto/x509"
 	"fmt"
 	"math/big"
-	"sync"
-	"time"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -40,9 +37,6 @@ type ClientsetCAStore struct {
 	cluster   *kops.Cluster
 	namespace string
 	clientset kopsinternalversion.KopsInterface
-
-	mutex           sync.Mutex
-	cachedCaKeysets map[string]*keyset
 }
 
 var _ CAStore = &ClientsetCAStore{}
@@ -51,10 +45,9 @@ var _ SSHCredentialStore = &ClientsetCAStore{}
 // NewClientsetCAStore is the constructor for ClientsetCAStore
 func NewClientsetCAStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) CAStore {
 	c := &ClientsetCAStore{
-		cluster:         cluster,
-		clientset:       clientset,
-		namespace:       namespace,
-		cachedCaKeysets: make(map[string]*keyset),
+		cluster:   cluster,
+		clientset: clientset,
+		namespace: namespace,
 	}
 
 	return c
@@ -64,36 +57,12 @@ func NewClientsetCAStore(cluster *kops.Cluster, clientset kopsinternalversion.Ko
 func NewClientsetSSHCredentialStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) SSHCredentialStore {
 	// Note: currently identical to NewClientsetCAStore
 	c := &ClientsetCAStore{
-		cluster:         cluster,
-		clientset:       clientset,
-		namespace:       namespace,
-		cachedCaKeysets: make(map[string]*keyset),
+		cluster:   cluster,
+		clientset: clientset,
+		namespace: namespace,
 	}
 
 	return c
-}
-
-// readCAKeypairs retrieves the CA keypair.
-// (No longer generates a keypair if not found.)
-func (c *ClientsetCAStore) readCAKeypairs(ctx context.Context, id string) (*keyset, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	cached := c.cachedCaKeysets[id]
-	if cached != nil {
-		return cached, nil
-	}
-
-	keyset, err := c.loadKeyset(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	if keyset == nil {
-		return nil, nil
-	}
-	c.cachedCaKeysets[id] = keyset
-	return keyset, nil
 }
 
 // keyset is a parsed Keyset
@@ -319,67 +288,6 @@ func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
 	return items, nil
 }
 
-func (c *ClientsetCAStore) issueCert(signer string, name string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
-	ctx := context.TODO()
-
-	klog.Infof("Issuing new certificate: %q", name)
-
-	template.SerialNumber = serial
-
-	caKeyset, err := c.readCAKeypairs(ctx, signer)
-	if err != nil {
-		return nil, err
-	}
-
-	if caKeyset == nil {
-		return nil, fmt.Errorf("ca keyset was not found; cannot issue certificates")
-	}
-	if caKeyset.primary == nil {
-		return nil, fmt.Errorf("ca keyset did not have any key data; cannot issue certificates")
-	}
-	if caKeyset.primary.certificate == nil {
-		return nil, fmt.Errorf("ca certificate was not found; cannot issue certificates")
-	}
-	if caKeyset.primary.privateKey == nil {
-		return nil, fmt.Errorf("ca privateKey was not found; cannot issue certificates")
-	}
-	cert, err := pki.SignNewCertificate(privateKey, template, caKeyset.primary.certificate.Certificate, caKeyset.primary.privateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err := c.storeAndVerifyKeypair(ctx, name, cert, privateKey); err != nil {
-		return nil, err
-	}
-
-	return cert, nil
-}
-
-// storeAndVerifyKeypair writes the keypair, also re-reading it to double-check it
-func (c *ClientsetCAStore) storeAndVerifyKeypair(ctx context.Context, name string, cert *pki.Certificate, privateKey *pki.PrivateKey) (*keyset, error) {
-	id := cert.Certificate.SerialNumber.String()
-	if err := c.storeKeypair(ctx, name, id, cert, privateKey); err != nil {
-		return nil, err
-	}
-
-	// Make double-sure it round-trips
-	keyset, err := c.loadKeyset(ctx, name)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching stored certificate: %v", err)
-	}
-
-	if keyset == nil {
-		return nil, fmt.Errorf("stored certificate not found: %v", err)
-	}
-	if keyset.primary == nil {
-		return nil, fmt.Errorf("stored certificate did not have data: %v", err)
-	}
-	if keyset.primary.id != id {
-		return nil, fmt.Errorf("stored certificate changed concurrently (id mismatch)")
-	}
-	return keyset, nil
-}
-
 // StoreKeypair implements CAStore::StoreKeypair
 func (c *ClientsetCAStore) StoreKeypair(name string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
 	ctx := context.TODO()
@@ -427,18 +335,6 @@ func (c *ClientsetCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) 
 		return nil, fmt.Errorf("error reading keyset %q: %v", name, err)
 	}
 	return o, nil
-}
-
-// CreateKeypair implements CAStore::CreateKeypair
-func (c *ClientsetCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
-	serial := c.buildSerial()
-
-	cert, err := c.issueCert(signer, id, serial, privateKey, template)
-	if err != nil {
-		return nil, err
-	}
-
-	return cert, nil
 }
 
 // addKey saves the specified key to the registry
@@ -571,12 +467,6 @@ func (c *ClientsetCAStore) storeKeypair(ctx context.Context, name string, id str
 		PrivateMaterial: privateMaterial.Bytes(),
 	}
 	return c.addKey(ctx, name, kops.SecretTypeKeypair, item)
-}
-
-// buildSerial returns a serial for use when issuing certificates
-func (c *ClientsetCAStore) buildSerial() *big.Int {
-	t := time.Now().UnixNano()
-	return pki.BuildPKISerial(t)
 }
 
 // AddSSHPublicKey implements CAStore::AddSSHPublicKey
