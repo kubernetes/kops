@@ -137,6 +137,17 @@ function try-download-release() {
 }
 
 function download-release() {
+  case "$(uname -m)" in
+  x86_64*|i?86_64*|amd64*)
+    NODEUP_URL="${NODEUP_URL}"
+    NODEUP_HASH="${NODEUP_HASH}"
+    ;;
+  *)
+    echo "Unsupported host arch: $(uname -m)" >&2
+    exit 1
+    ;;
+  esac
+
   # In case of failure checking integrity of release, retry.
   cd ${INSTALL_DIR}/bin
   until try-download-release; do
