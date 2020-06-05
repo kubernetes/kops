@@ -17,6 +17,7 @@ limitations under the License.
 package awsmodel
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"k8s.io/kops/pkg/model"
@@ -33,29 +34,20 @@ type OIDCProviderBuilder struct {
 	Lifecycle *fi.Lifecycle
 }
 
+type oidcDiscovery struct {
+	Issuer                string   `json:"issuer"`
+	JWKSURI               string   `json:"jwks_uri"`
+	AuthorizationEndpoint string   `json:"authorization_endpoint"`
+	ResponseTypes         []string `json:"response_types_supported"`
+	SubjectTypes          []string `json:"subject_types_supported"`
+	SigningAlgs           []string `json:"id_token_signing_alg_values_supported"`
+	ClaimsSupported       []string `json:"claims_supported"`
+}
+
 var _ fi.ModelBuilder = &OIDCProviderBuilder{}
 
 const (
-	stsAudience   = "sts.amazonaws.com"
-	discoveryJSON = `
-{
-		"issuer": "%v/",
-		"jwks_uri": "%v/keys.json",
-		"authorization_endpoint": "urn:kubernetes:programmatic_authorization",
-		"response_types_supported": [
-						"id_token"
-		],
-		"subject_types_supported": [
-						"public"
-		],
-		"id_token_signing_alg_values_supported": [
-						"RS256"
-		],
-		"claims_supported": [
-						"sub",
-						"iss"
-		]
-}`
+	stsAudience = "sts.amazonaws.com"
 )
 
 func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -67,16 +59,19 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	issuerURL := provider.IssuerURL
 
 	saSigner := &fitasks.Keypair{
-		Name:      fi.String("service-account-signer"),
+		Name:      fi.String("service-oidc-ca"),
 		Lifecycle: b.Lifecycle,
-		Subject:   "cn=service-account-signer",
+		Subject:   "cn=service-oidc-ca",
 		Type:      "ca",
 	}
 	c.AddTask(saSigner)
 
-	discoveryContents := fmt.Sprintf(discoveryJSON, issuerURL, issuerURL)
+	discovery, err := buildDicoveryJSON(issuerURL)
+	if err != nil {
+		return err
+	}
 	discoveryFile := &fitasks.ManagedFile{
-		Contents:  fi.WrapResource(fi.NewStringResource(discoveryContents)),
+		Contents:  fi.WrapResource(fi.NewBytesResource(discovery)),
 		Lifecycle: b.Lifecycle,
 		Location:  fi.String("discovery.json"),
 		Name:      fi.String("discovery.json"),
@@ -107,4 +102,17 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(oidcProvider)
 
 	return nil
+}
+
+func buildDicoveryJSON(issuerURL string) ([]byte, error) {
+	d := oidcDiscovery{
+		Issuer:                fmt.Sprintf("%v/", issuerURL),
+		JWKSURI:               fmt.Sprintf("%v/keys.json", issuerURL),
+		AuthorizationEndpoint: "urn:kubernetes:programmatic_authorization",
+		ResponseTypes:         []string{"id_token"},
+		SubjectTypes:          []string{"public"},
+		SigningAlgs:           []string{"RS256"},
+		ClaimsSupported:       []string{"sub", "iss"},
+	}
+	return json.MarshalIndent(d, "", "")
 }
