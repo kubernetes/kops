@@ -34,14 +34,17 @@ import (
 
 var (
 	exportKubecfgLong = templates.LongDesc(i18n.T(`
-	Export a kubecfg file for a cluster from the state store. The configuration
-	will be saved into a users $HOME/.kube/config file.
-	To export the kubectl configuration to a specific file set the KUBECONFIG
-	environment variable.`))
+	Export a kubecfg file for a cluster from the state store. By default the configuration
+	will be saved into a users $HOME/.kube/config file. Kops will respect the KUBECONFIG environment variable
+	if the --kubeconfig flag is not set.
+	`))
 
 	exportKubecfgExample = templates.Examples(i18n.T(`
-	# export a kubecfg file
-	kops export kubecfg kubernetes-cluster.example.com
+	# export a kubeconfig file with the cluster admin user (make sure you keep this user safe!)
+	kops export kubecfg kubernetes-cluster.example.com --admin
+
+	# export using a user already existing in the kubeconfig file
+	kops export kubecfg kubernetes-cluster.example.com --user my-oidc-user
 		`))
 
 	exportKubecfgShort = i18n.T(`Export kubecfg.`)
@@ -50,6 +53,8 @@ var (
 type ExportKubecfgOptions struct {
 	KubeConfigPath string
 	all            bool
+	admin          bool
+	user           string
 }
 
 func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
@@ -69,8 +74,10 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "The location of the kubeconfig file to create.")
+	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "the location of the kubeconfig file to create.")
 	cmd.Flags().BoolVar(&options.all, "all", options.all, "export all clusters from the kops state store")
+	cmd.Flags().BoolVar(&options.admin, "admin", options.admin, "export the cluster admin user and add it to the context")
+	cmd.Flags().StringVar(&options.user, "user", options.user, "add an existing user to the cluster context")
 
 	return cmd
 }
@@ -80,12 +87,17 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 	if err != nil {
 		return err
 	}
+	if options.all {
+		if len(args) != 0 {
+			return fmt.Errorf("cannot use both --all flag and positional arguments")
+		}
+	}
+	if options.admin && options.user != "" {
+		return fmt.Errorf("cannot use both --admin and --user")
+	}
 
 	var clusterList []*kopsapi.Cluster
 	if options.all {
-		if len(args) != 0 {
-			return fmt.Errorf("Cannot use both --all flag and positional arguments")
-		}
 		list, err := clientset.ListClusters(ctx, metav1.ListOptions{})
 		if err != nil {
 			return err
@@ -116,7 +128,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 			return err
 		}
 
-		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, buildPathOptions(options))
+		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, buildPathOptions(options), options.admin, options.user)
 		if err != nil {
 			return err
 		}
