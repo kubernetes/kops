@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/architectures"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -143,7 +144,7 @@ type packageVersion struct {
 	// List of dependencies that can be installed using the system's package
 	// manager (e.g. apt-get install or yum install).
 	Dependencies  []string
-	Architectures []Architecture
+	Architectures []architectures.Architecture
 
 	// PlainBinary indicates that the Source is not an OS, but a "bare" tar.gz
 	PlainBinary bool
@@ -153,7 +154,7 @@ type packageVersion struct {
 }
 
 // Match package version against configured values
-func (d *packageVersion) matches(arch Architecture, packageVersion string, distro distros.Distribution) bool {
+func (d *packageVersion) matches(arch architectures.Architecture, packageVersion string, distro distros.Distribution) bool {
 	if d.PackageVersion != packageVersion {
 		return false
 	}

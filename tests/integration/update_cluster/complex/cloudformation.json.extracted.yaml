@@ -111,6 +111,17 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
   }
 
   function download-release() {
+    case "$(uname -m)" in
+    x86_64*|i?86_64*|amd64*)
+      NODEUP_URL="${NODEUP_URL}"
+      NODEUP_HASH="${NODEUP_HASH}"
+      ;;
+    *)
+      echo "Unsupported host arch: $(uname -m)" >&2
+      exit 1
+      ;;
+    esac
+
     # In case of failure checking integrity of release, retry.
     cd ${INSTALL_DIR}/bin
     until try-download-release; do
@@ -233,7 +244,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.2
+    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -251,7 +262,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.2
+    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -405,6 +416,17 @@ Resources.AWSAutoScalingLaunchConfigurationnodescomplexexamplecom.Properties.Use
   }
 
   function download-release() {
+    case "$(uname -m)" in
+    x86_64*|i?86_64*|amd64*)
+      NODEUP_URL="${NODEUP_URL}"
+      NODEUP_HASH="${NODEUP_HASH}"
+      ;;
+    *)
+      echo "Unsupported host arch: $(uname -m)" >&2
+      exit 1
+      ;;
+    esac
+
     # In case of failure checking integrity of release, retry.
     cd ${INSTALL_DIR}/bin
     until try-download-release; do
@@ -461,7 +483,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescomplexexamplecom.Properties.Use
     networkPluginMTU: 9001
     networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause-amd64:3.2
+    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC

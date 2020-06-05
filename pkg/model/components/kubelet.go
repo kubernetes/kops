@@ -188,7 +188,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	// Specify our pause image
-	image := "k8s.gcr.io/pause-amd64:3.2"
+	image := "k8s.gcr.io/pause:3.2"
 	if image, err = b.Context.AssetBuilder.RemapImage(image); err != nil {
 		return err
 	}
