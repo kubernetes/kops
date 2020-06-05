@@ -1,4 +1,4 @@
-  {
+{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -140,6 +140,13 @@
     {
       "Effect": "Allow",
       "Action": [
+        "s3:Get*"
+      ],
+      "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:ListBucket",
@@ -148,13 +155,6 @@
       "Resource": [
         "arn:aws:s3:::kops-tests"
       ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:Get*"
-      ],
-      "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
     },
     {
       "Effect": "Allow",
