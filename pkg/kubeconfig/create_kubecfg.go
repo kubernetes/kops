@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess) (*KubeconfigBuilder, error) {
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin bool, user string) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	master := cluster.Spec.MasterPublicName
@@ -86,6 +86,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	b := NewKubeconfigBuilder(configAccess)
 
 	b.Context = clusterName
+	b.Server = server
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a SSL cert for the LB
 	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" {
@@ -103,27 +104,30 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		}
 	}
 
-	{
-		cert, key, _, err := keyStore.FindKeypair("kubecfg")
-		if err != nil {
-			return nil, fmt.Errorf("error fetching kubecfg keypair: %v", err)
-		}
-		if cert != nil {
-			b.ClientCert, err = cert.AsBytes()
+	if admin {
+		{
+			cert, key, _, err := keyStore.FindKeypair("kubecfg")
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("error fetching kubecfg keypair: %v", err)
 			}
-		} else {
-			return nil, fmt.Errorf("cannot find kubecfg certificate")
-		}
-		if key != nil {
-			b.ClientKey, err = key.AsBytes()
-			if err != nil {
-				return nil, err
+			if cert != nil {
+				b.ClientCert, err = cert.AsBytes()
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				return nil, fmt.Errorf("cannot find kubecfg certificate")
 			}
-		} else {
-			return nil, fmt.Errorf("cannot find kubecfg key")
+			if key != nil {
+				b.ClientKey, err = key.AsBytes()
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				return nil, fmt.Errorf("cannot find kubecfg key")
+			}
 		}
+
 	}
 
 	b.Server = server
@@ -154,6 +158,12 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 			b.KubeUser = "admin"
 			b.KubePassword = string(secret.Data)
 		}
+	}
+
+	if user == "" {
+		b.User = cluster.ObjectMeta.Name
+	} else {
+		b.User = user
 	}
 
 	return b, nil
