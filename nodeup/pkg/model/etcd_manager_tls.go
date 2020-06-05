@@ -17,12 +17,10 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/pki"
@@ -78,26 +76,22 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 }
 
 func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
-	etcdClientsCACertificate, err := b.KeyStore.FindCert("etcd-clients-ca")
-	if err != nil {
-		return err
+	req := &pki.IssueCertRequest{
+		Signer: "etcd-clients-ca",
+		Type:   "client",
+		Subject: pkix.Name{
+			CommonName: "kube-apiserver",
+		},
+		MinValidDays: 455,
 	}
-
-	etcdClientsCAPrivateKey, err := b.KeyStore.FindPrivateKey("etcd-clients-ca")
-	if err != nil {
-		return err
-	}
-
-	if etcdClientsCACertificate == nil {
-		klog.Errorf("unable to find etcd-clients-ca certificate, won't build key for apiserver")
-		return nil
-	}
-	if etcdClientsCAPrivateKey == nil {
-		klog.Errorf("unable to find etcd-clients-ca private key, won't build key for apiserver")
-		return nil
-	}
-
 	dir := "/etc/kubernetes/pki/kube-apiserver"
+	name := "etcd-client"
+	humanName := dir + "/" + name
+	klog.Infof("signing certificate for %q", humanName)
+	cert, privateKey, etcdClientsCACertificate, err := pki.IssueCert(req, b.KeyStore)
+	if err != nil {
+		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)
+	}
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("error creating directories %q: %v", dir, err)
@@ -110,39 +104,12 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair() error {
 		}
 	}
 
-	name := "etcd-client"
-
-	humanName := dir + "/" + name
-	privateKey, err := pki.GeneratePrivateKey()
-	if err != nil {
-		return fmt.Errorf("unable to create private key %q: %v", humanName, err)
-	}
-
-	certTmpl := &x509.Certificate{
-		Subject: pkix.Name{
-			CommonName: "kube-apiserver",
-		},
-		NotAfter:    time.Now().Add(time.Hour * 24 * 365).UTC(),
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-
-	klog.Infof("signing certificate for %q", humanName)
-	cert, err := pki.SignNewCertificate(privateKey, certTmpl, etcdClientsCACertificate.Certificate, etcdClientsCAPrivateKey)
-	if err != nil {
-		return fmt.Errorf("error signing certificate for %q: %v", humanName, err)
-	}
-
 	p := filepath.Join(dir, name)
-	{
-		if err := cert.WriteToFile(p+".crt", 0644); err != nil {
-			return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
-		}
+	if err := cert.WriteToFile(p+".crt", 0644); err != nil {
+		return fmt.Errorf("error writing certificate key file %q: %v", p+".crt", err)
 	}
-
-	{
-		if err := privateKey.WriteToFile(p+".key", 0600); err != nil {
-			return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
-		}
+	if err := privateKey.WriteToFile(p+".key", 0600); err != nil {
+		return fmt.Errorf("error writing private key file %q: %v", p+".key", err)
 	}
 
 	return nil

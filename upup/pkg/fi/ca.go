@@ -18,7 +18,6 @@ package fi
 
 import (
 	"bytes"
-	"crypto/x509"
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -52,8 +51,6 @@ type Keystore interface {
 	// in a legacy format. This bool is used by a keypair
 	// task to convert a Legacy Keypair to the new Keypair API format.
 	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error)
-
-	CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 
 	// StoreKeypair writes the keypair to the store
 	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
