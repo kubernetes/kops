@@ -2158,6 +2158,11 @@ func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 		}
 		_, err := c.IAM().DeleteOpenIDConnectProvider(request)
 		if err != nil {
+			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+				klog.V(2).Infof("Got NoSuchEntity deleting IAM OIDC Provider %v; will treat as already-deleted", arn)
+				return nil
+			}
+
 			return fmt.Errorf("error deleting IAM OIDC Provider %v: %v", arn, err)
 		}
 	}
