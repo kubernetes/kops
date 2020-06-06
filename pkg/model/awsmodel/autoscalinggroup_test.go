@@ -91,7 +91,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 
 	b.Build(c)
 
-	lc := c.Tasks["LaunchConfiguration/nodes.testcluster.test.com"].(*awstasks.LaunchConfiguration)
+	lc := c.Tasks["LaunchTemplate/nodes.testcluster.test.com"].(*awstasks.LaunchTemplate)
 
 	if *lc.RootVolumeOptimization == false {
 		t.Fatalf("RootVolumeOptimization was expected to be true, but was false")
