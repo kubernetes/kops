@@ -4,8 +4,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1a.masters.nosshkey.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersnosshkeyexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amastersnosshkeyexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 1,
         "MinSize": 1,
@@ -62,8 +70,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "nodes.nosshkey.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodesnosshkeyexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodesnosshkeyexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 2,
         "MinSize": 2,
@@ -116,66 +132,6 @@
         ]
       }
     },
-    "AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 64,
-              "DeleteOnTermination": true
-            }
-          },
-          {
-            "DeviceName": "/dev/sdc",
-            "VirtualName": "ephemeral0"
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilemastersnosshkeyexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "m3.medium",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupmastersnosshkeyexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 128,
-              "DeleteOnTermination": true
-            }
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilenodesnosshkeyexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "t2.medium",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupnodesnosshkeyexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
     "AWSEC2DHCPOptionsnosshkeyexamplecom": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
@@ -216,6 +172,190 @@
             "Value": "owned"
           }
         ]
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amastersnosshkeyexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.nosshkey.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 64,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemastersnosshkeyexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "m3.medium",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmastersnosshkeyexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "nosshkey.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.nosshkey.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/nosshkey.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "nosshkey.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.nosshkey.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/nosshkey.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodesnosshkeyexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.nosshkey.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 128,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodesnosshkeyexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.medium",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesnosshkeyexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "nosshkey.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.nosshkey.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/nosshkey.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "nosshkey.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.nosshkey.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/nosshkey.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
       }
     },
     "AWSEC2Route00000": {

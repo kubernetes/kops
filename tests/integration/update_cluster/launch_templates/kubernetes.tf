@@ -91,15 +91,12 @@ provider "aws" {
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-example-com" {
-  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_template {
-    id      = aws_launch_template.master-us-test-1a-masters-launchtemplates-example-com.id
-    version = aws_launch_template.master-us-test-1a-masters-launchtemplates-example-com.latest_version
-  }
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1a.masters.launchtemplates.example.com"
+  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_configuration = aws_launch_configuration.master-us-test-1a-masters-launchtemplates-example-com.id
+  max_size             = 1
+  metrics_granularity  = "1Minute"
+  min_size             = 1
+  name                 = "master-us-test-1a.masters.launchtemplates.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -129,15 +126,12 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-example-com" {
-  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_template {
-    id      = aws_launch_template.master-us-test-1b-masters-launchtemplates-example-com.id
-    version = aws_launch_template.master-us-test-1b-masters-launchtemplates-example-com.latest_version
-  }
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1b.masters.launchtemplates.example.com"
+  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_configuration = aws_launch_configuration.master-us-test-1b-masters-launchtemplates-example-com.id
+  max_size             = 1
+  metrics_granularity  = "1Minute"
+  min_size             = 1
+  name                 = "master-us-test-1b.masters.launchtemplates.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -167,15 +161,12 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-example-com" {
-  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_template {
-    id      = aws_launch_template.master-us-test-1c-masters-launchtemplates-example-com.id
-    version = aws_launch_template.master-us-test-1c-masters-launchtemplates-example-com.latest_version
-  }
-  max_size            = 1
-  metrics_granularity = "1Minute"
-  min_size            = 1
-  name                = "master-us-test-1c.masters.launchtemplates.example.com"
+  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_configuration = aws_launch_configuration.master-us-test-1c-masters-launchtemplates-example-com.id
+  max_size             = 1
+  metrics_granularity  = "1Minute"
+  min_size             = 1
+  name                 = "master-us-test-1c.masters.launchtemplates.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -205,11 +196,8 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-exam
 }
 
 resource "aws_autoscaling_group" "nodes-launchtemplates-example-com" {
-  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_template {
-    id      = aws_launch_template.nodes-launchtemplates-example-com.id
-    version = aws_launch_template.nodes-launchtemplates-example-com.latest_version
-  }
+  enabled_metrics       = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_configuration  = aws_launch_configuration.nodes-launchtemplates-example-com.id
   max_size              = 2
   metrics_granularity   = "1Minute"
   min_size              = 2
@@ -373,200 +361,85 @@ resource "aws_key_pair" "kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2
   public_key = file("${path.module}/data/aws_key_pair_kubernetes.launchtemplates.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
 }
 
-resource "aws_launch_template" "master-us-test-1a-masters-launchtemplates-example-com" {
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      delete_on_termination = true
-      volume_size           = 64
-      volume_type           = "gp2"
-    }
-  }
-  iam_instance_profile {
-    name = aws_iam_instance_profile.masters-launchtemplates-example-com.id
-  }
-  image_id      = "ami-12345678"
-  instance_type = "t3.medium"
-  key_name      = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_configuration" "master-us-test-1a-masters-launchtemplates-example-com" {
+  associate_public_ip_address = true
+  enable_monitoring           = false
+  iam_instance_profile        = aws_iam_instance_profile.masters-launchtemplates-example-com.id
+  image_id                    = "ami-12345678"
+  instance_type               = "t3.medium"
+  key_name                    = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "master-us-test-1a.masters.launchtemplates.example.com-"
-  network_interfaces {
-    associate_public_ip_address = true
-    delete_on_termination       = true
-    security_groups             = [aws_security_group.masters-launchtemplates-example-com.id]
+  root_block_device {
+    delete_on_termination = true
+    volume_size           = 64
+    volume_type           = "gp2"
   }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "master-us-test-1a.masters.launchtemplates.example.com"
-      "k8s.io/role/master"                                = "1"
-      "kops.k8s.io/instancegroup"                         = "master-us-test-1a"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "master-us-test-1a.masters.launchtemplates.example.com"
-      "k8s.io/role/master"                                = "1"
-      "kops.k8s.io/instancegroup"                         = "master-us-test-1a"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.launchtemplates.example.com_user_data")
+  security_groups = [aws_security_group.masters-launchtemplates-example-com.id]
+  user_data       = file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.launchtemplates.example.com_user_data")
 }
 
-resource "aws_launch_template" "master-us-test-1b-masters-launchtemplates-example-com" {
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      delete_on_termination = true
-      volume_size           = 64
-      volume_type           = "gp2"
-    }
-  }
-  iam_instance_profile {
-    name = aws_iam_instance_profile.masters-launchtemplates-example-com.id
-  }
-  image_id      = "ami-12345678"
-  instance_type = "t3.medium"
-  key_name      = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_configuration" "master-us-test-1b-masters-launchtemplates-example-com" {
+  associate_public_ip_address = true
+  enable_monitoring           = false
+  iam_instance_profile        = aws_iam_instance_profile.masters-launchtemplates-example-com.id
+  image_id                    = "ami-12345678"
+  instance_type               = "t3.medium"
+  key_name                    = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "master-us-test-1b.masters.launchtemplates.example.com-"
-  network_interfaces {
-    associate_public_ip_address = true
-    delete_on_termination       = true
-    security_groups             = [aws_security_group.masters-launchtemplates-example-com.id]
+  root_block_device {
+    delete_on_termination = true
+    volume_size           = 64
+    volume_type           = "gp2"
   }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "master-us-test-1b.masters.launchtemplates.example.com"
-      "k8s.io/role/master"                                = "1"
-      "kops.k8s.io/instancegroup"                         = "master-us-test-1b"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "master-us-test-1b.masters.launchtemplates.example.com"
-      "k8s.io/role/master"                                = "1"
-      "kops.k8s.io/instancegroup"                         = "master-us-test-1b"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1b.masters.launchtemplates.example.com_user_data")
+  security_groups = [aws_security_group.masters-launchtemplates-example-com.id]
+  user_data       = file("${path.module}/data/aws_launch_configuration_master-us-test-1b.masters.launchtemplates.example.com_user_data")
 }
 
-resource "aws_launch_template" "master-us-test-1c-masters-launchtemplates-example-com" {
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      delete_on_termination = true
-      volume_size           = 64
-      volume_type           = "gp2"
-    }
-  }
-  iam_instance_profile {
-    name = aws_iam_instance_profile.masters-launchtemplates-example-com.id
-  }
-  image_id      = "ami-12345678"
-  instance_type = "t3.medium"
-  key_name      = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_configuration" "master-us-test-1c-masters-launchtemplates-example-com" {
+  associate_public_ip_address = true
+  enable_monitoring           = false
+  iam_instance_profile        = aws_iam_instance_profile.masters-launchtemplates-example-com.id
+  image_id                    = "ami-12345678"
+  instance_type               = "t3.medium"
+  key_name                    = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "master-us-test-1c.masters.launchtemplates.example.com-"
-  network_interfaces {
-    associate_public_ip_address = true
-    delete_on_termination       = true
-    security_groups             = [aws_security_group.masters-launchtemplates-example-com.id]
+  root_block_device {
+    delete_on_termination = true
+    volume_size           = 64
+    volume_type           = "gp2"
   }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "master-us-test-1c.masters.launchtemplates.example.com"
-      "k8s.io/role/master"                                = "1"
-      "kops.k8s.io/instancegroup"                         = "master-us-test-1c"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "master-us-test-1c.masters.launchtemplates.example.com"
-      "k8s.io/role/master"                                = "1"
-      "kops.k8s.io/instancegroup"                         = "master-us-test-1c"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1c.masters.launchtemplates.example.com_user_data")
+  security_groups = [aws_security_group.masters-launchtemplates-example-com.id]
+  user_data       = file("${path.module}/data/aws_launch_configuration_master-us-test-1c.masters.launchtemplates.example.com_user_data")
 }
 
-resource "aws_launch_template" "nodes-launchtemplates-example-com" {
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      delete_on_termination = true
-      volume_size           = 128
-      volume_type           = "gp2"
-    }
-  }
-  iam_instance_profile {
-    name = aws_iam_instance_profile.nodes-launchtemplates-example-com.id
-  }
-  image_id = "ami-12345678"
-  instance_market_options {
-    market_type = "spot"
-    spot_options {
-      block_duration_minutes         = 120
-      instance_interruption_behavior = "hibernate"
-      max_price                      = "0.1"
-    }
-  }
-  instance_type = "t3.medium"
-  key_name      = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_configuration" "nodes-launchtemplates-example-com" {
+  associate_public_ip_address = true
+  enable_monitoring           = false
+  iam_instance_profile        = aws_iam_instance_profile.nodes-launchtemplates-example-com.id
+  image_id                    = "ami-12345678"
+  instance_type               = "t3.medium"
+  key_name                    = aws_key_pair.kubernetes-launchtemplates-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "nodes.launchtemplates.example.com-"
-  network_interfaces {
-    associate_public_ip_address = true
-    delete_on_termination       = true
-    security_groups             = [aws_security_group.nodes-launchtemplates-example-com.id]
+  root_block_device {
+    delete_on_termination = true
+    volume_size           = 128
+    volume_type           = "gp2"
   }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "nodes.launchtemplates.example.com"
-      "k8s.io/role/node"                                  = "1"
-      "kops.k8s.io/instancegroup"                         = "nodes"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      "KubernetesCluster"                                 = "launchtemplates.example.com"
-      "Name"                                              = "nodes.launchtemplates.example.com"
-      "k8s.io/role/node"                                  = "1"
-      "kops.k8s.io/instancegroup"                         = "nodes"
-      "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
-    }
-  }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.launchtemplates.example.com_user_data")
+  security_groups = [aws_security_group.nodes-launchtemplates-example-com.id]
+  spot_price      = "0.1"
+  user_data       = file("${path.module}/data/aws_launch_configuration_nodes.launchtemplates.example.com_user_data")
 }
 
 resource "aws_route_table_association" "us-test-1a-launchtemplates-example-com" {

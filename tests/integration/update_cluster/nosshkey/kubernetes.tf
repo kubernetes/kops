@@ -86,12 +86,15 @@ resource "aws_autoscaling_attachment" "master-us-test-1a-masters-nosshkey-exampl
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-nosshkey-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.master-us-test-1a-masters-nosshkey-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "master-us-test-1a.masters.nosshkey.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.master-us-test-1a-masters-nosshkey-example-com.id
+    version = aws_launch_template.master-us-test-1a-masters-nosshkey-example-com.latest_version
+  }
+  max_size            = 1
+  metrics_granularity = "1Minute"
+  min_size            = 1
+  name                = "master-us-test-1a.masters.nosshkey.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -131,13 +134,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-nosshkey-example-com
 }
 
 resource "aws_autoscaling_group" "nodes-nosshkey-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.nodes-nosshkey-example-com.id
-  max_size             = 2
-  metrics_granularity  = "1Minute"
-  min_size             = 2
-  name                 = "nodes.nosshkey.example.com"
-  suspended_processes  = ["AZRebalance"]
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.nodes-nosshkey-example-com.id
+    version = aws_launch_template.nodes-nosshkey-example-com.latest_version
+  }
+  max_size            = 2
+  metrics_granularity = "1Minute"
+  min_size            = 2
+  name                = "nodes.nosshkey.example.com"
+  suspended_processes = ["AZRebalance"]
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -280,46 +286,108 @@ resource "aws_internet_gateway" "nosshkey-example-com" {
   vpc_id = aws_vpc.nosshkey-example-com.id
 }
 
-resource "aws_launch_configuration" "master-us-test-1a-masters-nosshkey-example-com" {
-  associate_public_ip_address = true
-  enable_monitoring           = false
-  ephemeral_block_device {
+resource "aws_launch_template" "master-us-test-1a-masters-nosshkey-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 64
+      volume_type           = "gp2"
+    }
+  }
+  block_device_mappings {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
-  iam_instance_profile = aws_iam_instance_profile.masters-nosshkey-example-com.id
-  image_id             = "ami-12345678"
-  instance_type        = "m3.medium"
+  iam_instance_profile {
+    name = aws_iam_instance_profile.masters-nosshkey-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "m3.medium"
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "master-us-test-1a.masters.nosshkey.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 64
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.masters-nosshkey-example-com.id]
   }
-  security_groups = [aws_security_group.masters-nosshkey-example-com.id]
-  user_data       = file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.nosshkey.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                          = "nosshkey.example.com"
+      "Name"                                       = "master-us-test-1a.masters.nosshkey.example.com"
+      "Owner"                                      = "John Doe"
+      "foo/bar"                                    = "fib+baz"
+      "k8s.io/role/master"                         = "1"
+      "kops.k8s.io/instancegroup"                  = "master-us-test-1a"
+      "kubernetes.io/cluster/nosshkey.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                          = "nosshkey.example.com"
+      "Name"                                       = "master-us-test-1a.masters.nosshkey.example.com"
+      "Owner"                                      = "John Doe"
+      "foo/bar"                                    = "fib+baz"
+      "k8s.io/role/master"                         = "1"
+      "kops.k8s.io/instancegroup"                  = "master-us-test-1a"
+      "kubernetes.io/cluster/nosshkey.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.nosshkey.example.com_user_data")
 }
 
-resource "aws_launch_configuration" "nodes-nosshkey-example-com" {
-  associate_public_ip_address = true
-  enable_monitoring           = true
-  iam_instance_profile        = aws_iam_instance_profile.nodes-nosshkey-example-com.id
-  image_id                    = "ami-12345678"
-  instance_type               = "t2.medium"
+resource "aws_launch_template" "nodes-nosshkey-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 128
+      volume_type           = "gp2"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes-nosshkey-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "t2.medium"
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "nodes.nosshkey.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 128
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.nodes-nosshkey-example-com.id, "sg-exampleid3", "sg-exampleid4"]
   }
-  security_groups = [aws_security_group.nodes-nosshkey-example-com.id, "sg-exampleid3", "sg-exampleid4"]
-  user_data       = file("${path.module}/data/aws_launch_configuration_nodes.nosshkey.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                          = "nosshkey.example.com"
+      "Name"                                       = "nodes.nosshkey.example.com"
+      "Owner"                                      = "John Doe"
+      "foo/bar"                                    = "fib+baz"
+      "k8s.io/role/node"                           = "1"
+      "kops.k8s.io/instancegroup"                  = "nodes"
+      "kubernetes.io/cluster/nosshkey.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                          = "nosshkey.example.com"
+      "Name"                                       = "nodes.nosshkey.example.com"
+      "Owner"                                      = "John Doe"
+      "foo/bar"                                    = "fib+baz"
+      "k8s.io/role/node"                           = "1"
+      "kops.k8s.io/instancegroup"                  = "nodes"
+      "kubernetes.io/cluster/nosshkey.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_nodes.nosshkey.example.com_user_data")
 }
 
 resource "aws_route53_record" "api-nosshkey-example-com" {

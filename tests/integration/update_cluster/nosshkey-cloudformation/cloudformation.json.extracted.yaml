@@ -1,4 +1,4 @@
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatemasterustest1amastersnosshkeyexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -304,7 +304,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplec
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatenodesnosshkeyexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #

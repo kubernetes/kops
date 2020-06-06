@@ -4,8 +4,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1a.masters.additionaluserdata.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserdataexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersadditionaluserdataexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amastersadditionaluserdataexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 1,
         "MinSize": 1,
@@ -62,8 +70,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "nodes.additionaluserdata.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodesadditionaluserdataexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodesadditionaluserdataexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 2,
         "MinSize": 2,
@@ -116,68 +132,6 @@
         ]
       }
     },
-    "AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserdataexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 64,
-              "DeleteOnTermination": true
-            }
-          },
-          {
-            "DeviceName": "/dev/sdc",
-            "VirtualName": "ephemeral0"
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilemastersadditionaluserdataexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "m3.medium",
-        "KeyName": "kubernetes.additionaluserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 128,
-              "DeleteOnTermination": true
-            }
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilenodesadditionaluserdataexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "t2.medium",
-        "KeyName": "kubernetes.additionaluserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
     "AWSEC2DHCPOptionsadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
@@ -218,6 +172,192 @@
             "Value": "owned"
           }
         ]
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amastersadditionaluserdataexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.additionaluserdata.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 64,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemastersadditionaluserdataexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.additionaluserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "additionaluserdata.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.additionaluserdata.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "additionaluserdata.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.additionaluserdata.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodesadditionaluserdataexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.additionaluserdata.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 128,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodesadditionaluserdataexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.additionaluserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "additionaluserdata.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.additionaluserdata.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "additionaluserdata.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.additionaluserdata.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
       }
     },
     "AWSEC2Route00000": {
