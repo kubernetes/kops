@@ -116,12 +116,15 @@ resource "aws_autoscaling_attachment" "master-us-test-1a-masters-privatedns2-exa
 }
 
 resource "aws_autoscaling_group" "bastion-privatedns2-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.bastion-privatedns2-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "bastion.privatedns2.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.bastion-privatedns2-example-com.id
+    version = aws_launch_template.bastion-privatedns2-example-com.latest_version
+  }
+  max_size            = 1
+  metrics_granularity = "1Minute"
+  min_size            = 1
+  name                = "bastion.privatedns2.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -151,12 +154,15 @@ resource "aws_autoscaling_group" "bastion-privatedns2-example-com" {
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns2-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.master-us-test-1a-masters-privatedns2-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "master-us-test-1a.masters.privatedns2.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.master-us-test-1a-masters-privatedns2-example-com.id
+    version = aws_launch_template.master-us-test-1a-masters-privatedns2-example-com.latest_version
+  }
+  max_size            = 1
+  metrics_granularity = "1Minute"
+  min_size            = 1
+  name                = "master-us-test-1a.masters.privatedns2.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -186,12 +192,15 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns2-example-
 }
 
 resource "aws_autoscaling_group" "nodes-privatedns2-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.nodes-privatedns2-example-com.id
-  max_size             = 2
-  metrics_granularity  = "1Minute"
-  min_size             = 2
-  name                 = "nodes.privatedns2.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.nodes-privatedns2-example-com.id
+    version = aws_launch_template.nodes-privatedns2-example-com.latest_version
+  }
+  max_size            = 2
+  metrics_granularity = "1Minute"
+  min_size            = 2
+  name                = "nodes.privatedns2.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -363,67 +372,148 @@ resource "aws_key_pair" "kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39c
   public_key = file("${path.module}/data/aws_key_pair_kubernetes.privatedns2.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
 }
 
-resource "aws_launch_configuration" "bastion-privatedns2-example-com" {
-  associate_public_ip_address = true
-  enable_monitoring           = false
-  iam_instance_profile        = aws_iam_instance_profile.bastions-privatedns2-example-com.id
-  image_id                    = "ami-12345678"
-  instance_type               = "t2.micro"
-  key_name                    = aws_key_pair.kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_template" "bastion-privatedns2-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 32
+      volume_type           = "gp2"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.bastions-privatedns2-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "t2.micro"
+  key_name      = aws_key_pair.kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "bastion.privatedns2.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 32
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.bastion-privatedns2-example-com.id]
   }
-  security_groups = [aws_security_group.bastion-privatedns2-example-com.id]
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                             = "privatedns2.example.com"
+      "Name"                                          = "bastion.privatedns2.example.com"
+      "k8s.io/role/bastion"                           = "1"
+      "kops.k8s.io/instancegroup"                     = "bastion"
+      "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                             = "privatedns2.example.com"
+      "Name"                                          = "bastion.privatedns2.example.com"
+      "k8s.io/role/bastion"                           = "1"
+      "kops.k8s.io/instancegroup"                     = "bastion"
+      "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+    }
+  }
 }
 
-resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns2-example-com" {
-  associate_public_ip_address = false
-  enable_monitoring           = false
-  ephemeral_block_device {
+resource "aws_launch_template" "master-us-test-1a-masters-privatedns2-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 64
+      volume_type           = "gp2"
+    }
+  }
+  block_device_mappings {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
-  iam_instance_profile = aws_iam_instance_profile.masters-privatedns2-example-com.id
-  image_id             = "ami-12345678"
-  instance_type        = "m3.medium"
-  key_name             = aws_key_pair.kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+  iam_instance_profile {
+    name = aws_iam_instance_profile.masters-privatedns2-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "m3.medium"
+  key_name      = aws_key_pair.kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "master-us-test-1a.masters.privatedns2.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 64
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = false
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.masters-privatedns2-example-com.id]
   }
-  security_groups = [aws_security_group.masters-privatedns2-example-com.id]
-  user_data       = file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.privatedns2.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                             = "privatedns2.example.com"
+      "Name"                                          = "master-us-test-1a.masters.privatedns2.example.com"
+      "k8s.io/role/master"                            = "1"
+      "kops.k8s.io/instancegroup"                     = "master-us-test-1a"
+      "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                             = "privatedns2.example.com"
+      "Name"                                          = "master-us-test-1a.masters.privatedns2.example.com"
+      "k8s.io/role/master"                            = "1"
+      "kops.k8s.io/instancegroup"                     = "master-us-test-1a"
+      "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privatedns2.example.com_user_data")
 }
 
-resource "aws_launch_configuration" "nodes-privatedns2-example-com" {
-  associate_public_ip_address = false
-  enable_monitoring           = false
-  iam_instance_profile        = aws_iam_instance_profile.nodes-privatedns2-example-com.id
-  image_id                    = "ami-12345678"
-  instance_type               = "t2.medium"
-  key_name                    = aws_key_pair.kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_template" "nodes-privatedns2-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 128
+      volume_type           = "gp2"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes-privatedns2-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "t2.medium"
+  key_name      = aws_key_pair.kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "nodes.privatedns2.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 128
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = false
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.nodes-privatedns2-example-com.id]
   }
-  security_groups = [aws_security_group.nodes-privatedns2-example-com.id]
-  user_data       = file("${path.module}/data/aws_launch_configuration_nodes.privatedns2.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                             = "privatedns2.example.com"
+      "Name"                                          = "nodes.privatedns2.example.com"
+      "k8s.io/role/node"                              = "1"
+      "kops.k8s.io/instancegroup"                     = "nodes"
+      "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                             = "privatedns2.example.com"
+      "Name"                                          = "nodes.privatedns2.example.com"
+      "k8s.io/role/node"                              = "1"
+      "kops.k8s.io/instancegroup"                     = "nodes"
+      "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_nodes.privatedns2.example.com_user_data")
 }
 
 resource "aws_nat_gateway" "us-test-1a-privatedns2-example-com" {
