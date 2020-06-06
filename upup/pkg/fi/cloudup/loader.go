@@ -466,7 +466,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		klog.V(4).Infof("Built %s:%s => %v", key, k, o.Interface())
 
 		if inferredName {
-			hn, ok := o.Interface().(fi.HasName)
+			hn, ok := o.Interface().(fi.HasSetName)
 			if ok {
 				hn.SetName(name)
 			}

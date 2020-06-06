@@ -77,10 +77,6 @@ func (e *Archive) GetName() *string {
 	return &e.Name
 }
 
-func (e *Archive) SetName(name string) {
-	e.Name = name
-}
-
 // String returns a string representation, implementing the Stringer interface
 func (e *Archive) String() string {
 	return fmt.Sprintf("Archive: %s %s->%s", e.Name, e.Source, e.TargetDir)

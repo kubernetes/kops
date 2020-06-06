@@ -47,10 +47,6 @@ func (f *GroupTask) GetName() *string {
 	return &f.Name
 }
 
-func (f *GroupTask) SetName(name string) {
-	klog.Fatalf("SetName not supported for Group task")
-}
-
 func (e *GroupTask) Find(c *fi.Context) (*GroupTask, error) {
 	info, err := fi.LookupGroup(e.Name)
 	if err != nil {
