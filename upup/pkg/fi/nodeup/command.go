@@ -263,6 +263,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &networking.CiliumBuilder{NodeupModelContext: modelContext})
 	// Canal = Flannel + Calico, so use this builder for both CNIs
 	loader.Builders = append(loader.Builders, &networking.FlannelBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &networking.AmazonVPCBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.LyftVPCBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.KuberouterBuilder{NodeupModelContext: modelContext})
 	// Also handles kopeio as kopeio is based on kubenet
