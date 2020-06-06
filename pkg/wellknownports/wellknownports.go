@@ -48,6 +48,9 @@ const (
 
 	// KubeAPIServerHealthCheck is the port where kube-apiserver-healthcheck listens.
 	KubeAPIServerHealthCheck = 3990
+
+	// NodeLocalDNSHealthCheck is the port where the node-local-dns health check listens.
+	NodeLocalDNSHealthCheck = 3989
 )
 
 type PortRange struct {

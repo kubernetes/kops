@@ -15216,7 +15216,7 @@ data:
           force_tcp
         }
         prometheus :9253
-        health {{ KubeDNS.NodeLocalDNS.LocalIP }}:8080
+        health {{ KubeDNS.NodeLocalDNS.LocalIP }}:{{ NodeLocalDNSHealthCheck }}
     }
     in-addr.arpa:53 {
         errors
@@ -15315,7 +15315,7 @@ spec:
           httpGet:
             host: {{ .KubeDNS.NodeLocalDNS.LocalIP }}
             path: /health
-            port: 8080
+            port: {{ NodeLocalDNSHealthCheck }}
           initialDelaySeconds: 60
           timeoutSeconds: 5
         volumeMounts:
