@@ -4,8 +4,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "bastion.privatecalico.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationbastionprivatecalicoexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatebastionprivatecalicoexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatebastionprivatecalicoexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 1,
         "MinSize": 1,
@@ -67,8 +75,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1a.masters.privatecalico.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 1,
         "MinSize": 1,
@@ -130,8 +146,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "nodes.privatecalico.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodesprivatecalicoexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodesprivatecalicoexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 2,
         "MinSize": 2,
@@ -182,97 +206,6 @@
             ]
           }
         ]
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationbastionprivatecalicoexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 32,
-              "DeleteOnTermination": true
-            }
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilebastionsprivatecalicoexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "t2.micro",
-        "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": false,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 64,
-              "DeleteOnTermination": true
-            }
-          },
-          {
-            "DeviceName": "/dev/sdc",
-            "VirtualName": "ephemeral0"
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilemastersprivatecalicoexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "m3.medium",
-        "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": false,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 128,
-              "DeleteOnTermination": true
-            }
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilenodesprivatecalicoexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "t2.medium",
-        "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
       }
     },
     "AWSEC2DHCPOptionsprivatecalicoexamplecom": {
@@ -335,6 +268,283 @@
             "Value": "owned"
           }
         ]
+      }
+    },
+    "AWSEC2LaunchTemplatebastionprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "bastion.privatecalico.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 32,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilebastionsprivatecalicoexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.micro",
+          "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupbastionprivatecalicoexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecalico.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "bastion.privatecalico.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/bastion",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "bastion"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecalico.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecalico.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "bastion.privatecalico.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/bastion",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "bastion"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecalico.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.privatecalico.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 64,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemastersprivatecalicoexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": false,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmastersprivatecalicoexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecalico.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.privatecalico.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecalico.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecalico.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.privatecalico.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecalico.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodesprivatecalicoexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.privatecalico.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 128,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodesprivatecalicoexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": false,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesprivatecalicoexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecalico.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.privatecalico.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecalico.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecalico.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.privatecalico.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecalico.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
       }
     },
     "AWSEC2NatGatewayustest1aprivatecalicoexamplecom": {

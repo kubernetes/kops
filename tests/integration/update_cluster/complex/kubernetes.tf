@@ -86,12 +86,15 @@ resource "aws_autoscaling_attachment" "master-us-test-1a-masters-complex-example
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.master-us-test-1a-masters-complex-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "master-us-test-1a.masters.complex.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.master-us-test-1a-masters-complex-example-com.id
+    version = aws_launch_template.master-us-test-1a-masters-complex-example-com.latest_version
+  }
+  max_size            = 1
+  metrics_granularity = "1Minute"
+  min_size            = 1
+  name                = "master-us-test-1a.masters.complex.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -131,13 +134,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
 }
 
 resource "aws_autoscaling_group" "nodes-complex-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.nodes-complex-example-com.id
-  max_size             = 2
-  metrics_granularity  = "1Minute"
-  min_size             = 2
-  name                 = "nodes.complex.example.com"
-  suspended_processes  = ["AZRebalance"]
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.nodes-complex-example-com.id
+    version = aws_launch_template.nodes-complex-example-com.latest_version
+  }
+  max_size            = 2
+  metrics_granularity = "1Minute"
+  min_size            = 2
+  name                = "nodes.complex.example.com"
+  suspended_processes = ["AZRebalance"]
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -285,54 +291,118 @@ resource "aws_key_pair" "kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663
   public_key = file("${path.module}/data/aws_key_pair_kubernetes.complex.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
 }
 
-resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-com" {
-  associate_public_ip_address = true
-  enable_monitoring           = false
-  ephemeral_block_device {
+resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 64
+      volume_type           = "gp2"
+    }
+  }
+  block_device_mappings {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
-  iam_instance_profile = aws_iam_instance_profile.masters-complex-example-com.id
-  image_id             = "ami-12345678"
-  instance_type        = "m3.medium"
-  key_name             = aws_key_pair.kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+  iam_instance_profile {
+    name = aws_iam_instance_profile.masters-complex-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "m3.medium"
+  key_name      = aws_key_pair.kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "master-us-test-1a.masters.complex.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 64
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.masters-complex-example-com.id]
   }
-  security_groups = [aws_security_group.masters-complex-example-com.id]
-  user_data       = file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.complex.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                         = "complex.example.com"
+      "Name"                                      = "master-us-test-1a.masters.complex.example.com"
+      "Owner"                                     = "John Doe"
+      "foo/bar"                                   = "fib+baz"
+      "k8s.io/role/master"                        = "1"
+      "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
+      "kubernetes.io/cluster/complex.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                         = "complex.example.com"
+      "Name"                                      = "master-us-test-1a.masters.complex.example.com"
+      "Owner"                                     = "John Doe"
+      "foo/bar"                                   = "fib+baz"
+      "k8s.io/role/master"                        = "1"
+      "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
+      "kubernetes.io/cluster/complex.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.complex.example.com_user_data")
 }
 
-resource "aws_launch_configuration" "nodes-complex-example-com" {
-  associate_public_ip_address = true
-  ebs_block_device {
-    delete_on_termination = false
-    device_name           = "/dev/xvdd"
-    volume_size           = 20
-    volume_type           = "gp2"
+resource "aws_launch_template" "nodes-complex-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 128
+      volume_type           = "gp2"
+    }
   }
-  enable_monitoring    = true
-  iam_instance_profile = aws_iam_instance_profile.nodes-complex-example-com.id
-  image_id             = "ami-12345678"
-  instance_type        = "t2.medium"
-  key_name             = aws_key_pair.kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+  block_device_mappings {
+    device_name = "/dev/xvdd"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 20
+      volume_type           = "gp2"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes-complex-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "t2.medium"
+  key_name      = aws_key_pair.kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "nodes.complex.example.com-"
-  root_block_device {
-    delete_on_termination = false
-    volume_size           = 128
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
   }
-  security_groups = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
-  user_data       = file("${path.module}/data/aws_launch_configuration_nodes.complex.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                         = "complex.example.com"
+      "Name"                                      = "nodes.complex.example.com"
+      "Owner"                                     = "John Doe"
+      "foo/bar"                                   = "fib+baz"
+      "k8s.io/role/node"                          = "1"
+      "kops.k8s.io/instancegroup"                 = "nodes"
+      "kubernetes.io/cluster/complex.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                         = "complex.example.com"
+      "Name"                                      = "nodes.complex.example.com"
+      "Owner"                                     = "John Doe"
+      "foo/bar"                                   = "fib+baz"
+      "k8s.io/role/node"                          = "1"
+      "kops.k8s.io/instancegroup"                 = "nodes"
+      "kubernetes.io/cluster/complex.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_nodes.complex.example.com_user_data")
 }
 
 resource "aws_route53_record" "api-complex-example-com" {

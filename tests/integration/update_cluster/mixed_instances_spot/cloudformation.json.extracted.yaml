@@ -1,4 +1,4 @@
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -303,7 +303,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersmixedinstancesex
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -608,7 +608,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersmixedinstancesex
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmastersmixedinstancesexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
