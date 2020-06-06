@@ -9,6 +9,7 @@ go_library(
         "kube_router.go",
         "kubenet.go",
         "lyft.go",
+        "weave.go",
     ],
     importpath = "k8s.io/kops/nodeup/pkg/model/networking",
     visibility = ["//visibility:public"],
