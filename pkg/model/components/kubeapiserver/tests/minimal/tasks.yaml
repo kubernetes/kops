@@ -18,7 +18,7 @@ Contents:
           httpGet:
             host: 127.0.0.1
             path: /.kube-apiserver-healthcheck/healthz
-            port: 8080
+            port: 3990
           initialDelaySeconds: 5
           timeoutSeconds: 5
         name: healthcheck

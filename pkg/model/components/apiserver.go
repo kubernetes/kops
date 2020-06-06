@@ -211,7 +211,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.AnonymousAuth = fi.Bool(false)
 
 	if b.IsKubernetesGTE("1.17") {
-		// We query via the kube-apiserver-healthcheck proxy, which listens on port 8080
+		// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990
 		c.InsecurePort = 0
 	} else {
 		// Older versions of kubernetes continue to rely on the insecure port: kubernetes issue #43784

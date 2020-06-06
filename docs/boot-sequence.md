@@ -67,11 +67,6 @@ that have hostNetwork will work - so all the "core" containers run with hostNetw
 
 ## api-server bringup
 
-The api-server will listen on localhost:8080 on the master.  This is an unsecured endpoint,
-but is only reachable from the master, and only for pods running with hostNetwork=true.  This
-is how components like kube-scheduler and kube-controller-manager can reach the API without
-requiring a token.
-
 APIServer also listens on the HTTPS port (443) on all interfaces.  This is a secured endpoint,
 and requires valid authentication/authorization to use it.  This is the endpoint that node kubelets
 will reach, and also that end-users will reach.
