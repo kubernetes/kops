@@ -203,15 +203,10 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	for _, x := range lt.LaunchTemplateData.NetworkInterfaces {
 		if aws.BoolValue(x.AssociatePublicIpAddress) {
 			actual.AssociatePublicIP = fi.Bool(true)
-			// @note: not sure i like this https://github.com/hashicorp/terraform/issues/2998
-			for _, id := range x.Groups {
-				actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: id})
-			}
 		}
-	}
-	// @step: add at the security groups
-	for _, id := range lt.LaunchTemplateData.SecurityGroupIds {
-		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: id})
+		for _, id := range x.Groups {
+			actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: id})
+		}
 	}
 	sort.Sort(OrderSecurityGroupsById(actual.SecurityGroups))
 
