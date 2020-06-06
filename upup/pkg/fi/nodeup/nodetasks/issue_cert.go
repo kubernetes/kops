@@ -48,10 +48,6 @@ func (i *IssueCert) GetName() *string {
 	return &i.Name
 }
 
-func (i *IssueCert) SetName(name string) {
-	i.Name = name
-}
-
 // String returns a string representation, implementing the Stringer interface
 func (i *IssueCert) String() string {
 	return fmt.Sprintf("IssueCert: %s", i.Name)
