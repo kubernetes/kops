@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -409,10 +410,10 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	probeAction := &v1.HTTPGetAction{
 		Host: "127.0.0.1",
 		Path: "/healthz",
-		Port: intstr.FromInt(8080),
+		Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
 	}
 	if useHealthcheckProxy {
-		// kube-apiserver-healthcheck sidecar container runs on port 8080
+		// kube-apiserver-healthcheck sidecar container runs on port 3990
 	} else if kubeAPIServer.InsecurePort != 0 {
 		probeAction.Port = intstr.FromInt(int(kubeAPIServer.InsecurePort))
 	} else if kubeAPIServer.SecurePort != 0 {

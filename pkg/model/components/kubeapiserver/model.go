@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
@@ -100,7 +101,7 @@ spec:
         # The sidecar serves a healthcheck on the same port,
         # but with a .kube-apiserver-healthcheck prefix
         path: /.kube-apiserver-healthcheck/healthz
-        port: 8080
+        port: %d
         host: 127.0.0.1
       initialDelaySeconds: 5
       timeoutSeconds: 5
@@ -126,7 +127,7 @@ spec:
 func (b *KubeApiserverBuilder) buildHealthcheckSidecar() (*corev1.Pod, error) {
 	// TODO: pull from bundle
 	bundle := "(embedded kube-apiserver-healthcheck manifest)"
-	manifest := []byte(defaultManifest)
+	manifest := []byte(fmt.Sprintf(defaultManifest, wellknownports.KubeAPIServerHealthCheck))
 
 	var pod *corev1.Pod
 	var container *corev1.Container
