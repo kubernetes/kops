@@ -7,7 +7,6 @@ Enable experimental features with:
 The following experimental features are currently available:
 
 * `+EnableExternalDNS` - Enable external-dns with default settings (ingress sources only).
-* `+EnableLaunchTemplates` - Enable using launch templates rather than launchconfigurations (AWS only)
 * `+VPCSkipEnableDNSSupport` - Enables creation of a VPC that does not need DNSSupport enabled.
 * `+SkipTerraformFormat` - Do not `terraform fmt` the generated terraform files.
 * `+EnableExternalCloudController` - Enables the use of cloud-controller-manager introduced in v1.7.

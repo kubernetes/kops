@@ -103,9 +103,9 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 	}
 	if len(request.LaunchTemplateData.BlockDeviceMappings) > 0 {
 		for _, x := range request.LaunchTemplateData.BlockDeviceMappings {
-			resp.BlockDeviceMappings = append(resp.BlockDeviceMappings, &ec2.LaunchTemplateBlockDeviceMapping{
-				DeviceName: x.DeviceName,
-				Ebs: &ec2.LaunchTemplateEbsBlockDevice{
+			var ebs *ec2.LaunchTemplateEbsBlockDevice
+			if x.Ebs != nil {
+				ebs = &ec2.LaunchTemplateEbsBlockDevice{
 					DeleteOnTermination: x.Ebs.DeleteOnTermination,
 					Encrypted:           x.Ebs.Encrypted,
 					Iops:                x.Ebs.Iops,
@@ -113,7 +113,11 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 					SnapshotId:          x.Ebs.SnapshotId,
 					VolumeSize:          x.Ebs.VolumeSize,
 					VolumeType:          x.Ebs.VolumeType,
-				},
+				}
+			}
+			resp.BlockDeviceMappings = append(resp.BlockDeviceMappings, &ec2.LaunchTemplateBlockDeviceMapping{
+				DeviceName:  x.DeviceName,
+				Ebs:         ebs,
 				NoDevice:    x.NoDevice,
 				VirtualName: x.VirtualName,
 			})
@@ -157,7 +161,14 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 			})
 		}
 	}
-
+	if len(request.LaunchTemplateData.TagSpecifications) > 0 {
+		for _, x := range request.LaunchTemplateData.TagSpecifications {
+			resp.TagSpecifications = append(resp.TagSpecifications, &ec2.LaunchTemplateTagSpecification{
+				ResourceType: x.ResourceType,
+				Tags:         x.Tags,
+			})
+		}
+	}
 	return &ec2.CreateLaunchTemplateOutput{}, nil
 }
 
