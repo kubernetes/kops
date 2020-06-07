@@ -219,14 +219,6 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				}
 			}
 
-			hooks, err := b.getRelevantHooks(cs.Hooks, ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(hooks) > 0 {
-				spec["hooks"] = hooks
-			}
-
 			fileAssets, err := b.getRelevantFileAssets(cs.FileAssets, ig.Spec.Role)
 			if err != nil {
 				return "", err
@@ -247,14 +239,6 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			spec["kubelet"] = ig.Spec.Kubelet
 			spec["nodeLabels"] = ig.Spec.NodeLabels
 			spec["taints"] = ig.Spec.Taints
-
-			hooks, err := b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(hooks) > 0 {
-				spec["hooks"] = hooks
-			}
 
 			fileAssets, err := b.getRelevantFileAssets(ig.Spec.FileAssets, ig.Spec.Role)
 			if err != nil {
@@ -283,56 +267,6 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 	}
 
 	return fi.WrapResource(templateResource), nil
-}
-
-// getRelevantHooks returns a list of hooks to be applied to the instance group,
-// with the Manifest and ExecContainer Commands fingerprinted to reduce size
-func (b *BootstrapScript) getRelevantHooks(allHooks []kops.HookSpec, role kops.InstanceGroupRole) ([]kops.HookSpec, error) {
-	relevantHooks := []kops.HookSpec{}
-	for _, hook := range allHooks {
-		if len(hook.Roles) == 0 {
-			relevantHooks = append(relevantHooks, hook)
-			continue
-		}
-		for _, hookRole := range hook.Roles {
-			if role == hookRole {
-				relevantHooks = append(relevantHooks, hook)
-				break
-			}
-		}
-	}
-
-	hooks := []kops.HookSpec{}
-	if len(relevantHooks) > 0 {
-		for _, hook := range relevantHooks {
-			if hook.Manifest != "" {
-				manifestFingerprint, err := b.computeFingerprint(hook.Manifest)
-				if err != nil {
-					return nil, err
-				}
-				hook.Manifest = manifestFingerprint + " (fingerprint)"
-			}
-
-			if hook.ExecContainer != nil && hook.ExecContainer.Command != nil {
-				execContainerCommandFingerprint, err := b.computeFingerprint(strings.Join(hook.ExecContainer.Command[:], " "))
-				if err != nil {
-					return nil, err
-				}
-
-				execContainerAction := &kops.ExecContainerAction{
-					Command:     []string{execContainerCommandFingerprint + " (fingerprint)"},
-					Environment: hook.ExecContainer.Environment,
-					Image:       hook.ExecContainer.Image,
-				}
-				hook.ExecContainer = execContainerAction
-			}
-
-			hook.Roles = nil
-			hooks = append(hooks, hook)
-		}
-	}
-
-	return hooks, nil
 }
 
 // getRelevantFileAssets returns a list of file assets to be applied to the

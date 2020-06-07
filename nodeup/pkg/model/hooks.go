@@ -40,13 +40,9 @@ var _ fi.ModelBuilder = &HookBuilder{}
 func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	// we keep a list of hooks name so we can allow local instanceGroup hooks override the cluster ones
 	hookNames := make(map[string]bool)
-	for i, spec := range []*[]kops.HookSpec{&h.InstanceGroup.Spec.Hooks, &h.Cluster.Spec.Hooks} {
-		for j, hook := range *spec {
+	for i, spec := range h.NodeupConfig.Hooks {
+		for j, hook := range spec {
 			isInstanceGroup := i == 0
-			// filter roles if required
-			if len(hook.Roles) > 0 && !containsRole(h.NodeupConfig.InstanceGroupRole, hook.Roles) {
-				continue
-			}
 
 			// I don't want to affect those whom are already using the hooks, so I'm going to try to keep the name for now
 			// i.e. use the default naming convention - kops-hook-<index>, only those using the Name or hooks in IG should alter

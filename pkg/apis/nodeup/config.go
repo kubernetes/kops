@@ -48,6 +48,8 @@ type Config struct {
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
+	// Hooks are for custom actions, for example on first installation.
+	Hooks [][]kops.HookSpec
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
@@ -75,9 +77,35 @@ type StaticManifest struct {
 }
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
+	clusterHooks := filterHooks(cluster.Spec.Hooks, instanceGroup.Spec.Role)
+	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
+
 	return &Config{
 		InstanceGroupRole: instanceGroup.Spec.Role,
+		Hooks:             [][]kops.HookSpec{igHooks, clusterHooks},
 		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
+}
+
+func filterHooks(h []kops.HookSpec, role kops.InstanceGroupRole) []kops.HookSpec {
+	var hooks []kops.HookSpec
+	for _, hook := range h {
+		if len(hook.Roles) > 0 && !containsRole(role, hook.Roles) {
+			continue
+		}
+		hook.Roles = nil
+		hooks = append(hooks, hook)
+	}
+	return hooks
+}
+
+func containsRole(v kops.InstanceGroupRole, list []kops.InstanceGroupRole) bool {
+	for _, x := range list {
+		if v == x {
+			return true
+		}
+	}
+
+	return false
 }
