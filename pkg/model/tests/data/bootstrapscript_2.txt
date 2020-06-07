@@ -175,11 +175,6 @@ fileAssets:
 - content: E1oeAbrnQsSldrIP1BpoP2SDykM= (fingerprint)
   name: iptables-restore
   path: /var/lib/iptables/rules-save
-hooks:
-- execContainer:
-    command:
-    - pkF7ytM3ENpYWZF36FoHJsqXP5Y= (fingerprint)
-    image: busybox
 kubeAPIServer:
   image: CoreOS
 kubeControllerManager:
@@ -208,14 +203,6 @@ fileAssets:
 - content: xYagtQLwBAAi3V8Wc2Jrojz28I0= (fingerprint)
   name: tokens
   path: /kube/tokens.csv
-hooks:
-- before:
-  - update-engine.service
-  - kubelet.service
-  manifest: /uSPh015xYXh8dAVqXjP/ePkbrM= (fingerprint)
-  name: disable-update-engine.service
-- manifest: 8BN3anFUyDlkVF/JnaJqbwpq8ME= (fingerprint)
-  name: apply-to-all.service
 kubelet:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
 nodeLabels:
@@ -228,6 +215,24 @@ taints:
 __EOF_IG_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+Hooks:
+- - before:
+    - update-engine.service
+    - kubelet.service
+    manifest: |-
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine.service
+    name: disable-update-engine.service
+  - manifest: |-
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl start apply-to-all.service
+    name: apply-to-all.service
+- - execContainer:
+      command:
+      - sh
+      - -c
+      - apt-get update
+      image: busybox
 InstanceGroupRole: Master
 
 __EOF_KUBE_ENV

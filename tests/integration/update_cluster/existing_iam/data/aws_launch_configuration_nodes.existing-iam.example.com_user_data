@@ -196,6 +196,9 @@ Assets:
 - 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
 ClusterName: existing-iam.example.com
 ConfigBase: memfs://tests/existing-iam.example.com
+Hooks:
+- null
+- null
 InstanceGroupName: nodes
 InstanceGroupRole: Node
 Tags:
