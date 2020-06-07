@@ -18,6 +18,7 @@ package nodeup
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/reflectutils"
@@ -111,6 +112,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
 		}
 	}
+
+	// We include the NodeLabels in the userdata even for Kubernetes 1.16 and later so that
+	// rolling update will still replace nodes when they change.
+	config.KubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, instanceGroup)
 
 	config.KubeletConfig.Taints = append(config.KubeletConfig.Taints, instanceGroup.Spec.Taints...)
 
