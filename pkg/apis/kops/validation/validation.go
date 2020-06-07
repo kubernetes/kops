@@ -871,6 +871,7 @@ func validateServiceOIDCProvider(c *kops.ClusterSpec, path *field.Path) field.Er
 
 	if kops.CloudProviderID(c.CloudProvider) != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(path, "serviceOIDCProvider is supported only in AWS"))
+		return allErrs
 	}
 
 	if provider.IssuerURL == "" {
