@@ -192,8 +192,6 @@ masterKubelet:
 __EOF_CLUSTER_SPEC
 
 cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-kubelet:
-  kubeconfigPath: /etc/kubernetes/igconfig.txt
 nodeLabels:
   label2: value2
   labelname: labelvalue
@@ -233,6 +231,8 @@ Hooks:
       - apt-get update
       image: busybox
 InstanceGroupRole: Master
+KubeletConfig:
+  kubeconfigPath: /etc/kubernetes/igconfig.txt
 
 __EOF_KUBE_ENV
 

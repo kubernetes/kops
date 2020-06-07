@@ -264,7 +264,6 @@ masterKubelet:
 __EOF_CLUSTER_SPEC
 
 cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-kubelet: null
 nodeLabels: null
 taints: null
 
@@ -282,6 +281,24 @@ Hooks:
 - null
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: Master
+KubeletConfig:
+  anonymousAuth: false
+  cgroupRoot: /
+  cloudProvider: aws
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    ExperimentalCriticalPodAnnotation: "true"
+  hostnameOverride: '@aws'
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause:3.2
+  podManifestPath: /etc/kubernetes/manifests
+  registerSchedulable: false
 Tags:
 - _automatic_upgrades
 - _aws
