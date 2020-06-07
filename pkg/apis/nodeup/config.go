@@ -48,6 +48,8 @@ type Config struct {
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
+	// VolumeMounts are a collection of volume mounts.
+	VolumeMounts []*kops.VolumeMountSpec `json:",omitempty"`
 }
 
 // Image is a docker image we should pre-load
@@ -71,5 +73,6 @@ type StaticManifest struct {
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
 	return &Config{
 		InstanceGroupRole: instanceGroup.Spec.Role,
+		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
 }

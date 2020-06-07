@@ -306,11 +306,7 @@ func (c *NodeupModelContext) UseEtcdTLS() bool {
 // UseVolumeMounts is used to check if we have volume mounts enabled as we need to
 // insert requires and afters in various places
 func (c *NodeupModelContext) UseVolumeMounts() bool {
-	if c.InstanceGroup != nil {
-		return len(c.InstanceGroup.Spec.VolumeMounts) > 0
-	}
-
-	return false
+	return len(c.NodeupConfig.VolumeMounts) > 0
 }
 
 // UseEtcdTLSAuth checks the peer-auth is set in both cluster
