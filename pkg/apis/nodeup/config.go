@@ -48,6 +48,10 @@ type Config struct {
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
+	// SysctlParameters will configure kernel parameters using sysctl(8). When
+	// specified, each parameter must follow the form variable=value, the way
+	// it would appear in sysctl.conf.
+	SysctlParameters []string `json:",omitempty"`
 	// VolumeMounts are a collection of volume mounts.
 	VolumeMounts []*kops.VolumeMountSpec `json:",omitempty"`
 }
@@ -73,6 +77,7 @@ type StaticManifest struct {
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
 	return &Config{
 		InstanceGroupRole: instanceGroup.Spec.Role,
+		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
 }
