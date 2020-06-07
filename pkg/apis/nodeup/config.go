@@ -73,6 +73,8 @@ type Config struct {
 
 // AuxConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
 type AuxConfig struct {
+	// Hooks are for custom actions, for example on first installation.
+	Hooks [][]kops.HookSpec
 }
 
 type ConfigServerOptions struct {
@@ -113,6 +115,13 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
 
+	clusterHooks := filterHooks(cluster.Spec.Hooks, instanceGroup.Spec.Role)
+	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
+
+	auxConfig := AuxConfig{
+		Hooks: [][]kops.HookSpec{igHooks, clusterHooks},
+	}
+
 	if isMaster {
 		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.MasterKubelet)
 
@@ -144,5 +153,27 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 	}
 
-	return &config, &AuxConfig{}
+	return &config, &auxConfig
+}
+
+func filterHooks(h []kops.HookSpec, role kops.InstanceGroupRole) []kops.HookSpec {
+	var hooks []kops.HookSpec
+	for _, hook := range h {
+		if len(hook.Roles) > 0 && !containsRole(role, hook.Roles) {
+			continue
+		}
+		hook.Roles = nil
+		hooks = append(hooks, hook)
+	}
+	return hooks
+}
+
+func containsRole(v kops.InstanceGroupRole, list []kops.InstanceGroupRole) bool {
+	for _, x := range list {
+		if v == x {
+			return true
+		}
+	}
+
+	return false
 }
