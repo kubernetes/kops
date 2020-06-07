@@ -1254,7 +1254,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		return nil, err
 	}
 
-	config := &nodeup.Config{}
+	config := nodeup.NewConfig(cluster, ig)
 	config.Tags = append(config.Tags, nodeUpTags.List()...)
 
 	for _, a := range c.Assets {
