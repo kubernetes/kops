@@ -178,7 +178,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 
 	o.Authorization = AuthorizationFlagRBAC
 
-	o.ContainerRuntime = "docker"
+	o.ContainerRuntime = "containerd"
 }
 
 var (
