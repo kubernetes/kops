@@ -153,7 +153,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		klog.Warningf("No instance group defined in nodeup config")
 	}
 
-	err := evaluateSpec(c.cluster)
+	err := evaluateSpec(c)
 	if err != nil {
 		return err
 	}
@@ -328,32 +328,37 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	return nil
 }
 
-func evaluateSpec(c *api.Cluster) error {
+func evaluateSpec(c *NodeUpCommand) error {
 	var err error
 
-	c.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.Kubelet.HostnameOverride)
+	c.cluster.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.Kubelet.HostnameOverride)
 	if err != nil {
 		return err
 	}
 
-	c.Spec.MasterKubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.MasterKubelet.HostnameOverride)
+	c.cluster.Spec.MasterKubelet.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.MasterKubelet.HostnameOverride)
 	if err != nil {
 		return err
 	}
 
-	if c.Spec.KubeProxy != nil {
-		c.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.Spec.KubeProxy.HostnameOverride)
+	c.config.KubeletConfig.HostnameOverride, err = evaluateHostnameOverride(c.config.KubeletConfig.HostnameOverride)
+	if err != nil {
+		return err
+	}
+
+	if c.cluster.Spec.KubeProxy != nil {
+		c.cluster.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.cluster.Spec.KubeProxy.HostnameOverride)
 		if err != nil {
 			return err
 		}
-		c.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(c.Spec.KubeProxy.BindAddress)
+		c.cluster.Spec.KubeProxy.BindAddress, err = evaluateBindAddress(c.cluster.Spec.KubeProxy.BindAddress)
 		if err != nil {
 			return err
 		}
 	}
 
-	if c.Spec.Docker != nil {
-		err = evaluateDockerSpecStorage(c.Spec.Docker)
+	if c.cluster.Spec.Docker != nil {
+		err = evaluateDockerSpecStorage(c.cluster.Spec.Docker)
 		if err != nil {
 			return err
 		}

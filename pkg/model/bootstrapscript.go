@@ -281,7 +281,6 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 
 		"IGSpec": func() (string, error) {
 			spec := make(map[string]interface{})
-			spec["kubelet"] = b.ig.Spec.Kubelet
 			spec["nodeLabels"] = b.ig.Spec.NodeLabels
 			spec["taints"] = b.ig.Spec.Taints
 
