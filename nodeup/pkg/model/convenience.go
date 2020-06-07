@@ -23,7 +23,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -35,17 +34,6 @@ func s(v string) *string {
 // b returns a pointer to a boolean
 func b(v bool) *bool {
 	return fi.Bool(v)
-}
-
-// containsRole checks if a collection roles contains role v
-func containsRole(v kops.InstanceGroupRole, list []kops.InstanceGroupRole) bool {
-	for _, x := range list {
-		if v == x {
-			return true
-		}
-	}
-
-	return false
 }
 
 // buildDockerEnvironmentVars just converts a series of keypairs to docker environment variables switches
