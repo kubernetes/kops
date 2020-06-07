@@ -62,7 +62,7 @@ func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.ModelBuilderCont
 		return
 	}
 
-	for _, spec := range [][]kops.HookSpec{b.InstanceGroup.Spec.Hooks, b.Cluster.Spec.Hooks} {
+	for _, spec := range b.NodeupAuxConfig.Hooks {
 		for _, hook := range spec {
 			if hook.Name == flatcarServiceName || hook.Name == flatcarServiceName+".service" {
 				klog.Infof("Detected kops Hook for '%s'; skipping creation", flatcarServiceName)
