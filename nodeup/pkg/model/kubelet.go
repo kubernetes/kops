@@ -484,8 +484,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	// Use --register-with-taints
 	{
-		c.Taints = append(c.Taints, b.InstanceGroup.Spec.Taints...)
-
 		if len(c.Taints) == 0 && isMaster {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			c.Taints = append(c.Taints, nodelabels.RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
