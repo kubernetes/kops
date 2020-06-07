@@ -196,7 +196,7 @@ taints:
 __EOF_IG_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
-{}
+InstanceGroupRole: Node
 
 __EOF_KUBE_ENV
 

@@ -196,6 +196,7 @@ Assets:
 ClusterName: privateweave.example.com
 ConfigBase: memfs://clusters.example.com/privateweave.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws
