@@ -83,6 +83,7 @@ type StaticManifest struct {
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
 	role := instanceGroup.Spec.Role
+	isMaster := role == kops.InstanceGroupRoleMaster
 
 	config := Config{
 		InstanceGroupRole: role,
@@ -90,7 +91,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
 
-	if role == kops.InstanceGroupRoleMaster {
+	if isMaster {
 		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.MasterKubelet)
 
 		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
@@ -110,6 +111,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
 		}
 	}
+
+	config.KubeletConfig.Taints = append(config.KubeletConfig.Taints, instanceGroup.Spec.Taints...)
 
 	return &config
 }

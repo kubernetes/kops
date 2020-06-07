@@ -282,7 +282,6 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		"IGSpec": func() (string, error) {
 			spec := make(map[string]interface{})
 			spec["nodeLabels"] = b.ig.Spec.NodeLabels
-			spec["taints"] = b.ig.Spec.Taints
 
 			hooks, err := b.getRelevantHooks(b.ig.Spec.Hooks, b.ig.Spec.Role)
 			if err != nil {
