@@ -18,8 +18,6 @@ package model
 
 import (
 	"bytes"
-	"crypto/sha1"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"sort"
@@ -219,14 +217,6 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				}
 			}
 
-			fileAssets, err := b.getRelevantFileAssets(cs.FileAssets, ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(fileAssets) > 0 {
-				spec["fileAssets"] = fileAssets
-			}
-
 			content, err := yaml.Marshal(spec)
 			if err != nil {
 				return "", fmt.Errorf("error converting cluster spec to yaml for inclusion within bootstrap script: %v", err)
@@ -239,14 +229,6 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			spec["kubelet"] = ig.Spec.Kubelet
 			spec["nodeLabels"] = ig.Spec.NodeLabels
 			spec["taints"] = ig.Spec.Taints
-
-			fileAssets, err := b.getRelevantFileAssets(ig.Spec.FileAssets, ig.Spec.Role)
-			if err != nil {
-				return "", err
-			}
-			if len(fileAssets) > 0 {
-				spec["fileAssets"] = fileAssets
-			}
 
 			content, err := yaml.Marshal(spec)
 			if err != nil {
@@ -267,53 +249,6 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 	}
 
 	return fi.WrapResource(templateResource), nil
-}
-
-// getRelevantFileAssets returns a list of file assets to be applied to the
-// instance group, with the Content fingerprinted to reduce size
-func (b *BootstrapScript) getRelevantFileAssets(allFileAssets []kops.FileAssetSpec, role kops.InstanceGroupRole) ([]kops.FileAssetSpec, error) {
-	relevantFileAssets := []kops.FileAssetSpec{}
-	for _, fileAsset := range allFileAssets {
-		if len(fileAsset.Roles) == 0 {
-			relevantFileAssets = append(relevantFileAssets, fileAsset)
-			continue
-		}
-		for _, fileAssetRole := range fileAsset.Roles {
-			if role == fileAssetRole {
-				relevantFileAssets = append(relevantFileAssets, fileAsset)
-				break
-			}
-		}
-	}
-
-	fileAssets := []kops.FileAssetSpec{}
-	if len(relevantFileAssets) > 0 {
-		for _, fileAsset := range relevantFileAssets {
-			if fileAsset.Content != "" {
-				contentFingerprint, err := b.computeFingerprint(fileAsset.Content)
-				if err != nil {
-					return nil, err
-				}
-				fileAsset.Content = contentFingerprint + " (fingerprint)"
-			}
-
-			fileAsset.Roles = nil
-			fileAssets = append(fileAssets, fileAsset)
-		}
-	}
-
-	return fileAssets, nil
-}
-
-// computeFingerprint takes a string and returns a base64 encoded fingerprint
-func (b *BootstrapScript) computeFingerprint(content string) (string, error) {
-	hasher := sha1.New()
-
-	if _, err := hasher.Write([]byte(content)); err != nil {
-		return "", fmt.Errorf("error computing fingerprint hash: %v", err)
-	}
-
-	return base64.StdEncoding.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {

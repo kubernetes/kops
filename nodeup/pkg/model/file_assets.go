@@ -45,28 +45,12 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 		Mode: s("0755"),
 	})
 
-	// do we have any instanceGroup file assets
-	if f.InstanceGroup.Spec.FileAssets != nil {
-		if err := f.buildFileAssets(c, f.InstanceGroup.Spec.FileAssets, tracker); err != nil {
-			return err
-		}
-	}
-	if f.Cluster.Spec.FileAssets != nil {
-		if err := f.buildFileAssets(c, f.Cluster.Spec.FileAssets, tracker); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return f.buildFileAssets(c, f.NodeupConfig.FileAssets, tracker)
 }
 
 // buildFileAssets is responsible for rendering the file assets to disk
 func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []kops.FileAssetSpec, tracker map[string]bool) error {
 	for _, asset := range assets {
-		// @check if the file asset applies to us. If no roles applied we assume its applied to all roles
-		if len(asset.Roles) > 0 && !containsRole(f.NodeupConfig.InstanceGroupRole, asset.Roles) {
-			continue
-		}
 		// @check if e have a path and if not use the default path
 		assetPath := asset.Path
 		if assetPath == "" {

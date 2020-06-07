@@ -48,6 +48,8 @@ type Config struct {
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
+	// FileAssets are a collection of file assets for this instance group.
+	FileAssets []kops.FileAssetSpec `json:",omitempty"`
 	// Hooks are for custom actions, for example on first installation.
 	Hooks [][]kops.HookSpec
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
@@ -77,15 +79,29 @@ type StaticManifest struct {
 }
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
-	clusterHooks := filterHooks(cluster.Spec.Hooks, instanceGroup.Spec.Role)
-	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
+	role := instanceGroup.Spec.Role
+	clusterHooks := filterHooks(cluster.Spec.Hooks, role)
+	igHooks := filterHooks(instanceGroup.Spec.Hooks, role)
 
 	return &Config{
-		InstanceGroupRole: instanceGroup.Spec.Role,
+		InstanceGroupRole: role,
+		FileAssets:        append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:             [][]kops.HookSpec{igHooks, clusterHooks},
 		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
+}
+
+func filterFileAssets(f []kops.FileAssetSpec, role kops.InstanceGroupRole) []kops.FileAssetSpec {
+	var fileAssets []kops.FileAssetSpec
+	for _, fileAsset := range f {
+		if len(fileAsset.Roles) > 0 && !containsRole(role, fileAsset.Roles) {
+			continue
+		}
+		fileAsset.Roles = nil
+		fileAssets = append(fileAssets, fileAsset)
+	}
+	return fileAssets
 }
 
 func filterHooks(h []kops.HookSpec, role kops.InstanceGroupRole) []kops.HookSpec {
