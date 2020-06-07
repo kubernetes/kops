@@ -66,9 +66,7 @@ func (c *NodeupModelContext) Init() error {
 	}
 	c.kubernetesVersion = *k8sVersion
 
-	if c.InstanceGroup == nil {
-		klog.Warningf("cannot determine role, InstanceGroup not set")
-	} else if c.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
+	if c.NodeupConfig.InstanceGroupRole == kops.InstanceGroupRoleMaster {
 		c.IsMaster = true
 	}
 
