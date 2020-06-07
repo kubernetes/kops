@@ -40,7 +40,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const (
@@ -425,12 +424,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	isMaster := b.IsMaster
 
 	// Merge KubeletConfig for NodeLabels
-	c := &kops.KubeletConfigSpec{}
-	if isMaster {
-		reflectutils.JSONMergeStruct(c, b.Cluster.Spec.MasterKubelet)
-	} else {
-		reflectutils.JSONMergeStruct(c, b.Cluster.Spec.Kubelet)
-	}
+	c := b.NodeupConfig.KubeletConfig
 
 	// check if we are using secure kubelet <-> api settings
 	if b.UseSecureKubelet() {
@@ -481,15 +475,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 		// Write back values that could have changed
 		c.MaxPods = &maxPods
-		if b.InstanceGroup.Spec.Kubelet != nil {
-			if b.InstanceGroup.Spec.Kubelet.MaxPods == nil {
-				b.InstanceGroup.Spec.Kubelet.MaxPods = &maxPods
-			}
-		}
-	}
-
-	if b.InstanceGroup.Spec.Kubelet != nil {
-		reflectutils.JSONMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
 	// Use --register-with-taints
@@ -541,7 +526,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.NodeLabels = nodeLabels
 	}
 
-	return c, nil
+	return &c, nil
 }
 
 // buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert

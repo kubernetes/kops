@@ -354,31 +354,9 @@ func (c *NodeupModelContext) UseBootstrapTokens() bool {
 	return c.Cluster.Spec.Kubelet != nil && c.Cluster.Spec.Kubelet.BootstrapKubeconfig != ""
 }
 
-// UseSecureKubelet checks if the kubelet api should be protected by a client certificate. Note: the settings are
-// in one of three section, master specific kubelet, cluster wide kubelet or the InstanceGroup. Though arguably is
-// doesn't make much sense to unset this on a per InstanceGroup level, but hey :)
+// UseSecureKubelet checks if the kubelet api should be protected by a client certificate.
 func (c *NodeupModelContext) UseSecureKubelet() bool {
-	cluster := &c.Cluster.Spec // just to shorten the typing
-	group := &c.InstanceGroup.Spec
-
-	// @check on the InstanceGroup itself
-	if group.Kubelet != nil && group.Kubelet.AnonymousAuth != nil && !*group.Kubelet.AnonymousAuth {
-		return true
-	}
-
-	// @check if we have anything specific to master kubelet
-	if c.IsMaster {
-		if cluster.MasterKubelet != nil && cluster.MasterKubelet.AnonymousAuth != nil && !*cluster.MasterKubelet.AnonymousAuth {
-			return true
-		}
-	}
-
-	// @check the default settings for master and kubelet
-	if cluster.Kubelet != nil && cluster.Kubelet.AnonymousAuth != nil && !*cluster.Kubelet.AnonymousAuth {
-		return true
-	}
-
-	return false
+	return c.NodeupConfig.KubeletConfig.AnonymousAuth != nil && !*c.NodeupConfig.KubeletConfig.AnonymousAuth
 }
 
 // KubectlPath returns distro based path for kubectl

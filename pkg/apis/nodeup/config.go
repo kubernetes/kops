@@ -16,7 +16,11 @@ limitations under the License.
 
 package nodeup
 
-import "k8s.io/kops/pkg/apis/kops"
+import (
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/reflectutils"
+)
 
 // Config is the configuration for the nodeup binary
 type Config struct {
@@ -52,6 +56,8 @@ type Config struct {
 	FileAssets []kops.FileAssetSpec `json:",omitempty"`
 	// Hooks are for custom actions, for example on first installation.
 	Hooks [][]kops.HookSpec
+	// KubeletConfig defines the kubelet configuration.
+	KubeletConfig kops.KubeletConfigSpec
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
@@ -83,13 +89,36 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 	clusterHooks := filterHooks(cluster.Spec.Hooks, role)
 	igHooks := filterHooks(instanceGroup.Spec.Hooks, role)
 
-	return &Config{
+	config := Config{
 		InstanceGroupRole: role,
 		FileAssets:        append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:             [][]kops.HookSpec{igHooks, clusterHooks},
 		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
+
+	if role == kops.InstanceGroupRoleMaster {
+		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.MasterKubelet)
+
+		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
+		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
+			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
+		}
+	} else {
+		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.Kubelet)
+	}
+
+	if instanceGroup.Spec.Kubelet != nil {
+		useSecureKubelet := config.KubeletConfig.AnonymousAuth != nil && !*config.KubeletConfig.AnonymousAuth
+
+		reflectutils.JSONMergeStruct(&config.KubeletConfig, instanceGroup.Spec.Kubelet)
+
+		if useSecureKubelet {
+			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
+		}
+	}
+
+	return &config
 }
 
 func filterFileAssets(f []kops.FileAssetSpec, role kops.InstanceGroupRole) []kops.FileAssetSpec {
