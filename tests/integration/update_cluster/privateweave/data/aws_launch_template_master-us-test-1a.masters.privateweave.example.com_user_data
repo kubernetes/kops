@@ -278,6 +278,7 @@ Assets:
 ClusterName: privateweave.example.com
 ConfigBase: memfs://clusters.example.com/privateweave.example.com
 InstanceGroupName: master-us-test-1a
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws

@@ -196,6 +196,7 @@ Assets:
 ClusterName: privatedns1.example.com
 ConfigBase: memfs://clusters.example.com/privatedns1.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws

@@ -197,6 +197,7 @@ Assets:
 ClusterName: additionalcidr.example.com
 ConfigBase: memfs://clusters.example.com/additionalcidr.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws

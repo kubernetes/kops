@@ -278,6 +278,7 @@ Assets:
 ClusterName: private-shared-subnet.example.com
 ConfigBase: memfs://clusters.example.com/private-shared-subnet.example.com
 InstanceGroupName: master-us-test-1a
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws

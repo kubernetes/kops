@@ -282,6 +282,7 @@ Assets:
 ClusterName: launchtemplates.example.com
 ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
 InstanceGroupName: master-us-test-1b
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws
