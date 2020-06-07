@@ -283,6 +283,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscomplexexampleco
   ClusterName: complex.example.com
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -503,6 +504,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescomplexexamplecom.Properties.Use
   ClusterName: complex.example.com
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

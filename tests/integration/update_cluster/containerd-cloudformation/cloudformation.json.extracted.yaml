@@ -280,6 +280,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterscontainerdexampl
   ClusterName: containerd.example.com
   ConfigBase: memfs://clusters.example.com/containerd.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -499,6 +500,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodescontainerdexamplecom.Properties.
   ClusterName: containerd.example.com
   ConfigBase: memfs://clusters.example.com/containerd.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

@@ -287,6 +287,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersnosshkeyexamplec
   ClusterName: nosshkey.example.com
   ConfigBase: memfs://clusters.example.com/nosshkey.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -505,6 +506,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesnosshkeyexamplecom.Properties.Us
   ClusterName: nosshkey.example.com
   ConfigBase: memfs://clusters.example.com/nosshkey.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

@@ -280,6 +280,7 @@ Assets:
 ClusterName: ha.example.com
 ConfigBase: memfs://tests/ha.example.com
 InstanceGroupName: master-us-test-1c
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws

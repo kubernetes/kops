@@ -197,6 +197,7 @@ Assets:
 ClusterName: minimal-json.example.com
 ConfigBase: memfs://clusters.example.com/minimal-json.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws

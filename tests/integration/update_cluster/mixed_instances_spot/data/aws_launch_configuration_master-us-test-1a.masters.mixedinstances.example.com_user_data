@@ -282,6 +282,7 @@ Assets:
 ClusterName: mixedinstances.example.com
 ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
 InstanceGroupName: master-us-test-1a
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws

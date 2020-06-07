@@ -280,6 +280,7 @@ Assets:
 ClusterName: restrictaccess.example.com
 ConfigBase: memfs://clusters.example.com/restrictaccess.example.com
 InstanceGroupName: master-us-test-1a
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws

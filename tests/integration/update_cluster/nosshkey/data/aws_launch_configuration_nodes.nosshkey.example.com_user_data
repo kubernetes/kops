@@ -198,6 +198,7 @@ Assets:
 ClusterName: nosshkey.example.com
 ConfigBase: memfs://clusters.example.com/nosshkey.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws

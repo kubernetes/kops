@@ -284,6 +284,7 @@ Assets:
 ClusterName: minimal-gce.example.com
 ConfigBase: memfs://tests/minimal-gce.example.com
 InstanceGroupName: master-us-test1-a
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _gce
