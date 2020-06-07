@@ -38,7 +38,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	if c.Version == "" {
 		if b.Context.IsKubernetesLT("1.12.0") {
 			c.Version = "v1.6.9"
-		} else if b.Context.IsKubernetesLT("1.18.0") {
+		} else {
 			c.Version = "v1.7.4"
 		}
 	}
@@ -69,6 +69,14 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if c.ToFqdnsDNSRejectResponseCode == "" {
 		c.ToFqdnsDNSRejectResponseCode = "refused"
+	}
+
+	if c.ContainerRuntimeLabels == "" {
+		c.ContainerRuntimeLabels = "none"
+	}
+
+	if c.AgentPrometheusPort == 0 {
+		c.AgentPrometheusPort = 9090
 	}
 
 	return nil

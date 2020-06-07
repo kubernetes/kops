@@ -50,8 +50,8 @@ data:
   #
   # For users upgrading from Cilium 1.2 or earlier, to minimize disruption
   # during the upgrade process, comment out these options.
-  bpf-ct-global-tcp-max: "{{- if eq .BPFCTGlobalTCPMax 0 -}}524288{{- else -}}{{ .BPFCTGlobalTCPMax}}{{- end -}}"
-  bpf-ct-global-any-max: "{{- if eq .BPFCTGlobalAnyMax 0 -}}262144{{- else -}}{{ .BPFCTGlobalAnyMax}}{{- end -}}"
+  bpf-ct-global-tcp-max: "{{ .BPFCTGlobalTCPMax }}"
+  bpf-ct-global-any-max: "{{ .BPFCTGlobalAnyMax }}"
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The
@@ -69,19 +69,19 @@ data:
   #
   # If this option is set to "false" during an upgrade from 1.3 or earlier to
   # 1.4 or later, then it may cause one-time disruptions during the upgrade.
-  preallocate-bpf-maps: "{{- if .PreallocateBPFMaps -}}true{{- else -}}false{{- end -}}"
+  preallocate-bpf-maps: "{{ .PreallocateBPFMaps }}"
   # Regular expression matching compatible Istio sidecar istio-proxy
   # container image names
-  sidecar-istio-proxy-image: "{{- if eq .SidecarIstioProxyImage "" -}}cilium/istio_proxy{{- else -}}{{ .SidecarIstioProxyImage }}{{- end -}}"
+  sidecar-istio-proxy-image: "{{ .SidecarIstioProxyImage }}"
   # Encapsulation mode for communication between nodes
   # Possible values:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: "{{- if eq .Tunnel "" -}}vxlan{{- else -}}{{ .Tunnel }}{{- end -}}"
+  tunnel: "{{ .Tunnel }}"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
-  cluster-name: "{{- if eq .ClusterName "" -}}default{{- else -}}{{ .ClusterName}}{{- end -}}"
+  cluster-name: "{{ .ClusterName }}"
 
   # This option is disabled by default starting from version 1.4.x in favor
   # of a more powerful DNS proxy-based implementation, see [0] for details.
@@ -94,7 +94,7 @@ data:
   #
   # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
-  tofqdns-enable-poller: "{{- if .ToFqdnsEnablePoller -}}true{{- else -}}false{{- end -}}"
+  tofqdns-enable-poller: "{{ .ToFqdnsEnablePoller }}"
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
   wait-bpf-mount: "false"
   # Enable fetching of container-runtime specific metadata
@@ -116,11 +116,11 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  container-runtime: "{{- if eq .ContainerRuntimeLabels "" -}}none{{- else -}}{{ .ContainerRuntimeLabels }}{{- end -}}"
+  container-runtime: "{{ .ContainerRuntimeLabels }}"
   masquerade: "{{- if .DisableMasquerade -}}false{{- else -}}true{{- end -}}"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
-  enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  enable-node-port: "{{ .EnableNodePort }}"
   {{ with .Ipam }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
@@ -380,7 +380,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.6.6" }}"
+        image: "docker.io/cilium/cilium:{{ .Version  }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -408,8 +408,8 @@ spec:
         name: cilium-agent
         {{ if .EnablePrometheusMetrics }}
         ports:
-        - containerPort: {{ or .AgentPrometheusPort "9090" }}
-          hostPort: {{ or .AgentPrometheusPort "9090" }}
+        - containerPort: {{ .AgentPrometheusPort }}
+          hostPort: {{ .AgentPrometheusPort }}
           name: prometheus
           protocol: TCP
         {{ end }}
@@ -652,7 +652,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{- or .Version "v1.6.6" }}"
+        image: "docker.io/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
