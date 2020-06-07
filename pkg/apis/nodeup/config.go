@@ -16,6 +16,8 @@ limitations under the License.
 
 package nodeup
 
+import "k8s.io/kops/pkg/apis/kops"
+
 // Config is the configuration for the nodeup binary
 type Config struct {
 	// Tags enable/disable chunks of the model
@@ -31,6 +33,8 @@ type Config struct {
 	ClusterLocation *string `json:",omitempty"`
 	// InstanceGroupName is the name of the instance group
 	InstanceGroupName string `json:",omitempty"`
+	// InstanceGroupRole is the instance group role.
+	InstanceGroupRole kops.InstanceGroupRole
 	// ClusterName is the name of the cluster
 	ClusterName string `json:",omitempty"`
 	// ProtokubeImage is the docker image to load for protokube (bootstrapping)
@@ -62,4 +66,10 @@ type StaticManifest struct {
 	Key string `json:"key,omitempty"`
 	// Path is the path to the manifest
 	Path string `json:"path,omitempty"`
+}
+
+func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
+	return &Config{
+		InstanceGroupRole: instanceGroup.Spec.Role,
+	}
 }

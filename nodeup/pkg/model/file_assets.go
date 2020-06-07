@@ -64,7 +64,7 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []kops.FileAssetSpec, tracker map[string]bool) error {
 	for _, asset := range assets {
 		// @check if the file asset applies to us. If no roles applied we assume its applied to all roles
-		if len(asset.Roles) > 0 && !containsRole(f.InstanceGroup.Spec.Role, asset.Roles) {
+		if len(asset.Roles) > 0 && !containsRole(f.NodeupConfig.InstanceGroupRole, asset.Roles) {
 			continue
 		}
 		// @check if e have a path and if not use the default path

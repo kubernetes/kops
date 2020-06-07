@@ -114,7 +114,7 @@ func TestBootstrapUserData(t *testing.T) {
 		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles, x.FileAssetSpecRoles)
 
 		renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
-			return &nodeup.Config{}, nil
+			return nodeup.NewConfig(cluster, ig), nil
 		}
 
 		bs := &BootstrapScript{
