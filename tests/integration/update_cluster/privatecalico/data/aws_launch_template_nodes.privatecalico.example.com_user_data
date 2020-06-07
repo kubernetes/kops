@@ -196,6 +196,7 @@ Assets:
 ClusterName: privatecalico.example.com
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws
