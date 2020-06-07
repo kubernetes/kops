@@ -760,27 +760,23 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 }
 
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersionMinor int) *nodetasks.Service {
-	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
 	usesDockerSocket := true
 
-	var dockerdCommand string
-	if oldDocker {
-		dockerdCommand = "/usr/bin/docker daemon"
-	} else {
-		dockerdCommand = "/usr/bin/dockerd"
-	}
+	var dockerdCommand = "/usr/bin/dockerd"
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
 
-	if b.Distribution.IsRHELFamily() && !oldDocker {
+	if b.Distribution.IsRHELFamily() {
 		// See https://github.com/docker/docker/pull/24804
 		usesDockerSocket = false
 	}
 
 	if usesDockerSocket {
-		manifest.Set("Unit", "After", "network.target docker.socket")
+		manifest.Set("Unit", "BindsTo", "containerd.service")
+		manifest.Set("Unit", "After", "network-online.target firewalld.service containerd.service")
+		manifest.Set("Unit", "Wants", "network-online.target")
 		manifest.Set("Unit", "Requires", "docker.socket")
 	} else {
 		manifest.Set("Unit", "After", "network.target")
@@ -796,36 +792,16 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersio
 		manifest.Set("Service", "ExecStart", dockerdCommand+" \"$DOCKER_OPTS\"")
 	}
 
-	if !oldDocker {
-		// This was added by docker 1.12
-		// TODO: They seem sensible - should we backport them?
+	manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
+	// kill only the docker process, not all processes in the cgroup
+	manifest.Set("Service", "KillMode", "process")
 
-		manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
-		// kill only the docker process, not all processes in the cgroup
-		manifest.Set("Service", "KillMode", "process")
+	manifest.Set("Service", "TimeoutStartSec", "0")
 
-		manifest.Set("Service", "TimeoutStartSec", "0")
-	}
-
-	if oldDocker {
-		// Only in older versions of docker (< 1.12)
-		manifest.Set("Service", "MountFlags", "slave")
-	}
-
-	// Having non-zero Limit*s causes performance problems due to accounting overhead
-	// in the kernel. We recommend using cgroups to do container-local accounting.
-	// TODO: Should we set this? https://github.com/kubernetes/kubernetes/issues/39682
-	//service.Set("Service", "LimitNOFILE", "infinity")
-	//service.Set("Service", "LimitNPROC", "infinity")
-	//service.Set("Service", "LimitCORE", "infinity")
-	manifest.Set("Service", "LimitNOFILE", "1048576")
-	manifest.Set("Service", "LimitNPROC", "1048576")
+	manifest.Set("Service", "LimitNOFILE", "infinity")
+	manifest.Set("Service", "LimitNPROC", "infinity")
 	manifest.Set("Service", "LimitCORE", "infinity")
 
-	//# Uncomment TasksMax if your systemd version supports it.
-	//# Only systemd 226 and above support this version.
-	//#TasksMax=infinity
-	// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
 	manifest.Set("Service", "TasksMax", "infinity")
 
 	manifest.Set("Service", "Restart", "always")

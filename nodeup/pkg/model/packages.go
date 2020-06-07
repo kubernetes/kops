@@ -40,6 +40,7 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Distribution.IsDebianFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
 		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
+		c.AddTask(&nodetasks.Package{Name: "cgroupfs-mount"})
 		c.AddTask(&nodetasks.Package{Name: "conntrack"})
 		c.AddTask(&nodetasks.Package{Name: "ebtables"})
 		c.AddTask(&nodetasks.Package{Name: "ethtool"})
