@@ -521,12 +521,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
 	if b.Cluster.IsKubernetesGTE("1.16") {
 		c.NodeLabels = nil
-	} else {
-		nodeLabels, err := nodelabels.BuildNodeLabels(b.Cluster, b.InstanceGroup)
-		if err != nil {
-			return nil, err
-		}
-		c.NodeLabels = nodeLabels
 	}
 
 	return &c, nil
