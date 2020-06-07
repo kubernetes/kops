@@ -73,6 +73,8 @@ type Config struct {
 
 // AuxConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
 type AuxConfig struct {
+	// FileAssets are a collection of file assets for this instance group.
+	FileAssets []kops.FileAssetSpec `json:",omitempty"`
 	// Hooks are for custom actions, for example on first installation.
 	Hooks [][]kops.HookSpec
 }
@@ -119,7 +121,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	igHooks := filterHooks(instanceGroup.Spec.Hooks, instanceGroup.Spec.Role)
 
 	auxConfig := AuxConfig{
-		Hooks: [][]kops.HookSpec{igHooks, clusterHooks},
+		FileAssets: append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
+		Hooks:      [][]kops.HookSpec{igHooks, clusterHooks},
 	}
 
 	if isMaster {
@@ -154,6 +157,18 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	return &config, &auxConfig
+}
+
+func filterFileAssets(f []kops.FileAssetSpec, role kops.InstanceGroupRole) []kops.FileAssetSpec {
+	var fileAssets []kops.FileAssetSpec
+	for _, fileAsset := range f {
+		if len(fileAsset.Roles) > 0 && !containsRole(role, fileAsset.Roles) {
+			continue
+		}
+		fileAsset.Roles = nil
+		fileAssets = append(fileAssets, fileAsset)
+	}
+	return fileAssets
 }
 
 func filterHooks(h []kops.HookSpec, role kops.InstanceGroupRole) []kops.HookSpec {
