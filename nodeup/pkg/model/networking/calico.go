@@ -36,6 +36,8 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	b.AddCNIBinAssets(c, []string{"bandwidth", "flannel", "host-local", "loopback", "portmap", "tuning"})
+
 	// @check if tls is enabled and if so, we need to download the client certificates
 	if !b.UseEtcdManager() && b.UseEtcdTLS() {
 		name := "calico-client"
