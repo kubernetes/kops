@@ -17,6 +17,8 @@ limitations under the License.
 package nodeup
 
 import (
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi"
@@ -51,6 +53,8 @@ type Config struct {
 	// Manifests for running etcd
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
 
+	// DefaultMachineType is the first-listed instance machine type, used if querying instance metadata fails.
+	DefaultMachineType *string `json:",omitempty"`
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
@@ -118,6 +122,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config
 	config.KubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, instanceGroup)
 
 	config.KubeletConfig.Taints = append(config.KubeletConfig.Taints, instanceGroup.Spec.Taints...)
+
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
+		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
+	}
 
 	return &config
 }

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"k8s.io/kops/pkg/model/components"
 
@@ -440,7 +439,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		instanceTypeName, err := metadata.GetMetadata("instance-type")
 		if err != nil {
 			// Otherwise, fall back to the Instance Group spec.
-			instanceTypeName = strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0]
+			instanceTypeName = *b.NodeupConfig.DefaultMachineType
 		}
 
 		region, err := awsup.FindRegion(b.Cluster)
