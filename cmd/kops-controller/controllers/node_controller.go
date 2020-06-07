@@ -114,10 +114,7 @@ func (r *NodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, fmt.Errorf("unable to load instance group object for node %s: %v", node.Name, err)
 	}
 
-	labels, err := nodelabels.BuildNodeLabels(cluster, ig)
-	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("unable to build config for node %s: %v", node.Name, err)
-	}
+	labels := nodelabels.BuildNodeLabels(cluster, ig)
 
 	lifecycle, err := r.getInstanceLifecycle(ctx, node)
 	if err != nil {
