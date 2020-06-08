@@ -199,6 +199,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		NodeupConfig:  c.config,
 	}
 
+	var secretStore fi.SecretStore
+	var keyStore fi.Keystore
 	if c.cluster.Spec.SecretStore != "" {
 		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)
@@ -206,7 +208,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
 
-		modelContext.SecretStore = secrets.NewVFSSecretStore(c.cluster, p)
+		secretStore = secrets.NewVFSSecretStore(c.cluster, p)
+		modelContext.SecretStore = secretStore
 	} else {
 		return fmt.Errorf("SecretStore not set")
 	}
@@ -219,6 +222,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 
 		modelContext.KeyStore = fi.NewVFSCAStore(c.cluster, p)
+		keyStore = modelContext.KeyStore
 	} else {
 		return fmt.Errorf("KeyStore not set")
 	}
@@ -285,8 +289,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	// Protokube load image task is in ProtokubeBuilder
 
 	var cloud fi.Cloud
-	var keyStore fi.Keystore
-	var secretStore fi.SecretStore
 	var target fi.Target
 	checkExisting := true
 
