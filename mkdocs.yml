@@ -145,6 +145,8 @@ nav:
     - Vendoring: "development/vendoring.md"
     - Ports: "development/ports.md"
   - Releases:
+    - 1.18-beta: releases/1.18-NOTES.md
+    - 1.17: releases/1.17-NOTES.md
     - 1.16: releases/1.16-NOTES.md
     - 1.15: releases/1.15-NOTES.md
     - 1.14: releases/1.14-NOTES.md
