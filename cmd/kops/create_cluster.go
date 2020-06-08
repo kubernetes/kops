@@ -955,6 +955,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
+	c.KubernetesVersion = "v1.18.3"
 	if c.KubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = c.KubernetesVersion
 	}
