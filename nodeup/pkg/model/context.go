@@ -54,7 +54,6 @@ type NodeupModelContext struct {
 	Cluster         *kops.Cluster
 	ConfigBase      vfs.Path
 	Distribution    distributions.Distribution
-	InstanceGroup   *kops.InstanceGroup
 	KeyStore        fi.CAStore
 	NodeupConfig    *nodeup.Config
 	NodeupAuxConfig *nodeup.AuxConfig
