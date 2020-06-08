@@ -271,7 +271,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 			fmt.Sprintf("/bin/bash -c 'while [ ! -f %s ]; do sleep 5; done;'", b.KubeletBootstrapKubeconfig()))
 	}
 
-	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
+	manifest.Set("Service", "ExecStart", kubeletCommand+" --experimental-allocatable-ignore-eviction=true \"$DAEMON_ARGS\"")
 	manifest.Set("Service", "Restart", "always")
 	manifest.Set("Service", "RestartSec", "2s")
 	manifest.Set("Service", "StartLimitInterval", "0")
