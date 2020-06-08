@@ -2,9 +2,7 @@ language: go
 arch:
   - amd64
   - arm64
-os:
-  - linux
-  - osx
+os: linux
 dist: focal
 go: 1.15rc2
 
@@ -12,13 +10,3 @@ go_import_path: k8s.io/kops
 
 script:
   - GOPROXY=https://proxy.golang.org travis_wait 30 make all examples test
-
-jobs:
-  include:
-    - name: Verify
-      arch: amd64
-      os: linux
-      dist: focal
-      go: 1.15rc2
-      script:
-        - GOPROXY=https://proxy.golang.org make travis-ci
