@@ -86,7 +86,9 @@ go_test(
     srcs = [
         "containerd_test.go",
         "docker_test.go",
+        "fakes_test.go",
         "kube_apiserver_test.go",
+        "kube_controller_manager_test.go",
         "kube_proxy_test.go",
         "kube_scheduler_test.go",
         "kubelet_test.go",
@@ -111,9 +113,9 @@ go_test(
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/blang/semver:go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
     ],
 )
