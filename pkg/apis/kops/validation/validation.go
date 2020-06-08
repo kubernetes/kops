@@ -658,6 +658,9 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 	if v.Version != "" {
 		versionFld := fldPath.Child("version")
 		version, err := semver.ParseTolerant(v.Version)
+
+		version.Pre = nil
+		version.Build = nil
 		if err != nil {
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
@@ -671,7 +674,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		}
 
 		if !cluster.IsKubernetesGTE("1.12.0") && version.GTE(v7) {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Version >= 1.7 requires kubernetesVersion 1.12 or higher"))
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version >= 1.7 requires kubernetesVersion 1.12 or higher"))
 		}
 	}
 
