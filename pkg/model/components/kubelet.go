@@ -101,13 +101,17 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			evictionHard := []string{
 				// TODO: Some people recommend 250Mi, but this would hurt small machines
 				"memory.available<100Mi",
-
-				// Disk eviction (evict old images)
+			}
+			// Disk based evictions are not detecting the correct disk capacity in Kubernetes 1.19 and are
+			// blocking scheduling by tainting worker nodes with "node.kubernetes.io/disk-pressure:NoSchedule"
+			// TODO: Re-enable once the Kubelet issue is fixed
+			if b.Context.IsKubernetesLT("1.19") {
+				// Disk based eviction (evict old images)
 				// We don't need to specify both, but it seems harmless / safer
-				"nodefs.available<10%",
-				"nodefs.inodesFree<5%",
-				"imagefs.available<10%",
-				"imagefs.inodesFree<5%",
+				evictionHard = append(evictionHard, "nodefs.available<10%")
+				evictionHard = append(evictionHard, "nodefs.inodesFree<5%")
+				evictionHard = append(evictionHard, "imagefs.available<10%")
+				evictionHard = append(evictionHard, "imagefs.inodesFree<5%")
 			}
 			clusterSpec.Kubelet.EvictionHard = fi.String(strings.Join(evictionHard, ","))
 		}
