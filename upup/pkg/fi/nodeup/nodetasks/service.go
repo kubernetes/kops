@@ -64,13 +64,13 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	for _, v := range tasks {
 		// We assume that services depend on everything except for
-		// LoadImageTask. If there are any LoadImageTasks (e.g. we're
+		// LoadImageTask or IssueCert. If there are any LoadImageTasks (e.g. we're
 		// launching a custom Kubernetes build), they all depend on
 		// the "docker.service" Service task.
 		switch v.(type) {
 		case *File, *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive:
 			deps = append(deps, v)
-		case *Service, *LoadImageTask:
+		case *Service, *LoadImageTask, *IssueCert:
 			// ignore
 		default:
 			klog.Warningf("Unhandled type %T in Service::GetDependencies: %v", v, v)

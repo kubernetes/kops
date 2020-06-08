@@ -248,3 +248,22 @@ func WrapResource(r Resource) *ResourceHolder {
 		Resource: r,
 	}
 }
+
+type TaskDependentResource struct {
+	Resource Resource
+	Task     Task
+}
+
+var _ Resource = &TaskDependentResource{}
+var _ HasDependencies = &TaskDependentResource{}
+
+func (r *TaskDependentResource) Open() (io.Reader, error) {
+	if r.Resource == nil {
+		return nil, fmt.Errorf("resource opened before it is ready")
+	}
+	return r.Resource.Open()
+}
+
+func (r *TaskDependentResource) GetDependencies(tasks map[string]Task) []Task {
+	return []Task{r.Task}
+}
