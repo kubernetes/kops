@@ -12,6 +12,9 @@ env:
 jobs:
   build:
     strategy:
+      # Note, the following build matrix generates jobs that are blocking via prow.
+      # When changing the versions or images below, please update prow config too:
+      # https://github.com/kubernetes/test-infra/blob/566fea31f63670f583dde93b55fcb0a13bdc2562/config/prow/config.yaml
       matrix:
         os: [ubuntu-18.04, macos-10.15]
         go: [1.13, 1.14]
