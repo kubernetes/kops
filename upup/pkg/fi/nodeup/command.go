@@ -67,7 +67,6 @@ type NodeUpCommand struct {
 	cluster        *api.Cluster
 	config         *nodeup.Config
 	auxConfig      *nodeup.AuxConfig
-	instanceGroup  *api.InstanceGroup
 }
 
 // Run is responsible for perform the nodeup process
@@ -157,33 +156,16 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var auxConfigHash [32]byte
 	if nodeConfig != nil {
-		c.instanceGroup = &api.InstanceGroup{}
-		if err := utils.YamlUnmarshal([]byte(nodeConfig.InstanceGroupConfig), c.instanceGroup); err != nil {
-			return fmt.Errorf("error parsing InstanceGroup config response: %v", err)
-		}
-
 		c.auxConfig = &nodeup.AuxConfig{}
 		if err := utils.YamlUnmarshal([]byte(nodeConfig.AuxConfig), c.auxConfig); err != nil {
 			return fmt.Errorf("error parsing AuxConfig config response: %v", err)
 		}
 		auxConfigHash = sha256.Sum256([]byte(nodeConfig.AuxConfig))
 	} else if c.config.InstanceGroupName != "" {
-		instanceGroupLocation := configBase.Join("instancegroup", c.config.InstanceGroupName)
-
-		c.instanceGroup = &api.InstanceGroup{}
-		b, err := instanceGroupLocation.ReadFile()
-		if err != nil {
-			return fmt.Errorf("error loading InstanceGroup %q: %v", instanceGroupLocation, err)
-		}
-
-		if err = utils.YamlUnmarshal(b, c.instanceGroup); err != nil {
-			return fmt.Errorf("error parsing InstanceGroup %q: %v", instanceGroupLocation, err)
-		}
-
-		auxConfigLocation := configBase.Join("igconfig", strings.ToLower(string(c.instanceGroup.Spec.Role)), c.config.InstanceGroupName, "auxconfig.yaml")
+		auxConfigLocation := configBase.Join("igconfig", strings.ToLower(string(c.config.InstanceGroupRole)), c.config.InstanceGroupName, "auxconfig.yaml")
 
 		c.auxConfig = &nodeup.AuxConfig{}
-		b, err = auxConfigLocation.ReadFile()
+		b, err := auxConfigLocation.ReadFile()
 		if err != nil {
 			return fmt.Errorf("error loading AuxConfig %q: %v", auxConfigLocation, err)
 		}
@@ -245,7 +227,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Cluster:         c.cluster,
 		ConfigBase:      configBase,
 		Distribution:    distribution,
-		InstanceGroup:   c.instanceGroup,
 		NodeupConfig:    c.config,
 		NodeupAuxConfig: c.auxConfig,
 	}
@@ -402,7 +383,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 }
 
 func completeWarmingLifecycleAction(cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
-	asgName := modelContext.InstanceGroup.GetName() + "." + modelContext.Cluster.GetName()
+	asgName := modelContext.NodeupConfig.InstanceGroupName + "." + modelContext.Cluster.GetName()
 	hookName := "kops-warmpool"
 	svc := cloud.(awsup.AWSCloud).Autoscaling()
 	hooks, err := svc.DescribeLifecycleHooks(&autoscaling.DescribeLifecycleHooksInput{
@@ -736,7 +717,7 @@ func getNodeConfigFromServer(ctx context.Context, config *nodeup.ConfigServerOpt
 func getAWSConfigurationMode(c *model.NodeupModelContext) (string, error) {
 	// Only worker nodes and apiservers can actually autoscale.
 	// We are not adding describe permissions to the other roles
-	role := c.InstanceGroup.Spec.Role
+	role := c.NodeupConfig.InstanceGroupRole
 	if role != api.InstanceGroupRoleNode && role != api.InstanceGroupRoleAPIServer {
 		return "", nil
 	}

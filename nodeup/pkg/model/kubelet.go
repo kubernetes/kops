@@ -306,10 +306,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 
 // buildKubeletConfig is responsible for creating the kubelet configuration
 func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
-	if b.InstanceGroup == nil {
-		klog.Fatalf("InstanceGroup was not set")
-	}
-
 	kubeletConfigSpec, err := b.buildKubeletConfigSpec()
 	if err != nil {
 		return nil, fmt.Errorf("error building kubelet config: %v", err)
@@ -429,7 +425,7 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
 	isMaster := b.IsMaster
-	isAPIServer := b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleAPIServer
+	isAPIServer := b.NodeupConfig.InstanceGroupRole == kops.InstanceGroupRoleAPIServer
 
 	// Merge KubeletConfig for NodeLabels
 	c := b.NodeupConfig.KubeletConfig
