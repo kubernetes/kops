@@ -19,12 +19,9 @@ package model
 import (
 	"crypto/x509/pkix"
 	"fmt"
-	"path/filepath"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -85,63 +82,16 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.ModelBuilderCont
 		})
 	}
 
-	req := &pki.IssueCertRequest{
+	issueCert := &nodetasks.IssueCert{
+		Name:   id,
 		Signer: fi.CertificateId_CA,
 		Type:   "client",
 		Subject: pkix.Name{
 			CommonName: id,
 		},
-		MinValidDays: 455,
 	}
-
-	klog.Infof("signing certificate for %q", id)
-	clientCert, clientKey, _, err := pki.IssueCert(req, b.KeyStore)
-	if err != nil {
-		return err
-	}
-
-	c.AddTask(&nodetasks.File{
-		Path: filepath.Join(secretsDir),
-		Type: nodetasks.FileType_Directory,
-		Mode: s("0755"),
-	})
-
-	clientCertBytes, err := clientCert.AsBytes()
-	if err != nil {
-		return err
-	}
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(secretsDir, "client.crt"),
-		Contents: fi.NewBytesResource(clientCertBytes),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0644"),
-		Owner:    s(userName),
-	})
-
-	clientKeyBytes, err := clientKey.AsBytes()
-	if err != nil {
-		return err
-	}
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(secretsDir, "client.key"),
-		Contents: fi.NewBytesResource(clientKeyBytes),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0600"),
-		Owner:    s(userName),
-	})
-
-	cert, err := b.GetCert(fi.CertificateId_CA)
-	if err != nil {
-		return err
-	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(secretsDir, "ca.crt"),
-		Contents: fi.NewBytesResource(cert),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0644"),
-		Owner:    s(userName),
-	})
+	c.AddTask(issueCert)
+	issueCert.AddFileTasks(c, secretsDir, "client", "ca", s(userName))
 
 	return nil
 }
