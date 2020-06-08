@@ -14168,18 +14168,18 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
+  namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
 rules:
   - apiGroups:
       - ''
@@ -14219,10 +14219,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
 roleRef:
   kind: ClusterRole
   name: weave-net
@@ -14276,17 +14276,17 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
 spec:
   # Wait 5 seconds to let pod connect before rolling next pod
-  minReadySeconds: 5
   selector:
     matchLabels:
       name: weave-net
       role.kubernetes.io/networking: "1"
+  minReadySeconds: 5
   template:
     metadata:
       labels:
@@ -14330,7 +14330,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.2'
+          image: 'weaveworks/weave-kube:2.6.4'
           ports:
             - name: metrics
               containerPort: 6782
@@ -14377,7 +14377,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.6.2'
+          image: 'weaveworks/weave-npc:2.6.4'
           ports:
             - name: metrics
               containerPort: 6781
@@ -14468,18 +14468,18 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
+  namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
 rules:
   - apiGroups:
       - ''
@@ -14515,14 +14515,14 @@ rules:
       - patch
       - update
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
 roleRef:
   kind: ClusterRole
   name: weave-net
@@ -14532,7 +14532,7 @@ subjects:
     name: weave-net
     namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: weave-net
@@ -14556,7 +14556,7 @@ rules:
     verbs:
       - create
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: weave-net
@@ -14576,10 +14576,10 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
 spec:
   # Wait 5 seconds to let pod connect before rolling next pod
   minReadySeconds: 5
@@ -14627,7 +14627,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.2'
+          image: 'weaveworks/weave-kube:2.6.4'
           ports:
             - name: metrics
               containerPort: 6782
@@ -14674,7 +14674,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.6.2'
+          image: 'weaveworks/weave-npc:2.6.4'
           ports:
             - name: metrics
               containerPort: 6781
