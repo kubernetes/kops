@@ -377,16 +377,6 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 			return string(content), nil
 		},
 
-		"IGSpec": func() (string, error) {
-			spec := make(map[string]interface{})
-
-			content, err := yaml.Marshal(spec)
-			if err != nil {
-				return "", fmt.Errorf("error converting instancegroup spec to yaml for inclusion within bootstrap script: %v", err)
-			}
-			return string(content), nil
-		},
-
 		"CompressUserData": func() *bool {
 			return b.ig.Spec.CompressUserData
 		},

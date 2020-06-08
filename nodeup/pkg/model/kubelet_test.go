@@ -48,7 +48,6 @@ func Test_InstanceGroupKubeletMerge(t *testing.T) {
 	b := &KubeletBuilder{
 		&NodeupModelContext{
 			Cluster:         cluster,
-			InstanceGroup:   instanceGroup,
 			NodeupConfig:    config,
 			NodeupAuxConfig: auxConfig,
 		},
@@ -95,7 +94,6 @@ func TestTaintsApplied(t *testing.T) {
 		b := &KubeletBuilder{
 			&NodeupModelContext{
 				Cluster:         cluster,
-				InstanceGroup:   ig,
 				NodeupConfig:    config,
 				NodeupAuxConfig: auxConfig,
 			},
@@ -242,8 +240,7 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 	if len(model.InstanceGroups) == 0 {
 		// We tolerate this - not all tests need an instance group
 	} else if len(model.InstanceGroups) == 1 {
-		nodeUpModelContext.InstanceGroup = model.InstanceGroups[0]
-		nodeUpModelContext.NodeupConfig, nodeUpModelContext.NodeupAuxConfig = nodeup.NewConfig(model.Cluster, nodeUpModelContext.InstanceGroup)
+		nodeUpModelContext.NodeupConfig, nodeUpModelContext.NodeupAuxConfig = nodeup.NewConfig(model.Cluster, model.InstanceGroups[0])
 	} else {
 		return nil, fmt.Errorf("unexpected number of instance groups in %s, found %d", basedir, len(model.InstanceGroups))
 	}
