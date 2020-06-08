@@ -18,8 +18,8 @@ package model
 
 import (
 	"crypto/x509/pkix"
+	"fmt"
 
-	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -33,7 +33,7 @@ var _ fi.ModelBuilder = &EtcdManagerTLSBuilder{}
 
 // Build is responsible for TLS configuration for etcd-manager
 func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.IsMaster || !b.UseEtcdManager() {
 		return nil
 	}
 
@@ -52,8 +52,7 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 				return err
 			}
 			if cert == nil {
-				klog.Warningf("keypair %q not found, won't configure", keystoreName)
-				continue
+				return fmt.Errorf("keypair %q not found", keystoreName)
 			}
 
 			if err := b.BuildCertificateTask(ctx, keystoreName, d+"/"+fileName+".crt"); err != nil {
