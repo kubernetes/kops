@@ -105,7 +105,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			// Disk based evictions are not detecting the correct disk capacity in Kubernetes 1.19 and are
 			// blocking scheduling by tainting worker nodes with "node.kubernetes.io/disk-pressure:NoSchedule"
 			// TODO: Re-enable once the Kubelet issue is fixed
-			if b.Context.IsKubernetesGTE("1.19") {
+			if b.Context.IsKubernetesLT("1.19") {
 				// Disk based eviction (evict old images)
 				// We don't need to specify both, but it seems harmless / safer
 				evictionHard = append(evictionHard, "nodefs.available<10%")
