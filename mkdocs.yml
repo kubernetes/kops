@@ -2,7 +2,7 @@ site_name: Kubernetes Operations - kops
 # strict: true
 repo_name: 'kubernetes/kops'
 repo_url: 'https://github.com/kubernetes/kops'
-site_url: 'https://kubernetes-kops.netlify.com'
+site_url: 'https://kops.sigs.k8s.io'
 markdown_extensions:
   - admonition
   - codehilite

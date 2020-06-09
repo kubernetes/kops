@@ -1,9 +1,7 @@
 # Vendoring Go dependencies
 
-kops uses [dep](https://github.com/golang/dep) to manage vendored
-dependencies in most versions leading up to kops 1.14.
 kops uses [go mod](https://github.com/golang/go/wiki/Modules) to manage
-vendored dependencies in versions 1.15 and newer.
+vendored dependencies.
 
 ## Prerequisites
 
@@ -11,8 +9,7 @@ The following software must be installed prior to running the
 update commands:
 
 * [bazel](https://github.com/bazelbuild/bazel)
-* [dep](https://github.com/golang/dep) for kops 1.14 or older
-* [go mod](https://github.com/golang/go/wiki/Modules) for kops 1.15 and newer branches (including master)
+* [go mod](https://github.com/golang/go/wiki/Modules)
 * [hg](https://www.mercurial-scm.org/wiki/Download)
 
 ## Adding a dependency to the vendor directory

@@ -141,7 +141,7 @@ Edit your cluster to add `encryptedVolume: true` to each etcd volume:
 
 `kops edit cluster ${CLUSTER_NAME}`
 
-```
+```yaml
 ...
 etcdClusters:
 - etcdMembers:
@@ -171,7 +171,7 @@ Edit your cluster to add `encryptedVolume: true` to each etcd volume:
 
 `kops edit cluster ${CLUSTER_NAME}`
 
-```
+```yaml
 ...
 etcdClusters:
 - etcdMembers:

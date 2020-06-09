@@ -6,7 +6,7 @@ If you download the config spec file on a running cluster that is configured the
 
 Let us say you create your cluster with the following configuration options:
 
-```
+```shell
 export KOPS_STATE_STORE=s3://k8s-us-west
 export CLOUD=aws
 export ZONE="us-west-1a"
@@ -19,7 +19,7 @@ export WORKER_SIZE="m4.large"
 ```
 Next you call the kops command to create the cluster in your terminal:
 
-```
+```shell
 kops create cluster $NAME              \
    --cloud=$CLOUD                      \
    --zones="$ZONE"                     \
