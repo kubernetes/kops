@@ -45,7 +45,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// @step: retrieve the platform ca
-	if err := b.BuildCertificateTask(c, fi.CertificateId_CA, "ca.crt"); err != nil {
+	if err := b.BuildCertificateTask(c, fi.CertificateIDCA, "ca.crt"); err != nil {
 		return err
 	}
 

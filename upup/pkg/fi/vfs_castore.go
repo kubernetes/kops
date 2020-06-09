@@ -586,7 +586,7 @@ func (c *VFSCAStore) loadPrivateKeys(p vfs.Path) (*keyset, error) {
 func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
 	var keys *keyset
 	var err error
-	if id == CertificateId_CA {
+	if id == CertificateIDCA {
 		c.mutex.Lock()
 		defer c.mutex.Unlock()
 

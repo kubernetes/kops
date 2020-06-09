@@ -480,21 +480,21 @@ func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
-	oldCACertPool, err := oldKeyStore.FindCertificatePool(fi.CertificateId_CA)
+	oldCACertPool, err := oldKeyStore.FindCertificatePool(fi.CertificateIDCA)
 	if err != nil {
 		return fmt.Errorf("error reading old CA certs: %v", err)
 	}
 	if oldCACertPool == nil {
-		return fmt.Errorf("cannot find certificate pool %q", fi.CertificateId_CA)
+		return fmt.Errorf("cannot find certificate pool %q", fi.CertificateIDCA)
 	}
 	for _, ca := range oldCACertPool.Secondary {
-		err := newKeyStore.AddCert(fi.CertificateId_CA, ca)
+		err := newKeyStore.AddCert(fi.CertificateIDCA, ca)
 		if err != nil {
 			return fmt.Errorf("error importing old CA certs: %v", err)
 		}
 	}
 	if oldCACertPool.Primary != nil {
-		err := newKeyStore.AddCert(fi.CertificateId_CA, oldCACertPool.Primary)
+		err := newKeyStore.AddCert(fi.CertificateIDCA, oldCACertPool.Primary)
 		if err != nil {
 			return fmt.Errorf("error importing old CA certs: %v", err)
 		}

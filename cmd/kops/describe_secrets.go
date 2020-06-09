@@ -119,7 +119,7 @@ func (c *DescribeSecretsCommand) Run(ctx context.Context, args []string) error {
 	for _, i := range items {
 		fmt.Fprintf(w, "Name:\t%s\n", i.Name)
 		fmt.Fprintf(w, "Type:\t%s\n", i.Type)
-		fmt.Fprintf(w, "Id:\t%s\n", i.Id)
+		fmt.Fprintf(w, "Id:\t%s\n", i.ID)
 
 		switch i.Type {
 		case kops.SecretTypeKeypair:

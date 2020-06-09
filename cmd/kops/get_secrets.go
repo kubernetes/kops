@@ -107,7 +107,7 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 				item := &fi.KeystoreItem{
 					Name: keyset.Name,
 					Type: keyset.Spec.Type,
-					Id:   key.Id,
+					ID:   key.Id,
 				}
 				items = append(items, item)
 			}
@@ -146,7 +146,7 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 			}
 			item := &fi.KeystoreItem{
 				Name: l[i].Name,
-				Id:   id,
+				ID:   id,
 				Type: SecretTypeSSHPublicKey,
 			}
 			if l[i].Spec.PublicKey != "" {
@@ -226,7 +226,7 @@ func RunGetSecrets(ctx context.Context, options *GetSecretsOptions, args []strin
 			return i.Name
 		})
 		t.AddColumn("ID", func(i *fi.KeystoreItem) string {
-			return i.Id
+			return i.ID
 		})
 		t.AddColumn("TYPE", func(i *fi.KeystoreItem) string {
 			return string(i.Type)

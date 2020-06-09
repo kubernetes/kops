@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	defaultKopsBaseUrl = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
+	defaultKopsBaseURL = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
 
 	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
 	defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
@@ -54,7 +54,7 @@ var defaultKopsMirrors = []mirror{
 	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},
 }
 
-var kopsBaseUrl *url.URL
+var kopsBaseURL *url.URL
 
 // nodeUpAsset caches the nodeup download urls/hash
 var nodeUpAsset *MirroredAsset
@@ -65,33 +65,33 @@ var protokubeLocation *url.URL
 // protokubeHash caches the hash for protokube
 var protokubeHash *hashing.Hash
 
-// BaseUrl returns the base url for the distribution of kops - in particular for nodeup & docker images
-func BaseUrl() (*url.URL, error) {
+// BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
+func BaseURL() (*url.URL, error) {
 	// returning cached value
 	// Avoid repeated logging
-	if kopsBaseUrl != nil {
-		klog.V(8).Infof("Using cached kopsBaseUrl url: %q", kopsBaseUrl.String())
-		return copyBaseURL(kopsBaseUrl)
+	if kopsBaseURL != nil {
+		klog.V(8).Infof("Using cached kopsBaseUrl url: %q", kopsBaseURL.String())
+		return copyBaseURL(kopsBaseURL)
 	}
 
-	baseUrlString := os.Getenv("KOPS_BASE_URL")
+	baseURLString := os.Getenv("KOPS_BASE_URL")
 	var err error
-	if baseUrlString == "" {
-		baseUrlString = fmt.Sprintf(defaultKopsBaseUrl, kops.Version)
-		klog.V(8).Infof("Using default base url: %q", baseUrlString)
-		kopsBaseUrl, err = url.Parse(baseUrlString)
+	if baseURLString == "" {
+		baseURLString = fmt.Sprintf(defaultKopsBaseURL, kops.Version)
+		klog.V(8).Infof("Using default base url: %q", baseURLString)
+		kopsBaseURL, err = url.Parse(baseURLString)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse %q as a url: %v", baseUrlString, err)
+			return nil, fmt.Errorf("unable to parse %q as a url: %v", baseURLString, err)
 		}
 	} else {
-		kopsBaseUrl, err = url.Parse(baseUrlString)
+		kopsBaseURL, err = url.Parse(baseURLString)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse env var KOPS_BASE_URL %q as a url: %v", baseUrlString, err)
+			return nil, fmt.Errorf("unable to parse env var KOPS_BASE_URL %q as a url: %v", baseURLString, err)
 		}
-		klog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseUrlString)
+		klog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseURLString)
 	}
 
-	return copyBaseURL(kopsBaseUrl)
+	return copyBaseURL(kopsBaseURL)
 }
 
 // copyBaseURL makes a copy of the base url or the path.Joins can append stuff to this URL
@@ -109,7 +109,7 @@ func SetKopsAssetsLocations(assetsBuilder *assets.AssetBuilder) error {
 	for _, s := range []string{
 		"linux/amd64/kops", "darwin/amd64/kops",
 	} {
-		_, _, err := KopsFileUrl(s, assetsBuilder)
+		_, _, err := KopsFileURL(s, assetsBuilder)
 		if err != nil {
 			return err
 		}
@@ -130,7 +130,7 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder) (*MirroredAsset, error) {
 	var u *url.URL
 	var hash *hashing.Hash
 	if env == "" {
-		u, hash, err = KopsFileUrl("linux/amd64/nodeup", assetsBuilder)
+		u, hash, err = KopsFileURL("linux/amd64/nodeup", assetsBuilder)
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +171,7 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 	env := os.Getenv("PROTOKUBE_IMAGE")
 	var err error
 	if env == "" {
-		protokubeLocation, protokubeHash, err = KopsFileUrl("images/protokube.tar.gz", assetsBuilder)
+		protokubeLocation, protokubeHash, err = KopsFileURL("images/protokube.tar.gz", assetsBuilder)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -192,21 +192,21 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 	return protokubeLocation, protokubeHash, nil
 }
 
-// KopsFileUrl returns the base url for the distribution of kops - in particular for nodeup & docker images
-func KopsFileUrl(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
-	base, err := BaseUrl()
+// KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images
+func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
+	base, err := BaseURL()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	base.Path = path.Join(base.Path, file)
 
-	fileUrl, hash, err := assetBuilder.RemapFileAndSHA(base)
+	fileURL, hash, err := assetBuilder.RemapFileAndSHA(base)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return fileUrl, hash, nil
+	return fileURL, hash, nil
 }
 
 type MirroredAsset struct {
@@ -216,9 +216,9 @@ type MirroredAsset struct {
 
 // BuildMirroredAsset checks to see if this is a file under the standard base location, and if so constructs some mirror locations
 func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
-	baseUrlString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
-	if !strings.HasSuffix(baseUrlString, "/") {
-		baseUrlString += "/"
+	baseURLString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
+	if !strings.HasSuffix(baseURLString, "/") {
+		baseURLString += "/"
 	}
 
 	a := &MirroredAsset{
@@ -229,11 +229,11 @@ func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
 	a.Locations = []string{urlString}
 
 	// Look at mirrors
-	if strings.HasPrefix(urlString, baseUrlString) {
+	if strings.HasPrefix(urlString, baseURLString) {
 		if hash == nil {
 			klog.Warningf("not using mirrors for asset %s as it does not have a known hash", u.String())
 		} else {
-			suffix := strings.TrimPrefix(urlString, baseUrlString)
+			suffix := strings.TrimPrefix(urlString, baseURLString)
 			// This is under our base url - add our well-known mirrors
 			a.Locations = []string{}
 			for _, m := range defaultKopsMirrors {

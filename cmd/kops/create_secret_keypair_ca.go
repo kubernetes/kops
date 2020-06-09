@@ -133,7 +133,7 @@ func RunCreateSecretCaCert(ctx context.Context, f *util.Factory, out io.Writer, 
 		return fmt.Errorf("error loading certificate %q: %v", options.CaCertPath, err)
 	}
 
-	err = keyStore.StoreKeypair(fi.CertificateId_CA, cert, privateKey)
+	err = keyStore.StoreKeypair(fi.CertificateIDCA, cert, privateKey)
 	if err != nil {
 		return fmt.Errorf("error storing user provided keys %q %q: %v", options.CaCertPath, options.CaPrivateKeyPath, err)
 	}

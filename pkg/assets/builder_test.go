@@ -136,13 +136,13 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToImagesWithTags(t *testing.T
 func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *testing.T) {
 	builder := buildAssetBuilder(t)
 
-	mirrorUrl := "proxy.example.com"
+	mirrorURL := "proxy.example.com"
 	image := "kube-apiserver:1.2.3"
 	expected := "proxy.example.com/kube-apiserver:1.2.3"
 	version, _ := util.ParseKubernetesVersion("1.10")
 
 	builder.KubernetesVersion = *version
-	builder.AssetsLocation.ContainerRegistry = &mirrorUrl
+	builder.AssetsLocation.ContainerRegistry = &mirrorURL
 
 	remapped := image
 	iterations := make([]map[int]int, 2)
