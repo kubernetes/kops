@@ -24,7 +24,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/pkg/urls"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -51,9 +50,9 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 		if etcdCluster.Backups == nil {
 			etcdCluster.Backups = &kops.EtcdBackupSpec{}
 		}
+
 		if etcdCluster.Backups.BackupStore == "" {
-			base := clusterSpec.ConfigBase
-			etcdCluster.Backups.BackupStore = urls.Join(base, "backups", "etcd", etcdCluster.Name)
+			etcdCluster.Backups.BackupStore = clusterSpec.ConfigBase
 		}
 
 		if etcdCluster.Version == "" {

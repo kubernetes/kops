@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/urls"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -100,6 +101,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&fitasks.ManagedFile{
 			Contents:  fi.WrapResource(fi.NewBytesResource(d)),
 			Lifecycle: b.Lifecycle,
+			Base:      fi.String(backupStore),
 			// TODO: We need this to match the backup base (currently)
 			Location: fi.String("backups/etcd/" + etcdCluster.Name + "/control/etcd-cluster-spec"),
 			Name:     fi.String("etcd-cluster-spec-" + name),
@@ -300,6 +302,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 
 	if backupStore == "" {
 		return nil, fmt.Errorf("backupStore must be set for use with etcd-manager")
+	}
+	// We need to ensure that the backupStore passed to etcd-manager contains
+	// the suffix "backups/etcd/{etcd-cluster-name}" as this is hardcoded
+	// in pkg/model/components/etcdmanager/model.go when generating etcd-cluster-spec
+	backupsSuffix := urls.Join("backups", "etcd", etcdCluster.Name)
+	if !strings.HasSuffix(backupStore, backupsSuffix) {
+		backupStore = urls.Join(backupStore, backupsSuffix)
 	}
 
 	name := clusterName

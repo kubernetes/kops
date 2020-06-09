@@ -43,6 +43,7 @@ oldFormat: false
 subject: cn=etcd-peers-ca-main
 type: ca
 ---
+Base: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
 Contents:
   Name: ""
   Resource: |-
@@ -53,6 +54,7 @@ Lifecycle: null
 Location: backups/etcd/events/control/etcd-cluster-spec
 Name: etcd-cluster-spec-events
 ---
+Base: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
 Contents:
   Name: ""
   Resource: |-
@@ -63,6 +65,7 @@ Lifecycle: null
 Location: backups/etcd/main/control/etcd-cluster-spec
 Name: etcd-cluster-spec-main
 ---
+Base: null
 Contents:
   Name: ""
   Resource: |
@@ -82,7 +85,7 @@ Contents:
         - /bin/sh
         - -c
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-          --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events
+          --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events/backups/etcd/events
           --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true
           --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3997
           --insecure=false --peer-urls=https://__name__:2381 --quarantine-client-urls=https://__name__:3995
@@ -131,6 +134,7 @@ Lifecycle: null
 Location: manifests/etcd/events.yaml
 Name: manifests-etcdmanager-events
 ---
+Base: null
 Contents:
   Name: ""
   Resource: |
@@ -150,7 +154,7 @@ Contents:
         - /bin/sh
         - -c
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
-          --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main
+          --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main/backups/etcd/main
           --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
           --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3996
           --insecure=false --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
