@@ -178,13 +178,17 @@ type awsCloudImplementation struct {
 
 	regionDelayers *RegionDelayers
 
-	instanceTypes      map[string]*ec2.InstanceTypeInfo
-	instanceTypesMutex sync.Mutex
+	instanceTypes *instanceTypes
 }
 
 type RegionDelayers struct {
 	mutex      sync.Mutex
 	delayerMap map[string]*k8s_aws.CrossRequestRetryDelay
+}
+
+type instanceTypes struct {
+	mutex   sync.Mutex
+	typeMap map[string]*ec2.InstanceTypeInfo
 }
 
 var _ fi.Cloud = &awsCloudImplementation{}
@@ -206,6 +210,9 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 			region: region,
 			regionDelayers: &RegionDelayers{
 				delayerMap: make(map[string]*k8s_aws.CrossRequestRetryDelay),
+			},
+			instanceTypes: &instanceTypes{
+				typeMap: make(map[string]*ec2.InstanceTypeInfo),
 			},
 		}
 
@@ -288,7 +295,6 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 				return c, err
 			}
 		}
-		c.instanceTypes = make(map[string]*ec2.InstanceTypeInfo)
 
 		awsCloudInstances[region] = c
 		raw = c
@@ -1547,17 +1553,17 @@ func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (set
 
 // DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
 func (c *awsCloudImplementation) DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error) {
-	if info, ok := c.instanceTypes[instanceType]; ok {
+	if info, ok := c.instanceTypes.typeMap[instanceType]; ok {
 		return info, nil
 	}
-	c.instanceTypesMutex.Lock()
-	defer c.instanceTypesMutex.Unlock()
+	c.instanceTypes.mutex.Lock()
+	defer c.instanceTypes.mutex.Unlock()
 
 	info, err := describeInstanceType(c, instanceType)
 	if err != nil {
 		return nil, err
 	}
-	c.instanceTypes[instanceType] = info
+	c.instanceTypes.typeMap[instanceType] = info
 	return info, nil
 }
 
