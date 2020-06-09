@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -47,9 +48,18 @@ func (b *LyftVPCBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	assetNames := []string{"loopback", "cni-ipvlan-vpc-k8s-ipam", "cni-ipvlan-vpc-k8s-ipvlan", "cni-ipvlan-vpc-k8s-tool", "cni-ipvlan-vpc-k8s-unnumbered-ptp"}
+	assets := []string{
+		"cni-ipvlan-vpc-k8s-ipam",
+		"cni-ipvlan-vpc-k8s-ipvlan",
+		"cni-ipvlan-vpc-k8s-tool",
+		"cni-ipvlan-vpc-k8s-unnumbered-ptp",
+	}
 
-	return b.AddCNIBinAssets(c, assetNames)
+	if err := b.AddCNIBinAssets(c, assets); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func LoadLyftTemplateFunctions(templateFunctions template.FuncMap, cluster *api.Cluster) {
