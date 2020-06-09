@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509/pkix"
 	"fmt"
 	"strconv"
 
@@ -85,7 +84,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig := b.BuildIssuedKubeconfig("kube-scheduler", pkix.Name{CommonName: rbac.KubeScheduler}, c)
+		kubeconfig := b.BuildIssuedKubeconfig("kube-scheduler", nodetasks.PKIXName{CommonName: rbac.KubeScheduler}, c)
 
 		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-scheduler/kubeconfig",
