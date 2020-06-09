@@ -6,7 +6,7 @@ To add an option for Cilium to use the ENI IPAM mode.
 
 We want to make this an option, so we need to add a field to CiliumNetworkingSpec:
 
-```
+```go
 	// Ipam specifies the IP address allocation mode to use.
 	// Possible values are "crd" and "eni".
 	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
@@ -33,7 +33,7 @@ We should add some validation that the value entered is valid.  We only accept `
 
 Validation is done in validation.go, and is fairly simple - we just add an error to a slice if something is not valid:
 
-```
+```go
 	if v.Ipam != "" {
 		// "azure" not supported by kops
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni"})...)
@@ -56,7 +56,7 @@ one file per range of Kubernetes versions. These files are referenced by upup/pk
 
 First we add to the `cilium-config` ConfigMap:
 
-```
+```go
   {{ with .Ipam }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
@@ -69,7 +69,7 @@ First we add to the `cilium-config` ConfigMap:
 
 Then we conditionally move cilium-operator to masters:
 
-```
+```go
       {{ if eq .Ipam "eni" }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
@@ -95,7 +95,7 @@ passes the local IP address to `kubelet` when the `UsesSecondaryIP()` receiver o
 
 So we modify `UsesSecondaryIP()` to also return `true` when Cilium is in ENI mode:
 
-```
+```go
 return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil || c.Cluster.Spec.Networking.LyftVPC != nil ||
     (c.Cluster.Spec.Networking.Cilium != nil && c.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni)
 ```
@@ -105,13 +105,13 @@ return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.Us
 When Cilium is in ENI mode, `cilium-operator` on the master nodes needs additional IAM permissions. The masters' IAM permissions
 are built by `BuildAWSPolicyMaster()` in pkg/model/iam/iam_builder.go:
 
-```
+```go
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.Ipam == kops.CiliumIpamEni {
 		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
 	}
 ```
 
-```
+```go
 func addCiliumEniPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
 	if legacyIAM {
 		// Legacy IAM provides ec2:*, so no additional permissions required
@@ -146,7 +146,7 @@ Prior to testing this for real, it can be handy to write a few unit tests.
 
 We should test that validation works as we expect (in validation_test.go):
 
-```
+```go
 func Test_Validate_Cilium(t *testing.T) {
 	grid := []struct {
 		Cilium         kops.CiliumNetworkingSpec
@@ -273,7 +273,7 @@ export KOPSCONTROLLER_IMAGE=${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_VERSION
 ## Using the feature
 
 Users would simply `kops edit cluster`, and add a value like:
-```
+```yaml
   spec:
     networking:
       cilium:

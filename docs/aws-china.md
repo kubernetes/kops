@@ -27,7 +27,7 @@ Default output format [None]:
 
 And export it correctly.
 
-```console
+```shell
 export AWS_REGION=$(aws configure get region)
 ```
 
@@ -43,7 +43,7 @@ Thanks to `gossip`, this section can be skipped safely as well.
 
 Since we are provisioning a cluster in AWS China Region, we need to create a dedicated S3 bucket in AWS China Region.
 
-```console
+```shell
 aws s3api create-bucket --bucket prefix-example-com-state-store --create-bucket-configuration LocationConstraint=$AWS_REGION
 ```
 
@@ -63,7 +63,7 @@ First, launch an instance in a private subnet which accesses the internet fast a
 
 Because the instance launched in a private subnet, we need to ensure it can be connected by using the private ip via a VPN or a bastion.
 
-```console
+```shell
 SUBNET_ID=<subnet id> # a private subnet
 SECURITY_GROUP_ID=<security group id>
 KEY_NAME=<key pair name on aws>
@@ -75,7 +75,7 @@ aws ec2 create-tags --resources ${INSTANCE_ID} --tags Key=k8s.io/role/imagebuild
 
 Now follow the documentation of [ImageBuilder][4] in `kube-deploy` to build the image.
 
-```console
+```shell
 go get k8s.io/kube-deploy/imagebuilder
 cd ${GOPATH}/src/k8s.io/kube-deploy/imagebuilder
 
@@ -103,7 +103,7 @@ No matter how to build the AMI, we get an AMI finally, e.g. `k8s-1.9-debian-jess
 
 Set up a few environment variables.
 
-```console
+```shell
 export NAME=example.k8s.local
 export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 ```
@@ -112,13 +112,13 @@ export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 
 We will need to note which availability zones are available to us. AWS China (Beijing) Region only has two availability zones. It will have [the same problem][6], like other regions having less than three AZs, that there is no true HA support in two AZs. You can [add more master nodes](#add-more-master-nodes) to improve the reliability in one AZ.
 
-```console
+```shell
 aws ec2 describe-availability-zones
 ```
 
 Below is a `create cluster` command which will create a complete internal cluster [in an existing VPC](run_in_existing_vpc.md). The below command will generate a cluster configuration, but not start building it. Make sure that you have generated SSH key pair before creating the cluster.
 
-```console
+```shell
 VPC_ID=<vpc id>
 VPC_NETWORK_CIDR=<vpc network cidr> # e.g. 172.30.0.0/16
 AMI=<owner id/ami name> # e.g. 123456890/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-07-18
@@ -139,7 +139,7 @@ kops create cluster \
 
 Now we have a cluster configuration, we adjust the subnet config to reuse [shared subnets](run_in_existing_vpc.md#shared-subnets) by editing the description.
 
-```console
+```shell
 kops edit cluster $NAME
 ```
 
@@ -183,14 +183,14 @@ Please note that this mirror *MIGHT BE* not suitable for some cases. It's can be
 
 To achieve this, we can add more parameters to `kops create cluster`.
 
-```console
+```shell
   --master-zones ${AWS_REGION}a --master-count 3 \
   --zones ${AWS_REGION}a --node-count 2 \
 ```
 
 #### In two AZs
 
-```console
+```shell
   --master-zones ${AWS_REGION}a,${AWS_REGION}b --master-count 3 \
   --zones ${AWS_REGION}a,${AWS_REGION}b --node-count 2 \
 ```
@@ -201,7 +201,7 @@ To achieve this, we can add more parameters to `kops create cluster`.
 
 Here is a naive, uncompleted attempt to provision a cluster in a way minimizing the requirements to the internet because even with some kind of proxies or VPN it's still not that fast and it's always much more expensive than downloading from S3.
 
-```console
+```shell
 ## Setup vars
 
 KUBERNETES_VERSION=$(curl -fsSL --retry 5 "https://dl.k8s.io/release/stable.txt")
@@ -276,7 +276,7 @@ aws configure set default.s3.multipart_threshold $AWS_S3_DEFAULT_MULTIPART_THRES
 
 When create the cluster, add these parameters to the command line.
 
-```console
+```shell
   --kubernetes-version https://s3.cn-north-1.amazonaws.com.cn/$ASSET_BUCKET/kubernetes/release/$KUBERNETES_VERSION
 ```
 

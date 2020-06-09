@@ -27,7 +27,7 @@ example:
 Note: it is currently not possible to delete secrets from the keystore that have the type "Secret"
 
 ### adding ssh credential from spec file
-```bash
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: SSHCredential
 metadata:

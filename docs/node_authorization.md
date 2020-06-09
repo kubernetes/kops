@@ -35,7 +35,7 @@ Assuming all the conditions are met a secret token is generated and returned to 
 
 Enabling the node authorization service is as follows; firstly you must enable the feature flag as node authorization is still experimental; export KOPS_FEATURE_FLAGS=EnableNodeAuthorization
 
-```
+```yaml
 # in the cluster spec
 nodeAuthorization:
   # enable the service under the node authorization section, please review the settings in the components.go

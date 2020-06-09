@@ -35,8 +35,9 @@ Sources:
 ### Check admission plugins
 
 Sources:
+
 * https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
-* https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/config-default.sh)
+* https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/config-default.sh
 
 ### Check for new deprecated flags
 

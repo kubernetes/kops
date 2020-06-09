@@ -145,7 +145,7 @@ which would end up in a drop-in file on nodes of the instance group in question.
 
 ### Example
 
-```
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:

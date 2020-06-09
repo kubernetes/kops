@@ -17,7 +17,7 @@ An example:
 
 `kops edit ig nodes`
 
-```
+```yaml
 ...
 spec:
   cloudLabels:
@@ -28,7 +28,7 @@ spec:
 
 `kops edit cluster`
 
-```
+```yaml
 ...
 spec:
   cloudLabels:
@@ -48,7 +48,7 @@ An example:
 
 `kops edit ig nodes`
 
-```
+```yaml
 ...
 spec:
   nodeLabels:
