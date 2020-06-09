@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,20 +21,26 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// WeaveBuilder installs weave
-type WeaveBuilder struct {
+// CanalBuilder writes Canal's assets
+type CanalBuilder struct {
 	*model.NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &WeaveBuilder{}
+var _ fi.ModelBuilder = &CanalBuilder{}
 
-// Build is responsible for configuring the weave
-func (b *WeaveBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Cluster.Spec.Networking.Weave == nil {
+// Build is responsible for configuring the network cni
+func (b *CanalBuilder) Build(c *fi.ModelBuilderContext) error {
+	networking := b.Cluster.Spec.Networking
+
+	if networking.Canal == nil {
 		return nil
 	}
 
-	b.AddCNIBinAssets(c, []string{"portmap"})
+	if err := b.AddCNIBinAssets(c, []string{"flannel"}); err != nil {
+		return err
+	}
+
+	buildFlannelTxChecksumOffloadDisableService(c)
 
 	return nil
 }
