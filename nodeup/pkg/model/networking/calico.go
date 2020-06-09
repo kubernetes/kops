@@ -32,8 +32,14 @@ var _ fi.ModelBuilder = &CalicoBuilder{}
 
 // Build is responsible for performing setup for CNIs that need etcd TLS support
 func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Cluster.Spec.Networking.Calico == nil {
+	networking := b.Cluster.Spec.Networking
+
+	if networking.Calico == nil {
 		return nil
+	}
+
+	if err := b.AddCNIBinAssets(c, []string{"flannel"}); err != nil {
+		return err
 	}
 
 	// @check if tls is enabled and if so, we need to download the client certificates
