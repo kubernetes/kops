@@ -15,10 +15,11 @@ markdown_extensions:
       permalink: ' ¶'
 theme:
   name: material
-  feature:
-    tabs: true
-  logo:
-    icon: 'public'   # globe icon
+  features:
+    - tabs
+  icon:
+    logo: 'material/earth'
+  favicon: 'img/logo-notext.svg'
   palette:
     primary: 'teal'
     accent: 'green'
