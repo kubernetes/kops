@@ -178,7 +178,8 @@ type awsCloudImplementation struct {
 
 	regionDelayers *RegionDelayers
 
-	instanceTypes map[string]*ec2.InstanceTypeInfo
+	instanceTypes      map[string]*ec2.InstanceTypeInfo
+	instanceTypesMutex sync.Mutex
 }
 
 type RegionDelayers struct {
@@ -1549,6 +1550,9 @@ func (c *awsCloudImplementation) DescribeInstanceType(instanceType string) (*ec2
 	if info, ok := c.instanceTypes[instanceType]; ok {
 		return info, nil
 	}
+	c.instanceTypesMutex.Lock()
+	defer c.instanceTypesMutex.Unlock()
+
 	info, err := describeInstanceType(c, instanceType)
 	if err != nil {
 		return nil, err
