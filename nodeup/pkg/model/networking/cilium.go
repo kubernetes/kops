@@ -17,7 +17,6 @@ limitations under the License.
 package networking
 
 import (
-	"crypto/x509/pkix"
 	"fmt"
 
 	"golang.org/x/sys/unix"
@@ -128,7 +127,7 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		Name:   name,
 		Signer: "etcd-clients-ca-cilium",
 		Type:   "client",
-		Subject: pkix.Name{
+		Subject: nodetasks.PKIXName{
 			CommonName: "cilium",
 		},
 	}

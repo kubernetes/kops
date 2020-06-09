@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509/pkix"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -86,7 +85,7 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.ModelBuilderCont
 		Name:   id,
 		Signer: fi.CertificateIDCA,
 		Type:   "client",
-		Subject: pkix.Name{
+		Subject: nodetasks.PKIXName{
 			CommonName: id,
 		},
 	}
