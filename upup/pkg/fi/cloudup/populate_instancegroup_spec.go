@@ -47,6 +47,7 @@ const (
 	defaultALINodeImage = "centos_7_04_64_20G_alibase_201701015.vhd"
 )
 
+// TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
 var awsDedicatedInstanceExceptions = map[string]bool{
 	"t2.nano":   true,
 	"t2.micro":  true,
@@ -60,7 +61,7 @@ var awsDedicatedInstanceExceptions = map[string]bool{
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, channel *kops.Channel) (*kops.InstanceGroup, error) {
 	var err error
-	err = validation.ValidateInstanceGroup(input).ToAggregate()
+	err = validation.ValidateInstanceGroup(input, nil).ToAggregate()
 	if err != nil {
 		return nil, err
 	}

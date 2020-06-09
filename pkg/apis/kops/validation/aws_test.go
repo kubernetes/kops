@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
@@ -143,6 +144,7 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 			ExpectedErrors: []string{},
 		},
 	}
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	for _, g := range grid {
 		ig := &kops.InstanceGroup{
 			ObjectMeta: v1.ObjectMeta{
@@ -150,7 +152,7 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 			},
 			Spec: g.Input,
 		}
-		errs := awsValidateInstanceGroup(ig)
+		errs := awsValidateInstanceGroup(ig, cloud)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}

@@ -61,7 +61,7 @@ func NewInstanceGroupMirror(cluster *kopsapi.Cluster, configBase vfs.Path) Insta
 	}
 	r.init(kind, configBase.Join("instancegroup"), StoreVersion)
 	r.validate = func(o runtime.Object) error {
-		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup)).ToAggregate()
+		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup), nil).ToAggregate()
 	}
 	return r
 }
@@ -80,7 +80,7 @@ func newInstanceGroupVFS(c *VFSClientset, cluster *kopsapi.Cluster) *InstanceGro
 	}
 	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
 	r.validate = func(o runtime.Object) error {
-		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup)).ToAggregate()
+		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup), nil).ToAggregate()
 	}
 	return r
 }

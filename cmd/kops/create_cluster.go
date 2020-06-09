@@ -1231,7 +1231,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	strict := false
-	err = validation.DeepValidate(cluster, instanceGroups, strict)
+	err = validation.DeepValidate(cluster, instanceGroups, strict, nil)
 	if err != nil {
 		return err
 	}
@@ -1255,7 +1255,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 	}
 
-	err = validation.DeepValidate(fullCluster, fullInstanceGroups, true)
+	err = validation.DeepValidate(fullCluster, fullInstanceGroups, true, nil)
 	if err != nil {
 		return err
 	}
