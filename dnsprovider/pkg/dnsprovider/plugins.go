@@ -35,9 +35,9 @@ type Factory func(config io.Reader) (Interface, error)
 var providersMutex sync.Mutex
 var providers = make(map[string]Factory)
 
-// RegisterDnsProvider registers a dnsprovider.Factory by name.  This
+// RegisterDNSProvider registers a dnsprovider.Factory by name.  This
 // is expected to happen during startup.
-func RegisterDnsProvider(name string, cloud Factory) {
+func RegisterDNSProvider(name string, cloud Factory) {
 	providersMutex.Lock()
 	defer providersMutex.Unlock()
 	if _, found := providers[name]; found {

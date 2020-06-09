@@ -58,15 +58,15 @@ func TestRoundTrip(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		actualJson, err := json.Marshal(g.Value)
+		actualJSON, err := json.Marshal(g.Value)
 		if err != nil {
 			t.Errorf("error encoding StringOrSlice %s to json: %v", g.Value, err)
 		}
 
-		klog.V(8).Infof("marshalled %s -> %q", g.Value, actualJson)
+		klog.V(8).Infof("marshalled %s -> %q", g.Value, actualJSON)
 
-		if g.JSON != string(actualJson) {
-			t.Errorf("Unexpected JSON encoding.  Actual=%q, Expected=%q", string(actualJson), g.JSON)
+		if g.JSON != string(actualJSON) {
+			t.Errorf("Unexpected JSON encoding.  Actual=%q, Expected=%q", string(actualJSON), g.JSON)
 		}
 
 		parsed := &StringOrSlice{}

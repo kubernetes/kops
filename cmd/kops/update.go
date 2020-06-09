@@ -35,13 +35,13 @@ var (
 		kops update cluster k8s.cluster.site --yes --state=s3://kops-state-1234
 	`))
 
-	update_short = i18n.T("Update a cluster.")
+	updateShort = i18n.T("Update a cluster.")
 )
 
 func NewCmdUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
-		Short:   update_short,
+		Short:   updateShort,
 		Long:    updateLong,
 		Example: updateExample,
 	}

@@ -427,9 +427,9 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
 	if isMaster {
-		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
+		reflectutils.JSONMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
-		reflectutils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
+		reflectutils.JSONMergeStruct(c, b.Cluster.Spec.Kubelet)
 	}
 
 	// check if we are using secure kubelet <-> api settings
@@ -489,7 +489,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	if b.InstanceGroup.Spec.Kubelet != nil {
-		reflectutils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
+		reflectutils.JSONMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
 	// Use --register-with-taints
@@ -552,7 +552,7 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error)
 	}
 
 	req := &pki.IssueCertRequest{
-		Signer: fi.CertificateId_CA,
+		Signer: fi.CertificateIDCA,
 		Type:   "client",
 		Subject: pkix.Name{
 			CommonName:   fmt.Sprintf("system:node:%s", nodeName),

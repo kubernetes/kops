@@ -40,7 +40,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// TODO: Only create the CA via this task
 	defaultCA := &fitasks.Keypair{
-		Name:      fi.String(fi.CertificateId_CA),
+		Name:      fi.String(fi.CertificateIDCA),
 		Lifecycle: b.Lifecycle,
 		Subject:   "cn=kubernetes",
 		Type:      "ca",

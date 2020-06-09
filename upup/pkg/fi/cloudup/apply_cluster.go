@@ -636,10 +636,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 					KopsModelContext: modelContext,
 				}
 
-				storageAclLifecycle := securityLifecycle
-				if storageAclLifecycle != fi.LifecycleIgnore {
+				storageACLLifecycle := securityLifecycle
+				if storageACLLifecycle != fi.LifecycleIgnore {
 					// This is a best-effort permissions fix
-					storageAclLifecycle = fi.LifecycleWarnIfInsufficientAccess
+					storageACLLifecycle = fi.LifecycleWarnIfInsufficientAccess
 				}
 
 				l.Builders = append(l.Builders,
@@ -652,7 +652,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				)
 
 				l.Builders = append(l.Builders,
-					&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
+					&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageACLLifecycle},
 				)
 
 			case kops.CloudProviderALI:
@@ -1031,7 +1031,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		klog.Warningf("unable to parse kops version %q", kopsVersion)
 	} else {
 		tooNewVersion := kopsVersion
-		tooNewVersion.Minor += 1
+		tooNewVersion.Minor++
 		tooNewVersion.Pre = nil
 		tooNewVersion.Build = nil
 		if util.IsKubernetesGTE(tooNewVersion.String(), *parsed) {

@@ -424,7 +424,7 @@ func (x *ImportCluster) ImportAWSCluster(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = keyStore.AddCert(fi.CertificateId_CA, caCert)
+	err = keyStore.AddCert(fi.CertificateIDCA, caCert)
 	if err != nil {
 		return err
 	}

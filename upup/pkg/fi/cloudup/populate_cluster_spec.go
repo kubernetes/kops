@@ -94,7 +94,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &kopsapi.Cluster{}
 
-	reflectutils.JsonMergeStruct(cluster, c.InputCluster)
+	reflectutils.JSONMergeStruct(cluster, c.InputCluster)
 
 	err := c.assignSubnets(cluster)
 	if err != nil {
