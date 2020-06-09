@@ -452,8 +452,16 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 			instanceTypeName = strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0]
 		}
 
+		region, err := awsup.FindRegion(b.Cluster)
+		if err != nil {
+			return nil, err
+		}
+		awsCloud, err := awsup.NewAWSCloud(region, nil)
+		if err != nil {
+			return nil, err
+		}
 		// Get the instance type's detailed information.
-		instanceType, err := awsup.GetMachineTypeInfo(instanceTypeName)
+		instanceType, err := awsup.GetMachineTypeInfo(awsCloud, instanceTypeName)
 		if err != nil {
 			return nil, err
 		}

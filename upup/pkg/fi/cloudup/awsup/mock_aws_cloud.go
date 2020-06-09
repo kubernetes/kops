@@ -270,3 +270,33 @@ func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Insta
 		return "", fmt.Errorf("MockAWSCloud DefaultInstanceType does not handle %s", ig.Spec.Role)
 	}
 }
+
+// DescribeInstanceType calls ec2.DescribeInstanceType to get information for a particular instance type
+func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceTypeInfo, error) {
+	if instanceType == "t2.invalidType" {
+		return nil, fmt.Errorf("invalid instance type specified: t2.invalidType")
+	}
+	info := &ec2.InstanceTypeInfo{
+		NetworkInfo: &ec2.NetworkInfo{
+			MaximumNetworkInterfaces:  aws.Int64(1),
+			Ipv4AddressesPerInterface: aws.Int64(1),
+		},
+		MemoryInfo: &ec2.MemoryInfo{
+			SizeInMiB: aws.Int64(1024),
+		},
+		VCpuInfo: &ec2.VCpuInfo{
+			DefaultVCpus: aws.Int64(2),
+		},
+	}
+	if instanceType == "m3.medium" {
+		info.InstanceStorageInfo = &ec2.InstanceStorageInfo{
+			Disks: []*ec2.DiskInfo{
+				{
+					Count:    aws.Int64(1),
+					SizeInGB: aws.Int64(1024),
+				},
+			},
+		}
+	}
+	return info, nil
+}

@@ -217,7 +217,7 @@ func TestValidBootDevice(t *testing.T) {
 				RootVolumeType: fi.String(g.volumeType),
 			},
 		}
-		errs := CrossValidateInstanceGroup(ig, cluster)
+		errs := CrossValidateInstanceGroup(ig, cluster, nil)
 		testErrors(t, g.volumeType, errs, g.expected)
 	}
 }
