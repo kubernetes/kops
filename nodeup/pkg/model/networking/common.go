@@ -18,25 +18,28 @@ package networking
 
 import (
 	"k8s.io/kops/nodeup/pkg/model"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// KubenetBuilder installs Kubenet networking provider
-type KubenetBuilder struct {
+// CommonBuilder runs common tasks
+type CommonBuilder struct {
 	*model.NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &KubenetBuilder{}
+var _ fi.ModelBuilder = &CommonBuilder{}
 
-// Build is responsible for configuring the kube-router
-func (b *KubenetBuilder) Build(c *fi.ModelBuilderContext) error {
-	usesKubenet := components.UsesKubenet(b.Cluster.Spec.Networking)
-	if !usesKubenet {
-		return nil
-	}
+// Build is responsible for copying the common CNI binaries
+func (b *CommonBuilder) Build(c *fi.ModelBuilderContext) error {
 
-	b.AddCNIBinAssets(c, []string{"loopback", "host-local", "bridge"})
+	b.AddCNIBinAssets(c, []string{
+		"bandwidth",
+		"bridge",
+		"host-local",
+		"loopback",
+		"portmap",
+		"ptp",
+		"tuning",
+	})
 
 	return nil
 }
