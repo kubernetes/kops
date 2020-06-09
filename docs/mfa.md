@@ -62,7 +62,7 @@ Download the script as `kops-mfa`, make it executable, put it on `$PATH`, set th
 
 ## The Workaround #2
 Use [awsudo](https://github.com/makethunder/awsudo) to generate temp credentials. This is similar to previous but shorter:
-```
+```shell
 pip install awsudo
 env $(awsudo ${AWS_PROFILE} | grep AWS | xargs) kops ...
 ```

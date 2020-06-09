@@ -111,7 +111,7 @@ aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="example.com.
 
 Note: The NS values here are for the **SUBDOMAIN**
 
-```
+```json
 {
   "Comment": "Create a subdomain NS record in the parent domain",
   "Changes": [

@@ -100,7 +100,7 @@ It's necessary to add your own RBAC permission to the dashboard. Please read the
 
 Below you see an example giving **cluster-admin access** to the dashboard.
 
-```
+```yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
@@ -115,7 +115,7 @@ subjects:
 - kind: ServiceAccount
   name: kubernetes-dashboard
   namespace: kube-system
-  ```
+```
 
 ### Monitoring with Heapster - Standalone
 
@@ -199,7 +199,7 @@ lists multiple versions.
 
 For example, a typical addons declaration might looks like this:
 
-```
+```yaml
   - version: 1.4.0
     selector:
       k8s-addon: kubernetes-dashboard.addons.k8s.io
@@ -243,7 +243,7 @@ to beta.  As such it is easier to have two separate manifests.
 
 For example:
 
-```
+```yaml
   - version: 1.5.0
     selector:
       k8s-addon: kube-dashboard.addons.k8s.io
@@ -278,7 +278,7 @@ We need a way to break the ties between the semvers, and thus we introduce the `
 
 Thus a manifest will actually look like this:
 
-```
+```yaml
   - version: 1.6.0
     selector:
       k8s-addon: kube-dns.addons.k8s.io

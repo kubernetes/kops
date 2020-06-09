@@ -70,7 +70,7 @@ ssh admin@<IP-of-master-node>
 
 in whatever manner you prefer. Here is one example.
 
-```
+```bash
 cd /usr/local
 sudo wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
 sudo tar -xvf go1.13.3.linux-amd64.tar.gz
@@ -85,7 +85,7 @@ which go
 
 3\. Install etcdhelper
 
-```
+```bash
 mkdir -p ~/go/src/github.com/
 cd ~/go/src/github.com/
 git clone https://github.com/openshift/origin openshift
