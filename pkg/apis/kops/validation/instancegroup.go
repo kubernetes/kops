@@ -115,8 +115,8 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleMaster)...)
 	}
 
-	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
-		allErrs = append(allErrs, awsValidateInstanceGroup(g, awsCloud)...)
+	if cloud != nil && cloud.ProviderID() == kops.CloudProviderAWS {
+		allErrs = append(allErrs, awsValidateInstanceGroup(g, cloud.(awsup.AWSCloud))...)
 	}
 
 	return allErrs
