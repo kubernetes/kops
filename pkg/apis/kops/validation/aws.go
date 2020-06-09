@@ -44,9 +44,7 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) fiel
 
 	allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "additionalSecurityGroups"), ig.Spec.AdditionalSecurityGroups)...)
 
-	if cloud != nil {
-		allErrs = append(allErrs, awsValidateInstanceType(field.NewPath(ig.GetName(), "spec", "machineType"), ig.Spec.MachineType, cloud)...)
-	}
+	allErrs = append(allErrs, awsValidateInstanceType(field.NewPath(ig.GetName(), "spec", "machineType"), ig.Spec.MachineType, cloud)...)
 
 	allErrs = append(allErrs, awsValidateSpotDurationInMinute(field.NewPath(ig.GetName(), "spec", "spotDurationInMinutes"), ig)...)
 
@@ -82,7 +80,7 @@ func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string)
 
 func awsValidateInstanceType(fieldPath *field.Path, instanceType string, cloud awsup.AWSCloud) field.ErrorList {
 	allErrs := field.ErrorList{}
-	if instanceType != "" {
+	if instanceType != "" && cloud != nil {
 		for _, typ := range strings.Split(instanceType, ",") {
 			if _, err := cloud.DescribeInstanceType(typ); err != nil {
 				allErrs = append(allErrs, field.Invalid(fieldPath, typ, "machine type specified is invalid"))
@@ -117,12 +115,11 @@ func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.Ins
 func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstancesPolicySpec, ig *kops.InstanceGroup, cloud awsup.AWSCloud) field.ErrorList {
 	var errs field.ErrorList
 
-	// @step: check the instances are validate
-	if cloud != nil {
-		for i, x := range spec.Instances {
-			errs = append(errs, awsValidateInstanceType(path.Child("instances").Index(i).Child("instanceType"), x, cloud)...)
-		}
+	// @step: check the instance types are valid
+	for i, x := range spec.Instances {
+		errs = append(errs, awsValidateInstanceType(path.Child("instances").Index(i), x, cloud)...)
 	}
+
 	if spec.OnDemandBase != nil {
 		if fi.Int64Value(spec.OnDemandBase) < 0 {
 			errs = append(errs, field.Invalid(path.Child("onDemandBase"), spec.OnDemandBase, "cannot be less than zero"))
