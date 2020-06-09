@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"crypto/x509/pkix"
 	"fmt"
 	"strconv"
 
@@ -24,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
@@ -83,14 +85,11 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kube-scheduler")
-		if err != nil {
-			return err
-		}
+		kubeconfig := b.BuildIssuedKubeconfig("kube-scheduler", pkix.Name{CommonName: rbac.KubeScheduler}, c)
 
 		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-scheduler/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
+			Contents: kubeconfig,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})

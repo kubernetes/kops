@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"crypto/x509/pkix"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -193,6 +193,33 @@ func (c *NodeupModelContext) KubeletKubeConfig() string {
 	return "/var/lib/kubelet/kubeconfig"
 }
 
+// BuildIssuedKubeconfig generates a kubeconfig with a locally issued client certificate.
+func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject pkix.Name, ctx *fi.ModelBuilderContext) *fi.TaskDependentResource {
+	issueCert := &nodetasks.IssueCert{
+		Name:    name,
+		Signer:  fi.CertificateIDCA,
+		Type:    "client",
+		Subject: subject,
+	}
+	ctx.AddTask(issueCert)
+	certResource, keyResource, caResource := issueCert.GetResources()
+
+	kubeConfig := &nodetasks.KubeConfig{
+		Name: name,
+		Cert: certResource,
+		Key:  keyResource,
+		CA:   caResource,
+	}
+	if c.IsMaster {
+		// @note: use https even for local connections, so we can turn off the insecure port
+		kubeConfig.ServerURL = "https://127.0.0.1"
+	} else {
+		kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+	}
+	ctx.AddTask(kubeConfig)
+	return kubeConfig.GetConfig()
+}
+
 // BuildPKIKubeconfig generates a kubeconfig
 func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
 	ca, err := c.GetCert(fi.CertificateIDCA)
@@ -215,54 +242,29 @@ func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
 
 // BuildKubeConfig is responsible for building a kubeconfig
 func (c *NodeupModelContext) BuildKubeConfig(username string, ca, certificate, privateKey []byte) (string, error) {
-	user := kubeconfig.KubectlUser{
-		ClientCertificateData: certificate,
-		ClientKeyData:         privateKey,
+	kubeConfig := &nodetasks.KubeConfig{
+		Name: username,
+		Cert: fi.NewBytesResource(certificate),
+		Key:  fi.NewBytesResource(privateKey),
+		CA:   fi.NewBytesResource(ca),
 	}
-	cluster := kubeconfig.KubectlCluster{
-		CertificateAuthorityData: ca,
-	}
-
 	if c.IsMaster {
 		// @note: use https even for local connections, so we can turn off the insecure port
-		cluster.Server = "https://127.0.0.1"
+		kubeConfig.ServerURL = "https://127.0.0.1"
 	} else {
-		cluster.Server = "https://" + c.Cluster.Spec.MasterInternalName
+		kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
 	}
 
-	config := &kubeconfig.KubectlConfig{
-		ApiVersion: "v1",
-		Kind:       "Config",
-		Users: []*kubeconfig.KubectlUserWithName{
-			{
-				Name: username,
-				User: user,
-			},
-		},
-		Clusters: []*kubeconfig.KubectlClusterWithName{
-			{
-				Name:    "local",
-				Cluster: cluster,
-			},
-		},
-		Contexts: []*kubeconfig.KubectlContextWithName{
-			{
-				Name: "service-account-context",
-				Context: kubeconfig.KubectlContext{
-					Cluster: "local",
-					User:    username,
-				},
-			},
-		},
-		CurrentContext: "service-account-context",
-	}
-
-	yaml, err := kops.ToRawYaml(config)
+	err := kubeConfig.Run(nil)
 	if err != nil {
-		return "", fmt.Errorf("error marshaling kubeconfig to yaml: %v", err)
+		return "", err
 	}
 
-	return string(yaml), nil
+	config, err := fi.ResourceAsString(kubeConfig.GetConfig())
+	if err != nil {
+		return "", err
+	}
+	return config, nil
 }
 
 // IsKubernetesGTE checks if the version is greater-than-or-equal
