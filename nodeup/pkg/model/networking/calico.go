@@ -38,7 +38,9 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	b.AddCNIBinAssets(c, []string{"flannel"})
+	if err := b.AddCNIBinAssets(c, []string{"flannel"}); err != nil {
+		return err
+	}
 
 	// @check if tls is enabled and if so, we need to download the client certificates
 	if !b.UseEtcdManager() && b.UseEtcdTLS() {
