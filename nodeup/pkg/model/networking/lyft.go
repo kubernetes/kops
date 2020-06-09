@@ -48,12 +48,18 @@ func (b *LyftVPCBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	return b.AddCNIBinAssets(c, []string{
+	assets := []string{
 		"cni-ipvlan-vpc-k8s-ipam",
 		"cni-ipvlan-vpc-k8s-ipvlan",
 		"cni-ipvlan-vpc-k8s-tool",
 		"cni-ipvlan-vpc-k8s-unnumbered-ptp",
-	})
+	}
+
+	if err := b.AddCNIBinAssets(c, assets); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func LoadLyftTemplateFunctions(templateFunctions template.FuncMap, cluster *api.Cluster) {

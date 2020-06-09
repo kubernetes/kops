@@ -36,7 +36,10 @@ func (b *CanalBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	b.AddCNIBinAssets(c, []string{"flannel"})
+	if err := b.AddCNIBinAssets(c, []string{"flannel"}); err != nil {
+		return err
+	}
+
 	buildFlannelTxChecksumOffloadDisableService(c)
 
 	return nil

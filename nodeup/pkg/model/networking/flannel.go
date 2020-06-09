@@ -39,7 +39,10 @@ func (b *FlannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	b.AddCNIBinAssets(c, []string{"flannel"})
+	if err := b.AddCNIBinAssets(c, []string{"flannel"}); err != nil {
+		return err
+	}
+
 	if networking.Flannel.Backend == "vxlan" {
 		buildFlannelTxChecksumOffloadDisableService(c)
 	}

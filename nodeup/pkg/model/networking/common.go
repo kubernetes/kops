@@ -30,8 +30,7 @@ var _ fi.ModelBuilder = &CommonBuilder{}
 
 // Build is responsible for copying the common CNI binaries
 func (b *CommonBuilder) Build(c *fi.ModelBuilderContext) error {
-
-	b.AddCNIBinAssets(c, []string{
+	assets := []string{
 		"bandwidth",
 		"bridge",
 		"host-local",
@@ -39,7 +38,11 @@ func (b *CommonBuilder) Build(c *fi.ModelBuilderContext) error {
 		"portmap",
 		"ptp",
 		"tuning",
-	})
+	}
+
+	if err := b.AddCNIBinAssets(c, assets); err != nil {
+		return err
+	}
 
 	return nil
 }
