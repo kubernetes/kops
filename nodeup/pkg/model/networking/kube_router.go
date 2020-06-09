@@ -31,24 +31,23 @@ var _ fi.ModelBuilder = &KuberouterBuilder{}
 
 // Build is responsible for configuring the kube-router
 func (b *KuberouterBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Cluster.Spec.Networking.Kuberouter == nil {
+	networking := b.Cluster.Spec.Networking
+
+	if networking.Kuberouter == nil {
 		return nil
 	}
-	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kube-router")
-		if err != nil {
-			return err
-		}
 
-		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kube-router/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
-			Type:     nodetasks.FileType_File,
-			Mode:     fi.String("0400"),
-		})
+	kubeconfig, err := b.BuildPKIKubeconfig("kube-router")
+	if err != nil {
+		return err
 	}
 
-	b.AddCNIBinAssets(c, []string{"loopback", "host-local", "bridge", "portmap"})
+	c.AddTask(&nodetasks.File{
+		Path:     "/var/lib/kube-router/kubeconfig",
+		Contents: fi.NewStringResource(kubeconfig),
+		Type:     nodetasks.FileType_File,
+		Mode:     fi.String("0400"),
+	})
 
 	return nil
 }

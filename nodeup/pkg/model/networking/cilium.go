@@ -20,9 +20,9 @@ import (
 	"crypto/x509/pkix"
 	"fmt"
 
-	"k8s.io/kops/nodeup/pkg/model"
-
 	"golang.org/x/sys/unix"
+
+	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )

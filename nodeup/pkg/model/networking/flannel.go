@@ -20,7 +20,6 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/pkg/systemd"
-
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -36,20 +35,22 @@ var _ fi.ModelBuilder = &FlannelBuilder{}
 func (b *FlannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	networking := b.Cluster.Spec.Networking
 
-	if networking.Flannel != nil {
-		b.AddCNIBinAssets(c, []string{"flannel", "portmap", "bridge", "host-local", "loopback"})
+	if networking.Flannel == nil {
+		return nil
 	}
 
-	if networking.Canal != nil || networking.Flannel != nil && networking.Flannel.Backend == "vxlan" {
-		return b.buildFlannelTxChecksumOffloadDisableService(c)
+	b.AddCNIBinAssets(c, []string{"flannel"})
+	if networking.Flannel.Backend == "vxlan" {
+		buildFlannelTxChecksumOffloadDisableService(c)
 	}
+
 	return nil
 }
 
 // Tx checksum offloading is buggy for NAT-ed VXLAN endpoints, leading to an invalid checksum sent and causing
 // Flannel to stop to working as the traffic is being discarded by the receiver.
 // https://github.com/coreos/flannel/issues/1279
-func (b *FlannelBuilder) buildFlannelTxChecksumOffloadDisableService(c *fi.ModelBuilderContext) error {
+func buildFlannelTxChecksumOffloadDisableService(c *fi.ModelBuilderContext) {
 	const serviceName = "flannel-tx-checksum-offload-disable.service"
 
 	manifest := &systemd.Manifest{}
@@ -69,6 +70,4 @@ func (b *FlannelBuilder) buildFlannelTxChecksumOffloadDisableService(c *fi.Model
 	}
 
 	c.AddTask(service)
-
-	return nil
 }
