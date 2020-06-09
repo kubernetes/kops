@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509/pkix"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -194,7 +193,7 @@ func (c *NodeupModelContext) KubeletKubeConfig() string {
 }
 
 // BuildIssuedKubeconfig generates a kubeconfig with a locally issued client certificate.
-func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject pkix.Name, ctx *fi.ModelBuilderContext) *fi.TaskDependentResource {
+func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetasks.PKIXName, ctx *fi.ModelBuilderContext) *fi.TaskDependentResource {
 	issueCert := &nodetasks.IssueCert{
 		Name:    name,
 		Signer:  fi.CertificateIDCA,

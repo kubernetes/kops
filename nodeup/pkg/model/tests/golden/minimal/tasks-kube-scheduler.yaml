@@ -64,61 +64,27 @@ path: /var/lib/kube-scheduler/config.yaml
 type: file
 ---
 contents:
-  Resource: null
-  Task:
+  task:
     CA:
-      Resource: null
-      Task:
+      task:
         Name: kube-scheduler
         signer: ca
         subject:
           CommonName: system:kube-scheduler
-          Country: null
-          ExtraNames: null
-          Locality: null
-          Names: null
-          Organization: null
-          OrganizationalUnit: null
-          PostalCode: null
-          Province: null
-          SerialNumber: ""
-          StreetAddress: null
         type: client
     Cert:
-      Resource: null
-      Task:
+      task:
         Name: kube-scheduler
         signer: ca
         subject:
           CommonName: system:kube-scheduler
-          Country: null
-          ExtraNames: null
-          Locality: null
-          Names: null
-          Organization: null
-          OrganizationalUnit: null
-          PostalCode: null
-          Province: null
-          SerialNumber: ""
-          StreetAddress: null
         type: client
     Key:
-      Resource: null
-      Task:
+      task:
         Name: kube-scheduler
         signer: ca
         subject:
           CommonName: system:kube-scheduler
-          Country: null
-          ExtraNames: null
-          Locality: null
-          Names: null
-          Organization: null
-          OrganizationalUnit: null
-          PostalCode: null
-          Province: null
-          SerialNumber: ""
-          StreetAddress: null
         type: client
     Name: kube-scheduler
     ServerURL: https://127.0.0.1
@@ -136,71 +102,28 @@ Name: kube-scheduler
 signer: ca
 subject:
   CommonName: system:kube-scheduler
-  Country: null
-  ExtraNames: null
-  Locality: null
-  Names: null
-  Organization: null
-  OrganizationalUnit: null
-  PostalCode: null
-  Province: null
-  SerialNumber: ""
-  StreetAddress: null
 type: client
 ---
 CA:
-  Resource: null
-  Task:
+  task:
     Name: kube-scheduler
     signer: ca
     subject:
       CommonName: system:kube-scheduler
-      Country: null
-      ExtraNames: null
-      Locality: null
-      Names: null
-      Organization: null
-      OrganizationalUnit: null
-      PostalCode: null
-      Province: null
-      SerialNumber: ""
-      StreetAddress: null
     type: client
 Cert:
-  Resource: null
-  Task:
+  task:
     Name: kube-scheduler
     signer: ca
     subject:
       CommonName: system:kube-scheduler
-      Country: null
-      ExtraNames: null
-      Locality: null
-      Names: null
-      Organization: null
-      OrganizationalUnit: null
-      PostalCode: null
-      Province: null
-      SerialNumber: ""
-      StreetAddress: null
     type: client
 Key:
-  Resource: null
-  Task:
+  task:
     Name: kube-scheduler
     signer: ca
     subject:
       CommonName: system:kube-scheduler
-      Country: null
-      ExtraNames: null
-      Locality: null
-      Names: null
-      Organization: null
-      OrganizationalUnit: null
-      PostalCode: null
-      Province: null
-      SerialNumber: ""
-      StreetAddress: null
     type: client
 Name: kube-scheduler
 ServerURL: https://127.0.0.1
