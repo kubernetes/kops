@@ -128,7 +128,7 @@ func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 		if user == nil {
 			continue
 		}
-		group, err := fi.LookupGroupById(user.Gid)
+		group, err := fi.LookupGroupByID(user.Gid)
 		if err != nil {
 			klog.Warningf("unable to find group %d for user %q", user.Gid, s)
 			continue

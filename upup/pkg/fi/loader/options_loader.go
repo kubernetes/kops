@@ -97,7 +97,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 	next := reflect.New(t).Interface()
 
 	// Copy the current state before applying rules; they act as defaults
-	reflectutils.JsonMergeStruct(next, current)
+	reflectutils.JSONMergeStruct(next, current)
 
 	for _, t := range l.templates {
 		klog.V(2).Infof("executing template %s (tags=%s)", t.Name, t.Tags)
@@ -136,7 +136,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 	}
 
 	// Also copy the user-provided values after applying rules; they act as overrides now
-	reflectutils.JsonMergeStruct(next, userConfig)
+	reflectutils.JSONMergeStruct(next, userConfig)
 
 	return next, nil
 }

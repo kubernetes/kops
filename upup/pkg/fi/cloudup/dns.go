@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	// This IP is from TEST-NET-3
+	// PlaceholderIP is from TEST-NET-3
 	// https://en.wikipedia.org/wiki/Reserved_IP_addresses
 	PlaceholderIP  = "203.0.113.123"
 	PlaceholderTTL = 10
@@ -111,9 +111,8 @@ func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	if len(ns) == 0 {
 		if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
 			return fmt.Errorf("NS records not found for %q - please make sure they are correctly configured", dnsName)
-		} else {
-			klog.Warningf("Ignoring failed NS record check because DNS_IGNORE_NS_CHECK is set")
 		}
+		klog.Warningf("Ignoring failed NS record check because DNS_IGNORE_NS_CHECK is set")
 	} else {
 		var hosts []string
 		for _, n := range ns {

@@ -179,12 +179,12 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		b.Cluster.Spec.KubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.String(PathAuthnConfig)
 
 		{
-			caCertificate, err := b.NodeupModelContext.KeyStore.FindCert(fi.CertificateId_CA)
+			caCertificate, err := b.NodeupModelContext.KeyStore.FindCert(fi.CertificateIDCA)
 			if err != nil {
 				return fmt.Errorf("error fetching AWS IAM Authentication CA certificate from keystore: %v", err)
 			}
 			if caCertificate == nil {
-				return fmt.Errorf("AWS IAM  Authentication CA certificate %q not found", fi.CertificateId_CA)
+				return fmt.Errorf("AWS IAM  Authentication CA certificate %q not found", fi.CertificateIDCA)
 			}
 
 			cluster := kubeconfig.KubectlCluster{

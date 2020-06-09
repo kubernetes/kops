@@ -47,7 +47,7 @@ type Source struct {
 	ExtractFromArchive string
 }
 
-// Builds a unique key for this source
+// Key builds a unique key for this source
 func (s *Source) Key() string {
 	var k string
 	if s.Parent != nil {
@@ -129,7 +129,7 @@ func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
 	return nil, fmt.Errorf("found multiple matching assets for key: %q", key)
 }
 
-func hashFromHttpHeader(url string) (*hashing.Hash, error) {
+func hashFromHTTPHeader(url string) (*hashing.Hash, error) {
 	klog.Infof("Doing HTTP HEAD on %q", url)
 	response, err := http.Head(url)
 	if err != nil {
@@ -180,7 +180,7 @@ func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
 	var err error
 	if hash == nil {
 		for _, url := range urls {
-			hash, err = hashFromHttpHeader(url)
+			hash, err = hashFromHTTPHeader(url)
 			if err != nil {
 				klog.Warningf("unable to get hash from %q: %v", url, err)
 				continue

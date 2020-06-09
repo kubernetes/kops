@@ -414,14 +414,14 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 	loaded := make(map[string]interface{})
 
 	for k, v := range data {
-		typeId := ""
+		typeID := ""
 		name := ""
 
 		// If the name & type are not specified in the values,
 		// we infer them from the key (first component -> typeid, last component -> name)
 		if vMap, ok := v.(map[string]interface{}); ok {
 			if s, ok := vMap[KEY_TYPE]; ok {
-				typeId = s.(string)
+				typeID = s.(string)
 			}
 			if s, ok := vMap[KEY_NAME]; ok {
 				name = s.(string)
@@ -436,19 +436,19 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 			inferredName = true
 		}
 
-		if typeId == "" {
+		if typeID == "" {
 			firstSlash := strings.Index(k, "/")
 			if firstSlash != -1 {
-				typeId = k[:firstSlash]
+				typeID = k[:firstSlash]
 			}
 
-			if typeId == "" {
+			if typeID == "" {
 				return nil, fmt.Errorf("cannot determine type for %q", k)
 			}
 		}
-		t, found := l.typeMap[typeId]
+		t, found := l.typeMap[typeID]
 		if !found {
-			return nil, fmt.Errorf("unknown type %q (in %q)", typeId, key)
+			return nil, fmt.Errorf("unknown type %q (in %q)", typeID, key)
 		}
 
 		o := reflect.New(t)

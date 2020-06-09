@@ -409,8 +409,8 @@ func deleteKeysetItem(client kopsinternalversion.KeysetInterface, name string, k
 	return nil
 }
 
-// addSshCredential saves the specified SSH Credential to the registry, doing an update or insert
-func (c *ClientsetCAStore) addSshCredential(ctx context.Context, name string, publicKey string) error {
+// addSSHCredential saves the specified SSH Credential to the registry, doing an update or insert
+func (c *ClientsetCAStore) addSSHCredential(ctx context.Context, name string, publicKey string) error {
 	create := false
 	client := c.clientset.SSHCredentials(c.namespace)
 	sshCredential, err := client.Get(ctx, name, metav1.GetOptions{})
@@ -487,7 +487,7 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 	//}
 	//id = formatFingerprint(h.Sum(nil))
 
-	return c.addSshCredential(ctx, name, string(pubkey))
+	return c.addSSHCredential(ctx, name, string(pubkey))
 }
 
 // FindSSHPublicKeys implements CAStore::FindSSHPublicKeys
