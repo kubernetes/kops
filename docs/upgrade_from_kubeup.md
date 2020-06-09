@@ -44,7 +44,7 @@ open an issue.
 
 ```
 kops get cluster ${OLD_NAME} -oyaml
-````
+```
 
 ## Move resources to a new cluster
 

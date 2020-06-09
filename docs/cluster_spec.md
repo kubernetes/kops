@@ -200,7 +200,7 @@ The resource identifier (ID) of something in your existing VPC that you would li
 
 This feature was originally envisioned to allow re-use of NAT gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
 
-```
+```yaml
 spec:
   subnets:
   - cidr: 10.20.64.0/21
@@ -217,7 +217,7 @@ spec:
 
 In the case that you don't use NAT gateways or internet gateways, Kops 1.12.0 introduced the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
 
-```
+```yaml
 spec:
   subnets:
   - cidr: 10.20.64.0/21
@@ -230,7 +230,7 @@ spec:
 ### publicIP
 The IP of an existing EIP that you would like to attach to the NAT gateway.
 
-```
+```yaml
 spec:
   subnets:
   - cidr: 10.20.64.0/21
@@ -431,7 +431,7 @@ Will result in the flag `--resolv-conf=` being built.
 To disable CPU CFS quota enforcement for containers that specify CPU limits (default true) we have to set the flag `--cpu-cfs-quota` to `false`
 on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
 
-```
+```yaml
 spec:
   kubelet:
     cpuCFSQuota: false
@@ -440,7 +440,7 @@ spec:
 ### Configure CPU CFS Period
 Configure CPU CFS quota period value (cpu.cfs_period_us). Example:
 
-```
+```yaml
 spec:
   kubelet:
     cpuCFSQuotaPeriod: "100ms"
@@ -450,7 +450,7 @@ spec:
 To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
 we have to set the flag `--enable-custom-metrics` to `true` on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
 
-```
+```yaml
 spec:
   kubelet:
     enableCustomMetrics: true
@@ -460,7 +460,7 @@ spec:
 Kops 1.12.0 added support for enabling cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
 we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
 
-```
+```yaml
 spec:
   kubelet:
     cpuManagerPolicy: static
@@ -688,7 +688,7 @@ Hooks allow for the execution of an action before the installation of Kubernetes
 
 When creating a systemd unit hook using the `manifest` field, the hook system will construct a systemd unit file for you. It creates the `[Unit]` section, adding an automated description and setting `Before` and `Requires` values based on the `before` and `requires` fields. The value of the `manifest` field is used as the `[Service]` section of the unit file. To override this behavior, and instead specify the entire unit file yourself, you may specify `useRawManifest: true`. In this case, the contents of the `manifest` field will be used as a systemd unit, unmodified. The `before` and `requires` fields may not be used together with `useRawManifest`.
 
-```
+```yaml
 spec:
   # many sections removed
 
@@ -749,7 +749,7 @@ spec:
 
 Install Ceph
 
-```
+```yaml
 spec:
   # many sections removed
   hooks:
@@ -763,7 +763,7 @@ spec:
 
 Install cachefilesd
 
-```
+```yaml
 spec:
   # many sections removed
   hooks:
@@ -804,6 +804,7 @@ spec:
 ### disableSecurityGroupIngress
 If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
 This can be useful to avoid AWS limit: 50 rules per security group.
+
 ```yaml
 spec:
   cloudConfig:

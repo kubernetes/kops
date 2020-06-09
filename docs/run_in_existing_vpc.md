@@ -120,7 +120,7 @@ spec:
 
 2. Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
 
-  ```
+  ```yaml
   metadata:
     creationTimestamp: "2016-06-27T14:23:34Z"
     name: ${CLUSTER_NAME}
@@ -139,7 +139,7 @@ spec:
 
 3. Once you're happy, you can create the cluster using:
 
-  ```
+  ```shell
   kops update cluster ${CLUSTER_NAME} --yes
   ```
 

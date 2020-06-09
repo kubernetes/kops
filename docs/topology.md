@@ -52,7 +52,7 @@ The AWS ELB does not support changing from internet facing to Internal.  However
 ### Steps to change the ELB from Internet-Facing to Internal
 - Edit the cluster: `kops edit cluster $NAME`
 - Change the api load balancer type from: Public to Internal... should look like this when done:
-```
+```yaml
  spec:
     api:
       loadBalancer:
@@ -60,7 +60,7 @@ The AWS ELB does not support changing from internet facing to Internal.  However
 ```
  - Quit the edit
  - Run the update command to check the config: `kops update cluster $NAME`
- - BEFORE DOING the same command with the `--yes` option go into the AWS console and DELETE the api ELB!!!!!!
+ - BEFORE DOING the same command with the `--yes` option go into the AWS console and DELETE the api ELB
  - Now run: `kops update cluster $NAME --yes`
  - Finally execute a rolling update so that the instances register with the new internal ELB,  execute: `kops rolling-update cluster --cloudonly --force` command.  We have to use the  `--cloudonly` option because we deleted the api ELB so there is no way to talk to the cluster through the k8s api.  The force option is there because kops / terraform doesn't know that we need to update the instances with the ELB so we have to force it.
  Once the rolling update has completed you have an internal only ELB that has the master k8s nodes registered with it.

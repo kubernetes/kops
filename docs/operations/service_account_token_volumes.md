@@ -3,7 +3,7 @@ Some services, such as Istio and Envoy's Secret Discovery Service (SDS), take ad
 
 1. In order to enable this feature for Kubernetes 1.12+, add the following config to your cluster spec:
 
-```
+```yaml
     kubeAPIServer:
         apiAudiences:
         - api

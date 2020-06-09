@@ -8,7 +8,7 @@ Read the [prerequisites](https://github.com/lyft/cni-ipvlan-vpc-k8s#prerequisite
 
 To use the Lyft CNI, specify the following in the cluster spec.
 
-```
+```yaml
   networking:
     lyftvpc: {}
 ```
@@ -33,7 +33,7 @@ $ kops create cluster \
 
 You can specify which subnets to use for allocating Pod IPs by specifying
 
-```
+```yaml
   networking:
     lyftvpc:
       subnetTags:
