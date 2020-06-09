@@ -16,7 +16,7 @@ Ps: Steps below assume a recent version of Terraform. There's a workaround for a
 
 You could keep your Terraform state locally, but we **strongly recommend** saving it on S3 with versioning turned on that bucket. Configure a remote S3 store with a setting like below:
 
-```
+```terraform
 terraform {
   backend "s3" {
     bucket = "mybucket"

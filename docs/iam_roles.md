@@ -22,7 +22,7 @@ iam:
 
 Following this, run a cluster update to have the changes take effect:
 
-```
+```shell
 kops update cluster ${CLUSTER_NAME} --yes
 ```
 
@@ -86,7 +86,7 @@ to add DynamoDB and Elasticsearch permissions to your nodes.
 
 Edit your cluster via `kops edit cluster ${CLUSTER_NAME}` and add the following to the spec:
 
-```
+```yaml
 spec:
   additionalPolicies:
     node: |
@@ -106,7 +106,7 @@ spec:
 
 After you're finished editing, your cluster spec should look something like this:
 
-```
+```yaml
 metadata:
   creationTimestamp: "2016-06-27T14:23:34Z"
   name: ${CLUSTER_NAME}
@@ -136,13 +136,13 @@ spec:
 
 Now you can run a cluster update to have the changes take effect:
 
-```
+```shell
 kops update cluster ${CLUSTER_NAME} --yes
 ```
 
 You can have an additional policy for each kops role (node, master, bastion). For instance, if you wanted to apply one set of additional permissions to the master instances, and another to the nodes, you could do the following:
 
-```
+```yaml
 spec:
   additionalPolicies:
     node: |
@@ -175,13 +175,13 @@ This is due to the lifecycle overrides being used to prevent creation of the IAM
 
 To do this, get a list of instance group names for the cluster:
 
-```
+```shell
 kops get ig --name ${CLUSTER_NAME}
 ```
 
 And update every instance group's spec with the desired instance profile ARNs:
 
-```
+```shell
 kops edit ig --name ${CLUSTER_NAME} ${INSTANCE_GROUP_NAME}
 ```
 
@@ -195,7 +195,7 @@ spec:
 
 Now run a cluster update to create the new launch configuration, using [lifecycle overrides](./cli/kops_update_cluster.md#options) to prevent IAM-related resources from being created:
 
-```
+```shell
 kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides IAMRole=ExistsAndWarnIfChanges,IAMRolePolicy=ExistsAndWarnIfChanges,IAMInstanceProfileRole=ExistsAndWarnIfChanges
 ```
 
@@ -203,6 +203,6 @@ kops update cluster ${CLUSTER_NAME} --yes --lifecycle-overrides IAMRole=ExistsAn
 
 Finally, perform a rolling update in order to replace EC2 instances in the ASG with the new launch configuration:
 
-```
+```shell
 kops rolling-update cluster ${CLUSTER_NAME} --yes
 ```

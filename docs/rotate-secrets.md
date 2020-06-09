@@ -6,7 +6,7 @@
 
 Delete all secrets & keypairs that kops is holding:
 
-```
+```shell
 kops get secrets  | grep ^Secret | awk '{print $2}' | xargs -I {} kops delete secret secret {}
 
 kops get secrets  | grep ^Keypair | awk '{print $2}' | xargs -I {} kops delete secret keypair {}
@@ -59,7 +59,7 @@ Now the service account tokens will need to be regenerated inside the cluster:
 
 Then `ssh admin@${IP}` and run this to delete all the service account tokens:
 
-```
+```shell
 # Delete all service account tokens in all namespaces
 NS=`kubectl get namespaces -o 'jsonpath={.items[*].metadata.name}'`
 for i in ${NS}; do kubectl get secrets --namespace=${i} --no-headers | grep "kubernetes.io/service-account-token" | awk '{print $1}' | xargs -I {} kubectl delete secret --namespace=$i {}; done
