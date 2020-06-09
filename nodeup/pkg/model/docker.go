@@ -87,299 +87,6 @@ type dockerVersion struct {
 const DefaultDockerVersion = "1.12.3"
 
 var dockerVersions = []dockerVersion{
-	// 1.11.2 - Jessie
-	{
-		DockerVersion: "1.11.2",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.11.2-0~jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~jessie_amd64.deb",
-		Hash:          "c312f1f6fa0b34df4589bb812e4f7af8e28fd51d",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.11.2 - Xenial
-	{
-		DockerVersion: "1.11.2",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionXenial},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.11.2-0~xenial",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~xenial_amd64.deb",
-		Hash:          "194bfa864f0424d1bbdc7d499ccfa0445ce09b9f",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.11.2 - Centos / Rhel7 (two packages)
-	{
-		DockerVersion: "1.11.2",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.11.2",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.11.2-1.el7.centos.x86_64.rpm",
-		Hash:          "432e6d7948df9e05f4190fce2f423eedbfd673d5",
-		ExtraPackages: map[string]packageInfo{
-			"docker-engine-selinux": {
-				Version: "1.11.2",
-				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.11.2-1.el7.centos.noarch.rpm",
-				Hash:    "f6da608fa8eeb2be8071489086ed9ff035f6daba",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl"},
-	},
-
-	// 1.12.1 - Jessie
-	{
-		DockerVersion: "1.12.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.1-0~jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~jessie_amd64.deb",
-		Hash:          "0401866231749abaabe8e09ee24432132839fe53",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.12.1 - Xenial
-	{
-		DockerVersion: "1.12.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionXenial},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.1-0~xenial",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~xenial_amd64.deb",
-		Hash:          "30f7840704361673db2b62f25b6038628184b056",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.12.1 - Centos / Rhel7 (two packages)
-	{
-		DockerVersion: "1.12.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.1",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.1-1.el7.centos.x86_64.rpm",
-		Hash:          "636471665665546224444052c3b48001397036be",
-		ExtraPackages: map[string]packageInfo{
-			"docker-engine-selinux": {
-				Version: "1.12.1",
-				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.1-1.el7.centos.noarch.rpm",
-				Hash:    "52ec22128e70acc2f76b3a8e87ff96785995116a",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl"},
-	},
-
-	// 1.12.3 - k8s 1.5
-
-	// 1.12.3 - Jessie
-	{
-		DockerVersion: "1.12.3",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.3-0~jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~jessie_amd64.deb",
-		Hash:          "7c7eb45542b67a9cfb33c292ba245710efb5d773",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
-	},
-
-	// 1.12.3 - Jessie on ARM
-	{
-		DockerVersion: "1.12.3",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureArm},
-		Version:       "1.12.3-0~jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~jessie_armhf.deb",
-		Hash:          "aa2f2f710360268dc5fd3eb066868c5883d95698",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.12.3 - Xenial
-	{
-		DockerVersion: "1.12.3",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionXenial},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.3-0~xenial",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~xenial_amd64.deb",
-		Hash:          "b758fc88346a1e5eebf7408b0d0c99f4f134166c",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.12.3 - Centos / Rhel7 (two packages)
-	{
-		DockerVersion: "1.12.3",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.3",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.3-1.el7.centos.x86_64.rpm",
-		Hash:          "67fbb78cfb9526aaf8142c067c10384df199d8f9",
-		ExtraPackages: map[string]packageInfo{
-			"docker-engine-selinux": {
-				Version: "1.12.3",
-				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.3-1.el7.centos.noarch.rpm",
-				Hash:    "a6b0243af348140236ed96f2e902b259c590eefa",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp"},
-	},
-
-	// 1.12.6 - k8s 1.6
-
-	// 1.12.6 - Jessie
-	{
-		DockerVersion: "1.12.6",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.6-0~debian-jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-jessie_amd64.deb",
-		Hash:          "1a8b0c4e3386e12964676a126d284cebf599cc8e",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
-	},
-
-	// 1.12.6 - Debian9 (stretch)
-	{
-		DockerVersion: "1.12.6",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionDebian9},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.6-0~debian-stretch",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-stretch_amd64.deb",
-		Hash:          "18bb7d024658f27a1221eae4de78d792bf00611b",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "libseccomp2"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
-	},
-
-	// 1.12.6 - Jessie on ARM
-	{
-		DockerVersion: "1.12.6",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureArm},
-		Version:       "1.12.6-0~debian-jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-jessie_armhf.deb",
-		Hash:          "ac148e1f7381e4201e139584dd3c102372ad96fb",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.12.6 - Xenial
-	{
-		DockerVersion: "1.12.6",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionXenial},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.6-0~ubuntu-xenial",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~ubuntu-xenial_amd64.deb",
-		Hash:          "fffc22da4ad5b20715bbb6c485b2d2bb7e84fd33",
-		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
-		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
-	},
-
-	// 1.12.6 - Centos / Rhel7 (two packages)
-	{
-		DockerVersion: "1.12.6",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.12.6",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.6-1.el7.centos.x86_64.rpm",
-		Hash:          "776dbefa9dc7733000e46049293555a9a422c50e",
-		ExtraPackages: map[string]packageInfo{
-			"docker-engine-selinux": {
-				Version: "1.12.6",
-				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.6-1.el7.centos.noarch.rpm",
-				Hash:    "9a6ee0d631ca911b6927450a3c396e9a5be75047",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python"},
-	},
-
-	// 1.13.1 - k8s 1.8
-
-	// 1.13.1 - Debian9 (stretch)
-	{
-		DockerVersion: "1.13.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionDebian9},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.13.1-0~debian-stretch",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-stretch_amd64.deb",
-		Hash:          "19296514610aa2e5efddade5222cafae7894a689",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
-	},
-
-	// 1.13.1 - Jessie
-	{
-		DockerVersion: "1.13.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.13.1-0~debian-jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_amd64.deb",
-		Hash:          "1d3370549e32ea13b2755b2db8dbc82b2b787ece",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
-		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
-	},
-
-	// 1.13.1 - Jessie on ARM
-	{
-		DockerVersion: "1.13.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionJessie},
-		Architectures: []Architecture{ArchitectureArm},
-		Version:       "1.13.1-0~debian-jessie",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_armhf.deb",
-		Hash:          "a3f252c5fbb2d3266be611bee50e1f331ff8d05f",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
-	},
-
-	// 1.13.1 - Xenial
-	{
-		DockerVersion: "1.13.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionXenial},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.13.1-0~ubuntu-xenial",
-		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~ubuntu-xenial_amd64.deb",
-		Hash:          "d12cbd686f44536c679a03cf0137df163f0bba5f",
-		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
-		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
-	},
-
-	// 1.13.1 - Centos / Rhel7 (two packages)
-	{
-		DockerVersion: "1.13.1",
-		Name:          "docker-engine",
-		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
-		Architectures: []Architecture{ArchitectureAmd64},
-		Version:       "1.13.1",
-		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.13.1-1.el7.centos.x86_64.rpm",
-		Hash:          "b18f7fd8057665e7d2871d29640e214173f70fe1",
-		ExtraPackages: map[string]packageInfo{
-			"docker-engine-selinux": {
-				Version: "1.13.1",
-				Source:  "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.13.1-1.el7.centos.noarch.rpm",
-				Hash:    "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
-			},
-		},
-		Dependencies: []string{"libtool-ltdl", "libseccomp", "libcgroup", "policycoreutils-python", "selinux-policy-base", "selinux-policy-targeted"},
-	},
-
 	// 17.03.2 - k8s 1.8
 
 	// 17.03.2 - Debian9 (stretch)
@@ -1098,9 +805,9 @@ var dockerVersions = []dockerVersion{
 				Hash:    "bd987ea43e654e08ad1549f5d59748de79760f09",
 			},
 			"containerd.io": {
-				Version: "1.2.13-1",
-				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
-				Hash:    "ae4c01ccccc12a58a2559270a99178a5707fcc93",
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "15735428de32cf7e0e2890aaa021c6e0d551e961",
 			},
 		},
 		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
@@ -1122,9 +829,9 @@ var dockerVersions = []dockerVersion{
 				Hash:    "04994a3b73483c68935996ceed08cd51545a17d9",
 			},
 			"containerd.io": {
-				Version: "1.2.13-1",
-				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
-				Hash:    "90611afda0acabae485f871b09e4c1eba0ac4dc0",
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "08fd3a4a4e82a1c0452c6bbd5803b19315c7e968",
 			},
 		},
 		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
@@ -1146,9 +853,9 @@ var dockerVersions = []dockerVersion{
 				Hash:    "a79866f5cb74f3e35afcc6af0070a1a503eaba06",
 			},
 			"containerd.io": {
-				Version: "1.2.13-1",
-				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
-				Hash:    "da0bc9d0b4d09875d0f29d7949754ffd3ee54ea5",
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "4990e0b41a30552521d76405a7fc41549cd82b5f",
 			},
 		},
 		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
@@ -1170,9 +877,9 @@ var dockerVersions = []dockerVersion{
 				Hash:    "1ae24a9b73cbc7ca4a048ac204a4470df4d2bc80",
 			},
 			"containerd.io": {
-				Version: "1.2.13-1",
-				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.13-1_amd64.deb",
-				Hash:    "4c7a98e8145fb258c24044c78f6f1f8abc1f6893",
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "38cc415af5a03198a2f83bd49307ad329b45ff06",
 			},
 		},
 		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
@@ -1195,8 +902,8 @@ var dockerVersions = []dockerVersion{
 			},
 			"containerd.io": {
 				Version: "1.2.13",
-				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm",
-				Hash:    "85f0501529e0b8ecde834d263583f888435b53d4",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.2.el7.x86_64.rpm",
+				Hash:    "915f19ac81a88801771227b907a29c219f4af0dc",
 			},
 			"container-selinux": {
 				Version: "2.107",
@@ -1224,8 +931,183 @@ var dockerVersions = []dockerVersion{
 			},
 			"containerd.io": {
 				Version: "1.2.13",
-				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.1.el7.x86_64.rpm",
-				Hash:    "85f0501529e0b8ecde834d263583f888435b53d4",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.2.el7.x86_64.rpm",
+				Hash:    "915f19ac81a88801771227b907a29c219f4af0dc",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl"},
+	},
+
+	// 19.03.11 - https://github.com/kubernetes/kubernetes/issues/91507
+
+	// 19.03.11 - Debian Stretch
+	{
+		DockerVersion: "19.03.11",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.11~3-0~debian-stretch",
+		Source:        "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_19.03.11~3-0~debian-stretch_amd64.deb",
+		Hash:          "9c63f20b00c06c990a5b335f95653875afd237e7",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.11~3-0~debian-stretch",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce-cli_19.03.11~3-0~debian-stretch_amd64.deb",
+				Hash:    "9f7d742f6383ed725ed1bd75f5ab6c6858e3b83d",
+			},
+			"containerd.io": {
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "15735428de32cf7e0e2890aaa021c6e0d551e961",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.11 - Debian Buster
+	{
+		DockerVersion: "19.03.11",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian10},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.11~3-0~debian-buster",
+		Source:        "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_19.03.11~3-0~debian-buster_amd64.deb",
+		Hash:          "a14d2a097af042e3e66c9bdc3e5be7e3197e24a1",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.11~3-0~debian-buster",
+				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce-cli_19.03.11~3-0~debian-buster_amd64.deb",
+				Hash:    "73fd58889d222c5094974222f839b7a173c64485",
+			},
+			"containerd.io": {
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "08fd3a4a4e82a1c0452c6bbd5803b19315c7e968",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.11 - Xenial
+	{
+		DockerVersion: "19.03.11",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.11~3-0~ubuntu-xenial",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_19.03.11~3-0~ubuntu-xenial_amd64.deb",
+		Hash:          "4e555d84978600bbcd1f8482b41767fd858685d5",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.11~3-0~ubuntu-xenial",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_19.03.11~3-0~ubuntu-xenial_amd64.deb",
+				Hash:    "83ab0e89b5ee8d96db73bf542fe8d33e12b13a0e",
+			},
+			"containerd.io": {
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "4990e0b41a30552521d76405a7fc41549cd82b5f",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.11 - Bionic
+	{
+		DockerVersion: "19.03.11",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionBionic},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.11~3-0~ubuntu-bionic",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_19.03.11~3-0~ubuntu-bionic_amd64.deb",
+		Hash:          "003653c685b85c57d25b3340b8ea0ecae14e78c3",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.11~3-0~ubuntu-bionic",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce-cli_19.03.11~3-0~ubuntu-bionic_amd64.deb",
+				Hash:    "9b9db0f1dafd555d3a45bfeffe6da510e224bff7",
+			},
+			"containerd.io": {
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "38cc415af5a03198a2f83bd49307ad329b45ff06",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.11 - Focal
+	{
+		DockerVersion: "19.03.11",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionFocal},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.11~3-0~ubuntu-focal",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce_19.03.11~3-0~ubuntu-focal_amd64.deb",
+		Hash:          "fe734c6a2ae3489d3ba42cea30c4a66e4855c7c4",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.11~3-0~ubuntu-focal",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_19.03.11~3-0~ubuntu-focal_amd64.deb",
+				Hash:    "42c7ee59ff2ae4a5f0381ec8422334e9c4fd9e62",
+			},
+			"containerd.io": {
+				Version: "1.2.13-2",
+				Source:  "https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/containerd.io_1.2.13-2_amd64.deb",
+				Hash:    "18bce1e3a4a1cafeb5ef8eafa6766225be195125",
+			},
+		},
+		Dependencies: []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 19.03.11 - CentOS / Rhel7
+	{
+		DockerVersion: "19.03.11",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.11",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.11-3.el7.x86_64.rpm",
+		Hash:          "47b239fcdb85fe1cd9921671df328ecdaca65f9c",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.11",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.11-3.el7.x86_64.rpm",
+				Hash:    "0139d74a8eaaddb9d8d4341c763934728961a662",
+			},
+			"containerd.io": {
+				Version: "1.2.13",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.2.el7.x86_64.rpm",
+				Hash:    "915f19ac81a88801771227b907a29c219f4af0dc",
+			},
+			"container-selinux": {
+				Version: "2.107",
+				Source:  "http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.107-1.el7_6.noarch.rpm",
+				Hash:    "7de4211fa0dfd240d8827b93763e1eb5f0d56411",
+			},
+		},
+		Dependencies: []string{"libtool-ltdl"},
+	},
+
+	// 19.03.11 - CentOS / Rhel8
+	{
+		DockerVersion: "19.03.11",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel8, distros.DistributionCentos8},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "19.03.11",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.11-3.el7.x86_64.rpm",
+		Hash:          "47b239fcdb85fe1cd9921671df328ecdaca65f9c",
+		ExtraPackages: map[string]packageInfo{
+			"docker-ce-cli": {
+				Version: "19.03.11",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.11-3.el7.x86_64.rpm",
+				Hash:    "0139d74a8eaaddb9d8d4341c763934728961a662",
+			},
+			"containerd.io": {
+				Version: "1.2.13",
+				Source:  "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.2.el7.x86_64.rpm",
+				Hash:    "915f19ac81a88801771227b907a29c219f4af0dc",
 			},
 		},
 		Dependencies: []string{"libtool-ltdl"},
