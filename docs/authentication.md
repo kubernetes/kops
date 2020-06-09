@@ -12,14 +12,14 @@ documentation.
 
 Alternatively, you can add this block to your cluster:
 
-```
+```yaml
 authentication:
   kopeio: {}
 ```
 
 For example:
 
-```
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
@@ -36,14 +36,14 @@ spec:
 To turn on AWS IAM Authenticator, you'll need to add the stanza bellow
 to your cluster configuration.
 
-```
+```yaml
 authentication:
   aws: {}
 ```
 
 For example:
 
-```
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
@@ -60,7 +60,7 @@ For more details on AWS IAM authenticator please visit [kubernetes-sigs/aws-iam-
 
 Example config:
 
-```
+```yaml
 ---
 apiVersion: v1
 kind: ConfigMap
