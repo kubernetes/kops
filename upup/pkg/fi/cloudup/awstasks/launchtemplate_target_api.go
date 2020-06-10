@@ -208,6 +208,10 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: id})
 		}
 	}
+	// In older Kops versions, security groups were added to LaunchTemplateData.SecurityGroupIds
+	for _, id := range lt.LaunchTemplateData.SecurityGroupIds {
+		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: fi.String("legacy-" + *id)})
+	}
 	sort.Sort(OrderSecurityGroupsById(actual.SecurityGroups))
 
 	// @step: check if monitoring it enabled
