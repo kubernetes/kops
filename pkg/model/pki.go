@@ -84,17 +84,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	{
-		t := &fitasks.Keypair{
-			Name:      fi.String("kube-controller-manager"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "cn=" + rbac.KubeControllerManager,
-			Type:      "client",
-			Signer:    defaultCA,
-		}
-		c.AddTask(t)
-	}
-
 	if b.UseEtcdManager() {
 		// We generate keypairs in the etcdmanager task itself
 	} else if b.UseEtcdTLS() {
