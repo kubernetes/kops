@@ -55,10 +55,6 @@ func (e *BindMount) GetName() *string {
 	return fi.String("BindMount-" + e.Mountpoint)
 }
 
-func (e *BindMount) SetName(name string) {
-	klog.Fatalf("SetName not supported for BindMount task")
-}
-
 var _ fi.HasDependencies = &BindMount{}
 
 // GetDependencies implements HasDependencies::GetDependencies

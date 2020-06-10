@@ -122,10 +122,6 @@ func (f *File) GetName() *string {
 	return &f.Path
 }
 
-func (f *File) SetName(name string) {
-	klog.Fatalf("SetName not supported for File task")
-}
-
 func (f *File) String() string {
 	return fmt.Sprintf("File: %q", f.Path)
 }
