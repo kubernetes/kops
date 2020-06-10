@@ -1,3 +1,11 @@
+Name: containerd.io
+hash: 9125a6ae5a89dfe9403fea7d03a8d8ba9fa97b6863ee8698c4e6c258fb14f1fd
+mapFiles:
+  ./usr/local/bin: /usr
+  ./usr/local/sbin: /usr
+source: https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.10.linux-amd64.tar.gz
+target: /
+---
 contents: |-
   {
       "cniVersion": "0.3.1",
@@ -225,12 +233,6 @@ contents: |2
      limitations under the License.
 path: /usr/share/doc/containerd/apache.txt
 type: file
----
-Name: containerd.io
-hash: ec7f4698df82c4dc683a8835ef5a3ecce4df1e41c5d65b4e17558cdccf44952b
-preventStart: true
-source: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/containerd.io_1.2.10-3_amd64.deb
-version: 1.2.10-3
 ---
 Name: containerd.service
 definition: |
