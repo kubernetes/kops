@@ -27,6 +27,7 @@ import (
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/apimachinery/pkg/api/validation"
@@ -41,6 +42,23 @@ import (
 
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, false, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
+
+	clusterName := cluster.ObjectMeta.Name
+	if clusterName == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("objectMeta", "name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)"))
+	} else {
+		// Must be a dns name
+		errs := utilvalidation.IsDNS1123Subdomain(clusterName)
+		if len(errs) != 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), clusterName, fmt.Sprintf("Cluster Name must be a valid DNS name (e.g. --name=mycluster.myzone.com) errors: %s", strings.Join(errs, ", "))))
+		} else if !strings.Contains(clusterName, ".") {
+			// Tolerate if this is a cluster we are importing for upgrade
+			if cluster.ObjectMeta.Annotations[kops.AnnotationNameManagement] != kops.AnnotationValueManagementImported {
+				allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), clusterName, "Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)"))
+			}
+		}
+	}
+
 	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, cluster, field.NewPath("spec"))...)
 
 	// Additional cloud-specific validation rules
@@ -79,6 +97,13 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("additionalNetworkCIDRs").Index(i))...)
 	}
 
+	if spec.Topology != nil {
+		allErrs = append(allErrs, validateTopology(spec.Topology, fieldPath.Child("topology"))...)
+	}
+
+	// UpdatePolicy
+	allErrs = append(allErrs, IsValidValue(fieldPath.Child("updatePolicy"), spec.UpdatePolicy, []string{kops.UpdatePolicyExternal})...)
+
 	// Hooks
 	for i := range spec.Hooks {
 		allErrs = append(allErrs, validateHookSpec(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
@@ -91,7 +116,19 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.KubeAPIServer != nil {
-		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, fieldPath.Child("kubeAPIServer"))...)
+		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"))...)
+	}
+
+	if spec.KubeProxy != nil {
+		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
+	}
+
+	if spec.Kubelet != nil {
+		allErrs = append(allErrs, validateKubelet(spec.Kubelet, c, fieldPath.Child("kubelet"))...)
+	}
+
+	if spec.MasterKubelet != nil {
+		allErrs = append(allErrs, validateKubelet(spec.MasterKubelet, c, fieldPath.Child("masterKubelet"))...)
 	}
 
 	if spec.Networking != nil {
@@ -99,6 +136,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if spec.Networking.Calico != nil {
 			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking", "calico"))...)
 		}
+	}
+
+	if spec.NodeAuthorization != nil {
+		allErrs = append(allErrs, validateNodeAuthorization(spec.NodeAuthorization, c, fieldPath.Child("nodeAuthorization"))...)
 	}
 
 	// IAM additionalPolicies
@@ -131,6 +172,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateDockerConfig(spec.Docker, fieldPath.Child("docker"))...)
 	}
 
+	if spec.Assets != nil {
+		if spec.Assets.ContainerProxy != nil && spec.Assets.ContainerRegistry != nil {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("assets", "containerProxy"), "containerProxy cannot be used in conjunction with containerRegistry"))
+		}
+	}
+
 	if spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
@@ -156,6 +203,42 @@ func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 		detail := fmt.Sprintf("Network contains bits outside prefix (did you mean \"%s/%d\")", ipNet.IP, maskSize)
 		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
 	}
+	return allErrs
+}
+
+func validateTopology(topology *kops.TopologySpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if topology.Masters == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("masters"), ""))
+	} else {
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("masters"), &topology.Masters, kops.SupportedTopologies)...)
+	}
+
+	if topology.Nodes == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("nodes"), ""))
+	} else {
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("nodes"), &topology.Nodes, kops.SupportedTopologies)...)
+	}
+
+	if topology.Bastion != nil {
+		bastion := topology.Bastion
+		if topology.Masters == kops.TopologyPublic || topology.Nodes == kops.TopologyPublic {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("bastion"), "bastion requires masters and nodes to have private topology"))
+		}
+		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("bastion", "idleTimeoutSeconds"), *bastion.IdleTimeoutSeconds, "bastion idleTimeoutSeconds should be greater than zero"))
+		}
+		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds > 3600 {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("bastion", "idleTimeoutSeconds"), *bastion.IdleTimeoutSeconds, "bastion idleTimeoutSeconds cannot be greater than one hour"))
+		}
+	}
+
+	if topology.DNS != nil {
+		value := string(topology.DNS.Type)
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("dns", "type"), &value, kops.SupportedDnsTypes)...)
+	}
+
 	return allErrs
 }
 
@@ -210,6 +293,14 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 		allErrs = append(allErrs, validateCIDR(subnet.CIDR, fieldPath.Child("cidr"))...)
 	}
 
+	if subnet.Egress != "" {
+		if !strings.HasPrefix(subnet.Egress, "nat-") && !strings.HasPrefix(subnet.Egress, "i-") && subnet.Egress != kops.EgressExternal {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress, "egress must be of type NAT Gateway or NAT EC2 Instance or 'External'"))
+		}
+		if subnet.Egress != kops.EgressExternal && subnet.Type != "Private" {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private subnets"))
+		}
+	}
 	return allErrs
 }
 
@@ -272,8 +363,15 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 	return allErrs
 }
 
-func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) field.ErrorList {
+func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	if len(v.AdmissionControl) > 0 {
+		if len(v.DisableAdmissionPlugins) > 0 {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("disableAdmissionPlugins"),
+				"disableAdmissionPlugins is mutually exclusive, you cannot use both admissionControl and disableAdmissionPlugins together"))
+		}
+	}
 
 	proxyClientCertIsNil := v.ProxyClientCertFile == nil
 	proxyClientKeyIsNil := v.ProxyClientKeyFile == nil
@@ -293,6 +391,99 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 	if v.AuthorizationMode != nil && strings.Contains(*v.AuthorizationMode, "Webhook") {
 		if v.AuthorizationWebhookConfigFile == nil {
 			allErrs = append(allErrs, field.Required(fldPath.Child("authorizationWebhookConfigFile"), "Authorization mode Webhook requires authorizationWebhookConfigFile to be specified"))
+		}
+	}
+
+	return allErrs
+}
+
+func validateKubeProxy(k *kops.KubeProxyConfig, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	master := k.Master
+
+	for i, x := range k.IPVSExcludeCIDRS {
+		if _, _, err := net.ParseCIDR(x); err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("ipvsExcludeCidrs").Index(i), x, "Invalid network CIDR"))
+		}
+	}
+
+	if master != "" && !isValidAPIServersURL(master) {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("master"), master, "Not a valid APIServer URL"))
+	}
+
+	return allErrs
+}
+
+func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if k != nil {
+
+		{
+			// Flag removed in 1.6
+			if k.APIServers != "" {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("apiServers"),
+					"api-servers flag was removed in 1.6"))
+			}
+		}
+
+		{
+			// Flag removed in 1.10
+			if k.RequireKubeconfig != nil {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("requireKubeconfig"),
+					"require-kubeconfig flag was removed in 1.10.  (Please be sure you are not using a cluster config from `kops get cluster --full`)"))
+			}
+		}
+
+		if k.BootstrapKubeconfig != "" {
+			if c.Spec.KubeAPIServer == nil {
+				allErrs = append(allErrs, field.Required(kubeletPath.Root().Child("spec").Child("kubeAPIServer"), "bootstrap token require the NodeRestriction admissions controller"))
+			}
+		}
+
+		if k.TopologyManagerPolicy != "" {
+			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("topologyManagerPolicy"), &k.TopologyManagerPolicy, []string{"none", "best-effort", "restricted", "single-numa-node"})...)
+			if !c.IsKubernetesGTE("1.18") {
+				allErrs = append(allErrs, field.Forbidden(kubeletPath.Child("topologyManagerPolicy"), "topologyManagerPolicy requires at least Kubernetes 1.18"))
+			}
+		}
+
+	}
+	return allErrs
+}
+
+func validateNodeAuthorization(n *kops.NodeAuthorizationSpec, c *kops.Cluster, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// @check the feature gate is enabled for this
+	if !featureflag.EnableNodeAuthorization.Enabled() {
+		return field.ErrorList{field.Forbidden(fldPath, "node authorization is experimental feature; set `export KOPS_FEATURE_FLAGS=EnableNodeAuthorization`")}
+	}
+
+	authorizerPath := fldPath.Child("nodeAuthorizer")
+	if c.Spec.NodeAuthorization.NodeAuthorizer == nil {
+		allErrs = append(allErrs, field.Required(authorizerPath, "no node authorization policy has been set"))
+	} else {
+		if c.Spec.NodeAuthorization.NodeAuthorizer.Port < 0 || n.NodeAuthorizer.Port >= 65535 {
+			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("port"), n.NodeAuthorizer.Port, "invalid port"))
+		}
+		if c.Spec.NodeAuthorization.NodeAuthorizer.Timeout != nil && n.NodeAuthorizer.Timeout.Duration <= 0 {
+			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("timeout"), n.NodeAuthorizer.Timeout, "must be greater than zero"))
+		}
+		if c.Spec.NodeAuthorization.NodeAuthorizer.TokenTTL != nil && n.NodeAuthorizer.TokenTTL.Duration < 0 {
+			allErrs = append(allErrs, field.Invalid(authorizerPath.Child("tokenTTL"), n.NodeAuthorizer.TokenTTL, "must be greater than or equal to zero"))
+		}
+
+		// @question: we could probably just default these settings in the model when the node-authorizer is enabled??
+		if c.Spec.KubeAPIServer == nil {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer"), "bootstrap token authentication is not enabled in the kube-apiserver"))
+		} else if c.Spec.KubeAPIServer.EnableBootstrapAuthToken == nil {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "kube-apiserver has not been configured to use bootstrap tokens"))
+		} else if !fi.BoolValue(c.Spec.KubeAPIServer.EnableBootstrapAuthToken) {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "kubeAPIServer", "enableBootstrapAuthToken"), "bootstrap tokens in the kube-apiserver has been disabled"))
 		}
 	}
 
