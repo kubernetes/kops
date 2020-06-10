@@ -16,8 +16,12 @@ limitations under the License.
 
 package fi
 
-// HasName indicates that the task has a Name
+// HasName indicates that the task has a Name.
 type HasName interface {
 	GetName() *string
+}
+
+// HasSetName indicates that the task can set its Name.
+type HasSetName interface {
 	SetName(name string)
 }
