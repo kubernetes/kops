@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/exec"
@@ -85,14 +86,10 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add kubeconfig
 	{
-		// @TODO: Change kubeconfig to be https
-		kubeconfig, err := b.BuildPKIKubeconfig("kube-controller-manager")
-		if err != nil {
-			return err
-		}
+		kubeconfig := b.BuildIssuedKubeconfig("kube-controller-manager", nodetasks.PKIXName{CommonName: rbac.KubeControllerManager}, c)
 		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-controller-manager/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
+			Contents: kubeconfig,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
