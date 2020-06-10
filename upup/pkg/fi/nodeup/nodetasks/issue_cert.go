@@ -30,6 +30,7 @@ import (
 
 // PKIXName is a simplified form of pkix.Name, for better golden test output
 type PKIXName struct {
+	fi.NotADependency
 	CommonName string
 }
 

@@ -17,17 +17,24 @@ limitations under the License.
 package fi
 
 import (
-	"crypto/x509/pkix"
 	"fmt"
 	"reflect"
 
 	"k8s.io/klog"
-
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 type HasDependencies interface {
 	GetDependencies(tasks map[string]Task) []Task
+}
+
+// NotADependency is a marker type to prevent FindTaskDependencies() from considering it a potential dependency.
+type NotADependency struct{}
+
+var _ HasDependencies = &NotADependency{}
+
+func (NotADependency) GetDependencies(map[string]Task) []Task {
+	return nil
 }
 
 // FindTaskDependencies returns a map from each task's key to the discovered list of dependencies
@@ -107,8 +114,6 @@ func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 				// Ignore: not a dependency (?)
 			} else if _, ok := intf.(*ResourceHolder); ok {
 				// Ignore: not a dependency (?)
-			} else if _, ok := intf.(*pkix.Name); ok {
-				// Ignore: not a dependency
 			} else {
 				return fmt.Errorf("Unhandled type for %q: %T", path, v.Interface())
 			}
