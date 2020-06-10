@@ -46,10 +46,6 @@ func (e *Chattr) GetName() *string {
 	return fi.String("Chattr-" + e.File)
 }
 
-func (e *Chattr) SetName(name string) {
-	klog.Fatalf("SetName not supported for Chattr task")
-}
-
 var _ fi.HasDependencies = &Chattr{}
 
 // GetDependencies implements HasDependencies::GetDependencies

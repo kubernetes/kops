@@ -49,10 +49,6 @@ func (f *UserTask) GetName() *string {
 	return &f.Name
 }
 
-func (f *UserTask) SetName(name string) {
-	klog.Fatalf("SetName not supported for User task")
-}
-
 func (e *UserTask) Find(c *fi.Context) (*UserTask, error) {
 	info, err := fi.LookupUser(e.Name)
 	if err != nil {

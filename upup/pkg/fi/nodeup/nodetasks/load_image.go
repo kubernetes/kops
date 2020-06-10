@@ -74,10 +74,6 @@ func (t *LoadImageTask) GetName() *string {
 	return &t.Name
 }
 
-func (t *LoadImageTask) SetName(name string) {
-	klog.Fatalf("SetName not supported for LoadImageTask")
-}
-
 func (t *LoadImageTask) String() string {
 	return fmt.Sprintf("LoadImageTask: %v", t.Sources)
 }

@@ -381,7 +381,3 @@ var _ fi.HasName = &Service{}
 func (f *Service) GetName() *string {
 	return &f.Name
 }
-
-func (f *Service) SetName(name string) {
-	klog.Fatalf("SetName not supported for Service task")
-}
