@@ -174,7 +174,7 @@ func TestValidate_ContainerRegistry_and_ContainerProxy_exclusivity(t *testing.T)
 
 	proxy := "https://proxy.example.com/"
 	c.Spec.Assets.ContainerProxy = &proxy
-	expectErrorFromValidate(t, c, "ContainerProxy cannot be used in conjunction with ContainerRegistry")
+	expectErrorFromValidate(t, c, "containerProxy cannot be used in conjunction with containerRegistry")
 
 	c.Spec.Assets.ContainerRegistry = nil
 	expectNoErrorFromValidate(t, c)
