@@ -30,14 +30,28 @@ var _ fi.ModelBuilder = &CommonBuilder{}
 
 // Build is responsible for copying the common CNI binaries
 func (b *CommonBuilder) Build(c *fi.ModelBuilderContext) error {
+	// Based on https://github.com/containernetworking/plugins/releases/tag/v0.7.5
 	assets := []string{
-		"bandwidth",
 		"bridge",
+		"dhcp",
+		"flannel",
+		"host-device",
 		"host-local",
+		"ipvlan",
 		"loopback",
+		"macvlan",
 		"portmap",
 		"ptp",
 		"tuning",
+		"vlan",
+	}
+
+	// Additions in https://github.com/containernetworking/plugins/releases/tag/v0.8.6
+	if b.IsKubernetesGTE("1.15") {
+		assets = append(assets, "bandwidth")
+		assets = append(assets, "firewall")
+		assets = append(assets, "sbr")
+		assets = append(assets, "static")
 	}
 
 	if err := b.AddCNIBinAssets(c, assets); err != nil {
