@@ -1007,6 +1007,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
 	case "kube-router":
 		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
+		enabled := false
+		cluster.Spec.KubeProxy.Enabled = &enabled
 	case "amazonvpc", "amazon-vpc-routed-eni":
 		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
 	case "cilium":
