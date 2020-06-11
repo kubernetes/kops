@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
@@ -55,10 +57,19 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ValidateClusterOptions{}
 	options.InitDefaults()
 
+	validateClusterLong := templates.LongDesc(i18n.T(`
+	This commands validates the following components:
+
+	1. All k8s masters are running and have "Ready" status.
+	2. All k8s nodes are running and have "Ready" status.
+	3. Component status returns healthy for all components.
+	4. All pods with a critical priority are running and healthy.
+	`))
+
 	cmd := &cobra.Command{
 		Use:     "cluster",
 		Short:   validateShort,
-		Long:    validateLong,
+		Long:    validateClusterLong,
 		Example: validateExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.TODO()
