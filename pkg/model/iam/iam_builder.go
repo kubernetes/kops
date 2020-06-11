@@ -490,14 +490,15 @@ func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vf
 		}
 	}
 
-	{
-		p := "s3://justinsb-discovery/clusters/cd.awsdata.com"
-		vfsPath, err := vfs.Context.BuildVfsPath(p)
+	if cluster.Spec.Discovery != nil && cluster.Spec.Discovery.Base != "" {
+		base, err := vfs.Context.BuildVfsPath(cluster.Spec.Discovery.Base)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse VFS path %q: %v", p, err)
+			return nil, fmt.Errorf("cannot parse VFS path %q: %v", cluster.Spec.Discovery.Base, err)
 		}
 
-		paths = append(paths, vfsPath)
+		p := base.Join(cluster.Name + "/identity")
+
+		paths = append(paths, p)
 	}
 
 	return paths, nil

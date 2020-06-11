@@ -191,8 +191,15 @@ type ClusterSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the default rolling-update settings for instance groups
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+
 	// ServiceOIDCProvider defines the OIDC provider setup for the cluster (AWS only)
 	ServiceOIDCProvider *ServiceOIDCProviderSpec `json:"serviceOIDCProvider,omitempty"`
+
+	Discovery *DiscoverySpec `json:"discovery,omitempty"`
+}
+
+type DiscoverySpec struct {
+	Base string `json:"base,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

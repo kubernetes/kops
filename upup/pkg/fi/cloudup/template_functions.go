@@ -50,6 +50,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/env"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // TemplateFunctions provides a collection of methods used throughout the templates
@@ -385,9 +386,18 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		ConfigBase: tf.cluster.Spec.ConfigBase,
 	}
 
-	config.PublicDiscovery = &kopscontrollerconfig.PublicDiscovery{
-		PublishBase: "s3://justinsb-discovery/clusters/cd.awsdata.com",
-		PublishACL:  "public-read",
+	if tf.cluster.Spec.Discovery != nil && tf.cluster.Spec.Discovery.Base != "" {
+		base, err := vfs.Context.BuildVfsPath(tf.cluster.Spec.Discovery.Base)
+		if err != nil {
+			return "", fmt.Errorf("cannot parse VFS path %q: %v", tf.cluster.Spec.Discovery.Base, err)
+		}
+
+		p := base.Join(tf.cluster.Name + "/identity")
+
+		config.PublicDiscovery = &kopscontrollerconfig.PublicDiscovery{
+			PublishBase: p.Path(),
+			PublishACL:  "public-read",
+		}
 	}
 
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
