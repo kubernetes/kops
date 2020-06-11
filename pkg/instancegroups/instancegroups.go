@@ -108,11 +108,6 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 	}
 	maxConcurrency := maxSurge + settings.MaxUnavailable.IntValue()
 
-	if maxConcurrency == 0 {
-		klog.Infof("Rolling updates for InstanceGroup %s are disabled", group.InstanceGroup.Name)
-		return nil
-	}
-
 	if group.InstanceGroup.Spec.Role == api.InstanceGroupRoleMaster && maxSurge != 0 {
 		// Masters are incapable of surging because they rely on registering themselves through
 		// the local apiserver. That apiserver depends on the local etcd, which relies on being
@@ -155,6 +150,11 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 				}
 			}
 		}
+	}
+
+	if !*settings.DrainAndTerminate {
+		klog.Infof("Rolling updates for InstanceGroup %s are disabled", group.InstanceGroup.Name)
+		return nil
 	}
 
 	terminateChan := make(chan error, maxConcurrency)

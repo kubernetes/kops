@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstances int) kops.RollingUpdate {
@@ -29,12 +30,19 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 	}
 
 	if def := cluster.Spec.RollingUpdate; def != nil {
+		if rollingUpdate.DrainAndTerminate == nil {
+			rollingUpdate.DrainAndTerminate = def.DrainAndTerminate
+		}
 		if rollingUpdate.MaxUnavailable == nil {
 			rollingUpdate.MaxUnavailable = def.MaxUnavailable
 		}
 		if rollingUpdate.MaxSurge == nil {
 			rollingUpdate.MaxSurge = def.MaxSurge
 		}
+	}
+
+	if rollingUpdate.DrainAndTerminate == nil {
+		rollingUpdate.DrainAndTerminate = fi.Bool(true)
 	}
 
 	if rollingUpdate.MaxSurge == nil {

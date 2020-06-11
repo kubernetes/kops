@@ -1025,8 +1025,10 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 
 func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Path, onMasterInstanceGroup bool) field.ErrorList {
 	allErrs := field.ErrorList{}
+	var err error
+	unavailable := 1
 	if rollingUpdate.MaxUnavailable != nil {
-		unavailable, err := intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, 1, false)
+		unavailable, err = intstr.GetValueFromIntOrPercent(rollingUpdate.MaxUnavailable, 1, false)
 		if err != nil {
 			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxUnavailable"), rollingUpdate.MaxUnavailable,
 				fmt.Sprintf("Unable to parse: %v", err)))
@@ -1045,6 +1047,9 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 			allErrs = append(allErrs, field.Forbidden(fldpath.Child("maxSurge"), "Cannot surge instance groups with role \"Master\""))
 		} else if surge < 0 {
 			allErrs = append(allErrs, field.Invalid(fldpath.Child("maxSurge"), rollingUpdate.MaxSurge, "Cannot be negative"))
+		}
+		if unavailable == 0 && surge == 0 {
+			allErrs = append(allErrs, field.Forbidden(fldpath.Child("maxSurge"), "Cannot be zero if maxUnavailable is zero"))
 		}
 	}
 
