@@ -100,7 +100,9 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	tf.AddTo(templates.TemplateFunctions, secretStore)
 
 	bcb := BootstrapChannelBuilder{
-		cluster:      cluster,
+		KopsModelContext: &model.KopsModelContext{
+			Cluster: cluster,
+		},
 		templates:    templates,
 		assetBuilder: assets.NewAssetBuilder(cluster, ""),
 	}
