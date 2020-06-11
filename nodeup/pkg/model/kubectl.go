@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
@@ -60,14 +61,15 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kubecfg")
-		if err != nil {
-			return err
+		name := nodetasks.PKIXName{
+			CommonName:   "kubecfg",
+			Organization: []string{rbac.SystemPrivilegedGroup},
 		}
+		kubeconfig := b.BuildIssuedKubeconfig("kubecfg", name, c)
 
 		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kubectl/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
+			Contents: kubeconfig,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
@@ -88,7 +90,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			c.AddTask(&nodetasks.File{
 				Path:     adminUser.Home + "/.kube/config",
-				Contents: fi.NewStringResource(kubeconfig),
+				Contents: kubeconfig,
 				Type:     nodetasks.FileType_File,
 				Mode:     s("0400"),
 				Owner:    s(adminUser.Name),
