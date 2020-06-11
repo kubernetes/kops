@@ -33,6 +33,11 @@ func TestSettings(t *testing.T) {
 		nonDefaultValue interface{}
 	}{
 		{
+			name:            "DrainAndTerminate",
+			defaultValue:    true,
+			nonDefaultValue: false,
+		},
+		{
 			name:            "MaxUnavailable",
 			defaultValue:    intstr.FromInt(1),
 			nonDefaultValue: intstr.FromInt(2),
