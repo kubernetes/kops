@@ -62,6 +62,7 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 		HealthCheckType:                  input.HealthCheckType,
 		Instances:                        []*autoscaling.Instance{},
 		LaunchConfigurationName:          input.LaunchConfigurationName,
+		LaunchTemplate:                   input.LaunchTemplate,
 		LoadBalancerNames:                input.LoadBalancerNames,
 		MaxSize:                          input.MaxSize,
 		MinSize:                          input.MinSize,

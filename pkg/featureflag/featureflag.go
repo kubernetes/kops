@@ -50,7 +50,7 @@ var (
 	// DNSPreCreate controls whether we pre-create DNS records.
 	DNSPreCreate = New("DNSPreCreate", Bool(true))
 	// EnableLaunchTemplates indicates we wish to switch to using launch templates rather than launchconfigurations
-	EnableLaunchTemplates = New("EnableLaunchTemplates", Bool(false))
+	EnableLaunchTemplates = New("EnableLaunchTemplates", Bool(true))
 	//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7
 	EnableExternalCloudController = New("EnableExternalCloudController", Bool(false))
 	// EnableExternalDNS enables external DNS

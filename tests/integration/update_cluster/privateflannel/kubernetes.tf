@@ -121,12 +121,15 @@ resource "aws_autoscaling_attachment" "master-us-test-1a-masters-privateflannel-
 }
 
 resource "aws_autoscaling_group" "bastion-privateflannel-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.bastion-privateflannel-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "bastion.privateflannel.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.bastion-privateflannel-example-com.id
+    version = aws_launch_template.bastion-privateflannel-example-com.latest_version
+  }
+  max_size            = 1
+  metrics_granularity = "1Minute"
+  min_size            = 1
+  name                = "bastion.privateflannel.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -156,12 +159,15 @@ resource "aws_autoscaling_group" "bastion-privateflannel-example-com" {
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-privateflannel-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.master-us-test-1a-masters-privateflannel-example-com.id
-  max_size             = 1
-  metrics_granularity  = "1Minute"
-  min_size             = 1
-  name                 = "master-us-test-1a.masters.privateflannel.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.master-us-test-1a-masters-privateflannel-example-com.id
+    version = aws_launch_template.master-us-test-1a-masters-privateflannel-example-com.latest_version
+  }
+  max_size            = 1
+  metrics_granularity = "1Minute"
+  min_size            = 1
+  name                = "master-us-test-1a.masters.privateflannel.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -191,12 +197,15 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateflannel-examp
 }
 
 resource "aws_autoscaling_group" "nodes-privateflannel-example-com" {
-  enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
-  launch_configuration = aws_launch_configuration.nodes-privateflannel-example-com.id
-  max_size             = 2
-  metrics_granularity  = "1Minute"
-  min_size             = 2
-  name                 = "nodes.privateflannel.example.com"
+  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  launch_template {
+    id      = aws_launch_template.nodes-privateflannel-example-com.id
+    version = aws_launch_template.nodes-privateflannel-example-com.latest_version
+  }
+  max_size            = 2
+  metrics_granularity = "1Minute"
+  min_size            = 2
+  name                = "nodes.privateflannel.example.com"
   tag {
     key                 = "KubernetesCluster"
     propagate_at_launch = true
@@ -377,67 +386,148 @@ resource "aws_key_pair" "kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c
   public_key = file("${path.module}/data/aws_key_pair_kubernetes.privateflannel.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
 }
 
-resource "aws_launch_configuration" "bastion-privateflannel-example-com" {
-  associate_public_ip_address = true
-  enable_monitoring           = false
-  iam_instance_profile        = aws_iam_instance_profile.bastions-privateflannel-example-com.id
-  image_id                    = "ami-12345678"
-  instance_type               = "t2.micro"
-  key_name                    = aws_key_pair.kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_template" "bastion-privateflannel-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 32
+      volume_type           = "gp2"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.bastions-privateflannel-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "t2.micro"
+  key_name      = aws_key_pair.kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "bastion.privateflannel.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 32
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.bastion-privateflannel-example-com.id]
   }
-  security_groups = [aws_security_group.bastion-privateflannel-example-com.id]
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                                = "privateflannel.example.com"
+      "Name"                                             = "bastion.privateflannel.example.com"
+      "k8s.io/role/bastion"                              = "1"
+      "kops.k8s.io/instancegroup"                        = "bastion"
+      "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                = "privateflannel.example.com"
+      "Name"                                             = "bastion.privateflannel.example.com"
+      "k8s.io/role/bastion"                              = "1"
+      "kops.k8s.io/instancegroup"                        = "bastion"
+      "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+    }
+  }
 }
 
-resource "aws_launch_configuration" "master-us-test-1a-masters-privateflannel-example-com" {
-  associate_public_ip_address = false
-  enable_monitoring           = false
-  ephemeral_block_device {
+resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 64
+      volume_type           = "gp2"
+    }
+  }
+  block_device_mappings {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
-  iam_instance_profile = aws_iam_instance_profile.masters-privateflannel-example-com.id
-  image_id             = "ami-12345678"
-  instance_type        = "m3.medium"
-  key_name             = aws_key_pair.kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+  iam_instance_profile {
+    name = aws_iam_instance_profile.masters-privateflannel-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "m3.medium"
+  key_name      = aws_key_pair.kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "master-us-test-1a.masters.privateflannel.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 64
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = false
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.masters-privateflannel-example-com.id]
   }
-  security_groups = [aws_security_group.masters-privateflannel-example-com.id]
-  user_data       = file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.privateflannel.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                                = "privateflannel.example.com"
+      "Name"                                             = "master-us-test-1a.masters.privateflannel.example.com"
+      "k8s.io/role/master"                               = "1"
+      "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
+      "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                = "privateflannel.example.com"
+      "Name"                                             = "master-us-test-1a.masters.privateflannel.example.com"
+      "k8s.io/role/master"                               = "1"
+      "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
+      "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privateflannel.example.com_user_data")
 }
 
-resource "aws_launch_configuration" "nodes-privateflannel-example-com" {
-  associate_public_ip_address = false
-  enable_monitoring           = false
-  iam_instance_profile        = aws_iam_instance_profile.nodes-privateflannel-example-com.id
-  image_id                    = "ami-12345678"
-  instance_type               = "t2.medium"
-  key_name                    = aws_key_pair.kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
+resource "aws_launch_template" "nodes-privateflannel-example-com" {
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      delete_on_termination = true
+      volume_size           = 128
+      volume_type           = "gp2"
+    }
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes-privateflannel-example-com.id
+  }
+  image_id      = "ami-12345678"
+  instance_type = "t2.medium"
+  key_name      = aws_key_pair.kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
   name_prefix = "nodes.privateflannel.example.com-"
-  root_block_device {
-    delete_on_termination = true
-    volume_size           = 128
-    volume_type           = "gp2"
+  network_interfaces {
+    associate_public_ip_address = false
+    delete_on_termination       = true
+    security_groups             = [aws_security_group.nodes-privateflannel-example-com.id]
   }
-  security_groups = [aws_security_group.nodes-privateflannel-example-com.id]
-  user_data       = file("${path.module}/data/aws_launch_configuration_nodes.privateflannel.example.com_user_data")
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      "KubernetesCluster"                                = "privateflannel.example.com"
+      "Name"                                             = "nodes.privateflannel.example.com"
+      "k8s.io/role/node"                                 = "1"
+      "kops.k8s.io/instancegroup"                        = "nodes"
+      "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                = "privateflannel.example.com"
+      "Name"                                             = "nodes.privateflannel.example.com"
+      "k8s.io/role/node"                                 = "1"
+      "kops.k8s.io/instancegroup"                        = "nodes"
+      "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+    }
+  }
+  user_data = file("${path.module}/data/aws_launch_template_nodes.privateflannel.example.com_user_data")
 }
 
 resource "aws_nat_gateway" "us-test-1a-privateflannel-example-com" {
