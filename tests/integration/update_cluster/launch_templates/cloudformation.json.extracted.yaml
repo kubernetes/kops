@@ -1,4 +1,4 @@
-Resources.AWSEC2LaunchTemplatemasterustest1amasterslaunchtemplatesexamplecom.Properties.LaunchTemplateData.UserData: |
+Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatesexamplecom.Properties.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -303,7 +303,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterslaunchtemplatesexamplecom.Pro
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSEC2LaunchTemplatemasterustest1bmasterslaunchtemplatesexamplecom.Properties.LaunchTemplateData.UserData: |
+Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatesexamplecom.Properties.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -608,7 +608,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmasterslaunchtemplatesexamplecom.Pro
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSEC2LaunchTemplatemasterustest1cmasterslaunchtemplatesexamplecom.Properties.LaunchTemplateData.UserData: |
+Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatesexamplecom.Properties.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -913,7 +913,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmasterslaunchtemplatesexamplecom.Pro
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSEC2LaunchTemplatenodeslaunchtemplatesexamplecom.Properties.LaunchTemplateData.UserData: |
+Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Properties.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #

@@ -4,8 +4,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "bastion.privatecilium.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationbastionprivateciliumexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatebastionprivateciliumexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatebastionprivateciliumexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 1,
         "MinSize": 1,
@@ -67,8 +75,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1a.masters.privatecilium.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivateciliumexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 1,
         "MinSize": 1,
@@ -130,8 +146,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "nodes.privatecilium.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationnodesprivateciliumexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodesprivateciliumexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodesprivateciliumexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 2,
         "MinSize": 2,
@@ -182,97 +206,6 @@
             ]
           }
         ]
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationbastionprivateciliumexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 32,
-              "DeleteOnTermination": true
-            }
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilebastionsprivateciliumexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "t2.micro",
-        "KeyName": "kubernetes.privatecilium.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupbastionprivateciliumexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationmasterustest1amastersprivateciliumexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": false,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 64,
-              "DeleteOnTermination": true
-            }
-          },
-          {
-            "DeviceName": "/dev/sdc",
-            "VirtualName": "ephemeral0"
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilemastersprivateciliumexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "m3.medium",
-        "KeyName": "kubernetes.privatecilium.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupmastersprivateciliumexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationnodesprivateciliumexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": false,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 128,
-              "DeleteOnTermination": true
-            }
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilenodesprivateciliumexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "t2.medium",
-        "KeyName": "kubernetes.privatecilium.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupnodesprivateciliumexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
       }
     },
     "AWSEC2DHCPOptionsprivateciliumexamplecom": {
@@ -335,6 +268,283 @@
             "Value": "owned"
           }
         ]
+      }
+    },
+    "AWSEC2LaunchTemplatebastionprivateciliumexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "bastion.privatecilium.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 32,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilebastionsprivateciliumexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.micro",
+          "KeyName": "kubernetes.privatecilium.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupbastionprivateciliumexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecilium.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "bastion.privatecilium.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/bastion",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "bastion"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecilium.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecilium.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "bastion.privatecilium.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/bastion",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "bastion"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecilium.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amastersprivateciliumexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.privatecilium.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 64,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemastersprivateciliumexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.privatecilium.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": false,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmastersprivateciliumexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecilium.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.privatecilium.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecilium.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecilium.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.privatecilium.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecilium.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodesprivateciliumexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.privatecilium.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 128,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodesprivateciliumexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.privatecilium.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": false,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesprivateciliumexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecilium.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.privatecilium.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecilium.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "privatecilium.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.privatecilium.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/privatecilium.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
       }
     },
     "AWSEC2NatGatewayustest1aprivateciliumexamplecom": {
