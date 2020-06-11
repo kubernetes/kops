@@ -81,11 +81,16 @@ provider "aws" {
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-tf11-example-com" {
-  name                 = "master-us-test-1a.masters.minimal-tf11.example.com"
-  launch_configuration = "${aws_launch_configuration.master-us-test-1a-masters-minimal-tf11-example-com.id}"
-  max_size             = 1
-  min_size             = 1
-  vpc_zone_identifier  = ["${aws_subnet.us-test-1a-minimal-tf11-example-com.id}"]
+  name = "master-us-test-1a.masters.minimal-tf11.example.com"
+
+  launch_template = {
+    id      = "${aws_launch_template.master-us-test-1a-masters-minimal-tf11-example-com.id}"
+    version = "${aws_launch_template.master-us-test-1a-masters-minimal-tf11-example-com.latest_version}"
+  }
+
+  max_size            = 1
+  min_size            = 1
+  vpc_zone_identifier = ["${aws_subnet.us-test-1a-minimal-tf11-example-com.id}"]
 
   tag = {
     key                 = "KubernetesCluster"
@@ -122,11 +127,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-tf11-example
 }
 
 resource "aws_autoscaling_group" "nodes-minimal-tf11-example-com" {
-  name                 = "nodes.minimal-tf11.example.com"
-  launch_configuration = "${aws_launch_configuration.nodes-minimal-tf11-example-com.id}"
-  max_size             = 2
-  min_size             = 2
-  vpc_zone_identifier  = ["${aws_subnet.us-test-1a-minimal-tf11-example-com.id}"]
+  name = "nodes.minimal-tf11.example.com"
+
+  launch_template = {
+    id      = "${aws_launch_template.nodes-minimal-tf11-example-com.id}"
+    version = "${aws_launch_template.nodes-minimal-tf11-example-com.latest_version}"
+  }
+
+  max_size            = 2
+  min_size            = 2
+  vpc_zone_identifier = ["${aws_subnet.us-test-1a-minimal-tf11-example-com.id}"]
 
   tag = {
     key                 = "KubernetesCluster"
@@ -239,55 +249,125 @@ resource "aws_key_pair" "kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39
   public_key = "${file("${path.module}/data/aws_key_pair_kubernetes.minimal-tf11.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")}"
 }
 
-resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-tf11-example-com" {
-  name_prefix                 = "master-us-test-1a.masters.minimal-tf11.example.com-"
-  image_id                    = "ami-12345678"
-  instance_type               = "m3.medium"
-  key_name                    = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
-  iam_instance_profile        = "${aws_iam_instance_profile.masters-minimal-tf11-example-com.id}"
-  security_groups             = ["${aws_security_group.masters-minimal-tf11-example-com.id}"]
-  associate_public_ip_address = true
-  user_data                   = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.minimal-tf11.example.com_user_data")}"
+resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-com" {
+  name_prefix = "master-us-test-1a.masters.minimal-tf11.example.com-"
 
-  root_block_device = {
-    volume_type           = "gp2"
-    volume_size           = 64
-    delete_on_termination = true
+  lifecycle = {
+    create_before_destroy = true
   }
 
-  ephemeral_block_device = {
+  block_device_mappings = {
+    device_name = "/dev/xvda"
+
+    ebs = {
+      volume_type           = "gp2"
+      volume_size           = 64
+      delete_on_termination = true
+    }
+  }
+
+  block_device_mappings = {
     device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
-  lifecycle = {
-    create_before_destroy = true
+  iam_instance_profile = {
+    name = "${aws_iam_instance_profile.masters-minimal-tf11-example-com.id}"
   }
 
-  enable_monitoring = false
+  image_id      = "ami-12345678"
+  instance_type = "m3.medium"
+  key_name      = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
+
+  network_interfaces = {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = ["${aws_security_group.masters-minimal-tf11-example-com.id}"]
+  }
+
+  tag_specifications = {
+    resource_type = "instance"
+
+    tags = {
+      KubernetesCluster                                = "minimal-tf11.example.com"
+      Name                                             = "master-us-test-1a.masters.minimal-tf11.example.com"
+      "k8s.io/role/master"                             = "1"
+      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
+      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+    }
+  }
+
+  tag_specifications = {
+    resource_type = "volume"
+
+    tags = {
+      KubernetesCluster                                = "minimal-tf11.example.com"
+      Name                                             = "master-us-test-1a.masters.minimal-tf11.example.com"
+      "k8s.io/role/master"                             = "1"
+      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
+      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+    }
+  }
+
+  user_data = "${file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal-tf11.example.com_user_data")}"
 }
 
-resource "aws_launch_configuration" "nodes-minimal-tf11-example-com" {
-  name_prefix                 = "nodes.minimal-tf11.example.com-"
-  image_id                    = "ami-12345678"
-  instance_type               = "t2.medium"
-  key_name                    = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
-  iam_instance_profile        = "${aws_iam_instance_profile.nodes-minimal-tf11-example-com.id}"
-  security_groups             = ["${aws_security_group.nodes-minimal-tf11-example-com.id}"]
-  associate_public_ip_address = true
-  user_data                   = "${file("${path.module}/data/aws_launch_configuration_nodes.minimal-tf11.example.com_user_data")}"
-
-  root_block_device = {
-    volume_type           = "gp2"
-    volume_size           = 128
-    delete_on_termination = true
-  }
+resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
+  name_prefix = "nodes.minimal-tf11.example.com-"
 
   lifecycle = {
     create_before_destroy = true
   }
 
-  enable_monitoring = false
+  block_device_mappings = {
+    device_name = "/dev/xvda"
+
+    ebs = {
+      volume_type           = "gp2"
+      volume_size           = 128
+      delete_on_termination = true
+    }
+  }
+
+  iam_instance_profile = {
+    name = "${aws_iam_instance_profile.nodes-minimal-tf11-example-com.id}"
+  }
+
+  image_id      = "ami-12345678"
+  instance_type = "t2.medium"
+  key_name      = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
+
+  network_interfaces = {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = ["${aws_security_group.nodes-minimal-tf11-example-com.id}"]
+  }
+
+  tag_specifications = {
+    resource_type = "instance"
+
+    tags = {
+      KubernetesCluster                                = "minimal-tf11.example.com"
+      Name                                             = "nodes.minimal-tf11.example.com"
+      "k8s.io/role/node"                               = "1"
+      "kops.k8s.io/instancegroup"                      = "nodes"
+      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+    }
+  }
+
+  tag_specifications = {
+    resource_type = "volume"
+
+    tags = {
+      KubernetesCluster                                = "minimal-tf11.example.com"
+      Name                                             = "nodes.minimal-tf11.example.com"
+      "k8s.io/role/node"                               = "1"
+      "kops.k8s.io/instancegroup"                      = "nodes"
+      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+    }
+  }
+
+  user_data = "${file("${path.module}/data/aws_launch_template_nodes.minimal-tf11.example.com_user_data")}"
 }
 
 resource "aws_route" "route-0-0-0-0--0" {

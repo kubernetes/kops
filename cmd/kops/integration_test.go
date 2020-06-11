@@ -52,17 +52,17 @@ import (
 const updateClusterTestBase = "../../tests/integration/update_cluster/"
 
 type integrationTest struct {
-	clusterName        string
-	srcDir             string
-	version            string
-	private            bool
-	zones              int
-	expectPolicies     bool
-	launchTemplate     bool
-	lifecycleOverrides []string
-	sshKey             bool
-	jsonOutput         bool
-	bastionUserData    bool
+	clusterName         string
+	srcDir              string
+	version             string
+	private             bool
+	zones               int
+	expectPolicies      bool
+	launchConfiguration bool
+	lifecycleOverrides  []string
+	sshKey              bool
+	jsonOutput          bool
+	bastionUserData     bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
@@ -111,8 +111,8 @@ func (i *integrationTest) withPrivate() *integrationTest {
 	return i
 }
 
-func (i *integrationTest) withLaunchTemplate() *integrationTest {
-	i.launchTemplate = true
+func (i *integrationTest) withLaunchConfiguration() *integrationTest {
+	i.launchConfiguration = true
 	return i
 }
 
@@ -317,14 +317,14 @@ func TestPhaseCluster(t *testing.T) {
 
 // TestMixedInstancesASG tests ASGs using a mixed instance policy
 func TestMixedInstancesASG(t *testing.T) {
-	newIntegrationTest("mixedinstances.example.com", "mixed_instances").withZones(3).withLaunchTemplate().runTestTerraformAWS(t)
-	newIntegrationTest("mixedinstances.example.com", "mixed_instances").withZones(3).withLaunchTemplate().runTestCloudformation(t)
+	newIntegrationTest("mixedinstances.example.com", "mixed_instances").withZones(3).runTestTerraformAWS(t)
+	newIntegrationTest("mixedinstances.example.com", "mixed_instances").withZones(3).runTestCloudformation(t)
 }
 
 // TestMixedInstancesSpotASG tests ASGs using a mixed instance policy and spot instances
 func TestMixedInstancesSpotASG(t *testing.T) {
-	newIntegrationTest("mixedinstances.example.com", "mixed_instances_spot").withZones(3).withLaunchTemplate().runTestTerraformAWS(t)
-	newIntegrationTest("mixedinstances.example.com", "mixed_instances_spot").withZones(3).withLaunchTemplate().runTestCloudformation(t)
+	newIntegrationTest("mixedinstances.example.com", "mixed_instances_spot").withZones(3).runTestTerraformAWS(t)
+	newIntegrationTest("mixedinstances.example.com", "mixed_instances_spot").withZones(3).runTestCloudformation(t)
 }
 
 // TestContainerdCloudformation runs the test on a containerd configuration
@@ -332,16 +332,16 @@ func TestContainerdCloudformation(t *testing.T) {
 	newIntegrationTest("containerd.example.com", "containerd-cloudformation").runTestCloudformation(t)
 }
 
-// TestLaunchTemplatesASG tests ASGs using launch templates instead of launch configurations
-func TestLaunchTemplatesASG(t *testing.T) {
-	featureflag.ParseFlags("+EnableLaunchTemplates")
+// TestLaunchConfigurationASG tests ASGs using launch configurations instead of launch templates
+func TestLaunchConfigurationASG(t *testing.T) {
+	featureflag.ParseFlags("-EnableLaunchTemplates")
 	unsetFeaureFlag := func() {
-		featureflag.ParseFlags("-EnableLaunchTemplates")
+		featureflag.ParseFlags("+EnableLaunchTemplates")
 	}
 	defer unsetFeaureFlag()
 
-	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchTemplate().runTestTerraformAWS(t)
-	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchTemplate().runTestCloudformation(t)
+	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchConfiguration().runTestTerraformAWS(t)
+	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchConfiguration().runTestCloudformation(t)
 }
 
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
@@ -497,10 +497,10 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 
 	expectedFilenames := []string{}
 
-	if i.launchTemplate {
-		expectedFilenames = append(expectedFilenames, "aws_launch_template_nodes."+i.clusterName+"_user_data")
-	} else {
+	if i.launchConfiguration {
 		expectedFilenames = append(expectedFilenames, "aws_launch_configuration_nodes."+i.clusterName+"_user_data")
+	} else {
+		expectedFilenames = append(expectedFilenames, "aws_launch_template_nodes."+i.clusterName+"_user_data")
 	}
 	if i.sshKey {
 		expectedFilenames = append(expectedFilenames, "aws_key_pair_kubernetes."+i.clusterName+"-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
@@ -528,7 +528,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
 			}...)
 			if i.bastionUserData {
-				expectedFilenames = append(expectedFilenames, "aws_launch_configuration_bastion."+i.clusterName+"_user_data")
+				expectedFilenames = append(expectedFilenames, "aws_launch_template_bastion."+i.clusterName+"_user_data")
 			}
 		}
 	}
@@ -561,7 +561,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 			expectedFilenames = append(expectedFilenames, []string{
 				"aws_iam_role_bastions." + i.clusterName + "_policy",
 				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-				"aws_launch_configuration_bastion." + i.clusterName + "_user_data",
+				"aws_launch_template_bastion." + i.clusterName + "_user_data",
 			}...)
 		}
 	} else if phase == cloudup.PhaseCluster {

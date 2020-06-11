@@ -1,4 +1,4 @@
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatemasterustest1amastersminimalexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -301,7 +301,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatenodesminimalexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #

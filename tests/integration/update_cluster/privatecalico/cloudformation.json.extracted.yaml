@@ -1,5 +1,5 @@
-Resources.AWSAutoScalingLaunchConfigurationbastionprivatecalicoexamplecom.Properties.UserData: ""
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatebastionprivatecalicoexamplecom.Properties.LaunchTemplateData.UserData: ""
+Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -300,7 +300,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersprivatecalicoexa
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSAutoScalingLaunchConfigurationnodesprivatecalicoexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #

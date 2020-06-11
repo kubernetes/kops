@@ -92,7 +92,10 @@
     "aws_autoscaling_group": {
       "master-us-test-1a-masters-minimal-json-example-com": {
         "name": "master-us-test-1a.masters.minimal-json.example.com",
-        "launch_configuration": "${aws_launch_configuration.master-us-test-1a-masters-minimal-json-example-com.id}",
+        "launch_template": {
+          "id": "${aws_launch_template.master-us-test-1a-masters-minimal-json-example-com.id}",
+          "version": "${aws_launch_template.master-us-test-1a-masters-minimal-json-example-com.latest_version}"
+        },
         "max_size": 1,
         "min_size": 1,
         "vpc_zone_identifier": [
@@ -139,7 +142,10 @@
       },
       "nodes-minimal-json-example-com": {
         "name": "nodes.minimal-json.example.com",
-        "launch_configuration": "${aws_launch_configuration.nodes-minimal-json-example-com.id}",
+        "launch_template": {
+          "id": "${aws_launch_template.nodes-minimal-json-example-com.id}",
+          "version": "${aws_launch_template.nodes-minimal-json-example-com.latest_version}"
+        },
         "max_size": 2,
         "min_size": 2,
         "vpc_zone_identifier": [
@@ -261,54 +267,126 @@
         "public_key": "${file(\"${path.module}/data/aws_key_pair_kubernetes.minimal-json.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key\")}"
       }
     },
-    "aws_launch_configuration": {
+    "aws_launch_template": {
       "master-us-test-1a-masters-minimal-json-example-com": {
         "name_prefix": "master-us-test-1a.masters.minimal-json.example.com-",
-        "image_id": "ami-12345678",
-        "instance_type": "m3.medium",
-        "key_name": "${aws_key_pair.kubernetes-minimal-json-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}",
-        "iam_instance_profile": "${aws_iam_instance_profile.masters-minimal-json-example-com.id}",
-        "security_groups": [
-          "${aws_security_group.masters-minimal-json-example-com.id}"
-        ],
-        "associate_public_ip_address": true,
-        "user_data": "${file(\"${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.minimal-json.example.com_user_data\")}",
-        "root_block_device": {
-          "volume_type": "gp2",
-          "volume_size": 64,
-          "delete_on_termination": true
+        "lifecycle": {
+          "create_before_destroy": true
         },
-        "ephemeral_block_device": [
+        "block_device_mappings": [
+          {
+            "device_name": "/dev/xvda",
+            "ebs": [
+              {
+                "volume_type": "gp2",
+                "volume_size": 64,
+                "delete_on_termination": true
+              }
+            ]
+          },
           {
             "device_name": "/dev/sdc",
             "virtual_name": "ephemeral0"
           }
         ],
-        "lifecycle": {
-          "create_before_destroy": true
-        },
-        "enable_monitoring": false
+        "iam_instance_profile": [
+          {
+            "name": "${aws_iam_instance_profile.masters-minimal-json-example-com.id}"
+          }
+        ],
+        "image_id": "ami-12345678",
+        "instance_type": "m3.medium",
+        "key_name": "${aws_key_pair.kubernetes-minimal-json-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}",
+        "network_interfaces": [
+          {
+            "associate_public_ip_address": true,
+            "delete_on_termination": true,
+            "security_groups": [
+              "${aws_security_group.masters-minimal-json-example-com.id}"
+            ]
+          }
+        ],
+        "tag_specifications": [
+          {
+            "resource_type": "instance",
+            "tags": {
+              "KubernetesCluster": "minimal-json.example.com",
+              "Name": "master-us-test-1a.masters.minimal-json.example.com",
+              "k8s.io/role/master": "1",
+              "kops.k8s.io/instancegroup": "master-us-test-1a",
+              "kubernetes.io/cluster/minimal-json.example.com": "owned"
+            }
+          },
+          {
+            "resource_type": "volume",
+            "tags": {
+              "KubernetesCluster": "minimal-json.example.com",
+              "Name": "master-us-test-1a.masters.minimal-json.example.com",
+              "k8s.io/role/master": "1",
+              "kops.k8s.io/instancegroup": "master-us-test-1a",
+              "kubernetes.io/cluster/minimal-json.example.com": "owned"
+            }
+          }
+        ],
+        "user_data": "${file(\"${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal-json.example.com_user_data\")}"
       },
       "nodes-minimal-json-example-com": {
         "name_prefix": "nodes.minimal-json.example.com-",
-        "image_id": "ami-12345678",
-        "instance_type": "t2.medium",
-        "key_name": "${aws_key_pair.kubernetes-minimal-json-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}",
-        "iam_instance_profile": "${aws_iam_instance_profile.nodes-minimal-json-example-com.id}",
-        "security_groups": [
-          "${aws_security_group.nodes-minimal-json-example-com.id}"
-        ],
-        "associate_public_ip_address": true,
-        "user_data": "${file(\"${path.module}/data/aws_launch_configuration_nodes.minimal-json.example.com_user_data\")}",
-        "root_block_device": {
-          "volume_type": "gp2",
-          "volume_size": 128,
-          "delete_on_termination": true
-        },
         "lifecycle": {
           "create_before_destroy": true
         },
-        "enable_monitoring": false
+        "block_device_mappings": [
+          {
+            "device_name": "/dev/xvda",
+            "ebs": [
+              {
+                "volume_type": "gp2",
+                "volume_size": 128,
+                "delete_on_termination": true
+              }
+            ]
+          }
+        ],
+        "iam_instance_profile": [
+          {
+            "name": "${aws_iam_instance_profile.nodes-minimal-json-example-com.id}"
+          }
+        ],
+        "image_id": "ami-12345678",
+        "instance_type": "t2.medium",
+        "key_name": "${aws_key_pair.kubernetes-minimal-json-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}",
+        "network_interfaces": [
+          {
+            "associate_public_ip_address": true,
+            "delete_on_termination": true,
+            "security_groups": [
+              "${aws_security_group.nodes-minimal-json-example-com.id}"
+            ]
+          }
+        ],
+        "tag_specifications": [
+          {
+            "resource_type": "instance",
+            "tags": {
+              "KubernetesCluster": "minimal-json.example.com",
+              "Name": "nodes.minimal-json.example.com",
+              "k8s.io/role/node": "1",
+              "kops.k8s.io/instancegroup": "nodes",
+              "kubernetes.io/cluster/minimal-json.example.com": "owned"
+            }
+          },
+          {
+            "resource_type": "volume",
+            "tags": {
+              "KubernetesCluster": "minimal-json.example.com",
+              "Name": "nodes.minimal-json.example.com",
+              "k8s.io/role/node": "1",
+              "kops.k8s.io/instancegroup": "nodes",
+              "kubernetes.io/cluster/minimal-json.example.com": "owned"
+            }
+          }
+        ],
+        "user_data": "${file(\"${path.module}/data/aws_launch_template_nodes.minimal-json.example.com_user_data\")}"
       }
     },
     "aws_route": {

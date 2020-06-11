@@ -4,8 +4,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "master-us-test-1a.masters.externallb.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 1,
         "MinSize": 1,
@@ -68,8 +76,16 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "nodes.externallb.example.com",
-        "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodesexternallbexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodesexternallbexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
         },
         "MaxSize": 2,
         "MinSize": 2,
@@ -125,68 +141,6 @@
         ]
       }
     },
-    "AWSAutoScalingLaunchConfigurationmasterustest1amastersexternallbexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 64,
-              "DeleteOnTermination": true
-            }
-          },
-          {
-            "DeviceName": "/dev/sdc",
-            "VirtualName": "ephemeral0"
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilemastersexternallbexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "m3.medium",
-        "KeyName": "kubernetes.externallb.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupmastersexternallbexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
-    "AWSAutoScalingLaunchConfigurationnodesexternallbexamplecom": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-      "Properties": {
-        "AssociatePublicIpAddress": true,
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": "/dev/xvda",
-            "Ebs": {
-              "VolumeType": "gp2",
-              "VolumeSize": 128,
-              "DeleteOnTermination": true
-            }
-          }
-        ],
-        "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilenodesexternallbexamplecom"
-        },
-        "ImageId": "ami-12345678",
-        "InstanceType": "t2.medium",
-        "KeyName": "kubernetes.externallb.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
-        "SecurityGroups": [
-          {
-            "Ref": "AWSEC2SecurityGroupnodesexternallbexamplecom"
-          }
-        ],
-        "UserData": "extracted",
-        "InstanceMonitoring": false
-      }
-    },
     "AWSEC2DHCPOptionsexternallbexamplecom": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
@@ -227,6 +181,192 @@
             "Value": "owned"
           }
         ]
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.externallb.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 64,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemastersexternallbexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.externallb.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmastersexternallbexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "externallb.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.externallb.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/externallb.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "externallb.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.externallb.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/externallb.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodesexternallbexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.externallb.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 128,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodesexternallbexamplecom"
+            }
+          },
+          "ImageId": "ami-12345678",
+          "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.externallb.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesexternallbexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "externallb.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.externallb.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/externallb.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "externallb.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.externallb.example.com"
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/externallb.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
       }
     },
     "AWSEC2Route00000": {

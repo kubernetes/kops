@@ -1,4 +1,4 @@
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatemasterustest1bmastersadditionalcidrexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -301,7 +301,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmastersadditionalcidrex
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSAutoScalingLaunchConfigurationnodesadditionalcidrexamplecom.Properties.UserData: |
+Resources.AWSEC2LaunchTemplatenodesadditionalcidrexamplecom.Properties.LaunchTemplateData.UserData: |
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
