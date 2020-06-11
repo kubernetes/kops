@@ -374,7 +374,7 @@ working.
 cluster is working as expected.
 
 ```bash
-kops validate cluster
+kops validate cluster --wait 10m
 ```
 
 You can look at all system components with the following command.

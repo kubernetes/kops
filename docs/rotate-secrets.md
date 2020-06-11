@@ -77,5 +77,5 @@ kubectl delete pods --all --all-namespaces
 The last command from the previous section will take some time. Meanwhile you can check validation to see the cluster gradually coming back online.
 
 ```
-kops validate cluster
+kops validate cluster --wait 10m
 ```
