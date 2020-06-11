@@ -576,10 +576,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
-					Lifecycle:    &clusterLifecycle,
-					assetBuilder: assetBuilder,
-					cluster:      cluster,
-					templates:    templates,
+					KopsModelContext: modelContext,
+					Lifecycle:        &clusterLifecycle,
+					assetBuilder:     assetBuilder,
+					templates:        templates,
 				},
 				&model.PKIModelBuilder{
 					KopsModelContext: modelContext,
