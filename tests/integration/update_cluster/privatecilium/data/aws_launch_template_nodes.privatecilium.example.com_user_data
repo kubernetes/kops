@@ -1,1 +1,208 @@
-IyEvYmluL2Jhc2gKIyBDb3B5cmlnaHQgMjAxNiBUaGUgS3ViZXJuZXRlcyBBdXRob3JzIEFsbCByaWdodHMgcmVzZXJ2ZWQuCiMKIyBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKIyB5b3UgbWF5IG5vdCB1c2UgdGhpcyBmaWxlIGV4Y2VwdCBpbiBjb21wbGlhbmNlIHdpdGggdGhlIExpY2Vuc2UuCiMgWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0CiMKIyAgICAgaHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzL0xJQ0VOU0UtMi4wCiMKIyBVbmxlc3MgcmVxdWlyZWQgYnkgYXBwbGljYWJsZSBsYXcgb3IgYWdyZWVkIHRvIGluIHdyaXRpbmcsIHNvZnR3YXJlCiMgZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gIkFTIElTIiBCQVNJUywKIyBXSVRIT1VUIFdBUlJBTlRJRVMgT1IgQ09ORElUSU9OUyBPRiBBTlkgS0lORCwgZWl0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4KIyBTZWUgdGhlIExpY2Vuc2UgZm9yIHRoZSBzcGVjaWZpYyBsYW5ndWFnZSBnb3Zlcm5pbmcgcGVybWlzc2lvbnMgYW5kCiMgbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuCgpzZXQgLW8gZXJyZXhpdApzZXQgLW8gbm91bnNldApzZXQgLW8gcGlwZWZhaWwKCk5PREVVUF9VUkw9aHR0cHM6Ly9hcnRpZmFjdHMuazhzLmlvL2JpbmFyaWVzL2tvcHMvMS4xNS4wL2xpbnV4L2FtZDY0L25vZGV1cCxodHRwczovL2dpdGh1Yi5jb20va3ViZXJuZXRlcy9rb3BzL3JlbGVhc2VzL2Rvd25sb2FkL3YxLjE1LjAvbGludXgtYW1kNjQtbm9kZXVwLGh0dHBzOi8va3ViZXVwdjIuczMuYW1hem9uYXdzLmNvbS9rb3BzLzEuMTUuMC9saW51eC9hbWQ2NC9ub2RldXAKTk9ERVVQX0hBU0g9OTYwNGVmMTgyNjdhZDdiNWNmNGNlYmJmN2FiNjQ0MjNjZjViYjAzNDJkMTY5YzYwOGFjNjM3NmU2YWYyNmQ4MQoKZXhwb3J0IEFXU19SRUdJT049dXMtdGVzdC0xCgoKCgpmdW5jdGlvbiBlbnN1cmUtaW5zdGFsbC1kaXIoKSB7CiAgSU5TVEFMTF9ESVI9Ii9vcHQva29wcyIKICAjIE9uIENvbnRhaW5lck9TLCB3ZSBpbnN0YWxsIHVuZGVyIC92YXIvbGliL3Rvb2xib3g7IC9vcHQgaXMgcm8gYW5kIG5vZXhlYwogIGlmIFtbIC1kIC92YXIvbGliL3Rvb2xib3ggXV07IHRoZW4KICAgIElOU1RBTExfRElSPSIvdmFyL2xpYi90b29sYm94L2tvcHMiCiAgZmkKICBta2RpciAtcCAke0lOU1RBTExfRElSfS9iaW4KICBta2RpciAtcCAke0lOU1RBTExfRElSfS9jb25mCiAgY2QgJHtJTlNUQUxMX0RJUn0KfQoKIyBSZXRyeSBhIGRvd25sb2FkIHVudGlsIHdlIGdldCBpdC4gYXJnczogbmFtZSwgc2hhLCB1cmwxLCB1cmwyLi4uCmRvd25sb2FkLW9yLWJ1c3QoKSB7CiAgbG9jYWwgLXIgZmlsZT0iJDEiCiAgbG9jYWwgLXIgaGFzaD0iJDIiCiAgc2hpZnQgMgoKICB1cmxzPSggJCogKQogIHdoaWxlIHRydWU7IGRvCiAgICBmb3IgdXJsIGluICIke3VybHNbQF19IjsgZG8KICAgICAgY29tbWFuZHM9KAogICAgICAgICJjdXJsIC1mIC0taXB2NCAtLWNvbXByZXNzZWQgLUxvICIke2ZpbGV9IiAtLWNvbm5lY3QtdGltZW91dCAyMCAtLXJldHJ5IDYgLS1yZXRyeS1kZWxheSAxMCIKICAgICAgICAid2dldCAtLWluZXQ0LW9ubHkgLS1jb21wcmVzc2lvbj1hdXRvIC1PICIke2ZpbGV9IiAtLWNvbm5lY3QtdGltZW91dD0yMCAtLXRyaWVzPTYgLS13YWl0PTEwIgogICAgICAgICJjdXJsIC1mIC0taXB2NCAtTG8gIiR7ZmlsZX0iIC0tY29ubmVjdC10aW1lb3V0IDIwIC0tcmV0cnkgNiAtLXJldHJ5LWRlbGF5IDEwIgogICAgICAgICJ3Z2V0IC0taW5ldDQtb25seSAtTyAiJHtmaWxlfSIgLS1jb25uZWN0LXRpbWVvdXQ9MjAgLS10cmllcz02IC0td2FpdD0xMCIKICAgICAgKQogICAgICBmb3IgY21kIGluICIke2NvbW1hbmRzW0BdfSI7IGRvCiAgICAgICAgZWNobyAiQXR0ZW1wdGluZyBkb3dubG9hZCB3aXRoOiAke2NtZH0ge3VybH0iCiAgICAgICAgaWYgISAoJHtjbWR9ICIke3VybH0iKTsgdGhlbgogICAgICAgICAgZWNobyAiPT0gRG93bmxvYWQgZmFpbGVkIHdpdGggJHtjbWR9ID09IgogICAgICAgICAgY29udGludWUKICAgICAgICBmaQogICAgICAgIGlmIFtbIC1uICIke2hhc2h9IiBdXSAmJiAhIHZhbGlkYXRlLWhhc2ggIiR7ZmlsZX0iICIke2hhc2h9IjsgdGhlbgogICAgICAgICAgZWNobyAiPT0gSGFzaCB2YWxpZGF0aW9uIG9mICR7dXJsfSBmYWlsZWQuIFJldHJ5aW5nLiA9PSIKICAgICAgICAgIHJtIC1mICIke2ZpbGV9IgogICAgICAgIGVsc2UKICAgICAgICAgIGlmIFtbIC1uICIke2hhc2h9IiBdXTsgdGhlbgogICAgICAgICAgICBlY2hvICI9PSBEb3dubG9hZGVkICR7dXJsfSAoU0hBMSA9ICR7aGFzaH0pID09IgogICAgICAgICAgZWxzZQogICAgICAgICAgICBlY2hvICI9PSBEb3dubG9hZGVkICR7dXJsfSA9PSIKICAgICAgICAgIGZpCiAgICAgICAgICByZXR1cm4KICAgICAgICBmaQogICAgICBkb25lCiAgICBkb25lCgogICAgZWNobyAiQWxsIGRvd25sb2FkcyBmYWlsZWQ7IHNsZWVwaW5nIGJlZm9yZSByZXRyeWluZyIKICAgIHNsZWVwIDYwCiAgZG9uZQp9Cgp2YWxpZGF0ZS1oYXNoKCkgewogIGxvY2FsIC1yIGZpbGU9IiQxIgogIGxvY2FsIC1yIGV4cGVjdGVkPSIkMiIKICBsb2NhbCBhY3R1YWwKCiAgYWN0dWFsPSQoc2hhMjU2c3VtICR7ZmlsZX0gfCBhd2sgJ3sgcHJpbnQgJDEgfScpIHx8IHRydWUKICBpZiBbWyAiJHthY3R1YWx9IiAhPSAiJHtleHBlY3RlZH0iIF1dOyB0aGVuCiAgICBlY2hvICI9PSAke2ZpbGV9IGNvcnJ1cHRlZCwgaGFzaCAke2FjdHVhbH0gZG9lc24ndCBtYXRjaCBleHBlY3RlZCAke2V4cGVjdGVkfSA9PSIKICAgIHJldHVybiAxCiAgZmkKfQoKZnVuY3Rpb24gc3BsaXQtY29tbWFzKCkgewogIGVjaG8gJDEgfCB0ciAiLCIgIlxuIgp9CgpmdW5jdGlvbiB0cnktZG93bmxvYWQtcmVsZWFzZSgpIHsKICBsb2NhbCAtciBub2RldXBfdXJscz0oICQoc3BsaXQtY29tbWFzICIke05PREVVUF9VUkx9IikgKQogIGlmIFtbIC1uICIke05PREVVUF9IQVNIOi19IiBdXTsgdGhlbgogICAgbG9jYWwgLXIgbm9kZXVwX2hhc2g9IiR7Tk9ERVVQX0hBU0h9IgogIGVsc2UKICAjIFRPRE86IFJlbW92ZT8KICAgIGVjaG8gIkRvd25sb2FkaW5nIHNoYTI1NiAobm90IGZvdW5kIGluIGVudikiCiAgICBkb3dubG9hZC1vci1idXN0IG5vZGV1cC5zaGEyNTYgIiIgIiR7bm9kZXVwX3VybHNbQF0vJS8uc2hhMjU2fSIKICAgIGxvY2FsIC1yIG5vZGV1cF9oYXNoPSQoY2F0IG5vZGV1cC5zaGEyNTYpCiAgZmkKCiAgZWNobyAiRG93bmxvYWRpbmcgbm9kZXVwICgke25vZGV1cF91cmxzW0BdfSkiCiAgZG93bmxvYWQtb3ItYnVzdCBub2RldXAgIiR7bm9kZXVwX2hhc2h9IiAiJHtub2RldXBfdXJsc1tAXX0iCgogIGNobW9kICt4IG5vZGV1cAp9CgpmdW5jdGlvbiBkb3dubG9hZC1yZWxlYXNlKCkgewogIGNhc2UgIiQodW5hbWUgLW0pIiBpbgogIHg4Nl82NCp8aT84Nl82NCp8YW1kNjQqKQogICAgTk9ERVVQX1VSTD0iJHtOT0RFVVBfVVJMfSIKICAgIE5PREVVUF9IQVNIPSIke05PREVVUF9IQVNIfSIKICAgIDs7CiAgKikKICAgIGVjaG8gIlVuc3VwcG9ydGVkIGhvc3QgYXJjaDogJCh1bmFtZSAtbSkiID4mMgogICAgZXhpdCAxCiAgICA7OwogIGVzYWMKCiAgIyBJbiBjYXNlIG9mIGZhaWx1cmUgY2hlY2tpbmcgaW50ZWdyaXR5IG9mIHJlbGVhc2UsIHJldHJ5LgogIGNkICR7SU5TVEFMTF9ESVJ9L2JpbgogIHVudGlsIHRyeS1kb3dubG9hZC1yZWxlYXNlOyBkbwogICAgc2xlZXAgMTUKICAgIGVjaG8gIkNvdWxkbid0IGRvd25sb2FkIHJlbGVhc2UuIFJldHJ5aW5nLi4uIgogIGRvbmUKCiAgZWNobyAiUnVubmluZyBub2RldXAiCiAgIyBXZSBjYW4ndCBydW4gaW4gdGhlIGZvcmVncm91bmQgYmVjYXVzZSBvZiBodHRwczovL2dpdGh1Yi5jb20vZG9ja2VyL2RvY2tlci9pc3N1ZXMvMjM3OTMKICAoIGNkICR7SU5TVEFMTF9ESVJ9L2JpbjsgLi9ub2RldXAgLS1pbnN0YWxsLXN5c3RlbWQtdW5pdCAtLWNvbmY9JHtJTlNUQUxMX0RJUn0vY29uZi9rdWJlX2Vudi55YW1sIC0tdj04ICApCn0KCiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKL2Jpbi9zeXN0ZW1kLW1hY2hpbmUtaWQtc2V0dXAgfHwgZWNobyAiZmFpbGVkIHRvIHNldCB1cCBlbnN1cmUgbWFjaGluZS1pZCBjb25maWd1cmVkIgoKZWNobyAiPT0gbm9kZXVwIG5vZGUgY29uZmlnIHN0YXJ0aW5nID09IgplbnN1cmUtaW5zdGFsbC1kaXIKCmNhdCA+IGNvbmYvY2x1c3Rlcl9zcGVjLnlhbWwgPDwgJ19fRU9GX0NMVVNURVJfU1BFQycKY2xvdWRDb25maWc6IG51bGwKY29udGFpbmVyUnVudGltZTogZG9ja2VyCmNvbnRhaW5lcmQ6CiAgc2tpcEluc3RhbGw6IHRydWUKZG9ja2VyOgogIGlwTWFzcTogZmFsc2UKICBpcFRhYmxlczogZmFsc2UKICBsb2dEcml2ZXI6IGpzb24tZmlsZQogIGxvZ0xldmVsOiBpbmZvCiAgbG9nT3B0OgogIC0gbWF4LXNpemU9MTBtCiAgLSBtYXgtZmlsZT01CiAgc3RvcmFnZTogb3ZlcmxheTIsb3ZlcmxheSxhdWZzCiAgdmVyc2lvbjogMTguMDYuMwprdWJlUHJveHk6CiAgY2x1c3RlckNJRFI6IDEwMC45Ni4wLjAvMTEKICBjcHVSZXF1ZXN0OiAxMDBtCiAgaG9zdG5hbWVPdmVycmlkZTogJ0Bhd3MnCiAgaW1hZ2U6IGs4cy5nY3IuaW8va3ViZS1wcm94eTp2MS4xNC4wCiAgbG9nTGV2ZWw6IDIKa3ViZWxldDoKICBhbm9ueW1vdXNBdXRoOiBmYWxzZQogIGNncm91cFJvb3Q6IC8KICBjbG91ZFByb3ZpZGVyOiBhd3MKICBjbHVzdGVyRE5TOiAxMDAuNjQuMC4xMAogIGNsdXN0ZXJEb21haW46IGNsdXN0ZXIubG9jYWwKICBlbmFibGVEZWJ1Z2dpbmdIYW5kbGVyczogdHJ1ZQogIGV2aWN0aW9uSGFyZDogbWVtb3J5LmF2YWlsYWJsZTwxMDBNaSxub2RlZnMuYXZhaWxhYmxlPDEwJSxub2RlZnMuaW5vZGVzRnJlZTw1JSxpbWFnZWZzLmF2YWlsYWJsZTwxMCUsaW1hZ2Vmcy5pbm9kZXNGcmVlPDUlCiAgZmVhdHVyZUdhdGVzOgogICAgRXhwZXJpbWVudGFsQ3JpdGljYWxQb2RBbm5vdGF0aW9uOiAidHJ1ZSIKICBob3N0bmFtZU92ZXJyaWRlOiAnQGF3cycKICBrdWJlY29uZmlnUGF0aDogL3Zhci9saWIva3ViZWxldC9rdWJlY29uZmlnCiAgbG9nTGV2ZWw6IDIKICBuZXR3b3JrUGx1Z2luTmFtZTogY25pCiAgbm9uTWFzcXVlcmFkZUNJRFI6IDEwMC42NC4wLjAvMTAKICBwb2RJbmZyYUNvbnRhaW5lckltYWdlOiBrOHMuZ2NyLmlvL3BhdXNlOjMuMgogIHBvZE1hbmlmZXN0UGF0aDogL2V0Yy9rdWJlcm5ldGVzL21hbmlmZXN0cwoKX19FT0ZfQ0xVU1RFUl9TUEVDCgpjYXQgPiBjb25mL2lnX3NwZWMueWFtbCA8PCAnX19FT0ZfSUdfU1BFQycKa3ViZWxldDogbnVsbApub2RlTGFiZWxzOiBudWxsCnRhaW50czogbnVsbAoKX19FT0ZfSUdfU1BFQwoKY2F0ID4gY29uZi9rdWJlX2Vudi55YW1sIDw8ICdfX0VPRl9LVUJFX0VOVicKQXNzZXRzOgotIGMzYjczNmZkMGYwMDM3NjVjMTJkOTlmMmM5OTVhODM2OWU2MjQxZjRAaHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL2t1YmVybmV0ZXMtcmVsZWFzZS9yZWxlYXNlL3YxLjE0LjAvYmluL2xpbnV4L2FtZDY0L2t1YmVsZXQKLSA3ZTNhM2VhNjYzMTUzZjkwMGNiZDUyOTAwYTM5YzkxZmE5ZjMzNGJlQGh0dHBzOi8vc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9rdWJlcm5ldGVzLXJlbGVhc2UvcmVsZWFzZS92MS4xNC4wL2Jpbi9saW51eC9hbWQ2NC9rdWJlY3RsCi0gNTJlOWQyZGU4YTVmOTI3MzA3ZDkzOTczMDg3MzU2NThlZTQ0YWI4ZEBodHRwczovL3N0b3JhZ2UuZ29vZ2xlYXBpcy5jb20va3ViZXJuZXRlcy1yZWxlYXNlL25ldHdvcmstcGx1Z2lucy9jbmktcGx1Z2lucy1hbWQ2NC12MC43LjUudGd6CkNsdXN0ZXJOYW1lOiBwcml2YXRlY2lsaXVtLmV4YW1wbGUuY29tCkNvbmZpZ0Jhc2U6IG1lbWZzOi8vY2x1c3RlcnMuZXhhbXBsZS5jb20vcHJpdmF0ZWNpbGl1bS5leGFtcGxlLmNvbQpJbnN0YW5jZUdyb3VwTmFtZTogbm9kZXMKVGFnczoKLSBfYXV0b21hdGljX3VwZ3JhZGVzCi0gX2F3cwpjaGFubmVsczoKLSBtZW1mczovL2NsdXN0ZXJzLmV4YW1wbGUuY29tL3ByaXZhdGVjaWxpdW0uZXhhbXBsZS5jb20vYWRkb25zL2Jvb3RzdHJhcC1jaGFubmVsLnlhbWwKCl9fRU9GX0tVQkVfRU5WCgpkb3dubG9hZC1yZWxlYXNlCmVjaG8gIj09IG5vZGV1cCBub2RlIGNvbmZpZyBkb25lID09Igo=
+#!/bin/bash
+# Copyright 2016 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.15.0/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.15.0/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.15.0/linux/amd64/nodeup
+NODEUP_HASH=9604ef18267ad7b5cf4cebbf7ab64423cf5bb0342d169c608ac6376e6af26d81
+
+export AWS_REGION=us-test-1
+
+
+
+
+function ensure-install-dir() {
+  INSTALL_DIR="/opt/kops"
+  # On ContainerOS, we install under /var/lib/toolbox; /opt is ro and noexec
+  if [[ -d /var/lib/toolbox ]]; then
+    INSTALL_DIR="/var/lib/toolbox/kops"
+  fi
+  mkdir -p ${INSTALL_DIR}/bin
+  mkdir -p ${INSTALL_DIR}/conf
+  cd ${INSTALL_DIR}
+}
+
+# Retry a download until we get it. args: name, sha, url1, url2...
+download-or-bust() {
+  local -r file="$1"
+  local -r hash="$2"
+  shift 2
+
+  urls=( $* )
+  while true; do
+    for url in "${urls[@]}"; do
+      commands=(
+        "curl -f --ipv4 --compressed -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --inet4-only --compression=auto -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10"
+      )
+      for cmd in "${commands[@]}"; do
+        echo "Attempting download with: ${cmd} {url}"
+        if ! (${cmd} "${url}"); then
+          echo "== Download failed with ${cmd} =="
+          continue
+        fi
+        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+          echo "== Hash validation of ${url} failed. Retrying. =="
+          rm -f "${file}"
+        else
+          if [[ -n "${hash}" ]]; then
+            echo "== Downloaded ${url} (SHA1 = ${hash}) =="
+          else
+            echo "== Downloaded ${url} =="
+          fi
+          return
+        fi
+      done
+    done
+
+    echo "All downloads failed; sleeping before retrying"
+    sleep 60
+  done
+}
+
+validate-hash() {
+  local -r file="$1"
+  local -r expected="$2"
+  local actual
+
+  actual=$(sha256sum ${file} | awk '{ print $1 }') || true
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "== ${file} corrupted, hash ${actual} doesn't match expected ${expected} =="
+    return 1
+  fi
+}
+
+function split-commas() {
+  echo $1 | tr "," "\n"
+}
+
+function try-download-release() {
+  local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
+  if [[ -n "${NODEUP_HASH:-}" ]]; then
+    local -r nodeup_hash="${NODEUP_HASH}"
+  else
+  # TODO: Remove?
+    echo "Downloading sha256 (not found in env)"
+    download-or-bust nodeup.sha256 "" "${nodeup_urls[@]/%/.sha256}"
+    local -r nodeup_hash=$(cat nodeup.sha256)
+  fi
+
+  echo "Downloading nodeup (${nodeup_urls[@]})"
+  download-or-bust nodeup "${nodeup_hash}" "${nodeup_urls[@]}"
+
+  chmod +x nodeup
+}
+
+function download-release() {
+  case "$(uname -m)" in
+  x86_64*|i?86_64*|amd64*)
+    NODEUP_URL="${NODEUP_URL}"
+    NODEUP_HASH="${NODEUP_HASH}"
+    ;;
+  *)
+    echo "Unsupported host arch: $(uname -m)" >&2
+    exit 1
+    ;;
+  esac
+
+  # In case of failure checking integrity of release, retry.
+  cd ${INSTALL_DIR}/bin
+  until try-download-release; do
+    sleep 15
+    echo "Couldn't download release. Retrying..."
+  done
+
+  echo "Running nodeup"
+  # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
+  ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
+}
+
+####################################################################################
+
+/bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+
+echo "== nodeup node config starting =="
+ensure-install-dir
+
+cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
+cloudConfig: null
+containerRuntime: docker
+containerd:
+  skipInstall: true
+docker:
+  ipMasq: false
+  ipTables: false
+  logDriver: json-file
+  logLevel: info
+  logOpt:
+  - max-size=10m
+  - max-file=5
+  storage: overlay2,overlay,aufs
+  version: 18.06.3
+kubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  hostnameOverride: '@aws'
+  image: k8s.gcr.io/kube-proxy:v1.14.0
+  logLevel: 2
+kubelet:
+  anonymousAuth: false
+  cgroupRoot: /
+  cloudProvider: aws
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    ExperimentalCriticalPodAnnotation: "true"
+  hostnameOverride: '@aws'
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  networkPluginName: cni
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podInfraContainerImage: k8s.gcr.io/pause:3.2
+  podManifestPath: /etc/kubernetes/manifests
+
+__EOF_CLUSTER_SPEC
+
+cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
+kubelet: null
+nodeLabels: null
+taints: null
+
+__EOF_IG_SPEC
+
+cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+Assets:
+- c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
+- 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
+- 52e9d2de8a5f927307d9397308735658ee44ab8d@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+ClusterName: privatecilium.example.com
+ConfigBase: memfs://clusters.example.com/privatecilium.example.com
+InstanceGroupName: nodes
+Tags:
+- _automatic_upgrades
+- _aws
+channels:
+- memfs://clusters.example.com/privatecilium.example.com/addons/bootstrap-channel.yaml
+
+__EOF_KUBE_ENV
+
+download-release
+echo "== nodeup node config done =="

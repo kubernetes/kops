@@ -1095,7 +1095,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 	// User data.
 	if e.UserData != nil {
 		var err error
-		tf.UserData, err = t.AddFile("spotinst_ocean_aws", *e.Name, "user_data", e.UserData)
+		tf.UserData, err = t.AddFile("spotinst_ocean_aws", *e.Name, "user_data", e.UserData, false)
 		if err != nil {
 			return err
 		}
