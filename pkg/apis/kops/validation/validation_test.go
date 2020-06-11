@@ -604,6 +604,13 @@ func Test_Validate_RollingUpdate(t *testing.T) {
 			OnMasterIG:     true,
 			ExpectedErrors: []string{"Forbidden::testField.maxSurge"},
 		},
+		{
+			Input: kops.RollingUpdate{
+				MaxUnavailable: intStr(intstr.FromInt(0)),
+				MaxSurge:       intStr(intstr.FromInt(0)),
+			},
+			ExpectedErrors: []string{"Forbidden::testField.maxSurge"},
+		},
 	}
 	for _, g := range grid {
 		errs := validateRollingUpdate(&g.Input, field.NewPath("testField"), g.OnMasterIG)

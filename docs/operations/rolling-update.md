@@ -144,12 +144,14 @@ then creates any remaining surge instances.
 
 #### Disabling rolling updates
 
-Rolling updates may be disabled for an instance group by setting both `maxSurge` and `maxUnavailable`
-to `0`.
+Rolling updates may be partially disabled for an instance group by setting the `drainAndTerminate`
+field to `false`.
 
 ```yaml
 spec:
   rollingUpdate:
-    maxSurge: 0
-    maxUnavailable: 0
+    drainAndTerminate: false
 ```
+
+Nodes needing update will still be tainted. If `maxSurge` is nonzero, up to that many extra
+nodes will still be created.
