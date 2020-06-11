@@ -118,7 +118,7 @@ This will launch the two new masters. You will also need to roll the old master 
 After about 5 minutes all three masters should have found each other. Run the following to ensure everything is running as expected.
 
 ```bash
-kops validate cluster
+kops validate cluster --wait 10m
 ```
 
 While rotating the original master is not strictly necessary, kops will say it needs updating because of the configuration change.
