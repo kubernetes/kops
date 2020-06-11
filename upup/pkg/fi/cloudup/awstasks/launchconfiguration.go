@@ -543,7 +543,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 			return err
 		}
 		if userData != "" {
-			tf.UserData, err = t.AddFile("aws_launch_configuration", *e.Name, "user_data", e.UserData)
+			tf.UserData, err = t.AddFile("aws_launch_configuration", *e.Name, "user_data", e.UserData, false)
 			if err != nil {
 				return err
 			}
