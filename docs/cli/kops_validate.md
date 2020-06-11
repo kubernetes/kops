@@ -7,20 +7,14 @@ Validate a kops cluster.
 
 ### Synopsis
 
-This commands validates the following components:
-
-  1.  All k8s masters are running and have "Ready" status.
-  2.  All k8s nodes are running and have "Ready" status.
-  3.  Component status returns healthy for all components.
-  4.  All pods with a critical priority are running and healthy.
+This command validates a cluster. See: kops validate cluster -h
 
 ### Examples
 
 ```
-  # Validate a cluster.
-  # This command uses the currently selected kops cluster as
-  # set by the kubectl config.
-  kops validate cluster
+  # Validate the cluster set as the current context of the kube config.
+  # Kops will try for 10 minutes to validate the cluster 3 times.
+  kops validate cluster --wait 10m --count 3
 ```
 
 ### Options
