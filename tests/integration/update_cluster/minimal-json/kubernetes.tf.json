@@ -328,7 +328,7 @@
             }
           }
         ],
-        "user_data": "${file(\"${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal-json.example.com_user_data\")}"
+        "user_data": "${filebase64(\"${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal-json.example.com_user_data\")}"
       },
       "nodes-minimal-json-example-com": {
         "name_prefix": "nodes.minimal-json.example.com-",
@@ -386,7 +386,7 @@
             }
           }
         ],
-        "user_data": "${file(\"${path.module}/data/aws_launch_template_nodes.minimal-json.example.com_user_data\")}"
+        "user_data": "${filebase64(\"${path.module}/data/aws_launch_template_nodes.minimal-json.example.com_user_data\")}"
       }
     },
     "aws_route": {

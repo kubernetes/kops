@@ -106,7 +106,7 @@ func tfSanitize(name string) string {
 	return strings.NewReplacer(".", "-", "/", "--", ":", "_").Replace(name)
 }
 
-func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key string, r fi.Resource) (*Literal, error) {
+func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key string, r fi.Resource, base64 bool) (*Literal, error) {
 	id := resourceType + "_" + resourceName + "_" + key
 
 	d, err := fi.ResourceAsBytes(r)
@@ -121,7 +121,7 @@ func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key 
 	t.files[p] = d
 
 	modulePath := path.Join("${path.module}", p)
-	l := LiteralFileExpression(modulePath)
+	l := LiteralFileExpression(modulePath, base64)
 	return l, nil
 }
 

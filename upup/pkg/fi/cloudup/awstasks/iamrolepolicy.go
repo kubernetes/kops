@@ -317,7 +317,7 @@ func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 		return nil
 	}
 
-	policy, err := t.AddFile("aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument)
+	policy, err := t.AddFile("aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument, false)
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}
