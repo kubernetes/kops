@@ -673,7 +673,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 and 1.7 are supported"))
 		}
 
-		if !cluster.IsKubernetesGTE("1.12.0") && version.GTE(v7) {
+		if !cluster.IsKubernetesGTE("1.12") && version.GTE(v7) {
 			allErrs = append(allErrs, field.Forbidden(versionFld, "Version >= 1.7 requires kubernetesVersion 1.12 or higher"))
 		}
 	}
