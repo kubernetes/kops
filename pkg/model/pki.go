@@ -72,33 +72,12 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Signer:    defaultCA,
 		})
 	}
-	{
-		t := &fitasks.Keypair{
-			Name:      fi.String("kube-scheduler"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "cn=" + rbac.KubeScheduler,
-			Type:      "client",
-			Signer:    defaultCA,
-		}
-		c.AddTask(t)
-	}
 
 	{
 		t := &fitasks.Keypair{
 			Name:      fi.String("kube-proxy"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=" + rbac.KubeProxy,
-			Type:      "client",
-			Signer:    defaultCA,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		t := &fitasks.Keypair{
-			Name:      fi.String("kube-controller-manager"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "cn=" + rbac.KubeControllerManager,
 			Type:      "client",
 			Signer:    defaultCA,
 		}

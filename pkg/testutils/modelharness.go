@@ -97,4 +97,7 @@ func ValidateTasks(t *testing.T, expectedFile string, context *fi.ModelBuilderCo
 	actualTasksYaml = strings.TrimSpace(actualTasksYaml)
 
 	golden.AssertMatchesFile(t, actualTasksYaml, expectedFile)
+
+	// Asserts that FindTaskDependencies doesn't call klog.Fatalf()
+	fi.FindTaskDependencies(context.Tasks)
 }

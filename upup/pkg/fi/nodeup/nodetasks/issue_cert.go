@@ -28,13 +28,25 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+// PKIXName is a simplified form of pkix.Name, for better golden test output
+type PKIXName struct {
+	fi.NotADependency
+	CommonName string
+}
+
+func (n *PKIXName) toPKIXName() pkix.Name {
+	return pkix.Name{
+		CommonName: n.CommonName,
+	}
+}
+
 type IssueCert struct {
 	Name string
 
-	Signer         string    `json:"signer"`
-	Type           string    `json:"type"`
-	Subject        pkix.Name `json:"subject"`
-	AlternateNames []string  `json:"alternateNames,omitempty"`
+	Signer         string   `json:"signer"`
+	Type           string   `json:"type"`
+	Subject        PKIXName `json:"subject"`
+	AlternateNames []string `json:"alternateNames,omitempty"`
 
 	cert *fi.TaskDependentResource
 	key  *fi.TaskDependentResource
@@ -101,7 +113,7 @@ func (e *IssueCert) Run(c *fi.Context) error {
 	req := &pki.IssueCertRequest{
 		Signer:       e.Signer,
 		Type:         e.Type,
-		Subject:      e.Subject,
+		Subject:      e.Subject.toPKIXName(),
 		MinValidDays: 455,
 	}
 
