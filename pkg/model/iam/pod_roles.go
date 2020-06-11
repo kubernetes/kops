@@ -32,8 +32,8 @@ type PodRole string
 const (
 	// PodRoleEmpty indicates we are not using a PodRole
 	PodRoleEmpty PodRole = ""
-	// PodRoleKopsController is the role used by the kops-controller pods
-	PodRoleKopsController PodRole = "kops-controller"
+	// PodRoleDNSController is the role used by the dns-controller pods
+	PodRoleDNSController PodRole = "dns-controller"
 )
 
 // PodOrNodeRole is used to specify generation of permissions for either a pod or a node
@@ -55,12 +55,20 @@ func ServiceAccountForPodRole(podRole PodRole) types.NamespacedName {
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
 func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) (string, error) {
+	if clusterSpec.Discovery == nil || clusterSpec.Discovery.Base == "" {
+		return "", fmt.Errorf("must specify discovery.base with UsePodIAM")
+	}
+
+	if clusterName == "" {
+		return "", fmt.Errorf("cluster name not specified")
+	}
+
 	base, err := vfs.Context.BuildVfsPath(clusterSpec.Discovery.Base)
 	if err != nil {
 		return "", fmt.Errorf("cannot parse VFS path %q: %v", clusterSpec.Discovery.Base, err)
 	}
 
-	p := base.Join(clusterName)
+	p := base.Join("identity", clusterName)
 
 	var publicURL string
 	switch p := p.(type) {

@@ -1,17 +1,13 @@
 package kopscontroller
 
-import (
-	"fmt"
-
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/kubemanifest"
-	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/iam"
-)
-
+// Currently disabled - chicken & egg situation
+/*
 // Remap remaps the kopscontroller addon
 func Remap(context *model.KopsModelContext, objects []*kubemanifest.Object) error {
+	if !featureflag.UsePodIAM.Enabled() {
+		return nil
+	}
+
 	var daemonsets []*kubemanifest.Object
 	for _, object := range objects {
 		if object.Kind() != "DaemonSet" {
@@ -50,3 +46,4 @@ func Remap(context *model.KopsModelContext, objects []*kubemanifest.Object) erro
 
 	return nil
 }
+*/

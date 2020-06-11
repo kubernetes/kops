@@ -392,7 +392,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			return "", fmt.Errorf("cannot parse VFS path %q: %v", tf.cluster.Spec.Discovery.Base, err)
 		}
 
-		p := base.Join(tf.cluster.Name + "/identity")
+		p := base.Join("identity", tf.cluster.Name)
 
 		config.PublicDiscovery = &kopscontrollerconfig.PublicDiscovery{
 			PublishBase: p.Path(),

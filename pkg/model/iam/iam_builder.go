@@ -37,6 +37,7 @@ import (
 	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -168,6 +169,12 @@ func (b *PolicyBuilder) BuildAWSPolicyPodRole() (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
+	if b.HostedZoneID != "" {
+		b.addRoute53Permissions(p, b.HostedZoneID)
+	}
+
+	b.addRoute53ListHostedZonesPermission(p)
+
 	return p, nil
 }
 
@@ -197,9 +204,7 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		b.addRoute53Permissions(p, b.HostedZoneID)
 	}
 
-	if b.Cluster.Spec.IAM.Legacy {
-		addRoute53ListHostedZonesPermission(p)
-	}
+	b.addRoute53ListHostedZonesPermission(p)
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -235,12 +240,10 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	if b.Cluster.Spec.IAM.Legacy {
-		if b.HostedZoneID != "" {
-			b.addRoute53Permissions(p, b.HostedZoneID)
-		}
-		addRoute53ListHostedZonesPermission(p)
+	if b.HostedZoneID != "" {
+		b.addRoute53Permissions(p, b.HostedZoneID)
 	}
+	b.addRoute53ListHostedZonesPermission(p)
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -470,7 +473,7 @@ func WriteableVFSPaths(cluster *kops.Cluster, role PodOrNodeRole) ([]vfs.Path, e
 				return nil, fmt.Errorf("cannot parse VFS path %q: %v", cluster.Spec.Discovery.Base, err)
 			}
 
-			p := base.Join(cluster.Name + "/identity")
+			p := base.Join("identity", cluster.Name)
 
 			paths = append(paths, p)
 		}
@@ -604,6 +607,19 @@ func addECRPermissions(p *Policy) {
 }
 
 func (b *PolicyBuilder) addRoute53Permissions(p *Policy, hostedZoneID string) {
+	if b.Role.PodRole == PodRoleEmpty {
+		if featureflag.UsePodIAM.Enabled() {
+			return
+		}
+
+		// Only the master (unless in legacy mode)
+		if b.Role.NodeRole != kops.InstanceGroupRoleMaster && !b.Cluster.Spec.IAM.Legacy {
+			return
+		}
+	} else if b.Role.PodRole != PodRoleDNSController {
+		// Only the dns-controller gets route53 permissions
+		return
+	}
 
 	// TODO: Route53 currently not supported in China, need to check and fail/return
 	// Remove /hostedzone/ prefix (if present)
@@ -857,7 +873,17 @@ func addCertIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 	})
 }
 
-func addRoute53ListHostedZonesPermission(p *Policy) {
+func (b *PolicyBuilder) addRoute53ListHostedZonesPermission(p *Policy) {
+	// This is only for legacy IAM permissions
+	if !b.Cluster.Spec.IAM.Legacy {
+		return
+	}
+
+	// Don't carry over any legacy IAM onto pod roles
+	if b.Role.PodRole != PodRoleEmpty {
+		return
+	}
+
 	wildcard := stringorslice.Slice([]string{"*"})
 	p.Statement = append(p.Statement, &Statement{
 		Effect:   StatementEffectAllow,

@@ -71,7 +71,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		// Go through any transforms that are best expressed as code
-		remapped, err := addonmanifests.RemapAddonManifest(fi.StringValue(a.Name), b.KopsModelContext, b.assetBuilder, manifestBytes)
+		remapped, err := addonmanifests.RemapAddonManifest(a, b.KopsModelContext, b.assetBuilder, manifestBytes)
 		if err != nil {
 			klog.Infof("invalid manifest: %s", string(manifestBytes))
 			return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)

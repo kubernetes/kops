@@ -111,7 +111,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for pod roles
 	if featureflag.UsePodIAM.Enabled() {
-		podRoles := []iam.PodRole{iam.PodRoleKopsController}
+		podRoles := []iam.PodRole{iam.PodRoleDNSController}
 		for _, podRole := range podRoles {
 			role := iam.PodOrNodeRole{PodRole: podRole}
 
@@ -146,7 +146,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.PodOrNodeRole, iamName string, 
 				policy, err := fi.ResourceAsString(rolePolicy)
 				klog.Infof("policy %s err %v", policy, err)
 			}
-			
+
 			iamRole = &awstasks.IAMRole{
 				Name:      s(iamName),
 				Lifecycle: b.Lifecycle,
@@ -298,7 +298,7 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.PodOrNodeRole) (fi.Reso
 	if role.PodRole != iam.PodRoleEmpty {
 		serviceAccount := iam.ServiceAccountForPodRole(role.PodRole)
 
-		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.Cluster.ClusterName, &b.Cluster.Spec)
+		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
 		if err != nil {
 			return nil, err
 		}
