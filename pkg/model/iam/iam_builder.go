@@ -37,7 +37,6 @@ import (
 	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -106,7 +105,7 @@ type PolicyBuilder struct {
 	KMSKeys      []string
 	Region       string
 	ResourceARN  *string
-	Role         kops.InstanceGroupRole
+	Role         PodOrNodeRole
 }
 
 // BuildAWSPolicy builds a set of IAM policy statements based on the
@@ -124,7 +123,7 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 		}
 	}
 
-	switch b.Role {
+	switch b.Role.NodeRole {
 	case kops.InstanceGroupRoleBastion:
 		p, err = b.BuildAWSPolicyBastion()
 		if err != nil {
@@ -140,8 +139,33 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate AWS IAM Policy for Master Instance Group: %v", err)
 		}
+
 	default:
-		return nil, fmt.Errorf("unrecognised instance group type: %s", b.Role)
+		if b.Role.PodRole == "" {
+			return nil, fmt.Errorf("unrecognised instance group type: %s", b.Role)
+		}
+	}
+
+	if b.Role.PodRole != PodRoleEmpty {
+		p, err = b.BuildAWSPolicyPodRole()
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate AWS IAM Policy for Master Instance Group: %v", err)
+		}
+
+	}
+
+	return p, nil
+}
+
+// BuildAWSPolicyPodRole generates a custom policy for a pod IAM role
+func (b *PolicyBuilder) BuildAWSPolicyPodRole() (*Policy, error) {
+	p := &Policy{
+		Version: PolicyDefaultVersion,
+	}
+
+	var err error
+	if p, err = b.AddS3Permissions(p); err != nil {
+		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
 	return p, nil
@@ -269,8 +293,8 @@ func (b *PolicyBuilder) IAMPrefix() string {
 	}
 }
 
-// AddS3Permissions updates an IAM Policy with statements granting tailored
-// access to S3 assets, depending on the instance group role
+// AddS3Permissions builds an IAM Policy, with statements granting tailored
+// access to S3 assets, depending on the instance group or pod role
 func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 	// For S3 IAM permissions we grant permissions to subtrees, so find the parents;
 	// we don't need to grant mypath and mypath/child.
@@ -341,18 +365,20 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 					return nil, err
 				}
 
-				sort.Strings(resources)
+				if len(resources) != 0 {
+					sort.Strings(resources)
 
-				// Add the prefix for IAM
-				for i, r := range resources {
-					resources[i] = b.IAMPrefix() + ":s3:::" + iamS3Path + r
+					// Add the prefix for IAM
+					for i, r := range resources {
+						resources[i] = b.IAMPrefix() + ":s3:::" + iamS3Path + r
+					}
+
+					p.Statement = append(p.Statement, &Statement{
+						Effect:   StatementEffectAllow,
+						Action:   stringorslice.Slice([]string{"s3:Get*"}),
+						Resource: stringorslice.Of(resources...),
+					})
 				}
-
-				p.Statement = append(p.Statement, &Statement{
-					Effect:   StatementEffectAllow,
-					Action:   stringorslice.Slice([]string{"s3:Get*"}),
-					Resource: stringorslice.Of(resources...),
-				})
 			}
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
 			// Tests -ignore - nothing we can do in terms of IAM policy
@@ -369,15 +395,6 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		return nil, err
 	}
 
-	statements, err := IAMForWriteablePaths(writeablePaths)
-	if err != nil {
-		return nil, err
-	}
-
-	return p, nil
-}
-
-func IAMForS3(writeablePaths []vfs.Path) error {
 	for _, vfsPath := range writeablePaths {
 		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
 			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
@@ -418,16 +435,15 @@ func IAMForS3(writeablePaths []vfs.Path) error {
 			}),
 		})
 	}
-	return statements
+
+	return p, nil
 }
 
-func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vfs.Path, error) {
+func WriteableVFSPaths(cluster *kops.Cluster, role PodOrNodeRole) ([]vfs.Path, error) {
 	var paths []vfs.Path
 
-	usePodIAM := featureflag.UsePodIAM.Enabled()
-
-	// On the master, grant IAM permissions to the backup store, if it is configured
-	if (!usePodIAM && role == kops.InstanceGroupRoleMaster) || (usePodIAM && podRole == kops.PodRoleEtcdManager) {
+	// etcd-manager needs write permissions to the backup store
+	if role.NodeRole == kops.InstanceGroupRoleMaster {
 		backupStores := sets.NewString()
 		for _, c := range cluster.Spec.EtcdClusters {
 			if c.Backups == nil || c.Backups.BackupStore == "" || backupStores.Has(c.Backups.BackupStore) {
@@ -447,7 +463,7 @@ func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vf
 	}
 
 	// Allow the master to write updated jwks docs to the discovery bucket
-	if role == kops.InstanceGroupRoleMaster {
+	if role.NodeRole == kops.InstanceGroupRoleMaster {
 		if cluster.Spec.Discovery != nil && cluster.Spec.Discovery.Base != "" {
 			base, err := vfs.Context.BuildVfsPath(cluster.Spec.Discovery.Base)
 			if err != nil {
@@ -464,12 +480,12 @@ func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vf
 }
 
 // ReadableStatePaths returns the file paths that should be readable in the cluster's state store "directory"
-func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]string, error) {
+func ReadableStatePaths(cluster *kops.Cluster, role PodOrNodeRole) ([]string, error) {
 	var paths []string
 
-	if role == kops.InstanceGroupRoleMaster {
+	if role.NodeRole == kops.InstanceGroupRoleMaster {
 		paths = append(paths, "/*")
-	} else if role == kops.InstanceGroupRoleNode {
+	} else if role.NodeRole == kops.InstanceGroupRoleNode {
 		paths = append(paths,
 			"/addons/*",
 			"/cluster.spec",

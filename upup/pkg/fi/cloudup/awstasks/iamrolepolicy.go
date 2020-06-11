@@ -264,6 +264,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 
 		_, err = t.Cloud.IAM().PutRolePolicy(request)
 		if err != nil {
+			klog.V(2).Infof("PutRolePolicy RoleName=%s PolicyName=%s: %s", aws.StringValue(e.Role.Name), aws.StringValue(e.Name), policy)
 			return fmt.Errorf("error creating/updating IAMRolePolicy: %v", err)
 		}
 	}

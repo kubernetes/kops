@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/iam"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -47,7 +48,7 @@ var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(fals
 
 // KopsModelContext is the kops model
 type KopsModelContext struct {
-	Cluster        *kops.Cluster
+	iam.IAMModelContext
 	InstanceGroups []*kops.InstanceGroup
 	Region         string
 	SSHPublicKeys  [][]byte
@@ -95,11 +96,6 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 	s = s + "-" + hashString
 
 	return s
-}
-
-// ClusterName returns the cluster name
-func (m *KopsModelContext) ClusterName() string {
-	return m.Cluster.ObjectMeta.Name
 }
 
 // GatherSubnets maps the subnet names in an InstanceGroup to the ClusterSubnetSpec objects (which are stored on the Cluster)

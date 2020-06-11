@@ -19,6 +19,8 @@ package iam
 import (
 	"encoding/json"
 	"fmt"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // ParseStatements parses JSON into a list of Statements
@@ -28,4 +30,23 @@ func ParseStatements(policy string) ([]*Statement, error) {
 		return nil, fmt.Errorf("error parsing IAM statements: %v", err)
 	}
 	return statements, nil
+}
+
+type IAMModelContext struct {
+	// AWSAccountID holds the 12 digit AWS account ID, when running on AWS
+	AWSAccountID string
+
+	Cluster *kops.Cluster
+}
+
+// IAMNameForPodRole determines the name of the IAM Role and Instance Profile to use for the pod role
+func (b *IAMModelContext) IAMNameForPodRole(role PodRole) string {
+	serviceAccount := ServiceAccountForPodRole(role)
+
+	return b.ClusterName() + ".sa." + serviceAccount.Namespace + "." + serviceAccount.Name
+}
+
+// ClusterName returns the cluster name
+func (b *IAMModelContext) ClusterName() string {
+	return b.Cluster.ObjectMeta.Name
 }

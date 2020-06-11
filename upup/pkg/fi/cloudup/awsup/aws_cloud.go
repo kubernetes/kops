@@ -40,6 +40,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam/iamiface"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"k8s.io/klog"
 
 	v1 "k8s.io/api/core/v1"
@@ -157,6 +158,9 @@ type AWSCloud interface {
 
 	// FindClusterStatus gets the status of the cluster as it exists in AWS, inferred from volumes
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
+
+	// AccountID returns the AWS account ID (typically a 12 digit number) we are deploying into
+	AccountID() (string, error)
 }
 
 type awsCloudImplementation struct {
@@ -168,6 +172,7 @@ type awsCloudImplementation struct {
 	autoscaling *autoscaling.AutoScaling
 	route53     *route53.Route53
 	spotinst    spotinst.Cloud
+	sts         *sts.STS
 
 	region string
 
@@ -259,6 +264,14 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.elbv2 = elbv2.New(sess, config)
 		c.elbv2.Handlers.Send.PushFront(requestLogger)
 		c.addHandlers(region, &c.elbv2.Handlers)
+
+		sess, err = session.NewSession(config)
+		if err != nil {
+			return c, err
+		}
+		c.sts = sts.New(sess, config)
+		c.sts.Handlers.Send.PushFront(requestLogger)
+		c.addHandlers(region, &c.sts.Handlers)
 
 		sess, err = session.NewSession(config)
 		if err != nil {
@@ -1536,4 +1549,21 @@ func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (set
 	}
 
 	return zones, nil
+}
+
+// AccountID returns the AWS account ID (typically a 12 digit number) we are deploying into
+func (c *awsCloudImplementation) AccountID() (string, error) {
+	request := &sts.GetCallerIdentityInput{}
+
+	response, err := c.sts.GetCallerIdentity(request)
+	if err != nil {
+		return "", fmt.Errorf("error geting AWS account ID: %v", err)
+	}
+
+	account := aws.StringValue(response.Account)
+	if account == "" {
+		return "", fmt.Errorf("AWS account id was empty")
+	}
+
+	return account, nil
 }

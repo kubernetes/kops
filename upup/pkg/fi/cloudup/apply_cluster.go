@@ -46,6 +46,7 @@ import (
 	"k8s.io/kops/pkg/model/components/kubeapiserver"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -344,7 +345,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	modelContext := &model.KopsModelContext{
-		Cluster:        cluster,
+		IAMModelContext: iam.IAMModelContext{
+			Cluster: cluster,
+		},
 		InstanceGroups: c.InstanceGroups,
 	}
 
@@ -394,6 +397,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
 			region = awsCloud.Region()
+
+			accountID, err := awsCloud.AccountID()
+			if err != nil {
+				return err
+			}
+			modelContext.AWSAccountID = accountID
 
 			l.AddTypes(map[string]interface{}{
 				// EC2
@@ -579,10 +588,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
-					Lifecycle:    &clusterLifecycle,
-					assetBuilder: assetBuilder,
-					cluster:      cluster,
-					templates:    templates,
+					Lifecycle:        &clusterLifecycle,
+					KopsModelContext: modelContext,
+					assetBuilder:     assetBuilder,
+					templates:        templates,
 				},
 				&model.PKIModelBuilder{
 					KopsModelContext: modelContext,

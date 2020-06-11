@@ -17,19 +17,21 @@ limitations under the License.
 package kubemanifest
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/text"
 )
 
-type Manifest struct {
+type Object struct {
 	data map[string]interface{}
 }
 
-func LoadManifestsFrom(contents []byte) ([]*Manifest, error) {
-	var manifests []*Manifest
+func LoadObjectsFrom(contents []byte) ([]*Object, error) {
+	var objects []*Object
 
 	// TODO: Support more separators?
 	sections := text.SplitContentToSections(contents)
@@ -41,17 +43,38 @@ func LoadManifestsFrom(contents []byte) ([]*Manifest, error) {
 			return nil, fmt.Errorf("error parsing yaml: %v", err)
 		}
 
-		manifest := &Manifest{
+		obj := &Object{
 			//bytes: section,
 			data: data,
 		}
-		manifests = append(manifests, manifest)
+		objects = append(objects, obj)
 	}
 
-	return manifests, nil
+	return objects, nil
 }
 
-func (m *Manifest) ToYAML() ([]byte, error) {
+// ToYAML serializes a list of manifests back to bytes; it is the opposite of LoadObjectsFrom
+func ToYAML(manifests []*Object) ([]byte, error) {
+	var yamlSeparator = []byte("\n---\n\n")
+	var yamls [][]byte
+	for _, manifest := range manifests {
+		// Don't serialize empty objects - they confuse yaml parsers
+		if manifest.IsEmptyObject() {
+			continue
+		}
+
+		y, err := manifest.ToYAML()
+		if err != nil {
+			return nil, fmt.Errorf("error re-marshaling manifest: %v", err)
+		}
+
+		yamls = append(yamls, y)
+	}
+
+	return bytes.Join(yamls, yamlSeparator), nil
+}
+
+func (m *Object) ToYAML() ([]byte, error) {
 	b, err := yaml.Marshal(m.data)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling manifest to yaml: %v", err)
@@ -59,7 +82,7 @@ func (m *Manifest) ToYAML() ([]byte, error) {
 	return b, nil
 }
 
-func (m *Manifest) accept(visitor Visitor) error {
+func (m *Object) accept(visitor Visitor) error {
 	err := visit(visitor, m.data, []string{}, func(v interface{}) {
 		klog.Fatal("cannot mutate top-level data")
 	})
@@ -67,6 +90,87 @@ func (m *Manifest) accept(visitor Visitor) error {
 }
 
 // IsEmptyObject checks if the object has no keys set (i.e. `== {}`)
-func (m *Manifest) IsEmptyObject() bool {
+func (m *Object) IsEmptyObject() bool {
 	return len(m.data) == 0
+}
+
+// Kind returns the kind field of the object, or "" if it cannot be found or is invalid
+func (m *Object) Kind() string {
+	v, found := m.data["kind"]
+	if !found {
+		return ""
+	}
+	s, ok := v.(string)
+	if !ok {
+		return ""
+	}
+	return s
+}
+
+// APIVersion returns the apiVersion field of the object, or "" if it cannot be found or is invalid
+func (m *Object) APIVersion() string {
+	v, found := m.data["apiVersion"]
+	if !found {
+		return ""
+	}
+	s, ok := v.(string)
+	if !ok {
+		return ""
+	}
+	return s
+}
+
+// Reparse parses a subfield from an object
+func (m *Object) Reparse(obj interface{}, fields ...string) error {
+	humanFields := strings.Join(fields, ".")
+
+	current := m.data
+	for _, field := range fields {
+		v, found := current[field]
+		if !found {
+			return fmt.Errorf("field %q in %s not found", field, humanFields)
+		}
+
+		m, ok := v.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("field %q in %s was not an object, was %T", field, humanFields, v)
+		}
+		current = m
+	}
+
+	b, err := yaml.Marshal(current)
+	if err != nil {
+		return fmt.Errorf("error marshaling %s to yaml: %v", humanFields, err)
+	}
+
+	if err := yaml.Unmarshal(b, obj); err != nil {
+		return fmt.Errorf("error unmarshaling subobject %s: %v", humanFields, err)
+	}
+
+	return nil
+}
+
+// Set parses a subfield from an object
+func (m *Object) Set(obj interface{}, fields ...string) error {
+	humanFields := strings.Join(fields, ".")
+
+	current := m.data
+	if len(fields) >= 2 {
+		for _, field := range fields[:len(fields)-1] {
+			v, found := current[field]
+			if !found {
+				return fmt.Errorf("field %q in %s not found", field, humanFields)
+			}
+
+			m, ok := v.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("field %q in %s was not an object, was %T", field, humanFields, v)
+			}
+			current = m
+		}
+	}
+
+	current[fields[len(fields)-1]] = obj
+
+	return nil
 }

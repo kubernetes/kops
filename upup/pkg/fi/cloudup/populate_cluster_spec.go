@@ -253,14 +253,13 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	}
 
 	tags, err := buildCloudupTags(cluster)
-
 	if err != nil {
 		return err
 	}
 
-	modelContext := &model.KopsModelContext{
-		Cluster: cluster,
-	}
+	modelContext := &model.KopsModelContext{}
+	modelContext.Cluster = cluster
+
 	tf := &TemplateFunctions{
 		cluster:      cluster,
 		tags:         tags,

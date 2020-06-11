@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -37,13 +38,27 @@ type IAMModelBuilder struct {
 
 var _ fi.ModelBuilder = &IAMModelBuilder{}
 
-const RolePolicyTemplate = `{
+const NodeRolePolicyTemplate = `{
   "Version": "2012-10-17",
   "Statement": [
     {
       "Effect": "Allow",
       "Principal": { "Service": "{{ IAMServiceEC2 }}"},
       "Action": "sts:AssumeRole"
+    }
+  ]
+}`
+
+const PodRolePolicyTemplate = `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Federated": "{{ FederatedPrincipal }}" },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": { "{{OIDCProvider}}:sub": "{{ OIDCSub }}" }
+      }
     }
   ]
 }`
@@ -72,11 +87,13 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each shared role
 	for profileARN, igRole := range sharedProfileARNsToIGRole {
+		role := iam.PodOrNodeRole{NodeRole: igRole}
+
 		iamName, err := findCustomAuthNameFromArn(profileARN)
 		if err != nil {
 			return fmt.Errorf("unable to parse instance profile name from arn %q: %v", profileARN, err)
 		}
-		err = b.buildIAMTasks(igRole, iamName, c, true)
+		err = b.buildIAMTasks(role, iamName, c, true)
 		if err != nil {
 			return err
 		}
@@ -84,31 +101,58 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each managed role
 	for igRole := range managedRoles {
+		role := iam.PodOrNodeRole{NodeRole: igRole}
 		iamName := b.IAMName(igRole)
-		err := b.buildIAMTasks(igRole, iamName, c, false)
+		err := b.buildIAMTasks(role, iamName, c, false)
 		if err != nil {
 			return err
+		}
+	}
+
+	// Generate IAM tasks for pod roles
+	if featureflag.UsePodIAM.Enabled() {
+		podRoles := []iam.PodRole{iam.PodRoleKopsController}
+		for _, podRole := range podRoles {
+			role := iam.PodOrNodeRole{PodRole: podRole}
+
+			iamName := b.IAMNameForPodRole(podRole)
+			err := b.buildIAMTasks(role, iamName, c, false)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName string, c *fi.ModelBuilderContext, shared bool) error {
+func (b *IAMModelBuilder) buildIAMTasks(role iam.PodOrNodeRole, iamName string, c *fi.ModelBuilderContext, shared bool) error {
+	var roleKey string
+	if role.PodRole != iam.PodRoleEmpty {
+		roleKey = strings.ToLower(string(role.PodRole))
+	} else {
+		roleKey = strings.ToLower(string(role.NodeRole) + "s")
+	}
+
 	{ // To minimize diff for easier code review
 		var iamRole *awstasks.IAMRole
 		{
-			rolePolicy, err := b.buildAWSIAMRolePolicy()
+			rolePolicy, err := b.buildAWSIAMRolePolicy(role)
 			if err != nil {
 				return err
 			}
 
+			{
+				policy, err := fi.ResourceAsString(rolePolicy)
+				klog.Infof("policy %s err %v", policy, err)
+			}
+			
 			iamRole = &awstasks.IAMRole{
 				Name:      s(iamName),
 				Lifecycle: b.Lifecycle,
 
 				RolePolicyDocument: fi.WrapResource(rolePolicy),
-				ExportWithID:       s(strings.ToLower(string(igRole)) + "s"),
+				ExportWithID:       s(roleKey + "s"),
 			}
 			c.AddTask(iamRole)
 
@@ -118,7 +162,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 			iamPolicy := &iam.PolicyResource{
 				Builder: &iam.PolicyBuilder{
 					Cluster: b.Cluster,
-					Role:    igRole,
+					Role:    role,
 					Region:  b.Region,
 				},
 			}
@@ -171,10 +215,10 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 
 			if b.Cluster.Spec.ExternalPolicies != nil {
 				p := *(b.Cluster.Spec.ExternalPolicies)
-				externalPolicies = append(externalPolicies, p[strings.ToLower(string(igRole))]...)
+				externalPolicies = append(externalPolicies, p[roleKey]...)
 			}
 
-			name := fmt.Sprintf("%s-policyoverride", strings.ToLower(string(igRole)))
+			name := fmt.Sprintf("%s-policyoverride", roleKey)
 			t := &awstasks.IAMRolePolicy{
 				Name:             s(name),
 				Lifecycle:        b.Lifecycle,
@@ -192,7 +236,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 			if b.Cluster.Spec.AdditionalPolicies != nil {
 				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
 
-				additionalPolicy = additionalPolicies[strings.ToLower(string(igRole))]
+				additionalPolicy = additionalPolicies[roleKey]
 			}
 
 			additionalPolicyName := "additional." + iamName
@@ -211,7 +255,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 
 				statements, err := iam.ParseStatements(additionalPolicy)
 				if err != nil {
-					return fmt.Errorf("additionalPolicy %q is invalid: %v", strings.ToLower(string(igRole)), err)
+					return fmt.Errorf("additionalPolicy %q is invalid: %v", roleKey, err)
 				}
 
 				p.Statement = append(p.Statement, statements...)
@@ -229,11 +273,12 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 			c.AddTask(t)
 		}
 	}
+
 	return nil
 }
 
 // buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role
-func (b *IAMModelBuilder) buildAWSIAMRolePolicy() (fi.Resource, error) {
+func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.PodOrNodeRole) (fi.Resource, error) {
 	functions := template.FuncMap{
 		"IAMServiceEC2": func() string {
 			// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
@@ -249,7 +294,26 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy() (fi.Resource, error) {
 		},
 	}
 
-	templateResource, err := NewTemplateResource("AWSIAMRolePolicy", RolePolicyTemplate, functions, nil)
+	var template string
+	if role.PodRole != iam.PodRoleEmpty {
+		serviceAccount := iam.ServiceAccountForPodRole(role.PodRole)
+
+		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.Cluster.ClusterName, &b.Cluster.Spec)
+		if err != nil {
+			return nil, err
+		}
+		oidcProvider := strings.TrimPrefix(serviceAccountIssuer, "https://")
+
+		functions["OIDCProvider"] = func() string { return oidcProvider }
+		functions["OIDCSub"] = func() string { return "system:serviceaccount:" + serviceAccount.Namespace + ":" + serviceAccount.Name }
+		functions["FederatedPrincipal"] = func() string { return "arn:aws:iam::" + b.AWSAccountID + ":oidc-provider/" + oidcProvider }
+
+		template = PodRolePolicyTemplate
+	} else {
+		template = NodeRolePolicyTemplate
+	}
+
+	templateResource, err := NewTemplateResource("AWSIAMRolePolicy", template, functions, nil)
 	if err != nil {
 		return nil, err
 	}

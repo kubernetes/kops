@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -68,14 +69,11 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if kubeAPIServer.ServiceAccountIssuer == nil {
-		var publicURL string
-		switch p := p.(type) {
-		case *vfs.S3Path:
-			publicURL = "https://" + p.Bucket() + ".s3.amazonaws.com/" + p.Path()
-		default:
-			return fmt.Errorf("unhandled scheme in %q for computing serviceAccountIssuer", p)
+		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.Context.ClusterName, clusterSpec)
+		if err != nil {
+			return err
 		}
-		kubeAPIServer.ServiceAccountIssuer = &publicURL
+		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 	}
 
 	if kubeAPIServer.ServiceAccountJWKSURI == nil {
@@ -88,6 +86,10 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {
 		s := "/srv/kubernetes/server.key"
 		kubeAPIServer.ServiceAccountSigningKeyFile = &s
+	}
+
+	if len(kubeAPIServer.ServiceAccountKeyFile) == 0 {
+		kubeAPIServer.ServiceAccountKeyFile = []string{"/srv/kubernetes/server.key"}
 	}
 
 	if clusterSpec.ServiceOIDCProvider == nil {

@@ -86,10 +86,9 @@ func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 }
 
 func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
-	kopsModelContext := &model.KopsModelContext{
-		Cluster: cluster,
-		// We are not initializing a lot of the fields here; revisit once UsePrivateDNS is "real"
-	}
+	// We are not initializing a lot of the fields here; revisit once UsePrivateDNS is "real"
+	kopsModelContext := &model.KopsModelContext{}
+	kopsModelContext.Cluster = cluster
 
 	if kopsModelContext.UsePrivateDNS() {
 		klog.Infof("Private DNS: skipping DNS validation")

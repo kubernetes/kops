@@ -28,7 +28,7 @@ import (
 	"k8s.io/klog"
 )
 
-// ParseManifest parses a set of objects from a []byte
+// ParseManifest parses a typed set of objects from a []byte
 func ParseManifest(data []byte) ([]runtime.Object, error) {
 	decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(data), 4096)
 	deser := scheme.Codecs.UniversalDeserializer()

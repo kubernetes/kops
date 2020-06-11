@@ -19,6 +19,7 @@ package awstasks
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -64,13 +65,23 @@ func (e *IAMOIDCProvider) Find(c *fi.Context) (*IAMOIDCProvider, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error describing oidc provider: %v", err)
 		}
-		if fi.StringValue(descResp.Url) == fi.StringValue(e.URL) {
+		// AWS does not return the https:// in the url
+		actualURL := aws.StringValue(descResp.Url)
+		if !strings.Contains(actualURL, "://") {
+			actualURL = "https://" + actualURL
+		}
+
+		if actualURL == fi.StringValue(e.URL) {
 			actual := &IAMOIDCProvider{
 				ClientIDs:   descResp.ClientIDList,
 				Thumbprints: descResp.ThumbprintList,
-				URL:         descResp.Url,
+				URL:         &actualURL,
 				ARN:         arn,
 			}
+
+			actual.Lifecycle = e.Lifecycle
+			actual.Name = e.Name
+
 			klog.V(2).Infof("found matching IAMOIDCProvider %q", aws.StringValue(arn))
 			return actual, nil
 		}

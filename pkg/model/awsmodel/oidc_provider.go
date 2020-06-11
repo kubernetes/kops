@@ -47,7 +47,7 @@ type oidcDiscovery struct {
 var _ fi.ModelBuilder = &OIDCProviderBuilder{}
 
 const (
-	stsAudience = "sts.amazonaws.com"
+	defaultAudience = "amazonaws.com"
 )
 
 func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -96,7 +96,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 		Name:        fi.String(b.ClusterName()),
 		Lifecycle:   b.Lifecycle,
 		URL:         fi.String(issuerURL),
-		ClientIDs:   []*string{fi.String(stsAudience)},
+		ClientIDs:   []*string{fi.String(defaultAudience)},
 		Thumbprints: thumbprints,
 	}
 	c.AddTask(oidcProvider)

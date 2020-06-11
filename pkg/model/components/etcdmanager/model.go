@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -496,12 +495,6 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Po
 
 	kubemanifest.MarkPodAsCritical(pod)
 	kubemanifest.MarkPodAsClusterCritical(pod)
-
-	if featureflag.UsePodIAM {
-		if err := usePodIAM(pod); err != nil {
-			return nil, err
-		}
-	}
 
 	return pod, nil
 }

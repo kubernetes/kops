@@ -270,3 +270,8 @@ func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Insta
 		return "", fmt.Errorf("MockAWSCloud DefaultInstanceType does not handle %s", ig.Spec.Role)
 	}
 }
+
+// AccountID returns the AWS account ID (typically a 12 digit number) we are deploying into
+func (c *MockAWSCloud) AccountID() (string, error) {
+	return "123456789012", nil
+}
