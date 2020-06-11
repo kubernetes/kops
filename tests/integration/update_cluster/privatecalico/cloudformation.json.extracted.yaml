@@ -151,7 +151,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     ipMasq: false
     ipTables: false
     logDriver: json-file
-    logLevel: warn
+    logLevel: info
     logOpt:
     - max-size=10m
     - max-file=5
@@ -452,7 +452,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
     ipMasq: false
     ipTables: false
     logDriver: json-file
-    logLevel: warn
+    logLevel: info
     logOpt:
     - max-size=10m
     - max-file=5
