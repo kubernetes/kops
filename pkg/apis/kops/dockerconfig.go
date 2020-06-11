@@ -60,6 +60,8 @@ type DockerConfig struct {
 	MTU *int32 `json:"mtu,omitempty" flag:"mtu"`
 	// RegistryMirrors is a referred list of docker registry mirror
 	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
+	// SelinuxEnabled enables SELinux support
+	SelinuxEnabled *bool `json:"selinuxEnabled,omitempty" flag:"selinux-enabled"`
 	// SkipInstall when set to true will prevent kops from installing and modifying Docker in any way
 	SkipInstall bool `json:"skipInstall,omitempty"`
 	// Storage is the docker storage driver to use
