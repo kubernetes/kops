@@ -92,11 +92,15 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			cluster.Spec.Kubelet.AuthenticationTokenWebhook = &v
 		case "cluster.spec.nodePortAccess":
 			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
-		case "spec.docker.execOpt":
+		case "spec.docker.selinuxEnabled":
+			v, err := strconv.ParseBool(kv[1])
+			if err != nil {
+				return fmt.Errorf("unknown boolean value: %q", kv[1])
+			}
 			if cluster.Spec.Docker == nil {
 				cluster.Spec.Docker = &api.DockerConfig{}
 			}
-			cluster.Spec.Docker.ExecOpt = append(cluster.Spec.Docker.ExecOpt, kv[1])
+			cluster.Spec.Docker.SelinuxEnabled = &v
 		case "spec.kubernetesVersion":
 			cluster.Spec.KubernetesVersion = kv[1]
 		case "spec.masterPublicName":
