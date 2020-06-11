@@ -38,7 +38,7 @@ const maxTimeout = 15 * time.Second
 
 // Interface is a wrapper around kubernetes.Interface, that recovers
 // better from network failures.  This error handling is only
-// available on the helper methods, but for compatability RawClient
+// available on the helper methods, but for compatibility RawClient
 // exposes the underlying kubernetes.Interface
 type Interface interface {
 	// RawClient returns the current kubernetes.Interface; it should not be cached
