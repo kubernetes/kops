@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509/pkix"
 	"fmt"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -77,7 +76,7 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair(c *fi.ModelBuilderCont
 		Name:   name,
 		Signer: "etcd-clients-ca",
 		Type:   "client",
-		Subject: pkix.Name{
+		Subject: nodetasks.PKIXName{
 			CommonName: "kube-apiserver",
 		},
 	}

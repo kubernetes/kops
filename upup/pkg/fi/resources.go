@@ -250,8 +250,8 @@ func WrapResource(r Resource) *ResourceHolder {
 }
 
 type TaskDependentResource struct {
-	Resource Resource
-	Task     Task
+	Resource Resource `json:"resource,omitempty"`
+	Task     Task     `json:"task,omitempty"`
 }
 
 var _ Resource = &TaskDependentResource{}
