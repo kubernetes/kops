@@ -37,6 +37,7 @@ import (
 	"k8s.io/klog"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -368,6 +369,15 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		return nil, err
 	}
 
+	statements, err := IAMForWriteablePaths(writeablePaths)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
+
+func IAMForS3(writeablePaths []vfs.Path) error {
 	for _, vfsPath := range writeablePaths {
 		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
 			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
@@ -408,15 +418,16 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			}),
 		})
 	}
-
-	return p, nil
+	return statements
 }
 
 func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vfs.Path, error) {
 	var paths []vfs.Path
 
+	usePodIAM := featureflag.UsePodIAM.Enabled()
+
 	// On the master, grant IAM permissions to the backup store, if it is configured
-	if role == kops.InstanceGroupRoleMaster {
+	if (!usePodIAM && role == kops.InstanceGroupRoleMaster) || (usePodIAM && podRole == kops.PodRoleEtcdManager) {
 		backupStores := sets.NewString()
 		for _, c := range cluster.Spec.EtcdClusters {
 			if c.Backups == nil || c.Backups.BackupStore == "" || backupStores.Has(c.Backups.BackupStore) {
@@ -435,15 +446,18 @@ func WriteableVFSPaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]vf
 		}
 	}
 
-	if cluster.Spec.Discovery != nil && cluster.Spec.Discovery.Base != "" {
-		base, err := vfs.Context.BuildVfsPath(cluster.Spec.Discovery.Base)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse VFS path %q: %v", cluster.Spec.Discovery.Base, err)
+	// Allow the master to write updated jwks docs to the discovery bucket
+	if role == kops.InstanceGroupRoleMaster {
+		if cluster.Spec.Discovery != nil && cluster.Spec.Discovery.Base != "" {
+			base, err := vfs.Context.BuildVfsPath(cluster.Spec.Discovery.Base)
+			if err != nil {
+				return nil, fmt.Errorf("cannot parse VFS path %q: %v", cluster.Spec.Discovery.Base, err)
+			}
+
+			p := base.Join(cluster.Name + "/identity")
+
+			paths = append(paths, p)
 		}
-
-		p := base.Join(cluster.Name + "/identity")
-
-		paths = append(paths, p)
 	}
 
 	return paths, nil

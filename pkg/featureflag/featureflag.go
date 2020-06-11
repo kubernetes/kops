@@ -88,6 +88,8 @@ var (
 	TerraformJSON = New("TerraformJSON", Bool(false))
 	// Terraform012 will output terraform in the 0.12 (hcl2) syntax
 	Terraform012 = New("Terraform-0.12", Bool(true))
+	// UsePodIAM controls whether we use pod-level IAM permissions for our system pods.
+	UsePodIAM = New("UsePodIAM", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
