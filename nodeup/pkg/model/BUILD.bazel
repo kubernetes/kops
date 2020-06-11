@@ -91,6 +91,7 @@ go_test(
         "kube_controller_manager_test.go",
         "kube_proxy_test.go",
         "kube_scheduler_test.go",
+        "kubectl_test.go",
         "kubelet_test.go",
         "protokube_test.go",
     ],
