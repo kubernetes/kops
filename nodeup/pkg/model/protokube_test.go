@@ -17,65 +17,33 @@ limitations under the License.
 package model
 
 import (
-	"path"
-	"path/filepath"
 	"testing"
 
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestProtokubeBuilder_Docker(t *testing.T) {
-	runProtokubeBuilderTest(t, "docker")
+	RunGoldenTest(t, "tests/protokube/docker", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := ProtokubeBuilder{NodeupModelContext: nodeupModelContext}
+		populateImage(nodeupModelContext)
+		return builder.Build(target)
+	})
 }
 
 func TestProtokubeBuilder_containerd(t *testing.T) {
-	runProtokubeBuilderTest(t, "containerd")
+	RunGoldenTest(t, "tests/protokube/containerd", "protokube", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := ProtokubeBuilder{NodeupModelContext: nodeupModelContext}
+		populateImage(nodeupModelContext)
+		return builder.Build(target)
+	})
 }
 
-func runProtokubeBuilderTest(t *testing.T, key string) {
-	basedir := path.Join("tests/protokube/", key)
-
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+func populateImage(ctx *NodeupModelContext) {
+	if ctx.NodeupConfig == nil {
+		ctx.NodeupConfig = &nodeup.Config{}
 	}
-	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
-	if err != nil {
-		t.Fatalf("error loading model %q: %v", basedir, err)
-		return
+	ctx.NodeupConfig.ProtokubeImage = &nodeup.Image{
+		Name: "protokube image name",
 	}
-
-	cluster := nodeUpModelContext.Cluster
-	if cluster.Spec.MasterKubelet == nil {
-		cluster.Spec.MasterKubelet = &kops.KubeletConfigSpec{}
-	}
-	if cluster.Spec.MasterKubelet == nil {
-		cluster.Spec.MasterKubelet = &kops.KubeletConfigSpec{}
-	}
-	cluster.Spec.Kubelet.HostnameOverride = "example-hostname"
-
-	nodeUpModelContext.IsMaster = true
-
-	nodeUpModelContext.NodeupConfig = &nodeup.Config{}
-
-	// These trigger use of etcd-manager
-	nodeUpModelContext.NodeupConfig.EtcdManifests = []string{
-		"memfs://clusters.example.com/minimal.example.com/manifests/etcd/main.yaml",
-		"memfs://clusters.example.com/minimal.example.com/manifests/etcd/events.yaml",
-	}
-
-	nodeUpModelContext.NodeupConfig.ProtokubeImage = &nodeup.Image{}
-	nodeUpModelContext.NodeupConfig.ProtokubeImage.Name = "protokube:test"
-
-	builder := &ProtokubeBuilder{NodeupModelContext: nodeUpModelContext}
-
-	if task, err := builder.buildSystemdService(); err != nil {
-		t.Fatalf("error from buildSystemdService: %v", err)
-	} else {
-		context.AddTask(task)
-	}
-
-	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }
