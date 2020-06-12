@@ -25,7 +25,7 @@ import (
 
 type ImageRemapFunction func(image string) (string, error)
 
-func (m *Manifest) RemapImages(mapper ImageRemapFunction) error {
+func (m *Object) RemapImages(mapper ImageRemapFunction) error {
 	visitor := &imageRemapVisitor{
 		mapper: mapper,
 	}
