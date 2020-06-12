@@ -21,9 +21,10 @@ spec:
       name: master-us-test-1a
     name: events
     provider: Manager
-  kubelet: {}
+  kubelet:
+    hostnameOverride: master.override.invalid
   kubernetesVersion: v1.17.0
-  masterInternalName: api.internal.minimal.example.com
+  masterInternalName: api.internal.minimal.k8s.local
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
