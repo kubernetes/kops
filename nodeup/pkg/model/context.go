@@ -446,7 +446,6 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 	if err != nil {
 		return err
 	}
-
 	p := filename
 	if !filepath.IsAbs(p) {
 		p = filepath.Join(c.PathSrvKubernetes(), filename)
