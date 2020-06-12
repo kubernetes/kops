@@ -17,7 +17,10 @@ limitations under the License.
 package components
 
 import (
+	"github.com/blang/semver"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -39,9 +42,11 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		if b.Context.IsKubernetesLT("1.12.0") {
 			c.Version = "v1.6.9"
 		} else {
-			c.Version = "v1.7.4"
+			c.Version = "v1.8.0"
 		}
 	}
+
+	version, _ := semver.ParseTolerant(c.Version)
 
 	if c.BPFCTGlobalAnyMax == 0 {
 		c.BPFCTGlobalAnyMax = 262144
@@ -76,7 +81,19 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if c.AgentPrometheusPort == 0 {
-		c.AgentPrometheusPort = 9090
+		c.AgentPrometheusPort = wellknownports.CiliumPrometheusPort
+	}
+
+	if c.Ipam == "" {
+		if version.Minor >= 8 {
+			c.Ipam = "kubernetes"
+		} else {
+			c.Ipam = "hostscope"
+		}
+	}
+
+	if c.EnableRemoteNodeIdentity == nil {
+		c.EnableRemoteNodeIdentity = fi.Bool(true)
 	}
 
 	return nil
