@@ -583,7 +583,7 @@ spec:
 
 ## Node local DNS cache
 
-If you are using CoreDNS, you can enable NodeLocal DNSCache. It is used to improve improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
+As of kops 1.18, you can enable NodeLocal DNSCache if you are using CoreDNS. It is used to improve improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
 
 ```yaml
 spec:
