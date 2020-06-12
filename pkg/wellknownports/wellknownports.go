@@ -51,6 +51,15 @@ const (
 
 	// NodeLocalDNSHealthCheck is the port where the node-local-dns health check listens.
 	NodeLocalDNSHealthCheck = 3989
+
+	// CiliumPrometheusPort is the default port where Cilium exposes metrics
+	CiliumPrometheusPort = 9090
+
+	// CiliumHubblePrometheusPort is the default port where Hubble exposes metrics
+	CiliumHubblePrometheusPort = 9091
+
+	// CiliumOperatorPrometheusPort is the port the Cilium Operator exposes metrics
+	CiliumPrometheusOperatorPort = 6942
 )
 
 type PortRange struct {

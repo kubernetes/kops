@@ -581,7 +581,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "1.0",
+				Version: "v1.0.0",
 			},
 			Spec: kops.ClusterSpec{
 				KubernetesVersion: "1.11.0",
@@ -590,34 +590,66 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.7.0",
+			},
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.11.0",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.version"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.7.0-rc1",
+			},
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.11.0",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.version"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.7.0",
+			},
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.18.0",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.version"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.7.0",
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
 				Version: "1.7.0",
 			},
-			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.11.0",
-			},
-			ExpectedErrors: []string{"Forbidden::cilium.version"},
+			ExpectedErrors: []string{"Invalid value::cilium.version"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "1.7.0-rc1",
+				Version: "v1.7.0",
+				Hubble: kops.HubbleSpec{
+					Enabled: fi.Bool(true),
+				},
 			},
-			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.11.0",
-			},
-			ExpectedErrors: []string{"Forbidden::cilium.version"},
+			ExpectedErrors: []string{"Forbidden::cilium.hubble.enabled"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "1.7",
-			},
-			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.12.0",
+				Version: "v1.8.0",
+				Hubble: kops.HubbleSpec{
+					Enabled: fi.Bool(true),
+				},
 			},
 		},
 	}
 	for _, g := range grid {
 		g.Spec.Networking = &kops.NetworkingSpec{
 			Cilium: &g.Cilium,
+		}
+		if g.Spec.KubernetesVersion == "" {
+			g.Spec.KubernetesVersion = "1.12.0"
 		}
 		cluster := &kops.Cluster{
 			Spec: g.Spec,
