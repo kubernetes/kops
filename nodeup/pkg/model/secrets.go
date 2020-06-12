@@ -120,6 +120,10 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:        nodetasks.PKIXName{CommonName: "kubernetes-master"},
 			AlternateNames: alternateNames,
 		}
+
+		// Including the CA certificate is more correct, and is needed for e.g. AWS WebIdentity federation
+		issueCert.IncludeRootCertificate = true
+
 		c.AddTask(issueCert)
 		err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "server", "", nil)
 		if err != nil {
