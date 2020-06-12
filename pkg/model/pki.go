@@ -205,18 +205,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		// Used by e.g. protokube
-		t := &fitasks.Keypair{
-			Name:      fi.String("kops"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "o=" + rbac.SystemPrivilegedGroup + ",cn=kops",
-			Type:      "client",
-			Signer:    defaultCA,
-		}
-		c.AddTask(t)
-	}
-
-	{
 		// A few names used from inside the cluster, which all resolve the same based on our default suffixes
 		alternateNames := []string{
 			"kubernetes",

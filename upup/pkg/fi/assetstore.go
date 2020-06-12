@@ -73,18 +73,18 @@ type HasSource interface {
 
 // assetResource implements Resource, but also implements HasFetchInstructions
 type assetResource struct {
-	asset *asset
+	Asset *asset
 }
 
 var _ Resource = &assetResource{}
 var _ HasSource = &assetResource{}
 
 func (r *assetResource) Open() (io.Reader, error) {
-	return r.asset.resource.Open()
+	return r.Asset.resource.Open()
 }
 
 func (r *assetResource) GetSource() *Source {
-	return r.asset.source
+	return r.Asset.source
 }
 
 type AssetStore struct {
@@ -119,7 +119,7 @@ func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
 	}
 	if len(matches) == 1 {
 		klog.Infof("Resolved asset %s:%s to %s", key, assetPath, matches[0].AssetPath)
-		return &assetResource{asset: matches[0]}, nil
+		return &assetResource{Asset: matches[0]}, nil
 	}
 
 	klog.Infof("Matching assets:")
@@ -127,6 +127,15 @@ func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
 		klog.Infof("    %s %s", match.Key, match.AssetPath)
 	}
 	return nil, fmt.Errorf("found multiple matching assets for key: %q", key)
+}
+
+// Add an asset into the store, in one of the recognized formats (see Assets in types package)
+func (a *AssetStore) AddForTest(id string, content string) {
+	a.assets = append(a.assets, &asset{
+		Key:       id,
+		AssetPath: "/path/to/" + id + "/asset",
+		resource:  NewStringResource(content),
+	})
 }
 
 func hashFromHTTPHeader(url string) (*hashing.Hash, error) {

@@ -1,0 +1,26 @@
+Hash: ""
+Name: protokube
+Runtime: docker
+Sources: null
+---
+Name: protokube.service
+definition: |
+  [Unit]
+  Description=Kubernetes Protokube Service
+  Documentation=https://github.com/kubernetes/kops
+
+  [Service]
+  ExecStartPre=-/usr/bin/docker stop protokube
+  ExecStartPre=-/usr/bin/docker rm protokube
+  ExecStartPre=/bin/true
+  ExecStart=/usr/bin/docker run --net=host --pid=host --privileged --volume /:/rootfs/ --volume /var/run/dbus:/var/run/dbus --volume /run/systemd:/run/systemd --env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig --name protokube protokube image name /usr/bin/protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=true --dns-internal-suffix=internal.minimal.k8s.local --dns=gossip --etcd-backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/main --etcd-image=k8s.gcr.io/etcd:3.4.3 --initialize-rbac=true --manage-etcd=true --master=false --node-name=master.override.invalid --peer-ca=/srv/kubernetes/ca.crt --peer-cert=/srv/kubernetes/etcd-peer.pem --peer-key=/srv/kubernetes/etcd-peer-key.pem --tls-auth=true --tls-ca=/srv/kubernetes/ca.crt --tls-cert=/srv/kubernetes/etcd.pem --tls-key=/srv/kubernetes/etcd-key.pem --v=4 --zone=*/Z1AFAKE1ZON3YO
+  Restart=always
+  RestartSec=2s
+  StartLimitInterval=0
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true

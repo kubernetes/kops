@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -65,14 +66,15 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if t.IsMaster {
-		kubeconfig, err := t.BuildPKIKubeconfig("kops")
-		if err != nil {
-			return err
+		name := nodetasks.PKIXName{
+			CommonName:   "kops",
+			Organization: []string{rbac.SystemPrivilegedGroup},
 		}
+		kubeconfig := t.BuildIssuedKubeconfig("kops", name, c)
 
 		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kops/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
+			Contents: kubeconfig,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
