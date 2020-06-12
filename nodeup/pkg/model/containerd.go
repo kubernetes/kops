@@ -69,11 +69,11 @@ var containerdVersions = []packageVersion{
 		PackageVersion: "1.2.13",
 		PlainBinary:    true,
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.13.linux-amd64.tar.gz",
-		Hash:           "92d6ae6c60f6b068652b31811ce23d650ec0f6cc1e618ec9ae23db9321956258",
+		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.11.tgz",
+		Hash:           "0f4336378f61ed73ed55a356ac19e46699a995f2aff34323ba5874d131548b9e",
 		MapFiles: map[string]string{
-			"./usr/local/bin":  "/usr",
-			"./usr/local/sbin": "/usr",
+			"docker/c*":   "/usr/bin",
+			"docker/runc": "/usr/bin",
 		},
 	},
 
