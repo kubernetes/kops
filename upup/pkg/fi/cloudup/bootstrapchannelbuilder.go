@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/blang/semver"
+
 	"k8s.io/klog"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
@@ -924,36 +926,58 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
-	if b.Cluster.Spec.Networking.Cilium != nil {
+	cilium := b.Cluster.Spec.Networking.Cilium
+	if cilium != nil {
+		ver, _ := semver.ParseTolerant(cilium.Version)
+		ver.Build = nil
+		ver.Pre = nil
+		v8, _ := semver.Parse("1.8.0")
 		key := "networking.cilium.io"
-		version := "1.7.3-kops.1"
+		if ver.LT(v8) {
+			version := "1.7.3-kops.1"
 
-		{
-			id := "k8s-1.7"
-			location := key + "/" + id + ".yaml"
+			{
+				id := "k8s-1.7"
+				location := key + "/" + id + ".yaml"
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          networkingSelector,
-				Manifest:          fi.String(location),
-				KubernetesVersion: "<1.12.0",
-				Id:                id,
-			})
-		}
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          networkingSelector,
+					Manifest:          fi.String(location),
+					KubernetesVersion: "<1.12.0",
+					Id:                id,
+				})
+			}
 
-		{
-			id := "k8s-1.12"
-			location := key + "/" + id + ".yaml"
+			{
+				id := "k8s-1.12"
+				location := key + "/" + id + ".yaml"
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          networkingSelector,
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.12.0",
-				Id:                id,
-			})
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          networkingSelector,
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.12.0",
+					Id:                id,
+				})
+			}
+		} else {
+			version := "1.8.0-kops.1"
+			{
+				id := "k8s-1.12"
+				location := key + "/" + id + "-v1.8.yaml"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          networkingSelector,
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.12.0",
+					Id:                id,
+				})
+			}
 		}
 	}
 

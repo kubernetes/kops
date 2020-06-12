@@ -270,7 +270,7 @@ type CiliumNetworkingSpec struct {
 	EnablePrometheusMetrics bool `json:"enablePrometheusMetrics,omitempty"`
 	// EnableEncryption enables Cilium Encryption.
 	// Default: false
-	EnableEncryption bool `json:"enableEncryption"`
+	EnableEncryption bool `json:"enableEncryption,omitempty"`
 	// EnvoyLog is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	EnvoyLog string `json:"envoyLog,omitempty"`
@@ -411,7 +411,9 @@ type CiliumNetworkingSpec struct {
 	// Possible values are "crd" and "eni".
 	// "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
 	// "crd" will use CRDs for controlling IP address management.
-	// Empty value will use host-scope address management.
+	// "hostscope" will use hostscope IPAM mode.
+	// "kubernetes" will use addersing based on node pod CIDR.
+	// Empty value will use hostscope for cilum <= 1.7 and "kubernetes" otherwise.
 	Ipam string `json:"ipam,omitempty"`
 	// IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
 	// Default: false
@@ -429,7 +431,9 @@ type CiliumNetworkingSpec struct {
 	EtcdManaged bool `json:"etcdManaged,omitempty"`
 	// EnableRemoteNodeIdentity enables the remote-node-identity added in Cilium 1.7.0.
 	// Default: false
-	EnableRemoteNodeIdentity bool `json:"enableRemoteNodeIdentity,omitempty"`
+	EnableRemoteNodeIdentity *bool `json:"enableRemoteNodeIdentity,omitempty"`
+	// Hubble configures the Hubble service on the Cilium agent.
+	Hubble HubbleSpec `json:"hubble,omitempty"`
 
 	// RemoveCbrBridge is not implemented and may be removed in the future.
 	// Setting this has no effect.
@@ -446,6 +450,16 @@ type CiliumNetworkingSpec struct {
 	// CniBinPath is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	CniBinPath string `json:"cniBinPath,omitempty"`
+}
+
+// HubbleSpec configures the Hubble service on the Cilium agent.
+type HubbleSpec struct {
+	// Enabled decides if Hubble is enabled on the agent or not
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Metrics is a list of metrics to collect. If empty or null, metrics are disabled.
+	// See https://docs.cilium.io/en/stable/configuration/metrics/#hubble-exported-metrics
+	Metrics []string `json:"metrics,omitempty"`
 }
 
 // LyftVPCNetworkingSpec declares that we want to use the cni-ipvlan-vpc-k8s CNI networking.

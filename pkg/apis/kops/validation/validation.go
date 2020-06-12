@@ -658,7 +658,11 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 
 	if v.Version != "" {
 		versionFld := fldPath.Child("version")
-		version, err := semver.ParseTolerant(v.Version)
+		if !strings.HasPrefix(v.Version, "v") {
+			return append(allErrs, field.Invalid(versionFld, v.Version, "Cilium version must be prefixed with 'v'"))
+		}
+		versionString := strings.TrimPrefix(v.Version, "v")
+		version, err := semver.Parse(versionString)
 
 		version.Pre = nil
 		version.Build = nil
@@ -666,16 +670,25 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
 		}
 
-		v8, _ := semver.Parse("1.8.0")
-		v7, _ := semver.Parse("1.7.0")
-		v6, _ := semver.Parse("1.6.0")
-
-		if !(version.GTE(v6) && version.LT(v8)) {
-			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 and 1.7 are supported"))
+		if !(version.Minor >= 6 && version.Minor <= 8) {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 through 1.8 are supported"))
 		}
 
-		if !cluster.IsKubernetesGTE("1.12") && version.GTE(v7) {
-			allErrs = append(allErrs, field.Forbidden(versionFld, "Version >= 1.7 requires kubernetesVersion 1.12 or higher"))
+		if version.Minor == 6 && (!cluster.IsKubernetesGTE("1.11") || cluster.IsKubernetesGTE("1.16")) {
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.6 requires kubernetesVersion between 1.11 and 1.16"))
+		}
+
+		if version.Minor == 7 && (!cluster.IsKubernetesGTE("1.12") || cluster.IsKubernetesGTE("1.17")) {
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.7 requires kubernetesVersion between 1.12 and 1.17"))
+		}
+		if version.Minor == 8 && !cluster.IsKubernetesGTE("1.12") {
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.8 requires kubernetesVersion 1.12 or newer"))
+		}
+
+		if fi.BoolValue(v.Hubble.Enabled) {
+			if version.Minor < 8 {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("hubble", "enabled"), "Hubble requires Cilium 1.8 or newer"))
+			}
 		}
 	}
 
@@ -701,7 +714,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 
 	if v.Ipam != "" {
 		// "azure" not supported by kops
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni"})...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"hostscope", "kubernetes", "crd", "eni"})...)
 
 		if v.Ipam == kops.CiliumIpamEni {
 			if c.CloudProvider != string(kops.CloudProviderAWS) {
