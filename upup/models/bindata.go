@@ -14330,7 +14330,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.4'
+          image: 'weaveworks/weave-kube:2.6.5'
           ports:
             - name: metrics
               containerPort: 6782
@@ -14377,7 +14377,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.6.4'
+          image: 'weaveworks/weave-npc:2.6.5'
           ports:
             - name: metrics
               containerPort: 6781
@@ -14627,7 +14627,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.4'
+          image: 'weaveworks/weave-kube:2.6.5'
           ports:
             - name: metrics
               containerPort: 6782
@@ -14674,7 +14674,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.6.4'
+          image: 'weaveworks/weave-npc:2.6.5'
           ports:
             - name: metrics
               containerPort: 6781
