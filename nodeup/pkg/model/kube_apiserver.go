@@ -288,7 +288,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
 	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.cert")
+	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.crt")
 	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
 
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
@@ -327,7 +327,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	{
-		certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.cert")
+		certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.crt")
 		kubeAPIServer.ProxyClientCertFile = &certPath
 		keyPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.key")
 		kubeAPIServer.ProxyClientKeyFile = &keyPath
@@ -341,7 +341,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		}
 
 		if cert != nil {
-			certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator-ca.cert")
+			certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator-ca.crt")
 			kubeAPIServer.RequestheaderClientCAFile = certPath
 		}
 	}

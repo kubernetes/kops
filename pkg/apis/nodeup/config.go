@@ -44,6 +44,8 @@ type Config struct {
 	ProtokubeImage *Image `json:"protokubeImage,omitempty"`
 	// Channels is a list of channels that we should apply
 	Channels []string `json:"channels,omitempty"`
+	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.
+	ApiserverAdditionalIPs []string `json:",omitempty"`
 
 	// Manifests for running etcd
 	EtcdManifests []string `json:"etcdManifests,omitempty"`

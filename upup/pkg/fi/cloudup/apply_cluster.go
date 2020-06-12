@@ -1279,7 +1279,7 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 }
 
 // BuildNodeUpConfig returns the NodeUp config, in YAML format
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string) (*nodeup.Config, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1304,6 +1304,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Confi
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.ConfigBase = fi.String(n.configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name
+
+	if role == kops.InstanceGroupRoleMaster {
+		config.ApiserverAdditionalIPs = apiserverAdditionalIPs
+	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests {
 		match := false
