@@ -169,53 +169,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:      "ca",
 		}
 		c.AddTask(aggregatorCA)
-
-		aggregator := &fitasks.Keypair{
-			Name:      fi.String("apiserver-aggregator"),
-			Lifecycle: b.Lifecycle,
-			// Must match RequestheaderAllowedNames
-			Subject: "cn=aggregator",
-			Type:    "client",
-			Signer:  aggregatorCA,
-		}
-		c.AddTask(aggregator)
-	}
-
-	{
-		// A few names used from inside the cluster, which all resolve the same based on our default suffixes
-		alternateNames := []string{
-			"kubernetes",
-			"kubernetes.default",
-			"kubernetes.default.svc",
-			"kubernetes.default.svc." + b.Cluster.Spec.ClusterDNSDomain,
-		}
-
-		// Names specified in the cluster spec
-		alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
-		alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
-		alternateNames = append(alternateNames, b.Cluster.Spec.AdditionalSANs...)
-
-		// Referencing it by internal IP should work also
-		{
-			ip, err := b.WellKnownServiceIP(1)
-			if err != nil {
-				return err
-			}
-			alternateNames = append(alternateNames, ip.String())
-		}
-
-		// We also want to be able to reference it locally via https://127.0.0.1
-		alternateNames = append(alternateNames, "127.0.0.1")
-
-		t := &fitasks.Keypair{
-			Name:           fi.String("master"),
-			Lifecycle:      b.Lifecycle,
-			Subject:        "cn=kubernetes-master",
-			Type:           "server",
-			AlternateNames: alternateNames,
-			Signer:         defaultCA,
-		}
-		c.AddTask(t)
 	}
 
 	// @TODO this is VERY presumptuous, i'm going on the basis we can make it configurable in the future.
