@@ -31,12 +31,14 @@ import (
 // PKIXName is a simplified form of pkix.Name, for better golden test output
 type PKIXName struct {
 	fi.NotADependency
-	CommonName string
+	CommonName   string
+	Organization []string `json:",omitempty"`
 }
 
 func (n *PKIXName) toPKIXName() pkix.Name {
 	return pkix.Name{
-		CommonName: n.CommonName,
+		CommonName:   n.CommonName,
+		Organization: n.Organization,
 	}
 }
 

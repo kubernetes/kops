@@ -9,6 +9,8 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
+  containerd:
+    version: 1.3.4
   containerRuntime: containerd
   etcdClusters:
     - etcdMembers:
@@ -21,7 +23,8 @@ spec:
           name: master-us-test-1a
       name: events
       provider: Manager
-  kubelet: {}
+  kubelet:
+    hostnameOverride: master.hostname.invalid
   kubernetesVersion: v1.17.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
@@ -46,7 +49,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
-  name: nodes
+  name: master-1a
   labels:
     kops.k8s.io/cluster: minimal.example.com
 spec:
@@ -55,6 +58,6 @@ spec:
   machineType: t2.medium
   maxSize: 2
   minSize: 2
-  role: Node
+  role: Master
   subnets:
     - us-test-1a
