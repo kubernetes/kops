@@ -3203,7 +3203,7 @@ func compareErrors(t *testing.T, actual, expected error) {
 type nodeupConfigBuilder struct {
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string) (*nodeup.Config, error) {
 	return &nodeup.Config{}, nil
 }
 
