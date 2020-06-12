@@ -17,7 +17,6 @@ limitations under the License.
 package assets
 
 import (
-	"bytes"
 	"fmt"
 	"net/url"
 	"os"
@@ -113,32 +112,18 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 		return data, nil
 	}
 
-	manifests, err := kubemanifest.LoadManifestsFrom(data)
+	objects, err := kubemanifest.LoadObjectsFrom(data)
 	if err != nil {
 		return nil, err
 	}
 
-	var yamlSeparator = []byte("\n---\n\n")
-	var remappedManifests [][]byte
-	for _, manifest := range manifests {
-		if err := manifest.RemapImages(a.RemapImage); err != nil {
+	for _, object := range objects {
+		if err := object.RemapImages(a.RemapImage); err != nil {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
-
-		// Don't serialize empty objects - they confuse yaml parsers
-		if manifest.IsEmptyObject() {
-			continue
-		}
-
-		y, err := manifest.ToYAML()
-		if err != nil {
-			return nil, fmt.Errorf("error re-marshaling manifest: %v", err)
-		}
-
-		remappedManifests = append(remappedManifests, y)
 	}
 
-	return bytes.Join(remappedManifests, yamlSeparator), nil
+	return kubemanifest.ToYAML(objects)
 }
 
 // RemapImage normalizes a containers location if a user sets the AssetsLocation ContainerRegistry location.
