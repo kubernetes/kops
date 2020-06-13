@@ -76,13 +76,16 @@ func (i *IssueCert) GetResources() (certResource, keyResource, caResource *fi.Ta
 	return i.cert, i.key, i.ca
 }
 
-func (i *IssueCert) AddFileTasks(c *fi.ModelBuilderContext, dir string, name string, caName string, owner *string) {
+func (i *IssueCert) AddFileTasks(c *fi.ModelBuilderContext, dir string, name string, caName string, owner *string) error {
 	certResource, keyResource, caResource := i.GetResources()
-	c.AddTask(&File{
+	err := c.EnsureTask(&File{
 		Path: dir,
 		Type: FileType_Directory,
 		Mode: fi.String("0755"),
 	})
+	if err != nil {
+		return err
+	}
 
 	c.AddTask(&File{
 		Path:     filepath.Join(dir, name+".crt"),
@@ -101,14 +104,19 @@ func (i *IssueCert) AddFileTasks(c *fi.ModelBuilderContext, dir string, name str
 	})
 
 	if caName != "" {
-		c.AddTask(&File{
+		err = c.EnsureTask(&File{
 			Path:     filepath.Join(dir, caName+".crt"),
 			Contents: caResource,
 			Type:     FileType_File,
 			Mode:     fi.String("0644"),
 			Owner:    owner,
 		})
+		if err != nil {
+			return nil
+		}
 	}
+
+	return nil
 }
 
 func (e *IssueCert) Run(c *fi.Context) error {
