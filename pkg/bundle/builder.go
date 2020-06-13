@@ -239,37 +239,18 @@ func (b *Builder) buildPKIFiles(cluster *kops.Cluster, ig *kops.InstanceGroup, k
 	keys = append(keys, "kube-proxy")
 
 	if ig.IsMaster() {
-		// Used by e.g. protokube
-		certs = append(certs, "kops")
-		keys = append(keys, "kops")
-
 		// Used by apiserver-aggregator
 		certs = append(certs, "apiserver-aggregator")
 		keys = append(keys, "apiserver-aggregator")
 		certs = append(certs, "apiserver-aggregator-ca")
 
-		certs = append(certs, "apiserver-proxy-client")
-		keys = append(keys, "apiserver-proxy-client")
-
 		// Used by k-c-m, for example
 		//certs = append(certs, "ca")
 		keys = append(keys, "ca")
 
-		// Used by kube-controller-manager to auth to API
-		certs = append(certs, "kube-controller-manager")
-		keys = append(keys, "kube-controller-manager")
-
-		// Used by kube-scheduler to auth to API
-		certs = append(certs, "kube-scheduler")
-		keys = append(keys, "kube-scheduler")
-
 		// key for the apiserver
 		certs = append(certs, "master")
 		keys = append(keys, "master")
-
-		// We store kubecfg on the master
-		certs = append(certs, "kubecfg")
-		keys = append(keys, "kubecfg")
 	}
 
 	for _, name := range certs {

@@ -109,11 +109,15 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// @check if we are using secure client certificates for kubelet and grab the certificates
 	if b.UseSecureKubelet() {
-		name := "kubelet-api"
-		if err := b.BuildCertificateTask(c, name, name+".pem"); err != nil {
-			return err
+		issueCert := &nodetasks.IssueCert{
+			Name:    "kubelet-api",
+			Signer:  fi.CertificateIDCA,
+			Type:    "client",
+			Subject: nodetasks.PKIXName{CommonName: "kubelet-api"},
 		}
-		if err := b.BuildPrivateKeyTask(c, name, name+"-key.pem"); err != nil {
+		c.AddTask(issueCert)
+		err := issueCert.AddFileTasks(c, b.PathSrvKubernetes(), "kubelet-api", "", nil)
+		if err != nil {
 			return err
 		}
 	}
@@ -331,8 +335,8 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	// @check if we are using secure kubelet client certificates
 	if b.UseSecureKubelet() {
 		// @note we are making assumption were using the ones created by the pki model, not custom defined ones
-		kubeAPIServer.KubeletClientCertificate = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.pem")
-		kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api-key.pem")
+		kubeAPIServer.KubeletClientCertificate = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.crt")
+		kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.key")
 	}
 
 	{

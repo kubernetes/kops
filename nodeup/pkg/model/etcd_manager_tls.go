@@ -81,7 +81,5 @@ func (b *EtcdManagerTLSBuilder) buildKubeAPIServerKeypair(c *fi.ModelBuilderCont
 		},
 	}
 	c.AddTask(issueCert)
-	issueCert.AddFileTasks(c, "/etc/kubernetes/pki/kube-apiserver", name, "etcd-ca", nil)
-
-	return nil
+	return issueCert.AddFileTasks(c, "/etc/kubernetes/pki/kube-apiserver", name, "etcd-ca", nil)
 }

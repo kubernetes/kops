@@ -80,16 +80,6 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		// TODO: Remove - we use the apiserver-aggregator keypair instead (which is signed by a different CA)
-		if err := b.BuildCertificateTask(c, "apiserver-proxy-client", "proxy-client.cert"); err != nil {
-			return err
-		}
-		if err := b.BuildPrivateKeyTask(c, "apiserver-proxy-client", "proxy-client.key"); err != nil {
-			return err
-		}
-	}
-
-	{
 		if err := b.BuildCertificateTask(c, "apiserver-aggregator", "apiserver-aggregator.cert"); err != nil {
 			return err
 		}
