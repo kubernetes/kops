@@ -45,7 +45,6 @@ Misc infrequently used commands.
 ### SEE ALSO
 
 * [kops](kops.md)	 - kops is Kubernetes ops.
-* [kops toolbox bundle](kops_toolbox_bundle.md)	 - Bundle cluster information
 * [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.
 * [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cluster information
 * [kops toolbox template](kops_toolbox_template.md)	 - Generate cluster.yaml from template
