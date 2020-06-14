@@ -145,8 +145,6 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.CloudProvider = "gce"
 	case kops.CloudProviderDO:
 		c.CloudProvider = "external"
-	case kops.CloudProviderBareMetal:
-		// for baremetal, we don't specify a cloudprovider to apiserver
 	case kops.CloudProviderOpenstack:
 		c.CloudProvider = "openstack"
 	case kops.CloudProviderALI:

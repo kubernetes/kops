@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "ali_volume.go",
         "aws_volume.go",
-        "baremetal_volume.go",
         "channels.go",
         "do_volume.go",
         "etcd_cluster.go",
