@@ -340,10 +340,13 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 			n := &ValidationNode{
 				Name:     node.Name,
-				Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
+				Zone:     node.ObjectMeta.Labels["topology.kubernetes.io/zone"],
 				Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
 				Role:     role,
 				Status:   getNodeReadyStatus(node),
+			}
+			if n.Zone == "" {
+				n.Zone = node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"]
 			}
 
 			ready := isNodeReady(node)
