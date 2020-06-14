@@ -59,11 +59,12 @@ var (
 )
 
 type UpdateClusterOptions struct {
-	Yes             bool
-	Target          string
-	OutDir          string
-	SSHPublicKey    string
-	RunTasksOptions fi.RunTasksOptions
+	Yes                bool
+	Target             string
+	OutDir             string
+	SSHPublicKey       string
+	RunTasksOptions    fi.RunTasksOptions
+	AllowKopsDowngrade bool
 
 	CreateKubecfg bool
 	admin         bool
@@ -117,6 +118,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	cmd.Flags().BoolVar(&options.admin, "admin", options.admin, "Also export the admin user. Implies --create-kube-config")
 	cmd.Flags().StringVar(&options.user, "user", options.user, "Existing user to add to the cluster context. Implies --create-kube-config")
+	cmd.Flags().BoolVar(&options.AllowKopsDowngrade, "allow-kops-downgrade", options.AllowKopsDowngrade, "Allow an older version of kops to update the cluster than last used")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
 	cmd.Flags().StringSliceVar(&options.LifecycleOverrides, "lifecycle-overrides", options.LifecycleOverrides, "comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges")
 	viper.BindPFlag("lifecycle-overrides", cmd.Flags().Lookup("lifecycle-overrides"))
@@ -259,6 +261,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		Clientset:          clientset,
 		Cluster:            cluster,
 		DryRun:             isDryrun,
+		AllowKopsDowngrade: c.AllowKopsDowngrade,
 		RunTasksOptions:    &c.RunTasksOptions,
 		OutDir:             c.OutDir,
 		Phase:              phase,

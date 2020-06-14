@@ -26,6 +26,7 @@ kops update cluster [flags]
 
 ```
       --admin                         Also export the admin user. Implies --create-kube-config
+      --allow-kops-downgrade          Allow an older version of kops to update the cluster than last used
       --create-kube-config            Will control automatically creating the kube config file on your local filesystem
   -h, --help                          help for cluster
       --lifecycle-overrides strings   comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges

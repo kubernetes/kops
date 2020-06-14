@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/url"
@@ -28,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	kopsbase "k8s.io/kops"
+	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -111,6 +113,9 @@ type ApplyClusterCmd struct {
 
 	// DryRun is true if this is only a dry run
 	DryRun bool
+
+	// AllowKopsDowngrade permits applying with a kops version older than what was last used to apply to the cluster.
+	AllowKopsDowngrade bool
 
 	// RunTasksOptions defines parameters for task execution, e.g. retry interval
 	RunTasksOptions *fi.RunTasksOptions
@@ -229,6 +234,35 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	cluster := c.Cluster
 
+	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	if err != nil {
+		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
+	}
+
+	if !c.AllowKopsDowngrade {
+		kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile()
+		if err == nil {
+			kopsVersionUpdated := strings.TrimSpace(string(kopsVersionUpdatedBytes))
+			version, err := semver.Parse(kopsVersionUpdated)
+			if err != nil {
+				return fmt.Errorf("error parsing last kops version updated: %v", err)
+			}
+			if version.GT(semver.MustParse(kopsbase.Version)) {
+				fmt.Printf("\n")
+				fmt.Printf("%s\n", starline)
+				fmt.Printf("\n")
+				fmt.Printf("The cluster was last updated by kops version %s\n", kopsVersionUpdated)
+				fmt.Printf("To permit updating by the older version %s, run with the --allow-kops-downgrade flag\n", kopsbase.Version)
+				fmt.Printf("\n")
+				fmt.Printf("%s\n", starline)
+				fmt.Printf("\n")
+				return fmt.Errorf("kops version older than last used to update the cluster")
+			}
+		} else if err != os.ErrNotExist {
+			return fmt.Errorf("error reading last kops version used to update: %v", err)
+		}
+	}
+
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
@@ -249,11 +283,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	l := &Loader{}
 	l.Init()
 	l.Cluster = c.Cluster
-
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
-	if err != nil {
-		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
-	}
 
 	keyStore, err := c.Clientset.KeyStore(cluster)
 	if err != nil {
@@ -743,6 +772,15 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	c.Target = target
 
 	if !dryRun {
+		acl, err := acls.GetACL(configBase, cluster)
+		if err != nil {
+			return err
+		}
+		err = configBase.Join(registry.PathKopsVersionUpdated).WriteFile(bytes.NewReader([]byte(kopsbase.Version)), acl)
+		if err != nil {
+			return fmt.Errorf("error writing kops version: %v", err)
+		}
+
 		err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), c.Cluster)
 		if err != nil {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)

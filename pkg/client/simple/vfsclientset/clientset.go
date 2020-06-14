@@ -139,7 +139,7 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 			continue
 		}
 
-		if relativePath == "config" || relativePath == "cluster.spec" {
+		if relativePath == "config" || relativePath == "cluster.spec" || relativePath == registry.PathKopsVersionUpdated {
 			continue
 		}
 		if strings.HasPrefix(relativePath, "addons/") {
