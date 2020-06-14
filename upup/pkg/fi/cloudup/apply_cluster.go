@@ -56,7 +56,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
@@ -76,8 +75,6 @@ const (
 )
 
 var (
-	// AlphaAllowBareMetal is a feature flag that gates BareMetal support while it is alpha
-	AlphaAllowBareMetal = featureflag.New("AlphaAllowBareMetal", featureflag.Bool(false))
 	// AlphaAllowDO is a feature flag that gates DigitalOcean support while it is alpha
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
@@ -483,15 +480,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 		}
 
-	case kops.CloudProviderBareMetal:
-		{
-			if !AlphaAllowBareMetal.Enabled() {
-				return fmt.Errorf("BareMetal support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowBareMetal to enable it")
-			}
-
-			// No additional tasks (yet)
-		}
-
 	case kops.CloudProviderOpenstack:
 		{
 
@@ -667,9 +655,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 					&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 				)
 
-			case kops.CloudProviderBareMetal:
-				// No special settings (yet!)
-
 			case kops.CloudProviderOpenstack:
 				openstackModelContext := &openstackmodel.OpenstackModelContext{
 					KopsModelContext: modelContext,
@@ -771,9 +756,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			})
 		}
 
-	case kops.CloudProviderBareMetal:
-		// BareMetal tasks will go here
-
 	case kops.CloudProviderOpenstack:
 		openstackModelContext := &openstackmodel.OpenstackModelContext{
 			KopsModelContext: modelContext,
@@ -816,8 +798,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
 		case kops.CloudProviderDO:
 			target = do.NewDOAPITarget(cloud.(*digitalocean.Cloud))
-		case kops.CloudProviderBareMetal:
-			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
 		case kops.CloudProviderOpenstack:
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
 		case kops.CloudProviderALI:

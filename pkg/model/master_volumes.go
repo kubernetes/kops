@@ -21,7 +21,6 @@ import (
 	"sort"
 	"strings"
 
-	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -101,8 +100,6 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				b.addDOVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderGCE:
 				b.addGCEVolume(c, name, volumeSize, zone, etcd, m, allMembers)
-			case kops.CloudProviderBareMetal:
-				klog.Fatalf("BareMetal not implemented")
 			case kops.CloudProviderOpenstack:
 				err = b.addOpenstackVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 				if err != nil {
