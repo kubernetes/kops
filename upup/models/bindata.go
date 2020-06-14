@@ -15604,6 +15604,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: gp2
+  annotations:
+    storageclass.beta.kubernetes.io/is-default-class: "false"
   labels:
     k8s-addon: storage-aws.addons.k8s.io
 provisioner: kubernetes.io/aws-ebs
