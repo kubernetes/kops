@@ -132,7 +132,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.Networking != nil {
-		allErrs = append(allErrs, validateNetworking(spec, spec.Networking, fieldPath.Child("networking"))...)
+		allErrs = append(allErrs, validateNetworking(c, spec.Networking, fieldPath.Child("networking"))...)
 		if spec.Networking.Calico != nil {
 			allErrs = append(allErrs, validateNetworkingCalico(spec.Networking.Calico, spec.EtcdClusters[0], fieldPath.Child("networking", "calico"))...)
 		}
@@ -490,7 +490,8 @@ func validateNodeAuthorization(n *kops.NodeAuthorizationSpec, c *kops.Cluster, f
 	return allErrs
 }
 
-func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *field.Path) field.ErrorList {
+	c := &cluster.Spec
 	allErrs := field.ErrorList{}
 	optionTaken := false
 
@@ -586,7 +587,7 @@ func validateNetworking(c *kops.ClusterSpec, v *kops.NetworkingSpec, fldPath *fi
 		}
 		optionTaken = true
 
-		allErrs = append(allErrs, validateNetworkingCilium(c, v.Cilium, fldPath.Child("cilium"))...)
+		allErrs = append(allErrs, validateNetworkingCilium(cluster, v.Cilium, fldPath.Child("cilium"))...)
 	}
 
 	if v.LyftVPC != nil {
@@ -650,8 +651,32 @@ func validateNetworkingCanal(v *kops.CanalNetworkingSpec, fldPath *field.Path) f
 	return allErrs
 }
 
-func validateNetworkingCilium(c *kops.ClusterSpec, v *kops.CiliumNetworkingSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpec, fldPath *field.Path) field.ErrorList {
+	c := &cluster.Spec
 	allErrs := field.ErrorList{}
+
+	if v.Version != "" {
+		versionFld := fldPath.Child("version")
+		version, err := semver.ParseTolerant(v.Version)
+
+		version.Pre = nil
+		version.Build = nil
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Could not parse as semantic version"))
+		}
+
+		v8, _ := semver.Parse("1.8.0")
+		v7, _ := semver.Parse("1.7.0")
+		v6, _ := semver.Parse("1.6.0")
+
+		if !(version.GTE(v6) && version.LT(v8)) {
+			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 and 1.7 are supported"))
+		}
+
+		if !cluster.IsKubernetesGTE("1.12") && version.GTE(v7) {
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version >= 1.7 requires kubernetesVersion 1.12 or higher"))
+		}
+	}
 
 	if v.EnableNodePort && c.KubeProxy != nil && (c.KubeProxy.Enabled == nil || *c.KubeProxy.Enabled) {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("spec", "kubeProxy", "enabled"), "When Cilium NodePort is enabled, kubeProxy must be disabled"))

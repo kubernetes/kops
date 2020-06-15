@@ -292,7 +292,7 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 		cluster := &kops.Cluster{}
 		cluster.Spec.Networking = networking
 
-		errs := validateNetworking(&cluster.Spec, networking, field.NewPath("networking"))
+		errs := validateNetworking(cluster, networking, field.NewPath("networking"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -579,12 +579,50 @@ func Test_Validate_Cilium(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Forbidden::cilium.ipam"},
 		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "1.0",
+			},
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.11.0",
+			},
+			ExpectedErrors: []string{"Invalid value::cilium.version"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "1.7.0",
+			},
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.11.0",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.version"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "1.7.0-rc1",
+			},
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.11.0",
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.version"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "1.7",
+			},
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.12.0",
+			},
+		},
 	}
 	for _, g := range grid {
 		g.Spec.Networking = &kops.NetworkingSpec{
 			Cilium: &g.Cilium,
 		}
-		errs := validateNetworkingCilium(&g.Spec, g.Spec.Networking.Cilium, field.NewPath("cilium"))
+		cluster := &kops.Cluster{
+			Spec: g.Spec,
+		}
+		errs := validateNetworkingCilium(cluster, g.Spec.Networking.Cilium, field.NewPath("cilium"))
 		testErrors(t, g.Spec, errs, g.ExpectedErrors)
 	}
 }
