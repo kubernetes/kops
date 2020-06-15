@@ -4718,7 +4718,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.3" }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.5" }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -4821,7 +4821,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.3" }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.5" }}"
 ## end of ` + "`" + `with .Networking.Cilium` + "`" + `
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -5022,7 +5022,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.3{{- else -}}{{ .Version }}{{- end -}}"
+        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.5{{- else -}}{{ .Version }}{{- end -}}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
