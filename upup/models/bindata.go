@@ -4091,7 +4091,7 @@ data:
   #   setting it to "kvstore".
   identity-allocation-mode: crd
   # If you want to run cilium in debug mode change this value to true
-  debug: "{{- if .Debug -}}true{{- else -}}false{{- end -}}"
+  debug: "{{ .Debug }}"
   {{ if .EnablePrometheusMetrics }}
   # If you want metrics enabled in all of your Cilium agents, set the port for
   # which the Cilium agents will have their metrics exposed.
@@ -4099,7 +4099,7 @@ data:
   # "cilium-metrics-config" ConfigMap
   # NOTE that this will open the port on ALL nodes where Cilium pods are
   # scheduled.
-  prometheus-serve-addr: ":{{- or .AgentPrometheusPort "9090" }}"
+  prometheus-serve-addr: ":{{ .AgentPrometheusPort }}"
   {{ end }}
   {{ if .EnableEncryption }}
   enable-ipsec: "true"
@@ -4114,7 +4114,7 @@ data:
   # If you want cilium monitor to aggregate tracing for packets, set this level
   # to "low", "medium", or "maximum". The higher the level, the less packets
   # that will be seen in monitor output.
-  monitor-aggregation: "{{- if eq .MonitorAggregation "" -}}medium{{- else -}}{{ .MonitorAggregation }}{{- end -}}"
+  monitor-aggregation: "{{ .MonitorAggregation }}"
   # ct-global-max-entries-* specifies the maximum number of connections
   # supported across all endpoints, split by protocol: tcp or other. One pair
   # of maps uses these values for IPv4 connections, and another pair of maps
@@ -4126,8 +4126,8 @@ data:
   #
   # For users upgrading from Cilium 1.2 or earlier, to minimize disruption
   # during the upgrade process, comment out these options.
-  bpf-ct-global-tcp-max: "{{- if eq .BPFCTGlobalTCPMax 0 -}}524288{{- else -}}{{ .BPFCTGlobalTCPMax}}{{- end -}}"
-  bpf-ct-global-any-max: "{{- if eq .BPFCTGlobalAnyMax 0 -}}262144{{- else -}}{{ .BPFCTGlobalAnyMax}}{{- end -}}"
+  bpf-ct-global-tcp-max: "{{ .BPFCTGlobalTCPMax }}"
+  bpf-ct-global-any-max: "{{ .BPFCTGlobalAnyMax }}"
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The
@@ -4148,20 +4148,20 @@ data:
   preallocate-bpf-maps: "{{- if .PreallocateBPFMaps -}}true{{- else -}}false{{- end -}}"
   # Regular expression matching compatible Istio sidecar istio-proxy
   # container image names
-  sidecar-istio-proxy-image: "{{- if eq .SidecarIstioProxyImage "" -}}cilium/istio_proxy{{- else -}}{{ .SidecarIstioProxyImage }}{{- end -}}"
+  sidecar-istio-proxy-image: "{{ .SidecarIstioProxyImage }}"
   # Encapsulation mode for communication between nodes
   # Possible values:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: "{{- if eq .Tunnel "" -}}vxlan{{- else -}}{{ .Tunnel }}{{- end -}}"
+  tunnel: "{{ .Tunnel }}"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
-  cluster-name: "{{- if eq .ClusterName "" -}}default{{- else -}}{{ .ClusterName}}{{- end -}}"
+  cluster-name: "{{ .ClusterName }}"
 
   # DNS response code for rejecting DNS requests,
   # available options are "nameError" and "refused"
-  tofqdns-dns-reject-response-code: "{{- if eq .ToFqdnsDNSRejectResponseCode  "" -}}refused{{- else -}}{{ .ToFqdnsDNSRejectResponseCode }}{{- end -}}"
+  tofqdns-dns-reject-response-code: "{{ .ToFqdnsDNSRejectResponseCode }}"
   # This option is disabled by default starting from version 1.4.x in favor
   # of a more powerful DNS proxy-based implementation, see [0] for details.
   # Enable this option if you want to use FQDN policies but do not want to use
@@ -4195,11 +4195,11 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  container-runtime: "{{- if eq .ContainerRuntimeLabels "" -}}none{{- else -}}{{ .ContainerRuntimeLabels }}{{- end -}}"
+  container-runtime: "{{ .ContainerRuntimeLabels }}"
   masquerade: "{{- if .DisableMasquerade -}}false{{- else -}}true{{- end -}}"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
-  auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
-  enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
+  enable-node-port: "{{ .EnableNodePort }}"
   kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
   enable-remote-node-identity: "{{- if .EnableRemoteNodeIdentity -}}true{{- else -}}false{{- end -}}"
   {{ with .Ipam }}
@@ -4480,7 +4480,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.3" }}"
+        image: "docker.io/cilium/cilium:{{ .Version  }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -4508,8 +4508,8 @@ spec:
         name: cilium-agent
         {{ if .EnablePrometheusMetrics }}
         ports:
-        - containerPort: {{ or .AgentPrometheusPort "9090" }}
-          hostPort: {{ or .AgentPrometheusPort "9090" }}
+        - containerPort: {{ .AgentPrometheusPort }}
+          hostPort: {{ .AgentPrometheusPort }}
           name: prometheus
           protocol: TCP
         {{ end }}
@@ -4587,7 +4587,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.3" }}"
+        image: "docker.io/cilium/cilium:{{ "v1.7.3" }}"
 ## end of ` + "`" + `with .Networking.Cilium` + "`" + `
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -4793,7 +4793,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.3{{- else -}}{{ .Version }}{{- end -}}"
+        image: "docker.io/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
@@ -4928,8 +4928,8 @@ data:
   #
   # For users upgrading from Cilium 1.2 or earlier, to minimize disruption
   # during the upgrade process, comment out these options.
-  bpf-ct-global-tcp-max: "{{- if eq .BPFCTGlobalTCPMax 0 -}}524288{{- else -}}{{ .BPFCTGlobalTCPMax}}{{- end -}}"
-  bpf-ct-global-any-max: "{{- if eq .BPFCTGlobalAnyMax 0 -}}262144{{- else -}}{{ .BPFCTGlobalAnyMax}}{{- end -}}"
+  bpf-ct-global-tcp-max: "{{ .BPFCTGlobalTCPMax }}"
+  bpf-ct-global-any-max: "{{ .BPFCTGlobalAnyMax }}"
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
   # the expense of up-front memory allocation for the entries in the maps. The
@@ -4947,19 +4947,19 @@ data:
   #
   # If this option is set to "false" during an upgrade from 1.3 or earlier to
   # 1.4 or later, then it may cause one-time disruptions during the upgrade.
-  preallocate-bpf-maps: "{{- if .PreallocateBPFMaps -}}true{{- else -}}false{{- end -}}"
+  preallocate-bpf-maps: "{{ .PreallocateBPFMaps }}"
   # Regular expression matching compatible Istio sidecar istio-proxy
   # container image names
-  sidecar-istio-proxy-image: "{{- if eq .SidecarIstioProxyImage "" -}}cilium/istio_proxy{{- else -}}{{ .SidecarIstioProxyImage }}{{- end -}}"
+  sidecar-istio-proxy-image: "{{ .SidecarIstioProxyImage }}"
   # Encapsulation mode for communication between nodes
   # Possible values:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: "{{- if eq .Tunnel "" -}}vxlan{{- else -}}{{ .Tunnel }}{{- end -}}"
+  tunnel: "{{ .Tunnel }}"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
-  cluster-name: "{{- if eq .ClusterName "" -}}default{{- else -}}{{ .ClusterName}}{{- end -}}"
+  cluster-name: "{{ .ClusterName }}"
 
   # This option is disabled by default starting from version 1.4.x in favor
   # of a more powerful DNS proxy-based implementation, see [0] for details.
@@ -4972,7 +4972,7 @@ data:
   #
   # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
-  tofqdns-enable-poller: "{{- if .ToFqdnsEnablePoller -}}true{{- else -}}false{{- end -}}"
+  tofqdns-enable-poller: "{{ .ToFqdnsEnablePoller }}"
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
   wait-bpf-mount: "false"
   # Enable fetching of container-runtime specific metadata
@@ -4994,11 +4994,11 @@ data:
   # - none
   # - auto (automatically detect the container runtime)
   #
-  container-runtime: "{{- if eq .ContainerRuntimeLabels "" -}}none{{- else -}}{{ .ContainerRuntimeLabels }}{{- end -}}"
+  container-runtime: "{{ .ContainerRuntimeLabels }}"
   masquerade: "{{- if .DisableMasquerade -}}false{{- else -}}true{{- end -}}"
   install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
   auto-direct-node-routes: "{{- if .AutoDirectNodeRoutes -}}true{{- else -}}false{{- end -}}"
-  enable-node-port: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
+  enable-node-port: "{{ .EnableNodePort }}"
   {{ with .Ipam }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
@@ -5258,7 +5258,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.6.6" }}"
+        image: "docker.io/cilium/cilium:{{ .Version  }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -5286,8 +5286,8 @@ spec:
         name: cilium-agent
         {{ if .EnablePrometheusMetrics }}
         ports:
-        - containerPort: {{ or .AgentPrometheusPort "9090" }}
-          hostPort: {{ or .AgentPrometheusPort "9090" }}
+        - containerPort: {{ .AgentPrometheusPort }}
+          hostPort: {{ .AgentPrometheusPort }}
           name: prometheus
           protocol: TCP
         {{ end }}
@@ -5530,7 +5530,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{- or .Version "v1.6.6" }}"
+        image: "docker.io/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
