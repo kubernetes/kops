@@ -27,19 +27,19 @@ func TestBuildProxyRequest(t *testing.T) {
 		In  string
 		Out string
 	}{
-		{In: "http://127.0.0.1:8080/readyz", Out: "https://127.0.0.1/readyz"},
-		{In: "http://127.0.0.1:8080/livez", Out: "https://127.0.0.1/livez"},
-		{In: "http://127.0.0.1:8080/healthz", Out: "https://127.0.0.1/healthz"},
-		{In: "http://127.0.0.1:8080/ready", Out: ""},
-		{In: "http://127.0.0.1:8080/", Out: ""},
-		{In: "http://127.0.0.1:8080/readyz/foo", Out: ""},
-		{In: "http://127.0.0.1:8080/readyzfoo", Out: ""},
-		{In: "http://127.0.0.1:8080/readyz?", Out: "https://127.0.0.1/readyz"},
-		{In: "http://127.0.0.1:8080/readyz?foo=bar", Out: "https://127.0.0.1/readyz"},
-		{In: "http://127.0.0.1:8080/readyz?exclude=1", Out: "https://127.0.0.1/readyz?exclude=1"},
-		{In: "http://127.0.0.1:8080/readyz?exclude=1&exclude=2", Out: "https://127.0.0.1/readyz?exclude=1&exclude=2"},
-		{In: "http://127.0.0.1:8080/readyz?exclude=1&verbose", Out: "https://127.0.0.1/readyz?exclude=1"},
-		{In: "http://127.0.0.1:8080/readyz?exclude", Out: "https://127.0.0.1/readyz?exclude="},
+		{In: "http://127.0.0.1:3990/readyz", Out: "https://127.0.0.1/readyz"},
+		{In: "http://127.0.0.1:3990/livez", Out: "https://127.0.0.1/livez"},
+		{In: "http://127.0.0.1:3990/healthz", Out: "https://127.0.0.1/healthz"},
+		{In: "http://127.0.0.1:3990/ready", Out: ""},
+		{In: "http://127.0.0.1:3990/", Out: ""},
+		{In: "http://127.0.0.1:3990/readyz/foo", Out: ""},
+		{In: "http://127.0.0.1:3990/readyzfoo", Out: ""},
+		{In: "http://127.0.0.1:3990/readyz?", Out: "https://127.0.0.1/readyz"},
+		{In: "http://127.0.0.1:3990/readyz?foo=bar", Out: "https://127.0.0.1/readyz"},
+		{In: "http://127.0.0.1:3990/readyz?exclude=1", Out: "https://127.0.0.1/readyz?exclude=1"},
+		{In: "http://127.0.0.1:3990/readyz?exclude=1&exclude=2", Out: "https://127.0.0.1/readyz?exclude=1&exclude=2"},
+		{In: "http://127.0.0.1:3990/readyz?exclude=1&verbose", Out: "https://127.0.0.1/readyz?exclude=1"},
+		{In: "http://127.0.0.1:3990/readyz?exclude", Out: "https://127.0.0.1/readyz?exclude="},
 	}
 
 	for _, g := range grid {
