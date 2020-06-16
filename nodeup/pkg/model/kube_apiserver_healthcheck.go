@@ -90,7 +90,5 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecarTasks(c *fi.ModelBuilderCont
 		},
 	}
 	c.AddTask(issueCert)
-	issueCert.AddFileTasks(c, secretsDir, "client", "ca", s(userName))
-
-	return nil
+	return issueCert.AddFileTasks(c, secretsDir, "client", "ca", s(userName))
 }

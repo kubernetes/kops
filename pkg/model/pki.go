@@ -60,18 +60,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			})
 		}
 	}
-	{
-		// Generate a kubelet client certificate for api to speak securely to kubelets. This change was first
-		// introduced in https://github.com/kubernetes/kops/pull/2831 where server.cert/key were used. With kubernetes >= 1.7
-		// the certificate usage is being checked (obviously the above was server not client certificate) and so now fails
-		c.AddTask(&fitasks.Keypair{
-			Name:      fi.String("kubelet-api"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "cn=kubelet-api",
-			Type:      "client",
-			Signer:    defaultCA,
-		})
-	}
 
 	{
 		t := &fitasks.Keypair{
@@ -167,17 +155,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:      fi.String("kubecfg"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "o=" + rbac.SystemPrivilegedGroup + ",cn=kubecfg",
-			Type:      "client",
-			Signer:    defaultCA,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		t := &fitasks.Keypair{
-			Name:      fi.String("apiserver-proxy-client"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "cn=apiserver-proxy-client",
 			Type:      "client",
 			Signer:    defaultCA,
 		}

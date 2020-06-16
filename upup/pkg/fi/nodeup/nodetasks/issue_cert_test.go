@@ -30,7 +30,8 @@ func TestIssueCertFileDependencies(t *testing.T) {
 
 	issue := &IssueCert{Name: "testCert"}
 	context.AddTask(issue)
-	issue.AddFileTasks(context, "/tmp", "testCert", "testCa", nil)
+	err := issue.AddFileTasks(context, "/tmp", "testCert", "testCa", nil)
+	assert.NoError(t, err)
 	var taskNames []string
 	for name := range context.Tasks {
 		taskNames = append(taskNames, name)

@@ -132,7 +132,5 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		},
 	}
 	c.AddTask(issueCert)
-	issueCert.AddFileTasks(c, "/etc/kubernetes/pki/cilium", name, "etcd-ca", nil)
-
-	return nil
+	return issueCert.AddFileTasks(c, "/etc/kubernetes/pki/cilium", name, "etcd-ca", nil)
 }
