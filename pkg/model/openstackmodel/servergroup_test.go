@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 func Test_ServerGroupModelBuilder(t *testing.T) {
@@ -2715,8 +2716,14 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 					return &nodeup.Config{}, nil
 				},
-				NodeUpSource:     "source",
-				NodeUpSourceHash: "source-hash",
+				NodeUpSource: map[architectures.Architecture]string{
+					architectures.ArchitectureAmd64: "source-amd64",
+					architectures.ArchitectureArm64: "source-arm64",
+				},
+				NodeUpSourceHash: map[architectures.Architecture]string{
+					architectures.ArchitectureAmd64: "source-hash-amd64",
+					architectures.ArchitectureArm64: "source-hash-arm64",
+				},
 			}
 
 			builder := createBuilderForCluster(testCase.cluster, testCase.instanceGroups, clusterLifecycle, bootstrapScriptBuilder)
@@ -3179,8 +3186,14 @@ func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGrou
 		NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 			return &nodeup.Config{}, nil
 		},
-		NodeUpSource:     "source",
-		NodeUpSourceHash: "source-hash",
+		NodeUpSource: map[architectures.Architecture]string{
+			architectures.ArchitectureAmd64: "source-amd64",
+			architectures.ArchitectureArm64: "source-arm64",
+		},
+		NodeUpSourceHash: map[architectures.Architecture]string{
+			architectures.ArchitectureAmd64: "source-hash-amd64",
+			architectures.ArchitectureArm64: "source-hash-arm64",
+		},
 	}
 	startupResources, err := bootstrapScriptBuilder.ResourceNodeUp(ig, cluster)
 	if err != nil {
