@@ -94,10 +94,10 @@ func (s *IAMOIDCProvider) CheckChanges(a, e, changes *IAMOIDCProvider) error {
 			return fi.RequiredField("Thumbprints")
 		}
 	} else {
-		if changes.ClientIDs == nil {
+		if changes.ClientIDs != nil {
 			return fi.CannotChangeField("ClientIDs")
 		}
-		if changes.URL == nil {
+		if changes.URL != nil {
 			return fi.CannotChangeField("URL")
 		}
 	}
