@@ -88,8 +88,7 @@ func NewCloud(region string) (*Cloud, error) {
 
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	klog.V(8).Info("digitalocean cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("digital ocean cloud provider does not support getting cloud groups at this time")
+	return nil, nil
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
@@ -278,3 +277,144 @@ func (c *Cloud) getEtcdClusterSpec(volumeName string, dropletName string) (*etcd
 		NodeNames:  []string{dropletName},
 	}, nil
 }
+
+
+// func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+// 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
+
+// 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+// 	instanceGroups, err := FindInstanceGroups(c)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
+// 	}
+
+// 	for _, asg := range instanceGroups {
+// 		name := asg.ScalingGroupName
+
+// 		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("error getting instance group for ASG %q", name)
+// 		}
+// 		if instancegroup == nil {
+// 			if warnUnmatched {
+// 				klog.Warningf("Found ASG with no corresponding instance group %q", name)
+// 			}
+// 			continue
+// 		}
+
+// 		groups[instancegroup.ObjectMeta.Name], err = buildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
+// 		}
+// 	}
+
+// 	return groups, nil
+
+// }
+
+// FindInstanceGroups finds instance groups matching the specified tags
+// func FindInstanceGroups(c ALICloud) ([]ess.ScalingGroupItemType, error) {
+// 	var sgs []ess.ScalingGroupItemType
+// 	var relsult []ess.ScalingGroupItemType
+// 	var clusterName string
+
+// 	clusterName, ok := c.GetClusterTags()[TagClusterName]
+// 	if !ok {
+// 		return nil, errors.New("error describing ScalingGroups:can not get clusterName")
+// 	}
+
+// 	klog.V(2).Infof("Listing all Autoscaling groups matching clusterName")
+
+// 	request := &ess.DescribeScalingGroupsArgs{
+// 		RegionId: common.Region(c.Region()),
+// 	}
+// 	for {
+// 		resp, page, err := c.EssClient().DescribeScalingGroups(request)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("error describing ScalingGroups: %v", err)
+// 		}
+// 		sgs = append(sgs, resp...)
+
+// 		if page.NextPage() == nil {
+// 			break
+// 		}
+// 		request.Pagination = *(page.NextPage())
+// 	}
+// 	for _, sg := range sgs {
+// 		if strings.HasSuffix(sg.ScalingGroupName, clusterName) {
+// 			relsult = append(relsult, sg)
+// 		}
+// 	}
+
+// 	return relsult, nil
+// }
+
+// matchInstanceGroup filters a list of instancegroups for recognized cloud groups
+// func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.InstanceGroup) (*kops.InstanceGroup, error) {
+// 	var instancegroup *kops.InstanceGroup
+// 	for _, g := range instancegroups {
+// 		var groupName string
+
+// 		switch g.Spec.Role {
+// 		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode:
+// 			groupName = clusterName + "-" + g.ObjectMeta.Name
+// 		default:
+// 			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+// 			continue
+// 		}
+
+// 		if name == groupName {
+// 			if instancegroup != nil {
+// 				return nil, fmt.Errorf("found multiple instance groups matching servergrp %q", groupName)
+// 			}
+// 			instancegroup = g
+// 		}
+// 	}
+
+// 	return instancegroup, nil
+// }
+
+// func buildCloudInstanceGroup(c ALICloud, ig *kops.InstanceGroup, g ess.ScalingGroupItemType, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+// 	newLaunchConfigName := g.ActiveScalingConfigurationId
+// 	cg := &cloudinstances.CloudInstanceGroup{
+// 		HumanName:     g.ScalingGroupName,
+// 		InstanceGroup: ig,
+// 		MinSize:       g.MinSize,
+// 		TargetSize:    g.MinSize, // TODO: Which is the appropriate field? Need to add DesiredCapacity field to ScalingGroupItemType?
+// 		MaxSize:       g.MaxSize,
+// 		Raw:           g,
+// 	}
+
+// 	var instances []ess.ScalingInstanceItemType
+// 	request := &ess.DescribeScalingInstancesArgs{
+// 		RegionId:       common.Region(c.Region()),
+// 		ScalingGroupId: g.ScalingGroupId,
+// 	}
+// 	for {
+// 		resp, page, err := c.EssClient().DescribeScalingInstances(request)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("error describing ScalingGroups: %v", err)
+// 		}
+// 		instances = append(instances, resp...)
+
+// 		if page.NextPage() == nil {
+// 			break
+// 		}
+// 		request.Pagination = *(page.NextPage())
+// 	}
+
+// 	for _, i := range instances {
+// 		instanceId := i.InstanceId
+// 		if instanceId == "" {
+// 			klog.Warningf("ignoring instance with no instance id: %s", i)
+// 			continue
+// 		}
+// 		err := cg.NewCloudInstanceGroupMember(instanceId, newLaunchConfigName, i.ScalingConfigurationId, nodeMap)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+// 		}
+// 	}
+
+// 	return cg, nil
+// }
+
