@@ -238,8 +238,6 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 			"--pid=host",   // Needed for mounting in a container (when using systemd mounting?)
 			"--privileged", // We execute in the host namespace
 			"--volume /:/rootfs/",
-			"--volume /var/run/dbus:/var/run/dbus",
-			"--volume /run/systemd:/run/systemd",
 			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		}...)
 
@@ -279,8 +277,6 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 			"--with-ns pid:/proc/1/ns/pid",
 			"--privileged",
 			"--mount type=bind,src=/,dst=/rootfs,options=rbind:rslave",
-			"--mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate",
-			"--mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate",
 			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		}...)
 
