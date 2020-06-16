@@ -47,7 +47,6 @@ func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.AddCommand(NewCmdToolboxConvertImported(f, out))
 	cmd.AddCommand(NewCmdToolboxDump(f, out))
-	cmd.AddCommand(NewCmdToolboxBundle(f, out))
 	cmd.AddCommand(NewCmdToolboxTemplate(f, out))
 
 	return cmd

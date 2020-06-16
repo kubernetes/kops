@@ -50,9 +50,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 			tags.Insert("_do")
 		}
 
-	case api.CloudProviderBareMetal:
-		// No tags
-
 	case api.CloudProviderOpenstack:
 
 	case api.CloudProviderALI:

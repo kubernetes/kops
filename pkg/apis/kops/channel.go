@@ -247,7 +247,6 @@ type CloudProviderID string
 const (
 	CloudProviderALI       CloudProviderID = "alicloud"
 	CloudProviderAWS       CloudProviderID = "aws"
-	CloudProviderBareMetal CloudProviderID = "baremetal"
 	CloudProviderDO        CloudProviderID = "digitalocean"
 	CloudProviderGCE       CloudProviderID = "gce"
 	CloudProviderOpenstack CloudProviderID = "openstack"
