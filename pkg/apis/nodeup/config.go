@@ -16,7 +16,10 @@ limitations under the License.
 
 package nodeup
 
-import "k8s.io/kops/pkg/apis/kops"
+import (
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/util/pkg/architectures"
+)
 
 // Config is the configuration for the nodeup binary
 type Config struct {
@@ -24,9 +27,9 @@ type Config struct {
 	Tags []string `json:",omitempty"`
 	// Assets are locations where we can find files to be installed
 	// TODO: Remove once everything is in containers?
-	Assets []string `json:",omitempty"`
+	Assets map[architectures.Architecture][]string `json:",omitempty"`
 	// Images are a list of images we should preload
-	Images []*Image `json:"images,omitempty"`
+	Images map[architectures.Architecture][]*Image `json:"images,omitempty"`
 	// ConfigBase is the base VFS path for config objects
 	ConfigBase *string `json:",omitempty"`
 	// ClusterLocation is the VFS path to the cluster spec (deprecated: prefer ConfigBase)
