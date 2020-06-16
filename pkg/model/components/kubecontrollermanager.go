@@ -92,9 +92,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	case kops.CloudProviderDO:
 		kcm.CloudProvider = "external"
 
-	case kops.CloudProviderBareMetal:
-		// No cloudprovider
-
 	case kops.CloudProviderOpenstack:
 		kcm.CloudProvider = "openstack"
 

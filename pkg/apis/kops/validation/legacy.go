@@ -56,14 +56,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		requiresSubnetCIDR = false
 		requiresNetworkCIDR = false
 
-	case kops.CloudProviderBareMetal:
-		requiresSubnets = false
-		requiresSubnetCIDR = false
-		requiresNetworkCIDR = false
-		if c.Spec.NetworkCIDR != "" {
-			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("networkCIDR"), "networkCIDR should not be set on bare metal"))
-		}
-
 	case kops.CloudProviderGCE:
 		requiresNetworkCIDR = false
 		if c.Spec.NetworkCIDR != "" {
@@ -89,7 +81,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	default:
 		allErrs = append(allErrs, field.NotSupported(fieldSpec.Child("cloudProvider"), c.Spec.CloudProvider, []string{
-			string(kops.CloudProviderBareMetal),
 			string(kops.CloudProviderGCE),
 			string(kops.CloudProviderDO),
 			string(kops.CloudProviderALI),
@@ -301,8 +292,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			k8sCloudProvider = "gce"
 		case kops.CloudProviderDO:
 			k8sCloudProvider = "external"
-		case kops.CloudProviderBareMetal:
-			k8sCloudProvider = ""
 		case kops.CloudProviderOpenstack:
 			k8sCloudProvider = "openstack"
 		case kops.CloudProviderALI:

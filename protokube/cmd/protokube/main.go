@@ -176,15 +176,6 @@ func run() error {
 		if internalIP == nil {
 			internalIP = gceVolumes.InternalIP()
 		}
-	} else if cloud == "baremetal" {
-		if internalIP == nil {
-			ip, err := findInternalIP()
-			if err != nil {
-				klog.Errorf("error finding internal IP: %v", err)
-				os.Exit(1)
-			}
-			internalIP = ip
-		}
 	} else if cloud == "openstack" {
 		klog.Info("Initializing openstack volumes")
 		osVolumes, err := protokube.NewOpenstackVolumes()
@@ -436,88 +427,4 @@ func run() error {
 	k.RunSyncLoop()
 
 	return fmt.Errorf("Unexpected exit")
-}
-
-// findInternalIP attempts to discover the internal IP address by inspecting the network interfaces
-func findInternalIP() (net.IP, error) {
-	var ips []net.IP
-
-	networkInterfaces, err := net.Interfaces()
-	if err != nil {
-		return nil, fmt.Errorf("error querying interfaces to determine internal ip: %v", err)
-	}
-
-	for i := range networkInterfaces {
-		networkInterface := &networkInterfaces[i]
-		flags := networkInterface.Flags
-		name := networkInterface.Name
-
-		if (flags & net.FlagLoopback) != 0 {
-			klog.V(2).Infof("Ignoring interface %s - loopback", name)
-			continue
-		}
-
-		// Not a lot else to go on...
-		if !strings.HasPrefix(name, "eth") && !strings.HasPrefix(name, "en") {
-			klog.V(2).Infof("Ignoring interface %s - name does not look like ethernet device", name)
-			continue
-		}
-
-		addrs, err := networkInterface.Addrs()
-		if err != nil {
-			return nil, fmt.Errorf("error querying network interface %s for IP addresses: %v", name, err)
-		}
-
-		for _, addr := range addrs {
-			ip, _, err := net.ParseCIDR(addr.String())
-			if err != nil {
-				return nil, fmt.Errorf("error parsing address %s on network interface %s: %v", addr.String(), name, err)
-			}
-
-			if ip.IsLoopback() {
-				klog.V(2).Infof("Ignoring address %s (loopback)", ip)
-				continue
-			}
-
-			if ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() {
-				klog.V(2).Infof("Ignoring address %s (link-local)", ip)
-				continue
-			}
-
-			ips = append(ips, ip)
-		}
-	}
-
-	if len(ips) == 0 {
-		return nil, fmt.Errorf("unable to determine internal ip (no addresses found)")
-	}
-
-	if len(ips) == 1 {
-		return ips[0], nil
-	}
-
-	var ipv4s []net.IP
-	for _, ip := range ips {
-		if ip.To4() != nil {
-			ipv4s = append(ipv4s, ip)
-		}
-	}
-
-	klog.Warningf("Found multiple internal IPs")
-	for _, ip := range ips {
-		klog.Warningf("\tip: %s", ip.String())
-	}
-
-	if len(ipv4s) != 0 {
-		// TODO: sort?
-		if len(ipv4s) == 1 {
-			klog.Warningf("choosing IPv4 address: %s", ipv4s[0].String())
-		} else {
-			klog.Warningf("arbitrarily choosing IPv4 address: %s", ipv4s[0].String())
-		}
-		return ipv4s[0], nil
-	}
-
-	klog.Warningf("arbitrarily choosing address: %s", ips[0].String())
-	return ips[0], nil
 }
