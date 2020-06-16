@@ -149,7 +149,7 @@ docker:
   ipMasq: false
   ipTables: false
   logDriver: json-file
-  logLevel: warn
+  logLevel: info
   logOpt:
   - max-size=10m
   - max-file=5

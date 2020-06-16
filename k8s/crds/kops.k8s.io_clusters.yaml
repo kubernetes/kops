@@ -555,6 +555,9 @@ spec:
                     items:
                       type: string
                     type: array
+                  selinuxEnabled:
+                    description: SelinuxEnabled enables SELinux support
+                    type: boolean
                   skipInstall:
                     description: SkipInstall when set to true will prevent kops from
                       installing and modifying Docker in any way
