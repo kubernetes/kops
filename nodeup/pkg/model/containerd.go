@@ -58,15 +58,36 @@ var containerdVersions = []packageVersion{
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.10.linux-amd64.tar.gz",
 		Hash:           "9125a6ae5a89dfe9403fea7d03a8d8ba9fa97b6863ee8698c4e6c258fb14f1fd",
+		MapFiles: map[string]string{
+			"./usr/local/bin":  "/usr",
+			"./usr/local/sbin": "/usr",
+		},
 	},
 
-	// 1.2.13 - Linux Generic
+	// 1.2.13 - Linux Generic AMD64
 	{
 		PackageVersion: "1.2.13",
 		PlainBinary:    true,
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.13.linux-amd64.tar.gz",
 		Hash:           "92d6ae6c60f6b068652b31811ce23d650ec0f6cc1e618ec9ae23db9321956258",
+		MapFiles: map[string]string{
+			"./usr/local/bin":  "/usr",
+			"./usr/local/sbin": "/usr",
+		},
+	},
+
+	// 1.2.13 - Linux Generic ARM64
+	{
+		PackageVersion: "1.2.13",
+		PlainBinary:    true,
+		Architectures:  []architectures.Architecture{architectures.ArchitectureArm64},
+		Source:         "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.11.tgz",
+		Hash:           "9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145",
+		MapFiles: map[string]string{
+			"docker/c*":   "/usr/bin",
+			"docker/runc": "/usr/bin",
+		},
 	},
 
 	// 1.3.4 - Linux Generic
@@ -76,6 +97,10 @@ var containerdVersions = []packageVersion{
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.4.linux-amd64.tar.gz",
 		Hash:           "4616971c3ad21c24f2f2320fa1c085577a91032a068dd56a41c7c4b71a458087",
+		MapFiles: map[string]string{
+			"./usr/local/bin":  "/usr",
+			"./usr/local/sbin": "/usr",
+		},
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
@@ -165,11 +190,8 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 					Name:      "containerd.io",
 					Source:    dv.Source,
 					Hash:      dv.Hash,
+					MapFiles:  dv.MapFiles,
 					TargetDir: "/",
-					MapFiles: map[string]string{
-						"./usr/local/bin":  "/usr",
-						"./usr/local/sbin": "/usr",
-					},
 				}
 				c.AddTask(packageTask)
 			} else {
