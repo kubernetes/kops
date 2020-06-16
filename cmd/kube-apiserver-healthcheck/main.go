@@ -28,6 +28,7 @@ import (
 	"os"
 
 	"k8s.io/klog"
+	"k8s.io/kops/pkg/wellknownports"
 )
 
 // healthCheckServer is the http server
@@ -129,7 +130,7 @@ func (s *healthCheckServer) proxyRequest(w http.ResponseWriter, forwardRequest *
 }
 
 func run() error {
-	listen := ":8080"
+	listen := fmt.Sprintf(":%d", wellknownports.KubeAPIServerHealthCheck)
 
 	clientCert := ""
 	clientKey := ""
