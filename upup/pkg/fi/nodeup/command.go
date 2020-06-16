@@ -88,13 +88,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.CacheDir == "" {
 		return fmt.Errorf("CacheDir is required")
 	}
-	assetStore := fi.NewAssetStore(c.CacheDir)
-	for _, asset := range c.config.Assets {
-		err := assetStore.Add(asset)
-		if err != nil {
-			return fmt.Errorf("error adding asset %q: %v", asset, err)
-		}
-	}
 
 	var configBase vfs.Path
 	if fi.StringValue(c.config.ConfigBase) != "" {
@@ -189,6 +182,15 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	klog.Infof("Arch tags: %v", archTags)
 	klog.Infof("Distro tags: %v", distroTags)
 
+	configAssets := c.config.Assets[architecture]
+	assetStore := fi.NewAssetStore(c.CacheDir)
+	for _, asset := range configAssets {
+		err := assetStore.Add(asset)
+		if err != nil {
+			return fmt.Errorf("error adding asset %q: %v", asset, err)
+		}
+	}
+
 	modelContext := &model.NodeupModelContext{
 		Architecture:  architecture,
 		Assets:        assetStore,
@@ -278,7 +280,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error building loader: %v", err)
 	}
 
-	for i, image := range c.config.Images {
+	for i, image := range c.config.Images[architecture] {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,
