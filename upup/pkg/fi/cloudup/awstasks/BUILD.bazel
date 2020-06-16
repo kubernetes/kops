@@ -27,6 +27,8 @@ go_library(
         "iaminstanceprofile_fitask.go",
         "iaminstanceprofilerole.go",
         "iaminstanceprofilerole_fitask.go",
+        "iamoidcprovider.go",
+        "iamoidcprovider_fitask.go",
         "iamrole.go",
         "iamrole_fitask.go",
         "iamrolepolicy.go",
