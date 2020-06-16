@@ -309,7 +309,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
     }
   }
 
-  user_data = "${filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal-tf11.example.com_user_data")}"
+  user_data = "${file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal-tf11.example.com_user_data")}"
 }
 
 resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
@@ -367,7 +367,7 @@ resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
     }
   }
 
-  user_data = "${filebase64("${path.module}/data/aws_launch_template_nodes.minimal-tf11.example.com_user_data")}"
+  user_data = "${file("${path.module}/data/aws_launch_template_nodes.minimal-tf11.example.com_user_data")}"
 }
 
 resource "aws_route" "route-0-0-0-0--0" {
