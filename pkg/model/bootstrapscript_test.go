@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/testutils/golden"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 func Test_ProxyFunc(t *testing.T) {
@@ -118,9 +119,15 @@ func TestBootstrapUserData(t *testing.T) {
 		}
 
 		bs := &BootstrapScript{
-			NodeUpSource:        "NUSource",
-			NodeUpSourceHash:    "NUSHash",
 			NodeUpConfigBuilder: renderNodeUpConfig,
+			NodeUpSource: map[architectures.Architecture]string{
+				architectures.ArchitectureAmd64: "NUSourceAmd64",
+				architectures.ArchitectureArm64: "NUSourceArm64",
+			},
+			NodeUpSourceHash: map[architectures.Architecture]string{
+				architectures.ArchitectureAmd64: "NUSHashAmd64",
+				architectures.ArchitectureArm64: "NUSHashArm64",
+			},
 		}
 
 		// Purposely running this twice to cover issue #3516
