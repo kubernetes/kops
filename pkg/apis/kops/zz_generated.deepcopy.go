@@ -1231,6 +1231,11 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.SelinuxEnabled != nil {
+		in, out := &in.SelinuxEnabled, &out.SelinuxEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Storage != nil {
 		in, out := &in.Storage, &out.Storage
 		*out = new(string)

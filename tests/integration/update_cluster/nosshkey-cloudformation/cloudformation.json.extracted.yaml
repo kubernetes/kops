@@ -150,7 +150,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnosshkeyexamplecom.Properties
     ipMasq: false
     ipTables: false
     logDriver: json-file
-    logLevel: warn
+    logLevel: info
     logOpt:
     - max-size=10m
     - max-file=5
@@ -456,7 +456,7 @@ Resources.AWSEC2LaunchTemplatenodesnosshkeyexamplecom.Properties.LaunchTemplateD
     ipMasq: false
     ipTables: false
     logDriver: json-file
-    logLevel: warn
+    logLevel: info
     logOpt:
     - max-size=10m
     - max-file=5
