@@ -111,6 +111,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			return tf.cluster.Spec.KubeDNS.ServerIP
 		}
 	}
+	dest["NodeLocalDNSHealthCheck"] = func() string {
+		return fmt.Sprintf("%d", wellknownports.NodeLocalDNSHealthCheck)
+	}
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
