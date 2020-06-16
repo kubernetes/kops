@@ -305,6 +305,9 @@ var dockerVersions = []packageVersion{
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-18.09.9.tgz",
 		Hash:           "82a362af7689038c51573e0fd0554da8703f0d06f4dfe95dd5bda5acf0ae45fb",
+		MapFiles: map[string]string{
+			"docker/docker*": "/usr/bin",
+		},
 	},
 
 	// 19.03.4 - Linux Generic
@@ -314,6 +317,9 @@ var dockerVersions = []packageVersion{
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.4.tgz",
 		Hash:           "efef2ad32d262674501e712351be0df9dd31d6034b175d0020c8f5d5c9c3fd10",
+		MapFiles: map[string]string{
+			"docker/docker*": "/usr/bin",
+		},
 	},
 
 	// 19.03.8 - Linux Generic
@@ -323,15 +329,33 @@ var dockerVersions = []packageVersion{
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.8.tgz",
 		Hash:           "7f4115dc6a3c19c917f8b9664d7b51c904def1c984e082c4600097433323cf6f",
+		MapFiles: map[string]string{
+			"docker/docker*": "/usr/bin",
+		},
 	},
 
-	// 19.03.11 - Linux Generic
+	// 19.03.11 - Linux Generic AMD64
 	{
 		PackageVersion: "19.03.11",
 		PlainBinary:    true,
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.11.tgz",
 		Hash:           "0f4336378f61ed73ed55a356ac19e46699a995f2aff34323ba5874d131548b9e",
+		MapFiles: map[string]string{
+			"docker/docker*": "/usr/bin",
+		},
+	},
+
+	// 19.03.11 - Linux Generic ARM64
+	{
+		PackageVersion: "19.03.11",
+		PlainBinary:    true,
+		Architectures:  []architectures.Architecture{architectures.ArchitectureArm64},
+		Source:         "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.11.tgz",
+		Hash:           "9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145",
+		MapFiles: map[string]string{
+			"docker/docker*": "/usr/bin",
+		},
 	},
 
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
@@ -406,10 +430,8 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Name:      "docker-ce",
 					Source:    dv.Source,
 					Hash:      dv.Hash,
+					MapFiles:  dv.MapFiles,
 					TargetDir: "/",
-					MapFiles: map[string]string{
-						"docker/docker*": "/usr/bin",
-					},
 				}
 				c.AddTask(packageTask)
 

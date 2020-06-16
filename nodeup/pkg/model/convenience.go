@@ -148,6 +148,8 @@ type packageVersion struct {
 
 	// PlainBinary indicates that the Source is not an OS, but a "bare" tar.gz
 	PlainBinary bool
+	// MapFiles is the list of files to extract with corresponding directories for PlainBinary
+	MapFiles map[string]string
 
 	// MarkImmutable is a list of files on which we should perform a `chattr +i <file>`
 	MarkImmutable []string
