@@ -19,6 +19,7 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"k8s.io/kops/pkg/configbuilder"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/proxy"
 
@@ -175,9 +177,14 @@ func (b *KubeSchedulerBuilder) buildPod(useConfigFile bool) (*v1.Pod, error) {
 		},
 	}
 
+	image := c.Image
+	if b.Architecture != architectures.ArchitectureAmd64 {
+		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
+	}
+
 	container := &v1.Container{
 		Name:  "kube-scheduler",
-		Image: c.Image,
+		Image: image,
 		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
