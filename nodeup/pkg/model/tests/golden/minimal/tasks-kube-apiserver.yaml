@@ -29,6 +29,8 @@ contents: |
       - --etcd-servers=https://127.0.0.1:4001
       - --insecure-bind-address=127.0.0.1
       - --insecure-port=0
+      - --kubelet-client-certificate=/srv/kubernetes/kubelet-api.crt
+      - --kubelet-client-key=/srv/kubernetes/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
       - --proxy-client-cert-file=/srv/kubernetes/apiserver-aggregator.cert
       - --proxy-client-key-file=/srv/kubernetes/apiserver-aggregator.key
@@ -153,8 +155,40 @@ contents: |
 path: /etc/kubernetes/manifests/kube-apiserver.manifest
 type: file
 ---
+mode: "0755"
+path: /srv/kubernetes
+type: directory
+---
+contents:
+  task:
+    Name: kubelet-api
+    signer: ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kubelet-api.crt
+type: file
+---
+contents:
+  task:
+    Name: kubelet-api
+    signer: ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kubelet-api.key
+type: file
+---
 contents: ""
 ifNotExists: true
 mode: "0400"
 path: /var/log/kube-apiserver.log
 type: file
+---
+Name: kubelet-api
+signer: ca
+subject:
+  CommonName: kubelet-api
+type: client
