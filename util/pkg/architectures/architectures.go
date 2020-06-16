@@ -27,14 +27,24 @@ type Architecture string
 
 var (
 	ArchitectureAmd64 Architecture = "amd64"
+	ArchitectureArm64 Architecture = "arm64"
 )
 
 func FindArchitecture() (Architecture, error) {
 	switch runtime.GOARCH {
 	case "amd64":
 		return ArchitectureAmd64, nil
+	case "arm64":
+		return ArchitectureArm64, nil
 	default:
 		return "", fmt.Errorf("unsupported arch: %q", runtime.GOARCH)
+	}
+}
+
+func GetSupprted() []Architecture {
+	return []Architecture{
+		ArchitectureAmd64,
+		ArchitectureArm64,
 	}
 }
 
@@ -44,6 +54,8 @@ func (a Architecture) BuildTags() []string {
 	switch a {
 	case ArchitectureAmd64:
 		t = []string{"_amd64"}
+	case ArchitectureArm64:
+		t = []string{"_arm64"}
 	default:
 		klog.Fatalf("unknown architecture: %s", a)
 		return nil
