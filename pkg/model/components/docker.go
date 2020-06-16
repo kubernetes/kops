@@ -66,7 +66,7 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-file=5")
 	}
 
-	docker.LogLevel = fi.String("warn")
+	docker.LogLevel = fi.String("info")
 	docker.IPTables = fi.Bool(false)
 	docker.IPMasq = fi.Bool(false)
 

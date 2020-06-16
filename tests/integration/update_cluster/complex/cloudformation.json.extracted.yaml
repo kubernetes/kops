@@ -150,7 +150,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
     ipMasq: false
     ipTables: false
     logDriver: json-file
-    logLevel: warn
+    logLevel: info
     logOpt:
     - max-size=10m
     - max-file=5
@@ -455,7 +455,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
     ipMasq: false
     ipTables: false
     logDriver: json-file
-    logLevel: warn
+    logLevel: info
     logOpt:
     - max-size=10m
     - max-file=5
