@@ -20,8 +20,12 @@ import (
 	"bytes"
 	"crypto/x509/pkix"
 	"fmt"
+	"hash/fnv"
 	"io"
+	"net"
 	"path/filepath"
+	"sort"
+	"time"
 
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/pki"
@@ -120,11 +124,28 @@ func (i *IssueCert) AddFileTasks(c *fi.ModelBuilderContext, dir string, name str
 }
 
 func (e *IssueCert) Run(c *fi.Context) error {
+	// Skew the certificate lifetime by up to 30 days based on information about the generating node.
+	// This is so that different nodes created at the same time have the certificates they generated
+	// expire at different times, but all certificates on a given node expire around the same time.
+	hash := fnv.New32()
+	addrs, err := net.InterfaceAddrs()
+	sort.Slice(addrs, func(i, j int) bool {
+		return addrs[i].String() < addrs[j].String()
+	})
+	if err == nil {
+		for _, addr := range addrs {
+			_, _ = hash.Write([]byte(addr.String()))
+		}
+	} else {
+		klog.Warningf("cannot skew certificate lifetime: failed to get interface addresses: %v", err)
+	}
+	validHours := (455 * 24) + (hash.Sum32() % (30 * 24))
+
 	req := &pki.IssueCertRequest{
-		Signer:       e.Signer,
-		Type:         e.Type,
-		Subject:      e.Subject.toPKIXName(),
-		MinValidDays: 455,
+		Signer:   e.Signer,
+		Type:     e.Type,
+		Subject:  e.Subject.toPKIXName(),
+		Validity: time.Hour * time.Duration(validHours),
 	}
 
 	klog.Infof("signing certificate for %q", e.Name)

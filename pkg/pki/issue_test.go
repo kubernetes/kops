@@ -93,7 +93,7 @@ func TestIssueCert(t *testing.T) {
 				Subject: pkix.Name{
 					CommonName: "Test client",
 				},
-				MinValidDays: 365,
+				Validity: time.Hour * 24 * 365,
 			},
 			expectedKeyUsage:    x509.KeyUsageDigitalSignature,
 			expectedExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
@@ -133,10 +133,10 @@ func TestIssueCert(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var minExpectedValidity int64
-			if tc.req.MinValidDays == 0 {
+			if tc.req.Validity == 0 {
 				minExpectedValidity = time.Now().Add(time.Hour * 10 * 365 * 24).Unix()
 			} else {
-				minExpectedValidity = time.Now().Add(time.Hour * 24 * time.Duration(tc.req.MinValidDays)).Unix()
+				minExpectedValidity = time.Now().Add(tc.req.Validity).Unix()
 			}
 
 			var keystore Keystore
@@ -202,10 +202,10 @@ func TestIssueCert(t *testing.T) {
 
 			// validity
 			var maxExpectedValidity int64
-			if tc.req.MinValidDays == 0 {
+			if tc.req.Validity == 0 {
 				maxExpectedValidity = time.Now().Add(time.Hour * 10 * 365 * 24).Unix()
 			} else {
-				maxExpectedValidity = time.Now().Add(time.Hour * 24 * time.Duration(tc.req.MinValidDays+30)).Unix()
+				maxExpectedValidity = time.Now().Add(tc.req.Validity).Unix()
 			}
 			assert.Less(t, cert.NotBefore.Unix(), time.Now().Add(time.Hour*-47).Unix(), "NotBefore")
 			assert.GreaterOrEqual(t, cert.NotAfter.Unix(), minExpectedValidity, "NotAfter")

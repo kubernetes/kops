@@ -20,14 +20,10 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"hash/fnv"
 	"math/big"
 	"net"
-	"sort"
 	"strings"
 	"time"
-
-	"k8s.io/klog"
 )
 
 var wellKnownCertificateTypes = map[string]string{
@@ -49,10 +45,8 @@ type IssueCertRequest struct {
 
 	// PrivateKey is the private key for this certificate. If nil, a new private key will be generated.
 	PrivateKey *PrivateKey
-	// MinValidDays is the lower bound on the certificate validity, in days. If specified, up to 30 days
-	// will be added so that certificate generated at the same time on different hosts will be unlikely to
-	// expire at the same time. The default is 10 years (without the up to 30 day skew).
-	MinValidDays int
+	// Validity is the certificate validity. The default is 10 years.
+	Validity time.Duration
 
 	// Serial is the certificate serial number. If nil, a random number will be generated.
 	Serial *big.Int
@@ -144,23 +138,8 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate 
 		}
 	}
 
-	// Skew the certificate lifetime by up to 30 days based on information about the generating node.
-	// This is so that different nodes created at the same time have the certificates they generated
-	// expire at different times, but all certificates on a given node expire around the same time.
-	if request.MinValidDays != 0 {
-		hash := fnv.New32()
-		addrs, err := net.InterfaceAddrs()
-		sort.Slice(addrs, func(i, j int) bool {
-			return addrs[i].String() < addrs[j].String()
-		})
-		if err == nil {
-			for _, addr := range addrs {
-				_, _ = hash.Write([]byte(addr.String()))
-			}
-		} else {
-			klog.Warningf("cannot skew certificate lifetime: failed to get interface addresses: %v", err)
-		}
-		template.NotAfter = time.Now().Add(time.Hour * 24 * time.Duration(request.MinValidDays)).Add(time.Hour * time.Duration(hash.Sum32()%(30*24))).UTC()
+	if request.Validity != 0 {
+		template.NotAfter = time.Now().Add(request.Validity).UTC()
 	}
 
 	certificate, err := signNewCertificate(privateKey, template, signer, caPrivateKey)
