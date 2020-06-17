@@ -41,7 +41,7 @@ func RegisterPrinter(p Printer) {
 func ValueAsString(value reflect.Value) string {
 	b := &bytes.Buffer{}
 
-	walker := func(path string, field *reflect.StructField, v reflect.Value) error {
+	walker := func(path *FieldPath, field *reflect.StructField, v reflect.Value) error {
 		if IsPrimitiveValue(v) || v.Kind() == reflect.String {
 			fmt.Fprintf(b, "%v", v.Interface())
 			return SkipReflection
@@ -113,7 +113,7 @@ func ValueAsString(value reflect.Value) string {
 		}
 	}
 
-	err := ReflectRecursive(value, walker)
+	err := ReflectRecursive(value, walker, &ReflectOptions{DeprecatedDoubleVisit: true})
 	if err != nil {
 		klog.Fatalf("unexpected error during reflective walk: %v", err)
 	}

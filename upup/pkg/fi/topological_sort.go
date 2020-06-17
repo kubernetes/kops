@@ -84,7 +84,7 @@ func reflectForDependencies(tasks map[string]Task, task Task) []Task {
 func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 	var dependencies []Task
 
-	err := reflectutils.ReflectRecursive(v, func(path string, f *reflect.StructField, v reflect.Value) error {
+	visitor := func(path *reflectutils.FieldPath, f *reflect.StructField, v reflect.Value) error {
 		if reflectutils.IsPrimitiveValue(v) {
 			return nil
 		}
@@ -98,7 +98,7 @@ func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 			return nil
 
 		case reflect.Struct:
-			if path == "" {
+			if path.IsEmpty() {
 				// Ignore self - we are a struct, but not our own dependency!
 				return nil
 			}
@@ -123,8 +123,9 @@ func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 			klog.Infof("Unhandled kind for %q: %T", path, v.Interface())
 			return fmt.Errorf("Unhandled kind for %q: %v", path, v.Kind())
 		}
-	})
+	}
 
+	err := reflectutils.ReflectRecursive(v, visitor, &reflectutils.ReflectOptions{DeprecatedDoubleVisit: true})
 	if err != nil {
 		klog.Fatalf("unexpected error finding dependencies %v", err)
 	}
