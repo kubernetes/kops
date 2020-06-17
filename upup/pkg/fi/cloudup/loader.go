@@ -220,12 +220,12 @@ func (l *Loader) processDeferrals() error {
 	for taskKey, task := range l.tasks {
 		taskValue := reflect.ValueOf(task)
 
-		err := reflectutils.ReflectRecursive(taskValue, func(path string, f *reflect.StructField, v reflect.Value) error {
+		visitor := func(path *reflectutils.FieldPath, f *reflect.StructField, v reflect.Value) error {
 			if reflectutils.IsPrimitiveValue(v) {
 				return nil
 			}
 
-			if path == "" {
+			if path.IsEmpty() {
 				// Don't process top-level value
 				return nil
 			}
@@ -292,8 +292,9 @@ func (l *Loader) processDeferrals() error {
 			}
 
 			return nil
-		})
+		}
 
+		err := reflectutils.ReflectRecursive(taskValue, visitor, &reflectutils.ReflectOptions{DeprecatedDoubleVisit: true})
 		if err != nil {
 			return fmt.Errorf("unexpected error resolving task %q: %v", taskKey, err)
 		}
