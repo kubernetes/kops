@@ -1,96 +1,59 @@
-High Availability (HA)
-======================
+# High Availability (HA)
 
-Introduction
--------------
+## Introduction
 
-Kubernetes has two strategies for high availability:
+For testing purposes, kubernetes works just fine with a single master. However, when the master becomes unavailable, for example due to upgrade or instance failure, the kubernetes API will be unavailable. Pods and services that are running on the continues to operate as long as they do not depend on interacting with the API, but operations such as adding nodes, scaling pods, replacing terminated pods will not work. Running kubectl will also not work. 
 
-* Run multiple independent clusters and combine them behind one management plane: [federation](https://kubernetes.io/docs/user-guide/federation/)
-* Run a single cluster in multiple cloud zones, with redundant components
+kops runs each master in a dedicated autoscaling groups (ASG) and stores data on EBS volumes. That way, if a master node is terminated the ASG will launch a new master instance with the master's volume. Because of the dedicated EBS volumes, each master is bound to a fixed Availability Zone (AZ). If the AZ becomes unavailable, the master instance in that AZ will also become unavailable.
 
-kops has good support for a cluster than runs
-with redundant components.  kops is able to create multiple kubernetes masters, so in the event of
-a master instance failure, the kubernetes API will continue to operate.
+For production use, you therefore want to run kubernetes in a HA setup with multiple masters. With multiple master nodes, you will be able both to do graceful (zero-downtime) upgrades and you will be able to survive AZ failures.
 
-However, when running kubernetes with a single master, if the master fails, the kubernetes API will be unavailable, but pods and services that are running on the (unaffected) nodes should continue to operate.  In this situation, we won't be able to do anything that involves the API (adding nodes, scaling pods, replacing
-terminated pods), and kubectl won't work.  However your application should continue to run, and most applications
-could probably tolerate an API outage of an hour or more.
+Very few regions offer less than 3 AZs. In this case, running multiple masters in the same AZ is an option. If the AZ with multiple masters becomes unavailable you will still have downtime with this configuration. But regular changes to master nodes such as upgrades will be graceful and without downtime.
 
-Moreover, kops runs the masters in an automatic replacement mode.  Masters are run in auto-scaling groups, with
-the data on an EBS volume.  If a master node is terminated, the ASG will launch a new master instance, and kops
-will mount the master volume and replace the master.
+If you already have a single-master cluster you would like to convert to a multi-master cluster, read the [single to multi-master](../single-to-multi-master.md) docs.
 
-In short:
+Note that running clusters spanning several AZs is more expensive than running clusters spanning one or two AZs. This happens not only because of the master EC2 cost, but also because you have to pay for cross-AZ traffic. Depending on your workload you may therefore also want to consider running worker nodes only in two AZs. As long as your application do not rely on quorum, you will still have AZ fault tolerance.
 
-* A single master kops cluster is still reasonably available; if the master instance terminates it will be automatically
-  replaced.  But the use of EBS binds us to a single AZ, and in the event of a prolonged AZ outage, we might experience
-  downtime.
-* A multi-node kops cluster can tolerate the outage of a single AZ
+## Creating a HA cluster
 
+### Example 1: public topology
 
-Using Kops HA
--------------
-
-We can create HA clusters using kops, but only it's important to note that migrating from a single-master
-cluster to a multi-master cluster is a complicated operation (described [here](../single-to-multi-master.md)).
-If possible, try to plan this at time of cluster creation.
-
-When you first call `kops create cluster`, you specify the `--master-zones` flag listing the zones you want your masters
-to run in, for example:
+The simplest way to get started with a HA cluster is to run `kops create cluster` as shown below. The `--master-zones` flag lists the zones you want your masters
+to run in. By default, kops will create one master per AZ. Since the kubernetes etcd cluster runs on the master nodes, you have to specify an odd number of zones in order to obtain quorum.
 
 ```
 kops create cluster \
     --node-count 3 \
     --zones us-west-2a,us-west-2b,us-west-2c \
     --master-zones us-west-2a,us-west-2b,us-west-2c \
-    --node-size t2.medium \
-    --master-size t2.medium \
-    --topology private \
-    --networking kopeio-vxlan \
     hacluster.example.com
 ```
 
-Kubernetes relies on a key-value store called "etcd", which uses the Quorum approach to consistency,
-so it is available if 51% of the nodes are available.
+## Example 2: private topology
 
-As a result there are a few considerations that need to be taken into account when using kops with HA:
-
-* Only odd number of masters instances should be created, as an even number is likely _less_ reliable than the lower odd number.
-* Kops has experimental support for running multiple masters in the same AZ, but it should be used carefully.
-  If we create 2 (or more) masters in the same AZ, then failure of the AZ will likely cause etcd to lose quorum
-  and stop operating (with 3 nodes).  Running in the same AZ therefore increases the risk of cluster disruption,
-  though it can be a valid scenario, particularly if combined with [federation](https://kubernetes.io/docs/user-guide/federation/).
-
-
-Advanced Example
-----------------
-
-Another example `create cluster` invocation for HA with [a private network topology](../topology.md):
+Create a cluster using [private network topology](../topology.md):
 
 ```
 kops create cluster \
     --node-count 3 \
     --zones us-west-2a,us-west-2b,us-west-2c \
     --master-zones us-west-2a,us-west-2b,us-west-2c \
-    --dns-zone example.com \
-    --node-size t2.medium \
-    --master-size t2.medium \
-    --node-security-groups sg-12345678 \
-    --master-security-groups sg-12345678,i-abcd1234 \
     --topology private \
-    --networking weave \
-    --cloud-labels "Team=Dev,Owner=John Doe" \
-    --image 293135079892/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16 \
+    --networking <provider> \
     ${NAME}
 ```
 
-Notes (Best Practice)
-----
-* In regions with 2 Availability Zones, deploy the 3 masters in one zone and the nodes can be distributed between the 2
-zones. This can be done by specifying the flags:
+Note that the default networking provider (kubenet) does not support private topology.
+
+## Example 3: multiple masters in the same AZ
+
+If necessary, for example in regions with less than 3 AZs, you can launch multiple masters in the same AZ.
+
 ```
-     --master-count=3
-     --master-zones=$MASTER_ZONE
-     --zones=$NODE_ZONES
+kops create cluster \
+    --node-count 3 \
+    --master-count 3 \
+    --zones cn-north-1a,cn-north-1b \
+    --master-zones cn-north-1a,cn-north-1b \
+    hacluster.k8s.local
 ```
