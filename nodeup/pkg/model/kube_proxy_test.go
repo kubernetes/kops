@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/exec"
 
 	"github.com/blang/semver"
@@ -158,6 +159,21 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 func TestKubeProxyBuilder(t *testing.T) {
 	RunGoldenTest(t, "tests/golden/minimal", "kube-proxy", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
 		builder := KubeProxyBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
+
+func TestKubeProxyBuilderAMD64(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-proxy-amd64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeProxyBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
+
+func TestKubeProxyBuilderARM64(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-proxy-arm64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeProxyBuilder{NodeupModelContext: nodeupModelContext}
+		builder.Architecture = architectures.ArchitectureArm64
 		return builder.Build(target)
 	})
 }
