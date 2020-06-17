@@ -33,7 +33,17 @@ func ParseStatements(policy string) ([]*Statement, error) {
 }
 
 type IAMModelContext struct {
+	// AWSAccountID holds the 12 digit AWS account ID, when running on AWS
+	AWSAccountID string
+
 	Cluster *kops.Cluster
+}
+
+// IAMNameForServiceAccountRole determines the name of the IAM Role and Instance Profile to use for the service-account role
+func (b *IAMModelContext) IAMNameForServiceAccountRole(role ServiceAccountRole) string {
+	serviceAccount := ServiceAccountForServiceAccountRole(role)
+
+	return serviceAccount.Name + "." + serviceAccount.Namespace + ".sa." + b.ClusterName()
 }
 
 // ClusterName returns the cluster name

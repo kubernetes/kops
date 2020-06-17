@@ -329,7 +329,7 @@ func (b *PolicyBuilder) AddOSSPermissions(p *Policy) (*Policy, error) {
 		}
 	}
 
-	writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, b.Role)
+	writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, iam.NodeOrServiceAccountRole{NodeRole: b.Role})
 	if err != nil {
 		return nil, err
 	}

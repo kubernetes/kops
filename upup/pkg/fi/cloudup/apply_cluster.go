@@ -408,6 +408,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			awsCloud := cloud.(awsup.AWSCloud)
 			region = awsCloud.Region()
 
+			accountID, err := awsCloud.AccountID()
+			if err != nil {
+				return err
+			}
+			modelContext.AWSAccountID = accountID
+
 			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == nil {
 				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
