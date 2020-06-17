@@ -1,1 +1,13 @@
-Q29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSJNSU1FQk9VTkRBUlkiDQpNSU1FLVZlcnNpb246IDEuMA0KDQotLU1JTUVCT1VOREFSWQ0KQ29udGVudC1EaXNwb3NpdGlvbjogYXR0YWNobWVudDsgZmlsZW5hbWU9Im15c2NyaXB0LnNoIg0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KQ29udGVudC1UeXBlOiB0ZXh0L3gtc2hlbGxzY3JpcHQNCk1pbWUtVmVyc2lvbjogMS4wDQoNCiMhL2Jpbi9zaAplY2hvICJIZWxsbyBXb3JsZCwgZnJvbSB0aGUgYmFzdGlvbiEgIFRoZSB0aW1lIGlzIG5vdyAkKGRhdGUgLVIpISIgfCB0ZWUgL3Jvb3Qvb3V0cHV0LnR4dAoNCi0tTUlNRUJPVU5EQVJZLS0NCg==
+Content-Type: multipart/mixed; boundary="MIMEBOUNDARY"
+MIME-Version: 1.0
+
+--MIMEBOUNDARY
+Content-Disposition: attachment; filename="myscript.sh"
+Content-Transfer-Encoding: 7bit
+Content-Type: text/x-shellscript
+Mime-Version: 1.0
+
+#!/bin/sh
+echo "Hello World, from the bastion!  The time is now $(date -R)!" | tee /root/output.txt
+
+--MIMEBOUNDARY--

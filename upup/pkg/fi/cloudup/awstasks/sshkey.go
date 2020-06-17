@@ -176,7 +176,7 @@ func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SS
 		return nil
 	}
 	tfName := strings.Replace(*e.Name, ":", "", -1)
-	publicKey, err := t.AddFile("aws_key_pair", tfName, "public_key", e.PublicKey)
+	publicKey, err := t.AddFile("aws_key_pair", tfName, "public_key", e.PublicKey, false)
 	if err != nil {
 		return fmt.Errorf("error rendering PublicKey: %v", err)
 	}

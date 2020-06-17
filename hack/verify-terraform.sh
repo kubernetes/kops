@@ -36,7 +36,7 @@ while IFS= read -r -d '' -u 3 test_dir; do
   cluster=$(basename "${test_dir}")
   kube::util::array_contains "${cluster}" "${CLUSTERS_0_11[@]}" && tag=$TAG_0_11 || tag=$TAG_0_12
 
-  docker run --rm -it -v "${test_dir}":"${test_dir}" -w "${test_dir}" --entrypoint=sh hashicorp/terraform:$tag -c '/bin/terraform init >/dev/null && /bin/terraform validate' || RC=$?
+  docker run --rm -v "${test_dir}":"${test_dir}" -w "${test_dir}" --entrypoint=sh hashicorp/terraform:$tag -c '/bin/terraform init >/dev/null && /bin/terraform validate' || RC=$?
 done 3< <(find "${KOPS_ROOT}/tests/integration/update_cluster" -type d -maxdepth 1 -print0)
 
 if [ $RC != 0 ]; then
