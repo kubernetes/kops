@@ -500,7 +500,7 @@ func addMetadata(target *terraform.TerraformTarget, name string, metadata *compu
 		val := fi.StringValue(g.Value)
 		if strings.Contains(val, "\n") {
 			v := fi.NewStringResource(val)
-			tfResource, err := target.AddFile("google_compute_instance_template", name, "metadata_"+g.Key, v)
+			tfResource, err := target.AddFile("google_compute_instance_template", name, "metadata_"+g.Key, v, false)
 			if err != nil {
 				return nil, err
 			}
