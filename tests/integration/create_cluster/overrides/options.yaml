@@ -4,5 +4,4 @@ Zones:
 CloudProvider: aws
 KubernetesVersion: v1.15.6
 Overrides:
-- cluster.spec.nodePortAccess=1.2.3.4/32
-- cluster.spec.nodePortAccess=10.20.30.0/24
+- cluster.spec.nodePortAccess=1.2.3.4/32,10.20.30.0/24
