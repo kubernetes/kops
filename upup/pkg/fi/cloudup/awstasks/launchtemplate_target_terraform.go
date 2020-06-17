@@ -19,6 +19,7 @@ package awstasks
 import (
 	"encoding/base64"
 
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -212,13 +213,23 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		if err != nil {
 			return err
 		}
-		b64d := base64.StdEncoding.EncodeToString(d)
-		if b64d != "" {
-			b64UserDataResource := fi.WrapResource(fi.NewStringResource(b64d))
+		if d != nil {
+			if featureflag.Terraform012.Enabled() {
+				userDataResource := fi.WrapResource(fi.NewBytesResource(d))
 
-			tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", b64UserDataResource)
-			if err != nil {
-				return err
+				tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", userDataResource, true)
+				if err != nil {
+					return err
+				}
+			} else {
+				b64d := base64.StdEncoding.EncodeToString(d)
+				if b64d != "" {
+					b64UserDataResource := fi.WrapResource(fi.NewStringResource(b64d))
+					tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", b64UserDataResource, false)
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
