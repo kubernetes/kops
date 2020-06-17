@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"crypto/x509/pkix"
 	"fmt"
 	"path"
 	"path/filepath"
@@ -34,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/nodelabels"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -113,11 +111,10 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			if b.IsMaster {
 				klog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
 
-				task, err := b.buildMasterKubeletKubeconfig()
+				err := b.buildMasterKubeletKubeconfig(c)
 				if err != nil {
 					return err
 				}
-				c.AddTask(task)
 			}
 		} else {
 			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
@@ -553,49 +550,23 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 }
 
 // buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
-func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (*nodetasks.File, error) {
+func (b *KubeletBuilder) buildMasterKubeletKubeconfig(c *fi.ModelBuilderContext) error {
 	nodeName, err := b.NodeName()
 	if err != nil {
-		return nil, fmt.Errorf("error getting NodeName: %v", err)
+		return fmt.Errorf("error getting NodeName: %v", err)
+	}
+	certName := nodetasks.PKIXName{
+		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
+		Organization: []string{rbac.NodesGroup},
 	}
 
-	req := &pki.IssueCertRequest{
-		Signer: fi.CertificateIDCA,
-		Type:   "client",
-		Subject: pkix.Name{
-			CommonName:   fmt.Sprintf("system:node:%s", nodeName),
-			Organization: []string{rbac.NodesGroup},
-		},
-		MinValidDays: 455,
-	}
-
-	certificate, privateKey, caCert, err := pki.IssueCert(req, b.KeyStore)
-	if err != nil {
-		return nil, fmt.Errorf("error signing certificate for master kubelet: %v", err)
-	}
-
-	caBytes, err := caCert.AsBytes()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get certificate authority data: %s", err)
-	}
-	certBytes, err := certificate.AsBytes()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get certificate data: %s", err)
-	}
-	keyBytes, err := privateKey.AsBytes()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get private key data: %s", err)
-	}
-
-	content, err := b.BuildKubeConfig("kubelet", caBytes, certBytes, keyBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return &nodetasks.File{
+	kubeconfig := b.BuildIssuedKubeconfig("kubelet", certName, c)
+	c.AddTask(&nodetasks.File{
 		Path:     b.KubeletKubeConfig(),
-		Contents: fi.NewStringResource(content),
+		Contents: kubeconfig,
 		Type:     nodetasks.FileType_File,
 		Mode:     s("600"),
-	}, nil
+	})
+
+	return nil
 }
