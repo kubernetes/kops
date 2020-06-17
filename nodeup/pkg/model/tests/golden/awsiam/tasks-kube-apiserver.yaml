@@ -1,0 +1,268 @@
+contents: |
+  apiVersion: ""
+  clusters:
+  - cluster:
+      certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyRENDQWNDZ0F3SUJBZ0lSQUxKWEFrVmo5NjR0cTY3d01TSThvSlF3RFFZSktvWklodmNOQVFFTEJRQXcKRlRFVE1CRUdBMVVFQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB4TnpFeU1qY3lNelV5TkRCYUZ3MHlOekV5TWpjeQpNelV5TkRCYU1CVXhFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBCkE0SUJEd0F3Z2dFS0FvSUJBUURnbkNrU210bm1meEVnUzNxTlBhVUNINVFPQkdESC9pbkhiV0NPRExCQ0s5Z2QKWEVjQmw3RlZ2OFQya0ZyMURZYjBIVkR0TUk3dGl4UlZGRExna3dObFczNHh3V2RaWEI3R2VvRmdVMXhXT1FTWQpPQUNDOEpnWVRRLzEzOUhCRXZncTRzZWo2N3ArL3MvU05jdzM0S2s3SEl1RmhsazFyUms1a01leEtJbEpCS1AxCllZVVlldHNKL1FwVU9rcUo1SFc0R29ldEU3Nll0SG5PUmZZdm55YnZpU01yaDJ3R0dhTjZyL3M0Q2hPYUliWkMKQW44L1lpUEtHSURhWkdwajZHWG5tWEFSUlgvVElkZ1NRa0x3dDBhVERCblBaNFh2dHBJOGFhTDhEWUpJcUF6QQpOUEgyYjQvdU55bGF0NWpEbzBiMEc1NGFnTWk5NysyQVVyQzlVVVhwQWdNQkFBR2pJekFoTUE0R0ExVWREd0VCCi93UUVBd0lCQmpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFCVkdSMnIKaHpYelJNVTV3cmlQUUFKU2Nzek5PUnZvQnBYZlpvWjA5Rkl1cHVkRnhCVlUzZDRoVjlTdEtuUWdQU0dBNVhRTwpIRTk3K0J4SkR1QS9yQjVvQlVzTUJqYzd5MWNkZS9UNmhtaTNyTG9FWUJTblN1ZENPWEpFNEc5LzBmOGJ5QUplCnJOOCtObzFyMlZnWnZaaDZwNzRURWtYdi9sM0hCUFdNN0lkVVYwSE85SkRoU2dPVkYxZnlRS0p4UnVMSlI4anQKTzZtUEgyVVgwdk13VmE0anZ3dGtkZHFrMk9BZFlRdkg5cmJEampiemFpVzBLbm1kdWVSbzkyS0hBTjdCc0RaeQpWcFhIcHFvMUt6ZzdEM2ZwYVhDZjVzaTdscXFyZEpWWEg0SkM3Mnp4c1BlaHFnaThlSXVxT0JraURXbVJ4QXhoCjh5R2VSeDlBYmtuSGg0SWEKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+      server: https://127.0.0.1:21362/authenticate
+    name: aws-iam-authenticator
+  contexts:
+  - context:
+      cluster: aws-iam-authenticator
+      user: kube-apiserver
+    name: webhook
+  current-context: webhook
+  kind: ""
+  users:
+  - name: kube-apiserver
+    user: {}
+mode: "600"
+path: /etc/kubernetes/authn.config
+type: file
+---
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      dns.alpha.kubernetes.io/external: api.minimal.example.com
+      dns.alpha.kubernetes.io/internal: api.internal.minimal.example.com
+      scheduler.alpha.kubernetes.io/critical-pod: ""
+    creationTimestamp: null
+    labels:
+      k8s-app: kube-apiserver
+    name: kube-apiserver
+    namespace: kube-system
+  spec:
+    containers:
+    - args:
+      - --allow-privileged=true
+      - --anonymous-auth=false
+      - --apiserver-count=1
+      - --authentication-token-webhook-config-file=/etc/kubernetes/authn.config
+      - --authorization-mode=AlwaysAllow
+      - --bind-address=0.0.0.0
+      - --client-ca-file=/srv/kubernetes/ca.crt
+      - --cloud-provider=aws
+      - --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,NodeRestriction,ResourceQuota
+      - --etcd-cafile=/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt
+      - --etcd-certfile=/etc/kubernetes/pki/kube-apiserver/etcd-client.crt
+      - --etcd-keyfile=/etc/kubernetes/pki/kube-apiserver/etcd-client.key
+      - --etcd-servers-overrides=/events#https://127.0.0.1:4002
+      - --etcd-servers=https://127.0.0.1:4001
+      - --insecure-bind-address=127.0.0.1
+      - --insecure-port=0
+      - --kubelet-client-certificate=/srv/kubernetes/kubelet-api.crt
+      - --kubelet-client-key=/srv/kubernetes/kubelet-api.key
+      - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+      - --proxy-client-cert-file=/srv/kubernetes/apiserver-aggregator.cert
+      - --proxy-client-key-file=/srv/kubernetes/apiserver-aggregator.key
+      - --requestheader-allowed-names=aggregator
+      - --requestheader-client-ca-file=/srv/kubernetes/apiserver-aggregator-ca.cert
+      - --requestheader-extra-headers-prefix=X-Remote-Extra-
+      - --requestheader-group-headers=X-Remote-Group
+      - --requestheader-username-headers=X-Remote-User
+      - --secure-port=443
+      - --service-cluster-ip-range=100.64.0.0/13
+      - --storage-backend=etcd3
+      - --tls-cert-file=/srv/kubernetes/server.cert
+      - --tls-private-key-file=/srv/kubernetes/server.key
+      - --v=2
+      - --logtostderr=false
+      - --alsologtostderr
+      - --log-file=/var/log/kube-apiserver.log
+      command:
+      - /usr/local/bin/kube-apiserver
+      image: k8s.gcr.io/kube-apiserver:v1.18.0
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 443
+          scheme: HTTPS
+        initialDelaySeconds: 45
+        timeoutSeconds: 15
+      name: kube-apiserver
+      ports:
+      - containerPort: 443
+        hostPort: 443
+        name: https
+      resources:
+        requests:
+          cpu: 150m
+      volumeMounts:
+      - mountPath: /var/log/kube-apiserver.log
+        name: logfile
+      - mountPath: /etc/ssl
+        name: etcssl
+        readOnly: true
+      - mountPath: /etc/pki/tls
+        name: etcpkitls
+        readOnly: true
+      - mountPath: /etc/pki/ca-trust
+        name: etcpkica-trust
+        readOnly: true
+      - mountPath: /usr/share/ssl
+        name: usrsharessl
+        readOnly: true
+      - mountPath: /usr/ssl
+        name: usrssl
+        readOnly: true
+      - mountPath: /usr/lib/ssl
+        name: usrlibssl
+        readOnly: true
+      - mountPath: /usr/local/openssl
+        name: usrlocalopenssl
+        readOnly: true
+      - mountPath: /var/ssl
+        name: varssl
+        readOnly: true
+      - mountPath: /etc/openssl
+        name: etcopenssl
+        readOnly: true
+      - mountPath: /etc/kubernetes/pki/kube-apiserver
+        name: pki
+      - mountPath: /srv/kubernetes
+        name: srvkube
+        readOnly: true
+      - mountPath: /srv/sshproxy
+        name: srvsshproxy
+        readOnly: true
+      - mountPath: /etc/kubernetes/authn.config
+        name: authn-config
+        readOnly: true
+    hostNetwork: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    volumes:
+    - hostPath:
+        path: /var/log/kube-apiserver.log
+      name: logfile
+    - hostPath:
+        path: /etc/ssl
+      name: etcssl
+    - hostPath:
+        path: /etc/pki/tls
+      name: etcpkitls
+    - hostPath:
+        path: /etc/pki/ca-trust
+      name: etcpkica-trust
+    - hostPath:
+        path: /usr/share/ssl
+      name: usrsharessl
+    - hostPath:
+        path: /usr/ssl
+      name: usrssl
+    - hostPath:
+        path: /usr/lib/ssl
+      name: usrlibssl
+    - hostPath:
+        path: /usr/local/openssl
+      name: usrlocalopenssl
+    - hostPath:
+        path: /var/ssl
+      name: varssl
+    - hostPath:
+        path: /etc/openssl
+      name: etcopenssl
+    - hostPath:
+        path: /etc/kubernetes/pki/kube-apiserver
+        type: DirectoryOrCreate
+      name: pki
+    - hostPath:
+        path: /srv/kubernetes
+      name: srvkube
+    - hostPath:
+        path: /srv/sshproxy
+      name: srvsshproxy
+    - hostPath:
+        path: /etc/kubernetes/authn.config
+      name: authn-config
+  status: {}
+path: /etc/kubernetes/manifests/kube-apiserver.manifest
+type: file
+---
+mode: "0755"
+path: /srv/kubernetes
+type: directory
+---
+contents:
+  task:
+    Name: aws-iam-authenticator
+    alternateNames:
+    - localhost
+    - 127.0.0.1
+    signer: ca
+    subject:
+      CommonName: aws-iam-authenticator
+    type: server
+group: aws-iam-authenticator
+mode: "600"
+owner: aws-iam-authenticator
+path: /srv/kubernetes/aws-iam-authenticator/cert.pem
+type: file
+---
+contents:
+  task:
+    Name: aws-iam-authenticator
+    alternateNames:
+    - localhost
+    - 127.0.0.1
+    signer: ca
+    subject:
+      CommonName: aws-iam-authenticator
+    type: server
+group: aws-iam-authenticator
+mode: "600"
+owner: aws-iam-authenticator
+path: /srv/kubernetes/aws-iam-authenticator/key.pem
+type: file
+---
+contents:
+  task:
+    Name: kubelet-api
+    signer: ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0644"
+path: /srv/kubernetes/kubelet-api.crt
+type: file
+---
+contents:
+  task:
+    Name: kubelet-api
+    signer: ca
+    subject:
+      CommonName: kubelet-api
+    type: client
+mode: "0600"
+path: /srv/kubernetes/kubelet-api.key
+type: file
+---
+contents: ""
+ifNotExists: true
+mode: "0400"
+path: /var/log/kube-apiserver.log
+type: file
+---
+Name: aws-iam-authenticator
+alternateNames:
+- localhost
+- 127.0.0.1
+signer: ca
+subject:
+  CommonName: aws-iam-authenticator
+type: server
+---
+Name: kubelet-api
+signer: ca
+subject:
+  CommonName: kubelet-api
+type: client
+---
+Name: aws-iam-authenticator
+home: /srv/kubernetes/aws-iam-authenticator
+shell: /sbin/nologin
+uid: 10000

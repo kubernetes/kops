@@ -245,46 +245,31 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 		}
 
 		{
-			certificate, err := b.NodeupModelContext.KeyStore.FindCert(id)
-			if err != nil {
-				return fmt.Errorf("error fetching %q certificate from keystore: %v", id, err)
+			issueCert := &nodetasks.IssueCert{
+				Name:    id,
+				Signer:  fi.CertificateIDCA,
+				Type:    "server",
+				Subject: nodetasks.PKIXName{CommonName: id},
+				AlternateNames: []string{
+					"localhost",
+					"127.0.0.1",
+				},
 			}
-			if certificate == nil {
-				return fmt.Errorf("certificate %q not found", id)
-			}
-
-			certificateData, err := certificate.AsBytes()
-			if err != nil {
-				return fmt.Errorf("error encoding %q certificate: %v", id, err)
-			}
+			c.AddTask(issueCert)
+			certificate, privateKey, _ := issueCert.GetResources()
 
 			c.AddTask(&nodetasks.File{
 				Path:     "/srv/kubernetes/aws-iam-authenticator/cert.pem",
-				Contents: fi.NewBytesResource(certificateData),
+				Contents: certificate,
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
 				Owner:    fi.String("aws-iam-authenticator"),
 				Group:    fi.String("aws-iam-authenticator"),
 			})
-		}
-
-		{
-			privateKey, err := b.NodeupModelContext.KeyStore.FindPrivateKey(id)
-			if err != nil {
-				return fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
-			}
-			if privateKey == nil {
-				return fmt.Errorf("private key %q not found", id)
-			}
-
-			keyData, err := privateKey.AsBytes()
-			if err != nil {
-				return fmt.Errorf("error encoding %q private key: %v", id, err)
-			}
 
 			c.AddTask(&nodetasks.File{
 				Path:     "/srv/kubernetes/aws-iam-authenticator/key.pem",
-				Contents: fi.NewBytesResource(keyData),
+				Contents: privateKey,
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("600"),
 				Owner:    fi.String("aws-iam-authenticator"),
