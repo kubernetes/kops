@@ -52,7 +52,7 @@ func TestRoundTrip(t *testing.T) {
 	for _, g := range grid {
 		actualJSON, err := json.Marshal(g.IAM)
 		if err != nil {
-			t.Errorf("error encoding IAM %s to json: %v", g.IAM, err)
+			t.Errorf("error encoding IAM %v to json: %v", g.IAM, err)
 		}
 
 		if g.JSON != string(actualJSON) {
@@ -168,7 +168,7 @@ func TestPolicyGeneration(t *testing.T) {
 					},
 				},
 			},
-			Role: x.Role,
+			Role: NodeOrServiceAccountRole{NodeRole: x.Role},
 		}
 		b.Cluster.SetName("iam-builder-test.k8s.local")
 

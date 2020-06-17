@@ -19,6 +19,7 @@ package kubemanifest
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"k8s.io/klog/v2"
@@ -139,4 +140,59 @@ func (m *Object) APIVersion() string {
 		return ""
 	}
 	return s
+}
+
+// Reparse parses a subfield from an object
+func (m *Object) Reparse(obj interface{}, fields ...string) error {
+	humanFields := strings.Join(fields, ".")
+
+	current := m.data
+	for _, field := range fields {
+		v, found := current[field]
+		if !found {
+			return fmt.Errorf("field %q in %s not found", field, humanFields)
+		}
+
+		m, ok := v.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("field %q in %s was not an object, was %T", field, humanFields, v)
+		}
+		current = m
+	}
+
+	b, err := yaml.Marshal(current)
+	if err != nil {
+		return fmt.Errorf("error marshaling %s to yaml: %v", humanFields, err)
+	}
+
+	if err := yaml.Unmarshal(b, obj); err != nil {
+		return fmt.Errorf("error unmarshaling subobject %s: %v", humanFields, err)
+	}
+
+	return nil
+}
+
+// Set mutates a subfield to the newValue
+func (m *Object) Set(newValue interface{}, fieldPath ...string) error {
+	humanFields := strings.Join(fieldPath, ".")
+
+	current := m.data
+	if len(fieldPath) >= 2 {
+		for _, field := range fieldPath[:len(fieldPath)-1] {
+			v, found := current[field]
+			if !found {
+				return fmt.Errorf("field %q in %s not found", field, humanFields)
+			}
+
+			m, ok := v.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("field %q in %s was not an object, was %T", field, humanFields, v)
+			}
+			current = m
+		}
+	}
+
+	current[fieldPath[len(fieldPath)-1]] = newValue
+
+	return nil
 }

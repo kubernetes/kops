@@ -69,7 +69,7 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		klog.Warningf("we need to split master / node roles")
 		role := kops.InstanceGroupRoleMaster
-		writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, role)
+		writeablePaths, err := iam.WriteableVFSPaths(b.Cluster, iam.NodeOrServiceAccountRole{NodeRole: role})
 		if err != nil {
 			return err
 		}
