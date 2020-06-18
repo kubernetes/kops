@@ -22,6 +22,8 @@ set -o pipefail
 
 cd "${KOPS_ROOT}"
 
+make gomod
+
 changes=$(git status --porcelain || true)
 if [ -n "${changes}" ]; then
   echo "ERROR: go modules are not up to date; please run: go mod tidy"
