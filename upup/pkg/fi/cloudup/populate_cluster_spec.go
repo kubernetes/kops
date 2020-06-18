@@ -258,13 +258,11 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		return err
 	}
 
-	modelContext := &model.KopsModelContext{
-		Cluster: cluster,
-	}
 	tf := &TemplateFunctions{
-		cluster:      cluster,
-		tags:         tags,
-		modelContext: modelContext,
+		KopsModelContext: model.KopsModelContext{
+			Cluster: cluster,
+		},
+		tags: tags,
 	}
 
 	templateFunctions := make(template.FuncMap)
@@ -326,7 +324,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	fullCluster := &kopsapi.Cluster{}
 	*fullCluster = *cluster
 	fullCluster.Spec = *completed
-	tf.cluster = fullCluster
+	tf.Cluster = fullCluster
 
 	if errs := validation.ValidateCluster(fullCluster, true); len(errs) != 0 {
 		return fmt.Errorf("Completed cluster failed validation: %v", errs.ToAggregate())

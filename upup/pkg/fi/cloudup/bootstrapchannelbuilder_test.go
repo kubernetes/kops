@@ -91,11 +91,10 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	}
 
 	tf := &TemplateFunctions{
-		cluster: cluster,
-		modelContext: &model.KopsModelContext{
+		KopsModelContext: model.KopsModelContext{
 			Cluster: cluster,
+			Region:  "us-east-1",
 		},
-		region: "us-east-1",
 	}
 	tf.AddTo(templates.TemplateFunctions, secretStore)
 
