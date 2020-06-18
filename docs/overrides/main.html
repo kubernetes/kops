@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block announce %}
+  <style>
+
+    /* Preserve link color */
+    .md-typeset a,
+    .md-typeset a:focus,
+    .md-typeset a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+
+    .md-typeset .announce h2 {
+      display: block;
+      font-size: 1.5em;
+      margin-block-start: 0.83em;
+      margin-block-end: 0.83em;
+      margin-inline-start: 0px;
+      margin-inline-end: 0px;
+      font-weight: 800;
+    }
+
+
+    /* Don't wrap name of blog article */
+    .announce strong {
+      white-space: nowrap;
+    }
+  </style>
+<div id="announce">
+  <div><h2>Black lives matter.</h2></div>
+  We stand in solidarity with the Black community.<br/>
+  Racism is unacceptable.<br/>
+  It conflicts with <a href="https://git.k8s.io/community/values.md">the core values of the Kubernetes project</a> and our community does not tolerate it.
+  <p></p>
+</div>
+{% endblock %}
