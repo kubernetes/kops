@@ -278,6 +278,7 @@ Assets:
 ClusterName: bastionuserdata.example.com
 ConfigBase: memfs://clusters.example.com/bastionuserdata.example.com
 InstanceGroupName: master-us-test-1a
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws

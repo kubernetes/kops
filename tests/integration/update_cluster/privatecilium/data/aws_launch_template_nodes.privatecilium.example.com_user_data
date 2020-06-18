@@ -196,6 +196,7 @@ Assets:
 ClusterName: privatecilium.example.com
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws

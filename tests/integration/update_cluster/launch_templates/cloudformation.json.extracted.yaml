@@ -283,6 +283,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
   ClusterName: launchtemplates.example.com
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -588,6 +589,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
   ClusterName: launchtemplates.example.com
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: master-us-test-1b
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -893,6 +895,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
   ClusterName: launchtemplates.example.com
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: master-us-test-1c
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -1114,6 +1117,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
   ClusterName: launchtemplates.example.com
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

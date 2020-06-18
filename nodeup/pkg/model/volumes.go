@@ -43,7 +43,7 @@ func (b *VolumesBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// @step: iterate the volume mounts and attempt to mount the devices
-	for _, x := range b.InstanceGroup.Spec.VolumeMounts {
+	for _, x := range b.NodeupConfig.VolumeMounts {
 		// @check the directory exists, else create it
 		if err := b.EnsureDirectory(x.Path); err != nil {
 			return fmt.Errorf("failed to ensure the directory: %s, error: %s", x.Path, err)
