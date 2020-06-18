@@ -534,11 +534,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	tf := &TemplateFunctions{
-		cluster:        cluster,
-		instanceGroups: c.InstanceGroups,
-		tags:           clusterTags,
-		region:         region,
-		modelContext:   modelContext,
+		KopsModelContext: *modelContext,
+		tags:             clusterTags,
 	}
 
 	l.Tags = clusterTags
@@ -771,7 +768,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
+	l.TemplateFunctions["Masters"] = tf.MasterInstanceGroups
 
 	err = tf.AddTo(l.TemplateFunctions, secretStore)
 	if err != nil {
