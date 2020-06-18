@@ -463,9 +463,8 @@ gomod-prereqs:
 	(which bazel > /dev/null) || (echo "gomod requires that bazel is installed"; exit 1)
 
 .PHONY: gomod
-gomod: export GOFLAGS=
 gomod: gomod-prereqs
-	GO111MODULE=on go mod vendor
+	GO111MODULE=on GOFLAGS= go mod vendor
 	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
 	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
 	sed -i -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
