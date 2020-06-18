@@ -2713,9 +2713,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 		t.Run(testCase.desc, func(t *testing.T) {
 			clusterLifecycle := fi.LifecycleSync
 			bootstrapScriptBuilder := &model.BootstrapScript{
-				NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
-					return &nodeup.Config{}, nil
-				},
+				NodeUpConfigBuilder: &nodeupConfigBuilder{},
 				NodeUpSource: map[architectures.Architecture]string{
 					architectures.ArchitectureAmd64: "source-amd64",
 					architectures.ArchitectureArm64: "source-arm64",
@@ -3181,11 +3179,16 @@ func compareErrors(t *testing.T, actual, expected error) {
 	}
 }
 
+type nodeupConfigBuilder struct {
+}
+
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
+	return &nodeup.Config{}, nil
+}
+
 func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGroup) string {
 	bootstrapScriptBuilder := &model.BootstrapScript{
-		NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
-			return &nodeup.Config{}, nil
-		},
+		NodeUpConfigBuilder: &nodeupConfigBuilder{},
 		NodeUpSource: map[architectures.Architecture]string{
 			architectures.ArchitectureAmd64: "source-amd64",
 			architectures.ArchitectureArm64: "source-arm64",
