@@ -459,11 +459,6 @@ dns-controller-push:
 gomod-prereqs:
 	(which bazel > /dev/null) || (echo "gomod requires that bazel is installed"; exit 1)
 
-.PHONY: dep-ensure
-dep-ensure:
-	echo "'make dep-ensure' has been replaced by 'make gomod'"
-	exit 1
-
 .PHONY: gomod
 gomod: gomod-prereqs
 	GO111MODULE=on go mod vendor
@@ -509,7 +504,7 @@ verify-gofmt:
 
 .PHONY: verify-gomod
 verify-gomod:
-	hack/verify-gomod
+	hack/verify-gomod.sh
 
 .PHONY: verify-packages
 verify-packages: ${BINDATA_TARGETS}
