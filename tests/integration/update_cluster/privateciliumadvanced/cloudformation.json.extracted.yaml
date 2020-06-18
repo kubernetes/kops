@@ -283,6 +283,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
   ClusterName: privateciliumadvanced.example.com
   ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -504,6 +505,7 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumadvancedexamplecom.Properties.La
   ClusterName: privateciliumadvanced.example.com
   ConfigBase: memfs://clusters.example.com/privateciliumadvanced.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

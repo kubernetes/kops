@@ -283,6 +283,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   ClusterName: complex.example.com
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -503,6 +504,7 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
   ClusterName: complex.example.com
   ConfigBase: memfs://clusters.example.com/complex.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

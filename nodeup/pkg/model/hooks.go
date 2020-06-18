@@ -44,7 +44,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 		for j, hook := range *spec {
 			isInstanceGroup := i == 0
 			// filter roles if required
-			if len(hook.Roles) > 0 && !containsRole(h.InstanceGroup.Spec.Role, hook.Roles) {
+			if len(hook.Roles) > 0 && !containsRole(h.NodeupConfig.InstanceGroupRole, hook.Roles) {
 				continue
 			}
 

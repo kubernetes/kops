@@ -149,7 +149,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		"net.ipv4.ip_forward=1",
 		"")
 
-	if params := b.InstanceGroup.Spec.SysctlParameters; len(params) > 0 {
+	if params := b.NodeupConfig.SysctlParameters; len(params) > 0 {
 		sysctls = append(sysctls,
 			"# Custom sysctl parameters from instance group spec",
 			"")

@@ -287,6 +287,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersnosshkeyexamplecom.Properties
   ClusterName: nosshkey.example.com
   ConfigBase: memfs://clusters.example.com/nosshkey.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -505,6 +506,7 @@ Resources.AWSEC2LaunchTemplatenodesnosshkeyexamplecom.Properties.LaunchTemplateD
   ClusterName: nosshkey.example.com
   ConfigBase: memfs://clusters.example.com/nosshkey.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

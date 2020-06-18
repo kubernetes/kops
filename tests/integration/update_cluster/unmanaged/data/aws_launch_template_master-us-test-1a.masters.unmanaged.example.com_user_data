@@ -278,6 +278,7 @@ Assets:
 ClusterName: unmanaged.example.com
 ConfigBase: memfs://clusters.example.com/unmanaged.example.com
 InstanceGroupName: master-us-test-1a
+InstanceGroupRole: Master
 Tags:
 - _automatic_upgrades
 - _aws
