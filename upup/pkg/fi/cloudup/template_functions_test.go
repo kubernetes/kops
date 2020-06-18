@@ -200,9 +200,9 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 	}
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			tf := &TemplateFunctions{
-				cluster: testCase.cluster,
-			}
+			tf := &TemplateFunctions{}
+			tf.Cluster = testCase.cluster
+
 			actual, error := tf.CloudControllerConfigArgv()
 			if !reflect.DeepEqual(error, testCase.expectedError) {
 				t.Errorf("Error differs: %+v instead of %+v", error, testCase.expectedError)
@@ -260,7 +260,8 @@ func Test_executeTemplate(t *testing.T) {
 			tpl := template.New(filepath.Base(templateFileAbsolutePath))
 
 			funcMap := make(template.FuncMap)
-			templateFunctions := TemplateFunctions{cluster: testCase.cluster}
+			templateFunctions := TemplateFunctions{}
+			templateFunctions.Cluster = testCase.cluster
 			templateFunctions.AddTo(funcMap, nil)
 
 			tpl.Funcs(funcMap)
