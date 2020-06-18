@@ -52,7 +52,6 @@ go_library(
         "//pkg/kubemanifest:go_default_library",
         "//pkg/model/components:go_default_library",
         "//pkg/nodelabels:go_default_library",
-        "//pkg/pki:go_default_library",
         "//pkg/rbac:go_default_library",
         "//pkg/systemd:go_default_library",
         "//pkg/tokens:go_default_library",

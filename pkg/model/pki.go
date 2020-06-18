@@ -218,24 +218,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	if b.Cluster.Spec.Authentication != nil {
-		if b.KopsModelContext.Cluster.Spec.Authentication.Aws != nil {
-			alternateNames := []string{
-				"localhost",
-				"127.0.0.1",
-			}
-
-			t := &fitasks.Keypair{
-				Name:           fi.String("aws-iam-authenticator"),
-				Subject:        "cn=aws-iam-authenticator",
-				Type:           "server",
-				AlternateNames: alternateNames,
-				Signer:         defaultCA,
-			}
-			c.AddTask(t)
-		}
-	}
-
 	// @TODO this is VERY presumptuous, i'm going on the basis we can make it configurable in the future.
 	// But I'm conscious not to do too much work on bootstrap tokens as it might overlay further down the
 	// line with the machines api
