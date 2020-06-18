@@ -659,6 +659,8 @@ spec:
         memory: "100Mi"
         ephemeral-storage: "1Gi"
     kubeReservedCgroup: "/kube-reserved"
+    kubeletCgroups: "/kube-reserved"
+    runtimeCgroups: "/kube-reserved"
     systemReserved:
         cpu: "100m"
         memory: "100Mi"
@@ -667,9 +669,9 @@ spec:
     enforceNodeAllocatable: "pods,system-reserved,kube-reserved"
 ```
 
-Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
+Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --kubelet-cgroups=/kube-reserved --runtime-cgroups=/kube-reserved --system-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
 
-Learn [more about reserving compute resources](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/).
+Learn more about reserving compute resources [here](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/) and [here](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/).
 
 ## networkID
 
