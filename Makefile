@@ -45,6 +45,9 @@ BAZEL_CONFIG?=
 API_OPTIONS?=
 GCFLAGS?=
 
+# This can be removed when we upgrade to go 1.14
+export GOFLAGS=-mod=vendor
+
 UPLOAD_CMD=$(KOPS_ROOT)/hack/upload
 
 # Unexport environment variables that can affect tests and are not used in builds
@@ -460,6 +463,7 @@ gomod-prereqs:
 	(which bazel > /dev/null) || (echo "gomod requires that bazel is installed"; exit 1)
 
 .PHONY: gomod
+gomod: export GOFLAGS=
 gomod: gomod-prereqs
 	GO111MODULE=on go mod vendor
 	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
