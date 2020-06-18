@@ -290,6 +290,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersadditionaluserdataexamplecom.
   ClusterName: additionaluserdata.example.com
   ConfigBase: memfs://clusters.example.com/additionaluserdata.example.com
   InstanceGroupName: master-us-test-1a
+  InstanceGroupRole: Master
   Tags:
   - _automatic_upgrades
   - _aws
@@ -530,6 +531,7 @@ Resources.AWSEC2LaunchTemplatenodesadditionaluserdataexamplecom.Properties.Launc
   ClusterName: additionaluserdata.example.com
   ConfigBase: memfs://clusters.example.com/additionaluserdata.example.com
   InstanceGroupName: nodes
+  InstanceGroupRole: Node
   Tags:
   - _automatic_upgrades
   - _aws

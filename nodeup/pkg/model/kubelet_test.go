@@ -24,6 +24,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/pki"
@@ -48,6 +49,7 @@ func Test_InstanceGroupKubeletMerge(t *testing.T) {
 		&NodeupModelContext{
 			Cluster:       cluster,
 			InstanceGroup: instanceGroup,
+			NodeupConfig:  nodeup.NewConfig(cluster, instanceGroup),
 		},
 	}
 	if err := b.Init(); err != nil {
@@ -91,6 +93,7 @@ func TestTaintsApplied(t *testing.T) {
 			&NodeupModelContext{
 				Cluster:       cluster,
 				InstanceGroup: ig,
+				NodeupConfig:  nodeup.NewConfig(cluster, ig),
 			},
 		}
 		if err := b.Init(); err != nil {
@@ -205,12 +208,14 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 		Cluster:      model.Cluster,
 		Architecture: "amd64",
 		Distribution: distros.DistributionXenial,
+		NodeupConfig: &nodeup.Config{},
 	}
 
 	if len(model.InstanceGroups) == 0 {
 		// We tolerate this - not all tests need an instance group
 	} else if len(model.InstanceGroups) == 1 {
 		nodeUpModelContext.InstanceGroup = model.InstanceGroups[0]
+		nodeUpModelContext.NodeupConfig = nodeup.NewConfig(model.Cluster, nodeUpModelContext.InstanceGroup)
 	} else {
 		return nil, fmt.Errorf("unexpected number of instance groups in %s, found %d", basedir, len(model.InstanceGroups))
 	}

@@ -198,6 +198,7 @@ Assets:
 ClusterName: mixedinstances.example.com
 ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
 InstanceGroupName: nodes
+InstanceGroupRole: Node
 Tags:
 - _automatic_upgrades
 - _aws
