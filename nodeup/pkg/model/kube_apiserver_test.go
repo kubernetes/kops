@@ -190,3 +190,10 @@ func TestKubeAPIServerBuilder(t *testing.T) {
 		return builder.Build(target)
 	})
 }
+
+func TestAwsIamAuthenticator(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/awsiam", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
