@@ -216,7 +216,7 @@ Each of the paths specified above can be configurable, but they must be unique a
 After launching your cluster you need to add the cluster roles to Vault, binding them to the cluster's IAM identity and granting them access to the appropriate secrets and keys. The nodes will wait until they can authenticate before completing provisioning.
 
 #### Vault policies
-Note that contrary to the S3 state store, kops will not provision any policies for you. You have to provide both the role for operators and the nodes.
+Note that contrary to the S3 state store, kops will not provision any policies for you. You have to provide roles for both operators and nodes.
 
 Using the example paths above, a policy for the cluster nodes can be:
 
@@ -234,13 +234,13 @@ path "kv-v2/data/clusters/<clustername>/*" {
 }
 ```
 
-Once you add this policy, you can assign them to the IAM roles like this:
+Once you add this policy, you can assign it to the IAM roles like this:
 
 ```sh
 vault write auth/aws/role/masters.<clustername> auth_type=iam \
-              bound_iam_principal_arn=arn:aws:iam::<account>:role/masters.<clustername> policies=<my policy> max_ttl=500h
+              bound_iam_principal_arn=arn:aws:iam::<account>:role/masters.<clustername> policies=<policy> max_ttl=500h
 vault write auth/aws/role/nodes.<clustername> auth_type=iam \
-              bound_iam_principal_arn=arn:aws:iam::<account>:role/nodes.<clustername> policies=<my policy> max_ttl=500h
+              bound_iam_principal_arn=arn:aws:iam::<account>:role/nodes.<clustername> policies=<policy> max_ttl=500h
 vault write auth/aws/config/client iam_server_id_header_value="<vault server hostname>"
 ```
 
@@ -250,4 +250,4 @@ Vault will use TLS by default. If you want to use plaintext instead, add `?tls=f
 
 ### Client configuration
 
-The `kops` CLI only expects `VAULT_TOKEN` environment variable set to a valid token. You can use any authentication method to obtain a token and then set it manually if the authentication method does not do that automatically.
+The `kops` CLI only expects the `VAULT_TOKEN` environment variable to be set to a valid token. You can use any authentication method to obtain a token and then set it manually if the authentication method does not do that automatically.
