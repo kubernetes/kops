@@ -53,6 +53,14 @@ func Test_ProxyFunc(t *testing.T) {
 	}
 }
 
+type nodeupConfigBuilder struct {
+	cluster *kops.Cluster
+}
+
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
+	return nodeup.NewConfig(n.cluster, ig), nil
+}
+
 func TestBootstrapUserData(t *testing.T) {
 	cs := []struct {
 		Role               kops.InstanceGroupRole
@@ -114,12 +122,8 @@ func TestBootstrapUserData(t *testing.T) {
 		cluster := makeTestCluster(x.HookSpecRoles, x.FileAssetSpecRoles)
 		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles, x.FileAssetSpecRoles)
 
-		renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
-			return nodeup.NewConfig(cluster, ig), nil
-		}
-
 		bs := &BootstrapScript{
-			NodeUpConfigBuilder: renderNodeUpConfig,
+			NodeUpConfigBuilder: &nodeupConfigBuilder{cluster: cluster},
 			NodeUpSource: map[architectures.Architecture]string{
 				architectures.ArchitectureAmd64: "NUSourceAmd64",
 				architectures.ArchitectureArm64: "NUSourceArm64",

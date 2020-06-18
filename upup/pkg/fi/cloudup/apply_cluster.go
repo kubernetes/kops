@@ -305,7 +305,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	if err := c.AddFileAssets(assetBuilder); err != nil {
+	if err := c.addFileAssets(assetBuilder); err != nil {
 		return err
 	}
 
@@ -684,8 +684,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return secretStore
 	}
 
+	configBuilder, err := c.newNodeUpConfigBuilder(assetBuilder)
+	if err != nil {
+		return err
+	}
 	bootstrapScriptBuilder := &model.BootstrapScript{
-		NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) { return c.BuildNodeUpConfig(assetBuilder, ig) },
+		NodeUpConfigBuilder: configBuilder,
 		NodeUpSource:        c.NodeUpSource,
 		NodeUpSourceHash:    c.NodeUpHash,
 	}
@@ -1105,8 +1109,8 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	return nil
 }
 
-// AddFileAssets adds the file assets within the assetBuilder
-func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
+// addFileAssets adds the file assets within the assetBuilder
+func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error {
 
 	var baseURL string
 	var err error
@@ -1240,13 +1244,25 @@ func needsMounterAsset(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bo
 	}
 }
 
+type nodeUpConfigBuilder struct {
+	*ApplyClusterCmd
+	assetBuilder *assets.AssetBuilder
+}
+
+func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuilder) (model.NodeUpConfigBuilder, error) {
+	return &nodeUpConfigBuilder{
+		ApplyClusterCmd: c,
+		assetBuilder:    assetBuilder,
+	}, nil
+}
+
 // BuildNodeUpConfig returns the NodeUp config, in YAML format
-func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, ig *kops.InstanceGroup) (*nodeup.Config, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 	if ig == nil {
 		return nil, fmt.Errorf("instanceGroup cannot be nil")
 	}
 
-	cluster := c.Cluster
+	cluster := n.Cluster
 
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
@@ -1263,8 +1279,8 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
 	}
 
-	for i := range c.Cluster.Spec.Addons {
-		channels = append(channels, c.Cluster.Spec.Addons[i].Manifest)
+	for i := range cluster.Spec.Addons {
+		channels = append(channels, cluster.Spec.Addons[i].Manifest)
 	}
 
 	role := ig.Spec.Role
@@ -1283,7 +1299,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupprted() {
 		config.Assets[arch] = []string{}
-		for _, a := range c.Assets[arch] {
+		for _, a := range n.Assets[arch] {
 			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
 		}
 	}
@@ -1305,14 +1321,14 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 
 		for _, arch := range architectures.GetSupprted() {
 			for _, component := range components {
-				baseURL, err := url.Parse(c.Cluster.Spec.KubernetesVersion)
+				baseURL, err := url.Parse(cluster.Spec.KubernetesVersion)
 				if err != nil {
 					return nil, err
 				}
 
 				baseURL.Path = path.Join(baseURL.Path, "/bin/linux", string(arch), component+".tar")
 
-				u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+				u, hash, err := n.assetBuilder.RemapFileAndSHA(baseURL)
 				if err != nil {
 					return nil, err
 				}
@@ -1343,7 +1359,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 
 				baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
 
-				u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+				u, hash, err := n.assetBuilder.RemapFileAndSHA(baseURL)
 				if err != nil {
 					return nil, err
 				}
@@ -1358,7 +1374,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	}
 
 	if isMaster || useGossip {
-		u, hash, err := ProtokubeImageSource(assetBuilder)
+		u, hash, err := ProtokubeImageSource(n.assetBuilder)
 		if err != nil {
 			return nil, err
 		}
@@ -1381,7 +1397,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 		}
 	}
 
-	for _, manifest := range assetBuilder.StaticManifests {
+	for _, manifest := range n.assetBuilder.StaticManifests {
 		match := false
 		for _, r := range manifest.Roles {
 			if r == role {

@@ -29,6 +29,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"k8s.io/klog"
+	"k8s.io/kops/upup/pkg/fi/utils"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -38,23 +39,27 @@ import (
 	"k8s.io/kops/util/pkg/architectures"
 )
 
+type NodeUpConfigBuilder interface {
+	BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error)
+}
+
 // BootstrapScript creates the bootstrap script
 type BootstrapScript struct {
 	NodeUpSource        map[architectures.Architecture]string
 	NodeUpSourceHash    map[architectures.Architecture]string
-	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.Config, error)
+	NodeUpConfigBuilder NodeUpConfigBuilder
 }
 
-// KubeEnv returns the nodeup config for the instance group
-func (b *BootstrapScript) KubeEnv(ig *kops.InstanceGroup) (string, error) {
-	config, err := b.NodeUpConfigBuilder(ig)
+// kubeEnv returns the nodeup config for the instance group
+func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup) (string, error) {
+	config, err := b.NodeUpConfigBuilder.BuildConfig(ig)
 	if err != nil {
 		return "", err
 	}
 
-	data, err := kops.ToRawYaml(config)
+	data, err := utils.YamlMarshal(config)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error converting nodeup config to yaml: %v", err)
 	}
 
 	return string(data), nil
@@ -154,7 +159,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 			return b.NodeUpSourceHash[architectures.ArchitectureArm64]
 		},
 		"KubeEnv": func() (string, error) {
-			return b.KubeEnv(ig)
+			return b.kubeEnv(ig)
 		},
 
 		"EnvironmentVariables": func() (string, error) {
