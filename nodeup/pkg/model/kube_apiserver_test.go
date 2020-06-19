@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 func Test_KubeAPIServer_Builder(t *testing.T) {
@@ -194,6 +195,21 @@ func TestKubeAPIServerBuilder(t *testing.T) {
 func TestAwsIamAuthenticator(t *testing.T) {
 	RunGoldenTest(t, "tests/golden/awsiam", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
+
+func TestKubeAPIServerBuilderAMD64(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-apiserver-amd64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
+
+func TestKubeAPIServerBuilderARM64(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/side-loading", "kube-apiserver-arm64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		builder.Architecture = architectures.ArchitectureArm64
 		return builder.Build(target)
 	})
 }

@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/proxy"
 
@@ -161,9 +162,14 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	// Add the volumePluginDir flag if provided in the kubelet spec, or set above based on the OS
 	flags = append(flags, "--flex-volume-plugin-dir="+volumePluginDir)
 
+	image := kcm.Image
+	if b.Architecture != architectures.ArchitectureAmd64 {
+		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
+	}
+
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
-		Image: b.Cluster.Spec.KubeControllerManager.Image,
+		Image: image,
 		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{

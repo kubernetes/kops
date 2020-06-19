@@ -110,6 +110,7 @@ go_test(
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
+        "//util/pkg/architectures:go_default_library",
         "//util/pkg/exec:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",
