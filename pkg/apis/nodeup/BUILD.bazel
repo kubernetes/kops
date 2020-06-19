@@ -5,5 +5,8 @@ go_library(
     srcs = ["config.go"],
     importpath = "k8s.io/kops/pkg/apis/nodeup",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/apis/kops:go_default_library"],
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//util/pkg/architectures:go_default_library",
+    ],
 )
