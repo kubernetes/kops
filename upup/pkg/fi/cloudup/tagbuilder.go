@@ -67,7 +67,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	return tags, nil
 }
 
-func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
+func buildNodeupTags(cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
 	tags := sets.NewString()
 
 	networking := cluster.Spec.Networking
