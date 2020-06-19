@@ -1246,23 +1246,18 @@ func needsMounterAsset(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bo
 
 type nodeUpConfigBuilder struct {
 	*ApplyClusterCmd
-	assetBuilder *assets.AssetBuilder
+	assetBuilder   *assets.AssetBuilder
+	channels       []string
+	configBase     vfs.Path
+	cluster        *kops.Cluster
+	etcdManifests  map[kops.InstanceGroupRole][]string
+	images         map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
+	nodeUpTags     []string
+	protokubeImage map[kops.InstanceGroupRole]*nodeup.Image
 }
 
 func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuilder) (model.NodeUpConfigBuilder, error) {
-	return &nodeUpConfigBuilder{
-		ApplyClusterCmd: c,
-		assetBuilder:    assetBuilder,
-	}, nil
-}
-
-// BuildNodeUpConfig returns the NodeUp config, in YAML format
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
-	if ig == nil {
-		return nil, fmt.Errorf("instanceGroup cannot be nil")
-	}
-
-	cluster := n.Cluster
+	cluster := c.Cluster
 
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
@@ -1283,18 +1278,136 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Confi
 		channels = append(channels, cluster.Spec.Addons[i].Manifest)
 	}
 
+	nodeUpTags, err := buildNodeupTags(cluster, clusterTags)
+	if err != nil {
+		return nil, err
+	}
+
+	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
+
+	etcdManifests := map[kops.InstanceGroupRole][]string{}
+	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
+	protokubeImage := map[kops.InstanceGroupRole]*nodeup.Image{}
+
+	for _, role := range kops.AllInstanceGroupRoles {
+		isMaster := role == kops.InstanceGroupRoleMaster
+
+		images[role] = make(map[architectures.Architecture][]*nodeup.Image)
+		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
+			// When using a custom version, we want to preload the images over http
+			components := []string{"kube-proxy"}
+			if isMaster {
+				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
+			}
+
+			for _, arch := range architectures.GetSupprted() {
+				for _, component := range components {
+					baseURL, err := url.Parse(cluster.Spec.KubernetesVersion)
+					if err != nil {
+						return nil, err
+					}
+
+					baseURL.Path = path.Join(baseURL.Path, "/bin/linux", string(arch), component+".tar")
+
+					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					if err != nil {
+						return nil, err
+					}
+
+					image := &nodeup.Image{
+						Sources: []string{u.String()},
+						Hash:    hash.Hex(),
+					}
+					images[role][arch] = append(images[role][arch], image)
+				}
+			}
+		}
+
+		// `docker load` our images when using a KOPS_BASE_URL, so we
+		// don't need to push/pull from a registry
+		if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
+			for _, arch := range architectures.GetSupprted() {
+				// TODO: Build multi-arch Kops images
+				if arch != architectures.ArchitectureAmd64 {
+					continue
+				}
+
+				for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
+					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+					if err != nil {
+						return nil, err
+					}
+
+					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
+
+					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+					if err != nil {
+						return nil, err
+					}
+
+					image := &nodeup.Image{
+						Sources: []string{u.String()},
+						Hash:    hash.Hex(),
+					}
+					images[role][arch] = append(images[role][arch], image)
+				}
+			}
+		}
+
+		if isMaster || useGossip {
+			u, hash, err := ProtokubeImageSource(assetBuilder)
+			if err != nil {
+				return nil, err
+			}
+
+			asset := BuildMirroredAsset(u, hash)
+
+			protokubeImage[role] = &nodeup.Image{
+				Name:    kopsbase.DefaultProtokubeImageName(),
+				Sources: asset.Locations,
+				Hash:    asset.Hash.Hex(),
+			}
+		}
+
+		if role == kops.InstanceGroupRoleMaster {
+			for _, etcdCluster := range cluster.Spec.EtcdClusters {
+				if etcdCluster.Provider == kops.EtcdProviderTypeManager {
+					p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
+					etcdManifests[role] = append(etcdManifests[role], p)
+				}
+			}
+		}
+	}
+
+	configBuilder := nodeUpConfigBuilder{
+		ApplyClusterCmd: c,
+		assetBuilder:    assetBuilder,
+		channels:        channels,
+		configBase:      configBase,
+		cluster:         cluster,
+		etcdManifests:   etcdManifests,
+		images:          images,
+		nodeUpTags:      nodeUpTags.List(),
+		protokubeImage:  protokubeImage,
+	}
+	return &configBuilder, nil
+}
+
+// BuildNodeUpConfig returns the NodeUp config, in YAML format
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
+	cluster := n.cluster
+
+	if ig == nil {
+		return nil, fmt.Errorf("instanceGroup cannot be nil")
+	}
+
 	role := ig.Spec.Role
 	if role == "" {
 		return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 	}
 
-	nodeUpTags, err := buildNodeupTags(role, cluster, clusterTags)
-	if err != nil {
-		return nil, err
-	}
-
 	config := nodeup.NewConfig(cluster, ig)
-	config.Tags = append(config.Tags, nodeUpTags.List()...)
+	config.Tags = append(config.Tags, n.nodeUpTags...)
 
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupprted() {
@@ -1303,99 +1416,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Confi
 			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
 		}
 	}
-
 	config.ClusterName = cluster.ObjectMeta.Name
-	config.ConfigBase = fi.String(configBase.Path())
+	config.ConfigBase = fi.String(n.configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name
-
-	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
-	isMaster := role == kops.InstanceGroupRoleMaster
-
-	images := make(map[architectures.Architecture][]*nodeup.Image)
-	if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
-		// When using a custom version, we want to preload the images over http
-		components := []string{"kube-proxy"}
-		if isMaster {
-			components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
-		}
-
-		for _, arch := range architectures.GetSupprted() {
-			for _, component := range components {
-				baseURL, err := url.Parse(cluster.Spec.KubernetesVersion)
-				if err != nil {
-					return nil, err
-				}
-
-				baseURL.Path = path.Join(baseURL.Path, "/bin/linux", string(arch), component+".tar")
-
-				u, hash, err := n.assetBuilder.RemapFileAndSHA(baseURL)
-				if err != nil {
-					return nil, err
-				}
-
-				image := &nodeup.Image{
-					Sources: []string{u.String()},
-					Hash:    hash.Hex(),
-				}
-				images[arch] = append(images[arch], image)
-			}
-		}
-	}
-
-	// `docker load` our images when using a KOPS_BASE_URL, so we
-	// don't need to push/pull from a registry
-	if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
-		for _, arch := range architectures.GetSupprted() {
-			// TODO: Build multi-arch Kops images
-			if arch != architectures.ArchitectureAmd64 {
-				continue
-			}
-
-			for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
-				baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
-				if err != nil {
-					return nil, err
-				}
-
-				baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
-
-				u, hash, err := n.assetBuilder.RemapFileAndSHA(baseURL)
-				if err != nil {
-					return nil, err
-				}
-
-				image := &nodeup.Image{
-					Sources: []string{u.String()},
-					Hash:    hash.Hex(),
-				}
-				images[arch] = append(images[arch], image)
-			}
-		}
-	}
-
-	if isMaster || useGossip {
-		u, hash, err := ProtokubeImageSource(n.assetBuilder)
-		if err != nil {
-			return nil, err
-		}
-
-		asset := BuildMirroredAsset(u, hash)
-
-		config.ProtokubeImage = &nodeup.Image{
-			Name:    kopsbase.DefaultProtokubeImageName(),
-			Sources: asset.Locations,
-			Hash:    asset.Hash.Hex(),
-		}
-	}
-
-	if role == kops.InstanceGroupRoleMaster {
-		for _, etcdCluster := range cluster.Spec.EtcdClusters {
-			if etcdCluster.Provider == kops.EtcdProviderTypeManager {
-				p := configBase.Join("manifests/etcd/" + etcdCluster.Name + ".yaml").Path()
-				config.EtcdManifests = append(config.EtcdManifests, p)
-			}
-		}
-	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests {
 		match := false
@@ -1415,8 +1438,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Confi
 		})
 	}
 
-	config.Images = images
-	config.Channels = channels
+	config.Images = n.images[role]
+	config.Channels = n.channels
+	config.EtcdManifests = n.etcdManifests[role]
+	config.ProtokubeImage = n.protokubeImage[role]
 
 	return config, nil
 }
