@@ -323,6 +323,79 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks:    nil,
 	},
 
+	// c5a family
+	{
+		Name:              "c5a.large",
+		MemoryGB:          4,
+		Cores:             2,
+		InstanceENIs:      3,
+		InstanceIPsPerENI: 10,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c5a.xlarge",
+		MemoryGB:          8,
+		Cores:             4,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c5a.2xlarge",
+		MemoryGB:          16,
+		Cores:             8,
+		InstanceENIs:      4,
+		InstanceIPsPerENI: 15,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c5a.4xlarge",
+		MemoryGB:          32,
+		Cores:             16,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c5a.8xlarge",
+		MemoryGB:          64,
+		Cores:             32,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c5a.12xlarge",
+		MemoryGB:          96,
+		Cores:             48,
+		InstanceENIs:      8,
+		InstanceIPsPerENI: 30,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c5a.16xlarge",
+		MemoryGB:          128,
+		Cores:             64,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
+	{
+		Name:              "c5a.24xlarge",
+		MemoryGB:          192,
+		Cores:             96,
+		InstanceENIs:      15,
+		InstanceIPsPerENI: 50,
+		EphemeralDisks:    nil,
+	},
+
 	// c5d family
 	{
 		Name:              "c5d.large",
