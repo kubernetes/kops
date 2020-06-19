@@ -269,7 +269,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		containerRunArgs = append(containerRunArgs, []string{
 			"--name", "protokube",
 			t.ProtokubeImageName(),
-			"/usr/bin/protokube",
+			"/protokube",
 		}...)
 
 	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
@@ -307,7 +307,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		containerRunArgs = append(containerRunArgs, []string{
 			"docker.io/library/" + t.ProtokubeImageName(),
 			"protokube",
-			"/usr/bin/protokube",
+			"/protokube",
 		}...)
 	} else {
 		return "", fmt.Errorf("unable to create protokube run command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
