@@ -9,6 +9,8 @@ metadata:
     version: v1.17.0
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       k8s-app: dns-controller
