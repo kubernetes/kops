@@ -30,6 +30,7 @@ mkdir -p "${WORK_DIR}/go/"
 cp -R "${GOPATH}/src/k8s.io/kops/vendor/" "${WORK_DIR}/go/src"
 
 unset GOBIN
+unset GOFLAGS
 
 env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -v k8s.io/code-generator/cmd/conversion-gen/
 cp "${WORK_DIR}/go/bin/conversion-gen" "${GOPATH}/bin/"
