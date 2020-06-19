@@ -84,6 +84,8 @@ type CreateClusterOptions struct {
 	ContainerRuntime     string
 	OutDir               string
 	Image                string
+	NodeImage            string
+	MasterImage          string
 	VPCID                string
 	SubnetIDs            []string
 	UtilitySubnetIDs     []string
@@ -299,8 +301,14 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)")
 
-	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
+	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set number of masters. Defaults to one master per master-zone")
+	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set number of nodes")
 
+	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Set image for all instances.")
+	cmd.Flags().StringVar(&options.NodeImage, "node-image", options.NodeImage, "Set image for nodes")
+	cmd.Flags().StringVar(&options.MasterImage, "master-image", options.MasterImage, "Set image for masters")
+
+	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
 
 	cmd.Flags().Int32Var(&options.MasterVolumeSize, "master-volume-size", options.MasterVolumeSize, "Set instance volume size (in GB) for masters")
@@ -312,12 +320,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 	cmd.Flags().BoolVar(&options.DisableSubnetTags, "disable-subnet-tags", options.DisableSubnetTags, "Set to disable automatic subnet tagging")
 
-	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
-	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
 	cmd.Flags().StringVar(&options.EtcdStorageType, "etcd-storage-type", options.EtcdStorageType, "The default storage type for etc members")
-
-	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
 	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazon-vpc-routed-eni, cilium, cni, lyftvpc.")
 
@@ -850,6 +854,16 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if c.Image != "" {
 		for _, group := range instanceGroups {
 			group.Spec.Image = c.Image
+		}
+	}
+	if c.MasterImage != "" {
+		for _, group := range masters {
+			group.Spec.Image = c.MasterImage
+		}
+	}
+	if c.NodeImage != "" {
+		for _, group := range nodes {
+			group.Spec.Image = c.NodeImage
 		}
 	}
 

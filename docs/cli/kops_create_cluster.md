@@ -83,9 +83,10 @@ kops create cluster [flags]
       --etcd-storage-type string         The default storage type for etc members
       --gce-service-account string       Service account with which the GCE VM runs. Warning: if not set, VMs will run as default compute service account.
   -h, --help                             help for cluster
-      --image string                     Image to use for all instances.
+      --image string                     Set image for all instances.
       --kubernetes-version string        Version of kubernetes to run (defaults to version in channel)
-      --master-count int32               Set the number of masters.  Defaults to one master per master-zone
+      --master-count int32               Set number of masters. Defaults to one master per master-zone
+      --master-image string              Set image for masters
       --master-public-name string        Sets the public master public name
       --master-security-groups strings   Add precreated additional security groups to masters.
       --master-size string               Set instance size for masters
@@ -95,7 +96,8 @@ kops create cluster [flags]
       --model string                     Models to apply (separate multiple models with commas) (default "proto,cloudup")
       --network-cidr string              Set to override the default network CIDR
       --networking string                Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazon-vpc-routed-eni, cilium, cni, lyftvpc. (default "kubenet")
-      --node-count int32                 Set the number of nodes
+      --node-count int32                 Set number of nodes
+      --node-image string                Set image for nodes
       --node-security-groups strings     Add precreated additional security groups to nodes.
       --node-size string                 Set instance size for nodes
       --node-tenancy string              The tenancy of the node group on AWS. Can be either default or dedicated.
