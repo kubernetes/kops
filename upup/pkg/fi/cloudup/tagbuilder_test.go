@@ -79,7 +79,7 @@ func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -105,7 +105,7 @@ func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -131,7 +131,7 @@ func TestBuildTags_CloudProvider_AWS_Calico(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -157,7 +157,7 @@ func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -180,7 +180,7 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -218,7 +218,7 @@ func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 		t.Fatalf("buildCloudupTags error: %v", err)
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -236,7 +236,7 @@ func TestBuildTags_UpdatePolicy_None(t *testing.T) {
 		t.Fatalf("buildTags error: %v", err)
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
@@ -262,7 +262,7 @@ func TestBuildTags_CloudProvider_AWS_Cilium(t *testing.T) {
 		t.Fatal("tag _aws not found")
 	}
 
-	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	nodeUpTags, err := buildNodeupTags(c, tags)
 	if err != nil {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
