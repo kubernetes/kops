@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -25,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/exec"
 
 	v1 "k8s.io/api/core/v1"
@@ -163,7 +165,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building kubeproxy flags: %v", err)
 	}
-	image := c.Image
 
 	flags = append(flags, []string{
 		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
@@ -172,6 +173,11 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	if !b.IsKubernetesGTE("1.16") {
 		// Removed in 1.16: https://github.com/kubernetes/kubernetes/pull/78294
 		flags = append(flags, `--resource-container=""`)
+	}
+
+	image := c.Image
+	if b.Architecture != architectures.ArchitectureAmd64 {
+		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
 	}
 
 	container := &v1.Container{

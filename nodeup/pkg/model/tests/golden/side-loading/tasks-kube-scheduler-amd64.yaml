@@ -1,0 +1,129 @@
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      scheduler.alpha.kubernetes.io/critical-pod: ""
+    creationTimestamp: null
+    labels:
+      k8s-app: kube-scheduler
+    name: kube-scheduler
+    namespace: kube-system
+  spec:
+    containers:
+    - args:
+      - --config=/var/lib/kube-scheduler/config.yaml
+      - --leader-elect=true
+      - --v=2
+      - --logtostderr=false
+      - --alsologtostderr
+      - --log-file=/var/log/kube-scheduler.log
+      command:
+      - /usr/local/bin/kube-scheduler
+      image: k8s.gcr.io/kube-scheduler-amd64:v1.18.0
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 10251
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      name: kube-scheduler
+      resources:
+        requests:
+          cpu: 100m
+      volumeMounts:
+      - mountPath: /var/lib/kube-scheduler
+        name: varlibkubescheduler
+        readOnly: true
+      - mountPath: /var/log/kube-scheduler.log
+        name: logfile
+    hostNetwork: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    volumes:
+    - hostPath:
+        path: /var/lib/kube-scheduler
+      name: varlibkubescheduler
+    - hostPath:
+        path: /var/log/kube-scheduler.log
+      name: logfile
+  status: {}
+path: /etc/kubernetes/manifests/kube-scheduler.manifest
+type: file
+---
+contents: |
+  apiVersion: kubescheduler.config.k8s.io/v1alpha2
+  kind: KubeSchedulerConfiguration
+  clientConnection:
+    kubeconfig: /var/lib/kube-scheduler/kubeconfig
+mode: "0400"
+path: /var/lib/kube-scheduler/config.yaml
+type: file
+---
+contents:
+  task:
+    CA:
+      task:
+        Name: kube-scheduler
+        signer: ca
+        subject:
+          CommonName: system:kube-scheduler
+        type: client
+    Cert:
+      task:
+        Name: kube-scheduler
+        signer: ca
+        subject:
+          CommonName: system:kube-scheduler
+        type: client
+    Key:
+      task:
+        Name: kube-scheduler
+        signer: ca
+        subject:
+          CommonName: system:kube-scheduler
+        type: client
+    Name: kube-scheduler
+    ServerURL: https://127.0.0.1
+mode: "0400"
+path: /var/lib/kube-scheduler/kubeconfig
+type: file
+---
+contents: ""
+ifNotExists: true
+mode: "0400"
+path: /var/log/kube-scheduler.log
+type: file
+---
+Name: kube-scheduler
+signer: ca
+subject:
+  CommonName: system:kube-scheduler
+type: client
+---
+CA:
+  task:
+    Name: kube-scheduler
+    signer: ca
+    subject:
+      CommonName: system:kube-scheduler
+    type: client
+Cert:
+  task:
+    Name: kube-scheduler
+    signer: ca
+    subject:
+      CommonName: system:kube-scheduler
+    type: client
+Key:
+  task:
+    Name: kube-scheduler
+    signer: ca
+    subject:
+      CommonName: system:kube-scheduler
+    type: client
+Name: kube-scheduler
+ServerURL: https://127.0.0.1

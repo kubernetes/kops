@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/proxy"
 
@@ -415,9 +416,14 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		requestCPU = resource.MustParse(b.Cluster.Spec.KubeAPIServer.CPURequest)
 	}
 
+	image := kubeAPIServer.Image
+	if b.Architecture != architectures.ArchitectureAmd64 {
+		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
+	}
+
 	container := &v1.Container{
 		Name:  "kube-apiserver",
-		Image: b.Cluster.Spec.KubeAPIServer.Image,
+		Image: image,
 		Env:   proxy.GetProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{

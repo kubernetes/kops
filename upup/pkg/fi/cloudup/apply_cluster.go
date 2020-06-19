@@ -66,6 +66,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -95,10 +96,10 @@ type ApplyClusterCmd struct {
 	InstanceGroups []*kops.InstanceGroup
 
 	// NodeUpSource is the location from which we download nodeup
-	NodeUpSource string
+	NodeUpSource map[architectures.Architecture]string
 
 	// NodeUpHash is the sha hash
-	NodeUpHash string
+	NodeUpHash map[architectures.Architecture]string
 
 	// Models is a list of cloudup models to apply
 	Models []string
@@ -116,7 +117,7 @@ type ApplyClusterCmd struct {
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets []*MirroredAsset
+	Assets map[architectures.Architecture][]*MirroredAsset
 
 	Clientset simple.Clientset
 
@@ -1115,64 +1116,89 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + c.Cluster.Spec.KubernetesVersion
 	}
 
-	k8sAssetsNames := []string{
-		"/bin/linux/amd64/kubelet",
-		"/bin/linux/amd64/kubectl",
-	}
-	if needsMounterAsset(c.Cluster, c.InstanceGroups) {
-		k8sAssetsNames = append(k8sAssetsNames, "/bin/linux/amd64/mounter")
-	}
+	c.Assets = make(map[architectures.Architecture][]*MirroredAsset)
+	c.NodeUpSource = make(map[architectures.Architecture]string)
+	c.NodeUpHash = make(map[architectures.Architecture]string)
+	for _, arch := range architectures.GetSupprted() {
+		c.Assets[arch] = []*MirroredAsset{}
+		c.NodeUpSource[arch] = ""
+		c.NodeUpHash[arch] = ""
 
-	for _, a := range k8sAssetsNames {
-		k, err := url.Parse(baseURL)
-		if err != nil {
-			return err
+		k8sAssetsNames := []string{
+			fmt.Sprintf("/bin/linux/%s/kubelet", arch),
+			fmt.Sprintf("/bin/linux/%s/kubectl", arch),
 		}
-		k.Path = path.Join(k.Path, a)
 
-		u, hash, err := assetBuilder.RemapFileAndSHA(k)
-		if err != nil {
-			return err
+		if needsMounterAsset(c.Cluster, c.InstanceGroups) {
+			k8sAssetsNames = append(k8sAssetsNames, fmt.Sprintf("/bin/linux/%s/mounter", arch))
 		}
-		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
-	}
 
-	cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder)
-	if err != nil {
-		return err
-	}
-
-	c.Assets = append(c.Assets, BuildMirroredAsset(cniAsset, cniAssetHash))
-
-	if c.Cluster.Spec.Networking.LyftVPC != nil {
-		var hash *hashing.Hash
-
-		urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
-		if urlString == "" {
-			urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
-			hash, err = hashing.FromString("871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566")
+		for _, an := range k8sAssetsNames {
+			k, err := url.Parse(baseURL)
 			if err != nil {
-				// Should be impossible
-				return fmt.Errorf("invalid hard-coded hash for lyft url")
+				return err
 			}
-		} else {
-			klog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
+			k.Path = path.Join(k.Path, an)
+
+			u, hash, err := assetBuilder.RemapFileAndSHA(k)
+			if err != nil {
+				return err
+			}
+			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(u, hash))
 		}
 
-		u, err := url.Parse(urlString)
+		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder, arch)
 		if err != nil {
-			return fmt.Errorf("unable to parse lyft-vpc URL %q", urlString)
+			return err
+		}
+		c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(cniAsset, cniAssetHash))
+
+		if c.Cluster.Spec.Networking.LyftVPC != nil {
+			var hash *hashing.Hash
+
+			urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
+			if urlString == "" {
+				switch arch {
+				case architectures.ArchitectureAmd64:
+					urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
+					hash, err = hashing.FromString("871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566")
+				case architectures.ArchitectureArm64:
+					urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-arm64-v0.6.0.tar.gz"
+					hash, err = hashing.FromString("3aadcb32ffda53990153790203eb72898e55a985207aa5b4451357f9862286f0")
+				default:
+					return fmt.Errorf("unknown arch for lyft asset %s", arch)
+				}
+				if err != nil {
+					// Should be impossible
+					return fmt.Errorf("invalid hard-coded hash for lyft url")
+				}
+			} else {
+				klog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
+			}
+
+			u, err := url.Parse(urlString)
+			if err != nil {
+				return fmt.Errorf("unable to parse lyft-vpc URL %q", urlString)
+			}
+
+			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(u, hash))
 		}
 
-		c.Assets = append(c.Assets, BuildMirroredAsset(u, hash))
+		// TODO: Update Kops version in integration tests to 1.19 after 1.19 is released
+		// Integration tests fake the Kops version to 1.15 and will not be able to find NodeUp
+		kopsVersion, err := semver.Parse(kopsbase.Version)
+		if err != nil && !strings.HasPrefix(kopsbase.Version, "pull-") {
+			return fmt.Errorf("unable to parse kubernetes version %q", kopsbase.Version)
+		}
+		if arch != architectures.ArchitectureArm64 || err != nil || kopsVersion.NE(semver.MustParse("1.15.0")) {
+			asset, err := NodeUpAsset(assetBuilder, arch)
+			if err != nil {
+				return err
+			}
+			c.NodeUpSource[arch] = strings.Join(asset.Locations, ",")
+			c.NodeUpHash[arch] = asset.Hash.Hex()
+		}
 	}
-
-	asset, err := NodeUpAsset(assetBuilder)
-	if err != nil {
-		return err
-	}
-	c.NodeUpSource = strings.Join(asset.Locations, ",")
-	c.NodeUpHash = asset.Hash.Hex()
 
 	// Explicitly add the protokube image,
 	// otherwise when the Target is DryRun this asset is not added
@@ -1254,9 +1280,14 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	config := nodeup.NewConfig(cluster, ig)
 	config.Tags = append(config.Tags, nodeUpTags.List()...)
 
-	for _, a := range c.Assets {
-		config.Assets = append(config.Assets, a.CompactString())
+	config.Assets = make(map[architectures.Architecture][]string)
+	for _, arch := range architectures.GetSupprted() {
+		config.Assets[arch] = []string{}
+		for _, a := range c.Assets[arch] {
+			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
+		}
 	}
+
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.ConfigBase = fi.String(configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name
@@ -1264,8 +1295,7 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
 	isMaster := role == kops.InstanceGroupRoleMaster
 
-	var images []*nodeup.Image
-
+	images := make(map[architectures.Architecture][]*nodeup.Image)
 	if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 		// When using a custom version, we want to preload the images over http
 		components := []string{"kube-proxy"}
@@ -1273,48 +1303,57 @@ func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, i
 			components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
 		}
 
-		for _, component := range components {
-			baseURL, err := url.Parse(c.Cluster.Spec.KubernetesVersion)
-			if err != nil {
-				return nil, err
-			}
+		for _, arch := range architectures.GetSupprted() {
+			for _, component := range components {
+				baseURL, err := url.Parse(c.Cluster.Spec.KubernetesVersion)
+				if err != nil {
+					return nil, err
+				}
 
-			baseURL.Path = path.Join(baseURL.Path, "/bin/linux/amd64/", component+".tar")
+				baseURL.Path = path.Join(baseURL.Path, "/bin/linux", string(arch), component+".tar")
 
-			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
-			if err != nil {
-				return nil, err
-			}
+				u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+				if err != nil {
+					return nil, err
+				}
 
-			image := &nodeup.Image{
-				Sources: []string{u.String()},
-				Hash:    hash.Hex(),
+				image := &nodeup.Image{
+					Sources: []string{u.String()},
+					Hash:    hash.Hex(),
+				}
+				images[arch] = append(images[arch], image)
 			}
-			images = append(images, image)
 		}
 	}
 
 	// `docker load` our images when using a KOPS_BASE_URL, so we
 	// don't need to push/pull from a registry
 	if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
-		for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
-			baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
-			if err != nil {
-				return nil, err
+		for _, arch := range architectures.GetSupprted() {
+			// TODO: Build multi-arch Kops images
+			if arch != architectures.ArchitectureAmd64 {
+				continue
 			}
 
-			baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
+			for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
+				baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
+				if err != nil {
+					return nil, err
+				}
 
-			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
-			if err != nil {
-				return nil, err
-			}
+				baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
 
-			image := &nodeup.Image{
-				Sources: []string{u.String()},
-				Hash:    hash.Hex(),
+				u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+				if err != nil {
+					return nil, err
+				}
+
+				image := &nodeup.Image{
+					Sources: []string{u.String()},
+					Hash:    hash.Hex(),
+				}
+				images[arch] = append(images[arch], image)
 			}
-			images = append(images, image)
 		}
 	}
 
