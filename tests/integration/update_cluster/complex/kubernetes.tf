@@ -215,7 +215,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
 }
 
 resource "aws_elb" "api-complex-example-com" {
-  cross_zone_load_balancing = false
+  cross_zone_load_balancing = true
   health_check {
     healthy_threshold   = 2
     interval            = 10
@@ -286,11 +286,6 @@ resource "aws_internet_gateway" "complex-example-com" {
   vpc_id = aws_vpc.complex-example-com.id
 }
 
-resource "aws_key_pair" "kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
-  key_name   = "kubernetes.complex.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57"
-  public_key = file("${path.module}/data/aws_key_pair_kubernetes.complex.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
-}
-
 resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
   block_device_mappings {
     device_name = "/dev/xvda"
@@ -309,7 +304,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
-  key_name      = aws_key_pair.kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
@@ -368,7 +362,6 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   }
   image_id      = "ami-12345678"
   instance_type = "t2.medium"
-  key_name      = aws_key_pair.kubernetes-complex-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
   }
@@ -475,8 +468,17 @@ resource "aws_security_group_rule" "api-elb-egress" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "https-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
+resource "aws_security_group_rule" "https-api-elb-1-1-1-0--24" {
+  cidr_blocks       = ["1.1.1.0/24"]
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "https-api-elb-2001_0_8500__--40" {
+  cidr_blocks       = ["2001:0:8500::/40"]
   from_port         = 443
   protocol          = "tcp"
   security_group_id = aws_security_group.api-elb-complex-example-com.id
@@ -493,8 +495,17 @@ resource "aws_security_group_rule" "https-elb-to-master" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
+resource "aws_security_group_rule" "icmp-pmtu-api-elb-1-1-1-0--24" {
+  cidr_blocks       = ["1.1.1.0/24"]
+  from_port         = 3
+  protocol          = "icmp"
+  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port           = 4
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "icmp-pmtu-api-elb-2001_0_8500__--40" {
+  cidr_blocks       = ["2001:0:8500::/40"]
   from_port         = 3
   protocol          = "icmp"
   security_group_id = aws_security_group.api-elb-complex-example-com.id
@@ -592,8 +603,8 @@ resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
+resource "aws_security_group_rule" "ssh-external-to-master-1-1-1-1--32" {
+  cidr_blocks       = ["1.1.1.1/32"]
   from_port         = 22
   protocol          = "tcp"
   security_group_id = aws_security_group.masters-complex-example-com.id
@@ -601,8 +612,26 @@ resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "ssh-external-to-node-0-0-0-0--0" {
-  cidr_blocks       = ["0.0.0.0/0"]
+resource "aws_security_group_rule" "ssh-external-to-master-2001_0_85a3__--48" {
+  cidr_blocks       = ["2001:0:85a3::/48"]
+  from_port         = 22
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "ssh-external-to-node-1-1-1-1--32" {
+  cidr_blocks       = ["1.1.1.1/32"]
+  from_port         = 22
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "ssh-external-to-node-2001_0_85a3__--48" {
+  cidr_blocks       = ["2001:0:85a3::/48"]
   from_port         = 22
   protocol          = "tcp"
   security_group_id = aws_security_group.nodes-complex-example-com.id
@@ -679,6 +708,11 @@ resource "aws_vpc_dhcp_options" "complex-example-com" {
     "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
+}
+
+resource "aws_vpc_ipv4_cidr_block_association" "cidr-10-1-0-0--16" {
+  cidr_block = "10.1.0.0/16"
+  vpc_id     = aws_vpc.complex-example-com.id
 }
 
 resource "aws_vpc" "complex-example-com" {
