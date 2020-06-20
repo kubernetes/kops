@@ -17,7 +17,6 @@ go_library(
         "//pkg/apis/nodeup:go_default_library",
         "//pkg/assets:go_default_library",
         "//upup/pkg/fi:go_default_library",
-        "//upup/pkg/fi/loader:go_default_library",
         "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
