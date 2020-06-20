@@ -25,12 +25,10 @@ import (
 	"strings"
 	"syscall"
 
+	"k8s.io/klog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/utils"
-
-	"k8s.io/klog"
 )
 
 const (
@@ -58,29 +56,6 @@ type File struct {
 var _ fi.Task = &File{}
 var _ fi.HasDependencies = &File{}
 var _ fi.HasName = &File{}
-
-func NewFileTask(name string, src fi.Resource, destPath string, meta string) (*File, error) {
-	f := &File{
-		//Name:     name,
-		Contents: src,
-		Path:     destPath,
-	}
-
-	if meta != "" {
-		err := utils.YamlUnmarshal([]byte(meta), f)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing meta for file %q: %v", name, err)
-		}
-	}
-
-	if f.Symlink != nil && f.Type == "" {
-		f.Type = FileType_Symlink
-	}
-
-	return f, nil
-}
-
-var _ fi.HasDependencies = &File{}
 
 // GetDependencies implements HasDependencies::GetDependencies
 func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
