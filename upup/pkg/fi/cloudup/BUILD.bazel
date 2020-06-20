@@ -9,6 +9,7 @@ go_library(
         "dns.go",
         "loader.go",
         "networking.go",
+        "new_cluster.go",
         "phase.go",
         "populate_cluster_spec.go",
         "populate_instancegroup_spec.go",
