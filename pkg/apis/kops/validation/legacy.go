@@ -19,6 +19,7 @@ package validation
 import (
 	"fmt"
 	"net"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -44,6 +45,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	} else if _, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion); err != nil {
 		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version"))
 		return allErrs
+	}
+
+	if strings.HasPrefix(c.Spec.ConfigBase, "vault://") {
+		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("configBase"), c.Spec.ConfigBase, "Vault is not supported as configBase"))
 	}
 
 	requiresSubnets := true
@@ -346,6 +351,22 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	allErrs = append(allErrs, newValidateCluster(c)...)
 
+	if strings.HasPrefix(c.Spec.SecretStore, "vault://") {
+		if !featureflag.VFSVaultSupport.Enabled() {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("secretStore"), "vault VFS is an experimental feature; set `export KOPS_FEATURE_FLAGS=VFSVaultSupport`"))
+		}
+		if kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderAWS {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("secretStore"), "Vault secret store is only available on AWS"))
+		}
+	}
+	if strings.HasPrefix(c.Spec.KeyStore, "vault://") {
+		if !featureflag.VFSVaultSupport.Enabled() {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "vault VFS is an experimental feature; set `export KOPS_FEATURE_FLAGS=VFSVaultSupport`"))
+		}
+		if kops.CloudProviderID(c.Spec.CloudProvider) != kops.CloudProviderAWS {
+			allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("keyStore"), "Vault keystore is only available on AWS"))
+		}
+	}
 	return allErrs
 }
 
