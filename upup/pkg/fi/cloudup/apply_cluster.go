@@ -155,6 +155,19 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		c.InstanceGroups = instanceGroups
 	}
 
+	for _, ig := range c.InstanceGroups {
+		// Try to guess the path for additional third party volume plugins in Flatcar
+		image := strings.ToLower(ig.Spec.Image)
+		if strings.Contains(image, "flatcar") {
+			if c.Cluster.Spec.Kubelet == nil {
+				c.Cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
+			}
+			if c.Cluster.Spec.Kubelet.VolumePluginDirectory == "" {
+				c.Cluster.Spec.Kubelet.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
+			}
+		}
+	}
+
 	if c.Models == nil {
 		c.Models = CloudupModels
 	}
