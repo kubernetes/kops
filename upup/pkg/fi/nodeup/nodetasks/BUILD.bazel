@@ -4,7 +4,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "archive.go",
-        "asset.go",
         "bindmount.go",
         "chattr.go",
         "createsdir.go",
