@@ -2,7 +2,7 @@
 
 ## Introduction
 
-For testing purposes, kubernetes works just fine with a single master. However, when the master becomes unavailable, for example due to upgrade or instance failure, the kubernetes API will be unavailable. Pods and services that are running in the cluster continues to operate as long as they do not depend on interacting with the API, but operations such as adding nodes, scaling pods, replacing terminated pods will not work. Running kubectl will also not work. 
+For testing purposes, kubernetes works just fine with a single master. However, when the master becomes unavailable, for example due to upgrade or instance failure, the kubernetes API will be unavailable. Pods and services that are running in the cluster continue to operate as long as they do not depend on interacting with the API, but operations such as adding nodes, scaling pods, replacing terminated pods will not work. Running kubectl will also not work. 
 
 kops runs each master in a dedicated autoscaling groups (ASG) and stores data on EBS volumes. That way, if a master node is terminated the ASG will launch a new master instance with the master's volume. Because of the dedicated EBS volumes, each master is bound to a fixed Availability Zone (AZ). If the AZ becomes unavailable, the master instance in that AZ will also become unavailable.
 
