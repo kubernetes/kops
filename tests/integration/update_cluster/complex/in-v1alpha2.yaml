@@ -10,8 +10,10 @@ spec:
       additionalSecurityGroups:
       - sg-exampleid3
       - sg-exampleid4
+      crossZoneLoadBalancing: true
   kubernetesApiAccess:
-  - 0.0.0.0/0
+  - 1.1.1.0/24
+  - 2001:0:8500::/40
   channel: stable
   cloudProvider: aws
   cloudLabels:
@@ -36,6 +38,8 @@ spec:
   masterInternalName: api.internal.complex.example.com
   masterPublicName: api.complex.example.com
   networkCIDR: 172.20.0.0/16
+  additionalNetworkCIDRs:
+  - 10.1.0.0/16
   networking:
     kubenet: {}
   nodePortAccess:
@@ -43,7 +47,9 @@ spec:
   - 10.20.30.0/24
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
-  - 0.0.0.0/0
+  - 1.1.1.1/32
+  - 2001:0:85a3::/48
+  sshKeyName: ""
   topology:
     masters: public
     nodes: public
@@ -83,6 +89,12 @@ spec:
     deleteOnTermination: false
     size: 20
     type: gp2
+  additionalUserData:
+  - name: myscript.sh
+    type: text/x-shellscript
+    content: |
+      #!/bin/sh
+      echo "nodes: The time is now $(date -R)!" | tee /root/output.txt
 
 ---
 
@@ -102,3 +114,9 @@ spec:
   role: Master
   subnets:
   - us-test-1a
+  additionalUserData:
+  - name: myscript.sh
+    type: text/x-shellscript
+    content: |
+      #!/bin/sh
+      echo "nodes: The time is now $(date -R)!" | tee /root/output.txt
