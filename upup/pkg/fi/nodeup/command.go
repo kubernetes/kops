@@ -58,7 +58,6 @@ type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
 	FSRoot         string
-	ModelDir       vfs.Path
 	Target         string
 	cluster        *api.Cluster
 	config         *nodeup.Config
@@ -237,7 +236,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return err
 	}
 
-	loader := NewLoader(c.config, c.cluster, assetStore, nodeTags)
+	loader := &Loader{}
 	loader.Builders = append(loader.Builders, &model.NTPBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.MiscUtilsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
@@ -273,7 +272,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &networking.KuberouterBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.LyftVPCBuilder{NodeupModelContext: modelContext})
 
-	taskMap, err := loader.Build(c.ModelDir)
+	taskMap, err := loader.Build()
 	if err != nil {
 		return fmt.Errorf("error building loader: %v", err)
 	}

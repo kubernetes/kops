@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops"
 	"k8s.io/kops/nodeup/pkg/bootstrap"
-	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 )
 
@@ -117,7 +116,6 @@ func main() {
 				Target:         target,
 				CacheDir:       flagCacheDir,
 				FSRoot:         flagRootFS,
-				ModelDir:       models.NewAssetPath("nodeup"),
 			}
 			err = cmd.Run(os.Stdout)
 			if err == nil {
