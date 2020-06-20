@@ -1,3 +1,12 @@
+Content-Type: multipart/mixed; boundary="MIMEBOUNDARY"
+MIME-Version: 1.0
+
+--MIMEBOUNDARY
+Content-Disposition: attachment; filename="nodeup.sh"
+Content-Transfer-Encoding: 7bit
+Content-Type: text/x-shellscript
+Mime-Version: 1.0
+
 #!/bin/bash
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
@@ -314,3 +323,14 @@ __EOF_KUBE_ENV
 
 download-release
 echo "== nodeup node config done =="
+
+--MIMEBOUNDARY
+Content-Disposition: attachment; filename="myscript.sh"
+Content-Transfer-Encoding: 7bit
+Content-Type: text/x-shellscript
+Mime-Version: 1.0
+
+#!/bin/sh
+echo "nodes: The time is now $(date -R)!" | tee /root/output.txt
+
+--MIMEBOUNDARY--

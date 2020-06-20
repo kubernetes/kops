@@ -131,11 +131,6 @@ func TestMinimalGCE(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce").runTestTerraformGCE(t)
 }
 
-// TestRestrictAccess runs the test on a simple SG configuration, similar to kops create cluster minimal.example.com --ssh-access=$(IPS) --admin-access=$(IPS) --master-count=3
-func TestRestrictAccess(t *testing.T) {
-	newIntegrationTest("restrictaccess.example.com", "restrict_access").runTestTerraformAWS(t)
-}
-
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
 	newIntegrationTest("ha.example.com", "ha").withZones(3).runTestTerraformAWS(t)
@@ -149,24 +144,14 @@ func TestHighAvailabilityGCE(t *testing.T) {
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
-	newIntegrationTest("complex.example.com", "complex").runTestTerraformAWS(t)
-	newIntegrationTest("complex.example.com", "complex").runTestCloudformation(t)
-	newIntegrationTest("complex.example.com", "complex").withVersion("legacy-v1alpha2").runTestTerraformAWS(t)
+	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().runTestTerraformAWS(t)
+	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().runTestCloudformation(t)
+	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").runTestTerraformAWS(t)
 }
 
 // TestExternalPolicies tests external policies output
 func TestExternalPolicies(t *testing.T) {
 	newIntegrationTest("externalpolicies.example.com", "externalpolicies").runTestTerraformAWS(t)
-}
-
-func TestNoSSHKey(t *testing.T) {
-	newIntegrationTest("nosshkey.example.com", "nosshkey").withoutSSHKey().runTestTerraformAWS(t)
-	newIntegrationTest("nosshkey.example.com", "nosshkey-cloudformation").withoutSSHKey().runTestCloudformation(t)
-}
-
-// TestCrossZone tests that the cross zone setting on the API ELB is set properly
-func TestCrossZone(t *testing.T) {
-	newIntegrationTest("crosszone.example.com", "api_elb_cross_zone").runTestTerraformAWS(t)
 }
 
 // TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -183,11 +168,6 @@ func TestExistingIAMCloudformation(t *testing.T) {
 // TestExistingSG runs the test with existing Security Group, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestExistingSG(t *testing.T) {
 	newIntegrationTest("existingsg.example.com", "existing_sg").withZones(3).runTestTerraformAWS(t)
-}
-
-// TestAdditionalUserData runs the test on passing additional user-data to an instance at bootstrap.
-func TestAdditionalUserData(t *testing.T) {
-	newIntegrationTest("additionaluserdata.example.com", "additional_user-data").runTestCloudformation(t)
 }
 
 // TestBastionAdditionalUserData runs the test on passing additional user-data to a bastion instance group
@@ -284,12 +264,6 @@ func TestSharedVPC(t *testing.T) {
 func TestExistingIAM(t *testing.T) {
 	lifecycleOverrides := []string{"IAMRole=ExistsAndWarnIfChanges", "IAMRolePolicy=ExistsAndWarnIfChanges", "IAMInstanceProfileRole=ExistsAndWarnIfChanges"}
 	newIntegrationTest("existing-iam.example.com", "existing_iam").withZones(3).withoutPolicies().withLifecycleOverrides(lifecycleOverrides).runTestTerraformAWS(t)
-}
-
-// TestAdditionalCIDR runs the test on a configuration with a shared VPC
-func TestAdditionalCIDR(t *testing.T) {
-	newIntegrationTest("additionalcidr.example.com", "additional_cidr").withVersion("v1alpha3").withZones(3).runTestTerraformAWS(t)
-	newIntegrationTest("additionalcidr.example.com", "additional_cidr").runTestCloudformation(t)
 }
 
 // TestPhaseNetwork tests the output of tf for the network phase
