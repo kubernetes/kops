@@ -62,7 +62,6 @@
 // upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml
 // upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml
 // upup/models/cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml
-// upup/models/nodeup/resources/_lyft_vpc_cni/files/etc/cni/net.d/10-cni-ipvlan-vpc-k8s.conflist.template
 package models
 
 import (
@@ -15758,49 +15757,6 @@ func cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml() (*asset, error) {
 	return a, nil
 }
 
-var _nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplate = []byte(`{
-  "cniVersion": "0.3.1",
-  "name": "cni-ipvlan-vpc-k8s",
-  "plugins": [
-  {
-    "cniVersion": "0.3.1",
-    "type": "cni-ipvlan-vpc-k8s-ipam",
-    "interfaceIndex": 1,
-    "skipDeallocation": true,
-    "subnetTags":  {{ SubnetTags }},
-    "secGroupIds": {{ NodeSecurityGroups }}
-  },
-  {
-    "cniVersion": "0.3.1",
-    "type": "cni-ipvlan-vpc-k8s-ipvlan",
-    "mode": "l2"
-  },
-  {
-    "cniVersion": "0.3.1",
-    "type": "cni-ipvlan-vpc-k8s-unnumbered-ptp",
-    "hostInterface": "eth0",
-    "containerInterface": "veth0",
-    "ipMasq": true
-  }
-  ]
-}
-`)
-
-func nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplateBytes() ([]byte, error) {
-	return _nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplate, nil
-}
-
-func nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplate() (*asset, error) {
-	bytes, err := nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplateBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "nodeup/resources/_lyft_vpc_cni/files/etc/cni/net.d/10-cni-ipvlan-vpc-k8s.conflist.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -15915,7 +15871,6 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml":                                     cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml,
 	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml,
 	"cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml,
-	"nodeup/resources/_lyft_vpc_cni/files/etc/cni/net.d/10-cni-ipvlan-vpc-k8s.conflist.template":          nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplate,
 }
 
 // AssetDir returns the file names below a certain
@@ -16081,21 +16036,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				}},
 				"storage-gce.addons.k8s.io": {nil, map[string]*bintree{
 					"v1.7.0.yaml": {cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml, map[string]*bintree{}},
-				}},
-			}},
-		}},
-	}},
-	"nodeup": {nil, map[string]*bintree{
-		"resources": {nil, map[string]*bintree{
-			"_lyft_vpc_cni": {nil, map[string]*bintree{
-				"files": {nil, map[string]*bintree{
-					"etc": {nil, map[string]*bintree{
-						"cni": {nil, map[string]*bintree{
-							"net.d": {nil, map[string]*bintree{
-								"10-cni-ipvlan-vpc-k8s.conflist.template": {nodeupResources_lyft_vpc_cniFilesEtcCniNetD10CniIpvlanVpcK8sConflistTemplate, map[string]*bintree{}},
-							}},
-						}},
-					}},
 				}},
 			}},
 		}},

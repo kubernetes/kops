@@ -20,13 +20,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"text/template"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -59,45 +59,67 @@ func (b *LyftVPCBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	securityGroups, err := evaluateSecurityGroups(b.Cluster.Spec.NetworkID)
+	if err != nil {
+		return err
+	}
+
+	conflist := map[string]interface{}{
+		"cniVersion": "0.3.1",
+		"name":       "cni-ipvlan-vpc-k8s",
+		"plugins": []map[string]interface{}{
+			{
+				"cniVersion":       "0.3.1",
+				"type":             "cni-ipvlan-vpc-k8s-ipam",
+				"interfaceIndex":   1,
+				"skipDeallocation": true,
+				"subnetTags":       getSubnetTags(b.Cluster),
+				"secGroupIds":      securityGroups,
+			},
+			{
+				"cniVersion": "0.3.1",
+				"type":       "cni-ipvlan-vpc-k8s-ipvlan",
+				"mode":       "l2",
+			},
+			{
+				"cniVersion":         "0.3.1",
+				"type":               "cni-ipvlan-vpc-k8s-unnumbered-ptp",
+				"hostInterface":      "eth0",
+				"containerInterface": "veth0",
+				"ipMasq":             true,
+			},
+		},
+	}
+
+	bytes, err := json.Marshal(conflist)
+	if err != nil {
+		return err
+	}
+
+	c.AddTask(&nodetasks.File{
+		Contents: fi.NewBytesResource(bytes),
+		Path:     "/etc/cni/net.d/10-cni-ipvlan-vpc-k8s.conflist",
+		Type:     nodetasks.FileType_File,
+	})
+
 	return nil
 }
 
-func LoadLyftTemplateFunctions(templateFunctions template.FuncMap, cluster *api.Cluster) {
-	templateFunctions["SubnetTags"] = func() (string, error) {
-		var tags map[string]string
-		if cluster.IsKubernetesGTE("1.18") {
-			tags = map[string]string{
-				"KubernetesCluster": cluster.Name,
-			}
-		} else {
-			tags = map[string]string{
-				"Type": "pod",
-			}
+func getSubnetTags(cluster *api.Cluster) interface{} {
+	var tags map[string]string
+	if cluster.IsKubernetesGTE("1.18") {
+		tags = map[string]string{
+			"KubernetesCluster": cluster.Name,
 		}
-		if len(cluster.Spec.Networking.LyftVPC.SubnetTags) > 0 {
-			tags = cluster.Spec.Networking.LyftVPC.SubnetTags
+	} else {
+		tags = map[string]string{
+			"Type": "pod",
 		}
-
-		bytes, err := json.Marshal(tags)
-		if err != nil {
-			return "", err
-		}
-		return string(bytes), nil
 	}
-
-	templateFunctions["NodeSecurityGroups"] = func() (string, error) {
-		// use the same security groups as the node
-		ids, err := evaluateSecurityGroups(cluster.Spec.NetworkID)
-		if err != nil {
-			return "", err
-		}
-		bytes, err := json.Marshal(ids)
-		if err != nil {
-			return "", err
-		}
-		return string(bytes), nil
+	if len(cluster.Spec.Networking.LyftVPC.SubnetTags) > 0 {
+		tags = cluster.Spec.Networking.LyftVPC.SubnetTags
 	}
-
+	return tags
 }
 
 func evaluateSecurityGroups(vpcId string) ([]string, error) {
