@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["strutil.go"],
+    importmap = "k8s.io/kops/vendor/github.com/hashicorp/vault/sdk/helper/strutil",
+    importpath = "github.com/hashicorp/vault/sdk/helper/strutil",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/hashicorp/errwrap:go_default_library",
+        "//vendor/github.com/ryanuber/go-glob:go_default_library",
+    ],
+)

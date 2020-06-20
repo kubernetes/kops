@@ -186,3 +186,68 @@ if err != nil {
 gcsClient, err := storage.New(httpClient)
 
 ```
+
+## Vault (vault://)
+
+As of 1.19, Kops has support for using Vault as state store. It is currently an experimental feature and you have to enable the `VFSVaultSupport` feature flag to enable it.
+
+The goal of the vault store is to be a safe storage for the kops keys and secrets store. It will not work to use this as a kops registry/config store. Among other things, etcd-manager is unable to read VFS control files from vault. Vault also cannot be used as backend for etcd backups.
+
+
+```sh
+export KOPS_FEATURE_FLAGS=VFSVaultSupport
+```
+
+### Node authentication and configuration
+The vault store uses IAM auth to authenticate against the vault server and expects the vault auth plugin to be mounted on `/aws`.
+
+Instructions for configuring your vault server to accept IAM authentication are at https://learn.hashicorp.com/vault/identity-access-management/iam-authentication
+
+To configure kops to use the Vault store, add this to the cluster spec:
+
+```yaml
+spec:
+  secretStore: vault://<vault>:<port>/<kv2 mount>/clusters/<clustername>/secrets
+  keyStore: vault://<vault>:<port>/<kv2 mount>/clusters/<clustername>/keys
+```
+
+Each of the paths specified above can be configurable, but they must be unique across all clusters. You can also not use the same path as both `stateStore` and `keyStore`.
+
+After launching your cluster you need to add the cluster roles to Vault, binding them to the cluster's IAM identity and granting them access to the appropriate secrets and keys. The nodes will wait until they can authenticate before completing provisioning.
+
+#### Vault policies
+Note that contrary to the S3 state store, kops will not provision any policies for you. You have to provide roles for both operators and nodes.
+
+Using the example paths above, a policy for the cluster nodes can be:
+
+```
+path "kv-v2/metadata/<clustername>" {
+  capabilities = ["list"]
+}
+
+path "kv-v2/metadata/clusters/<clustername>/*" {
+  capabilities = ["list", "read"]
+}
+
+path "kv-v2/data/clusters/<clustername>/*" {
+  capabilities = ["read"]
+}
+```
+
+Once you add this policy, you can assign it to the IAM roles like this:
+
+```sh
+vault write auth/aws/role/masters.<clustername> auth_type=iam \
+              bound_iam_principal_arn=arn:aws:iam::<account>:role/masters.<clustername> policies=<policy> max_ttl=500h
+vault write auth/aws/role/nodes.<clustername> auth_type=iam \
+              bound_iam_principal_arn=arn:aws:iam::<account>:role/nodes.<clustername> policies=<policy> max_ttl=500h
+vault write auth/aws/config/client iam_server_id_header_value="<vault server hostname>"
+```
+
+Note that if you re-provision your cluster, you need to re-run the above in order for Vault to update the role internal IDs.
+
+Vault will use TLS by default. If you want to use plaintext instead, add `?tls=false` to the url.
+
+### Client configuration
+
+The `kops` CLI only expects the `VAULT_TOKEN` environment variable to be set to a valid token. You can use any authentication method to obtain a token and then set it manually if the authentication method does not do that automatically.
