@@ -27,7 +27,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
@@ -236,33 +235,10 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		lifecycleOverrideMap[taskName] = lifecycleOverride
 	}
 
-	var instanceGroups []*kops.InstanceGroup
-	{
-		list, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
-		if err != nil {
-			return nil, err
-		}
-		for i := range list.Items {
-			instanceGroups = append(instanceGroups, &list.Items[i])
-
-			// Try to guess the path for additional third party volume plugins in Flatcar
-			image := strings.ToLower(list.Items[i].Spec.Image)
-			if strings.Contains(image, "flatcar") {
-				if cluster.Spec.Kubelet == nil {
-					cluster.Spec.Kubelet = &kops.KubeletConfigSpec{}
-				}
-				if cluster.Spec.Kubelet.VolumePluginDirectory == "" {
-					cluster.Spec.Kubelet.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
-				}
-			}
-		}
-	}
-
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Clientset:          clientset,
 		Cluster:            cluster,
 		DryRun:             isDryrun,
-		InstanceGroups:     instanceGroups,
 		RunTasksOptions:    &c.RunTasksOptions,
 		Models:             strings.Split(c.Models, ","),
 		OutDir:             c.OutDir,
@@ -360,7 +336,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 			fmt.Fprintf(sb, "Suggestions:\n")
 			fmt.Fprintf(sb, " * validate cluster: kops validate cluster --wait 10m\n")
 			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
-			if !usesBastion(instanceGroups) {
+			if !usesBastion(applyCmd.InstanceGroups) {
 				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa ubuntu@%s\n", cluster.Spec.MasterPublicName)
 			} else {
 				bastionPublicName := findBastionPublicName(cluster)
