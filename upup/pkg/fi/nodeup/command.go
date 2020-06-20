@@ -273,8 +273,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &networking.KuberouterBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.LyftVPCBuilder{NodeupModelContext: modelContext})
 
-	networking.LoadLyftTemplateFunctions(loader.TemplateFunctions, c.cluster)
-
 	taskMap, err := loader.Build(c.ModelDir)
 	if err != nil {
 		return fmt.Errorf("error building loader: %v", err)
