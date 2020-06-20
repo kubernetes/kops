@@ -19,6 +19,7 @@ package instancegroups
 import (
 	"context"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -128,21 +129,21 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 	{
 		var wg sync.WaitGroup
 
-		for k, bastionGroup := range bastionGroups {
+		for _, k := range sortGroups(bastionGroups) {
 			wg.Add(1)
-			go func(k string, group *cloudinstances.CloudInstanceGroup) {
+			go func(k string) {
 				resultsMutex.Lock()
 				results[k] = fmt.Errorf("function panic bastions")
 				resultsMutex.Unlock()
 
 				defer wg.Done()
 
-				err := c.rollingUpdateInstanceGroup(ctx, cluster, group, true, c.BastionInterval)
+				err := c.rollingUpdateInstanceGroup(ctx, cluster, bastionGroups[k], true, c.BastionInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
-			}(k, bastionGroup)
+			}(k)
 		}
 
 		wg.Wait()
@@ -161,8 +162,8 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		// typically they will be in separate instance groups, so we can force the zones,
 		// and we don't want to roll all the masters at the same time.  See issue #284
 
-		for _, group := range masterGroups {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.MasterInterval)
+		for _, k := range sortGroups(masterGroups) {
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, masterGroups[k], false, c.MasterInterval)
 
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 			if err != nil {
@@ -183,8 +184,8 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 			results[k] = fmt.Errorf("function panic nodes")
 		}
 
-		for k, group := range nodeGroups {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, group, false, c.NodeInterval)
+		for _, k := range sortGroups(nodeGroups) {
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, nodeGroups[k], false, c.NodeInterval)
 
 			results[k] = err
 
@@ -200,4 +201,13 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 
 	klog.Infof("Rolling update completed for cluster %q!", c.ClusterName)
 	return nil
+}
+
+func sortGroups(groupMap map[string]*cloudinstances.CloudInstanceGroup) []string {
+	groups := make([]string, 0, len(groupMap))
+	for group := range groupMap {
+		groups = append(groups, group)
+	}
+	sort.Strings(groups)
+	return groups
 }
