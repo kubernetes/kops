@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["xxh32zero.go"],
+    importmap = "k8s.io/kops/vendor/github.com/pierrec/lz4/internal/xxh32",
+    importpath = "github.com/pierrec/lz4/internal/xxh32",
+    visibility = ["//vendor/github.com/pierrec/lz4:__subpackages__"],
+)

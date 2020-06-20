@@ -77,6 +77,7 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl/v2 v2.3.0
+	github.com/hashicorp/vault/api v1.0.4
 	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d

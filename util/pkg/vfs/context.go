@@ -35,6 +35,8 @@ import (
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
+
+	vault "github.com/hashicorp/vault/api"
 )
 
 // VFSContext is a 'context' for VFS, that is normally a singleton
@@ -51,6 +53,8 @@ type VFSContext struct {
 	swiftClient *gophercloud.ServiceClient
 	// ossClient is the Aliyun Open Source Storage client
 	ossClient *oss.Client
+
+	vaultClient *vault.Client
 }
 
 var Context = VFSContext{
@@ -167,6 +171,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "oss://") {
 		return c.buildOSSPath(p)
+	}
+
+	if strings.HasPrefix(p, "vault://") {
+		return c.buildVaultPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -442,4 +450,36 @@ func (c *VFSContext) buildOSSPath(p string) (*OSSPath, error) {
 	}
 
 	return NewOSSPath(c.ossClient, bucket, u.Path)
+}
+
+func (c *VFSContext) buildVaultPath(p string) (*VaultPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid vault url: %q", p)
+	}
+
+	var scheme string
+
+	if u.Scheme != "vault" {
+		return nil, fmt.Errorf("invalid vault url: %q", p)
+	}
+
+	queryValues := u.Query()
+
+	scheme = "https://"
+	if queryValues.Get("tls") == "false" {
+		scheme = "http://"
+	}
+
+	if c.vaultClient == nil {
+
+		vaultClient, err := newVaultClient(scheme, u.Hostname(), u.Port())
+		if err != nil {
+			return nil, err
+		}
+
+		c.vaultClient = vaultClient
+	}
+
+	return newVaultPath(c.vaultClient, scheme, u.Path)
 }
