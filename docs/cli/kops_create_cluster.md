@@ -86,7 +86,7 @@ kops create cluster [flags]
       --image string                     Set image for all instances.
       --kubernetes-version string        Version of kubernetes to run (defaults to version in channel)
       --master-count int32               Set number of masters. Defaults to one master per master-zone
-      --master-image string              Set image for masters
+      --master-image string              Set image for masters. Takes precedence over --image
       --master-public-name string        Sets the public master public name
       --master-security-groups strings   Add precreated additional security groups to masters.
       --master-size string               Set instance size for masters
@@ -97,7 +97,7 @@ kops create cluster [flags]
       --network-cidr string              Set to override the default network CIDR
       --networking string                Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazon-vpc-routed-eni, cilium, cni, lyftvpc. (default "kubenet")
       --node-count int32                 Set number of nodes
-      --node-image string                Set image for nodes
+      --node-image string                Set image for nodes. Takes precedence over --image
       --node-security-groups strings     Add precreated additional security groups to nodes.
       --node-size string                 Set instance size for nodes
       --node-tenancy string              The tenancy of the node group on AWS. Can be either default or dedicated.

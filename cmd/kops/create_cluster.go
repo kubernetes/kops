@@ -305,8 +305,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set number of nodes")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Set image for all instances.")
-	cmd.Flags().StringVar(&options.NodeImage, "node-image", options.NodeImage, "Set image for nodes")
-	cmd.Flags().StringVar(&options.MasterImage, "master-image", options.MasterImage, "Set image for masters")
+	cmd.Flags().StringVar(&options.NodeImage, "node-image", options.NodeImage, "Set image for nodes. Takes precedence over --image")
+	cmd.Flags().StringVar(&options.MasterImage, "master-image", options.MasterImage, "Set image for masters. Takes precedence over --image")
 
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
