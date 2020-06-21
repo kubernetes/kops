@@ -274,7 +274,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersexternallbexamplecom.Properti
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
   nodeLabels: null
-  taints: null
 
   __EOF_IG_SPEC
 
@@ -524,7 +523,6 @@ Resources.AWSEC2LaunchTemplatenodesexternallbexamplecom.Properties.LaunchTemplat
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
   nodeLabels: null
-  taints: null
 
   __EOF_IG_SPEC
 
