@@ -275,7 +275,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  nodeLabels: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -309,6 +309,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
     logLevel: 2
     networkPluginMTU: 9001
     networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: master
+      node-role.kubernetes.io/master: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
@@ -610,7 +613,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  nodeLabels: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -644,6 +647,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
     logLevel: 2
     networkPluginMTU: 9001
     networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: master
+      node-role.kubernetes.io/master: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
@@ -945,7 +951,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  nodeLabels: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -979,6 +985,9 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
     logLevel: 2
     networkPluginMTU: 9001
     networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: master
+      node-role.kubernetes.io/master: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
@@ -1196,7 +1205,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  nodeLabels: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -1230,6 +1239,9 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
     logLevel: 2
     networkPluginMTU: 9001
     networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: node
+      node-role.kubernetes.io/node: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests

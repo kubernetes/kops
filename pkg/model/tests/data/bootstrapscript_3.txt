@@ -190,9 +190,6 @@ fileAssets:
 hooks:
 - manifest: 8BN3anFUyDlkVF/JnaJqbwpq8ME= (fingerprint)
   name: apply-to-all.service
-nodeLabels:
-  label2: value2
-  labelname: labelvalue
 
 __EOF_IG_SPEC
 
@@ -200,6 +197,11 @@ cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 InstanceGroupRole: Node
 KubeletConfig:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
+  nodeLabels:
+    kubernetes.io/role: node
+    label2: value2
+    labelname: labelvalue
+    node-role.kubernetes.io/node: ""
   taints:
   - key1=value1:NoSchedule
   - key2=value2:NoExecute
