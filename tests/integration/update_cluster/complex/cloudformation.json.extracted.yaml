@@ -285,7 +285,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
   nodeLabels: null
-  taints: null
 
   __EOF_IG_SPEC
 
@@ -555,7 +554,6 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
   nodeLabels: null
-  taints: null
 
   __EOF_IG_SPEC
 

@@ -275,7 +275,6 @@ __EOF_CLUSTER_SPEC
 
 cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
 nodeLabels: null
-taints: null
 
 __EOF_IG_SPEC
 
