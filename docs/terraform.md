@@ -79,6 +79,14 @@ $ kops update cluster \
   --target=terraform
 ```
 
+Upgrade to terraform v0.12+
+```
+$ terraform 0.12upgrade
+
+# Need init again
+$ terraform init
+```
+
 Then apply your changes after previewing what changes will be applied:
 
 ```
