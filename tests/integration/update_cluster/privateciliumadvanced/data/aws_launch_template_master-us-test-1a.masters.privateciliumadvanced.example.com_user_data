@@ -273,7 +273,7 @@ masterKubelet:
 __EOF_CLUSTER_SPEC
 
 cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-nodeLabels: null
+{}
 
 __EOF_IG_SPEC
 
@@ -305,6 +305,9 @@ KubeletConfig:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   networkPluginName: cni
+  nodeLabels:
+    kubernetes.io/role: master
+    node-role.kubernetes.io/master: ""
   nonMasqueradeCIDR: 100.64.0.0/10
   podInfraContainerImage: k8s.gcr.io/pause:3.2
   podManifestPath: /etc/kubernetes/manifests
