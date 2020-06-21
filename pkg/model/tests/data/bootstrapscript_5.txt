@@ -207,8 +207,6 @@ hooks:
   name: disable-update-engine.service
 - manifest: 8BN3anFUyDlkVF/JnaJqbwpq8ME= (fingerprint)
   name: apply-to-all.service
-kubelet:
-  kubeconfigPath: /etc/kubernetes/igconfig.txt
 nodeLabels:
   label2: value2
   labelname: labelvalue
@@ -220,6 +218,8 @@ __EOF_IG_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 InstanceGroupRole: Node
+KubeletConfig:
+  kubeconfigPath: /etc/kubernetes/igconfig.txt
 
 __EOF_KUBE_ENV
 
