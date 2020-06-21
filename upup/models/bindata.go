@@ -1265,7 +1265,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.4.0
+        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.4.0
         resources:
             requests:
                 cpu: "20m"
@@ -1280,10 +1280,14 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
+      nodeSelector:
+        kubernetes.io/arch: amd64
       priorityClassName: system-cluster-critical
       tolerations:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
+      - key: node-role.kubernetes.io/master
+        operator: Exists
       serviceAccountName: coredns-autoscaler
 ---
 apiVersion: apps/v1
@@ -2685,7 +2689,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.4.0
+        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.4.0
         resources:
             requests:
                 cpu: "20m"
@@ -2701,10 +2705,14 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
+      nodeSelector:
+        kubernetes.io/arch: amd64
       priorityClassName: system-cluster-critical
       tolerations:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
+      - key: node-role.kubernetes.io/master
+        operator: Exists
       serviceAccountName: kube-dns-autoscaler
 
 ---
@@ -2762,7 +2770,7 @@ spec:
 
       containers:
       - name: kubedns
-        image: k8s.gcr.io/k8s-dns-kube-dns-{{Arch}}:1.14.13
+        image: k8s.gcr.io/k8s-dns-kube-dns:1.14.13
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -2814,7 +2822,7 @@ spec:
           mountPath: /kube-dns-config
 
       - name: dnsmasq
-        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.13
+        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny:1.15.13
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -2856,7 +2864,7 @@ spec:
           mountPath: /etc/k8s/dns/dnsmasq-nanny
 
       - name: sidecar
-        image: k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.13
+        image: k8s.gcr.io/k8s-dns-sidecar:1.14.13
         livenessProbe:
           httpGet:
             path: /metrics
@@ -3038,7 +3046,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.1.2-r2
+        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.2-r2
         resources:
             requests:
                 cpu: "20m"
@@ -3103,7 +3111,7 @@ spec:
 
       containers:
       - name: kubedns
-        image: k8s.gcr.io/k8s-dns-kube-dns-{{Arch}}:1.14.10
+        image: k8s.gcr.io/k8s-dns-kube-dns:1.14.10
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -3155,7 +3163,7 @@ spec:
           mountPath: /kube-dns-config
 
       - name: dnsmasq
-        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.10
+        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny:1.14.10
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -3197,7 +3205,7 @@ spec:
           mountPath: /etc/k8s/dns/dnsmasq-nanny
 
       - name: sidecar
-        image: k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.10
+        image: k8s.gcr.io/k8s-dns-sidecar:1.14.10
         livenessProbe:
           httpGet:
             path: /metrics
