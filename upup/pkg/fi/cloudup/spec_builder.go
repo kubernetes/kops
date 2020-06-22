@@ -17,7 +17,6 @@ limitations under the License.
 package cloudup
 
 import (
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -27,8 +26,6 @@ import (
 
 type SpecBuilder struct {
 	OptionsLoader *loader.OptionsLoader
-
-	Tags sets.String
 }
 
 func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *kopsapi.ClusterSpec) (*kopsapi.ClusterSpec, error) {
