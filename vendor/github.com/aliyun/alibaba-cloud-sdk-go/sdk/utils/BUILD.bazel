@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "debug.go",
+        "utils.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils",
+    importpath = "github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils",
+    visibility = ["//visibility:public"],
+)
