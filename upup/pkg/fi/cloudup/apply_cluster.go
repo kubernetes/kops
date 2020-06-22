@@ -75,8 +75,6 @@ var (
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
 	AlphaAllowALI = featureflag.New("AlphaAllowALI", featureflag.Bool(false))
-	// CloudupModels a list of supported models
-	CloudupModels = []string{"proto", "cloudup"}
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in Kops
 	OldestSupportedKubernetesVersion = "1.11.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in Kops
@@ -93,9 +91,6 @@ type ApplyClusterCmd struct {
 
 	// NodeUpHash is the sha hash
 	NodeUpHash map[architectures.Architecture]string
-
-	// Models is a list of cloudup models to apply
-	Models []string
 
 	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	TargetName string
@@ -159,10 +154,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				c.Cluster.Spec.Kubelet.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
 			}
 		}
-	}
-
-	if c.Models == nil {
-		c.Models = CloudupModels
 	}
 
 	modelStore, err := findModelStore()
@@ -449,137 +440,125 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	l.Tags = clusterTags
 
-	var fileModels []string
-	for _, m := range c.Models {
-		switch m {
-		case "proto":
-		// No proto code options; no file model
+	{
+		templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
+		if err != nil {
+			return fmt.Errorf("error loading templates: %v", err)
+		}
 
-		case "cloudup":
-			templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
-			if err != nil {
-				return fmt.Errorf("error loading templates: %v", err)
-			}
+		err = tf.AddTo(templates.TemplateFunctions, secretStore)
+		if err != nil {
+			return err
+		}
 
-			err = tf.AddTo(templates.TemplateFunctions, secretStore)
-			if err != nil {
-				return err
+		l.Builders = append(l.Builders,
+			&BootstrapChannelBuilder{
+				KopsModelContext: modelContext,
+				Lifecycle:        &clusterLifecycle,
+				assetBuilder:     assetBuilder,
+				templates:        templates,
+			},
+			&model.PKIModelBuilder{
+				KopsModelContext: modelContext,
+				Lifecycle:        &clusterLifecycle,
+			},
+			&kubeapiserver.KubeApiserverBuilder{
+				AssetBuilder:     assetBuilder,
+				KopsModelContext: modelContext,
+				Lifecycle:        &clusterLifecycle,
+			},
+			&etcdmanager.EtcdManagerBuilder{
+				AssetBuilder:     assetBuilder,
+				KopsModelContext: modelContext,
+				Lifecycle:        &clusterLifecycle,
+			},
+		)
+
+		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		case kops.CloudProviderAWS:
+			awsModelContext := &awsmodel.AWSModelContext{
+				KopsModelContext: modelContext,
 			}
 
 			l.Builders = append(l.Builders,
-				&BootstrapChannelBuilder{
-					KopsModelContext: modelContext,
-					Lifecycle:        &clusterLifecycle,
-					assetBuilder:     assetBuilder,
-					templates:        templates,
-				},
-				&model.PKIModelBuilder{
-					KopsModelContext: modelContext,
-					Lifecycle:        &clusterLifecycle,
-				},
-				&kubeapiserver.KubeApiserverBuilder{
-					AssetBuilder:     assetBuilder,
-					KopsModelContext: modelContext,
-					Lifecycle:        &clusterLifecycle,
-				},
-				&etcdmanager.EtcdManagerBuilder{
-					AssetBuilder:     assetBuilder,
-					KopsModelContext: modelContext,
-					Lifecycle:        &clusterLifecycle,
-				},
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+				&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+				&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+				&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+				&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 			)
 
-			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
-			case kops.CloudProviderAWS:
-				awsModelContext := &awsmodel.AWSModelContext{
-					KopsModelContext: modelContext,
-				}
+			l.Builders = append(l.Builders,
+				&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},
+			)
 
-				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
-					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				)
+			l.Builders = append(l.Builders,
+				&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+			)
+		case kops.CloudProviderDO:
+			doModelContext := &domodel.DOModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&domodel.APILoadBalancerModelBuilder{DOModelContext: doModelContext, Lifecycle: &securityLifecycle},
+			)
 
-				l.Builders = append(l.Builders,
-					&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},
-				)
-
-				l.Builders = append(l.Builders,
-					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
-				)
-			case kops.CloudProviderDO:
-				doModelContext := &domodel.DOModelContext{
-					KopsModelContext: modelContext,
-				}
-				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-					&domodel.APILoadBalancerModelBuilder{DOModelContext: doModelContext, Lifecycle: &securityLifecycle},
-				)
-
-			case kops.CloudProviderGCE:
-				gceModelContext := &gcemodel.GCEModelContext{
-					KopsModelContext: modelContext,
-				}
-
-				storageACLLifecycle := securityLifecycle
-				if storageACLLifecycle != fi.LifecycleIgnore {
-					// This is a best-effort permissions fix
-					storageACLLifecycle = fi.LifecycleWarnIfInsufficientAccess
-				}
-
-				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-
-					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
-					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
-					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
-					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &networkLifecycle},
-				)
-
-				l.Builders = append(l.Builders,
-					&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageACLLifecycle},
-				)
-
-			case kops.CloudProviderALI:
-				aliModelContext := &alimodel.ALIModelContext{
-					KopsModelContext: modelContext,
-				}
-				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-					&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-					&alimodel.NetworkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-					&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-					&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-					&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-					&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
-				)
-
-			case kops.CloudProviderOpenstack:
-				openstackModelContext := &openstackmodel.OpenstackModelContext{
-					KopsModelContext: modelContext,
-				}
-
-				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
-					// &openstackmodel.APILBModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &clusterLifecycle},
-					&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
-					&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
-					&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
-				)
-
-			default:
-				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
+		case kops.CloudProviderGCE:
+			gceModelContext := &gcemodel.GCEModelContext{
+				KopsModelContext: modelContext,
 			}
 
-			fileModels = append(fileModels, m)
+			storageACLLifecycle := securityLifecycle
+			if storageACLLifecycle != fi.LifecycleIgnore {
+				// This is a best-effort permissions fix
+				storageACLLifecycle = fi.LifecycleWarnIfInsufficientAccess
+			}
+
+			l.Builders = append(l.Builders,
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+
+				&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
+				&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
+				&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
+				&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &networkLifecycle},
+			)
+
+			l.Builders = append(l.Builders,
+				&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageACLLifecycle},
+			)
+
+		case kops.CloudProviderALI:
+			aliModelContext := &alimodel.ALIModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&alimodel.APILoadBalancerModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+				&alimodel.NetworkModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+				&alimodel.RAMModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+				&alimodel.SSHKeyModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+				&alimodel.FirewallModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+				&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
+			)
+
+		case kops.CloudProviderOpenstack:
+			openstackModelContext := &openstackmodel.OpenstackModelContext{
+				KopsModelContext: modelContext,
+			}
+
+			l.Builders = append(l.Builders,
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				// &openstackmodel.APILBModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &clusterLifecycle},
+				&openstackmodel.NetworkModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &networkLifecycle},
+				&openstackmodel.SSHKeyModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
+				&openstackmodel.FirewallModelBuilder{OpenstackModelContext: openstackModelContext, Lifecycle: &securityLifecycle},
+			)
 
 		default:
-			fileModels = append(fileModels, m)
+			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 		}
 	}
 
@@ -682,7 +661,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
+	taskMap, err := l.BuildTasks(modelStore, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
