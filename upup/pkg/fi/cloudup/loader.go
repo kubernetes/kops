@@ -18,10 +18,8 @@ package cloudup
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"strings"
 	"text/template"
@@ -33,27 +31,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/assettasks"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/util/pkg/vfs"
-)
-
-const (
-	KEY_NAME = "name"
-	KEY_TYPE = "_type"
 )
 
 type Loader struct {
 	Cluster *kopsapi.Cluster
 
-	WorkDir string
-
-	ModelStore vfs.Path
-
 	Tags              sets.String
 	TemplateFunctions template.FuncMap
-
-	typeMap map[string]reflect.Type
 
 	Resources map[string]fi.Resource
 
@@ -91,24 +77,8 @@ func (a *templateResource) Curry(args []string) fi.TemplateResource {
 
 func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
-	l.typeMap = make(map[string]reflect.Type)
 	l.Resources = make(map[string]fi.Resource)
 	l.TemplateFunctions = make(template.FuncMap)
-}
-
-func (l *Loader) AddTypes(types map[string]interface{}) {
-	for key, proto := range types {
-		_, exists := l.typeMap[key]
-		if exists {
-			klog.Fatalf("duplicate type key: %q", key)
-		}
-
-		t := reflect.TypeOf(proto)
-		if t.Kind() == reflect.Ptr {
-			t = t.Elem()
-		}
-		l.typeMap[key] = t
-	}
 }
 
 func (l *Loader) executeTemplate(key string, d string, args []string) (string, error) {
@@ -145,7 +115,9 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 }
 
 func ignoreHandler(i *loader.TreeWalkItem) error {
-	return nil
+	// TODO remove after proving it's dead code
+	klog.Fatalf("ignoreHandler called on %s", i.Path)
+	return fmt.Errorf("ignoreHandler not implemented")
 }
 
 func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
@@ -367,113 +339,9 @@ func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
 }
 
 func (l *Loader) objectHandler(i *loader.TreeWalkItem) error {
-	klog.V(8).Infof("Reading %s", i.Path)
-	contents, err := i.ReadString()
-	if err != nil {
-		return err
-	}
-
-	data, err := l.executeTemplate(i.RelativePath, contents, nil)
-	if err != nil {
-		return err
-	}
-
-	objects, err := l.loadYamlObjects(i.RelativePath, data)
-	if err != nil {
-		return err
-	}
-
-	for k, v := range objects {
-		_, found := l.tasks[k]
-		if found {
-			return fmt.Errorf("found duplicate object: %q", k)
-		}
-		l.tasks[k] = v.(fi.Task)
-	}
-	return nil
-}
-
-func (l *Loader) loadYamlObjects(key string, data string) (map[string]interface{}, error) {
-	var o map[string]interface{}
-	if strings.TrimSpace(data) != "" {
-		err := utils.YamlUnmarshal([]byte(data), &o)
-		if err != nil {
-			// TODO: It would be nice if yaml returned us the line number here
-			klog.Infof("error parsing yaml.  yaml follows:")
-			for i, line := range strings.Split(string(data), "\n") {
-				fmt.Fprintf(os.Stderr, "%3d: %s\n", i, line)
-			}
-			return nil, fmt.Errorf("error parsing yaml %q: %v", key, err)
-		}
-	}
-
-	return l.loadObjectMap(key, o)
-}
-
-func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[string]interface{}, error) {
-	loaded := make(map[string]interface{})
-
-	for k, v := range data {
-		typeID := ""
-		name := ""
-
-		// If the name & type are not specified in the values,
-		// we infer them from the key (first component -> typeid, last component -> name)
-		if vMap, ok := v.(map[string]interface{}); ok {
-			if s, ok := vMap[KEY_TYPE]; ok {
-				typeID = s.(string)
-			}
-			if s, ok := vMap[KEY_NAME]; ok {
-				name = s.(string)
-			}
-		}
-
-		inferredName := false
-
-		if name == "" {
-			firstSlash := strings.Index(k, "/")
-			name = k[firstSlash+1:]
-			inferredName = true
-		}
-
-		if typeID == "" {
-			firstSlash := strings.Index(k, "/")
-			if firstSlash != -1 {
-				typeID = k[:firstSlash]
-			}
-
-			if typeID == "" {
-				return nil, fmt.Errorf("cannot determine type for %q", k)
-			}
-		}
-		t, found := l.typeMap[typeID]
-		if !found {
-			return nil, fmt.Errorf("unknown type %q (in %q)", typeID, key)
-		}
-
-		o := reflect.New(t)
-
-		// TODO replace with partial unmarshal...
-		jsonValue, err := json.Marshal(v)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling to json: %v", err)
-		}
-		err = json.Unmarshal(jsonValue, o.Interface())
-		if err != nil {
-			klog.V(2).Infof("JSON was %q", string(jsonValue))
-			return nil, fmt.Errorf("error parsing %q: %v", key, err)
-		}
-		klog.V(4).Infof("Built %s:%s => %v", key, k, o.Interface())
-
-		if inferredName {
-			hn, ok := o.Interface().(fi.HasSetName)
-			if ok {
-				hn.SetName(name)
-			}
-		}
-		loaded[k] = o.Interface()
-	}
-	return loaded, nil
+	// TODO remove after proving it's dead code
+	klog.Fatalf("objectHandler called on %s", i.Path)
+	return fmt.Errorf("objectHandler not implemented")
 }
 
 func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, args []string) error {
