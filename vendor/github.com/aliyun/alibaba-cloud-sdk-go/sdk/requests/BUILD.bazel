@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "acs_request.go",
+        "common_request.go",
+        "roa_request.go",
+        "rpc_request.go",
+        "types.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests",
+    importpath = "github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils:go_default_library",
+    ],
+)
