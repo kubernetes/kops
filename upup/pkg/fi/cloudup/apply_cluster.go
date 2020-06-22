@@ -52,20 +52,13 @@ import (
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/alitasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
-	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
-	"k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
@@ -331,14 +324,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	checkExisting := true
 
-	l.AddTypes(map[string]interface{}{
-		"keypair":        &fitasks.Keypair{},
-		"secret":         &fitasks.Secret{},
-		"managedFile":    &fitasks.ManagedFile{},
-		"mirrorKeystore": &fitasks.MirrorKeystore{},
-		"mirrorSecrets":  &fitasks.MirrorSecrets{},
-	})
-
 	region := ""
 	project := ""
 
@@ -371,16 +356,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
-
-			l.AddTypes(map[string]interface{}{
-				"Disk":                 &gcetasks.Disk{},
-				"Instance":             &gcetasks.Instance{},
-				"InstanceTemplate":     &gcetasks.InstanceTemplate{},
-				"Network":              &gcetasks.Network{},
-				"InstanceGroupManager": &gcetasks.InstanceGroupManager{},
-				"FirewallRule":         &gcetasks.FirewallRule{},
-				"Address":              &gcetasks.Address{},
-			})
 		}
 
 	case kops.CloudProviderDO:
@@ -394,59 +369,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
-
-			l.AddTypes(map[string]interface{}{
-				"volume":       &dotasks.Volume{},
-				"droplet":      &dotasks.Droplet{},
-				"loadbalancer": &dotasks.LoadBalancer{},
-			})
 		}
 	case kops.CloudProviderAWS:
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
 			region = awsCloud.Region()
-
-			l.AddTypes(map[string]interface{}{
-				// EC2
-				"elasticIP":                   &awstasks.ElasticIP{},
-				"instance":                    &awstasks.Instance{},
-				"instanceElasticIPAttachment": &awstasks.InstanceElasticIPAttachment{},
-				"instanceVolumeAttachment":    &awstasks.InstanceVolumeAttachment{},
-				"ebsVolume":                   &awstasks.EBSVolume{},
-				"sshKey":                      &awstasks.SSHKey{},
-
-				// IAM
-				"iamInstanceProfile":     &awstasks.IAMInstanceProfile{},
-				"iamInstanceProfileRole": &awstasks.IAMInstanceProfileRole{},
-				"iamRole":                &awstasks.IAMRole{},
-				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
-
-				// VPC / Networking
-				"dhcpOptions":                &awstasks.DHCPOptions{},
-				"internetGateway":            &awstasks.InternetGateway{},
-				"route":                      &awstasks.Route{},
-				"routeTable":                 &awstasks.RouteTable{},
-				"routeTableAssociation":      &awstasks.RouteTableAssociation{},
-				"securityGroup":              &awstasks.SecurityGroup{},
-				"securityGroupRule":          &awstasks.SecurityGroupRule{},
-				"subnet":                     &awstasks.Subnet{},
-				"vpc":                        &awstasks.VPC{},
-				"ngw":                        &awstasks.NatGateway{},
-				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
-
-				// ELB
-				"loadBalancer":           &awstasks.LoadBalancer{},
-				"loadBalancerAttachment": &awstasks.LoadBalancerAttachment{},
-
-				// Autoscaling
-				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
-				"launchConfiguration": &awstasks.LaunchConfiguration{},
-
-				// Spotinst
-				"spotinstElastigroup": &spotinsttasks.Elastigroup{},
-				"spotinstOcean":       &spotinsttasks.Ocean{},
-				"spotinstLaunchSpec":  &spotinsttasks.LaunchSpec{},
-			})
 
 			if len(sshPublicKeys) == 0 && c.Cluster.Spec.SSHKeyName == nil {
 				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
@@ -467,21 +394,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			aliCloud := cloud.(aliup.ALICloud)
 			region = aliCloud.Region()
-			l.AddTypes(map[string]interface{}{
-				"Vpc":                  &alitasks.VPC{},
-				"VSwitch":              &alitasks.VSwitch{},
-				"Disk":                 &alitasks.Disk{},
-				"SecurityGroup":        &alitasks.SecurityGroup{},
-				"SecurityGroupRule":    &alitasks.SecurityGroupRule{},
-				"LoadBalancer":         &alitasks.LoadBalancer{},
-				"LoadBalancerListener": &alitasks.LoadBalancerListener{},
-				"LoadBalancerACL":      &alitasks.LoadBalancerACL{},
-				"AutoscalingGroup":     &alitasks.ScalingGroup{},
-				"LaunchConfiguration":  &alitasks.LaunchConfiguration{},
-				"RAMPolicy":            &alitasks.RAMPolicy{},
-				"RAMRole":              &alitasks.RAMRole{},
-				"SSHKey":               &alitasks.SSHKey{},
-			})
 
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with ALICloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
@@ -499,23 +411,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			osCloud := cloud.(openstack.OpenstackCloud)
 			region = osCloud.Region()
-
-			l.AddTypes(map[string]interface{}{
-				// Compute
-				"sshKey":      &openstacktasks.SSHKey{},
-				"serverGroup": &openstacktasks.ServerGroup{},
-				"instance":    &openstacktasks.Instance{},
-				// Networking
-				"network":           &openstacktasks.Network{},
-				"subnet":            &openstacktasks.Subnet{},
-				"router":            &openstacktasks.Router{},
-				"securityGroup":     &openstacktasks.SecurityGroup{},
-				"securityGroupRule": &openstacktasks.SecurityGroupRule{},
-				// BlockStorage
-				"volume": &openstacktasks.Volume{},
-				// LB
-				"lb": &openstacktasks.LB{},
-			})
 
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
@@ -553,8 +448,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	l.Tags = clusterTags
-	l.WorkDir = c.OutDir
-	l.ModelStore = modelStore
 
 	var fileModels []string
 	for _, m := range c.Models {
