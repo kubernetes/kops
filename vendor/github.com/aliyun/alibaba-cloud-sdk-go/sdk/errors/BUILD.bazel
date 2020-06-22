@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client_error.go",
+        "error.go",
+        "server_error.go",
+        "signature_does_not_match_wrapper.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors",
+    importpath = "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils:go_default_library",
+        "//vendor/github.com/jmespath/go-jmespath:go_default_library",
+    ],
+)

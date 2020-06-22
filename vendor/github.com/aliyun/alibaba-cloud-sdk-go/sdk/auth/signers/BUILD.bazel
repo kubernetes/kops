@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "algorithms.go",
+        "credential_updater.go",
+        "session_credential.go",
+        "signer_access_key.go",
+        "signer_bearer_token.go",
+        "signer_ecs_ram_role.go",
+        "signer_key_pair.go",
+        "signer_ram_role_arn.go",
+        "signer_sts_token.go",
+        "signer_v2.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/signers",
+    importpath = "github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/signers",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses:go_default_library",
+        "//vendor/github.com/jmespath/go-jmespath:go_default_library",
+    ],
+)
