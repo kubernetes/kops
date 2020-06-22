@@ -1019,7 +1019,14 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	case "amazonvpc", "amazon-vpc-routed-eni":
 		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
 	case "cilium":
-		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{}
+		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{
+			EnableNodePort: true,
+		}
+		if cluster.Spec.KubeProxy == nil {
+			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+		}
+		enabled := false
+		cluster.Spec.KubeProxy.Enabled = &enabled
 	case "lyftvpc":
 		cluster.Spec.Networking.LyftVPC = &api.LyftVPCNetworkingSpec{}
 	case "gce":
