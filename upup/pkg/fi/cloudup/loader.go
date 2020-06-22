@@ -120,7 +120,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return fmt.Errorf("ignoreHandler not implemented")
 }
 
-func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(modelStore vfs.Path, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	// Second pass: load everything else
 	tw := &loader.TreeWalker{
 		DefaultHandler: l.objectHandler,
@@ -133,12 +133,10 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *
 		Tags: l.Tags,
 	}
 
-	for _, model := range models {
-		modelDir := modelStore.Join(model)
-		err := tw.Walk(modelDir)
-		if err != nil {
-			return nil, err
-		}
+	modelDir := modelStore.Join("cloudup")
+	err := tw.Walk(modelDir)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, builder := range l.Builders {
@@ -160,7 +158,7 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *
 	if err := l.addAssetFileCopyTasks(assetBuilder.FileAssets, lifecycle); err != nil {
 		return nil, err
 	}
-	err := l.processDeferrals()
+	err = l.processDeferrals()
 	if err != nil {
 		return nil, err
 	}

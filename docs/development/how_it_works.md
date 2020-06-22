@@ -65,7 +65,6 @@ A user can build a `cloudup.ApplyClusterCmd` defined [here](https://github.com/k
 ```go
 applyCmd := &cloudup.ApplyClusterCmd{
     Cluster:         cluster,
-    Models:          []string{"config", "proto", "cloudup"}, // ${GOPATH}/src/k8s.io/kops/upup/pkg/fi/cloudup/apply_cluster.go:52
     Clientset:       clientset,
     TargetName:      "target",                               // ${GOPATH}/src/k8s.io/kops/upup/pkg/fi/cloudup/target.go:19
     OutDir:          c.OutDir,
@@ -94,31 +93,18 @@ This is where we enter the **core** of `kops` logic. The starting point can be f
  
  **Note** As it stands the `FindVPCInfo()` function is a defined member of the interface. This is AWS only, and will eventually be pulled out of the interface. For now please implement the function as a no-op.
  
-#### d) Models
+#### d) The model
 
-A model is an evolution from the static YAML models in `kops v1.4`. There is a lot of improvements planned for these in the next major kops release. The models are indexed by a string. With the 3 primary models being 
+The model is what maps an ambiguous Cluster Spec (defined earlier) to **tasks**. Each **task** is a representation of an API request against a cloud.
+If you plan on implementing a new cloud, one option would be to define a new model context type, and build custom model builders for your cloud's objects.
 
-```
-config
-proto
-cloudup
-```
-
-Models are what map an ambiguous Cluster Spec (defined earlier) to **tasks**. Each **task** is a representation of an API request against a cloud. If you plan on implementing a new cloud, one option would be to define a new model, and build custom model code for your new model.
-
-The `cloudup` model is what is used to map a cluster spec with `cluster.Spec.CloudProvider` = `aws`. 
-
-**Note** this name is probably a misnomer, and is a reflection of the evolution of the `kops` core.
-
-The existing `cloudup` model code can be found [here](https://github.com/kubernetes/kops/tree/master/pkg/model). 
-
-**Note** that there is room here to redefine the directory structure based on models. EG: Moving these models into a new package, and renaming the model key.
+The existing model code can be found [here](https://github.com/kubernetes/kops/tree/master/pkg/model). 
 
 Once a model builder has been defined as in [here](https://github.com/kubernetes/kops/blob/master/upup/pkg/fi/cloudup/apply_cluster.go#L373) the code will automatically be called.
 
 From within the builder, we notice there is concrete logic for each builder. The logic will dictate which tasks need to be called in order to apply a resource to a cloud. The tasks are added by calling the `AddTask()` function as in [here](https://github.com/kubernetes/kops/blob/master/pkg/model/network.go#L69).
  
-Once the models have been parsed, all the tasks should have been set.
+Once the model builders have been called all the tasks should have been set.
 
 #### e) Tasks
 
