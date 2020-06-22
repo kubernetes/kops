@@ -19,7 +19,6 @@ package alimodel
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -106,28 +105,28 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(loadbalancerlistener)
 	}
 
-	// Create LoadBalancerWhiteList for API ELB
-	var loadbalancerwhiteList *alitasks.LoadBalancerWhiteList
+	// Allow traffic into the SLB from KubernetesAPIAccess CIDRs
+	var loadBalancerACL *alitasks.LoadBalancerACL
 	{
 
-		sourceItems := ""
-		var cidrs []string
+		var cidrs []*string
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 			if cidr != "0.0.0.0" && cidr != "0.0.0.0/0" {
-				cidrs = append(cidrs, cidr)
+				cc := cidr
+				cidrs = append(cidrs, &cc)
 			}
 		}
-		sourceItems = strings.Join(cidrs, ",")
 
-		loadbalancerwhiteList = &alitasks.LoadBalancerWhiteList{
-			Name:                 s("api." + b.ClusterName()),
-			Lifecycle:            b.Lifecycle,
-			LoadBalancer:         loadbalancer,
-			LoadBalancerListener: loadbalancerlistener,
-			SourceItems:          s(sourceItems),
+		if len(cidrs) != 0 {
+			loadBalancerACL = &alitasks.LoadBalancerACL{
+				Name:                 s("api." + b.ClusterName()),
+				Lifecycle:            b.Lifecycle,
+				LoadBalancer:         loadbalancer,
+				LoadBalancerListener: loadbalancerlistener,
+				SourceItems:          cidrs,
+			}
+			c.AddTask(loadBalancerACL)
 		}
-		c.AddTask(loadbalancerwhiteList)
-
 	}
 
 	// Temporarily do not know the role of the following function

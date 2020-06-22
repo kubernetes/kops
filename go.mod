@@ -54,6 +54,7 @@ require (
 	github.com/Masterminds/semver v1.3.1 // indirect
 	github.com/Masterminds/sprig v2.17.1+incompatible
 	github.com/Microsoft/go-winio v0.4.14 // indirect
+	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.30.16
 	github.com/bazelbuild/bazel-gazelle v0.19.1

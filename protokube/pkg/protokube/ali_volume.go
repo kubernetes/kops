@@ -47,8 +47,8 @@ type ALIVolumes struct {
 var _ Volumes = &ALIVolumes{}
 
 func NewALIVolumes() (*ALIVolumes, error) {
-	accessKeyId := os.Getenv("ALIYUN_ACCESS_KEY_ID")
-	if accessKeyId == "" {
+	accessKeyID := os.Getenv("ALIYUN_ACCESS_KEY_ID")
+	if accessKeyID == "" {
 		return nil, fmt.Errorf("error initialing ALIVolumes: ALIYUN_ACCESS_KEY_ID cannot be empty")
 	}
 	accessKeySecret := os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
@@ -61,7 +61,7 @@ func NewALIVolumes() (*ALIVolumes, error) {
 		ecsEndpoint = ecs.ECSDefaultEndpoint
 	}
 
-	client := ecs.NewClientWithEndpoint(ecsEndpoint, accessKeyId, accessKeySecret)
+	client := ecs.NewClientWithEndpoint(ecsEndpoint, accessKeyID, accessKeySecret)
 	a := &ALIVolumes{
 		client: client,
 	}

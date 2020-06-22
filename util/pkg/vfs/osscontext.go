@@ -28,7 +28,7 @@ import (
 type aliyunOSSConfig struct {
 	region          oss.Region
 	internal        bool
-	accessKeyId     string
+	accessKeyID     string
 	accessKeySecret string
 	securityToken   string
 	secure          bool
@@ -53,10 +53,10 @@ func NewAliOSSClient() (*oss.Client, error) {
 	}
 
 	if c.securityToken != "" {
-		return oss.NewOSSClientForAssumeRole(c.region, c.internal, c.accessKeyId, c.accessKeySecret, c.securityToken, c.secure), nil
+		return oss.NewOSSClientForAssumeRole(c.region, c.internal, c.accessKeyID, c.accessKeySecret, c.securityToken, c.secure), nil
 	}
 
-	return oss.NewOSSClient(c.region, c.internal, c.accessKeyId, c.accessKeySecret, c.secure), nil
+	return oss.NewOSSClient(c.region, c.internal, c.accessKeyID, c.accessKeySecret, c.secure), nil
 }
 
 func (c *aliyunOSSConfig) loadConfig() error {
@@ -71,8 +71,8 @@ func (c *aliyunOSSConfig) loadConfig() error {
 		c.region = oss.Region(fmt.Sprintf("oss-%s", region))
 	}
 
-	c.accessKeyId = os.Getenv("ALIYUN_ACCESS_KEY_ID")
-	if c.accessKeyId != "" {
+	c.accessKeyID = os.Getenv("ALIYUN_ACCESS_KEY_ID")
+	if c.accessKeyID != "" {
 		c.accessKeySecret = os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
 		if c.accessKeySecret == "" {
 			return fmt.Errorf("ALIYUN_ACCESS_KEY_SECRET cannot be empty")
@@ -87,7 +87,7 @@ func (c *aliyunOSSConfig) loadConfig() error {
 		if err != nil {
 			return fmt.Errorf("Can't get role token: %s", err)
 		}
-		c.accessKeyId = roleAuth.AccessKeyId
+		c.accessKeyID = roleAuth.AccessKeyId
 		c.accessKeySecret = roleAuth.AccessKeySecret
 		c.securityToken = roleAuth.SecurityToken
 	}

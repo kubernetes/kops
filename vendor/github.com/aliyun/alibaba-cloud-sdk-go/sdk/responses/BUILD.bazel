@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "json_parser.go",
+        "response.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses",
+    importpath = "github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors:go_default_library",
+        "//vendor/github.com/json-iterator/go:go_default_library",
+        "//vendor/github.com/modern-go/reflect2:go_default_library",
+    ],
+)
