@@ -24,6 +24,9 @@ import (
 
 	"k8s.io/klog"
 
+	alicloud "github.com/aliyun/alibaba-cloud-sdk-go/sdk"
+	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
+	slbnew "github.com/aliyun/alibaba-cloud-sdk-go/services/slb"
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 	"github.com/denverdino/aliyungo/ess"
@@ -50,6 +53,12 @@ var KubernetesKopsIdentity = fmt.Sprintf("Kubernetes.Kops/%s", prj.Version)
 type ALICloud interface {
 	fi.Cloud
 
+	// Clients that use official Alicloud go sdk
+	SLB() *slbnew.Client
+
+	// Since package github.com/denverdino/aliyungo is not actively maintained,
+	// clients that use github.com/denverdino/aliyungo, will be deprecated after
+	// the above official SDK clients covers all of them
 	EcsClient() *ecs.Client
 	SlbClient() *slb.Client
 	RamClient() *ram.RamClient
@@ -66,6 +75,8 @@ type ALICloud interface {
 }
 
 type aliCloudImplementation struct {
+	slb *slbnew.Client
+
 	ecsClient *ecs.Client
 	slbClient *slb.Client
 	ramClient *ram.RamClient
@@ -84,8 +95,8 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 
 	c := &aliCloudImplementation{region: region}
 
-	accessKeyId := os.Getenv("ALIYUN_ACCESS_KEY_ID")
-	if accessKeyId == "" {
+	accessKeyID := os.Getenv("ALIYUN_ACCESS_KEY_ID")
+	if accessKeyID == "" {
 		return nil, errors.New("ALIYUN_ACCESS_KEY_ID is required")
 	}
 	accessKeySecret := os.Getenv("ALIYUN_ACCESS_KEY_SECRET")
@@ -93,19 +104,34 @@ func NewALICloud(region string, tags map[string]string) (ALICloud, error) {
 		return nil, errors.New("ALIYUN_ACCESS_KEY_SECRET is required")
 	}
 
-	c.ecsClient = ecs.NewClient(accessKeyId, accessKeySecret)
+	c.ecsClient = ecs.NewClient(accessKeyID, accessKeySecret)
 	c.ecsClient.SetUserAgent(KubernetesKopsIdentity)
-	c.slbClient = slb.NewClient(accessKeyId, accessKeySecret)
-	ramclient := ram.NewClient(accessKeyId, accessKeySecret)
+	c.slbClient = slb.NewClient(accessKeyID, accessKeySecret)
+	ramclient := ram.NewClient(accessKeyID, accessKeySecret)
 	c.ramClient = ramclient.(*ram.RamClient)
-	c.essClient = ess.NewClient(accessKeyId, accessKeySecret)
-	c.vpcClient = ecs.NewVPCClient(accessKeyId, accessKeySecret, common.Region(region))
-
+	c.essClient = ess.NewClient(accessKeyID, accessKeySecret)
+	c.vpcClient = ecs.NewVPCClient(accessKeyID, accessKeySecret, common.Region(region))
 	c.tags = tags
+
+	// With Alicloud official go SDK
+	var err error
+
+	config := alicloud.NewConfig()
+	credential := credentials.NewAccessKeyCredential(accessKeyID, accessKeySecret)
+
+	c.slb, err = slbnew.NewClientWithOptions(region, config, credential)
+	if err != nil {
+		return nil, fmt.Errorf("error creating slb sdk client: %v", err)
+	}
 
 	return c, nil
 }
 
+func (c *aliCloudImplementation) SLB() *slbnew.Client {
+	return c.slb
+}
+
+// Clients as below are with github.com/denverdino/aliyungo
 func (c *aliCloudImplementation) EcsClient() *ecs.Client {
 	return c.ecsClient
 }

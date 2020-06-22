@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api_timeout.go",
+        "client.go",
+        "config.go",
+        "logger.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk",
+    importpath = "github.com/aliyun/alibaba-cloud-sdk-go/sdk",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials/provider:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/endpoints:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses:go_default_library",
+        "//vendor/github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils:go_default_library",
+    ],
+)
