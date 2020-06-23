@@ -29,6 +29,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/blang/semver"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -40,6 +41,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	version "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands"
@@ -1019,14 +1021,27 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	case "amazonvpc", "amazon-vpc-routed-eni":
 		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
 	case "cilium":
-		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{
-			EnableNodePort: true,
+		cilium := &api.CiliumNetworkingSpec{}
+		cluster.Spec.Networking.Cilium = cilium
+		nodeport := false
+		if c.KubernetesVersion == "" {
+			nodeport = true
+		} else {
+			k8sVersion, err := semver.ParseTolerant(c.KubernetesVersion)
+			if err == nil {
+				if version.IsKubernetesGTE("1.12", k8sVersion) {
+					nodeport = true
+				}
+			}
 		}
-		if cluster.Spec.KubeProxy == nil {
-			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+		if nodeport {
+			cilium.EnableNodePort = true
+			if cluster.Spec.KubeProxy == nil {
+				cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+			}
+			enabled := false
+			cluster.Spec.KubeProxy.Enabled = &enabled
 		}
-		enabled := false
-		cluster.Spec.KubeProxy.Enabled = &enabled
 	case "lyftvpc":
 		cluster.Spec.Networking.LyftVPC = &api.LyftVPCNetworkingSpec{}
 	case "gce":
