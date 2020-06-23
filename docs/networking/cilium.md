@@ -64,7 +64,7 @@ Then enable etcd as kvstore:
 
 ### Enabling BPF NodePort
 
-As of kops 1.19, BPF NodePort is enabled by default for new clusters. It can be safely enabled as of kops 1.18.
+As of kops 1.19, BPF NodePort is enabled by default for new clusters if the kubernetes version is 1.12 or newer. It can be safely enabled as of kops 1.18.
 
 In this mode, the cluster is fully functional without kube-proxy, with Cilium replacing kube-proxy's NodePort implementation using BPF.
 Read more about this in the [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/nodeport/)
