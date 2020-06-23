@@ -12,6 +12,8 @@ spec:
   selector:
     matchLabels:
       k8s-app: dns-controller
+  strategy:
+    type: Recreate
   template:
     metadata:
       annotations:
