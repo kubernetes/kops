@@ -56,6 +56,7 @@ require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aokoli/goutils v1.0.1 // indirect
+	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
 	github.com/aws/aws-sdk-go v1.33.13
 	github.com/bazelbuild/bazel-gazelle v0.19.1
 	github.com/blang/semver/v4 v4.0.0
@@ -88,7 +89,7 @@ require (
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v1.0.0
 	github.com/sergi/go-diff v1.0.0
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v0.0.7
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/spotinst/spotinst-sdk-go v1.56.0
