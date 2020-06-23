@@ -119,7 +119,7 @@ spec:
           - --logtostderr=true
           - --v=2
       nodeSelector:
-        kubernetes.io/arch: amd64
+        kubernetes.io/role: master
       priorityClassName: system-cluster-critical
       tolerations:
       - key: "CriticalAddonsOnly"
