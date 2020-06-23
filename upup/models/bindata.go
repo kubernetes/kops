@@ -1913,6 +1913,8 @@ metadata:
     version: v1.18.0-alpha.3
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       k8s-app: dns-controller
