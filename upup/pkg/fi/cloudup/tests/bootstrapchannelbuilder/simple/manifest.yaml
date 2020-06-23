@@ -21,7 +21,7 @@ spec:
   - id: k8s-1.6
     kubernetesVersion: <1.12.0
     manifest: kube-dns.addons.k8s.io/k8s-1.6.yaml
-    manifestHash: 7778a47fa6bda0bae9e0eeea1593a117a9b8bba4
+    manifestHash: 9fd3af6ffc7eb38e9e4d65326eff859dbe188be6
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
@@ -29,7 +29,7 @@ spec:
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: kube-dns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: c1d396ba1997d0eb54586cc14da24fb07548e215
+    manifestHash: 5542a0a05fb3bf378d7aebebf0f5dcf2c4b2071e
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
