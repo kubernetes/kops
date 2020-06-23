@@ -1281,7 +1281,7 @@ spec:
           - --logtostderr=true
           - --v=2
       nodeSelector:
-        kubernetes.io/arch: amd64
+        kubernetes.io/role: master
       priorityClassName: system-cluster-critical
       tolerations:
       - key: "CriticalAddonsOnly"
@@ -2706,7 +2706,7 @@ spec:
           - --logtostderr=true
           - --v=2
       nodeSelector:
-        kubernetes.io/arch: amd64
+        kubernetes.io/role: master
       priorityClassName: system-cluster-critical
       tolerations:
       - key: "CriticalAddonsOnly"
@@ -3062,9 +3062,13 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
+      nodeSelector:
+        kubernetes.io/role: master
       tolerations:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
+      - key: node-role.kubernetes.io/master
+        operator: Exists
       serviceAccountName: kube-dns-autoscaler
 
 ---
