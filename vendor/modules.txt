@@ -61,6 +61,12 @@ github.com/aokoli/goutils
 github.com/apparentlymart/go-textseg/textseg
 # github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
 github.com/armon/go-metrics
+# github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
+## explicit
+github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity
+github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli
+github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
+github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
 # github.com/aws/aws-sdk-go v1.33.13
 ## explicit
 github.com/aws/aws-sdk-go/aws
@@ -168,8 +174,8 @@ github.com/coreos/etcd/pkg/types
 github.com/coreos/etcd/version
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
-# github.com/cpuguy83/go-md2man v1.0.10
-github.com/cpuguy83/go-md2man/md2man
+# github.com/cpuguy83/go-md2man/v2 v2.0.0
+github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
@@ -479,6 +485,8 @@ github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 # github.com/russross/blackfriday v1.5.2
 github.com/russross/blackfriday
+# github.com/russross/blackfriday/v2 v2.0.1
+github.com/russross/blackfriday/v2
 # github.com/ryanuber/go-glob v1.0.0
 github.com/ryanuber/go-glob
 # github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529
@@ -486,6 +494,8 @@ github.com/sean-/seed
 # github.com/sergi/go-diff v1.0.0
 ## explicit
 github.com/sergi/go-diff/diffmatchpatch
+# github.com/shurcooL/sanitized_anchor_name v1.0.0
+github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.2
@@ -493,7 +503,7 @@ github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
 github.com/spf13/cast
-# github.com/spf13/cobra v0.0.5
+# github.com/spf13/cobra v0.0.7
 ## explicit
 github.com/spf13/cobra
 github.com/spf13/cobra/doc
@@ -786,7 +796,7 @@ gopkg.in/gcfg.v1/types
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
-# gopkg.in/ini.v1 v1.51.0
+# gopkg.in/ini.v1 v1.57.0
 gopkg.in/ini.v1
 # gopkg.in/square/go-jose.v2 v2.3.1
 gopkg.in/square/go-jose.v2
