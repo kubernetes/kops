@@ -676,10 +676,6 @@ bazel-crossbuild-protokube:
 bazel-crossbuild-protokube-image:
 	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
 
-.PHONY: bazel-crossbuild-kube-discovery-image
-bazel-crossbuild-kube-discovery-image:
-	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:kube-discovery.tar
-
 .PHONY: bazel-crossbuild-node-authorizer-image
 bazel-crossbuild-node-authorizer-image:
 	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
@@ -720,13 +716,6 @@ check-markdown-links:
 		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v Changelog.md)
 
 #-----------------------------------------------------------
-# kube-discovery
-
-.PHONY: push-kube-discovery
-push-kube-discovery:
-	bazel run ${BAZEL_CONFIG} //kube-discovery/images:kube-discovery
-	docker tag bazel/kube-discovery/images:kube-discovery ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
-	docker push ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
 
 .PHONY: push-node-authorizer
 push-node-authorizer:
