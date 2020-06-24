@@ -15194,6 +15194,9 @@ const (
 	// CloudWatchRegionAfSouth1 is a CloudWatchRegion enum value
 	CloudWatchRegionAfSouth1 = "af-south-1"
 
+	// CloudWatchRegionEuSouth1 is a CloudWatchRegion enum value
+	CloudWatchRegionEuSouth1 = "eu-south-1"
+
 	// CloudWatchRegionUsGovWest1 is a CloudWatchRegion enum value
 	CloudWatchRegionUsGovWest1 = "us-gov-west-1"
 
@@ -15415,6 +15418,9 @@ const (
 
 	// ResourceRecordSetRegionAfSouth1 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionAfSouth1 = "af-south-1"
+
+	// ResourceRecordSetRegionEuSouth1 is a ResourceRecordSetRegion enum value
+	ResourceRecordSetRegionEuSouth1 = "eu-south-1"
 )
 
 const (
@@ -15522,4 +15528,7 @@ const (
 
 	// VPCRegionAfSouth1 is a VPCRegion enum value
 	VPCRegionAfSouth1 = "af-south-1"
+
+	// VPCRegionEuSouth1 is a VPCRegion enum value
+	VPCRegionEuSouth1 = "eu-south-1"
 )

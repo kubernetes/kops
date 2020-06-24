@@ -5326,8 +5326,8 @@ func (c *IAM) GenerateServiceLastAccessedDetailsRequest(input *GenerateServiceLa
 // see Evaluating Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-basics)
 // in the IAM User Guide.
 //
-// For more information about service last accessed data, see Reducing Policy
-// Scope by Viewing User Activity (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html)
+// For more information about service and action last accessed data, see Reducing
+// Permissions Using Service Last Accessed Data (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html)
 // in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -7409,6 +7409,15 @@ func (c *IAM) GetServiceLastAccessedDetailsRequest(input *GetServiceLastAccessed
 //    to attempt to access the service
 //
 // By default, the list is sorted by service namespace.
+//
+// If you specified ACTION_LEVEL granularity when you generated the report,
+// this operation returns service and action last accessed data. This includes
+// the most recent access attempt for each tracked action within a service.
+// Otherwise, this operation returns only service data.
+//
+// For more information about service and action last accessed data, see Reducing
+// Permissions Using Service Last Accessed Data (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html)
+// in the IAM User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -20346,6 +20355,14 @@ type GenerateServiceLastAccessedDetailsInput struct {
 	//
 	// Arn is a required field
 	Arn *string `min:"20" type:"string" required:"true"`
+
+	// The level of detail that you want to generate. You can specify whether you
+	// want to generate information about the last attempt to access services or
+	// actions. If you specify service-level granularity, this operation generates
+	// only service data. If you specify action-level granularity, it generates
+	// service and action data. If you don't include this optional parameter, the
+	// operation generates service data.
+	Granularity *string `type:"string" enum:"AccessAdvisorUsageGranularityType"`
 }
 
 // String returns the string representation
@@ -20377,6 +20394,12 @@ func (s *GenerateServiceLastAccessedDetailsInput) Validate() error {
 // SetArn sets the Arn field's value.
 func (s *GenerateServiceLastAccessedDetailsInput) SetArn(v string) *GenerateServiceLastAccessedDetailsInput {
 	s.Arn = &v
+	return s
+}
+
+// SetGranularity sets the Granularity field's value.
+func (s *GenerateServiceLastAccessedDetailsInput) SetGranularity(v string) *GenerateServiceLastAccessedDetailsInput {
+	s.Granularity = &v
 	return s
 }
 
@@ -22358,6 +22381,11 @@ type GetServiceLastAccessedDetailsOutput struct {
 	// JobStatus is a required field
 	JobStatus *string `type:"string" required:"true" enum:"JobStatusType"`
 
+	// The type of job. Service jobs return information about when each service
+	// was last accessed. Action jobs also include information about when tracked
+	// actions within the service were last accessed.
+	JobType *string `type:"string" enum:"AccessAdvisorUsageGranularityType"`
+
 	// When IsTruncated is true, this element is present and contains the value
 	// to use for the Marker parameter in a subsequent pagination request.
 	Marker *string `type:"string"`
@@ -22406,6 +22434,12 @@ func (s *GetServiceLastAccessedDetailsOutput) SetJobCreationDate(v time.Time) *G
 // SetJobStatus sets the JobStatus field's value.
 func (s *GetServiceLastAccessedDetailsOutput) SetJobStatus(v string) *GetServiceLastAccessedDetailsOutput {
 	s.JobStatus = &v
+	return s
+}
+
+// SetJobType sets the JobType field's value.
+func (s *GetServiceLastAccessedDetailsOutput) SetJobType(v string) *GetServiceLastAccessedDetailsOutput {
+	s.JobType = &v
 	return s
 }
 
@@ -29462,6 +29496,13 @@ type ServiceLastAccessed struct {
 	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	LastAuthenticatedEntity *string `min:"20" type:"string"`
 
+	// The Region from which the authenticated entity (user or role) last attempted
+	// to access the service. AWS does not report unauthenticated requests.
+	//
+	// This field is null if no IAM entities attempted to access the service within
+	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	LastAuthenticatedRegion *string `type:"string"`
+
 	// The name of the service in which access was attempted.
 	//
 	// ServiceName is a required field
@@ -29486,6 +29527,16 @@ type ServiceLastAccessed struct {
 	// This field is null if no principals attempted to access the service within
 	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
 	TotalAuthenticatedEntities *int64 `type:"integer"`
+
+	// An object that contains details about the most recent attempt to access a
+	// tracked action within the service.
+	//
+	// This field is null if there no tracked actions or if the principal did not
+	// use the tracked actions within the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	// This field is also null if the report was generated at the service level
+	// and not the action level. For more information, see the Granularity field
+	// in GenerateServiceLastAccessedDetails.
+	TrackedActionsLastAccessed []*TrackedActionLastAccessed `type:"list"`
 }
 
 // String returns the string representation
@@ -29510,6 +29561,12 @@ func (s *ServiceLastAccessed) SetLastAuthenticatedEntity(v string) *ServiceLastA
 	return s
 }
 
+// SetLastAuthenticatedRegion sets the LastAuthenticatedRegion field's value.
+func (s *ServiceLastAccessed) SetLastAuthenticatedRegion(v string) *ServiceLastAccessed {
+	s.LastAuthenticatedRegion = &v
+	return s
+}
+
 // SetServiceName sets the ServiceName field's value.
 func (s *ServiceLastAccessed) SetServiceName(v string) *ServiceLastAccessed {
 	s.ServiceName = &v
@@ -29525,6 +29582,12 @@ func (s *ServiceLastAccessed) SetServiceNamespace(v string) *ServiceLastAccessed
 // SetTotalAuthenticatedEntities sets the TotalAuthenticatedEntities field's value.
 func (s *ServiceLastAccessed) SetTotalAuthenticatedEntities(v int64) *ServiceLastAccessed {
 	s.TotalAuthenticatedEntities = &v
+	return s
+}
+
+// SetTrackedActionsLastAccessed sets the TrackedActionsLastAccessed field's value.
+func (s *ServiceLastAccessed) SetTrackedActionsLastAccessed(v []*TrackedActionLastAccessed) *ServiceLastAccessed {
+	s.TrackedActionsLastAccessed = v
 	return s
 }
 
@@ -30313,7 +30376,7 @@ type SimulatePrincipalPolicyInput struct {
 	// one permissions boundary when you pass a policy to this operation. An IAM
 	// entity can only have one permissions boundary in effect at a time. For example,
 	// if a permissions boundary is attached to an entity and you pass in a different
-	// permissions boundary policy using this parameter, then the new permission
+	// permissions boundary policy using this parameter, then the new permissions
 	// boundary policy is used for the simulation. For more information about permissions
 	// boundaries, see Permissions Boundaries for IAM Entities (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html)
 	// in the IAM User Guide. The policy input is specified as a string containing
@@ -30855,6 +30918,75 @@ func (s TagUserOutput) String() string {
 // GoString returns the string representation
 func (s TagUserOutput) GoString() string {
 	return s.String()
+}
+
+// Contains details about the most recent attempt to access an action within
+// the service.
+//
+// This data type is used as a response element in the GetServiceLastAccessedDetails
+// operation.
+type TrackedActionLastAccessed struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the tracked action to which access was attempted. Tracked actions
+	// are actions that report activity to IAM.
+	ActionName *string `type:"string"`
+
+	// The Amazon Resource Name (ARN). ARNs are unique identifiers for AWS resources.
+	//
+	// For more information about ARNs, go to Amazon Resource Names (ARNs) and AWS
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the AWS General Reference.
+	LastAccessedEntity *string `min:"20" type:"string"`
+
+	// The Region from which the authenticated entity (user or role) last attempted
+	// to access the tracked action. AWS does not report unauthenticated requests.
+	//
+	// This field is null if no IAM entities attempted to access the service within
+	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	LastAccessedRegion *string `type:"string"`
+
+	// The date and time, in ISO 8601 date-time format (http://www.iso.org/iso/iso8601),
+	// when an authenticated entity most recently attempted to access the tracked
+	// service. AWS does not report unauthenticated requests.
+	//
+	// This field is null if no IAM entities attempted to access the service within
+	// the reporting period (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period).
+	LastAccessedTime *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation
+func (s TrackedActionLastAccessed) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TrackedActionLastAccessed) GoString() string {
+	return s.String()
+}
+
+// SetActionName sets the ActionName field's value.
+func (s *TrackedActionLastAccessed) SetActionName(v string) *TrackedActionLastAccessed {
+	s.ActionName = &v
+	return s
+}
+
+// SetLastAccessedEntity sets the LastAccessedEntity field's value.
+func (s *TrackedActionLastAccessed) SetLastAccessedEntity(v string) *TrackedActionLastAccessed {
+	s.LastAccessedEntity = &v
+	return s
+}
+
+// SetLastAccessedRegion sets the LastAccessedRegion field's value.
+func (s *TrackedActionLastAccessed) SetLastAccessedRegion(v string) *TrackedActionLastAccessed {
+	s.LastAccessedRegion = &v
+	return s
+}
+
+// SetLastAccessedTime sets the LastAccessedTime field's value.
+func (s *TrackedActionLastAccessed) SetLastAccessedTime(v time.Time) *TrackedActionLastAccessed {
+	s.LastAccessedTime = &v
+	return s
 }
 
 type UntagRoleInput struct {
@@ -33065,6 +33197,14 @@ func (s *VirtualMFADevice) SetUser(v *User) *VirtualMFADevice {
 	s.User = v
 	return s
 }
+
+const (
+	// AccessAdvisorUsageGranularityTypeServiceLevel is a AccessAdvisorUsageGranularityType enum value
+	AccessAdvisorUsageGranularityTypeServiceLevel = "SERVICE_LEVEL"
+
+	// AccessAdvisorUsageGranularityTypeActionLevel is a AccessAdvisorUsageGranularityType enum value
+	AccessAdvisorUsageGranularityTypeActionLevel = "ACTION_LEVEL"
+)
 
 const (
 	// AssignmentStatusTypeAssigned is a AssignmentStatusType enum value

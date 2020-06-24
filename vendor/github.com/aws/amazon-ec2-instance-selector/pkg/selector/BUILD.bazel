@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "aggregates.go",
+        "comparators.go",
+        "selector.go",
+        "types.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aws/amazon-ec2-instance-selector/pkg/selector",
+    importpath = "github.com/aws/amazon-ec2-instance-selector/pkg/selector",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/amazon-ec2-instance-selector/pkg/selector/outputs:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2/ec2iface:go_default_library",
+    ],
+)
