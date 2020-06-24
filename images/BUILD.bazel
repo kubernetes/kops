@@ -70,16 +70,6 @@ hashes(
 )
 
 container_image(
-    name = "kube-discovery",
-    base = "@debian_hyperkube_base_amd64//image",
-    cmd = ["/usr/bin/kube-discovery"],
-    directory = "/usr/bin/",
-    files = [
-        "//kube-discovery/cmd/kube-discovery",
-    ],
-)
-
-container_image(
     name = "kops-controller",
     base = "@distroless_base//image",
     cmd = ["/usr/bin/kops-controller"],

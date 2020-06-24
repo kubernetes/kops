@@ -33,7 +33,6 @@ k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate
 k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype
 k8s.io/kops/dnsprovider/pkg/dnsprovider/tests
 k8s.io/kops/examples/kops-api-example
-k8s.io/kops/kube-discovery/cmd/kube-discovery
 k8s.io/kops/node-authorizer/cmd/node-authorizer
 k8s.io/kops/node-authorizer/pkg/authorizers/alwaysallow
 k8s.io/kops/node-authorizer/pkg/authorizers/aws
