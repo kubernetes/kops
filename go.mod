@@ -84,7 +84,6 @@ require (
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
-	github.com/miekg/dns v1.1.16
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v1.0.0
