@@ -59,7 +59,6 @@ func makeHTTPClient(config *Config) (*http.Client, error) {
 		}
 		tlsConfig.Certificates = []tls.Certificate{certs}
 	}
-	tlsConfig.BuildNameToCertificate()
 
 	return &http.Client{
 		Timeout: 10 * time.Second,
