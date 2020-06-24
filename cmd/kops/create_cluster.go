@@ -36,7 +36,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
-	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -411,11 +410,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return fmt.Errorf("unable to execute --dry-run without setting --output")
 	}
 
-	clusterName := c.ClusterName
-	if clusterName == "" {
-		return fmt.Errorf("--name is required")
-	}
-
 	// TODO: Reuse rootCommand stateStore logic?
 
 	if c.OutDir == "" {
@@ -433,7 +427,16 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(ctx, clusterName)
+	options := &cloudup.NewClusterOptions{
+		Name:    c.ClusterName,
+		Channel: c.Channel,
+	}
+
+	if options.Name == "" {
+		return fmt.Errorf("--name is required")
+	}
+
+	cluster, err := clientset.GetCluster(ctx, options.Name)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			cluster = nil
@@ -443,26 +446,16 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if cluster != nil {
-		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", clusterName)
+		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", options.Name)
 	}
 
-	cluster = &api.Cluster{}
-	cluster.ObjectMeta.Name = clusterName
-
-	channel, err := api.LoadChannel(c.Channel)
+	clusterResult, err := cloudup.NewCluster(options)
 	if err != nil {
 		return err
 	}
 
-	if channel.Spec.Cluster != nil {
-		cluster.Spec = *channel.Spec.Cluster
-
-		kubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
-		if kubernetesVersion != nil {
-			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
-		}
-	}
-	cluster.Spec.Channel = c.Channel
+	// TODO: push more of the following logic into cloudup.NewCluster()
+	cluster = clusterResult.Cluster
 
 	cluster.Spec.ConfigBase = c.ConfigBase
 	configBase, err := clientset.ConfigBaseFor(cluster)
@@ -1124,9 +1117,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			bastionGroup.Spec.Image = c.Image
 			instanceGroups = append(instanceGroups, bastionGroup)
 
-			if !dns.IsGossipHostname(clusterName) {
+			if !dns.IsGossipHostname(cluster.Name) {
 				cluster.Spec.Topology.Bastion = &api.BastionSpec{
-					BastionPublicName: "bastion." + clusterName,
+					BastionPublicName: "bastion." + cluster.Name,
 				}
 			}
 		}
@@ -1263,7 +1256,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	var fullInstanceGroups []*api.InstanceGroup
 	for _, group := range instanceGroups {
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, channel)
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, clusterResult.Channel)
 		if err != nil {
 			return err
 		}
@@ -1375,7 +1368,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
 		//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
 
-		_, err := RunUpdateCluster(ctx, f, clusterName, out, updateClusterOptions)
+		_, err := RunUpdateCluster(ctx, f, cluster.Name, out, updateClusterOptions)
 		if err != nil {
 			return err
 		}
@@ -1387,15 +1380,15 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			fmt.Fprintf(&sb, "\n")
 			fmt.Fprintf(&sb, "Suggestions:\n")
 			fmt.Fprintf(&sb, " * list clusters with: kops get cluster\n")
-			fmt.Fprintf(&sb, " * edit this cluster with: kops edit cluster %s\n", clusterName)
+			fmt.Fprintf(&sb, " * edit this cluster with: kops edit cluster %s\n", cluster.Name)
 			if len(nodes) > 0 {
-				fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].ObjectMeta.Name)
+				fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", cluster.Name, nodes[0].ObjectMeta.Name)
 			}
 			if len(masters) > 0 {
-				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
+				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", cluster.Name, masters[0].ObjectMeta.Name)
 			}
 			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes\n", cluster.Name)
 			fmt.Fprintf(&sb, "\n")
 
 			_, err := out.Write(sb.Bytes())
