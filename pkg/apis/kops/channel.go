@@ -84,6 +84,10 @@ type ChannelImageSpec struct {
 
 // LoadChannel loads a Channel object from the specified VFS location
 func LoadChannel(location string) (*Channel, error) {
+	if location == "none" {
+		return &Channel{}, nil
+	}
+
 	u, err := url.Parse(location)
 	if err != nil {
 		return nil, fmt.Errorf("invalid channel: %q", location)
