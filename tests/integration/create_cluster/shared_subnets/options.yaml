@@ -2,7 +2,7 @@ ClusterName: subnet.example.com
 Zones:
 - us-test-1a
 CloudProvider: aws
-VPCID: vpc-12345678
+NetworkID: vpc-12345678
 SubnetIDs:
 - subnet-1
 KubernetesVersion: v1.15.6
