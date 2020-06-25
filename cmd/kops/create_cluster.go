@@ -63,9 +63,6 @@ type CreateClusterOptions struct {
 	cloudup.NewClusterOptions
 	Yes                  bool
 	Target               string
-	Cloud                string
-	Zones                []string
-	MasterZones          []string
 	NodeSize             string
 	MasterSize           string
 	MasterCount          int32
@@ -273,7 +270,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "A cluster-readable location where we mirror configuration information, separate from the state store.  Allows for a state store that is not accessible from the cluster.")
 	}
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, openstack")
+	cmd.Flags().StringVar(&options.CloudProvider, "cloud", options.CloudProvider, "Cloud provider to use - gce, aws, openstack")
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
@@ -435,14 +432,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	// TODO: push more of the following logic into cloudup.NewCluster()
 	cluster = clusterResult.Cluster
-
-	if c.Cloud != "" {
-		cluster.Spec.CloudProvider = c.Cloud
-	}
-
-	allZones := sets.NewString()
-	allZones.Insert(c.Zones...)
-	allZones.Insert(c.MasterZones...)
+	channel := clusterResult.Channel
+	allZones := clusterResult.AllZones
 
 	if c.VPCID != "" {
 		cluster.Spec.NetworkID = c.VPCID
@@ -505,23 +496,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 		if c.OpenstackExternalSubnet != "" {
 			cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
-		}
-	}
-
-	if cluster.Spec.CloudProvider == "" {
-		for _, zone := range allZones.List() {
-			cloud, known := fi.GuessCloudForZone(zone)
-			if known {
-				klog.Infof("Inferred --cloud=%s from zone %q", cloud, zone)
-				cluster.Spec.CloudProvider = string(cloud)
-				break
-			}
-		}
-		if cluster.Spec.CloudProvider == "" {
-			if allZones.Len() == 0 {
-				return fmt.Errorf("must specify --zones or --cloud")
-			}
-			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
 		}
 	}
 
@@ -881,7 +855,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.DNSZone = c.DNSZone
 	}
 
-	if c.Cloud != "" {
+	if c.CloudProvider != "" {
 		if featureflag.Spotinst.Enabled() {
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
@@ -1153,7 +1127,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.API = &api.AccessSpec{}
 	}
 	if cluster.Spec.API.IsEmpty() {
-		if c.Cloud == "openstack" {
+		if c.CloudProvider == "openstack" {
 			initializeOpenstackAPI(c, cluster)
 		} else if c.APILoadBalancerType != "" {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
@@ -1238,7 +1212,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	var fullInstanceGroups []*api.InstanceGroup
 	for _, group := range instanceGroups {
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, clusterResult.Channel)
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, channel)
 		if err != nil {
 			return err
 		}
@@ -1297,7 +1271,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if len(c.SSHPublicKeys) == 0 {
 		autoloadSSHPublicKeys := true
-		switch c.Cloud {
+		switch c.CloudProvider {
 		case "gce":
 			// We don't normally use SSH keys on GCE
 			autoloadSSHPublicKeys = false

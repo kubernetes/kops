@@ -3,5 +3,5 @@ Zones:
 - us-test-1a
 - us-test-1b
 MasterCount: 5
-Cloud: aws
+CloudProvider: aws
 KubernetesVersion: v1.15.6

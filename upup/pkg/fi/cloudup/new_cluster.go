@@ -21,9 +21,12 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
@@ -39,8 +42,14 @@ type NewClusterOptions struct {
 	Authorization string
 	// Channel is a channel location for initializing the cluster. It defaults to "stable".
 	Channel string
+	// CloudProvider is the name of the cloud provider. The default is to guess based on the Zones name.
+	CloudProvider string
 	// ConfigBase is the location where we will store the configuration. It defaults to the state store.
 	ConfigBase string
+	// Zones are the availability zones in which to run the cluster.
+	Zones []string
+	// MasterZones are the availability zones in which to run the masters. Defaults to the list in the Zones field.
+	MasterZones []string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -53,7 +62,8 @@ type NewClusterResult struct {
 	Cluster *api.Cluster
 
 	// TODO remove after more create_cluster logic refactored in
-	Channel *api.Channel
+	Channel  *api.Channel
+	AllZones sets.String
 }
 
 // NewCluster initializes cluster and instance groups specifications as
@@ -103,9 +113,32 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, fmt.Errorf("unknown authorization mode %q", opt.Authorization)
 	}
 
+	allZones := sets.NewString()
+	allZones.Insert(opt.Zones...)
+	allZones.Insert(opt.MasterZones...)
+
+	cluster.Spec.CloudProvider = opt.CloudProvider
+	if cluster.Spec.CloudProvider == "" {
+		for _, zone := range allZones.List() {
+			cloud, known := fi.GuessCloudForZone(zone)
+			if known {
+				klog.Infof("Inferred %q cloud provider from zone %q", cloud, zone)
+				cluster.Spec.CloudProvider = string(cloud)
+				break
+			}
+		}
+		if cluster.Spec.CloudProvider == "" {
+			if allZones.Len() == 0 {
+				return nil, fmt.Errorf("must specify --zones or --cloud")
+			}
+			return nil, fmt.Errorf("unable to infer cloud provider from zones (is there a typo in --zones?)")
+		}
+	}
+
 	result := NewClusterResult{
-		Cluster: &cluster,
-		Channel: channel,
+		Cluster:  &cluster,
+		Channel:  channel,
+		AllZones: allZones,
 	}
 	return &result, nil
 }
