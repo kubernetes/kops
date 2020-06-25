@@ -4,7 +4,7 @@ Zones:
 CloudProvider: aws
 Topology: private
 Networking: kopeio-vxlan
-VPCID: vpc-12345678
+NetworkID: vpc-12345678
 SubnetIDs:
 - subnet-1
 UtilitySubnetIDs:
