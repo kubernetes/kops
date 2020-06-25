@@ -59,13 +59,8 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 )
 
-const (
-	AuthorizationFlagAlwaysAllow = "AlwaysAllow"
-	AuthorizationFlagRBAC        = "RBAC"
-)
-
 type CreateClusterOptions struct {
-	ClusterName          string
+	cloudup.NewClusterOptions
 	Yes                  bool
 	Target               string
 	Cloud                string
@@ -105,14 +100,8 @@ type CreateClusterOptions struct {
 	// Overrides allows settings values direct in the spec
 	Overrides []string
 
-	// Channel is the location of the api.Channel to use for our defaults
-	Channel string
-
 	// The network topology to use
 	Topology string
-
-	// The authorization approach to use (RBAC, AlwaysAllow)
-	Authorization string
 
 	// The DNS type to use (public/private)
 	DNSType string
@@ -156,9 +145,6 @@ type CreateClusterOptions struct {
 	// GCEServiceAccount specifies the service account with which the GCE VM runs
 	GCEServiceAccount string
 
-	// ConfigBase is the location where we will store the configuration, it defaults to the state store
-	ConfigBase string
-
 	// DryRun mode output a cluster manifest of Output type.
 	DryRun bool
 	// Output type during a DryRun
@@ -166,18 +152,17 @@ type CreateClusterOptions struct {
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
+	o.NewClusterOptions.InitDefaults()
+
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
 	o.Networking = "kubenet"
-	o.Channel = api.DefaultChannel
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
 	o.Bastion = false
 
 	// Default to open API & SSH access
 	o.AdminAccess = []string{"0.0.0.0/0"}
-
-	o.Authorization = AuthorizationFlagRBAC
 
 	o.ContainerRuntime = "docker"
 }
@@ -340,7 +325,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster: public|private.")
 
 	// Authorization
-	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+AuthorizationFlagAlwaysAllow+" or "+AuthorizationFlagRBAC)
+	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+cloudup.AuthorizationFlagAlwaysAllow+" or "+cloudup.AuthorizationFlagRBAC)
 
 	// DNS
 	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private.")
@@ -426,16 +411,11 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	options := &cloudup.NewClusterOptions{
-		Name:    c.ClusterName,
-		Channel: c.Channel,
-	}
-
-	if options.Name == "" {
+	if c.ClusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
 
-	cluster, err := clientset.GetCluster(ctx, options.Name)
+	cluster, err := clientset.GetCluster(ctx, c.ClusterName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			cluster = nil
@@ -445,33 +425,16 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if cluster != nil {
-		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", options.Name)
+		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", c.ClusterName)
 	}
 
-	clusterResult, err := cloudup.NewCluster(options)
+	clusterResult, err := cloudup.NewCluster(&c.NewClusterOptions, clientset)
 	if err != nil {
 		return err
 	}
 
 	// TODO: push more of the following logic into cloudup.NewCluster()
 	cluster = clusterResult.Cluster
-
-	cluster.Spec.ConfigBase = c.ConfigBase
-	configBase, err := clientset.ConfigBaseFor(cluster)
-	if err != nil {
-		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
-	}
-	cluster.Spec.ConfigBase = configBase.Path()
-
-	// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
-	cluster.Spec.Authorization = &api.AuthorizationSpec{}
-	if strings.EqualFold(c.Authorization, AuthorizationFlagAlwaysAllow) {
-		cluster.Spec.Authorization.AlwaysAllow = &api.AlwaysAllowAuthorizationSpec{}
-	} else if strings.EqualFold(c.Authorization, AuthorizationFlagRBAC) {
-		cluster.Spec.Authorization.RBAC = &api.RBACAuthorizationSpec{}
-	} else {
-		return fmt.Errorf("unknown authorization mode %q", c.Authorization)
-	}
 
 	if c.Cloud != "" {
 		cluster.Spec.CloudProvider = c.Cloud
@@ -1323,6 +1286,10 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
+	configBase, err := clientset.ConfigBaseFor(cluster)
+	if err != nil {
+		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
 	err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)

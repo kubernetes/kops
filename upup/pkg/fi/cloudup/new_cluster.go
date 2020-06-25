@@ -18,18 +18,34 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/client/simple"
+)
+
+const (
+	AuthorizationFlagAlwaysAllow = "AlwaysAllow"
+	AuthorizationFlagRBAC        = "RBAC"
 )
 
 type NewClusterOptions struct {
-	// Name is the name of the cluster to initialize.
-	Name string
+	// ClusterName is the name of the cluster to initialize.
+	ClusterName string
 
-	// Channel is a channel location for initializing the cluster.
+	// Authorization is the authorization mode to use. The options are "RBAC" (default) and "AlwaysAllow".
+	Authorization string
+	// Channel is a channel location for initializing the cluster. It defaults to "stable".
 	Channel string
+	// ConfigBase is the location where we will store the configuration. It defaults to the state store.
+	ConfigBase string
+}
+
+func (o *NewClusterOptions) InitDefaults() {
+	o.Channel = api.DefaultChannel
+	o.Authorization = AuthorizationFlagRBAC
 }
 
 type NewClusterResult struct {
@@ -42,11 +58,14 @@ type NewClusterResult struct {
 
 // NewCluster initializes cluster and instance groups specifications as
 // intended for newly created clusters.
-func NewCluster(opt *NewClusterOptions) (*NewClusterResult, error) {
-	if opt.Name == "" {
+func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewClusterResult, error) {
+	if opt.ClusterName == "" {
 		return nil, fmt.Errorf("name is required")
 	}
 
+	if opt.Channel == "" {
+		opt.Channel = api.DefaultChannel
+	}
 	channel, err := api.LoadChannel(opt.Channel)
 	if err != nil {
 		return nil, err
@@ -54,7 +73,7 @@ func NewCluster(opt *NewClusterOptions) (*NewClusterResult, error) {
 
 	cluster := api.Cluster{
 		ObjectMeta: v1.ObjectMeta{
-			Name: opt.Name,
+			Name: opt.ClusterName,
 		},
 	}
 
@@ -67,6 +86,22 @@ func NewCluster(opt *NewClusterOptions) (*NewClusterResult, error) {
 		}
 	}
 	cluster.Spec.Channel = opt.Channel
+
+	cluster.Spec.ConfigBase = opt.ConfigBase
+	configBase, err := clientset.ConfigBaseFor(&cluster)
+	if err != nil {
+		return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
+	cluster.Spec.ConfigBase = configBase.Path()
+
+	cluster.Spec.Authorization = &api.AuthorizationSpec{}
+	if strings.EqualFold(opt.Authorization, AuthorizationFlagAlwaysAllow) {
+		cluster.Spec.Authorization.AlwaysAllow = &api.AlwaysAllowAuthorizationSpec{}
+	} else if opt.Authorization == "" || strings.EqualFold(opt.Authorization, AuthorizationFlagRBAC) {
+		cluster.Spec.Authorization.RBAC = &api.RBACAuthorizationSpec{}
+	} else {
+		return nil, fmt.Errorf("unknown authorization mode %q", opt.Authorization)
+	}
 
 	result := NewClusterResult{
 		Cluster: &cluster,
