@@ -572,9 +572,10 @@ func (b *InstanceGroupModelBuilder) buildSecurityGroups(c *fi.ModelBuilderContex
 
 	for _, id := range ig.Spec.AdditionalSecurityGroups {
 		sg := &awstasks.SecurityGroup{
-			Name:   fi.String(id),
-			ID:     fi.String(id),
-			Shared: fi.Bool(true),
+			Lifecycle: b.SecurityLifecycle,
+			ID:        fi.String(id),
+			Name:      fi.String(id),
+			Shared:    fi.Bool(true),
 		}
 		if err := c.EnsureTask(sg); err != nil {
 			return nil, err
