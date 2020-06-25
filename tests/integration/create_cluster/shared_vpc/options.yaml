@@ -2,5 +2,5 @@ ClusterName: vpc.example.com
 Zones:
 - us-test-1a
 CloudProvider: aws
-VPCID: vpc-12345678
+NetworkID: vpc-12345678
 KubernetesVersion: v1.14.0
