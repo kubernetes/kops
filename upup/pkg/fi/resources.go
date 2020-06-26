@@ -207,6 +207,7 @@ type ResourceHolder struct {
 }
 
 var _ Resource = &ResourceHolder{}
+var _ HasDependencies = &ResourceHolder{}
 
 // Open implements the Open method of the Resource interface
 func (o *ResourceHolder) Open() (io.Reader, error) {
@@ -214,6 +215,13 @@ func (o *ResourceHolder) Open() (io.Reader, error) {
 		return nil, fmt.Errorf("ResourceHolder %q is not bound", o.Name)
 	}
 	return o.Resource.Open()
+}
+
+func (r *ResourceHolder) GetDependencies(tasks map[string]Task) []Task {
+	if hasDependencies, ok := r.Resource.(HasDependencies); ok {
+		return hasDependencies.GetDependencies(tasks)
+	}
+	return nil
 }
 
 // UnmarshalJSON implements the special JSON marshaling for the resource, rendering the name
