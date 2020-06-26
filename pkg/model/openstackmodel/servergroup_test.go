@@ -2736,9 +2736,21 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 			compareErrors(t, err, testCase.expectedError)
 
 			expectedTasks := testCase.expectedTasksBuilder(testCase.cluster, testCase.instanceGroups)
+			for _, ig := range testCase.instanceGroups {
+				expectedTasks["BootstrapScript/"+ig.Name] = &model.BootstrapScript{Name: ig.Name}
+			}
 
 			if len(expectedTasks) != len(context.Tasks) {
 				t.Errorf("expected %d tasks, got %d tasks", len(expectedTasks), len(context.Tasks))
+			}
+
+			for taskName, task := range context.Tasks {
+				if strings.HasPrefix(taskName, "BootstrapScript/") {
+					err = task.Run(&fi.Context{Cluster: testCase.cluster})
+					if err != nil {
+						t.Errorf("failed to run BootstrapScript task: %v", err)
+					}
+				}
 			}
 
 			for taskName, task := range expectedTasks {
@@ -2784,6 +2796,8 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					t.Run("creates a task for "+taskName, func(t *testing.T) {
 						compareSecurityGroups(t, actual, expected)
 					})
+				case *model.BootstrapScript:
+					// ignore
 				default:
 					t.Errorf("found a task with name %q and type %T", taskName, expected)
 				}
@@ -3205,9 +3219,19 @@ func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGrou
 			architectures.ArchitectureArm64: "source-hash-arm64",
 		},
 	}
-	startupResources, err := bootstrapScriptBuilder.ResourceNodeUp(ig, cluster)
+	c := &fi.ModelBuilderContext{
+		Tasks: make(map[string]fi.Task),
+	}
+
+	startupResources, err := bootstrapScriptBuilder.ResourceNodeUp(c, ig)
 	if err != nil {
 		panic(fmt.Errorf("error getting userdata: %v", err))
+	}
+
+	err = c.Tasks["BootstrapScript/"+ig.Name].Run(&fi.Context{Cluster: cluster})
+	if err != nil {
+		panic(fmt.Errorf("error running BootstrapScript task: %v", err))
+
 	}
 	userdata, err := startupResources.AsString()
 	if err != nil {

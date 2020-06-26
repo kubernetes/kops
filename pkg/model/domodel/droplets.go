@@ -78,7 +78,7 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"nodes")
 		}
 
-		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(ig, d.Cluster)
+		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
 			return err
 		}
