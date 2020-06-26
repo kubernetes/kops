@@ -43,15 +43,15 @@ type NodeUpConfigBuilder interface {
 	BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error)
 }
 
-// BootstrapScript creates the bootstrap script
-type BootstrapScript struct {
+// BootstrapScriptBuilder creates the bootstrap script
+type BootstrapScriptBuilder struct {
 	NodeUpSource        map[architectures.Architecture]string
 	NodeUpSourceHash    map[architectures.Architecture]string
 	NodeUpConfigBuilder NodeUpConfigBuilder
 }
 
 // kubeEnv returns the nodeup config for the instance group
-func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup) (string, error) {
+func (b *BootstrapScriptBuilder) kubeEnv(ig *kops.InstanceGroup) (string, error) {
 	config, err := b.NodeUpConfigBuilder.BuildConfig(ig)
 	if err != nil {
 		return "", err
@@ -65,7 +65,7 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup) (string, error) {
 	return string(data), nil
 }
 
-func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
+func (b *BootstrapScriptBuilder) buildEnvironmentVariables(cluster *kops.Cluster) (map[string]string, error) {
 	env := make(map[string]string)
 
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
@@ -135,7 +135,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
-func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.Cluster) (*fi.ResourceHolder, error) {
+func (b *BootstrapScriptBuilder) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.Cluster) (*fi.ResourceHolder, error) {
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
 		templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
@@ -299,7 +299,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 
 // getRelevantHooks returns a list of hooks to be applied to the instance group,
 // with the Manifest and ExecContainer Commands fingerprinted to reduce size
-func (b *BootstrapScript) getRelevantHooks(allHooks []kops.HookSpec, role kops.InstanceGroupRole) ([]kops.HookSpec, error) {
+func (b *BootstrapScriptBuilder) getRelevantHooks(allHooks []kops.HookSpec, role kops.InstanceGroupRole) ([]kops.HookSpec, error) {
 	relevantHooks := []kops.HookSpec{}
 	for _, hook := range allHooks {
 		if len(hook.Roles) == 0 {
@@ -349,7 +349,7 @@ func (b *BootstrapScript) getRelevantHooks(allHooks []kops.HookSpec, role kops.I
 
 // getRelevantFileAssets returns a list of file assets to be applied to the
 // instance group, with the Content fingerprinted to reduce size
-func (b *BootstrapScript) getRelevantFileAssets(allFileAssets []kops.FileAssetSpec, role kops.InstanceGroupRole) ([]kops.FileAssetSpec, error) {
+func (b *BootstrapScriptBuilder) getRelevantFileAssets(allFileAssets []kops.FileAssetSpec, role kops.InstanceGroupRole) ([]kops.FileAssetSpec, error) {
 	relevantFileAssets := []kops.FileAssetSpec{}
 	for _, fileAsset := range allFileAssets {
 		if len(fileAsset.Roles) == 0 {
@@ -384,7 +384,7 @@ func (b *BootstrapScript) getRelevantFileAssets(allFileAssets []kops.FileAssetSp
 }
 
 // computeFingerprint takes a string and returns a base64 encoded fingerprint
-func (b *BootstrapScript) computeFingerprint(content string) (string, error) {
+func (b *BootstrapScriptBuilder) computeFingerprint(content string) (string, error) {
 	hasher := sha1.New()
 
 	if _, err := hasher.Write([]byte(content)); err != nil {
@@ -394,7 +394,7 @@ func (b *BootstrapScript) computeFingerprint(content string) (string, error) {
 	return base64.StdEncoding.EncodeToString(hasher.Sum(nil)), nil
 }
 
-func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
+func (b *BootstrapScriptBuilder) createProxyEnv(ps *kops.EgressProxySpec) string {
 	var buffer bytes.Buffer
 
 	if ps != nil && ps.HTTPProxy.Host != "" {

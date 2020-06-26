@@ -27,7 +27,7 @@ import (
 )
 
 func Test_ProxyFunc(t *testing.T) {
-	b := &BootstrapScript{}
+	b := &BootstrapScriptBuilder{}
 	ps := &kops.EgressProxySpec{
 		HTTPProxy: kops.HTTPProxy{
 			Host: "example.com",
@@ -122,7 +122,7 @@ func TestBootstrapUserData(t *testing.T) {
 		cluster := makeTestCluster(x.HookSpecRoles, x.FileAssetSpecRoles)
 		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles, x.FileAssetSpecRoles)
 
-		bs := &BootstrapScript{
+		bs := &BootstrapScriptBuilder{
 			NodeUpConfigBuilder: &nodeupConfigBuilder{cluster: cluster},
 			NodeUpSource: map[architectures.Architecture]string{
 				architectures.ArchitectureAmd64: "NUSourceAmd64",

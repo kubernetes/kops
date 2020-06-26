@@ -2712,7 +2712,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
 			clusterLifecycle := fi.LifecycleSync
-			bootstrapScriptBuilder := &model.BootstrapScript{
+			bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 				NodeUpConfigBuilder: &nodeupConfigBuilder{},
 				NodeUpSource: map[architectures.Architecture]string{
 					architectures.ArchitectureAmd64: "source-amd64",
@@ -2798,7 +2798,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 	}
 }
 
-func createBuilderForCluster(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, clusterLifecycle fi.Lifecycle, bootstrapScript *model.BootstrapScript) *ServerGroupModelBuilder {
+func createBuilderForCluster(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, clusterLifecycle fi.Lifecycle, bootstrapScriptBuilder *model.BootstrapScriptBuilder) *ServerGroupModelBuilder {
 	sshPublicKey := []byte("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDF2sghZsClUBXJB4mBMIw8rb0hJWjg1Vz4eUeXwYmTdi92Gf1zNc5xISSip9Y+PWX/jJokPB7tgPnMD/2JOAKhG1bi4ZqB15pYRmbbBekVpM4o4E0dx+czbqjiAm6wlccTrINK5LYenbucAAQt19eH+D0gJwzYUK9SYz1hWnlGS+qurt2bz7rrsG73lN8E2eiNvGtIXqv3GabW/Hea3acOBgCUJQWUDTRu0OmmwxzKbFN/UpNKeRaHlCqwZWjVAsmqA8TX8LIocq7Np7MmIBwt7EpEeZJxThcmC8DEJs9ClAjD+jlLIvMPXKC3JWCPgwCLGxHjy7ckSGFCSzbyPduh")
 
 	modelContext := &model.KopsModelContext{
@@ -2811,9 +2811,9 @@ func createBuilderForCluster(cluster *kops.Cluster, instanceGroups []*kops.Insta
 	}
 
 	return &ServerGroupModelBuilder{
-		OpenstackModelContext: openstackModelContext,
-		BootstrapScript:       bootstrapScript,
-		Lifecycle:             &clusterLifecycle,
+		OpenstackModelContext:  openstackModelContext,
+		BootstrapScriptBuilder: bootstrapScriptBuilder,
+		Lifecycle:              &clusterLifecycle,
 	}
 }
 
@@ -3194,7 +3194,7 @@ func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Confi
 }
 
 func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGroup) *fi.ResourceHolder {
-	bootstrapScriptBuilder := &model.BootstrapScript{
+	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		NodeUpConfigBuilder: &nodeupConfigBuilder{},
 		NodeUpSource: map[architectures.Architecture]string{
 			architectures.ArchitectureAmd64: "source-amd64",
