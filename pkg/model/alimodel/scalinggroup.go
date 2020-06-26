@@ -129,7 +129,7 @@ func (b *ScalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 			launchConfiguration.SSHKey = b.LinkToSSHKey()
-			if launchConfiguration.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(ig, b.Cluster); err != nil {
+			if launchConfiguration.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
 				return err
 			}
 		}
