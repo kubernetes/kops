@@ -68,10 +68,20 @@ type InstanceTemplate struct {
 	ID *string
 }
 
+var _ fi.Task = &InstanceTemplate{}
 var _ fi.CompareWithID = &InstanceTemplate{}
+var _ fi.HasDependencies = &InstanceTemplate{}
 
 func (e *InstanceTemplate) CompareWithID() *string {
 	return e.ID
+}
+
+func (l *InstanceTemplate) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, resource := range l.Metadata {
+		deps = append(deps, resource.GetDependencies(tasks)...)
+	}
+	return deps
 }
 
 func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
