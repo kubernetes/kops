@@ -261,7 +261,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	}
 
 	// @step: add the instancegroup userdata
-	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(ig, b.Cluster); err != nil {
+	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
 		return nil, err
 	}
 
