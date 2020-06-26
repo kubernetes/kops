@@ -27,7 +27,9 @@ kops create cluster \
 
 ### Using etcd for agent state sync
 
-By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kops 1.18, kops can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for this must be enabled.
+This feature is in beta state as of kops 1.18.
+
+By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kops 1.18, kops can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
 
 Add the following to `spec.etcdClusters`:
 Make sure `instanceGroup` match the other etcd clusters.
@@ -41,6 +43,15 @@ Make sure `instanceGroup` match the other etcd clusters.
     - instanceGroup: master-az-1c
       name: c
     name: cilium
+```
+
+If this is an existing cluster, it is important that you roll the entire cluster so that all the nodes can connect to the new etcd cluster.
+
+```sh
+kops update cluster
+kops update cluster --yes
+kops rolling-update cluster --force --yes
+
 ```
 
 Then enable etcd as kvstore:
@@ -60,6 +71,8 @@ Read more about this in the [Cilium docs](https://docs.cilium.io/en/stable/getti
 
 Be aware that you need to use an AMI with at least Linux 4.19.57 for this feature to work.
 
+Also be aware that while enabling this on an existing cluster is safe, disabling this is disruptive and requires you to run `kops rolling-upgrade cluster --cloudonly`.
+
 ```yaml
   kubeProxy:
     enabled: false
@@ -69,6 +82,8 @@ Be aware that you need to use an AMI with at least Linux 4.19.57 for this featur
 ```
 
 ### Enabling Cilium ENI IPAM
+
+This feature is in beta state as of kops 1.18.
 
 As of Kops 1.18, you can have Cilium provision AWS managed adresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
 
