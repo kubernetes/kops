@@ -37,18 +37,28 @@ var _ fi.ModelBuilder = &CiliumBuilder{}
 func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 	networking := b.Cluster.Spec.Networking
 
+	// As long as the cilium cluster exists, we should do this
+	ciliumEtcd := false
+
+	for _, cluster := range b.Cluster.Spec.EtcdClusters {
+		if cluster.Name == "cilium" {
+			ciliumEtcd = true
+			break
+		}
+	}
+
+	if ciliumEtcd {
+		if err := b.buildCiliumEtcdSecrets(c); err != nil {
+			return err
+		}
+	}
+
 	if networking.Cilium == nil {
 		return nil
 	}
 
 	if err := b.buildBPFMount(c); err != nil {
 		return err
-	}
-
-	if networking.Cilium.EtcdManaged {
-		if err := b.buildCiliumEtcdSecrets(c); err != nil {
-			return err
-		}
 	}
 
 	return nil
