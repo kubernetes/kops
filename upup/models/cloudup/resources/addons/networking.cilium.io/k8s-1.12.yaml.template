@@ -18,8 +18,8 @@ data:
       - https://{{ $.MasterInternalName }}:4003
 
     trusted-ca-file: '/var/lib/etcd-secrets/etcd-ca.crt'
-    key-file: '/var/lib/etcd-secrets/etcd-client.key'
-    cert-file: '/var/lib/etcd-secrets/etcd-client.crt'
+    key-file: '/var/lib/etcd-secrets/etcd-client-cilium.key'
+    cert-file: '/var/lib/etcd-secrets/etcd-client-cilium.crt'
 {{ end }}
 
   # Identity allocation mode selects how identities are shared between cilium
