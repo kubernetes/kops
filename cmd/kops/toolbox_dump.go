@@ -96,8 +96,6 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	// TODO: Push up to top-level command?
-	// Yes please! (@kris-nova)
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "output format.  One of: yaml, json")
 
 	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "target directory; if specified will collect logs and other information.")
