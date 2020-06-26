@@ -701,7 +701,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	bootstrapScriptBuilder := &model.BootstrapScript{
+	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		NodeUpConfigBuilder: configBuilder,
 		NodeUpSource:        c.NodeUpSource,
 		NodeUpSourceHash:    c.NodeUpHash,
@@ -714,18 +714,18 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			awsModelBuilder := &awsmodel.AutoscalingGroupModelBuilder{
-				AWSModelContext:   awsModelContext,
-				BootstrapScript:   bootstrapScriptBuilder,
-				Lifecycle:         &clusterLifecycle,
-				SecurityLifecycle: &securityLifecycle,
+				AWSModelContext:        awsModelContext,
+				BootstrapScriptBuilder: bootstrapScriptBuilder,
+				Lifecycle:              &clusterLifecycle,
+				SecurityLifecycle:      &securityLifecycle,
 			}
 
 			if featureflag.Spotinst.Enabled() {
 				l.Builders = append(l.Builders, &spotinstmodel.InstanceGroupModelBuilder{
-					KopsModelContext:  modelContext,
-					BootstrapScript:   bootstrapScriptBuilder,
-					Lifecycle:         &clusterLifecycle,
-					SecurityLifecycle: &securityLifecycle,
+					KopsModelContext:       modelContext,
+					BootstrapScriptBuilder: bootstrapScriptBuilder,
+					Lifecycle:              &clusterLifecycle,
+					SecurityLifecycle:      &securityLifecycle,
 				})
 
 				if featureflag.SpotinstHybrid.Enabled() {
@@ -741,9 +741,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 
 		l.Builders = append(l.Builders, &domodel.DropletBuilder{
-			DOModelContext:  doModelContext,
-			BootstrapScript: bootstrapScriptBuilder,
-			Lifecycle:       &clusterLifecycle,
+			DOModelContext:         doModelContext,
+			BootstrapScriptBuilder: bootstrapScriptBuilder,
+			Lifecycle:              &clusterLifecycle,
 		})
 	case kops.CloudProviderGCE:
 		{
@@ -752,9 +752,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders, &gcemodel.AutoscalingGroupModelBuilder{
-				GCEModelContext: gceModelContext,
-				BootstrapScript: bootstrapScriptBuilder,
-				Lifecycle:       &clusterLifecycle,
+				GCEModelContext:        gceModelContext,
+				BootstrapScriptBuilder: bootstrapScriptBuilder,
+				Lifecycle:              &clusterLifecycle,
 			})
 		}
 
@@ -765,9 +765,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 
 			l.Builders = append(l.Builders, &alimodel.ScalingGroupModelBuilder{
-				ALIModelContext: aliModelContext,
-				BootstrapScript: bootstrapScriptBuilder,
-				Lifecycle:       &clusterLifecycle,
+				ALIModelContext:        aliModelContext,
+				BootstrapScriptBuilder: bootstrapScriptBuilder,
+				Lifecycle:              &clusterLifecycle,
 			})
 		}
 
@@ -777,9 +777,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 
 		l.Builders = append(l.Builders, &openstackmodel.ServerGroupModelBuilder{
-			OpenstackModelContext: openstackModelContext,
-			BootstrapScript:       bootstrapScriptBuilder,
-			Lifecycle:             &clusterLifecycle,
+			OpenstackModelContext:  openstackModelContext,
+			BootstrapScriptBuilder: bootstrapScriptBuilder,
+			Lifecycle:              &clusterLifecycle,
 		})
 
 	default:

@@ -112,9 +112,9 @@ const (
 type InstanceGroupModelBuilder struct {
 	*model.KopsModelContext
 
-	BootstrapScript   *model.BootstrapScript
-	Lifecycle         *fi.Lifecycle
-	SecurityLifecycle *fi.Lifecycle
+	BootstrapScriptBuilder *model.BootstrapScriptBuilder
+	Lifecycle              *fi.Lifecycle
+	SecurityLifecycle      *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &InstanceGroupModelBuilder{}
@@ -267,7 +267,7 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 	}
 
 	// User data.
-	group.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
+	group.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
 		return fmt.Errorf("error building user data: %v", err)
 	}
@@ -422,7 +422,7 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 	ocean.Monitoring = ig.Spec.DetailedInstanceMonitoring
 
 	// User data.
-	ocean.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
+	ocean.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
 		return fmt.Errorf("error building user data: %v", err)
 	}
@@ -512,7 +512,7 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 	ocean.MaxSize = fi.Int64(fi.Int64Value(ocean.MaxSize) + fi.Int64Value(maxSize))
 
 	// User data.
-	launchSpec.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
+	launchSpec.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
 		return fmt.Errorf("error building user data: %v", err)
 	}
