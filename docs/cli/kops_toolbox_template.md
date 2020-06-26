@@ -34,7 +34,7 @@ kops toolbox template [flags]
       --fail-on-missing          Fail on referencing unset variables in templates (default true)
       --format-yaml              Attempt to format the generated yaml content before output
   -h, --help                     help for template
-      --output string            Path to output file, otherwise defaults to stdout
+      --out string               Path to output file, otherwise defaults to stdout
       --set stringArray          Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
       --set-string stringArray   Set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
       --snippets strings         Path to directory containing snippets used for templating
