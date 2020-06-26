@@ -126,7 +126,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -172,7 +172,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodePort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -311,7 +311,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -357,7 +357,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodePort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -398,7 +398,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Bastion"),
 					Port:        bastionPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[2])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[2]),
 					Metadata: map[string]string{
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "bastion",
@@ -578,7 +578,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -625,7 +625,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -672,7 +672,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -718,7 +718,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -764,7 +764,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -810,7 +810,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1007,7 +1007,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1048,7 +1048,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1089,7 +1089,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1130,7 +1130,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1176,7 +1176,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1222,7 +1222,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1463,7 +1463,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1505,7 +1505,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1547,7 +1547,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1588,7 +1588,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1629,7 +1629,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1670,7 +1670,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1813,7 +1813,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1852,7 +1852,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1891,7 +1891,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1937,7 +1937,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeAPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -1975,7 +1975,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeBPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2013,7 +2013,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodeCPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2141,7 +2141,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2182,7 +2182,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodePort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2317,7 +2317,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Master"),
 					Port:        masterPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2358,7 +2358,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodePort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[1])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[1]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2399,7 +2399,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Bastion"),
 					Port:        bastionPort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[2])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[2]),
 					Metadata: map[string]string{
 						"k8s":                "cluster",
 						"KopsInstanceGroup":  "bastion",
@@ -2495,7 +2495,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodePort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2591,7 +2591,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodePort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -2685,7 +2685,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 					Tags:        []string{"KubernetesCluster:cluster"},
 					Role:        s("Node"),
 					Port:        nodePort,
-					UserData:    s(mustUserdataForClusterInstance(cluster, instanceGroups[0])),
+					UserData:    mustUserdataForClusterInstance(cluster, instanceGroups[0]),
 					Metadata: map[string]string{
 						"KubernetesCluster":  "cluster",
 						"k8s":                "cluster",
@@ -3099,18 +3099,25 @@ func compareStrings(t *testing.T, name string, actual, expected *string) {
 	}
 }
 
-func compareUserData(t *testing.T, actual, expected *string) {
+func compareUserData(t *testing.T, actual, expected *fi.ResourceHolder) {
 	t.Helper()
 	if pointersAreBothNil(t, "UserData", actual, expected) {
 		return
 	}
 	if !reflect.DeepEqual(actual, expected) {
 		var a, e string
+		var err error
 		if actual != nil {
-			a = *actual
+			a, err = actual.AsString()
+			if err != nil {
+				t.Errorf("error getting actual: %v", err)
+			}
 		}
 		if expected != nil {
-			e = *expected
+			e, err = expected.AsString()
+			if err != nil {
+				t.Errorf("error getting actual: %v", err)
+			}
 		}
 		aLines := strings.Split(a, "\n")
 		eLines := strings.Split(e, "\n")
@@ -3186,7 +3193,7 @@ func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Confi
 	return &nodeup.Config{}, nil
 }
 
-func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGroup) string {
+func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGroup) *fi.ResourceHolder {
 	bootstrapScriptBuilder := &model.BootstrapScript{
 		NodeUpConfigBuilder: &nodeupConfigBuilder{},
 		NodeUpSource: map[architectures.Architecture]string{
@@ -3206,5 +3213,5 @@ func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGrou
 	if err != nil {
 		panic(fmt.Errorf("error converting userdata to string: %v", err))
 	}
-	return userdata
+	return fi.WrapResource(fi.NewStringResource(userdata))
 }

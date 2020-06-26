@@ -41,7 +41,7 @@ type Instance struct {
 	ServerGroup      *ServerGroup
 	Tags             []string
 	Role             *string
-	UserData         *string
+	UserData         *fi.ResourceHolder
 	Metadata         map[string]string
 	AvailabilityZone *string
 	SecurityGroups   []string
@@ -49,7 +49,9 @@ type Instance struct {
 	Lifecycle *fi.Lifecycle
 }
 
+var _ fi.Task = &Instance{}
 var _ fi.HasAddress = &Instance{}
+var _ fi.HasDependencies = &Instance{}
 
 // GetDependencies returns the dependencies of the Instance task
 func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
@@ -62,6 +64,11 @@ func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			deps = append(deps, task)
 		}
 	}
+
+	if e.UserData != nil {
+		deps = append(deps, e.UserData.GetDependencies(tasks)...)
+	}
+
 	return deps
 }
 
@@ -169,7 +176,11 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 			SecurityGroups: e.SecurityGroups,
 		}
 		if e.UserData != nil {
-			opt.UserData = []byte(*e.UserData)
+			bytes, err := e.UserData.AsBytes()
+			if err != nil {
+				return err
+			}
+			opt.UserData = bytes
 		}
 		if e.AvailabilityZone != nil {
 			opt.AvailabilityZone = fi.StringValue(e.AvailabilityZone)
