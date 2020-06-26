@@ -30,8 +30,8 @@ import (
 type DropletBuilder struct {
 	*DOModelContext
 
-	BootstrapScript *model.BootstrapScript
-	Lifecycle       *fi.Lifecycle
+	BootstrapScriptBuilder *model.BootstrapScriptBuilder
+	Lifecycle              *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &DropletBuilder{}
@@ -78,7 +78,7 @@ func (d *DropletBuilder) Build(c *fi.ModelBuilderContext) error {
 			droplet.Tags = append(droplet.Tags, do.TagKubernetesClusterInstanceGroupPrefix+":"+"nodes")
 		}
 
-		userData, err := d.BootstrapScript.ResourceNodeUp(ig, d.Cluster)
+		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(ig, d.Cluster)
 		if err != nil {
 			return err
 		}

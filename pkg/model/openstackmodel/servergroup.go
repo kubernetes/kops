@@ -33,8 +33,8 @@ import (
 // ServerGroupModelBuilder configures server group objects
 type ServerGroupModelBuilder struct {
 	*OpenstackModelContext
-	BootstrapScript *model.BootstrapScript
-	Lifecycle       *fi.Lifecycle
+	BootstrapScriptBuilder *model.BootstrapScriptBuilder
+	Lifecycle              *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
@@ -76,7 +76,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igMeta[openstack.BOOT_VOLUME_SIZE] = v
 	}
 
-	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
+	startupScript, err := b.BootstrapScriptBuilder.ResourceNodeUp(ig, b.Cluster)
 	if err != nil {
 		return fmt.Errorf("could not create startup script for instance group %s: %v", ig.Name, err)
 	}
