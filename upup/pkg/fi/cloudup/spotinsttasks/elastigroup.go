@@ -100,13 +100,13 @@ type AutoScalerDownOpts struct {
 	EvaluationPeriods *int
 }
 
+var _ fi.Task = &Elastigroup{}
 var _ fi.CompareWithID = &Elastigroup{}
+var _ fi.HasDependencies = &Elastigroup{}
 
 func (e *Elastigroup) CompareWithID() *string {
 	return e.Name
 }
-
-var _ fi.HasDependencies = &Elastigroup{}
 
 func (e *Elastigroup) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
@@ -133,6 +133,10 @@ func (e *Elastigroup) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		for _, sg := range e.SecurityGroups {
 			deps = append(deps, sg)
 		}
+	}
+
+	if e.UserData != nil {
+		deps = append(deps, e.UserData.GetDependencies(tasks)...)
 	}
 
 	return deps
