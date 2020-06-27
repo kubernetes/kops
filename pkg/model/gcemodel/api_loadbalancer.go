@@ -22,7 +22,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
@@ -78,13 +77,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	{
 		// Ensure the IP address is included in our certificate
-		// TODO: I don't love this technique for finding the task by name & modifying it
-		masterKeypairTask, found := c.Tasks["Keypair/master"]
-		if !found {
-			return fmt.Errorf("keypair/master task not found")
-		}
-		masterKeypair := masterKeypairTask.(*fitasks.Keypair)
-		masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, ipAddress)
+		ipAddress.ForAPIServer = true
 	}
 
 	// Allow traffic into the API (port 443) from KubernetesAPIAccess CIDRs

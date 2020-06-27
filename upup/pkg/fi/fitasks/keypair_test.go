@@ -24,8 +24,11 @@ import (
 )
 
 func TestKeypairDeps(t *testing.T) {
-	ca := &Keypair{}
+	ca := &Keypair{
+		Name: fi.String("ca"),
+	}
 	cert := &Keypair{
+		Name:   fi.String("cert"),
 		Signer: ca,
 	}
 

@@ -31,7 +31,8 @@ type Address struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	IPAddress *string
+	IPAddress    *string
+	ForAPIServer bool
 }
 
 func (e *Address) Find(c *fi.Context) (*Address, error) {
@@ -83,6 +84,10 @@ func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
 }
 
 var _ fi.HasAddress = &Address{}
+
+func (e *Address) IsForAPIServer() bool {
+	return e.ForAPIServer
+}
 
 func (e *Address) FindIPAddress(context *fi.Context) (*string, error) {
 	actual, err := e.find(context.Cloud.(gce.GCECloud))
