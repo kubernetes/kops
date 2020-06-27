@@ -45,7 +45,7 @@ Make sure `instanceGroup` match the other etcd clusters.
     name: cilium
 ```
 
-If this is an existing cluster, it is important that you roll the entire cluster so that all the nodes can connect to the new etcd cluster.
+If this is an existing cluster, it is important that you perform a rolling update on the entire cluster so that all the nodes can connect to the new etcd cluster.
 
 ```sh
 kops update cluster
