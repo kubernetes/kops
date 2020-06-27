@@ -40,6 +40,7 @@ type LoadBalancer struct {
 	LoadBalancerAddress *string
 	Lifecycle           *fi.Lifecycle
 	Tags                map[string]string
+	ForAPIServer        bool
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -105,6 +106,10 @@ func (l *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	l.LoadbalancerId = actual.LoadbalancerId
 	actual.Lifecycle = l.Lifecycle
 	return actual, nil
+}
+
+func (l *LoadBalancer) IsForAPIServer() bool {
+	return l.ForAPIServer
 }
 
 func (l *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
