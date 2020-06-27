@@ -68,6 +68,15 @@ Be aware that you need to use an AMI with at least Linux 4.19.57 for this featur
       enableNodePort: true
 ```
 
+If you are migrating an existing cluster, you need to manually roll the cilium DaemonSet before rolling the cluster:
+
+```
+kops update cluster
+kops update cluster --yes
+kubectl rollout restart ds/cilium -n kube-system
+kops rolling-update cluster --yes
+```
+
 ### Enabling Cilium ENI IPAM
 
 As of Kops 1.18, you can have Cilium provision AWS managed adresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
