@@ -161,7 +161,7 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		}
 	}
 
-	name := "etcd-client"
+	name := "etcd-client-cilium"
 
 	humanName := dir + "/" + name
 	privateKey, err := pki.GeneratePrivateKey()
