@@ -37,7 +37,7 @@ var _ fi.ModelBuilder = &CiliumBuilder{}
 func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 	networking := b.Cluster.Spec.Networking
 
-	// As long as the cilium cluster exists, we should do this
+	// As long as the Cilium Etcd cluster exists, we should do this
 	ciliumEtcd := false
 
 	for _, cluster := range b.Cluster.Spec.EtcdClusters {
