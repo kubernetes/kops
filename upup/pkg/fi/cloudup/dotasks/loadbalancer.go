@@ -38,12 +38,14 @@ type LoadBalancer struct {
 	ID        *string
 	Lifecycle *fi.Lifecycle
 
-	Region     *string
-	DropletTag *string
-	IPAddress  *string
+	Region       *string
+	DropletTag   *string
+	IPAddress    *string
+	ForAPIServer bool
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
+var _ fi.HasAddress = &LoadBalancer{}
 
 func (lb *LoadBalancer) CompareWithID() *string {
 	return lb.ID
@@ -163,6 +165,10 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 	e.IPAddress = fi.String(loadbalancer.IP) // This will be empty on create, but will be filled later on FindIPAddress invokation.
 
 	return nil
+}
+
+func (lb *LoadBalancer) IsForAPIServer() bool {
+	return lb.ForAPIServer
 }
 
 func (lb *LoadBalancer) FindIPAddress(c *fi.Context) (*string, error) {

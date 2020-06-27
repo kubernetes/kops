@@ -17,7 +17,6 @@ limitations under the License.
 package domodel
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -26,7 +25,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 // APILoadBalancerModelBuilder builds a LoadBalancer for accessing the API
@@ -75,13 +73,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
 		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
-		// TODO: I don't love this technique for finding the task by name & modifying it
-		masterKeypairTask, found := c.Tasks["Keypair/master"]
-		if !found {
-			return errors.New("keypair/master task not found")
-		}
-		masterKeypair := masterKeypairTask.(*fitasks.Keypair)
-		masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, loadbalancer)
+		loadbalancer.ForAPIServer = true
 	}
 
 	return nil
