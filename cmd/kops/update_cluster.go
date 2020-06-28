@@ -61,7 +61,6 @@ var (
 type UpdateClusterOptions struct {
 	Yes             bool
 	Target          string
-	Models          string
 	OutDir          string
 	SSHPublicKey    string
 	RunTasksOptions fi.RunTasksOptions
@@ -77,7 +76,6 @@ type UpdateClusterOptions struct {
 func (o *UpdateClusterOptions) InitDefaults() {
 	o.Yes = false
 	o.Target = "direct"
-	o.Models = strings.Join(cloudup.CloudupModels, ",")
 	o.SSHPublicKey = ""
 	o.OutDir = ""
 	o.CreateKubecfg = true
@@ -111,7 +109,6 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Create cloud resources, without --yes update is in dry run mode")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
-	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
@@ -240,7 +237,6 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		Cluster:            cluster,
 		DryRun:             isDryrun,
 		RunTasksOptions:    &c.RunTasksOptions,
-		Models:             strings.Split(c.Models, ","),
 		OutDir:             c.OutDir,
 		Phase:              phase,
 		TargetName:         targetName,
