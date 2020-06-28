@@ -15356,7 +15356,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.58
+        image: spotinst/kubernetes-cluster-controller:1.0.61
         livenessProbe:
           httpGet:
             path: /healthcheck
