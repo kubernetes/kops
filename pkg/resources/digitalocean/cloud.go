@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/digitalocean/godo"
@@ -38,6 +39,8 @@ import (
 
 const TagKubernetesClusterIndex = "k8s-index"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
+const TagKubernetesInstanceGroup = "kops-instancegroup"
+const DOInstanceGroupConfig = "do-instancegroup-config"
 
 // TokenSource implements oauth2.TokenSource
 type TokenSource struct {
@@ -60,6 +63,13 @@ type Cloud struct {
 
 	// RegionName holds the region, renamed to avoid conflict with Region()
 	RegionName string
+}
+
+type DOInstanceGroup struct {
+	ClusterName       string
+	InstanceGroupName string
+	GroupType         string   // will be either "master" or "worker"
+	Members           []string // will store the droplet names that matches.
 }
 
 var _ fi.Cloud = &Cloud{}
@@ -88,7 +98,7 @@ func NewCloud(region string) (*Cloud, error) {
 
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, nil
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
@@ -278,143 +288,174 @@ func (c *Cloud) getEtcdClusterSpec(volumeName string, dropletName string) (*etcd
 	}, nil
 }
 
+func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 
-// func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-// 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	instanceGroups, err := FindInstanceGroups(c, cluster.ObjectMeta.Name)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
+	}
 
-// 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-// 	instanceGroups, err := FindInstanceGroups(c)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
-// 	}
+	for _, asg := range instanceGroups {
+		name := asg.InstanceGroupName
 
-// 	for _, asg := range instanceGroups {
-// 		name := asg.ScalingGroupName
+		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
+		if err != nil {
+			return nil, fmt.Errorf("error getting instance group for ASG %q", name)
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				klog.Warningf("Found ASG with no corresponding instance group %q", name)
+			}
+			continue
+		}
 
-// 		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error getting instance group for ASG %q", name)
-// 		}
-// 		if instancegroup == nil {
-// 			if warnUnmatched {
-// 				klog.Warningf("Found ASG with no corresponding instance group %q", name)
-// 			}
-// 			continue
-// 		}
+		groups[instancegroup.ObjectMeta.Name], err = buildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
+		}
+	}
 
-// 		groups[instancegroup.ObjectMeta.Name], err = buildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
-// 		}
-// 	}
+	klog.V(2).Infof("Cloud Instance Group Info = %v", groups)
+	return groups, nil
 
-// 	return groups, nil
-
-// }
+}
 
 // FindInstanceGroups finds instance groups matching the specified tags
-// func FindInstanceGroups(c ALICloud) ([]ess.ScalingGroupItemType, error) {
-// 	var sgs []ess.ScalingGroupItemType
-// 	var relsult []ess.ScalingGroupItemType
-// 	var clusterName string
+func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error) {
+	var result []DOInstanceGroup
+	var masterDroplets []string
+	var workerDroplets []string
+	nodeExists := false
 
-// 	clusterName, ok := c.GetClusterTags()[TagClusterName]
-// 	if !ok {
-// 		return nil, errors.New("error describing ScalingGroups:can not get clusterName")
-// 	}
+	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
+	droplets, err := getAllDropletsByTag(c, clusterTag)
+	if err != nil {
+		// Todo sri.
+	}
 
-// 	klog.V(2).Infof("Listing all Autoscaling groups matching clusterName")
+	instanceGroupName := ""
+	for _, droplet := range droplets {
+		doInstanceGroup, err := getDropletInstanceGroup(droplet.Tags)
+		if err != nil {
 
-// 	request := &ess.DescribeScalingGroupsArgs{
-// 		RegionId: common.Region(c.Region()),
-// 	}
-// 	for {
-// 		resp, page, err := c.EssClient().DescribeScalingGroups(request)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error describing ScalingGroups: %v", err)
-// 		}
-// 		sgs = append(sgs, resp...)
+		}
 
-// 		if page.NextPage() == nil {
-// 			break
-// 		}
-// 		request.Pagination = *(page.NextPage())
-// 	}
-// 	for _, sg := range sgs {
-// 		if strings.HasSuffix(sg.ScalingGroupName, clusterName) {
-// 			relsult = append(relsult, sg)
-// 		}
-// 	}
+		if strings.Contains(doInstanceGroup, "master") {
+			// This is a master instance group, get the index.
+			k8sIndex, err := getDropletIndexFromTag(droplet.Tags)
+			if err != nil {
+				// Todo Sri.
+				klog.Warningf("tag check returned err = %v", err)
+			}
+			instanceGroupName = fmt.Sprintf("%s-%s-%s", clusterName, doInstanceGroup, k8sIndex)
 
-// 	return relsult, nil
-// }
+			result = append(result, DOInstanceGroup{
+				InstanceGroupName: instanceGroupName,
+				GroupType:         "master",
+				ClusterName:       clusterName,
+				Members:           append(masterDroplets, strconv.Itoa(droplet.ID)),
+			})
+
+		} else {
+			// This is a node (add this instance group only once)
+			nodeExists = true
+			workerDroplets = append(workerDroplets, strconv.Itoa(droplet.ID))
+		}
+	}
+
+	if nodeExists {
+		instanceGroupName = fmt.Sprintf("%s-%s", clusterName, "nodes")
+
+		result = append(result, DOInstanceGroup{
+			InstanceGroupName: instanceGroupName,
+			GroupType:         "node",
+			ClusterName:       clusterName,
+			Members:           workerDroplets,
+		})
+	}
+
+	klog.V(2).Infof("InstanceGroup Info = %v", result)
+
+	return result, nil
+}
+
+func getDropletInstanceGroup(tags []string) (string, error) {
+	klog.V(2).Infof("tags = %v", tags)
+	for _, tag := range tags {
+		klog.V(2).Infof("Check tag = %s", tag)
+		if strings.Contains(strings.ToLower(tag), TagKubernetesInstanceGroup) {
+			tagParts := strings.Split(tag, ":")
+			if len(tagParts) < 2 {
+				return "", fmt.Errorf("tag split failed, too few components for tag %q", tag)
+			}
+			return tagParts[1], nil
+		}
+	}
+
+	return "", fmt.Errorf("Didn't find k8s-index for tag %v", tags)
+}
+
+func getDropletIndexFromTag(tags []string) (string, error) {
+	klog.V(2).Infof("tags = %v", tags)
+	for _, tag := range tags {
+		klog.V(2).Infof("Check tag = %s", tag)
+		if strings.Contains(strings.ToLower(tag), TagKubernetesClusterIndex) {
+			tagParts := strings.Split(tag, ":")
+			if len(tagParts) < 2 {
+				return "", fmt.Errorf("tag split failed, too few components for tag %q", tag)
+			}
+			return tagParts[1], nil
+		}
+	}
+
+	return "", fmt.Errorf("Didn't find k8s-index for tag %v", tags)
+}
 
 // matchInstanceGroup filters a list of instancegroups for recognized cloud groups
-// func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.InstanceGroup) (*kops.InstanceGroup, error) {
-// 	var instancegroup *kops.InstanceGroup
-// 	for _, g := range instancegroups {
-// 		var groupName string
+func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.InstanceGroup) (*kops.InstanceGroup, error) {
+	var instancegroup *kops.InstanceGroup
+	for _, g := range instancegroups {
+		var groupName string
 
-// 		switch g.Spec.Role {
-// 		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode:
-// 			groupName = clusterName + "-" + g.ObjectMeta.Name
-// 		default:
-// 			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
-// 			continue
-// 		}
+		switch g.Spec.Role {
+		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode:
+			groupName = clusterName + "-" + g.ObjectMeta.Name
+		default:
+			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+			continue
+		}
 
-// 		if name == groupName {
-// 			if instancegroup != nil {
-// 				return nil, fmt.Errorf("found multiple instance groups matching servergrp %q", groupName)
-// 			}
-// 			instancegroup = g
-// 		}
-// 	}
+		if name == groupName {
+			if instancegroup != nil {
+				return nil, fmt.Errorf("found multiple instance groups matching servergrp %q", groupName)
+			}
+			instancegroup = g
+		}
+	}
 
-// 	return instancegroup, nil
-// }
+	return instancegroup, nil
+}
 
-// func buildCloudInstanceGroup(c ALICloud, ig *kops.InstanceGroup, g ess.ScalingGroupItemType, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-// 	newLaunchConfigName := g.ActiveScalingConfigurationId
-// 	cg := &cloudinstances.CloudInstanceGroup{
-// 		HumanName:     g.ScalingGroupName,
-// 		InstanceGroup: ig,
-// 		MinSize:       g.MinSize,
-// 		TargetSize:    g.MinSize, // TODO: Which is the appropriate field? Need to add DesiredCapacity field to ScalingGroupItemType?
-// 		MaxSize:       g.MaxSize,
-// 		Raw:           g,
-// 	}
+func buildCloudInstanceGroup(c *Cloud, ig *kops.InstanceGroup, g DOInstanceGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	cg := &cloudinstances.CloudInstanceGroup{
+		HumanName:     g.InstanceGroupName,
+		InstanceGroup: ig,
+		Raw:           g,
+		MinSize:       int(fi.Int32Value(ig.Spec.MinSize)),
+		TargetSize:    int(fi.Int32Value(ig.Spec.MinSize)),
+		MaxSize:       int(fi.Int32Value(ig.Spec.MaxSize)),
+	}
 
-// 	var instances []ess.ScalingInstanceItemType
-// 	request := &ess.DescribeScalingInstancesArgs{
-// 		RegionId:       common.Region(c.Region()),
-// 		ScalingGroupId: g.ScalingGroupId,
-// 	}
-// 	for {
-// 		resp, page, err := c.EssClient().DescribeScalingInstances(request)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error describing ScalingGroups: %v", err)
-// 		}
-// 		instances = append(instances, resp...)
+	for _, member := range g.Members {
 
-// 		if page.NextPage() == nil {
-// 			break
-// 		}
-// 		request.Pagination = *(page.NextPage())
-// 	}
+		// DO doesn't have a notion of Auto Scaling Group - use the same config Type for both current config and new config.
+		err := cg.NewCloudInstanceGroupMember(member, g.GroupType, g.GroupType, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+		}
+	}
 
-// 	for _, i := range instances {
-// 		instanceId := i.InstanceId
-// 		if instanceId == "" {
-// 			klog.Warningf("ignoring instance with no instance id: %s", i)
-// 			continue
-// 		}
-// 		err := cg.NewCloudInstanceGroupMember(instanceId, newLaunchConfigName, i.ScalingConfigurationId, nodeMap)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
-// 		}
-// 	}
-
-// 	return cg, nil
-// }
-
+	return cg, nil
+}
