@@ -28,7 +28,6 @@ kops update cluster [flags]
       --create-kube-config            Will control automatically creating the kube config file on your local filesystem (default true)
   -h, --help                          help for cluster
       --lifecycle-overrides strings   comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges
-      --model string                  Models to apply (separate multiple models with commas) (default "proto,cloudup")
       --out string                    Path to write any local output
       --phase string                  Subset of tasks to run: assets, cluster, network, security
       --ssh-public-key string         SSH public key to use (deprecated: use kops create secret instead)

@@ -66,7 +66,6 @@ type CreateClusterOptions struct {
 	ClusterName          string
 	Yes                  bool
 	Target               string
-	Models               string
 	Cloud                string
 	Zones                []string
 	MasterZones          []string
@@ -167,7 +166,6 @@ type CreateClusterOptions struct {
 func (o *CreateClusterOptions) InitDefaults() {
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
-	o.Models = strings.Join(cloudup.CloudupModels, ",")
 	o.Networking = "kubenet"
 	o.Channel = api.DefaultChannel
 	o.Topology = api.TopologyPublic
@@ -282,7 +280,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately create the cluster")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, fmt.Sprintf("Valid targets: %s, %s, %s. Set this flag to %s if you want kops to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetCloudformation, cloudup.TargetTerraform))
-	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 
 	// Configuration / state location
 	if featureflag.EnableSeparateConfigBase.Enabled() {
@@ -1358,7 +1355,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 		updateClusterOptions.Yes = c.Yes
 		updateClusterOptions.Target = c.Target
-		updateClusterOptions.Models = c.Models
 		updateClusterOptions.OutDir = c.OutDir
 
 		// SSHPublicKey has already been mapped
