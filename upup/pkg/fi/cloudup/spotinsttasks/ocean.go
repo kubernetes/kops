@@ -64,13 +64,13 @@ type Ocean struct {
 	AutoScalerOpts           *AutoScalerOpts
 }
 
+var _ fi.Task = &Ocean{}
 var _ fi.CompareWithID = &Ocean{}
+var _ fi.HasDependencies = &Ocean{}
 
 func (o *Ocean) CompareWithID() *string {
 	return o.Name
 }
-
-var _ fi.HasDependencies = &Ocean{}
 
 func (o *Ocean) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
@@ -93,6 +93,10 @@ func (o *Ocean) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		for _, sg := range o.SecurityGroups {
 			deps = append(deps, sg)
 		}
+	}
+
+	if o.UserData != nil {
+		deps = append(deps, o.UserData.GetDependencies(tasks)...)
 	}
 
 	return deps

@@ -33,9 +33,9 @@ const DefaultInstanceType = "ecs.n2.medium"
 type ScalingGroupModelBuilder struct {
 	*ALIModelContext
 
-	BootstrapScript   *model.BootstrapScript
-	Lifecycle         *fi.Lifecycle
-	SecurityLifecycle *fi.Lifecycle
+	BootstrapScriptBuilder *model.BootstrapScriptBuilder
+	Lifecycle              *fi.Lifecycle
+	SecurityLifecycle      *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ScalingGroupModelBuilder{}
@@ -129,7 +129,7 @@ func (b *ScalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 			launchConfiguration.SSHKey = b.LinkToSSHKey()
-			if launchConfiguration.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster); err != nil {
+			if launchConfiguration.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
 				return err
 			}
 		}

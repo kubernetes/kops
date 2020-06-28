@@ -52,13 +52,13 @@ type LaunchSpec struct {
 	Ocean *Ocean
 }
 
+var _ fi.Task = &LaunchSpec{}
 var _ fi.CompareWithID = &LaunchSpec{}
+var _ fi.HasDependencies = &LaunchSpec{}
 
 func (o *LaunchSpec) CompareWithID() *string {
 	return o.Name
 }
-
-var _ fi.HasDependencies = &LaunchSpec{}
 
 func (o *LaunchSpec) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
@@ -81,6 +81,10 @@ func (o *LaunchSpec) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 
 	if o.Ocean != nil {
 		deps = append(deps, o.Ocean)
+	}
+
+	if o.UserData != nil {
+		deps = append(deps, o.UserData.GetDependencies(tasks)...)
 	}
 
 	return deps
