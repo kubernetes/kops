@@ -46,6 +46,7 @@ type LaunchSpec struct {
 	IAMInstanceProfile *awstasks.IAMInstanceProfile
 	ImageID            *string
 	Tags               map[string]string
+	RootVolumeOpts     *RootVolumeOpts
 	AutoScalerOpts     *AutoScalerOpts
 
 	Ocean *Ocean
@@ -168,6 +169,14 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 	{
 		if spec.IAMInstanceProfile != nil {
 			actual.IAMInstanceProfile = &awstasks.IAMInstanceProfile{Name: spec.IAMInstanceProfile.Name}
+		}
+	}
+
+	// Root volume options.
+	{
+		if spec.RootVolumeSize != nil {
+			actual.RootVolumeOpts = new(RootVolumeOpts)
+			actual.RootVolumeOpts.Size = fi.Int32(int32(*spec.RootVolumeSize))
 		}
 	}
 
@@ -330,6 +339,17 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Root volume options.
+	{
+		if opts := e.RootVolumeOpts; opts != nil {
+
+			// Volume size.
+			if opts.Size != nil {
+				spec.SetRootVolumeSize(fi.Int(int(*opts.Size)))
+			}
+		}
+	}
+
 	// Security groups.
 	{
 		if e.SecurityGroups != nil {
@@ -476,6 +496,20 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 			spec.SetIAMInstanceProfile(iprof)
 			changes.IAMInstanceProfile = nil
 			changed = true
+		}
+	}
+
+	// Root volume options.
+	{
+		if opts := changes.RootVolumeOpts; opts != nil {
+
+			// Volume size.
+			if opts.Size != nil {
+				spec.SetRootVolumeSize(fi.Int(int(*opts.Size)))
+				changed = true
+			}
+
+			changes.RootVolumeOpts = nil
 		}
 	}
 
@@ -678,6 +712,15 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	{
 		if e.IAMInstanceProfile != nil {
 			tf.IAMInstanceProfile = e.IAMInstanceProfile.TerraformLink()
+		}
+	}
+
+	// Root volume options.
+	if opts := e.RootVolumeOpts; opts != nil {
+
+		// Volume size.
+		if opts.Size != nil {
+			tf.RootVolumeSize = opts.Size
 		}
 	}
 
