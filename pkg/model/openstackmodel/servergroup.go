@@ -33,8 +33,8 @@ import (
 // ServerGroupModelBuilder configures server group objects
 type ServerGroupModelBuilder struct {
 	*OpenstackModelContext
-	BootstrapScript *model.BootstrapScript
-	Lifecycle       *fi.Lifecycle
+	BootstrapScriptBuilder *model.BootstrapScriptBuilder
+	Lifecycle              *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ServerGroupModelBuilder{}
@@ -50,7 +50,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 	clusterTag := "KubernetesCluster:" + strings.Replace(b.ClusterName(), ".", "-", -1)
 
-	var igUserData *string
 	igMeta := make(map[string]string)
 
 	if ig.Spec.Role != kops.InstanceGroupRoleBastion {
@@ -77,17 +76,9 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		igMeta[openstack.BOOT_VOLUME_SIZE] = v
 	}
 
-	startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
+	startupScript, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 	if err != nil {
 		return fmt.Errorf("could not create startup script for instance group %s: %v", ig.Name, err)
-	}
-	if startupScript != nil {
-		// var userData bytes.Buffer
-		startupStr, err := startupScript.AsString()
-		if err != nil {
-			return fmt.Errorf("could not create startup script for instance group %s: %v", ig.Name, err)
-		}
-		igUserData = fi.String(startupStr)
 	}
 
 	var securityGroups []*openstacktasks.SecurityGroup
@@ -149,12 +140,10 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Tags:             []string{clusterTag},
 			Role:             fi.String(string(ig.Spec.Role)),
 			Port:             portTask,
+			UserData:         startupScript,
 			Metadata:         igMeta,
 			SecurityGroups:   ig.Spec.AdditionalSecurityGroups,
 			AvailabilityZone: az,
-		}
-		if igUserData != nil {
-			instanceTask.UserData = igUserData
 		}
 		c.AddTask(instanceTask)
 

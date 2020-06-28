@@ -45,9 +45,9 @@ const (
 type AutoscalingGroupModelBuilder struct {
 	*AWSModelContext
 
-	BootstrapScript   *model.BootstrapScript
-	Lifecycle         *fi.Lifecycle
-	SecurityLifecycle *fi.Lifecycle
+	BootstrapScriptBuilder *model.BootstrapScriptBuilder
+	Lifecycle              *fi.Lifecycle
+	SecurityLifecycle      *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -261,7 +261,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	}
 
 	// @step: add the instancegroup userdata
-	if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, b.Cluster); err != nil {
+	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
 		return nil, err
 	}
 

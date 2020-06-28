@@ -20,9 +20,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/testutils/golden"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -121,8 +124,11 @@ func TestBootstrapUserData(t *testing.T) {
 	for i, x := range cs {
 		cluster := makeTestCluster(x.HookSpecRoles, x.FileAssetSpecRoles)
 		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles, x.FileAssetSpecRoles)
+		c := &fi.ModelBuilderContext{
+			Tasks: make(map[string]fi.Task),
+		}
 
-		bs := &BootstrapScript{
+		bs := &BootstrapScriptBuilder{
 			NodeUpConfigBuilder: &nodeupConfigBuilder{cluster: cluster},
 			NodeUpSource: map[architectures.Architecture]string{
 				architectures.ArchitectureAmd64: "NUSourceAmd64",
@@ -134,17 +140,15 @@ func TestBootstrapUserData(t *testing.T) {
 			},
 		}
 
-		// Purposely running this twice to cover issue #3516
-		_, err := bs.ResourceNodeUp(group, cluster)
+		res, err := bs.ResourceNodeUp(c, group)
 		if err != nil {
 			t.Errorf("case %d failed to create nodeup resource. error: %s", i, err)
 			continue
 		}
-		res, err := bs.ResourceNodeUp(group, cluster)
-		if err != nil {
-			t.Errorf("case %d failed to create nodeup resource. error: %s", i, err)
-			continue
-		}
+
+		require.Contains(t, c.Tasks, "BootstrapScript/testIG")
+		err = c.Tasks["BootstrapScript/testIG"].Run(&fi.Context{Cluster: cluster})
+		require.NoError(t, err, "running task")
 
 		actual, err := res.AsString()
 		if err != nil {
@@ -256,6 +260,9 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 
 func makeTestInstanceGroup(role kops.InstanceGroupRole, hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles []kops.InstanceGroupRole) *kops.InstanceGroup {
 	return &kops.InstanceGroup{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "testIG",
+		},
 		Spec: kops.InstanceGroupSpec{
 			Kubelet: &kops.KubeletConfigSpec{
 				KubeconfigPath: "/etc/kubernetes/igconfig.txt",
