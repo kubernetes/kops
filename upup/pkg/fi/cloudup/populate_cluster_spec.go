@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"text/template"
 
 	"k8s.io/klog"
 
@@ -31,7 +30,6 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
-	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
 	nodeauthorizer "k8s.io/kops/pkg/model/components/node-authorizer"
@@ -252,26 +250,6 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		cluster.Spec.DNSZone = dnsZone
 	}
 
-	tags, err := buildCloudupTags(cluster)
-
-	if err != nil {
-		return err
-	}
-
-	tf := &TemplateFunctions{
-		KopsModelContext: model.KopsModelContext{
-			Cluster: cluster,
-		},
-		tags: tags,
-	}
-
-	templateFunctions := make(template.FuncMap)
-
-	err = tf.AddTo(templateFunctions, secretStore)
-	if err != nil {
-		return err
-	}
-
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion is required")
 	}
@@ -308,8 +286,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	}
 
 	specBuilder := &SpecBuilder{
-		OptionsLoader: loader.NewOptionsLoader(templateFunctions, codeModels),
-		Tags:          tags,
+		OptionsLoader: loader.NewOptionsLoader(codeModels),
 	}
 
 	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec)
@@ -324,7 +301,6 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	fullCluster := &kopsapi.Cluster{}
 	*fullCluster = *cluster
 	fullCluster.Spec = *completed
-	tf.Cluster = fullCluster
 
 	if errs := validation.ValidateCluster(fullCluster, true); len(errs) != 0 {
 		return fmt.Errorf("Completed cluster failed validation: %v", errs.ToAggregate())
