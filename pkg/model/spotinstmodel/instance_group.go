@@ -523,6 +523,18 @@ func (b *InstanceGroupModelBuilder) buildLaunchSpec(c *fi.ModelBuilderContext,
 		return fmt.Errorf("error building iam instance profile: %v", err)
 	}
 
+	// Root volume.
+	rootVolumeOpts, err := b.buildRootVolumeOpts(ig)
+	if err != nil {
+		return fmt.Errorf("error building root volume options: %v", err)
+	}
+	if rootVolumeOpts != nil { // remove unsupported options
+		launchSpec.RootVolumeOpts = rootVolumeOpts
+		launchSpec.RootVolumeOpts.Type = nil
+		launchSpec.RootVolumeOpts.IOPS = nil
+		launchSpec.RootVolumeOpts.Optimization = nil
+	}
+
 	// Security groups.
 	launchSpec.SecurityGroups, err = b.buildSecurityGroups(c, ig)
 	if err != nil {
