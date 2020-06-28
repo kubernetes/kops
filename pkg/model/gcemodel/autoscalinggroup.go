@@ -40,8 +40,8 @@ const (
 type AutoscalingGroupModelBuilder struct {
 	*GCEModelContext
 
-	BootstrapScript *model.BootstrapScript
-	Lifecycle       *fi.Lifecycle
+	BootstrapScriptBuilder *model.BootstrapScriptBuilder
+	Lifecycle              *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -50,7 +50,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.SafeObjectName(ig.ObjectMeta.Name)
 
-		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster)
+		startupScript, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
 			return err
 		}

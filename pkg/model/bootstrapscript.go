@@ -43,16 +43,26 @@ type NodeUpConfigBuilder interface {
 	BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error)
 }
 
-// BootstrapScript creates the bootstrap script
-type BootstrapScript struct {
+// BootstrapScriptBuilder creates the bootstrap script
+type BootstrapScriptBuilder struct {
 	NodeUpSource        map[architectures.Architecture]string
 	NodeUpSourceHash    map[architectures.Architecture]string
 	NodeUpConfigBuilder NodeUpConfigBuilder
 }
 
+type BootstrapScript struct {
+	Name     string
+	ig       *kops.InstanceGroup
+	builder  *BootstrapScriptBuilder
+	resource fi.TaskDependentResource
+}
+
+var _ fi.Task = &BootstrapScript{}
+var _ fi.HasName = &BootstrapScript{}
+
 // kubeEnv returns the nodeup config for the instance group
 func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup) (string, error) {
-	config, err := b.NodeUpConfigBuilder.BuildConfig(ig)
+	config, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig)
 	if err != nil {
 		return "", err
 	}
@@ -135,7 +145,7 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
-func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.Cluster) (*fi.ResourceHolder, error) {
+func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
 		templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
@@ -145,25 +155,40 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 		return fi.WrapResource(templateResource), nil
 	}
 
+	task := &BootstrapScript{
+		Name:    ig.Name,
+		ig:      ig,
+		builder: b,
+	}
+	task.resource.Task = task
+	c.AddTask(task)
+	return fi.WrapResource(&task.resource), nil
+}
+
+func (b *BootstrapScript) GetName() *string {
+	return &b.Name
+}
+
+func (b *BootstrapScript) Run(c *fi.Context) error {
 	functions := template.FuncMap{
 		"NodeUpSourceAmd64": func() string {
-			return b.NodeUpSource[architectures.ArchitectureAmd64]
+			return b.builder.NodeUpSource[architectures.ArchitectureAmd64]
 		},
 		"NodeUpSourceHashAmd64": func() string {
-			return b.NodeUpSourceHash[architectures.ArchitectureAmd64]
+			return b.builder.NodeUpSourceHash[architectures.ArchitectureAmd64]
 		},
 		"NodeUpSourceArm64": func() string {
-			return b.NodeUpSource[architectures.ArchitectureArm64]
+			return b.builder.NodeUpSource[architectures.ArchitectureArm64]
 		},
 		"NodeUpSourceHashArm64": func() string {
-			return b.NodeUpSourceHash[architectures.ArchitectureArm64]
+			return b.builder.NodeUpSourceHash[architectures.ArchitectureArm64]
 		},
 		"KubeEnv": func() (string, error) {
-			return b.kubeEnv(ig)
+			return b.kubeEnv(b.ig)
 		},
 
 		"EnvironmentVariables": func() (string, error) {
-			env, err := b.buildEnvironmentVariables(cluster)
+			env, err := b.buildEnvironmentVariables(c.Cluster)
 			if err != nil {
 				return "", err
 			}
@@ -183,11 +208,11 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 		},
 
 		"ProxyEnv": func() string {
-			return b.createProxyEnv(cluster.Spec.EgressProxy)
+			return b.createProxyEnv(c.Cluster.Spec.EgressProxy)
 		},
 
 		"ClusterSpec": func() (string, error) {
-			cs := cluster.Spec
+			cs := c.Cluster.Spec
 
 			spec := make(map[string]interface{})
 			spec["cloudConfig"] = cs.CloudConfig
@@ -206,7 +231,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				}
 			}
 
-			if ig.IsMaster() {
+			if b.ig.IsMaster() {
 				spec["encryptionConfig"] = cs.EncryptionConfig
 				spec["etcdClusters"] = make(map[string]kops.EtcdClusterSpec)
 				spec["kubeAPIServer"] = cs.KubeAPIServer
@@ -231,7 +256,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				}
 			}
 
-			hooks, err := b.getRelevantHooks(cs.Hooks, ig.Spec.Role)
+			hooks, err := b.getRelevantHooks(cs.Hooks, b.ig.Spec.Role)
 			if err != nil {
 				return "", err
 			}
@@ -239,7 +264,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				spec["hooks"] = hooks
 			}
 
-			fileAssets, err := b.getRelevantFileAssets(cs.FileAssets, ig.Spec.Role)
+			fileAssets, err := b.getRelevantFileAssets(cs.FileAssets, b.ig.Spec.Role)
 			if err != nil {
 				return "", err
 			}
@@ -256,11 +281,11 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 
 		"IGSpec": func() (string, error) {
 			spec := make(map[string]interface{})
-			spec["kubelet"] = ig.Spec.Kubelet
-			spec["nodeLabels"] = ig.Spec.NodeLabels
-			spec["taints"] = ig.Spec.Taints
+			spec["kubelet"] = b.ig.Spec.Kubelet
+			spec["nodeLabels"] = b.ig.Spec.NodeLabels
+			spec["taints"] = b.ig.Spec.Taints
 
-			hooks, err := b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
+			hooks, err := b.getRelevantHooks(b.ig.Spec.Hooks, b.ig.Spec.Role)
 			if err != nil {
 				return "", err
 			}
@@ -268,7 +293,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 				spec["hooks"] = hooks
 			}
 
-			fileAssets, err := b.getRelevantFileAssets(ig.Spec.FileAssets, ig.Spec.Role)
+			fileAssets, err := b.getRelevantFileAssets(b.ig.Spec.FileAssets, b.ig.Spec.Role)
 			if err != nil {
 				return "", err
 			}
@@ -284,17 +309,18 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cluster *kops.C
 		},
 	}
 
-	awsNodeUpTemplate, err := resources.AWSNodeUpTemplate(ig)
+	awsNodeUpTemplate, err := resources.AWSNodeUpTemplate(b.ig)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	templateResource, err := NewTemplateResource("nodeup", awsNodeUpTemplate, functions, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return fi.WrapResource(templateResource), nil
+	b.resource.Resource = templateResource
+	return nil
 }
 
 // getRelevantHooks returns a list of hooks to be applied to the instance group,
