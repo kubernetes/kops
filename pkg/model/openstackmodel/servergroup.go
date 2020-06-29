@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 // ServerGroupModelBuilder configures server group objects
@@ -152,7 +151,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router != nil {
 			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
 				if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-					b.associateFixedIPToKeypair(c, instanceTask)
+					b.associateFixedIPToKeypair(instanceTask)
 				}
 				continue
 			}
@@ -172,7 +171,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 						Lifecycle: b.Lifecycle,
 					}
 					c.AddTask(t)
-					b.associateFIPToKeypair(c, t)
+					b.associateFIPToKeypair(t)
 				}
 			default:
 				if !b.UsesSSHBastion() {
@@ -187,7 +186,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		} else if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router == nil {
 			// No external router, but we need to add master fixed ips to certificates
 			if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-				b.associateFixedIPToKeypair(c, instanceTask)
+				b.associateFixedIPToKeypair(instanceTask)
 			}
 		}
 	}
@@ -195,30 +194,16 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 	return nil
 }
 
-func (b *ServerGroupModelBuilder) associateFixedIPToKeypair(c *fi.ModelBuilderContext, fipTask *openstacktasks.Instance) error {
+func (b *ServerGroupModelBuilder) associateFixedIPToKeypair(fipTask *openstacktasks.Instance) {
 	// Ensure the floating IP is included in the TLS certificate,
 	// if we're not going to use an alias for it
-	// TODO: I don't love this technique for finding the task by name & modifying it
-	masterKeypairTask, found := c.Tasks["Keypair/master"]
-	if !found {
-		return fmt.Errorf("keypair/master task not found")
-	}
-	masterKeypair := masterKeypairTask.(*fitasks.Keypair)
-	masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, fipTask)
-	return nil
+	fipTask.ForAPIServer = true
 }
 
-func (b *ServerGroupModelBuilder) associateFIPToKeypair(c *fi.ModelBuilderContext, fipTask *openstacktasks.FloatingIP) error {
+func (b *ServerGroupModelBuilder) associateFIPToKeypair(fipTask *openstacktasks.FloatingIP) {
 	// Ensure the floating IP is included in the TLS certificate,
 	// if we're not going to use an alias for it
-	// TODO: I don't love this technique for finding the task by name & modifying it
-	masterKeypairTask, found := c.Tasks["Keypair/master"]
-	if !found {
-		return fmt.Errorf("keypair/master task not found")
-	}
-	masterKeypair := masterKeypairTask.(*fitasks.Keypair)
-	masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, fipTask)
-	return nil
+	fipTask.ForAPIServer = true
 }
 
 func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -283,7 +268,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(lbfipTask)
 
 		if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
-			b.associateFIPToKeypair(c, lbfipTask)
+			b.associateFIPToKeypair(lbfipTask)
 		}
 
 		poolTask := &openstacktasks.LBPool{

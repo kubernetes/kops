@@ -65,7 +65,8 @@ type LoadBalancer struct {
 	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
 	SSLCertificateID       string
 
-	Tags map[string]string
+	Tags         map[string]string
+	ForAPIServer bool
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -404,6 +405,10 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 }
 
 var _ fi.HasAddress = &LoadBalancer{}
+
+func (e *LoadBalancer) IsForAPIServer() bool {
+	return e.ForAPIServer
+}
 
 func (e *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)

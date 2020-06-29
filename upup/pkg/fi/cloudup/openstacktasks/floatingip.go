@@ -31,11 +31,12 @@ import (
 
 //go:generate fitask -type=FloatingIP
 type FloatingIP struct {
-	Name      *string
-	ID        *string
-	Server    *Instance
-	LB        *LB
-	Lifecycle *fi.Lifecycle
+	Name         *string
+	ID           *string
+	Server       *Instance
+	LB           *LB
+	Lifecycle    *fi.Lifecycle
+	ForAPIServer bool
 }
 
 var _ fi.HasAddress = &FloatingIP{}
@@ -80,6 +81,10 @@ func (e *FloatingIP) findServerFloatingIP(context *fi.Context, cloud openstack.O
 		return ips[0], nil
 	}
 	return nil, nil
+}
+
+func (e *FloatingIP) IsForAPIServer() bool {
+	return e.ForAPIServer
 }
 
 func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {

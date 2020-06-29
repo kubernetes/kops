@@ -35,7 +35,7 @@ type Keypair struct {
 	// AlternateNames a list of alternative names for this certificate
 	AlternateNames []string `json:"alternateNames"`
 	// AlternateNameTasks is a collection of subtask
-	AlternateNameTasks []fi.Task `json:"alternateNameTasks"`
+	AlternateNameTasks []fi.HasAddress `json:"alternateNameTasks"`
 	// Lifecycle is context for a task
 	Lifecycle *fi.Lifecycle
 	// Signer is the keypair to use to sign, for when we want to use an alternative CA
@@ -50,6 +50,7 @@ type Keypair struct {
 
 var _ fi.HasCheckExisting = &Keypair{}
 var _ fi.HasName = &Keypair{}
+var _ fi.HasDependencies = &Keypair{}
 
 // It's important always to check for the existing key, so we don't regenerate keys e.g. on terraform
 func (e *Keypair) CheckExisting(c *fi.Context) bool {
@@ -60,6 +61,25 @@ var _ fi.CompareWithID = &Keypair{}
 
 func (e *Keypair) CompareWithID() *string {
 	return &e.Subject
+}
+
+func (e *Keypair) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+
+	if e.Signer != nil {
+		deps = append(deps, e.Signer)
+	}
+
+	if *e.Name == "master" {
+		for _, task := range tasks {
+			if hasAddress, ok := task.(fi.HasAddress); ok && hasAddress.IsForAPIServer() {
+				deps = append(deps, task)
+				e.AlternateNameTasks = append(e.AlternateNameTasks, hasAddress)
+			}
+		}
+	}
+
+	return deps
 }
 
 func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
@@ -122,21 +142,17 @@ func (e *Keypair) normalize(c *fi.Context) error {
 		alternateNames = append(alternateNames, s)
 	}
 
-	for _, task := range e.AlternateNameTasks {
-		if hasAddress, ok := task.(fi.HasAddress); ok {
-			address, err := hasAddress.FindIPAddress(c)
-			if err != nil {
-				return fmt.Errorf("error finding address for %v: %v", task, err)
-			}
-			if address == nil {
-				klog.Warningf("Task did not have an address: %v", task)
-				continue
-			}
-			klog.V(8).Infof("Resolved alternateName %q for %q", *address, task)
-			alternateNames = append(alternateNames, *address)
-		} else {
-			return fmt.Errorf("Unsupported type for AlternateNameDependencies: %v", task)
+	for _, hasAddress := range e.AlternateNameTasks {
+		address, err := hasAddress.FindIPAddress(c)
+		if err != nil {
+			return fmt.Errorf("error finding address for %v: %v", hasAddress, err)
 		}
+		if address == nil {
+			klog.Warningf("Task did not have an address: %v", hasAddress)
+			continue
+		}
+		klog.V(8).Infof("Resolved alternateName %q for %q", *address, hasAddress)
+		alternateNames = append(alternateNames, *address)
 	}
 
 	sort.Strings(alternateNames)
