@@ -409,7 +409,17 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 						}
 
 						// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
-						if networkingSpec.Cilium != nil && networkingSpec.Cilium.EtcdManaged {
+						// As long as the Cilium Etcd cluster exists, we should do this
+						ciliumEtcd := false
+
+						for _, cluster := range b.Cluster.Spec.EtcdClusters {
+							if cluster.Name == "cilium" {
+								ciliumEtcd = true
+								break
+							}
+						}
+
+						if networkingSpec.Cilium != nil && ciliumEtcd {
 							p.Statement = append(p.Statement, &Statement{
 								Effect: StatementEffectAllow,
 								Action: stringorslice.Slice([]string{"s3:Get*"}),
