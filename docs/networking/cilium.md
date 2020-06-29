@@ -81,6 +81,15 @@ Also be aware that while enabling this on an existing cluster is safe, disabling
       enableNodePort: true
 ```
 
+If you are migrating an existing cluster, you need to manually roll the cilium DaemonSet before rolling the cluster:
+
+```
+kops update cluster
+kops update cluster --yes
+kubectl rollout restart ds/cilium -n kube-system
+kops rolling-update cluster --yes
+```
+
 ### Enabling Cilium ENI IPAM
 
 This feature is in beta state as of kops 1.18.
