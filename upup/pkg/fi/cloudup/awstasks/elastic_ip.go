@@ -56,19 +56,6 @@ func (e *ElasticIP) CompareWithID() *string {
 	return e.ID
 }
 
-var _ fi.HasAddress = &ElasticIP{}
-
-func (e *ElasticIP) FindIPAddress(context *fi.Context) (*string, error) {
-	actual, err := e.find(context.Cloud.(awsup.AWSCloud))
-	if err != nil {
-		return nil, fmt.Errorf("error querying for ElasticIP: %v", err)
-	}
-	if actual == nil {
-		return nil, nil
-	}
-	return actual.PublicIP, nil
-}
-
 // Find returns the actual ElasticIP state, or nil if not found
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))

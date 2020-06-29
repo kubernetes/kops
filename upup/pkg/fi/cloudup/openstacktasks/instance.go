@@ -46,7 +46,8 @@ type Instance struct {
 	AvailabilityZone *string
 	SecurityGroups   []string
 
-	Lifecycle *fi.Lifecycle
+	Lifecycle    *fi.Lifecycle
+	ForAPIServer bool
 }
 
 var _ fi.Task = &Instance{}
@@ -80,6 +81,10 @@ func (e *Instance) WaitForStatusActive(t *openstack.OpenstackAPITarget) error {
 
 func (e *Instance) CompareWithID() *string {
 	return e.ID
+}
+
+func (e *Instance) IsForAPIServer() bool {
+	return e.ForAPIServer
 }
 
 func (e *Instance) FindIPAddress(context *fi.Context) (*string, error) {
