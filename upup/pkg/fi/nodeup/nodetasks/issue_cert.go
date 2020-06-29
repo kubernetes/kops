@@ -142,10 +142,11 @@ func (e *IssueCert) Run(c *fi.Context) error {
 	validHours := (455 * 24) + (hash.Sum32() % (30 * 24))
 
 	req := &pki.IssueCertRequest{
-		Signer:   e.Signer,
-		Type:     e.Type,
-		Subject:  e.Subject.toPKIXName(),
-		Validity: time.Hour * time.Duration(validHours),
+		Signer:         e.Signer,
+		Type:           e.Type,
+		Subject:        e.Subject.toPKIXName(),
+		AlternateNames: e.AlternateNames,
+		Validity:       time.Hour * time.Duration(validHours),
 	}
 
 	klog.Infof("signing certificate for %q", e.Name)
