@@ -21,15 +21,13 @@ import (
 	"sort"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
-
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/klog"
 )
 
 // LoadBalancerDefaultIdleTimeout is the default idle time for the ELB
@@ -272,13 +270,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
 		// Ensure the ELB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
-		// TODO: I don't love this technique for finding the task by name & modifying it
-		masterKeypairTask, found := c.Tasks["Keypair/master"]
-		if !found {
-			return fmt.Errorf("keypair/master task not found")
-		}
-		masterKeypair := masterKeypairTask.(*fitasks.Keypair)
-		masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, elb)
+		elb.ForAPIServer = true
 	}
 
 	// When Spotinst Elastigroups are used, there is no need to create
