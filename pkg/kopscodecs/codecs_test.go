@@ -76,6 +76,40 @@ func TestToVersionedYaml(t *testing.T) {
 
 }
 
+func TestToVersionedJSON(t *testing.T) {
+	grid := []struct {
+		obj      runtime.Object
+		expected string
+	}{
+		{
+			obj: &v1alpha2.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					CreationTimestamp: testTimestamp,
+					Name:              "hello",
+				},
+				Spec: v1alpha2.ClusterSpec{
+					KubernetesVersion: "1.2.3",
+				},
+			},
+			expected: "{\"kind\":\"Cluster\",\"apiVersion\":\"kops.k8s.io/v1alpha2\",\"metadata\":{\"name\":\"hello\",\"creationTimestamp\":\"2017-01-01T00:00:00Z\"},\"spec\":{\"kubernetesVersion\":\"1.2.3\"}}",
+		},
+	}
+	for _, g := range grid {
+		actualBytes, err := ToVersionedJSON(g.obj)
+		if err != nil {
+			t.Errorf("error from ToVersionedJSON: %v", err)
+			continue
+		}
+		actual := string(actualBytes)
+		actual = strings.TrimSpace(actual)
+		if actual != g.expected {
+			t.Logf(diff.FormatDiff(actual, g.expected))
+			t.Errorf("actual != expected")
+			continue
+		}
+	}
+}
+
 func TestRewriteAPIGroup(t *testing.T) {
 	input := []byte("apiVersion: kops/v1alpha2\nkind: Cluster")
 	expected := []byte("apiVersion: kops.k8s.io/v1alpha2\nkind: Cluster")
