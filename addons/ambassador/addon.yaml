@@ -1,0 +1,9 @@
+kind: Addons
+metadata:
+  name: ambassador
+spec:
+  addons:
+  - version: 1.1.0
+    selector:
+      k8s-addon: ambassador.addons.k8s.io
+    manifest: ambassador-operator.yaml
