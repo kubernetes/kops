@@ -35,6 +35,10 @@ CHECKS=(
   "-ST1006"  # Poorly chosen receiver name
   "-ST1012"  # Poorly chosen name for error variable
   "-ST1016"  # Use consistent method receiver names
+  "-ST1020"  # Comment on exported method should be of the form ...
+  "-ST1021"  # Comment on exported type should be of the form ...
+  "-ST1022"  # Comment on exported const should be of the form ...
+  "-SA5011"  # Possible nil pointer dereference. staticcheck doesn't yet recognize klog.Fatal
 )
 export IFS=','; checks="${CHECKS[*]}"; unset IFS
 

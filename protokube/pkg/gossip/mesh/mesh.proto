@@ -1,4 +1,4 @@
-// To regenerate mesh.pb.go run make protokube-gocode
+// To regenerate mesh.pb.go run make protobuf
 syntax = 'proto3';
 
 package mesh;
