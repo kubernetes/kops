@@ -62,6 +62,7 @@ func Test_InstanceGroupKubeletMerge(t *testing.T) {
 	}
 	if mergedKubeletSpec == nil {
 		t.Error("Returned nil kubelet spec")
+		t.FailNow()
 	}
 
 	if mergedKubeletSpec.NvidiaGPUs != instanceGroup.Spec.Kubelet.NvidiaGPUs {
