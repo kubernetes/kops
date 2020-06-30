@@ -11,21 +11,21 @@ package imports
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"go/ast"
-	"go/build"
 	"go/format"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"io"
 	"io/ioutil"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/ast/astutil"
+	"golang.org/x/tools/internal/gocommand"
 )
 
 // Options is golang.org/x/tools/imports.Options with extra internal-only options.
@@ -83,8 +83,9 @@ func FixImports(filename string, src []byte, opt *Options) (fixes []*ImportFix, 
 	return getFixes(fileSet, file, filename, opt.Env)
 }
 
-// ApplyFix will apply all of the fixes to the file and format it.
-func ApplyFixes(fixes []*ImportFix, filename string, src []byte, opt *Options) (formatted []byte, err error) {
+// ApplyFixes applies all of the fixes to the file and formats it. extraMode
+// is added in when parsing the file.
+func ApplyFixes(fixes []*ImportFix, filename string, src []byte, opt *Options, extraMode parser.Mode) (formatted []byte, err error) {
 	src, opt, err = initialize(filename, src, opt)
 	if err != nil {
 		return nil, err
@@ -100,6 +101,8 @@ func ApplyFixes(fixes []*ImportFix, filename string, src []byte, opt *Options) (
 	if opt.AllErrors {
 		parserMode |= parser.AllErrors
 	}
+	parserMode |= extraMode
+
 	file, err := parser.ParseFile(fileSet, filename, src, parserMode)
 	if file == nil {
 		return nil, err
@@ -111,23 +114,23 @@ func ApplyFixes(fixes []*ImportFix, filename string, src []byte, opt *Options) (
 	return formatFile(fileSet, file, src, nil, opt)
 }
 
-// GetAllCandidates gets all of the standard library candidate packages to import in
-// sorted order on import path.
-func GetAllCandidates(filename string, opt *Options) (pkgs []ImportFix, err error) {
-	_, opt, err = initialize(filename, nil, opt)
+// GetAllCandidates gets all of the packages starting with prefix that can be
+// imported by filename, sorted by import path.
+func GetAllCandidates(ctx context.Context, callback func(ImportFix), searchPrefix, filename, filePkg string, opt *Options) error {
+	_, opt, err := initialize(filename, []byte{}, opt)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return getAllCandidates(filename, opt.Env)
+	return getAllCandidates(ctx, callback, searchPrefix, filename, filePkg, opt.Env)
 }
 
 // GetPackageExports returns all known packages with name pkg and their exports.
-func GetPackageExports(pkg, filename string, opt *Options) (exports []PackageExport, err error) {
-	_, opt, err = initialize(filename, nil, opt)
+func GetPackageExports(ctx context.Context, callback func(PackageExport), searchPkg, filename, filePkg string, opt *Options) error {
+	_, opt, err := initialize(filename, []byte{}, opt)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return getPackageExports(pkg, filename, opt.Env)
+	return getPackageExports(ctx, callback, searchPkg, filename, filePkg, opt.Env)
 }
 
 // initialize sets the values for opt and src.
@@ -141,15 +144,14 @@ func initialize(filename string, src []byte, opt *Options) ([]byte, *Options, er
 
 	// Set the env if the user has not provided it.
 	if opt.Env == nil {
-		opt.Env = &ProcessEnv{
-			GOPATH: build.Default.GOPATH,
-			GOROOT: build.Default.GOROOT,
-		}
+		opt.Env = &ProcessEnv{}
 	}
-
-	// Set the logger if the user has not provided it.
-	if opt.Env.Logf == nil {
-		opt.Env.Logf = log.Printf
+	// Set the gocmdRunner if the user has not provided it.
+	if opt.Env.GocmdRunner == nil {
+		opt.Env.GocmdRunner = &gocommand.Runner{}
+	}
+	if err := opt.Env.init(); err != nil {
+		return nil, nil, err
 	}
 
 	if src == nil {

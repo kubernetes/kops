@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "convert.go",
+        "doc.go",
+        "lexer.go",
+        "match.go",
+        "parser.go",
+        "pattern.go",
+    ],
+    importmap = "k8s.io/kops/vendor/honnef.co/go/tools/pattern",
+    importpath = "honnef.co/go/tools/pattern",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/honnef.co/go/tools/lint:go_default_library"],
+)
