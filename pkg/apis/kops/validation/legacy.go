@@ -135,7 +135,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 		} else {
 			_, networkCIDR, err = net.ParseCIDR(c.Spec.NetworkCIDR)
 			if err != nil {
-				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, fmt.Sprintf("Cluster had an invalid networkCIDR")))
+				allErrs = append(allErrs, field.Invalid(fieldSpec.Child("networkCIDR"), c.Spec.NetworkCIDR, "Cluster had an invalid networkCIDR"))
 			}
 		}
 	}
@@ -147,7 +147,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 			for _, AdditionalNetworkCIDR := range c.Spec.AdditionalNetworkCIDRs {
 				_, IPNetAdditionalNetworkCIDR, err := net.ParseCIDR(AdditionalNetworkCIDR)
 				if err != nil {
-					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("additionalNetworkCIDRs"), AdditionalNetworkCIDR, fmt.Sprintf("Cluster had an invalid additionalNetworkCIDRs")))
+					allErrs = append(allErrs, field.Invalid(fieldSpec.Child("additionalNetworkCIDRs"), AdditionalNetworkCIDR, "Cluster had an invalid additionalNetworkCIDRs"))
 				}
 				additionalNetworkCIDRs = append(additionalNetworkCIDRs, IPNetAdditionalNetworkCIDR)
 			}

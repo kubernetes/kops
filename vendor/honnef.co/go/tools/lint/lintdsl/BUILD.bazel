@@ -8,8 +8,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/golang.org/x/tools/go/analysis:go_default_library",
-        "//vendor/honnef.co/go/tools/facts:go_default_library",
-        "//vendor/honnef.co/go/tools/lint:go_default_library",
-        "//vendor/honnef.co/go/tools/ssa:go_default_library",
+        "//vendor/honnef.co/go/tools/pattern:go_default_library",
     ],
 )

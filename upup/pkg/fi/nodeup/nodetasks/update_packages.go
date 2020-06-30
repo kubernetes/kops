@@ -45,7 +45,7 @@ func (p *UpdatePackages) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (p *UpdatePackages) String() string {
-	return fmt.Sprintf("UpdatePackages")
+	return "UpdatePackages"
 }
 
 func (e *UpdatePackages) Find(c *fi.Context) (*UpdatePackages, error) {
