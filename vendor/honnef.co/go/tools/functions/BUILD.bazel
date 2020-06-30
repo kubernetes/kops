@@ -4,11 +4,11 @@ go_library(
     name = "go_default_library",
     srcs = [
         "loops.go",
-        "pure.go",
+        "stub.go",
         "terminates.go",
     ],
     importmap = "k8s.io/kops/vendor/honnef.co/go/tools/functions",
     importpath = "honnef.co/go/tools/functions",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/honnef.co/go/tools/ssa:go_default_library"],
+    deps = ["//vendor/honnef.co/go/tools/ir:go_default_library"],
 )
