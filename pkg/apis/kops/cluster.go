@@ -697,7 +697,7 @@ type DNSControllerGossipConfig struct {
 type RollingUpdate struct {
 	// DrainAndTerminate enables draining and terminating nodes during rolling updates.
 	// Defaults to true.
-	DrainAndTerminate *bool `json:"enabled,omitempty"`
+	DrainAndTerminate *bool `json:"drainAndTerminate,omitempty"`
 	// MaxUnavailable is the maximum number of nodes that can be unavailable during the update.
 	// The value can be an absolute number (for example 5) or a percentage of desired
 	// nodes (for example 10%).
