@@ -531,21 +531,13 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 }
 
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersionMinor int) *nodetasks.Service {
-	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
 	usesDockerSocket := true
-
-	var dockerdCommand string
-	if oldDocker {
-		dockerdCommand = "/usr/bin/docker daemon"
-	} else {
-		dockerdCommand = "/usr/bin/dockerd"
-	}
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
 
-	if b.Distribution.IsRHELFamily() && !oldDocker {
+	if b.Distribution.IsRHELFamily() {
 		// See https://github.com/docker/docker/pull/24804
 		usesDockerSocket = false
 	}
@@ -562,21 +554,16 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersio
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
 	if usesDockerSocket {
-		manifest.Set("Service", "ExecStart", dockerdCommand+" -H fd:// \"$DOCKER_OPTS\"")
+		manifest.Set("Service", "ExecStart", "/usr/bin/dockerd -H fd:// \"$DOCKER_OPTS\"")
 	} else {
-		manifest.Set("Service", "ExecStart", dockerdCommand+" \"$DOCKER_OPTS\"")
+		manifest.Set("Service", "ExecStart", "/usr/bin/dockerd \"$DOCKER_OPTS\"")
 	}
 
-	if !oldDocker {
-		// This was added by docker 1.12
-		// TODO: They seem sensible - should we backport them?
+	manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
+	// kill only the docker process, not all processes in the cgroup
+	manifest.Set("Service", "KillMode", "process")
 
-		manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
-		// kill only the docker process, not all processes in the cgroup
-		manifest.Set("Service", "KillMode", "process")
-
-		manifest.Set("Service", "TimeoutStartSec", "0")
-	}
+	manifest.Set("Service", "TimeoutStartSec", "0")
 
 	manifest.Set("Service", "LimitNOFILE", "infinity")
 	manifest.Set("Service", "LimitNPROC", "infinity")
