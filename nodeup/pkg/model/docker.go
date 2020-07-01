@@ -504,6 +504,8 @@ func (b *DockerBuilder) buildDockerGroup() *nodetasks.GroupTask {
 
 // buildSystemdSocket creates docker.socket, for when we're not installing from a package
 func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
+	// Based on https://github.com/docker/docker-ce-packaging/blob/master/systemd/docker.socket
+
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Socket for the API")
 	manifest.Set("Unit", "PartOf", "docker.service")
@@ -529,37 +531,52 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 }
 
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersionMinor int) *nodetasks.Service {
+	// Based on https://github.com/docker/docker-ce-packaging/blob/master/systemd/docker.service
+
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
-
-	manifest.Set("Unit", "After", "network.target docker.socket")
+	manifest.Set("Unit", "After", "network-online.target firewalld.service")
+	manifest.Set("Unit", "Wants", "network-online.target")
 	manifest.Set("Unit", "Requires", "docker.socket")
 
-	manifest.Set("Service", "Type", "notify")
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
+	// the default is not to use systemd for cgroups because the delegate issues still
+	// exists and systemd currently does not support the cgroup feature set required
+	// for containers run by docker
+	manifest.Set("Service", "Type", "notify")
 	manifest.Set("Service", "ExecStart", "/usr/bin/dockerd -H fd:// \"$DOCKER_OPTS\"")
-
 	manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
-	// kill only the docker process, not all processes in the cgroup
-	manifest.Set("Service", "KillMode", "process")
+	manifest.Set("Service", "TimeoutSec", "0")
+	manifest.Set("Service", "RestartSec", "2s")
+	manifest.Set("Service", "Restart", "always")
 
-	manifest.Set("Service", "TimeoutStartSec", "0")
+	// Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
+	// Both the old, and new location are accepted by systemd 229 and up, so using the old location
+	// to make them work for either version of systemd.
+	manifest.Set("Service", "StartLimitBurst", "3")
 
+	// Note that StartLimitInterval was renamed to StartLimitIntervalSec in systemd 230.
+	// Both the old, and new name are accepted by systemd 230 and up, so using the old name to make
+	// this option work for either version of systemd.
+	manifest.Set("Service", "StartLimitInterval", "60s")
+
+	// Having non-zero Limit*s causes performance problems due to accounting overhead
+	// in the kernel. We recommend using cgroups to do container-local accounting.
 	manifest.Set("Service", "LimitNOFILE", "infinity")
 	manifest.Set("Service", "LimitNPROC", "infinity")
 	manifest.Set("Service", "LimitCORE", "infinity")
 
+	// Only systemd 226 and above support this option.
 	manifest.Set("Service", "TasksMax", "infinity")
-
-	manifest.Set("Service", "Restart", "always")
-	manifest.Set("Service", "RestartSec", "2s")
-	manifest.Set("Service", "StartLimitInterval", "0")
 
 	// set delegate yes so that systemd does not reset the cgroups of docker containers
 	manifest.Set("Service", "Delegate", "yes")
+
+	// kill only the docker process, not all processes in the cgroup
+	manifest.Set("Service", "KillMode", "process")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
