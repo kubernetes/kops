@@ -17,7 +17,7 @@ limitations under the License.
 package k8sversion
 
 import (
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 
 	"k8s.io/kops/pkg/apis/kops/util"
 )

@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
