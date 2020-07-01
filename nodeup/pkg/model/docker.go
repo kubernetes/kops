@@ -21,8 +21,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
+
+	"github.com/blang/semver/v4"
 
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -483,25 +484,11 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	// Split into major.minor.(patch+pr+meta)
-	parts := strings.SplitN(dockerVersion, ".", 3)
-	if len(parts) != 3 {
-		return fmt.Errorf("error parsing docker version %q, no Major.Minor.Patch elements found", dockerVersion)
-	}
-
-	// Validate major
-	dockerVersionMajor, err := strconv.Atoi(parts[0])
+	v, err := semver.ParseTolerant(dockerVersion)
 	if err != nil {
-		return fmt.Errorf("error parsing major docker version %q: %v", parts[0], err)
+		return fmt.Errorf("error parsing docker version %q: %v", dockerVersion, err)
 	}
-
-	// Validate minor
-	dockerVersionMinor, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return fmt.Errorf("error parsing minor docker version %q: %v", parts[1], err)
-	}
-
-	c.AddTask(b.buildSystemdService(dockerVersionMajor, dockerVersionMinor))
+	c.AddTask(b.buildSystemdService(v))
 
 	if err := b.buildSysconfig(c); err != nil {
 		return err
@@ -553,13 +540,18 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 	return service
 }
 
-func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersionMinor int) *nodetasks.Service {
+func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodetasks.Service {
 	// Based on https://github.com/docker/docker-ce-packaging/blob/master/systemd/docker.service
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
-	manifest.Set("Unit", "After", "network-online.target firewalld.service")
+	if dockerVersion.GTE(semver.MustParse("18.9.0")) {
+		manifest.Set("Unit", "BindsTo", "containerd.service")
+		manifest.Set("Unit", "After", "network-online.target firewalld.service containerd.service")
+	} else {
+		manifest.Set("Unit", "After", "network-online.target firewalld.service")
+	}
 	manifest.Set("Unit", "Wants", "network-online.target")
 	manifest.Set("Unit", "Requires", "docker.socket")
 
