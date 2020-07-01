@@ -80,14 +80,14 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: vpc.example.com
-  name: nodes
+  name: nodes-us-test-1a
 spec:
   image: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2020-01-17
   machineType: t2.medium
-  maxSize: 2
-  minSize: 2
+  maxSize: 1
+  minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: nodes
+    kops.k8s.io/instancegroup: nodes-us-test-1a
   role: Node
   subnets:
   - us-test-1a
