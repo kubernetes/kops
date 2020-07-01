@@ -19,7 +19,7 @@ package kops
 import (
 	"testing"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 )
 
 // Test_SemverOrdering is a test of semver ordering, but highlights the case that trips everyone one:
