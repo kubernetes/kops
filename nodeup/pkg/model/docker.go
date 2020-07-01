@@ -601,25 +601,10 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersio
 		manifest.Set("Service", "TimeoutStartSec", "0")
 	}
 
-	if oldDocker {
-		// Only in older versions of docker (< 1.12)
-		manifest.Set("Service", "MountFlags", "slave")
-	}
-
-	// Having non-zero Limit*s causes performance problems due to accounting overhead
-	// in the kernel. We recommend using cgroups to do container-local accounting.
-	// TODO: Should we set this? https://github.com/kubernetes/kubernetes/issues/39682
-	//service.Set("Service", "LimitNOFILE", "infinity")
-	//service.Set("Service", "LimitNPROC", "infinity")
-	//service.Set("Service", "LimitCORE", "infinity")
-	manifest.Set("Service", "LimitNOFILE", "1048576")
-	manifest.Set("Service", "LimitNPROC", "1048576")
+	manifest.Set("Service", "LimitNOFILE", "infinity")
+	manifest.Set("Service", "LimitNPROC", "infinity")
 	manifest.Set("Service", "LimitCORE", "infinity")
 
-	//# Uncomment TasksMax if your systemd version supports it.
-	//# Only systemd 226 and above support this version.
-	//#TasksMax=infinity
-	// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
 	manifest.Set("Service", "TasksMax", "infinity")
 
 	manifest.Set("Service", "Restart", "always")
