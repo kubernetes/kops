@@ -436,9 +436,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(packageTask)
 
 				c.AddTask(b.buildDockerGroup())
-				if b.Distribution.IsDebianFamily() {
-					c.AddTask(b.buildSystemdSocket())
-				}
+				c.AddTask(b.buildSystemdSocket())
 			} else {
 				var extraPkgs []*nodetasks.Package
 				for name, pkg := range dv.ExtraPackages {
@@ -554,33 +552,18 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 }
 
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersionMinor int) *nodetasks.Service {
-	usesDockerSocket := true
-
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
 
-	if b.Distribution.IsRHELFamily() {
-		// See https://github.com/docker/docker/pull/24804
-		usesDockerSocket = false
-	}
-
-	if usesDockerSocket {
-		manifest.Set("Unit", "After", "network.target docker.socket")
-		manifest.Set("Unit", "Requires", "docker.socket")
-	} else {
-		manifest.Set("Unit", "After", "network.target")
-	}
+	manifest.Set("Unit", "After", "network.target docker.socket")
+	manifest.Set("Unit", "Requires", "docker.socket")
 
 	manifest.Set("Service", "Type", "notify")
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
-	if usesDockerSocket {
-		manifest.Set("Service", "ExecStart", "/usr/bin/dockerd -H fd:// \"$DOCKER_OPTS\"")
-	} else {
-		manifest.Set("Service", "ExecStart", "/usr/bin/dockerd \"$DOCKER_OPTS\"")
-	}
+	manifest.Set("Service", "ExecStart", "/usr/bin/dockerd -H fd:// \"$DOCKER_OPTS\"")
 
 	manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
 	// kill only the docker process, not all processes in the cgroup
