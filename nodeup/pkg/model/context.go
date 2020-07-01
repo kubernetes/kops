@@ -37,7 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks

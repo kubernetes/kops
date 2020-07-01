@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 )
 
 func Test_ParseKubernetesVersion(t *testing.T) {

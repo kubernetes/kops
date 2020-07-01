@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model

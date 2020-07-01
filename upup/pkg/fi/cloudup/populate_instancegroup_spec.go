@@ -19,7 +19,7 @@ package cloudup
 import (
 	"fmt"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"

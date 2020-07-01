@@ -24,7 +24,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"

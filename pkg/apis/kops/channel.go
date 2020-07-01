@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops/util"

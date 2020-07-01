@@ -21,7 +21,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/upup/pkg/fi"
 
