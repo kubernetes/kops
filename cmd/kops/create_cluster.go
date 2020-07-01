@@ -24,20 +24,17 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/blang/semver"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	version "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -62,12 +59,9 @@ type CreateClusterOptions struct {
 	Target               string
 	NodeSize             string
 	MasterSize           string
-	MasterCount          int32
 	NodeCount            int32
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
-	EncryptEtcdStorage   bool
-	EtcdStorageType      string
 	Project              string
 	KubernetesVersion    string
 	ContainerRuntime     string
@@ -420,13 +414,12 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	// TODO: push more of the following logic into cloudup.NewCluster()
 	cluster = clusterResult.Cluster
+	instanceGroups := clusterResult.InstanceGroups
 	channel := clusterResult.Channel
 	allZones := clusterResult.AllZones
 	zoneToSubnetMap := clusterResult.ZoneToSubnetMap
+	masters := clusterResult.Masters
 
-	var masters []*api.InstanceGroup
-	var nodes []*api.InstanceGroup
-	var instanceGroups []*api.InstanceGroup
 	cloudLabels, err := parseCloudLabels(c.CloudLabels)
 	if err != nil {
 		return fmt.Errorf("error parsing global cloud labels: %v", err)
@@ -435,138 +428,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.CloudLabels = cloudLabels
 	}
 
-	// Build the master subnets
-	// The master zones is the default set of zones unless explicitly set
-	// The master count is the number of master zones unless explicitly set
-	// We then round-robin around the zones
-	if len(masters) == 0 {
-		masterCount := c.MasterCount
-		masterZones := c.MasterZones
-		if len(masterZones) != 0 {
-			if c.MasterCount != 0 && c.MasterCount < int32(len(c.MasterZones)) {
-				return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterZones), c.MasterCount)
-			}
-
-			if masterCount == 0 {
-				// If master count is not specified, default to the number of master zones
-				masterCount = int32(len(c.MasterZones))
-			}
-		} else {
-			// masterZones not set; default to same as node Zones
-			masterZones = c.Zones
-
-			if masterCount == 0 {
-				// If master count is not specified, default to 1
-				masterCount = 1
-			}
-		}
-
-		if len(masterZones) == 0 {
-			// Should be unreachable
-			return fmt.Errorf("cannot determine master zones")
-		}
-
-		for i := 0; i < int(masterCount); i++ {
-			zone := masterZones[i%len(masterZones)]
-			name := zone
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
-				if int(masterCount) >= len(masterZones) {
-					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
-				}
-			} else {
-				if int(masterCount) > len(masterZones) {
-					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
-				}
-			}
-
-			g := &api.InstanceGroup{}
-			g.Spec.Role = api.InstanceGroupRoleMaster
-			g.Spec.MinSize = fi.Int32(1)
-			g.Spec.MaxSize = fi.Int32(1)
-			g.ObjectMeta.Name = "master-" + name
-
-			subnet := zoneToSubnetMap[zone]
-			if subnet == nil {
-				klog.Fatalf("subnet not found in zoneToSubnetMap")
-			}
-
-			g.Spec.Subnets = []string{subnet.Name}
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
-				g.Spec.Zones = []string{zone}
-			}
-
-			instanceGroups = append(instanceGroups, g)
-			masters = append(masters, g)
-		}
-	}
-
-	if len(cluster.Spec.EtcdClusters) == 0 {
-		masterAZs := sets.NewString()
-		duplicateAZs := false
-		for _, ig := range masters {
-			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
-			if err != nil {
-				return err
-			}
-			for _, zone := range zones {
-				if masterAZs.Has(zone) {
-					duplicateAZs = true
-				}
-
-				masterAZs.Insert(zone)
-			}
-		}
-
-		if duplicateAZs {
-			klog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
-		}
-
-		for _, etcdCluster := range cloudup.EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
-			etcd.Name = etcdCluster
-
-			// if this is the main cluster, we use 200 millicores by default.
-			// otherwise we use 100 millicores by default.  100Mi is always default
-			// for event and main clusters.  This is changeable in the kops cluster
-			// configuration.
-			if etcd.Name == "main" {
-				cpuRequest := resource.MustParse("200m")
-				etcd.CPURequest = &cpuRequest
-			} else {
-				cpuRequest := resource.MustParse("100m")
-				etcd.CPURequest = &cpuRequest
-			}
-			memoryRequest := resource.MustParse("100Mi")
-			etcd.MemoryRequest = &memoryRequest
-
-			var names []string
-			for _, ig := range masters {
-				name := ig.ObjectMeta.Name
-				// We expect the IG to have a `master-` prefix, but this is both superfluous
-				// and not how we named things previously
-				name = strings.TrimPrefix(name, "master-")
-				names = append(names, name)
-			}
-
-			names = trimCommonPrefix(names)
-
-			for i, ig := range masters {
-				m := &api.EtcdMemberSpec{}
-				if c.EncryptEtcdStorage {
-					m.EncryptedVolume = &c.EncryptEtcdStorage
-				}
-				if len(c.EtcdStorageType) > 0 {
-					m.VolumeType = fi.String(c.EtcdStorageType)
-				}
-				m.Name = names[i]
-
-				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
-				etcd.Members = append(etcd.Members, m)
-			}
-			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
-		}
-	}
-
+	var nodes []*api.InstanceGroup
 	if len(nodes) == 0 {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
@@ -1174,30 +1036,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	return nil
-}
-
-func trimCommonPrefix(names []string) []string {
-	// Trim shared prefix to keep the lengths sane
-	// (this only applies to new clusters...)
-	for len(names) != 0 && len(names[0]) > 1 {
-		prefix := names[0][:1]
-		allMatch := true
-		for _, name := range names {
-			if !strings.HasPrefix(name, prefix) {
-				allMatch = false
-			}
-		}
-
-		if !allMatch {
-			break
-		}
-
-		for i := range names {
-			names[i] = strings.TrimPrefix(names[i], prefix)
-		}
-	}
-
-	return names
 }
 
 // parseCloudLabels takes a CSV list of key=value records and parses them into a map. Nested '='s are supported via
