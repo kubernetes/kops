@@ -1,75 +1,14 @@
+Name: docker-ce
+hash: 0f4336378f61ed73ed55a356ac19e46699a995f2aff34323ba5874d131548b9e
+mapFiles:
+  docker/docker*: /usr/bin
+source: https://download.docker.com/linux/static/stable/x86_64/docker-19.03.11.tgz
+target: /
+---
 contents: |-
   DOCKER_OPTS=
   DOCKER_NOFILE=1000000
 path: /etc/sysconfig/docker
-type: file
----
-contents: |
-  #!/bin/bash
-
-  # Copyright 2019 The Kubernetes Authors All rights reserved.
-  #
-  # Licensed under the Apache License, Version 2.0 (the "License");
-  # you may not use this file except in compliance with the License.
-  # You may obtain a copy of the License at
-  #
-  #     http://www.apache.org/licenses/LICENSE-2.0
-  #
-  # Unless required by applicable law or agreed to in writing, software
-  # distributed under the License is distributed on an "AS IS" BASIS,
-  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  # See the License for the specific language governing permissions and
-  # limitations under the License.
-
-  # This script is intended to be run periodically, to check the health
-  # of docker.  If it detects a failure, it will restart docker using systemctl.
-
-  healthcheck() {
-     if output=`timeout 60 docker network ls`; then
-         echo "$output" | fgrep -qw host || {
-            echo "docker 'host' network missing"
-            return 1
-         }
-     else
-         echo "docker returned $?"
-         return 1
-     fi
-  }
-
-  if healthcheck; then
-    echo "docker healthy"
-    exit 0
-  fi
-
-  echo "docker failed"
-  echo "Giving docker 30 seconds grace before restarting"
-  sleep 30
-
-  if healthcheck; then
-    echo "docker recovered"
-    exit 0
-  fi
-
-  echo "docker still unresponsive; triggering docker restart"
-  systemctl stop docker
-
-  echo "wait all tcp sockets to close"
-  sleep `cat /proc/sys/net/ipv4/tcp_fin_timeout`
-
-  sleep 10
-  systemctl start docker
-
-  echo "Waiting 120 seconds to give docker time to start"
-  sleep 60
-
-  if healthcheck; then
-    echo "docker recovered"
-    exit 0
-  fi
-
-  echo "docker still failing"
-mode: "0755"
-path: /opt/kops/bin/docker-healthcheck
 type: file
 ---
 contents: |2
@@ -268,52 +207,17 @@ contents: |2
 path: /usr/share/doc/docker/apache.txt
 type: file
 ---
-Name: docker-ce
-hash: 6e9da7303cfa7ef7d4d8035bdc205229dd84e572f29957a9fb36e1351fe88a24
-preventStart: true
-source: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb
-version: 18.06.3~ce~3-0~ubuntu
----
-Name: docker-healthcheck.service
-definition: |
-  [Unit]
-  Description=Run docker-healthcheck once
-  Documentation=https://kops.sigs.k8s.io
-
-  [Service]
-  Type=oneshot
-  ExecStart=/opt/kops/bin/docker-healthcheck
-
-  [Install]
-  WantedBy=multi-user.target
-enabled: true
-manageState: true
-running: true
-smartRestart: true
----
-Name: docker-healthcheck.timer
-definition: |
-  [Unit]
-  Description=Trigger docker-healthcheck periodically
-  Documentation=https://kops.sigs.k8s.io
-
-  [Timer]
-  OnUnitInactiveSec=10s
-  Unit=docker-healthcheck.service
-
-  [Install]
-  WantedBy=multi-user.target
-enabled: true
-manageState: true
-running: true
-smartRestart: true
+GID: null
+Name: docker
+System: true
 ---
 Name: docker.service
 definition: |
   [Unit]
   Description=Docker Application Container Engine
   Documentation=https://docs.docker.com
-  After=network-online.target firewalld.service
+  BindsTo=containerd.service
+  After=network-online.target firewalld.service containerd.service
   Wants=network-online.target
   Requires=docker.socket
 
@@ -337,6 +241,25 @@ definition: |
 
   [Install]
   WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
+---
+Name: docker.socket
+definition: |
+  [Unit]
+  Description=Docker Socket for the API
+  PartOf=docker.service
+
+  [Socket]
+  ListenStream=/var/run/docker.sock
+  SocketMode=0660
+  SocketUser=root
+  SocketGroup=docker
+
+  [Install]
+  WantedBy=sockets.target
 enabled: true
 manageState: true
 running: true

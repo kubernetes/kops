@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"k8s.io/klog"
 )
 

@@ -23,7 +23,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 	"k8s.io/apimachinery/pkg/util/intstr"
