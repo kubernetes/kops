@@ -1,7 +1,7 @@
 ClusterName: complex.example.com
 Zones:
 - us-test-1a
-Cloud: aws
+CloudProvider: aws
 KubernetesVersion: v1.15.6
 # We specify SSHAccess but _not_ AdminAccess
 SSHAccess:
