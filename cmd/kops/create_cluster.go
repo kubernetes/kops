@@ -27,8 +27,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/blang/semver"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -59,18 +57,10 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 )
 
-const (
-	AuthorizationFlagAlwaysAllow = "AlwaysAllow"
-	AuthorizationFlagRBAC        = "RBAC"
-)
-
 type CreateClusterOptions struct {
-	ClusterName          string
+	cloudup.NewClusterOptions
 	Yes                  bool
 	Target               string
-	Cloud                string
-	Zones                []string
-	MasterZones          []string
 	NodeSize             string
 	MasterSize           string
 	MasterCount          int32
@@ -86,8 +76,6 @@ type CreateClusterOptions struct {
 	Image                string
 	NodeImage            string
 	MasterImage          string
-	VPCID                string
-	SubnetIDs            []string
 	UtilitySubnetIDs     []string
 	DisableSubnetTags    bool
 	NetworkCIDR          string
@@ -105,14 +93,8 @@ type CreateClusterOptions struct {
 	// Overrides allows settings values direct in the spec
 	Overrides []string
 
-	// Channel is the location of the api.Channel to use for our defaults
-	Channel string
-
 	// The network topology to use
 	Topology string
-
-	// The authorization approach to use (RBAC, AlwaysAllow)
-	Authorization string
 
 	// The DNS type to use (public/private)
 	DNSType string
@@ -143,21 +125,10 @@ type CreateClusterOptions struct {
 	SpotinstProduct     string
 	SpotinstOrientation string
 
-	// OpenstackExternalNet is the name of the external network for the openstack router
-	OpenstackExternalNet     string
-	OpenstackExternalSubnet  string
-	OpenstackStorageIgnoreAZ bool
-	OpenstackDNSServers      string
-	OpenstackLbSubnet        string
-	OpenstackNetworkID       string
-	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
-	OpenstackLBOctavia bool
+	OpenstackNetworkID string
 
 	// GCEServiceAccount specifies the service account with which the GCE VM runs
 	GCEServiceAccount string
-
-	// ConfigBase is the location where we will store the configuration, it defaults to the state store
-	ConfigBase string
 
 	// DryRun mode output a cluster manifest of Output type.
 	DryRun bool
@@ -166,18 +137,17 @@ type CreateClusterOptions struct {
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
+	o.NewClusterOptions.InitDefaults()
+
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
 	o.Networking = "kubenet"
-	o.Channel = api.DefaultChannel
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
 	o.Bastion = false
 
 	// Default to open API & SSH access
 	o.AdminAccess = []string{"0.0.0.0/0"}
-
-	o.Authorization = AuthorizationFlagRBAC
 
 	o.ContainerRuntime = "docker"
 }
@@ -288,7 +258,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "A cluster-readable location where we mirror configuration information, separate from the state store.  Allows for a state store that is not accessible from the cluster.")
 	}
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, openstack")
+	cmd.Flags().StringVar(&options.CloudProvider, "cloud", options.CloudProvider, "Cloud provider to use - gce, aws, openstack")
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
@@ -312,7 +282,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.MasterVolumeSize, "master-volume-size", options.MasterVolumeSize, "Set instance volume size (in GB) for masters")
 	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Set instance volume size (in GB) for nodes")
 
-	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
+	cmd.Flags().StringVar(&options.NetworkID, "vpc", options.NetworkID, "Set to use a shared VPC")
 	cmd.Flags().StringSliceVar(&options.SubnetIDs, "subnets", options.SubnetIDs, "Set to use shared subnets")
 	cmd.Flags().StringSliceVar(&options.UtilitySubnetIDs, "utility-subnets", options.UtilitySubnetIDs, "Set to use shared utility subnets")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
@@ -340,7 +310,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster: public|private.")
 
 	// Authorization
-	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+AuthorizationFlagAlwaysAllow+" or "+AuthorizationFlagRBAC)
+	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+cloudup.AuthorizationFlagAlwaysAllow+" or "+cloudup.AuthorizationFlagRBAC)
 
 	// DNS
 	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private.")
@@ -426,16 +396,11 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	options := &cloudup.NewClusterOptions{
-		Name:    c.ClusterName,
-		Channel: c.Channel,
-	}
-
-	if options.Name == "" {
+	if c.ClusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
 
-	cluster, err := clientset.GetCluster(ctx, options.Name)
+	cluster, err := clientset.GetCluster(ctx, c.ClusterName)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			cluster = nil
@@ -445,122 +410,22 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if cluster != nil {
-		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", options.Name)
+		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", c.ClusterName)
 	}
 
-	clusterResult, err := cloudup.NewCluster(options)
+	if c.OpenstackNetworkID != "" {
+		c.NetworkID = c.OpenstackNetworkID
+	}
+
+	clusterResult, err := cloudup.NewCluster(&c.NewClusterOptions, clientset)
 	if err != nil {
 		return err
 	}
 
 	// TODO: push more of the following logic into cloudup.NewCluster()
 	cluster = clusterResult.Cluster
-
-	cluster.Spec.ConfigBase = c.ConfigBase
-	configBase, err := clientset.ConfigBaseFor(cluster)
-	if err != nil {
-		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
-	}
-	cluster.Spec.ConfigBase = configBase.Path()
-
-	// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
-	cluster.Spec.Authorization = &api.AuthorizationSpec{}
-	if strings.EqualFold(c.Authorization, AuthorizationFlagAlwaysAllow) {
-		cluster.Spec.Authorization.AlwaysAllow = &api.AlwaysAllowAuthorizationSpec{}
-	} else if strings.EqualFold(c.Authorization, AuthorizationFlagRBAC) {
-		cluster.Spec.Authorization.RBAC = &api.RBACAuthorizationSpec{}
-	} else {
-		return fmt.Errorf("unknown authorization mode %q", c.Authorization)
-	}
-
-	if c.Cloud != "" {
-		cluster.Spec.CloudProvider = c.Cloud
-	}
-
-	allZones := sets.NewString()
-	allZones.Insert(c.Zones...)
-	allZones.Insert(c.MasterZones...)
-
-	if c.VPCID != "" {
-		cluster.Spec.NetworkID = c.VPCID
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && len(c.SubnetIDs) > 0 {
-		cloudTags := map[string]string{}
-		awsCloud, err := awsup.NewAWSCloud(c.Zones[0][:len(c.Zones[0])-1], cloudTags)
-		if err != nil {
-			return fmt.Errorf("error loading cloud: %v", err)
-		}
-		res, err := awsCloud.EC2().DescribeSubnets(&ec2.DescribeSubnetsInput{
-			SubnetIds: []*string{aws.String(c.SubnetIDs[0])},
-		})
-		if err != nil {
-			return fmt.Errorf("error describing subnet %s: %v", c.SubnetIDs[0], err)
-		}
-		if len(res.Subnets) == 0 || res.Subnets[0].VpcId == nil {
-			return fmt.Errorf("failed to determine VPC id of subnet %s", c.SubnetIDs[0])
-		}
-		cluster.Spec.NetworkID = *res.Subnets[0].VpcId
-	}
-
-	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
-		if cluster.Spec.CloudConfig == nil {
-			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-		}
-		cluster.Spec.CloudConfig.Openstack = &api.OpenstackConfiguration{
-			Router: &api.OpenstackRouter{
-				ExternalNetwork: fi.String(c.OpenstackExternalNet),
-			},
-			BlockStorage: &api.OpenstackBlockStorageConfig{
-				Version:  fi.String("v3"),
-				IgnoreAZ: fi.Bool(c.OpenstackStorageIgnoreAZ),
-			},
-			Monitor: &api.OpenstackMonitor{
-				Delay:      fi.String("1m"),
-				Timeout:    fi.String("30s"),
-				MaxRetries: fi.Int(3),
-			},
-		}
-
-		if c.OpenstackNetworkID != "" {
-			cluster.Spec.NetworkID = c.OpenstackNetworkID
-		} else if len(c.SubnetIDs) > 0 {
-			tags := make(map[string]string)
-			tags[openstack.TagClusterName] = c.ClusterName
-			osCloud, err := openstack.NewOpenstackCloud(tags, &cluster.Spec)
-			if err != nil {
-				return fmt.Errorf("error loading cloud: %v", err)
-			}
-
-			res, err := osCloud.FindNetworkBySubnetID(c.SubnetIDs[0])
-			if err != nil {
-				return fmt.Errorf("error finding network: %v", err)
-			}
-			cluster.Spec.NetworkID = res.ID
-		}
-
-		if c.OpenstackDNSServers != "" {
-			cluster.Spec.CloudConfig.Openstack.Router.DNSServers = fi.String(c.OpenstackDNSServers)
-		}
-		if c.OpenstackExternalSubnet != "" {
-			cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(c.OpenstackExternalSubnet)
-		}
-	}
-
-	if cluster.Spec.CloudProvider == "" {
-		for _, zone := range allZones.List() {
-			cloud, known := fi.GuessCloudForZone(zone)
-			if known {
-				klog.Infof("Inferred --cloud=%s from zone %q", cloud, zone)
-				cluster.Spec.CloudProvider = string(cloud)
-				break
-			}
-		}
-		if cluster.Spec.CloudProvider == "" {
-			if allZones.Len() == 0 {
-				return fmt.Errorf("must specify --zones or --cloud")
-			}
-			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
-		}
-	}
+	channel := clusterResult.Channel
+	allZones := clusterResult.AllZones
 
 	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
 	if len(c.Zones) == 0 {
@@ -918,7 +783,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.DNSZone = c.DNSZone
 	}
 
-	if c.Cloud != "" {
+	if c.CloudProvider != "" {
 		if featureflag.Spotinst.Enabled() {
 			if cluster.Spec.CloudConfig == nil {
 				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
@@ -1190,7 +1055,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.API = &api.AccessSpec{}
 	}
 	if cluster.Spec.API.IsEmpty() {
-		if c.Cloud == "openstack" {
+		if c.CloudProvider == "openstack" {
 			initializeOpenstackAPI(c, cluster)
 		} else if c.APILoadBalancerType != "" {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
@@ -1275,7 +1140,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	var fullInstanceGroups []*api.InstanceGroup
 	for _, group := range instanceGroups {
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, clusterResult.Channel)
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, channel)
 		if err != nil {
 			return err
 		}
@@ -1323,6 +1188,10 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
+	configBase, err := clientset.ConfigBaseFor(cluster)
+	if err != nil {
+		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
 	err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
@@ -1330,7 +1199,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if len(c.SSHPublicKeys) == 0 {
 		autoloadSSHPublicKeys := true
-		switch c.Cloud {
+		switch c.CloudProvider {
 		case "gce":
 			// We don't normally use SSH keys on GCE
 			autoloadSSHPublicKeys = false

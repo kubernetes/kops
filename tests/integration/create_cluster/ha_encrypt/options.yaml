@@ -7,6 +7,6 @@ MasterZones:
 - us-test-1a
 - us-test-1b
 - us-test-1c
-Cloud: aws
+CloudProvider: aws
 KubernetesVersion: v1.15.0-alpha.3
 EncryptEtcdStorage: true
