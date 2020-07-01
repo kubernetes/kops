@@ -699,30 +699,44 @@ func trimCommonPrefix(names []string) []string {
 func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
 	var nodes []*api.InstanceGroup
 
-	g := &api.InstanceGroup{}
-	g.Spec.Role = api.InstanceGroupRoleNode
-	g.ObjectMeta.Name = "nodes"
+	// The node count is the number of zones unless explicitly set
+	// We then divvy up amongst the zones
+	numZones := len(opt.Zones)
+	nodeCount := opt.NodeCount
+	if nodeCount == 0 {
+		// If node count is not specified, default to the number of zones
+		nodeCount = int32(numZones)
+	}
 
-	subnetNames := sets.NewString()
-	for _, zone := range opt.Zones {
+	countPerIG := nodeCount / int32(numZones)
+	remainder := int(nodeCount) % numZones
+
+	for i, zone := range opt.Zones {
+		count := countPerIG
+		if i < remainder {
+			count++
+		} else if count == 0 {
+			break
+		}
+
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleNode
+		g.Spec.MinSize = fi.Int32(count)
+		g.Spec.MaxSize = fi.Int32(count)
+		g.ObjectMeta.Name = "nodes-" + zone
+
 		subnet := zoneToSubnetMap[zone]
 		if subnet == nil {
 			klog.Fatalf("subnet not found in zoneToSubnetMap")
 		}
-		subnetNames.Insert(subnet.Name)
-	}
-	g.Spec.Subnets = subnetNames.List()
 
-	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
-		g.Spec.Zones = opt.Zones
-	}
+		g.Spec.Subnets = []string{subnet.Name}
+		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+			g.Spec.Zones = []string{zone}
+		}
 
-	if opt.NodeCount != 0 {
-		g.Spec.MinSize = fi.Int32(opt.NodeCount)
-		g.Spec.MaxSize = fi.Int32(opt.NodeCount)
+		nodes = append(nodes, g)
 	}
-
-	nodes = append(nodes, g)
 
 	return nodes, nil
 }

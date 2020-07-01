@@ -215,7 +215,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)")
 
 	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set number of masters. Defaults to one master per master-zone")
-	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set number of nodes")
+	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set number of nodes. Defaults to one node per zone")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Set image for all instances.")
 	cmd.Flags().StringVar(&options.NodeImage, "node-image", options.NodeImage, "Set image for nodes. Takes precedence over --image")
