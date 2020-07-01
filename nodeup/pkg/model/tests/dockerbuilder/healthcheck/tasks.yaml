@@ -327,8 +327,8 @@ definition: |
   ExecReload=/bin/kill -s HUP $MAINPID
   KillMode=process
   TimeoutStartSec=0
-  LimitNOFILE=1048576
-  LimitNPROC=1048576
+  LimitNOFILE=infinity
+  LimitNPROC=infinity
   LimitCORE=infinity
   Restart=always
   RestartSec=2s
