@@ -57,7 +57,8 @@ require (
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.30.16
 	github.com/bazelbuild/bazel-gazelle v0.19.1
-	github.com/blang/semver v3.5.0+incompatible
+	github.com/blang/semver v3.5.0+incompatible // indirect
+	github.com/blang/semver/v4 v4.0.0
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/client9/misspell v0.3.4
 	github.com/coreos/etcd v3.3.17+incompatible
