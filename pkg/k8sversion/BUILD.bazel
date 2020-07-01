@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops/util:go_default_library",
-        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/github.com/blang/semver/v4:go_default_library",
     ],
 )
 

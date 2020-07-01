@@ -21,7 +21,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
 )
 

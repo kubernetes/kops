@@ -9,7 +9,7 @@ go_test(
     ],
     deps = [
         "//pkg/apis/kops:go_default_library",
-        "//vendor/github.com/blang/semver:go_default_library",
+        "//vendor/github.com/blang/semver/v4:go_default_library",
     ],
 )
 

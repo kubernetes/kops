@@ -33,7 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/klog"
 )
