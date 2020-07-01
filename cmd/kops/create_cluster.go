@@ -48,7 +48,6 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -104,9 +103,6 @@ type CreateClusterOptions struct {
 
 	// Specify tags for AWS instance groups
 	CloudLabels string
-
-	// Egress configuration - FOR TESTING ONLY
-	Egress string
 
 	// Specify tenancy (default or dedicated) for masters and nodes
 	MasterTenancy string
@@ -426,115 +422,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	cluster = clusterResult.Cluster
 	channel := clusterResult.Channel
 	allZones := clusterResult.AllZones
-
-	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
-	if len(c.Zones) == 0 {
-		return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
-		// On GCE, subnets are regional - we create one per region, not per zone
-		for _, zoneName := range allZones.List() {
-			region, err := gce.ZoneToRegion(zoneName)
-			if err != nil {
-				return err
-			}
-
-			// We create default subnets named the same as the regions
-			subnetName := region
-
-			subnet := model.FindSubnet(cluster, subnetName)
-			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{
-					Name:   subnetName,
-					Region: region,
-				}
-				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
-			}
-			zoneToSubnetMap[zoneName] = subnet
-		}
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
-		if len(c.Zones) > 1 {
-			return fmt.Errorf("digitalocean cloud provider currently only supports 1 region, expect multi-region support when digitalocean support is in beta")
-		}
-
-		// For DO we just pass in the region for --zones
-		region := c.Zones[0]
-		subnet := model.FindSubnet(cluster, region)
-
-		// for DO, subnets are just regions
-		subnetName := region
-
-		if subnet == nil {
-			subnet = &api.ClusterSubnetSpec{
-				Name: subnetName,
-				// region and zone are the same for DO
-				Region: region,
-				Zone:   region,
-			}
-			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
-		}
-		zoneToSubnetMap[region] = subnet
-	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderALI {
-		var zoneToSubnetSwitchID map[string]string
-		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderALI {
-			zoneToSubnetSwitchID, err = aliup.ZoneToVSwitchID(cluster.Spec.NetworkID, c.Zones, c.SubnetIDs)
-			if err != nil {
-				return err
-			}
-		}
-		for _, zoneName := range allZones.List() {
-			// We create default subnets named the same as the zones
-			subnetName := zoneName
-
-			subnet := model.FindSubnet(cluster, subnetName)
-			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{
-					Name:   subnetName,
-					Zone:   subnetName,
-					Egress: c.Egress,
-				}
-				if vswitchID, ok := zoneToSubnetSwitchID[zoneName]; ok {
-					subnet.ProviderID = vswitchID
-				}
-				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
-			}
-			zoneToSubnetMap[zoneName] = subnet
-		}
-	} else {
-		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 {
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
-				zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
-				if err != nil {
-					return err
-				}
-			} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
-				tags := make(map[string]string)
-				tags[openstack.TagClusterName] = c.ClusterName
-				zoneToSubnetProviderID, err = getSubnetProviderID(&cluster.Spec, allZones.List(), c.SubnetIDs, tags)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		for _, zoneName := range allZones.List() {
-			// We create default subnets named the same as the zones
-			subnetName := zoneName
-
-			subnet := model.FindSubnet(cluster, subnetName)
-			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{
-					Name:   subnetName,
-					Zone:   subnetName,
-					Egress: c.Egress,
-				}
-				if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
-					subnet.ProviderID = subnetID
-				}
-				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
-			}
-			zoneToSubnetMap[zoneName] = subnet
-		}
-	}
+	zoneToSubnetMap := clusterResult.ZoneToSubnetMap
 
 	var masters []*api.InstanceGroup
 	var nodes []*api.InstanceGroup
@@ -1360,6 +1248,7 @@ func initializeOpenstackAPI(c *CreateClusterOptions, cluster *api.Cluster) {
 	}
 }
 
+// TODO dedup or remove
 func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
 	res := make(map[string]string)
 	cloudTags := map[string]string{}
@@ -1391,6 +1280,7 @@ func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) 
 	return res, nil
 }
 
+// TODO dedup or remove
 func getSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
 	res := make(map[string]string)
 	osCloud, err := openstack.NewOpenstackCloud(tags, spec)

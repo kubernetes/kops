@@ -27,9 +27,12 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
@@ -62,6 +65,8 @@ type NewClusterOptions struct {
 	NetworkID string
 	// SubnetIDs are the IDs of the shared subnets. If empty, creates new subnets to be owned by the cluster.
 	SubnetIDs []string
+	// Egress defines the method of traffic egress for subnets.
+	Egress string
 
 	// OpenstackExternalNet is the name of the external network for the openstack router
 	OpenstackExternalNet     string
@@ -83,8 +88,9 @@ type NewClusterResult struct {
 	Cluster *api.Cluster
 
 	// TODO remove after more create_cluster logic refactored in
-	Channel  *api.Channel
-	AllZones sets.String
+	Channel         *api.Channel
+	AllZones        sets.String
+	ZoneToSubnetMap map[string]*api.ClusterSubnetSpec
 }
 
 // NewCluster initializes cluster and instance groups specifications as
@@ -161,10 +167,16 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	zoneToSubnetMap, err := setupZones(opt, &cluster, allZones)
+	if err != nil {
+		return nil, err
+	}
+
 	result := NewClusterResult{
-		Cluster:  &cluster,
-		Channel:  channel,
-		AllZones: allZones,
+		Cluster:         &cluster,
+		Channel:         channel,
+		AllZones:        allZones,
+		ZoneToSubnetMap: zoneToSubnetMap,
 	}
 	return &result, nil
 }
@@ -235,4 +247,179 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 	}
 
 	return nil
+}
+
+func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.String) (map[string]*api.ClusterSubnetSpec, error) {
+	var err error
+	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
+
+	if len(opt.Zones) == 0 {
+		return nil, fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
+	}
+
+	var zoneToSubnetProviderID map[string]string
+
+	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
+	case api.CloudProviderGCE:
+		// On GCE, subnets are regional - we create one per region, not per zone
+		for _, zoneName := range allZones.List() {
+			region, err := gce.ZoneToRegion(zoneName)
+			if err != nil {
+				return nil, err
+			}
+
+			// We create default subnets named the same as the regions
+			subnetName := region
+
+			subnet := model.FindSubnet(cluster, subnetName)
+			if subnet == nil {
+				subnet = &api.ClusterSubnetSpec{
+					Name:   subnetName,
+					Region: region,
+				}
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+			}
+			zoneToSubnetMap[zoneName] = subnet
+		}
+		return zoneToSubnetMap, nil
+
+	case api.CloudProviderDO:
+		if len(opt.Zones) > 1 {
+			return nil, fmt.Errorf("digitalocean cloud provider currently only supports 1 region, expect multi-region support when digitalocean support is in beta")
+		}
+
+		// For DO we just pass in the region for --zones
+		region := opt.Zones[0]
+		subnet := model.FindSubnet(cluster, region)
+
+		// for DO, subnets are just regions
+		subnetName := region
+
+		if subnet == nil {
+			subnet = &api.ClusterSubnetSpec{
+				Name: subnetName,
+				// region and zone are the same for DO
+				Region: region,
+				Zone:   region,
+			}
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+		}
+		zoneToSubnetMap[region] = subnet
+		return zoneToSubnetMap, nil
+
+	case api.CloudProviderALI:
+		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
+			zoneToSubnetProviderID, err = aliup.ZoneToVSwitchID(cluster.Spec.NetworkID, opt.Zones, opt.SubnetIDs)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	case api.CloudProviderAWS:
+		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, opt.Zones[0][:len(opt.Zones[0])-1], opt.SubnetIDs)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	case api.CloudProviderOpenstack:
+		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
+			tags := make(map[string]string)
+			tags[openstack.TagClusterName] = opt.ClusterName
+			zoneToSubnetProviderID, err = getSubnetProviderID(&cluster.Spec, allZones.List(), opt.SubnetIDs, tags)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	for _, zoneName := range allZones.List() {
+		// We create default subnets named the same as the zones
+		subnetName := zoneName
+
+		subnet := model.FindSubnet(cluster, subnetName)
+		if subnet == nil {
+			subnet = &api.ClusterSubnetSpec{
+				Name:   subnetName,
+				Zone:   subnetName,
+				Egress: opt.Egress,
+			}
+			if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
+				subnet.ProviderID = subnetID
+			}
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+		}
+		zoneToSubnetMap[zoneName] = subnet
+	}
+
+	return zoneToSubnetMap, nil
+}
+
+// TODO rename to getAWSZoneToSubnetProviderID
+func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
+	res := make(map[string]string)
+	cloudTags := map[string]string{}
+	awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+	vpcInfo, err := awsCloud.FindVPCInfo(VPCID)
+	if err != nil {
+		return res, fmt.Errorf("error describing VPC: %v", err)
+	}
+	if vpcInfo == nil {
+		return res, fmt.Errorf("VPC %q not found", VPCID)
+	}
+	subnetByID := make(map[string]*fi.SubnetInfo)
+	for _, subnetInfo := range vpcInfo.Subnets {
+		subnetByID[subnetInfo.ID] = subnetInfo
+	}
+	for _, subnetID := range subnetIDs {
+		subnet, ok := subnetByID[subnetID]
+		if !ok {
+			return res, fmt.Errorf("subnet %s not found in VPC %s", subnetID, VPCID)
+		}
+		if res[subnet.Zone] != "" {
+			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
+		}
+		res[subnet.Zone] = subnetID
+	}
+	return res, nil
+}
+
+// TODO rename to getOpenstackZoneToSubnetProviderID
+func getSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
+	res := make(map[string]string)
+	osCloud, err := openstack.NewOpenstackCloud(tags, spec)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+	osCloud.UseZones(zones)
+
+	networkInfo, err := osCloud.FindVPCInfo(spec.NetworkID)
+	if err != nil {
+		return res, fmt.Errorf("error describing Network: %v", err)
+	}
+	if networkInfo == nil {
+		return res, fmt.Errorf("network %q not found", spec.NetworkID)
+	}
+
+	subnetByID := make(map[string]*fi.SubnetInfo)
+	for _, subnetInfo := range networkInfo.Subnets {
+		subnetByID[subnetInfo.ID] = subnetInfo
+	}
+
+	for _, subnetID := range subnetIDs {
+		subnet, ok := subnetByID[subnetID]
+		if !ok {
+			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, spec.NetworkID)
+		}
+
+		if res[subnet.Zone] != "" {
+			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
+		}
+		res[subnet.Zone] = subnetID
+	}
+	return res, nil
 }
