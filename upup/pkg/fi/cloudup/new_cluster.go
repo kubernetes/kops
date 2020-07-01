@@ -18,10 +18,12 @@ package cloudup
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
@@ -76,6 +78,14 @@ type NewClusterOptions struct {
 	OpenstackLbSubnet        string
 	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
 	OpenstackLBOctavia bool
+
+	// MasterCount is the number of masters to create. Defaults to the length of MasterZones
+	// if MasterZones is explicitly nonempty, otherwise defaults to 1.
+	MasterCount int32
+	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
+	EncryptEtcdStorage bool
+	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
+	EtcdStorageType string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -86,11 +96,14 @@ func (o *NewClusterOptions) InitDefaults() {
 type NewClusterResult struct {
 	// Cluster is the initialized Cluster resource.
 	Cluster *api.Cluster
+	// InstanceGroups are the initialized InstanceGroup resources.
+	InstanceGroups []*api.InstanceGroup
 
 	// TODO remove after more create_cluster logic refactored in
 	Channel         *api.Channel
 	AllZones        sets.String
 	ZoneToSubnetMap map[string]*api.ClusterSubnetSpec
+	Masters         []*api.InstanceGroup
 }
 
 // NewCluster initializes cluster and instance groups specifications as
@@ -172,11 +185,18 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	masters, err := setupMasters(opt, &cluster, zoneToSubnetMap)
+	if err != nil {
+		return nil, err
+	}
+
 	result := NewClusterResult{
 		Cluster:         &cluster,
+		InstanceGroups:  masters,
 		Channel:         channel,
 		AllZones:        allZones,
 		ZoneToSubnetMap: zoneToSubnetMap,
+		Masters:         masters,
 	}
 	return &result, nil
 }
@@ -422,4 +442,166 @@ func getSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []stri
 		res[subnet.Zone] = subnetID
 	}
 	return res, nil
+}
+
+func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	var masters []*api.InstanceGroup
+
+	// Build the master subnets
+	// The master zones is the default set of zones unless explicitly set
+	// The master count is the number of master zones unless explicitly set
+	// We then round-robin around the zones
+	{
+		masterCount := opt.MasterCount
+		masterZones := opt.MasterZones
+		if len(masterZones) != 0 {
+			if masterCount != 0 && masterCount < int32(len(masterZones)) {
+				return nil, fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterZones), masterCount)
+			}
+
+			if masterCount == 0 {
+				// If master count is not specified, default to the number of master zones
+				masterCount = int32(len(masterZones))
+			}
+		} else {
+			// masterZones not set; default to same as node Zones
+			masterZones = opt.Zones
+
+			if masterCount == 0 {
+				// If master count is not specified, default to 1
+				masterCount = 1
+			}
+		}
+
+		if len(masterZones) == 0 {
+			// Should be unreachable
+			return nil, fmt.Errorf("cannot determine master zones")
+		}
+
+		for i := 0; i < int(masterCount); i++ {
+			zone := masterZones[i%len(masterZones)]
+			name := zone
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
+				if int(masterCount) >= len(masterZones) {
+					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				}
+			} else {
+				if int(masterCount) > len(masterZones) {
+					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				}
+			}
+
+			g := &api.InstanceGroup{}
+			g.Spec.Role = api.InstanceGroupRoleMaster
+			g.Spec.MinSize = fi.Int32(1)
+			g.Spec.MaxSize = fi.Int32(1)
+			g.ObjectMeta.Name = "master-" + name
+
+			subnet := zoneToSubnetMap[zone]
+			if subnet == nil {
+				klog.Fatalf("subnet not found in zoneToSubnetMap")
+			}
+
+			g.Spec.Subnets = []string{subnet.Name}
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+				g.Spec.Zones = []string{zone}
+			}
+
+			masters = append(masters, g)
+		}
+	}
+
+	// Build the Etcd clusters
+	{
+		masterAZs := sets.NewString()
+		duplicateAZs := false
+		for _, ig := range masters {
+			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
+			if err != nil {
+				return nil, err
+			}
+			for _, zone := range zones {
+				if masterAZs.Has(zone) {
+					duplicateAZs = true
+				}
+
+				masterAZs.Insert(zone)
+			}
+		}
+
+		if duplicateAZs {
+			klog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
+		}
+
+		for _, etcdCluster := range EtcdClusters {
+			etcd := &api.EtcdClusterSpec{}
+			etcd.Name = etcdCluster
+
+			// if this is the main cluster, we use 200 millicores by default.
+			// otherwise we use 100 millicores by default.  100Mi is always default
+			// for event and main clusters.  This is changeable in the kops cluster
+			// configuration.
+			if etcd.Name == "main" {
+				cpuRequest := resource.MustParse("200m")
+				etcd.CPURequest = &cpuRequest
+			} else {
+				cpuRequest := resource.MustParse("100m")
+				etcd.CPURequest = &cpuRequest
+			}
+			memoryRequest := resource.MustParse("100Mi")
+			etcd.MemoryRequest = &memoryRequest
+
+			var names []string
+			for _, ig := range masters {
+				name := ig.ObjectMeta.Name
+				// We expect the IG to have a `master-` prefix, but this is both superfluous
+				// and not how we named things previously
+				name = strings.TrimPrefix(name, "master-")
+				names = append(names, name)
+			}
+
+			names = trimCommonPrefix(names)
+
+			for i, ig := range masters {
+				m := &api.EtcdMemberSpec{}
+				if opt.EncryptEtcdStorage {
+					m.EncryptedVolume = fi.Bool(opt.EncryptEtcdStorage)
+				}
+				if opt.EtcdStorageType != "" {
+					m.VolumeType = fi.String(opt.EtcdStorageType)
+				}
+				m.Name = names[i]
+
+				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
+				etcd.Members = append(etcd.Members, m)
+			}
+			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
+		}
+	}
+
+	return masters, nil
+}
+
+func trimCommonPrefix(names []string) []string {
+	// Trim shared prefix to keep the lengths sane
+	// (this only applies to new clusters...)
+	for len(names) != 0 && len(names[0]) > 1 {
+		prefix := names[0][:1]
+		allMatch := true
+		for _, name := range names {
+			if !strings.HasPrefix(name, prefix) {
+				allMatch = false
+			}
+		}
+
+		if !allMatch {
+			break
+		}
+
+		for i := range names {
+			names[i] = strings.TrimPrefix(names[i], prefix)
+		}
+	}
+
+	return names
 }
