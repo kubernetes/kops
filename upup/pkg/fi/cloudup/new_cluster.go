@@ -86,6 +86,10 @@ type NewClusterOptions struct {
 	EncryptEtcdStorage bool
 	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
 	EtcdStorageType string
+
+	// NodeCount is the number of nodes to create. Defaults to leaving the count unspecified
+	// on the InstanceGroup, which results in a count of 2.
+	NodeCount int32
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -100,10 +104,8 @@ type NewClusterResult struct {
 	InstanceGroups []*api.InstanceGroup
 
 	// TODO remove after more create_cluster logic refactored in
-	Channel         *api.Channel
-	AllZones        sets.String
-	ZoneToSubnetMap map[string]*api.ClusterSubnetSpec
-	Masters         []*api.InstanceGroup
+	Channel  *api.Channel
+	AllZones sets.String
 }
 
 // NewCluster initializes cluster and instance groups specifications as
@@ -190,13 +192,19 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	nodes, err := setupNodes(opt, &cluster, zoneToSubnetMap)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceGroups := append([]*api.InstanceGroup(nil), masters...)
+	instanceGroups = append(instanceGroups, nodes...)
+
 	result := NewClusterResult{
-		Cluster:         &cluster,
-		InstanceGroups:  masters,
-		Channel:         channel,
-		AllZones:        allZones,
-		ZoneToSubnetMap: zoneToSubnetMap,
-		Masters:         masters,
+		Cluster:        &cluster,
+		InstanceGroups: instanceGroups,
+		Channel:        channel,
+		AllZones:       allZones,
 	}
 	return &result, nil
 }
@@ -604,4 +612,35 @@ func trimCommonPrefix(names []string) []string {
 	}
 
 	return names
+}
+
+func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	var nodes []*api.InstanceGroup
+
+	g := &api.InstanceGroup{}
+	g.Spec.Role = api.InstanceGroupRoleNode
+	g.ObjectMeta.Name = "nodes"
+
+	subnetNames := sets.NewString()
+	for _, zone := range opt.Zones {
+		subnet := zoneToSubnetMap[zone]
+		if subnet == nil {
+			klog.Fatalf("subnet not found in zoneToSubnetMap")
+		}
+		subnetNames.Insert(subnet.Name)
+	}
+	g.Spec.Subnets = subnetNames.List()
+
+	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		g.Spec.Zones = opt.Zones
+	}
+
+	if opt.NodeCount != 0 {
+		g.Spec.MinSize = fi.Int32(opt.NodeCount)
+		g.Spec.MaxSize = fi.Int32(opt.NodeCount)
+	}
+
+	nodes = append(nodes, g)
+
+	return nodes, nil
 }
