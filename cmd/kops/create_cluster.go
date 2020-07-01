@@ -30,7 +30,6 @@ import (
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
@@ -59,7 +58,6 @@ type CreateClusterOptions struct {
 	Target               string
 	NodeSize             string
 	MasterSize           string
-	NodeCount            int32
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
 	Project              string
@@ -390,17 +388,19 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return fmt.Errorf("--name is required")
 	}
 
-	cluster, err := clientset.GetCluster(ctx, c.ClusterName)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			cluster = nil
-		} else {
-			return err
+	{
+		cluster, err := clientset.GetCluster(ctx, c.ClusterName)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				cluster = nil
+			} else {
+				return err
+			}
 		}
-	}
 
-	if cluster != nil {
-		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", c.ClusterName)
+		if cluster != nil {
+			return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", c.ClusterName)
+		}
 	}
 
 	if c.OpenstackNetworkID != "" {
@@ -412,13 +412,19 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	// TODO: push more of the following logic into cloudup.NewCluster()
-	cluster = clusterResult.Cluster
+	cluster := clusterResult.Cluster
 	instanceGroups := clusterResult.InstanceGroups
-	channel := clusterResult.Channel
-	allZones := clusterResult.AllZones
-	zoneToSubnetMap := clusterResult.ZoneToSubnetMap
-	masters := clusterResult.Masters
+
+	var masters []*api.InstanceGroup
+	var nodes []*api.InstanceGroup
+	for _, ig := range instanceGroups {
+		switch ig.Spec.Role {
+		case api.InstanceGroupRoleMaster:
+			masters = append(masters, ig)
+		case api.InstanceGroupRoleNode:
+			nodes = append(nodes, ig)
+		}
+	}
 
 	cloudLabels, err := parseCloudLabels(c.CloudLabels)
 	if err != nil {
@@ -426,30 +432,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 	if len(cloudLabels) != 0 {
 		cluster.Spec.CloudLabels = cloudLabels
-	}
-
-	var nodes []*api.InstanceGroup
-	if len(nodes) == 0 {
-		g := &api.InstanceGroup{}
-		g.Spec.Role = api.InstanceGroupRoleNode
-		g.ObjectMeta.Name = "nodes"
-
-		subnetNames := sets.NewString()
-		for _, zone := range c.Zones {
-			subnet := zoneToSubnetMap[zone]
-			if subnet == nil {
-				klog.Fatalf("subnet not found in zoneToSubnetMap")
-			}
-			subnetNames.Insert(subnet.Name)
-		}
-		g.Spec.Subnets = subnetNames.List()
-
-		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
-			g.Spec.Zones = c.Zones
-		}
-
-		instanceGroups = append(instanceGroups, g)
-		nodes = append(nodes, g)
 	}
 
 	if c.NodeSize != "" {
@@ -477,13 +459,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if c.AssociatePublicIP != nil {
 		for _, group := range instanceGroups {
 			group.Spec.AssociatePublicIP = c.AssociatePublicIP
-		}
-	}
-
-	if c.NodeCount != 0 {
-		for _, group := range nodes {
-			group.Spec.MinSize = fi.Int32(c.NodeCount)
-			group.Spec.MaxSize = fi.Int32(c.NodeCount)
 		}
 	}
 
@@ -532,6 +507,10 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if c.DNSZone != "" {
 		cluster.Spec.DNSZone = c.DNSZone
 	}
+
+	// TODO: push more of the following logic into cloudup.NewCluster()
+	channel := clusterResult.Channel
+	allZones := clusterResult.AllZones
 
 	if c.CloudProvider != "" {
 		if featureflag.Spotinst.Enabled() {
