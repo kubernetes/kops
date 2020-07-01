@@ -3358,7 +3358,7 @@ spec:
                 description: RollingUpdate defines the default rolling-update settings
                   for instance groups
                 properties:
-                  enabled:
+                  drainAndTerminate:
                     description: DrainAndTerminate enables draining and terminating
                       nodes during rolling updates. Defaults to true.
                     type: boolean
