@@ -159,6 +159,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 			for i, etcdCluster := range spec.EtcdClusters {
 				allErrs = append(allErrs, validateEtcdClusterSpec(etcdCluster, c, fieldEtcdClusters.Index(i))...)
 			}
+			allErrs = append(allErrs, validateEtcdBackupStore(spec.EtcdClusters, fieldEtcdClusters)...)
 			allErrs = append(allErrs, validateEtcdTLS(spec.EtcdClusters, fieldEtcdClusters)...)
 			allErrs = append(allErrs, validateEtcdStorage(spec.EtcdClusters, fieldEtcdClusters)...)
 		}
@@ -791,6 +792,20 @@ func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, c *kops.Cluster, fieldP
 	allErrs = append(allErrs, validateEtcdVersion(spec, fieldPath, nil)...)
 	for i, m := range spec.Members {
 		allErrs = append(allErrs, validateEtcdMemberSpec(m, fieldPath.Child("etcdMembers").Index(i))...)
+	}
+
+	return allErrs
+}
+
+// validateEtcdBackupStore checks that the etcd clusters backupStore path is unique.
+func validateEtcdBackupStore(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	etcdBackupStore := make(map[string]bool)
+	for _, x := range specs {
+		if _, alreadyUsed := etcdBackupStore[x.Name]; alreadyUsed {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("backupStore"), "the backup store must be unique for each etcd cluster"))
+		}
+		etcdBackupStore[x.Name] = true
 	}
 
 	return allErrs
