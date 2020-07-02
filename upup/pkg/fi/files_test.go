@@ -26,7 +26,7 @@ import (
 
 func TestWriteFile(t *testing.T) {
 	var TempDir, _ = ioutil.TempDir("", "fitest")
-	defer os.Remove(TempDir)
+	defer os.RemoveAll(TempDir)
 	tests := []struct {
 		path     string
 		data     []byte
