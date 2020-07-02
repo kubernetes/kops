@@ -26,7 +26,7 @@ import (
 
 func TestCreateFile(t *testing.T) {
 	var TempDir, _ = ioutil.TempDir("", "test")
-	defer os.Remove(TempDir)
+	defer os.RemoveAll(TempDir)
 	tests := []struct {
 		path string
 		data []byte
@@ -63,7 +63,7 @@ func TestCreateFile(t *testing.T) {
 
 func TestWriteTo(t *testing.T) {
 	var TempDir, _ = ioutil.TempDir("", "test")
-	defer os.Remove(TempDir)
+	defer os.RemoveAll(TempDir)
 	tests := []struct {
 		path string
 		data []byte
