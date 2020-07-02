@@ -297,27 +297,27 @@ func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.Inst
 		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
 	}
 
-	for _, asg := range instanceGroups {
-		name := asg.InstanceGroupName
+	for _, doGroup := range instanceGroups {
+		name := doGroup.InstanceGroupName
 
 		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
 		if err != nil {
-			return nil, fmt.Errorf("error getting instance group for ASG %q", name)
+			return nil, fmt.Errorf("error getting instance group for doGroup %q", name)
 		}
 		if instancegroup == nil {
 			if warnUnmatched {
-				klog.Warningf("Found ASG with no corresponding instance group %q", name)
+				klog.Warningf("Found doGroup with no corresponding instance group %q", name)
 			}
 			continue
 		}
 
-		groups[instancegroup.ObjectMeta.Name], err = buildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = buildCloudInstanceGroup(c, instancegroup, doGroup, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
 		}
 	}
 
-	klog.V(2).Infof("Cloud Instance Group Info = %v", groups)
+	klog.V(8).Infof("Cloud Instance Group Info = %v", groups)
 	return groups, nil
 
 }
@@ -332,21 +332,20 @@ func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error)
 	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
 	droplets, err := getAllDropletsByTag(c, clusterTag)
 	if err != nil {
-		// Todo sri.
+		return nil, fmt.Errorf("get all droplets for tag %s returned error. Error=%v", clusterTag, err)
 	}
 
 	instanceGroupName := ""
 	for _, droplet := range droplets {
 		doInstanceGroup, err := getDropletInstanceGroup(droplet.Tags)
 		if err != nil {
-
+			return nil, fmt.Errorf("get droplets Instance group for tags %v returned error. Error=%v", droplet.Tags, err)
 		}
 
 		if strings.Contains(doInstanceGroup, "master") {
 			// This is a master instance group, get the index.
 			k8sIndex, err := getDropletIndexFromTag(droplet.Tags)
 			if err != nil {
-				// Todo Sri.
 				klog.Warningf("tag check returned err = %v", err)
 			}
 			instanceGroupName = fmt.Sprintf("%s-%s-%s", clusterName, doInstanceGroup, k8sIndex)
@@ -376,15 +375,14 @@ func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error)
 		})
 	}
 
-	klog.V(2).Infof("InstanceGroup Info = %v", result)
+	klog.V(8).Infof("InstanceGroup Info = %v", result)
 
 	return result, nil
 }
 
 func getDropletInstanceGroup(tags []string) (string, error) {
-	klog.V(2).Infof("tags = %v", tags)
 	for _, tag := range tags {
-		klog.V(2).Infof("Check tag = %s", tag)
+		klog.V(8).Infof("Check tag = %s", tag)
 		if strings.Contains(strings.ToLower(tag), TagKubernetesInstanceGroup) {
 			tagParts := strings.Split(tag, ":")
 			if len(tagParts) < 2 {
@@ -398,9 +396,8 @@ func getDropletInstanceGroup(tags []string) (string, error) {
 }
 
 func getDropletIndexFromTag(tags []string) (string, error) {
-	klog.V(2).Infof("tags = %v", tags)
 	for _, tag := range tags {
-		klog.V(2).Infof("Check tag = %s", tag)
+		klog.V(8).Infof("Check tag = %s", tag)
 		if strings.Contains(strings.ToLower(tag), TagKubernetesClusterIndex) {
 			tagParts := strings.Split(tag, ":")
 			if len(tagParts) < 2 {
