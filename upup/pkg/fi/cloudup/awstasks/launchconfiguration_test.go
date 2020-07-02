@@ -77,6 +77,7 @@ func TestLaunchConfigurationGarbageCollection(t *testing.T) {
 			if err != nil {
 				t.Fatalf("error building context: %v", err)
 			}
+			defer context.Close()
 
 			// We use a longer deadline because we know we often need to
 			// retry here, because we create different versions of
