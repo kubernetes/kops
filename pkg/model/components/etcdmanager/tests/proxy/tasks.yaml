@@ -43,6 +43,7 @@ oldFormat: false
 subject: cn=etcd-peers-ca-main
 type: ca
 ---
+Base: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
 Contents:
   Name: ""
   Resource: |-
@@ -50,9 +51,10 @@ Contents:
       "memberCount": 1
     }
 Lifecycle: null
-Location: backups/etcd/events/control/etcd-cluster-spec
+Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-events
 ---
+Base: memfs://clusters.example.com/minimal.example.com/backups/etcd-main
 Contents:
   Name: ""
   Resource: |-
@@ -60,9 +62,10 @@ Contents:
       "memberCount": 1
     }
 Lifecycle: null
-Location: backups/etcd/main/control/etcd-cluster-spec
+Location: /control/etcd-cluster-spec
 Name: etcd-cluster-spec-main
 ---
+Base: null
 Contents:
   Name: ""
   Resource: |
@@ -143,6 +146,7 @@ Lifecycle: null
 Location: manifests/etcd/events.yaml
 Name: manifests-etcdmanager-events
 ---
+Base: null
 Contents:
   Name: ""
   Resource: |
