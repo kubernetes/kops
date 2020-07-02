@@ -97,11 +97,19 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
+		// Ensure a unique backup location for each etcd cluster
+		// if a backupStore is not specified.
+		var location string
+		if backupStore == "" {
+			location = "backups/etcd/" + etcdCluster.Name
+		}
+
 		c.AddTask(&fitasks.ManagedFile{
 			Contents:  fi.WrapResource(fi.NewBytesResource(d)),
 			Lifecycle: b.Lifecycle,
+			Base:      fi.String(backupStore),
 			// TODO: We need this to match the backup base (currently)
-			Location: fi.String("backups/etcd/" + etcdCluster.Name + "/control/etcd-cluster-spec"),
+			Location: fi.String(location + "/control/etcd-cluster-spec"),
 			Name:     fi.String("etcd-cluster-spec-" + name),
 		})
 

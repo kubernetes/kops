@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 //go:generate fitask -type=ManagedFile
@@ -31,12 +32,16 @@ type ManagedFile struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
+	Base     *string
 	Location *string
 	Contents *fi.ResourceHolder
 }
 
 func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
-	managedFiles := c.ClusterConfigBase
+	managedFiles, err := getBasePath(c, e)
+	if err != nil {
+		return nil, err
+	}
 
 	location := fi.StringValue(e.Location)
 	if location == "" {
@@ -53,6 +58,7 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 
 	actual := &ManagedFile{
 		Name:     e.Name,
+		Base:     e.Base,
 		Location: e.Location,
 		Contents: fi.WrapResource(fi.NewBytesResource(existingData)),
 	}
@@ -90,7 +96,11 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		return fmt.Errorf("error reading contents of ManagedFile: %v", err)
 	}
 
-	p := c.ClusterConfigBase.Join(location)
+	p, err := getBasePath(c, e)
+	if err != nil {
+		return err
+	}
+	p = p.Join(location)
 
 	acl, err := acls.GetACL(p, c.Cluster)
 	if err != nil {
@@ -103,4 +113,17 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 	}
 
 	return nil
+}
+
+func getBasePath(c *fi.Context, e *ManagedFile) (vfs.Path, error) {
+	base := fi.StringValue(e.Base)
+	if base != "" {
+		p, err := vfs.Context.BuildVfsPath(base)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing ManagedFile Base %q: %v", base, err)
+		}
+		return p, nil
+	}
+
+	return c.ClusterConfigBase, nil
 }
