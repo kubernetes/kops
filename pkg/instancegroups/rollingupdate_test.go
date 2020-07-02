@@ -40,6 +40,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -800,9 +801,8 @@ func TestRollingUpdateDisabled(t *testing.T) {
 
 	c, cloud, cluster := getTestSetup()
 
-	zero := intstr.FromInt(0)
 	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
-		MaxUnavailable: &zero,
+		DrainAndTerminate: fi.Bool(false),
 	}
 
 	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
@@ -821,9 +821,8 @@ func TestRollingUpdateDisabledCloudonly(t *testing.T) {
 	c, cloud, cluster := getTestSetup()
 	c.CloudOnly = true
 
-	zero := intstr.FromInt(0)
 	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
-		MaxUnavailable: &zero,
+		DrainAndTerminate: fi.Bool(false),
 	}
 
 	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
@@ -834,6 +833,54 @@ func TestRollingUpdateDisabledCloudonly(t *testing.T) {
 	assertGroupInstanceCount(t, cloud, "node-2", 3)
 	assertGroupInstanceCount(t, cloud, "master-1", 2)
 	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
+}
+
+type disabledSurgeTest struct {
+	autoscalingiface.AutoScalingAPI
+	t           *testing.T
+	mutex       sync.Mutex
+	numDetached int
+}
+
+func (m *disabledSurgeTest) DetachInstances(input *autoscaling.DetachInstancesInput) (*autoscaling.DetachInstancesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	for _, id := range input.InstanceIds {
+		assert.NotContains(m.t, *id, "master")
+		m.numDetached++
+	}
+	return &autoscaling.DetachInstancesOutput{}, nil
+}
+
+func TestRollingUpdateDisabledSurge(t *testing.T) {
+	ctx := context.Background()
+
+	c, cloud, cluster := getTestSetup()
+
+	disabledSurgeTest := &disabledSurgeTest{
+		AutoScalingAPI: cloud.MockAutoscaling,
+		t:              t,
+	}
+	cloud.MockAutoscaling = disabledSurgeTest
+	cloud.MockEC2 = &ec2IgnoreTags{EC2API: cloud.MockEC2}
+
+	one := intstr.FromInt(1)
+	cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
+		DrainAndTerminate: fi.Bool(false),
+		MaxSurge:          &one,
+	}
+
+	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
+	err := c.RollingUpdate(ctx, groups, cluster, &kopsapi.InstanceGroupList{})
+	assert.NoError(t, err, "rolling update")
+
+	assertGroupInstanceCount(t, cloud, "node-1", 3)
+	assertGroupInstanceCount(t, cloud, "node-2", 3)
+	assertGroupInstanceCount(t, cloud, "master-1", 2)
+	assertGroupInstanceCount(t, cloud, "bastion-1", 1)
+
+	assert.Equal(t, 3, disabledSurgeTest.numDetached)
 }
 
 // The concurrent update tests attempt to induce the following expected update sequence:

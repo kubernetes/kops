@@ -42,6 +42,7 @@ go_test(
         "//pkg/apis/kops:go_default_library",
         "//pkg/cloudinstances:go_default_library",
         "//pkg/validation:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
