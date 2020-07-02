@@ -5141,6 +5141,7 @@ func Convert_kops_RBACAuthorizationSpec_To_v1alpha2_RBACAuthorizationSpec(in *ko
 }
 
 func autoConvert_v1alpha2_RollingUpdate_To_kops_RollingUpdate(in *RollingUpdate, out *kops.RollingUpdate, s conversion.Scope) error {
+	out.DrainAndTerminate = in.DrainAndTerminate
 	out.MaxUnavailable = in.MaxUnavailable
 	out.MaxSurge = in.MaxSurge
 	return nil
@@ -5152,6 +5153,7 @@ func Convert_v1alpha2_RollingUpdate_To_kops_RollingUpdate(in *RollingUpdate, out
 }
 
 func autoConvert_kops_RollingUpdate_To_v1alpha2_RollingUpdate(in *kops.RollingUpdate, out *RollingUpdate, s conversion.Scope) error {
+	out.DrainAndTerminate = in.DrainAndTerminate
 	out.MaxUnavailable = in.MaxUnavailable
 	out.MaxSurge = in.MaxSurge
 	return nil
