@@ -1272,7 +1272,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.4.0
+        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.8.1
         resources:
             requests:
                 cpu: "20m"
@@ -2694,7 +2694,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.4.0
+        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.8.1
         resources:
             requests:
                 cpu: "20m"
@@ -2771,7 +2771,7 @@ spec:
 
       containers:
       - name: kubedns
-        image: k8s.gcr.io/k8s-dns-kube-dns-{{Arch}}:1.14.13
+        image: k8s.gcr.io/k8s-dns-kube-dns:1.15.13
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -2865,7 +2865,7 @@ spec:
           mountPath: /etc/k8s/dns/dnsmasq-nanny
 
       - name: sidecar
-        image: k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.13
+        image: k8s.gcr.io/k8s-dns-sidecar:1.15.13
         livenessProbe:
           httpGet:
             path: /metrics
@@ -3047,7 +3047,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.1.2-r2
+        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.8.1
         resources:
             requests:
                 cpu: "20m"
@@ -3112,7 +3112,7 @@ spec:
 
       containers:
       - name: kubedns
-        image: k8s.gcr.io/k8s-dns-kube-dns-{{Arch}}:1.14.10
+        image: k8s.gcr.io/k8s-dns-kube-dns:1.15.13
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -3164,7 +3164,7 @@ spec:
           mountPath: /kube-dns-config
 
       - name: dnsmasq
-        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.10
+        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny:1.15.13
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -3206,7 +3206,7 @@ spec:
           mountPath: /etc/k8s/dns/dnsmasq-nanny
 
       - name: sidecar
-        image: k8s.gcr.io/k8s-dns-sidecar-amd64:1.14.10
+        image: k8s.gcr.io/k8s-dns-sidecar:1.15.13
         livenessProbe:
           httpGet:
             path: /metrics
