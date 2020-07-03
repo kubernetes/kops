@@ -31,6 +31,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -61,11 +62,21 @@ type NewClusterOptions struct {
 	// MasterZones are the availability zones in which to run the masters. Defaults to the list in the Zones field.
 	MasterZones []string
 
+	// Project is the cluster's GCE project.
+	Project string
+	// GCEServiceAccount specifies the service account with which the GCE VM runs.
+	GCEServiceAccount string
+
+	// Spotinst options
+	SpotinstProduct     string
+	SpotinstOrientation string
+
 	// NetworkID is the ID of the shared network (VPC).
 	// If empty, SubnetIDs are not empty, and on AWS or OpenStack, determines network ID from the first SubnetID.
 	// If empty otherwise, creates a new network/VPC to be owned by the cluster.
 	NetworkID string
-	// SubnetIDs are the IDs of the shared subnets. If empty, creates new subnets to be owned by the cluster.
+	// SubnetIDs are the IDs of the shared subnets.
+	// If empty, creates new subnets to be owned by the cluster.
 	SubnetIDs []string
 	// Egress defines the method of traffic egress for subnets.
 	Egress string
@@ -232,6 +243,32 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 			cluster.Spec.NetworkID = *res.Subnets[0].VpcId
 		}
 
+	case api.CloudProviderGCE:
+		if cluster.Spec.CloudConfig == nil {
+			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+		}
+		cluster.Spec.Project = opt.Project
+		if cluster.Spec.Project == "" {
+			project, err := gce.DefaultProject()
+			if err != nil {
+				klog.Warningf("unable to get default google cloud project: %v", err)
+			} else if project == "" {
+				klog.Warningf("default google cloud project not set (try `gcloud config set project <name>`")
+			} else {
+				klog.Infof("using google cloud project: %s", project)
+			}
+			cluster.Spec.Project = project
+		}
+		if opt.GCEServiceAccount != "" {
+			// TODO remove this logging?
+			klog.Infof("VMs will be configured to use specified Service Account: %v", opt.GCEServiceAccount)
+			cluster.Spec.CloudConfig.GCEServiceAccount = opt.GCEServiceAccount
+		} else {
+			klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
+			klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
+			cluster.Spec.CloudConfig.GCEServiceAccount = "default"
+		}
+
 	case api.CloudProviderOpenstack:
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
@@ -271,6 +308,18 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 		}
 		if opt.OpenstackExternalSubnet != "" {
 			cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(opt.OpenstackExternalSubnet)
+		}
+	}
+
+	if featureflag.Spotinst.Enabled() {
+		if cluster.Spec.CloudConfig == nil {
+			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+		}
+		if opt.SpotinstProduct != "" {
+			cluster.Spec.CloudConfig.SpotinstProduct = fi.String(opt.SpotinstProduct)
+		}
+		if opt.SpotinstOrientation != "" {
+			cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(opt.SpotinstOrientation)
 		}
 	}
 
