@@ -25,6 +25,7 @@ go_library(
         "//pkg/assets:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/k8sversion:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/loader:go_default_library",

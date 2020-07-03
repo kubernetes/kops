@@ -215,6 +215,11 @@ func TestPrivateCilium(t *testing.T) {
 	newIntegrationTest("privatecilium.example.com", "privatecilium").withPrivate().runTestCloudformation(t)
 }
 
+func TestPrivateCilium2(t *testing.T) {
+	newIntegrationTest("privatecilium.example.com", "privatecilium2").withPrivate().runTestTerraformAWS(t)
+	newIntegrationTest("privatecilium.example.com", "privatecilium2").withPrivate().runTestCloudformation(t)
+}
+
 func TestPrivateCiliumAdvanced(t *testing.T) {
 	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").withPrivate().runTestTerraformAWS(t)
 	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").withPrivate().runTestCloudformation(t)
