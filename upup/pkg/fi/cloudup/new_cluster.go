@@ -23,15 +23,20 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
+	version "k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -54,6 +59,8 @@ type NewClusterOptions struct {
 	Channel string
 	// ConfigBase is the location where we will store the configuration. It defaults to the state store.
 	ConfigBase string
+	// KubernetesVersion is the version of Kubernetes to deploy. It defaults to the version recommended by the channel.
+	KubernetesVersion string
 
 	// CloudProvider is the name of the cloud provider. The default is to guess based on the Zones name.
 	CloudProvider string
@@ -101,11 +108,15 @@ type NewClusterOptions struct {
 	// NodeCount is the number of nodes to create. Defaults to leaving the count unspecified
 	// on the InstanceGroup, which results in a count of 2.
 	NodeCount int32
+
+	// Networking is the networking provider/node to use.
+	Networking string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
 	o.Channel = api.DefaultChannel
 	o.Authorization = AuthorizationFlagRBAC
+	o.Networking = "kubenet"
 }
 
 type NewClusterResult struct {
@@ -149,6 +160,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 	}
 	cluster.Spec.Channel = opt.Channel
+	if opt.KubernetesVersion != "" {
+		cluster.Spec.KubernetesVersion = opt.KubernetesVersion
+	}
 
 	cluster.Spec.ConfigBase = opt.ConfigBase
 	configBase, err := clientset.ConfigBaseFor(&cluster)
@@ -210,6 +224,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 
 	instanceGroups := append([]*api.InstanceGroup(nil), masters...)
 	instanceGroups = append(instanceGroups, nodes...)
+
+	err = setupNetworking(opt, &cluster)
+	if err != nil {
+		return nil, err
+	}
 
 	result := NewClusterResult{
 		Cluster:        &cluster,
@@ -692,4 +711,91 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 	nodes = append(nodes, g)
 
 	return nodes, nil
+}
+
+func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
+	cluster.Spec.Networking = &api.NetworkingSpec{}
+	switch opt.Networking {
+	case "kubenet":
+		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+	case "external":
+		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
+	case "cni":
+		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
+	case "kopeio-vxlan", "kopeio":
+		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
+	case "weave":
+		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
+
+		if cluster.Spec.CloudProvider == "aws" {
+			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
+			// sets the default to the largest number that leaves enough overhead and is divisible by 4
+			jumboFrameMTUSize := int32(8912)
+			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
+		}
+	case "flannel", "flannel-vxlan":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+			Backend: "vxlan",
+		}
+	case "flannel-udp":
+		klog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+			Backend: "udp",
+		}
+	case "calico":
+		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{
+			MajorVersion: "v3",
+		}
+		// Validate to check if etcd clusters have an acceptable version
+		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("spec", "networking", "calico")); len(errList) != 0 {
+
+			// This is not a special version but simply of the 3 series
+			for _, etcd := range cluster.Spec.EtcdClusters {
+				etcd.Version = components.DefaultEtcd3Version_1_11
+			}
+		}
+	case "canal":
+		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
+	case "kube-router":
+		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
+		if cluster.Spec.KubeProxy == nil {
+			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+		}
+		enabled := false
+		cluster.Spec.KubeProxy.Enabled = &enabled
+	case "amazonvpc", "amazon-vpc-routed-eni":
+		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
+	case "cilium":
+		cilium := &api.CiliumNetworkingSpec{}
+		cluster.Spec.Networking.Cilium = cilium
+		nodeport := false
+		if cluster.Spec.KubernetesVersion == "" {
+			nodeport = true
+		} else {
+			k8sVersion, err := semver.ParseTolerant(cluster.Spec.KubernetesVersion)
+			if err == nil {
+				if version.IsKubernetesGTE("1.12", k8sVersion) {
+					nodeport = true
+				}
+			}
+		}
+		if nodeport {
+			cilium.EnableNodePort = true
+			if cluster.Spec.KubeProxy == nil {
+				cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+			}
+			enabled := false
+			cluster.Spec.KubeProxy.Enabled = &enabled
+		}
+	case "lyftvpc":
+		cluster.Spec.Networking.LyftVPC = &api.LyftVPCNetworkingSpec{}
+	case "gce":
+		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
+	default:
+		return fmt.Errorf("unknown networking mode %q", opt.Networking)
+	}
+
+	klog.V(4).Infof("networking mode=%s => %s", opt.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
+
+	return nil
 }
