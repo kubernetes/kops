@@ -58,7 +58,6 @@ require (
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.30.16
 	github.com/bazelbuild/bazel-gazelle v0.19.1
-	github.com/blang/semver v3.5.0+incompatible // indirect
 	github.com/blang/semver/v4 v4.0.0
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/client9/misspell v0.3.4
@@ -88,7 +87,6 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v1.0.0
-	github.com/rogpeppe/go-internal v1.6.0 // indirect
 	github.com/sergi/go-diff v1.0.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
