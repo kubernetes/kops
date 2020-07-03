@@ -2960,13 +2960,29 @@ spec:
                           that is used for Cilium state change. The cluster is operated
                           by cilium-etcd-operator. Default: false'
                         type: boolean
+                      hubble:
+                        description: Hubble configures the Hubble service on the Cilium
+                          agent.
+                        properties:
+                          enabled:
+                            description: Enabled specifies whether Hubble is enabled
+                              on the agent.
+                            type: boolean
+                          metrics:
+                            description: Metrics is a list of metrics to collect.
+                              If empty or null, metrics are disabled. See https://docs.cilium.io/en/stable/configuration/metrics/#hubble-exported-metrics
+                            items:
+                              type: string
+                            type: array
+                        type: object
                       ipam:
                         description: Ipam specifies the IP address allocation mode
                           to use. Possible values are "crd" and "eni". "eni" will
                           use AWS native networking for pods. Eni requires masquerade
                           to be set to false. "crd" will use CRDs for controlling
-                          IP address management. Empty value will use host-scope address
-                          management.
+                          IP address management. "hostscope" will use hostscope IPAM
+                          mode. "kubernetes" will use addersing based on node pod
+                          CIDR. Empty value will use host-scope address management.
                         type: string
                       ipv4ClusterCidrMaskSize:
                         description: Ipv4ClusterCIDRMaskSize is not implemented and
@@ -3144,8 +3160,6 @@ spec:
                         description: Version is the version of the Cilium agent and
                           the Cilium Operator.
                         type: string
-                    required:
-                    - enableEncryption
                     type: object
                   classic:
                     description: ClassicNetworkingSpec is the specification of classic

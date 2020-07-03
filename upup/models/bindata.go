@@ -29,6 +29,7 @@
 // upup/models/cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.16.yaml.template
+// upup/models/cloudup/resources/addons/networking.cilium.io/k8s-1.12-v1.8.yaml.template
 // upup/models/cloudup/resources/addons/networking.cilium.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/networking.cilium.io/k8s-1.7.yaml.template
 // upup/models/cloudup/resources/addons/networking.flannel/k8s-1.12.yaml.template
@@ -4058,6 +4059,933 @@ func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate() (*as
 	return a, nil
 }
 
+var _cloudupResourcesAddonsNetworkingCiliumIoK8s112V18YamlTemplate = []byte(`{{- if CiliumSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cilium-ipsec-keys
+  namespace: kube-system
+stringData:
+  {{ CiliumSecret }}
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cilium-config
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+data:
+{{ with .Networking.Cilium }}
+
+{{- if .EtcdManaged }}
+  kvstore: etcd
+  kvstore-opt: '{"etcd.config": "/var/lib/etcd-config/etcd.config"}'
+
+  etcd-config: |-
+    ---
+    endpoints:
+      - https://{{ $.MasterInternalName }}:4003
+
+    trusted-ca-file: '/var/lib/etcd-secrets/etcd-ca.crt'
+    key-file: '/var/lib/etcd-secrets/etcd-client-cilium.key'
+    cert-file: '/var/lib/etcd-secrets/etcd-client-cilium.crt'
+{{ end }}
+
+  # Identity allocation mode selects how identities are shared between cilium
+  # nodes by setting how they are stored. The options are "crd" or "kvstore".
+  # - "crd" stores identities in kubernetes as CRDs (custom resource definition).
+  #   These can be queried with:
+  #     kubectl get ciliumid
+  # - "kvstore" stores identities in a kvstore, etcd or consul, that is
+  #   configured below. Cilium versions before 1.6 supported only the kvstore
+  #   backend. Upgrades from these older cilium versions should continue using
+  #   the kvstore by commenting out the identity-allocation-mode below, or
+  #   setting it to "kvstore".
+  identity-allocation-mode: crd
+  # If you want to run cilium in debug mode change this value to true
+  debug: "{{ .Debug }}"
+  {{ if .EnablePrometheusMetrics }}
+  # If you want metrics enabled in all of your Cilium agents, set the port for
+  # which the Cilium agents will have their metrics exposed.
+  # This option deprecates the "prometheus-serve-addr" in the
+  # "cilium-metrics-config" ConfigMap
+  # NOTE that this will open the port on ALL nodes where Cilium pods are
+  # scheduled.
+  prometheus-serve-addr: ":{{ .AgentPrometheusPort }}"
+  operator-prometheus-serve-addr: ":6942" 
+  enable-metrics: true
+  {{ end }}
+  {{ if .EnableEncryption }}
+  enable-ipsec: "true"
+  ipsec-key-file: /etc/ipsec/keys
+  {{ end }}
+  # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
+  # address.
+  enable-ipv4: "true"
+  # Enable IPv6 addressing. If enabled, all endpoints are allocated an IPv6
+  # address.
+  enable-ipv6: "false"
+  # If you want cilium monitor to aggregate tracing for packets, set this level
+  # to "low", "medium", or "maximum". The higher the level, the less packets
+  # that will be seen in monitor output.
+  monitor-aggregation: "{{ .MonitorAggregation }}"
+  # ct-global-max-entries-* specifies the maximum number of connections
+  # supported across all endpoints, split by protocol: tcp or other. One pair
+  # of maps uses these values for IPv4 connections, and another pair of maps
+  # use these values for IPv6 connections.
+  #
+  # If these values are modified, then during the next Cilium startup the
+  # tracking of ongoing connections may be disrupted. This may lead to brief
+  # policy drops or a change in loadbalancing decisions for a connection.
+  #
+  # For users upgrading from Cilium 1.2 or earlier, to minimize disruption
+  # during the upgrade process, comment out these options.
+  bpf-ct-global-tcp-max: "{{ .BPFCTGlobalTCPMax }}"
+  bpf-ct-global-any-max: "{{ .BPFCTGlobalAnyMax }}"
+
+  # Pre-allocation of map entries allows per-packet latency to be reduced, at
+  # the expense of up-front memory allocation for the entries in the maps. The
+  # default value below will minimize memory usage in the default installation;
+  # users who are sensitive to latency may consider setting this to "true".
+  #
+  # This option was introduced in Cilium 1.4. Cilium 1.3 and earlier ignore
+  # this option and behave as though it is set to "true".
+  #
+  # If this value is modified, then during the next Cilium startup the restore
+  # of existing endpoints and tracking of ongoing connections may be disrupted.
+  # This may lead to policy drops or a change in loadbalancing decisions for a
+  # connection for some time. Endpoints may need to be recreated to restore
+  # connectivity.
+  #
+  # If this option is set to "false" during an upgrade from 1.3 or earlier to
+  # 1.4 or later, then it may cause one-time disruptions during the upgrade.
+  preallocate-bpf-maps: "{{- if .PreallocateBPFMaps -}}true{{- else -}}false{{- end -}}"
+  # Regular expression matching compatible Istio sidecar istio-proxy
+  # container image names
+  sidecar-istio-proxy-image: "{{ .SidecarIstioProxyImage }}"
+  # Encapsulation mode for communication between nodes
+  # Possible values:
+  #   - disabled
+  #   - vxlan (default)
+  #   - geneve
+  tunnel: "{{ .Tunnel }}"
+
+  # Name of the cluster. Only relevant when building a mesh of clusters.
+  cluster-name: "{{ .ClusterName }}"
+
+  # DNS response code for rejecting DNS requests,
+  # available options are "nameError" and "refused"
+  tofqdns-dns-reject-response-code: "{{ .ToFqdnsDNSRejectResponseCode }}"
+  # This option is disabled by default starting from version 1.4.x in favor
+  # of a more powerful DNS proxy-based implementation, see [0] for details.
+  # Enable this option if you want to use FQDN policies but do not want to use
+  # the DNS proxy.
+  #
+  # To ease upgrade, users may opt to set this option to "true".
+  # Otherwise please refer to the Upgrade Guide [1] which explains how to
+  # prepare policy rules for upgrade.
+  #
+  # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
+  # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
+  tofqdns-enable-poller: "{{- if .ToFqdnsEnablePoller -}}true{{- else -}}false{{- end -}}"
+  # wait-bpf-mount makes init container wait until bpf filesystem is mounted
+  wait-bpf-mount: "false"
+  # Enable fetching of container-runtime specific metadata
+  #
+  # By default, the Kubernetes pod and namespace labels are retrieved and
+  # associated with endpoints for identification purposes. By integrating
+  # with the container runtime, container runtime specific labels can be
+  # retrieved, such labels will be prefixed with container:
+  #
+  # CAUTION: The container runtime labels can include information such as pod
+  # annotations which may result in each pod being associated a unique set of
+  # labels which can result in excessive security identities being allocated.
+  # Please review the labels filter when enabling container runtime labels.
+  #
+  # Supported values:
+  # - containerd
+  # - crio
+  # - docker
+  # - none
+  # - auto (automatically detect the container runtime)
+  #
+  container-runtime: "{{ .ContainerRuntimeLabels }}"
+  masquerade: "{{- if .DisableMasquerade -}}false{{- else -}}true{{- end -}}"
+  install-iptables-rules: "{{- if .IPTablesRulesNoinstall -}}false{{- else -}}true{{- end -}}"
+  auto-direct-node-routes: "{{ .AutoDirectNodeRoutes }}"
+  enable-node-port: "{{ .EnableNodePort }}"
+  kube-proxy-replacement: "{{- if .EnableNodePort -}}strict{{- else -}}partial{{- end -}}"
+  enable-remote-node-identity: "{{ .EnableRemoteNodeIdentity -}}"
+  {{ with .Ipam }}
+  ipam: {{ . }}
+  {{ if eq . "eni" }}
+  enable-endpoint-routes: "true"
+  auto-create-cilium-node-resource: "true"
+  blacklist-conflicting-routes: "false"
+  {{ end }}
+  {{ end }}
+
+  {{ if .Hubble.Enabled }}
+  # Enable Hubble gRPC service.
+  enable-hubble: "true"
+  # UNIX domain socket for Hubble server to listen to.
+  hubble-socket-path:  "/var/run/cilium/hubble.sock"
+  {{ if .Hubble.Metrics }}
+  hubble-metrics-server: ":9091"
+  hubble-metrics:
+  {{- range .Hubble.Metrics }}
+    {{ . }}
+  {{- end }}
+  {{ end }}
+  {{ end }}
+
+{{ end }} # With .Networking.Cilium end
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cilium
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cilium-operator
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cilium
+  labels:
+    role.kubernetes.io/networking: "1"
+rules:
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - services
+  - nodes
+  - endpoints
+  - componentstatuses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnetworkpolicies
+  - ciliumnetworkpolicies/status
+  - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/status
+  - ciliumendpoints
+  - ciliumendpoints/status
+  - ciliumnodes
+  - ciliumnodes/status
+  - ciliumidentities
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cilium-operator
+  labels:
+    role.kubernetes.io/networking: "1"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  # to automatically delete [core|kube]dns pods so that are starting to being
+  # managed by Cilium
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - delete
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  # to automatically read from k8s and import the node's pod CIDR to cilium's
+  # etcd so all nodes know how to reach another pod running in a different
+  # node.
+  - nodes
+  # to perform the translation of a CNP that contains ` + "`" + `ToGroup` + "`" + ` to its endpoints
+  - services
+  - endpoints
+  # to check apiserver connectivity
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cilium.io
+  resources:
+  - ciliumnetworkpolicies
+  - ciliumnetworkpolicies/status
+  - ciliumclusterwidenetworkpolicies
+  - ciliumclusterwidenetworkpolicies/status
+  - ciliumendpoints
+  - ciliumendpoints/status
+  - ciliumnodes
+  - ciliumnodes/status
+  - ciliumidentities
+  - ciliumidentities/status
+  verbs:
+  - '*'
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cilium
+  labels:
+    role.kubernetes.io/networking: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cilium
+subjects:
+- kind: ServiceAccount
+  name: cilium
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cilium-operator
+  labels:
+    role.kubernetes.io/networking: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cilium-operator
+subjects:
+- kind: ServiceAccount
+  name: cilium-operator
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: cilium
+    kubernetes.io/cluster-service: "true"
+    role.kubernetes.io/networking: "1"
+  name: cilium
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: cilium
+      kubernetes.io/cluster-service: "true"
+  template:
+    metadata:
+      annotations:
+        # This annotation plus the CriticalAddonsOnly toleration makes
+        # cilium to be a critical pod in the cluster, which ensures cilium
+        # gets priority scheduling.
+        # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        k8s-app: cilium
+        kubernetes.io/cluster-service: "true"
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: k8s-app
+                operator: In
+                values:
+                - cilium
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - args:
+        - --config-dir=/tmp/cilium/config-map
+        command:
+        - cilium-agent
+        env:
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CILIUM_K8S_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: CILIUM_FLANNEL_MASTER_DEVICE
+          valueFrom:
+            configMapKeyRef:
+              key: flannel-master-device
+              name: cilium-config
+              optional: true
+        - name: CILIUM_FLANNEL_UNINSTALL_ON_EXIT
+          valueFrom:
+            configMapKeyRef:
+              key: flannel-uninstall-on-exit
+              name: cilium-config
+              optional: true
+        - name: CILIUM_CLUSTERMESH_CONFIG
+          value: /var/lib/cilium/clustermesh/
+        - name: CILIUM_CNI_CHAINING_MODE
+          valueFrom:
+            configMapKeyRef:
+              key: cni-chaining-mode
+              name: cilium-config
+              optional: true
+        - name: CILIUM_CUSTOM_CNI_CONF
+          valueFrom:
+            configMapKeyRef:
+              key: custom-cni-conf
+              name: cilium-config
+              optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{.MasterInternalName}}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+        {{ with .Networking.Cilium.EnablePolicy }}
+        - name: CILIUM_ENABLE_POLICY
+          value: {{ . }}
+        {{ end }}
+{{ with .Networking.Cilium }}
+        image: "docker.io/cilium/cilium:{{ .Version  }}"
+        imagePullPolicy: IfNotPresent
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /cni-install.sh
+          preStop:
+            exec:
+              command:
+              - /cni-uninstall.sh
+        livenessProbe:
+          httpGet:
+            host: '127.0.0.1'
+            path: /healthz
+            port: 9876
+            scheme: HTTP
+            httpHeaders:
+            - name: "brief"
+              value: "true"
+          failureThreshold: 10
+          # The initial delay for the liveness probe is intentionally large to
+          # avoid an endless kill & restart cycle if in the event that the initial
+          # bootstrapping takes longer than expected.
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: cilium-agent
+        {{ if or .EnablePrometheusMetrics .Hubble.Metrics }}
+        ports:
+        {{ if .EnablePrometheusMetrics }}
+        - containerPort: {{ .AgentPrometheusPort }}
+          name: prometheus
+          protocol: TCP
+        {{ end }}
+        {{- if .Hubble.Metrics }}
+        - containerPort: 9091
+          hostPort: 9091
+          name: hubble-metrics
+          protocol: TCP
+        {{- end }}
+        {{ end }}
+
+        readinessProbe:
+          httpGet:
+            host: '127.0.0.1'
+            path: /healthz
+            port: 9876
+            scheme: HTTP
+            httpHeaders:
+            - name: "brief"
+              value: "true"
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_MODULE
+          privileged: true
+        volumeMounts:
+        - mountPath: /sys/fs/bpf
+          name: bpf-maps
+          mountPropagation: HostToContainer
+        - mountPath: /var/run/cilium
+          name: cilium-run
+        - mountPath: /host/opt/cni/bin
+          name: cni-path
+        - mountPath: /host/etc/cni/net.d
+          name: etc-cni-netd
+{{ if .EtcdManaged }}
+        - mountPath: /var/lib/etcd-config
+          name: etcd-config-path
+          readOnly: true
+        - mountPath: /var/lib/etcd-secrets
+          name: etcd-secrets
+          readOnly: true
+{{ end }}
+        - mountPath: /var/lib/cilium/clustermesh
+          name: clustermesh-secrets
+          readOnly: true
+        - mountPath: /tmp/cilium/config-map
+          name: cilium-config-path
+          readOnly: true
+          # Needed to be able to load kernel modules
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+{{ if CiliumSecret }}
+        - mountPath: /etc/ipsec
+          name: cilium-ipsec-secrets
+{{ end }}
+      hostNetwork: true
+      initContainers:
+      - command:
+        - /init-container.sh
+        env:
+        - name: CILIUM_ALL_STATE
+          valueFrom:
+            configMapKeyRef:
+              key: clean-cilium-state
+              name: cilium-config
+              optional: true
+        - name: CILIUM_BPF_STATE
+          valueFrom:
+            configMapKeyRef:
+              key: clean-cilium-bpf-state
+              name: cilium-config
+              optional: true
+        - name: CILIUM_WAIT_BPF_MOUNT
+          valueFrom:
+            configMapKeyRef:
+              key: wait-bpf-mount
+              name: cilium-config
+              optional: true
+        image: "docker.io/cilium/cilium:{{ .Version }}"
+## end of ` + "`" + `with .Networking.Cilium` + "`" + `
+#{{ end }}
+        imagePullPolicy: IfNotPresent
+        name: clean-cilium-state
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            memory: 100Mi
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+          privileged: true
+        volumeMounts:
+        - mountPath: /sys/fs/bpf
+          name: bpf-maps
+        - mountPath: /var/run/cilium
+          name: cilium-run
+      priorityClassName: system-node-critical
+      restartPolicy: Always
+      serviceAccount: cilium
+      serviceAccountName: cilium
+      terminationGracePeriodSeconds: 1
+      tolerations:
+      - operator: Exists
+      volumes:
+        # To keep state between restarts / upgrades
+      - hostPath:
+          path: /var/run/cilium
+          type: DirectoryOrCreate
+        name: cilium-run
+        # To keep state between restarts / upgrades for bpf maps
+      - hostPath:
+          path: /sys/fs/bpf
+          type: DirectoryOrCreate
+        name: bpf-maps
+      # To install cilium cni plugin in the host
+      - hostPath:
+          path:  /opt/cni/bin
+          type: DirectoryOrCreate
+        name: cni-path
+        # To install cilium cni configuration in the host
+      - hostPath:
+          path: /etc/cni/net.d
+          type: DirectoryOrCreate
+        name: etc-cni-netd
+        # To be able to load kernel modules
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+        # To access iptables concurrently with other processes (e.g. kube-proxy)
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: xtables-lock
+        # To read the clustermesh configuration
+{{- if .Networking.Cilium.EtcdManaged }}
+        # To read the etcd config stored in config maps
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: etcd-config
+            path: etcd.config
+          name: cilium-config
+        name: etcd-config-path
+        # To read the Cilium etcd secrets in case the user might want to use TLS
+      - name: etcd-secrets
+        hostPath:
+          path: /etc/kubernetes/pki/cilium
+          type: Directory
+{{- end }}
+      - name: clustermesh-secrets
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: cilium-clustermesh
+        # To read the configuration from the config map
+      - configMap:
+          name: cilium-config
+        name: cilium-config-path
+{{ if CiliumSecret }}
+      - name: cilium-ipsec-secrets
+        secret:
+          secretName: cilium-ipsec-keys
+{{ end }}
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 2
+    type: RollingUpdate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.cilium/app: operator
+    name: cilium-operator
+    role.kubernetes.io/networking: "1"
+  name: cilium-operator
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.cilium/app: operator
+      name: cilium-operator
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        io.cilium/app: operator
+        name: cilium-operator
+    spec:
+      containers:
+      - args:
+        - --config-dir=/tmp/cilium/config-map
+        - --debug=$(CILIUM_DEBUG)
+        command:
+        - cilium-operator
+        env:
+        - name: CILIUM_K8S_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CILIUM_DEBUG
+          valueFrom:
+            configMapKeyRef:
+              key: debug
+              name: cilium-config
+              optional: true
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: AWS_ACCESS_KEY_ID
+              name: cilium-aws
+              optional: true
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: AWS_SECRET_ACCESS_KEY
+              name: cilium-aws
+              optional: true
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            secretKeyRef:
+              key: AWS_DEFAULT_REGION
+              name: cilium-aws
+              optional: true
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{.MasterInternalName}}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "443"
+{{ with .Networking.Cilium }}
+        image: "docker.io/cilium/operator:{{ .Version }}"
+        imagePullPolicy: IfNotPresent
+        name: cilium-operator
+        {{ if .EnablePrometheusMetrics }}
+        ports:
+        - containerPort: 6942
+          hostPort: 6942
+          name: prometheus
+          protocol: TCP
+        {{ end }}
+        livenessProbe:
+          httpGet:
+            host: "127.0.0.1"
+            path: /healthz
+            port: 9234
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 3
+        volumeMounts:
+        - mountPath: /tmp/cilium/config-map
+          name: cilium-config-path
+          readOnly: true
+{{- if .EtcdManaged }}
+        - mountPath: /var/lib/etcd-config
+          name: etcd-config-path
+          readOnly: true
+        - mountPath: /var/lib/etcd-secrets
+          name: etcd-secrets
+          readOnly: true
+{{- end }}
+      hostNetwork: true
+      priorityClassName: system-cluster-critical
+      restartPolicy: Always
+      serviceAccount: cilium-operator
+      serviceAccountName: cilium-operator
+      volumes:
+        # To read the configuration from the config map
+      - configMap:
+          name: cilium-config
+        name: cilium-config-path
+{{- if .EtcdManaged }}
+      # To read the etcd config stored in config maps
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: etcd-config
+            path: etcd.config
+          name: cilium-config
+        name: etcd-config-path
+        # To read the k8s etcd secrets in case the user might want to use TLS
+      - name: etcd-secrets
+        hostPath:
+          path: /etc/kubernetes/pki/cilium
+          type: Directory
+{{- end }}
+
+      {{ if eq .Ipam "eni" }}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+      {{ end }}
+{{ end }}
+
+{{ if .Networking.Cilium.Hubble.Enabled }}
+---
+# Source: cilium/charts/hubble-relay/templates/service.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: hubble-relay
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+    k8s-app: hubble-relay
+spec:
+  type: ClusterIP
+  selector:
+    k8s-app: hubble-relay
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 4245
+---
+# Source: cilium/charts/hubble-relay/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hubble-relay
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+    k8s-app: hubble-relay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: hubble-relay
+  template:
+    metadata:
+      labels:
+        k8s-app: hubble-relay
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "k8s-app"
+                  operator: In
+                  values:
+                    - cilium
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: hubble-relay
+          image: "docker.io/cilium/hubble-relay:{{ .Networking.Cilium.Version }}"
+          imagePullPolicy: IfNotPresent
+          command:
+            - "hubble-relay"
+          args:
+            - "serve"
+            - "--peer-service=unix:///var/run/cilium/hubble.sock"
+            - "--listen-address=:4245"
+          ports:
+            - name: grpc
+              containerPort: 4245
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+          livenessProbe:
+            tcpSocket:
+              port: grpc
+          volumeMounts:
+          - mountPath: /var/run/cilium
+            name: hubble-sock-dir
+            readOnly: true
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 0
+      tolerations:
+      - operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/run/cilium
+          type: Directory
+        name: hubble-sock-dir
+{{ end }}`)
+
+func cloudupResourcesAddonsNetworkingCiliumIoK8s112V18YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsNetworkingCiliumIoK8s112V18YamlTemplate, nil
+}
+
+func cloudupResourcesAddonsNetworkingCiliumIoK8s112V18YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsNetworkingCiliumIoK8s112V18YamlTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "cloudup/resources/addons/networking.cilium.io/k8s-1.12-v1.8.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 var _cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate = []byte(`{{- if CiliumSecret }}
 apiVersion: v1
 kind: Secret
@@ -4221,6 +5149,8 @@ data:
   enable-endpoint-routes: "true"
   auto-create-cilium-node-resource: "true"
   blacklist-conflicting-routes: "false"
+  {{ else if eq . "hostscope" }}
+  k8s-require-ipv4-pod-cidr: "true"
   {{ end }}
   {{ end }}
 {{ end }} # With .Networking.Cilium end
@@ -4600,7 +5530,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{ "v1.7.3" }}"
+        image: "docker.io/cilium/cilium:{{ .Version }}"
 ## end of ` + "`" + `with .Networking.Cilium` + "`" + `
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -18791,6 +19721,7 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.10.yaml.template":                    cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s110YamlTemplate,
 	"cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.12.yaml.template":                    cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s112YamlTemplate,
 	"cloudup/resources/addons/networking.amazon-vpc-routed-eni/k8s-1.16.yaml.template":                    cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate,
+	"cloudup/resources/addons/networking.cilium.io/k8s-1.12-v1.8.yaml.template":                           cloudupResourcesAddonsNetworkingCiliumIoK8s112V18YamlTemplate,
 	"cloudup/resources/addons/networking.cilium.io/k8s-1.12.yaml.template":                                cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate,
 	"cloudup/resources/addons/networking.cilium.io/k8s-1.7.yaml.template":                                 cloudupResourcesAddonsNetworkingCiliumIoK8s17YamlTemplate,
 	"cloudup/resources/addons/networking.flannel/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsNetworkingFlannelK8s112YamlTemplate,
@@ -18926,8 +19857,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 					"k8s-1.16.yaml.template": {cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate, map[string]*bintree{}},
 				}},
 				"networking.cilium.io": {nil, map[string]*bintree{
-					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate, map[string]*bintree{}},
-					"k8s-1.7.yaml.template":  {cloudupResourcesAddonsNetworkingCiliumIoK8s17YamlTemplate, map[string]*bintree{}},
+					"k8s-1.12-v1.8.yaml.template": {cloudupResourcesAddonsNetworkingCiliumIoK8s112V18YamlTemplate, map[string]*bintree{}},
+					"k8s-1.12.yaml.template":      {cloudupResourcesAddonsNetworkingCiliumIoK8s112YamlTemplate, map[string]*bintree{}},
+					"k8s-1.7.yaml.template":       {cloudupResourcesAddonsNetworkingCiliumIoK8s17YamlTemplate, map[string]*bintree{}},
 				}},
 				"networking.flannel": {nil, map[string]*bintree{
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNetworkingFlannelK8s112YamlTemplate, map[string]*bintree{}},
