@@ -26,22 +26,18 @@ import (
 	"os"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
-	version "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -59,7 +55,6 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
-	KubernetesVersion    string
 	ContainerRuntime     string
 	OutDir               string
 	Image                string
@@ -71,7 +66,6 @@ type CreateClusterOptions struct {
 	DNSZone              string
 	AdminAccess          []string
 	SSHAccess            []string
-	Networking           string
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
@@ -120,7 +114,6 @@ func (o *CreateClusterOptions) InitDefaults() {
 
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
-	o.Networking = "kubenet"
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
 	o.Bastion = false
@@ -503,96 +496,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	channel := clusterResult.Channel
 	allZones := clusterResult.AllZones
 
-	if c.KubernetesVersion != "" {
-		cluster.Spec.KubernetesVersion = c.KubernetesVersion
-	}
-
 	if c.ContainerRuntime != "" {
 		cluster.Spec.ContainerRuntime = c.ContainerRuntime
 	}
-
-	cluster.Spec.Networking = &api.NetworkingSpec{}
-	switch c.Networking {
-	case "kubenet":
-		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
-	case "external":
-		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
-	case "cni":
-		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
-	case "kopeio-vxlan", "kopeio":
-		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
-	case "weave":
-		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-
-		if cluster.Spec.CloudProvider == "aws" {
-			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
-			// sets the default to the largest number that leaves enough overhead and is divisible by 4
-			jumboFrameMTUSize := int32(8912)
-			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
-		}
-	case "flannel", "flannel-vxlan":
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
-			Backend: "vxlan",
-		}
-	case "flannel-udp":
-		klog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
-			Backend: "udp",
-		}
-	case "calico":
-		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{
-			MajorVersion: "v3",
-		}
-		// Validate to check if etcd clusters have an acceptable version
-		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("spec", "networking", "calico")); len(errList) != 0 {
-
-			// This is not a special version but simply of the 3 series
-			for _, etcd := range cluster.Spec.EtcdClusters {
-				etcd.Version = components.DefaultEtcd3Version_1_11
-			}
-		}
-	case "canal":
-		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
-	case "kube-router":
-		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
-		if cluster.Spec.KubeProxy == nil {
-			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-		}
-		enabled := false
-		cluster.Spec.KubeProxy.Enabled = &enabled
-	case "amazonvpc", "amazon-vpc-routed-eni":
-		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
-	case "cilium":
-		cilium := &api.CiliumNetworkingSpec{}
-		cluster.Spec.Networking.Cilium = cilium
-		nodeport := false
-		if c.KubernetesVersion == "" {
-			nodeport = true
-		} else {
-			k8sVersion, err := semver.ParseTolerant(c.KubernetesVersion)
-			if err == nil {
-				if version.IsKubernetesGTE("1.12", k8sVersion) {
-					nodeport = true
-				}
-			}
-		}
-		if nodeport {
-			cilium.EnableNodePort = true
-			if cluster.Spec.KubeProxy == nil {
-				cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-			}
-			enabled := false
-			cluster.Spec.KubeProxy.Enabled = &enabled
-		}
-	case "lyftvpc":
-		cluster.Spec.Networking.LyftVPC = &api.LyftVPCNetworkingSpec{}
-	case "gce":
-		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
-	default:
-		return fmt.Errorf("unknown networking mode %q", c.Networking)
-	}
-
-	klog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	if c.NetworkCIDR != "" {
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
