@@ -45,7 +45,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -60,7 +59,6 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
-	Project              string
 	KubernetesVersion    string
 	ContainerRuntime     string
 	OutDir               string
@@ -109,14 +107,7 @@ type CreateClusterOptions struct {
 	// Allow custom public master name
 	MasterPublicName string
 
-	// Spotinst options
-	SpotinstProduct     string
-	SpotinstOrientation string
-
 	OpenstackNetworkID string
-
-	// GCEServiceAccount specifies the service account with which the GCE VM runs
-	GCEServiceAccount string
 
 	// DryRun mode output a cluster manifest of Output type.
 	DryRun bool
@@ -511,49 +502,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	// TODO: push more of the following logic into cloudup.NewCluster()
 	channel := clusterResult.Channel
 	allZones := clusterResult.AllZones
-
-	if c.CloudProvider != "" {
-		if featureflag.Spotinst.Enabled() {
-			if cluster.Spec.CloudConfig == nil {
-				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-			}
-			if c.SpotinstProduct != "" {
-				cluster.Spec.CloudConfig.SpotinstProduct = fi.String(c.SpotinstProduct)
-			}
-			if c.SpotinstOrientation != "" {
-				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
-			}
-		}
-	}
-
-	// Populate project
-	if c.Project != "" {
-		cluster.Spec.Project = c.Project
-	}
-	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
-		if cluster.Spec.CloudConfig == nil {
-			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-		}
-		if cluster.Spec.Project == "" {
-			project, err := gce.DefaultProject()
-			if err != nil {
-				klog.Warningf("unable to get default google cloud project: %v", err)
-			} else if project == "" {
-				klog.Warningf("default google cloud project not set (try `gcloud config set project <name>`")
-			} else {
-				klog.Infof("using google cloud project: %s", project)
-			}
-			cluster.Spec.Project = project
-		}
-		if c.GCEServiceAccount != "" {
-			klog.Infof("VMs will be configured to use specified Service Account: %v", c.GCEServiceAccount)
-			cluster.Spec.CloudConfig.GCEServiceAccount = c.GCEServiceAccount
-		} else {
-			klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
-			klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
-			cluster.Spec.CloudConfig.GCEServiceAccount = "default"
-		}
-	}
 
 	if c.KubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = c.KubernetesVersion
