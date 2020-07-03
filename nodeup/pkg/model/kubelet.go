@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"k8s.io/kops/pkg/model/components"
 
@@ -38,7 +37,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const (
@@ -422,12 +420,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	isMaster := b.IsMaster
 
 	// Merge KubeletConfig for NodeLabels
-	c := &kops.KubeletConfigSpec{}
-	if isMaster {
-		reflectutils.JSONMergeStruct(c, b.Cluster.Spec.MasterKubelet)
-	} else {
-		reflectutils.JSONMergeStruct(c, b.Cluster.Spec.Kubelet)
-	}
+	c := b.NodeupConfig.KubeletConfig
 
 	// check if we are using secure kubelet <-> api settings
 	if b.UseSecureKubelet() {
@@ -446,7 +439,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		instanceTypeName, err := metadata.GetMetadata("instance-type")
 		if err != nil {
 			// Otherwise, fall back to the Instance Group spec.
-			instanceTypeName = strings.Split(b.InstanceGroup.Spec.MachineType, ",")[0]
+			instanceTypeName = *b.NodeupConfig.DefaultMachineType
 		}
 
 		region, err := awsup.FindRegion(b.Cluster)
@@ -486,21 +479,10 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 		// Write back values that could have changed
 		c.MaxPods = &maxPods
-		if b.InstanceGroup.Spec.Kubelet != nil {
-			if b.InstanceGroup.Spec.Kubelet.MaxPods == nil {
-				b.InstanceGroup.Spec.Kubelet.MaxPods = &maxPods
-			}
-		}
-	}
-
-	if b.InstanceGroup.Spec.Kubelet != nil {
-		reflectutils.JSONMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
 	}
 
 	// Use --register-with-taints
 	{
-		c.Taints = append(c.Taints, b.InstanceGroup.Spec.Taints...)
-
 		if len(c.Taints) == 0 && isMaster {
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			c.Taints = append(c.Taints, nodelabels.RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
@@ -538,15 +520,9 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
 	if b.Cluster.IsKubernetesGTE("1.16") {
 		c.NodeLabels = nil
-	} else {
-		nodeLabels, err := nodelabels.BuildNodeLabels(b.Cluster, b.InstanceGroup)
-		if err != nil {
-			return nil, err
-		}
-		c.NodeLabels = nodeLabels
 	}
 
-	return c, nil
+	return &c, nil
 }
 
 // buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
