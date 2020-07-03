@@ -8,7 +8,13 @@ The Terraform output should be reasonably stable (i.e. the text files should onl
 
 Note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs. In other terms, kops's own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience.
 
-Ps: Steps below assume a recent version of Terraform. There's a workaround for a bug if you are using a Terraform version before 0.7 that you should be aware of (see [_"Caveats"_ section](#caveats)).
+### Terraform Version Compatibility
+| Kops Version | Terraform Version | Feature Flag Notes |
+|--------------|-------------------|-------|
+| >= 1.18      | >= 0.12           | HCL2 supported by default |
+| >= 1.18      | < 0.12            | `KOPS_FEATURE_FLAGS=-Terraform-0.12` |
+| >= 1.17      | >= 0.12           | `KOPS_FEATURE_FLAGS=TerraformJSON` outputs JSON |
+| <= 1.17      | < 0.12            | Supported by default |
 
 ### Using Terraform
 
@@ -112,53 +118,6 @@ Ps: You don't have to `kops delete cluster` if you just want to recreate from sc
 Changes made with `kops edit` (like enabling RBAC and / or feature gates) will result in changes to the launch configuration of your cluster nodes. After a `terraform apply`, they won't be applied right away since terraform will not launch new instances as part of that.
 
 To see your changes applied to the cluster you'll also need to run `kops rolling-update` after running `terraform apply`. This will ensure that all nodes' changes have the desired settings configured with `kops edit`.
-
-#### Workaround for Terraform <0.7
-
-Before terraform version 0.7, there was a bug where it could not create AWS tags containing a dot. We recommend upgrading to version 0.7 or later, which will fix this bug. Please note that this issue only affects the volumes.
-
-There's a workaround if you need to use an earlier version. We divide the cloudup model into three parts:
-
-* `models/config` which contains all the options - this is run automatically by "create cluster"
-* `models/proto` which sets up the volumes and other data which would be hard to recover (e.g. likely keys & secrets in the near future)
-* `models/cloudup` which is the main cloud model for configuring everything else
-
-The workaround is that you don't use terraform for the `proto` phase (you can't anyway, because of the bug!):
-
-```
-$ kops create cluster \
-  --name=kubernetes.mydomain.com \
-  --state=s3://mycompany.kubernetes \
-  [... your other options ...]
-  --out=. \
-  --target=terraform
-
-$ kops update cluster \
-  --name=kubernetes.mydomain.com \
-  --state=s3://mycompany.kubernetes \
-  --model=proto \
-  --yes
-```
-
-And then you can use terraform to do the remainder of the installation:
-
-```
-$ kops update cluster \
-  --name=kubernetes.mydomain.com \
-  --state=s3://mycompany.kubernetes \
-  --model=cloudup \
-  --out=. \
-  --target=terraform
-```
-
-Then, to apply using terraform:
-
-```
-$ terraform plan
-$ terraform apply
-```
-
-You should still run `kops delete cluster ${CLUSTER_NAME}`, to remove the kops cluster specification and any dynamically created Kubernetes resources (ELBs or volumes), but under this workaround also to remove the primary ELB volumes from the `proto` phase.
 
 #### Terraform JSON output
 
