@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 
 	"k8s.io/klog"
 	channelsapi "k8s.io/kops/channels/pkg/api"
