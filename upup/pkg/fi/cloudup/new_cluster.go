@@ -18,18 +18,23 @@ package cloudup
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
@@ -62,6 +67,8 @@ type NewClusterOptions struct {
 	NetworkID string
 	// SubnetIDs are the IDs of the shared subnets. If empty, creates new subnets to be owned by the cluster.
 	SubnetIDs []string
+	// Egress defines the method of traffic egress for subnets.
+	Egress string
 
 	// OpenstackExternalNet is the name of the external network for the openstack router
 	OpenstackExternalNet     string
@@ -71,6 +78,18 @@ type NewClusterOptions struct {
 	OpenstackLbSubnet        string
 	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
 	OpenstackLBOctavia bool
+
+	// MasterCount is the number of masters to create. Defaults to the length of MasterZones
+	// if MasterZones is explicitly nonempty, otherwise defaults to 1.
+	MasterCount int32
+	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
+	EncryptEtcdStorage bool
+	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
+	EtcdStorageType string
+
+	// NodeCount is the number of nodes to create. Defaults to leaving the count unspecified
+	// on the InstanceGroup, which results in a count of 2.
+	NodeCount int32
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -81,6 +100,8 @@ func (o *NewClusterOptions) InitDefaults() {
 type NewClusterResult struct {
 	// Cluster is the initialized Cluster resource.
 	Cluster *api.Cluster
+	// InstanceGroups are the initialized InstanceGroup resources.
+	InstanceGroups []*api.InstanceGroup
 
 	// TODO remove after more create_cluster logic refactored in
 	Channel  *api.Channel
@@ -161,10 +182,29 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	zoneToSubnetMap, err := setupZones(opt, &cluster, allZones)
+	if err != nil {
+		return nil, err
+	}
+
+	masters, err := setupMasters(opt, &cluster, zoneToSubnetMap)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes, err := setupNodes(opt, &cluster, zoneToSubnetMap)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceGroups := append([]*api.InstanceGroup(nil), masters...)
+	instanceGroups = append(instanceGroups, nodes...)
+
 	result := NewClusterResult{
-		Cluster:  &cluster,
-		Channel:  channel,
-		AllZones: allZones,
+		Cluster:        &cluster,
+		InstanceGroups: instanceGroups,
+		Channel:        channel,
+		AllZones:       allZones,
 	}
 	return &result, nil
 }
@@ -235,4 +275,372 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 	}
 
 	return nil
+}
+
+func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.String) (map[string]*api.ClusterSubnetSpec, error) {
+	var err error
+	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
+
+	if len(opt.Zones) == 0 {
+		return nil, fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
+	}
+
+	var zoneToSubnetProviderID map[string]string
+
+	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
+	case api.CloudProviderGCE:
+		// On GCE, subnets are regional - we create one per region, not per zone
+		for _, zoneName := range allZones.List() {
+			region, err := gce.ZoneToRegion(zoneName)
+			if err != nil {
+				return nil, err
+			}
+
+			// We create default subnets named the same as the regions
+			subnetName := region
+
+			subnet := model.FindSubnet(cluster, subnetName)
+			if subnet == nil {
+				subnet = &api.ClusterSubnetSpec{
+					Name:   subnetName,
+					Region: region,
+				}
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+			}
+			zoneToSubnetMap[zoneName] = subnet
+		}
+		return zoneToSubnetMap, nil
+
+	case api.CloudProviderDO:
+		if len(opt.Zones) > 1 {
+			return nil, fmt.Errorf("digitalocean cloud provider currently only supports 1 region, expect multi-region support when digitalocean support is in beta")
+		}
+
+		// For DO we just pass in the region for --zones
+		region := opt.Zones[0]
+		subnet := model.FindSubnet(cluster, region)
+
+		// for DO, subnets are just regions
+		subnetName := region
+
+		if subnet == nil {
+			subnet = &api.ClusterSubnetSpec{
+				Name: subnetName,
+				// region and zone are the same for DO
+				Region: region,
+				Zone:   region,
+			}
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+		}
+		zoneToSubnetMap[region] = subnet
+		return zoneToSubnetMap, nil
+
+	case api.CloudProviderALI:
+		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
+			zoneToSubnetProviderID, err = aliup.ZoneToVSwitchID(cluster.Spec.NetworkID, opt.Zones, opt.SubnetIDs)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	case api.CloudProviderAWS:
+		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, opt.Zones[0][:len(opt.Zones[0])-1], opt.SubnetIDs)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	case api.CloudProviderOpenstack:
+		if len(opt.Zones) > 0 && len(opt.SubnetIDs) > 0 {
+			tags := make(map[string]string)
+			tags[openstack.TagClusterName] = opt.ClusterName
+			zoneToSubnetProviderID, err = getSubnetProviderID(&cluster.Spec, allZones.List(), opt.SubnetIDs, tags)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	for _, zoneName := range allZones.List() {
+		// We create default subnets named the same as the zones
+		subnetName := zoneName
+
+		subnet := model.FindSubnet(cluster, subnetName)
+		if subnet == nil {
+			subnet = &api.ClusterSubnetSpec{
+				Name:   subnetName,
+				Zone:   subnetName,
+				Egress: opt.Egress,
+			}
+			if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
+				subnet.ProviderID = subnetID
+			}
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+		}
+		zoneToSubnetMap[zoneName] = subnet
+	}
+
+	return zoneToSubnetMap, nil
+}
+
+// TODO rename to getAWSZoneToSubnetProviderID
+func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
+	res := make(map[string]string)
+	cloudTags := map[string]string{}
+	awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+	vpcInfo, err := awsCloud.FindVPCInfo(VPCID)
+	if err != nil {
+		return res, fmt.Errorf("error describing VPC: %v", err)
+	}
+	if vpcInfo == nil {
+		return res, fmt.Errorf("VPC %q not found", VPCID)
+	}
+	subnetByID := make(map[string]*fi.SubnetInfo)
+	for _, subnetInfo := range vpcInfo.Subnets {
+		subnetByID[subnetInfo.ID] = subnetInfo
+	}
+	for _, subnetID := range subnetIDs {
+		subnet, ok := subnetByID[subnetID]
+		if !ok {
+			return res, fmt.Errorf("subnet %s not found in VPC %s", subnetID, VPCID)
+		}
+		if res[subnet.Zone] != "" {
+			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
+		}
+		res[subnet.Zone] = subnetID
+	}
+	return res, nil
+}
+
+// TODO rename to getOpenstackZoneToSubnetProviderID
+func getSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
+	res := make(map[string]string)
+	osCloud, err := openstack.NewOpenstackCloud(tags, spec)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+	osCloud.UseZones(zones)
+
+	networkInfo, err := osCloud.FindVPCInfo(spec.NetworkID)
+	if err != nil {
+		return res, fmt.Errorf("error describing Network: %v", err)
+	}
+	if networkInfo == nil {
+		return res, fmt.Errorf("network %q not found", spec.NetworkID)
+	}
+
+	subnetByID := make(map[string]*fi.SubnetInfo)
+	for _, subnetInfo := range networkInfo.Subnets {
+		subnetByID[subnetInfo.ID] = subnetInfo
+	}
+
+	for _, subnetID := range subnetIDs {
+		subnet, ok := subnetByID[subnetID]
+		if !ok {
+			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, spec.NetworkID)
+		}
+
+		if res[subnet.Zone] != "" {
+			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
+		}
+		res[subnet.Zone] = subnetID
+	}
+	return res, nil
+}
+
+func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	var masters []*api.InstanceGroup
+
+	// Build the master subnets
+	// The master zones is the default set of zones unless explicitly set
+	// The master count is the number of master zones unless explicitly set
+	// We then round-robin around the zones
+	{
+		masterCount := opt.MasterCount
+		masterZones := opt.MasterZones
+		if len(masterZones) != 0 {
+			if masterCount != 0 && masterCount < int32(len(masterZones)) {
+				return nil, fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterZones), masterCount)
+			}
+
+			if masterCount == 0 {
+				// If master count is not specified, default to the number of master zones
+				masterCount = int32(len(masterZones))
+			}
+		} else {
+			// masterZones not set; default to same as node Zones
+			masterZones = opt.Zones
+
+			if masterCount == 0 {
+				// If master count is not specified, default to 1
+				masterCount = 1
+			}
+		}
+
+		if len(masterZones) == 0 {
+			// Should be unreachable
+			return nil, fmt.Errorf("cannot determine master zones")
+		}
+
+		for i := 0; i < int(masterCount); i++ {
+			zone := masterZones[i%len(masterZones)]
+			name := zone
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderDO {
+				if int(masterCount) >= len(masterZones) {
+					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				}
+			} else {
+				if int(masterCount) > len(masterZones) {
+					name += "-" + strconv.Itoa(1+(i/len(masterZones)))
+				}
+			}
+
+			g := &api.InstanceGroup{}
+			g.Spec.Role = api.InstanceGroupRoleMaster
+			g.Spec.MinSize = fi.Int32(1)
+			g.Spec.MaxSize = fi.Int32(1)
+			g.ObjectMeta.Name = "master-" + name
+
+			subnet := zoneToSubnetMap[zone]
+			if subnet == nil {
+				klog.Fatalf("subnet not found in zoneToSubnetMap")
+			}
+
+			g.Spec.Subnets = []string{subnet.Name}
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+				g.Spec.Zones = []string{zone}
+			}
+
+			masters = append(masters, g)
+		}
+	}
+
+	// Build the Etcd clusters
+	{
+		masterAZs := sets.NewString()
+		duplicateAZs := false
+		for _, ig := range masters {
+			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
+			if err != nil {
+				return nil, err
+			}
+			for _, zone := range zones {
+				if masterAZs.Has(zone) {
+					duplicateAZs = true
+				}
+
+				masterAZs.Insert(zone)
+			}
+		}
+
+		if duplicateAZs {
+			klog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
+		}
+
+		for _, etcdCluster := range EtcdClusters {
+			etcd := &api.EtcdClusterSpec{}
+			etcd.Name = etcdCluster
+
+			// if this is the main cluster, we use 200 millicores by default.
+			// otherwise we use 100 millicores by default.  100Mi is always default
+			// for event and main clusters.  This is changeable in the kops cluster
+			// configuration.
+			if etcd.Name == "main" {
+				cpuRequest := resource.MustParse("200m")
+				etcd.CPURequest = &cpuRequest
+			} else {
+				cpuRequest := resource.MustParse("100m")
+				etcd.CPURequest = &cpuRequest
+			}
+			memoryRequest := resource.MustParse("100Mi")
+			etcd.MemoryRequest = &memoryRequest
+
+			var names []string
+			for _, ig := range masters {
+				name := ig.ObjectMeta.Name
+				// We expect the IG to have a `master-` prefix, but this is both superfluous
+				// and not how we named things previously
+				name = strings.TrimPrefix(name, "master-")
+				names = append(names, name)
+			}
+
+			names = trimCommonPrefix(names)
+
+			for i, ig := range masters {
+				m := &api.EtcdMemberSpec{}
+				if opt.EncryptEtcdStorage {
+					m.EncryptedVolume = fi.Bool(opt.EncryptEtcdStorage)
+				}
+				if opt.EtcdStorageType != "" {
+					m.VolumeType = fi.String(opt.EtcdStorageType)
+				}
+				m.Name = names[i]
+
+				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
+				etcd.Members = append(etcd.Members, m)
+			}
+			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
+		}
+	}
+
+	return masters, nil
+}
+
+func trimCommonPrefix(names []string) []string {
+	// Trim shared prefix to keep the lengths sane
+	// (this only applies to new clusters...)
+	for len(names) != 0 && len(names[0]) > 1 {
+		prefix := names[0][:1]
+		allMatch := true
+		for _, name := range names {
+			if !strings.HasPrefix(name, prefix) {
+				allMatch = false
+			}
+		}
+
+		if !allMatch {
+			break
+		}
+
+		for i := range names {
+			names[i] = strings.TrimPrefix(names[i], prefix)
+		}
+	}
+
+	return names
+}
+
+func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap map[string]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	var nodes []*api.InstanceGroup
+
+	g := &api.InstanceGroup{}
+	g.Spec.Role = api.InstanceGroupRoleNode
+	g.ObjectMeta.Name = "nodes"
+
+	subnetNames := sets.NewString()
+	for _, zone := range opt.Zones {
+		subnet := zoneToSubnetMap[zone]
+		if subnet == nil {
+			klog.Fatalf("subnet not found in zoneToSubnetMap")
+		}
+		subnetNames.Insert(subnet.Name)
+	}
+	g.Spec.Subnets = subnetNames.List()
+
+	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		g.Spec.Zones = opt.Zones
+	}
+
+	if opt.NodeCount != 0 {
+		g.Spec.MinSize = fi.Int32(opt.NodeCount)
+		g.Spec.MaxSize = fi.Int32(opt.NodeCount)
+	}
+
+	nodes = append(nodes, g)
+
+	return nodes, nil
 }
