@@ -583,7 +583,7 @@ spec:
 
 ## Node local DNS cache
 
-If you are using CoreDNS, you can enable NodeLocal DNSCache. It is used to improve improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
+If you are using CoreDNS, you can enable NodeLocal DNSCache. It is used to improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
 
 ```yaml
 spec:
@@ -591,16 +591,6 @@ spec:
     provider: CoreDNS
     nodeLocalDNS:
       enabled: true
-```
-
-If you are using kube-proxy in ipvs mode or Cilium as CNI, you have to set the nodeLocalDNS as ClusterDNS.
-
-```yaml
-spec:
-  kubelet:
-    clusterDNS: 169.254.20.10
-  masterKubelet:
-    clusterDNS: 169.254.20.10
 ```
 
 ## kubeControllerManager
