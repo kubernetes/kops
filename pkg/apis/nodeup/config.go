@@ -17,8 +17,13 @@ limitations under the License.
 package nodeup
 
 import (
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/nodelabels"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // Config is the configuration for the nodeup binary
@@ -48,9 +53,13 @@ type Config struct {
 	// Manifests for running etcd
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
 
+	// DefaultMachineType is the first-listed instance machine type, used if querying instance metadata fails.
+	DefaultMachineType *string `json:",omitempty"`
 	// StaticManifests describes generic static manifests
 	// Using this allows us to keep complex logic out of nodeup
 	StaticManifests []*StaticManifest `json:"staticManifests,omitempty"`
+	// KubeletConfig defines the kubelet configuration.
+	KubeletConfig kops.KubeletConfigSpec
 	// SysctlParameters will configure kernel parameters using sysctl(8). When
 	// specified, each parameter must follow the form variable=value, the way
 	// it would appear in sysctl.conf.
@@ -78,9 +87,45 @@ type StaticManifest struct {
 }
 
 func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *Config {
-	return &Config{
-		InstanceGroupRole: instanceGroup.Spec.Role,
+	role := instanceGroup.Spec.Role
+	isMaster := role == kops.InstanceGroupRoleMaster
+
+	config := Config{
+		InstanceGroupRole: role,
 		SysctlParameters:  instanceGroup.Spec.SysctlParameters,
 		VolumeMounts:      instanceGroup.Spec.VolumeMounts,
 	}
+
+	if isMaster {
+		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.MasterKubelet)
+
+		// A few settings in Kubelet override those in MasterKubelet. I'm not sure why.
+		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
+			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
+		}
+	} else {
+		reflectutils.JSONMergeStruct(&config.KubeletConfig, cluster.Spec.Kubelet)
+	}
+
+	if instanceGroup.Spec.Kubelet != nil {
+		useSecureKubelet := config.KubeletConfig.AnonymousAuth != nil && !*config.KubeletConfig.AnonymousAuth
+
+		reflectutils.JSONMergeStruct(&config.KubeletConfig, instanceGroup.Spec.Kubelet)
+
+		if useSecureKubelet {
+			config.KubeletConfig.AnonymousAuth = fi.Bool(false)
+		}
+	}
+
+	// We include the NodeLabels in the userdata even for Kubernetes 1.16 and later so that
+	// rolling update will still replace nodes when they change.
+	config.KubeletConfig.NodeLabels = nodelabels.BuildNodeLabels(cluster, instanceGroup)
+
+	config.KubeletConfig.Taints = append(config.KubeletConfig.Taints, instanceGroup.Spec.Taints...)
+
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.AmazonVPC != nil {
+		config.DefaultMachineType = fi.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
+	}
+
+	return &config
 }

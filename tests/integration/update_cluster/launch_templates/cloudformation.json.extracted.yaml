@@ -275,9 +275,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  kubelet: null
-  nodeLabels: null
-  taints: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -295,6 +293,29 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: master-us-test-1a
   InstanceGroupRole: Master
+  KubeletConfig:
+    allowPrivileged: true
+    anonymousAuth: false
+    cgroupRoot: /
+    cloudProvider: aws
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginMTU: 9001
+    networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: master
+      node-role.kubernetes.io/master: ""
+    nonMasqueradeCIDR: 100.64.0.0/10
+    podInfraContainerImage: k8s.gcr.io/pause:3.2
+    podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: false
   Tags:
   - _automatic_upgrades
   - _aws
@@ -592,9 +613,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  kubelet: null
-  nodeLabels: null
-  taints: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -612,6 +631,29 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: master-us-test-1b
   InstanceGroupRole: Master
+  KubeletConfig:
+    allowPrivileged: true
+    anonymousAuth: false
+    cgroupRoot: /
+    cloudProvider: aws
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginMTU: 9001
+    networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: master
+      node-role.kubernetes.io/master: ""
+    nonMasqueradeCIDR: 100.64.0.0/10
+    podInfraContainerImage: k8s.gcr.io/pause:3.2
+    podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: false
   Tags:
   - _automatic_upgrades
   - _aws
@@ -909,9 +951,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  kubelet: null
-  nodeLabels: null
-  taints: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -929,6 +969,29 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: master-us-test-1c
   InstanceGroupRole: Master
+  KubeletConfig:
+    allowPrivileged: true
+    anonymousAuth: false
+    cgroupRoot: /
+    cloudProvider: aws
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginMTU: 9001
+    networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: master
+      node-role.kubernetes.io/master: ""
+    nonMasqueradeCIDR: 100.64.0.0/10
+    podInfraContainerImage: k8s.gcr.io/pause:3.2
+    podManifestPath: /etc/kubernetes/manifests
+    registerSchedulable: false
   Tags:
   - _automatic_upgrades
   - _aws
@@ -1142,9 +1205,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
   __EOF_CLUSTER_SPEC
 
   cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
-  kubelet: null
-  nodeLabels: null
-  taints: null
+  {}
 
   __EOF_IG_SPEC
 
@@ -1162,6 +1223,28 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
   ConfigBase: memfs://clusters.example.com/launchtemplates.example.com
   InstanceGroupName: nodes
   InstanceGroupRole: Node
+  KubeletConfig:
+    allowPrivileged: true
+    anonymousAuth: false
+    cgroupRoot: /
+    cloudProvider: aws
+    clusterDNS: 100.64.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ExperimentalCriticalPodAnnotation: "true"
+    hostnameOverride: '@aws'
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    networkPluginMTU: 9001
+    networkPluginName: kubenet
+    nodeLabels:
+      kubernetes.io/role: node
+      node-role.kubernetes.io/node: ""
+    nonMasqueradeCIDR: 100.64.0.0/10
+    podInfraContainerImage: k8s.gcr.io/pause:3.2
+    podManifestPath: /etc/kubernetes/manifests
   Tags:
   - _automatic_upgrades
   - _aws

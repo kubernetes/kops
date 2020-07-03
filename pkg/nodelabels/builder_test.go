@@ -111,7 +111,7 @@ func TestBuildNodeLabels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			out, _ := BuildNodeLabels(test.cluster, test.ig)
+			out := BuildNodeLabels(test.cluster, test.ig)
 			if !reflect.DeepEqual(out, test.expected) {
 				t.Fatalf("Actual result:\n%v\nExpect:\n%v", out, test.expected)
 			}

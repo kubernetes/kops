@@ -33,7 +33,7 @@ const (
 
 // BuildNodeLabels returns the node labels for the specified instance group
 // This moved from the kubelet to a central controller in kubernetes 1.16
-func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (map[string]string, error) {
+func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) map[string]string {
 	isMaster := instanceGroup.Spec.Role == kops.InstanceGroupRoleMaster
 
 	// Merge KubeletConfig for NodeLabels
@@ -71,5 +71,5 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (
 		nodeLabels[k] = v
 	}
 
-	return nodeLabels, nil
+	return nodeLabels
 }
