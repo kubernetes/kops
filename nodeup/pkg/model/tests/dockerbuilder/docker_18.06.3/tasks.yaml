@@ -313,25 +313,27 @@ definition: |
   [Unit]
   Description=Docker Application Container Engine
   Documentation=https://docs.docker.com
-  After=network.target docker.socket
+  After=network-online.target firewalld.service
+  Wants=network-online.target
   Requires=docker.socket
 
   [Service]
-  Type=notify
   EnvironmentFile=/etc/sysconfig/docker
   EnvironmentFile=/etc/environment
+  Type=notify
   ExecStart=/usr/bin/dockerd -H fd:// "$DOCKER_OPTS"
   ExecReload=/bin/kill -s HUP $MAINPID
-  KillMode=process
-  TimeoutStartSec=0
-  LimitNOFILE=1048576
-  LimitNPROC=1048576
+  TimeoutSec=0
+  RestartSec=2s
+  Restart=always
+  StartLimitBurst=3
+  StartLimitInterval=60s
+  LimitNOFILE=infinity
+  LimitNPROC=infinity
   LimitCORE=infinity
   TasksMax=infinity
-  Restart=always
-  RestartSec=2s
-  StartLimitInterval=0
   Delegate=yes
+  KillMode=process
 
   [Install]
   WantedBy=multi-user.target

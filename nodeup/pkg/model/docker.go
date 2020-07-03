@@ -413,9 +413,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(packageTask)
 
 				c.AddTask(b.buildDockerGroup())
-				if b.Distribution.IsDebianFamily() {
-					c.AddTask(b.buildSystemdSocket())
-				}
+				c.AddTask(b.buildSystemdSocket())
 			} else {
 				var extraPkgs []*nodetasks.Package
 				for name, pkg := range dv.ExtraPackages {
@@ -506,6 +504,8 @@ func (b *DockerBuilder) buildDockerGroup() *nodetasks.GroupTask {
 
 // buildSystemdSocket creates docker.socket, for when we're not installing from a package
 func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
+	// Based on https://github.com/docker/docker-ce-packaging/blob/master/systemd/docker.socket
+
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Socket for the API")
 	manifest.Set("Unit", "PartOf", "docker.service")
@@ -531,82 +531,52 @@ func (b *DockerBuilder) buildSystemdSocket() *nodetasks.Service {
 }
 
 func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int, dockerVersionMinor int) *nodetasks.Service {
-	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
-	usesDockerSocket := true
-
-	var dockerdCommand string
-	if oldDocker {
-		dockerdCommand = "/usr/bin/docker daemon"
-	} else {
-		dockerdCommand = "/usr/bin/dockerd"
-	}
+	// Based on https://github.com/docker/docker-ce-packaging/blob/master/systemd/docker.service
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
+	manifest.Set("Unit", "After", "network-online.target firewalld.service")
+	manifest.Set("Unit", "Wants", "network-online.target")
+	manifest.Set("Unit", "Requires", "docker.socket")
 
-	if b.Distribution.IsRHELFamily() && !oldDocker {
-		// See https://github.com/docker/docker/pull/24804
-		usesDockerSocket = false
-	}
-
-	if usesDockerSocket {
-		manifest.Set("Unit", "After", "network.target docker.socket")
-		manifest.Set("Unit", "Requires", "docker.socket")
-	} else {
-		manifest.Set("Unit", "After", "network.target")
-	}
-
-	manifest.Set("Service", "Type", "notify")
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
-	if usesDockerSocket {
-		manifest.Set("Service", "ExecStart", dockerdCommand+" -H fd:// \"$DOCKER_OPTS\"")
-	} else {
-		manifest.Set("Service", "ExecStart", dockerdCommand+" \"$DOCKER_OPTS\"")
-	}
+	// the default is not to use systemd for cgroups because the delegate issues still
+	// exists and systemd currently does not support the cgroup feature set required
+	// for containers run by docker
+	manifest.Set("Service", "Type", "notify")
+	manifest.Set("Service", "ExecStart", "/usr/bin/dockerd -H fd:// \"$DOCKER_OPTS\"")
+	manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
+	manifest.Set("Service", "TimeoutSec", "0")
+	manifest.Set("Service", "RestartSec", "2s")
+	manifest.Set("Service", "Restart", "always")
 
-	if !oldDocker {
-		// This was added by docker 1.12
-		// TODO: They seem sensible - should we backport them?
+	// Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
+	// Both the old, and new location are accepted by systemd 229 and up, so using the old location
+	// to make them work for either version of systemd.
+	manifest.Set("Service", "StartLimitBurst", "3")
 
-		manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
-		// kill only the docker process, not all processes in the cgroup
-		manifest.Set("Service", "KillMode", "process")
-
-		manifest.Set("Service", "TimeoutStartSec", "0")
-	}
-
-	if oldDocker {
-		// Only in older versions of docker (< 1.12)
-		manifest.Set("Service", "MountFlags", "slave")
-	}
+	// Note that StartLimitInterval was renamed to StartLimitIntervalSec in systemd 230.
+	// Both the old, and new name are accepted by systemd 230 and up, so using the old name to make
+	// this option work for either version of systemd.
+	manifest.Set("Service", "StartLimitInterval", "60s")
 
 	// Having non-zero Limit*s causes performance problems due to accounting overhead
 	// in the kernel. We recommend using cgroups to do container-local accounting.
-	// TODO: Should we set this? https://github.com/kubernetes/kubernetes/issues/39682
-	//service.Set("Service", "LimitNOFILE", "infinity")
-	//service.Set("Service", "LimitNPROC", "infinity")
-	//service.Set("Service", "LimitCORE", "infinity")
-	manifest.Set("Service", "LimitNOFILE", "1048576")
-	manifest.Set("Service", "LimitNPROC", "1048576")
+	manifest.Set("Service", "LimitNOFILE", "infinity")
+	manifest.Set("Service", "LimitNPROC", "infinity")
 	manifest.Set("Service", "LimitCORE", "infinity")
 
-	//# Uncomment TasksMax if your systemd version supports it.
-	//# Only systemd 226 and above support this version.
-	//#TasksMax=infinity
-	if b.IsKubernetesGTE("1.10") {
-		// Equivalent of https://github.com/kubernetes/kubernetes/pull/51986
-		manifest.Set("Service", "TasksMax", "infinity")
-	}
-
-	manifest.Set("Service", "Restart", "always")
-	manifest.Set("Service", "RestartSec", "2s")
-	manifest.Set("Service", "StartLimitInterval", "0")
+	// Only systemd 226 and above support this option.
+	manifest.Set("Service", "TasksMax", "infinity")
 
 	// set delegate yes so that systemd does not reset the cgroups of docker containers
 	manifest.Set("Service", "Delegate", "yes")
+
+	// kill only the docker process, not all processes in the cgroup
+	manifest.Set("Service", "KillMode", "process")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
