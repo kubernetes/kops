@@ -17,7 +17,7 @@ limitations under the License.
 package components
 
 import (
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
