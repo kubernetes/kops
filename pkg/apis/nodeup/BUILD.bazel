@@ -7,6 +7,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//pkg/nodelabels:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//util/pkg/architectures:go_default_library",
+        "//util/pkg/reflectutils:go_default_library",
     ],
 )
