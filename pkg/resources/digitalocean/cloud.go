@@ -40,7 +40,6 @@ import (
 const TagKubernetesClusterIndex = "k8s-index"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
 const TagKubernetesInstanceGroup = "kops-instancegroup"
-const DOInstanceGroupConfig = "do-instancegroup-config"
 
 // TokenSource implements oauth2.TokenSource
 type TokenSource struct {
