@@ -38,24 +38,8 @@ else
 fi
 echo "BUILD_SCM_STATUS ${tree_status}"
 
-# Compute KOPS_VERSION.  Keep in sync with logic in Makefile
-GITSHA=$(git describe --always 2>/dev/null)
-
-# These variables need to match the values in our Makefile
-# When we cut a new release we need to increment these accordingly
-KOPS_RELEASE_VERSION=`grep 'KOPS_RELEASE_VERSION\s*=' version.go  | awk '{print $3}' | sed -e 's_"__g'`
-KOPS_CI_VERSION=`grep 'KOPS_CI_VERSION\s*=' version.go  |  awk '{print $3}' | sed -e 's_"__g'`
-
-if [[ -z "${VERSION}" ]]; then
-  if [[ -z "${CI}" ]]; then
-    VERSION=${KOPS_RELEASE_VERSION}
-  else
-    VERSION="${KOPS_CI_VERSION}+${GITSHA}"
-  fi
-fi
-
+VERSION=`tools/get_version.sh | grep VERSION | awk '{print $2}'`
 echo "STABLE_KOPS_VERSION ${VERSION}"
-
 
 PROTOKUBE_TAG=${VERSION/+/-}
 echo "STABLE_PROTOKUBE_TAG ${PROTOKUBE_TAG}"
