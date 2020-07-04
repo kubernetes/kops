@@ -42,6 +42,7 @@ func buildMinimalCluster() *kopsapi.Cluster {
 		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24"},
 	}
 
+	c.Spec.IAM = &kopsapi.IAMSpec{}
 	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
 	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
 
