@@ -62,8 +62,9 @@ KOPS_CONTROLLER_TAG=1.18.0-alpha.3
 # Keep in sync with pkg/model/components/kubeapiserver/model.go
 KUBE_APISERVER_HEALTHCHECK_TAG=1.18.0-alpha.3
 
-# Keep in sync with logic in get_workspace_status
-# TODO: just invoke tools/get_workspace_status.sh?
+
+VERSION=$(shell tools/get_version.sh | grep VERSION | awk '{print $$2}')
+
 KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
 KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' version.go | awk '{print $$3}' | sed -e 's_"__g')
 
@@ -71,25 +72,6 @@ KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' version.go | awk '{print $$3
 KOPS                 = ${LOCAL}/kops
 
 GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
-
-# Keep in sync with logic in get_workspace_status
-ifndef VERSION
-  # To keep both CI and end-users building from source happy,
-  # we expect that CI sets CI=1.
-  #
-  # For end users, they need only build kops, and they can use the last
-  # released version of nodeup/protokube.
-  # For CI, we continue to build a synthetic version from the git SHA, so
-  # we never cross versions.
-  #
-  # We expect that if you are uploading nodeup/protokube, you will set
-  # VERSION (along with UPLOAD_DEST), either directly or by setting CI=1
-  ifndef CI
-    VERSION=${KOPS_RELEASE_VERSION}
-  else
-    VERSION := ${KOPS_CI_VERSION}+${GITSHA}
-  endif
-endif
 
 # + is valid in semver, but not in docker tags. Fixup CI versions.
 # Note that this mirrors the logic in DefaultProtokubeImageName
