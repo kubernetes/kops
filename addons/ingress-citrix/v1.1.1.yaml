@@ -4,19 +4,39 @@ metadata:
   name: cpx-ingress-k8s-role
 rules:
   - apiGroups: [""]
-    resources: ["services", "endpoints", "ingresses", "pods", "secrets", "routes", "routes/status", "nodes", "namespaces"]
-    verbs: ["*"]
+    resources: ["endpoints", "ingresses", "pods", "secrets", "nodes", "routes", "namespaces", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  # services/status is needed to update the loadbalancer IP in service status for integrating
+  # service of type LoadBalancer with external-dns
+  - apiGroups: [""]
+    resources: ["services/status"]
+    verbs: ["patch"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
   - apiGroups: ["extensions"]
     resources: ["ingresses", "ingresses/status"]
-    verbs: ["*"]
-  - apiGroups: ["citrix.com"]
-    resources: ["rewritepolicies", "vips"]
-    verbs: ["*"]
-  - apiGroups: ["apps"]
-    resources: ["deployments"]
-    verbs: ["*"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["citrix.com"]
+    resources: ["rewritepolicies", "canarycrds", "authpolicies", "ratelimits", "listeners", "httproutes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["citrix.com"]
+    resources: ["rewritepolicies/status", "canarycrds/status", "ratelimits/status", "authpolicies/status", "listeners/status", "httproutes/status"]
+    verbs: ["get", "list", "patch"]
+  - apiGroups: ["citrix.com"]
+    resources: ["vips"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
     verbs: ["get", "list", "watch"]
 
 ---
@@ -50,10 +70,10 @@ kind: Deployment
 metadata:
   name: cpx-ingress
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: cpx-ingress
+  replicas: 1
   template:
     metadata:
       name: cpx-ingress
@@ -64,7 +84,7 @@ spec:
       serviceAccountName: cpx-ingress-k8s-role
       containers:
         - name: cpx-ingress
-          image: "quay.io/citrix/citrix-k8s-cpx-ingress:13.0-36.29"
+          image: "quay.io/citrix/citrix-k8s-cpx-ingress:13.0-52.24"
           securityContext:
              privileged: true
           env:
@@ -72,6 +92,15 @@ spec:
             value: "yes"
           - name: "KUBERNETES_TASK_ID"
             value: ""
+          ports:
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+          - name: nitro-http
+            containerPort: 9080
+          - name: nitro-https
+            containerPort: 9443
           #This is required for Health check to succeed
           readinessProbe:
             tcpSocket:
@@ -81,9 +110,14 @@ spec:
             failureThreshold: 5
             successThreshold: 1
           imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /cpx/conf/
+              name: cpx-volume1
+            - mountPath: /cpx/crash/
+              name: cpx-volume2
         # Add cic as a sidecar
         - name: cic
-          image: "quay.io/citrix/citrix-k8s-ingress-controller:1.2.0"
+          image: "quay.io/citrix/citrix-k8s-ingress-controller:1.8.19"
           env:
           - name: "EULA"
             value: "yes"
@@ -97,6 +131,16 @@ spec:
             value: "SIDECAR"
           - name: "NS_ENABLE_MONITORING"
             value: "YES"
+          - name: "NS_USER"
+            valueFrom:
+             secretKeyRef:
+              name: nslogin
+              key: username
+          - name: "NS_PASSWORD"
+            valueFrom:
+             secretKeyRef:
+              name: nslogin
+              key: password
           - name: POD_NAME
             valueFrom:
               fieldRef:
@@ -107,9 +151,12 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.namespace
-          args:
           imagePullPolicy: Always
-
+      volumes:
+      - name: cpx-volume1
+        emptyDir: {}
+      - name: cpx-volume2
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -118,7 +165,6 @@ metadata:
   labels:
     app: cpx-service
 spec:
-  externalTrafficPolicy: Local
   type: LoadBalancer
   ports:
   - port: 80
