@@ -1911,7 +1911,7 @@ metadata:
   labels:
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.18.0-alpha.3
+    version: v1.19.0-alpha.1
 spec:
   replicas: 1
   strategy:
@@ -1924,7 +1924,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.18.0-alpha.3
+        version: v1.19.0-alpha.1
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -1938,7 +1938,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.18.0-alpha.3
+        image: kope/dns-controller:1.19.0-alpha.1
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
@@ -2047,7 +2047,7 @@ metadata:
   labels:
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.18.0-alpha.3
+    version: v1.19.0-alpha.1
 spec:
   replicas: 1
   selector:
@@ -2058,7 +2058,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.18.0-alpha.3
+        version: v1.19.0-alpha.1
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
@@ -2074,7 +2074,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.18.0-alpha.3
+        image: kope/dns-controller:1.19.0-alpha.1
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
@@ -2452,7 +2452,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.18.0-alpha.3
+    version: v1.19.0-alpha.1
 spec:
   selector:
     matchLabels:
@@ -2466,7 +2466,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.18.0-alpha.3
+        version: v1.19.0-alpha.1
     spec:
       priorityClassName: system-node-critical
       tolerations:
@@ -2479,7 +2479,7 @@ spec:
       serviceAccount: kops-controller
       containers:
       - name: kops-controller
-        image: kope/kops-controller:1.18.0-alpha.3
+        image: kope/kops-controller:1.19.0-alpha.1
         volumeMounts:
 {{ if .UseHostCertificates }}
         - mountPath: /etc/ssl/certs
