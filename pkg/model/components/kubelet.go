@@ -179,24 +179,26 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}
 
-	networking := clusterSpec.Networking
-	if networking == nil {
-		return fmt.Errorf("no networking mode set")
+	if clusterSpec.ContainerRuntime == "docker" || clusterSpec.ContainerRuntime == "" {
+		networking := clusterSpec.Networking
+		if networking == nil {
+			return fmt.Errorf("no networking mode set")
 
-	}
-	if UsesKubenet(networking) {
-		clusterSpec.Kubelet.NetworkPluginName = "kubenet"
+		}
+		if UsesKubenet(networking) {
+			clusterSpec.Kubelet.NetworkPluginName = "kubenet"
 
-		// AWS MTU is 9001
-		clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
-	}
+			// AWS MTU is 9001
+			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
+		}
 
-	// Specify our pause image
-	image := "k8s.gcr.io/pause:3.2"
-	if image, err = b.Context.AssetBuilder.RemapImage(image); err != nil {
-		return err
+		// Specify our pause image
+		image := "k8s.gcr.io/pause:3.2"
+		if image, err = b.Context.AssetBuilder.RemapImage(image); err != nil {
+			return err
+		}
+		clusterSpec.Kubelet.PodInfraContainerImage = image
 	}
-	clusterSpec.Kubelet.PodInfraContainerImage = image
 
 	if clusterSpec.Kubelet.FeatureGates == nil {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)

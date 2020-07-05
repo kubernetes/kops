@@ -244,10 +244,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
     anonymousAuth: false
@@ -262,10 +259,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
 
@@ -303,13 +297,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
     nodeLabels:
       kubernetes.io/role: master
       node-role.kubernetes.io/master: ""
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
   Tags:
@@ -514,10 +505,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
 
   __EOF_CLUSTER_SPEC
@@ -554,13 +542,10 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    networkPluginMTU: 9001
-    networkPluginName: kubenet
     nodeLabels:
       kubernetes.io/role: node
       node-role.kubernetes.io/node: ""
     nonMasqueradeCIDR: 100.64.0.0/10
-    podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
   Tags:
   - _automatic_upgrades
