@@ -16,6 +16,8 @@ steps:
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
   args:
   - kops-controller-push
+  - dns-controller-push
+  - kube-apiserver-healthcheck-push
 - name: 'gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.2.0'
   entrypoint: make
   env:
