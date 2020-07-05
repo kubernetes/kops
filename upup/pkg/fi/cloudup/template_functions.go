@@ -79,6 +79,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	sprigTxtFuncMap := sprig.TxtFuncMap()
 	dest["indent"] = sprigTxtFuncMap["indent"]
+	dest["contains"] = sprigTxtFuncMap["contains"]
 
 	dest["ClusterName"] = tf.ClusterName
 	dest["HasTag"] = tf.HasTag

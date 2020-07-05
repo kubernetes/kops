@@ -135,6 +135,15 @@ spec:
                 properties:
                   aws:
                     properties:
+                      backendMode:
+                        description: BackendMode is the AWS IAM Authenticator backend
+                          to use. Default MountedFile
+                        type: string
+                      clusterID:
+                        description: ClusterID identifies the cluster performing authentication
+                          to prevent certain replay attacks. Default master public
+                          DNS name
+                        type: string
                       cpuLimit:
                         anyOf:
                         - type: integer
