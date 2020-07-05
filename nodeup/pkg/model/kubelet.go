@@ -204,9 +204,6 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --cloud-config=" + CloudConfigFilePath
 	}
 
-	flags += " --cni-bin-dir=" + b.CNIBinDir()
-	flags += " --cni-conf-dir=" + b.CNIConfDir()
-
 	if b.UsesSecondaryIP() {
 		sess := session.Must(session.NewSession())
 		metadata := ec2metadata.New(sess)
@@ -217,18 +214,17 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --node-ip=" + localIpv4
 	}
 
-	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
-		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--cni-bin-dir` also
-		flags += " --cni-bin-dir=" + b.CNIBinDir()
-	}
-
 	if b.usesContainerizedMounter() {
 		// We don't want to expose this in the model while it is experimental, but it is needed on COS
 		flags += " --experimental-mounter-path=" + path.Join(containerizedMounterHome, "mounter")
 	}
 
-	// Add container runtime flags
-	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+	// Add container runtime spcific flags
+	switch b.Cluster.Spec.ContainerRuntime {
+	case "docker", "":
+		flags += " --cni-bin-dir=" + b.CNIBinDir()
+		flags += " --cni-conf-dir=" + b.CNIConfDir()
+	case "containerd":
 		flags += " --container-runtime=remote"
 		flags += " --runtime-request-timeout=15m"
 		if b.Cluster.Spec.Containerd == nil || b.Cluster.Spec.Containerd.Address == nil {
