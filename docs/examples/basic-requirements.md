@@ -8,12 +8,7 @@ Basic requirements:
 - Local ssh key ready on `~/.ssh/id_rsa` / `id_rsa.pub`. You can generate it using `ssh-keygen` command if you don't have one already: `ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ""`.
 - AWS Region set. 
   - Throughout most of the exercises, we'll deploy our clusters in us-east-1 region (AZs: us-east-1a, us-east-1b, us-east-1c, us-east-1d, us-east-1e and us-east-1f). 
-  - For real HA at the Kubernetes API level, you need 3 masters. 
-  - For even better HA, you'd want to make sure your region of choice has at least as many AZs as the amount of masters in your cluster (i.e. 3 masters <= 3 AZs). 
-    - You can still deploy a multi-master Kubernetes cluster on regions with only 2 AZs or even 1 AZ, but that would result in more than one (and potentially all) masters in the same AZ and thus, if that AZ goes offline, you'll lose two or all your masters. 
-    - You can always check Amazon's regions and AZs availability by following this link: [AWS Global Infrastructure](https://aws.amazon.com/about-aws/global-infrastructure/). 
-  - Remember: The masters are your Kubernetes control plane. If your masters die, you lose control over your Kubernetes cluster.
-- `kubectl` & `kops` installed. This can be done by running the following commands in your terminal (assuming you are using an amd64/x86_64 linux distro):
+  - For real HA at the Kubernetes API level, you need [3 masters](../operations/high_availability.md). 
 
 Using `root` to set up the utilities for all users on that machine (either ssh directly to `root` or switch to is by running `sudo su -`):
 
@@ -39,26 +34,4 @@ export PATH=$PATH:~/bin
 mv kubectl kops  ~/bin
 ```
 
-Finally, some of our exercises use the `jq` utility which is available on modern linux distributions. Please ensure to install it as well. Some examples of how to do it:
-
-**Amazon Linux, CentOS, RHEL:**
-
-```bash
-yum -y install epel-release
-yum -y install jq
-```
-
-**Debian, Ubuntu:**
-
-```bash
-apt-get -y update
-apt-get -y install jq
-```
-
-Also, if you are using **macOS**, you can install jq using ["Homebrew"](https://brew.sh):
-
-```bash
-brew install jq
-```
-
-More information on `jq` can be found [here](https://stedolan.github.io/jq/download/).
+Finally, some of our exercises use the `jq` utility which is available on modern linux distributions. Please ensure to [install](https://stedolan.github.io/jq/download/) it as well.
