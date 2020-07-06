@@ -31,7 +31,18 @@ This feature is in beta state as of kops 1.18.
 
 By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kops 1.18, kops can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
 
-Add the following to `spec.etcdClusters`:
+For new clusters you can use the `cilium-etcd` networking provider:
+
+```sh
+export ZONES=mylistofzones
+kops create cluster \
+  --zones $ZONES \
+  --networking cilium-etcd \
+  --yes \
+  --name cilium.example.com
+```
+
+For existing clusters, add the following to `spec.etcdClusters`:
 Make sure `instanceGroup` match the other etcd clusters.
 
 ```yaml
@@ -45,7 +56,7 @@ Make sure `instanceGroup` match the other etcd clusters.
     name: cilium
 ```
 
-If this is an existing cluster, it is important that you perform a rolling update on the entire cluster so that all the nodes can connect to the new etcd cluster.
+It is important that you perform a rolling update on the entire cluster so that all the nodes can connect to the new etcd cluster.
 
 ```sh
 kops update cluster
