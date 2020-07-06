@@ -11,13 +11,13 @@ To use Amazon VPC, specify the following in the cluster spec:
     amazonvpc: {}
 ```
 
-in the cluster spec file or pass the `--networking amazon-vpc-routed-eni` option on the command line to kops:
+in the cluster spec file or pass the `--networking amazonvpc` option on the command line to kops:
 
 ```sh
 export ZONES=<mylistofzones>
 kops create cluster \
   --zones $ZONES \
-  --networking amazon-vpc-routed-eni \
+  --networking amazonvpc \
   --yes \
   --name myclustername.mydns.io
 ```
