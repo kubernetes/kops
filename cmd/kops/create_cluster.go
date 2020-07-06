@@ -26,27 +26,20 @@ import (
 	"os"
 	"strings"
 
-	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
-	version "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -60,20 +53,16 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterVolumeSize     int32
 	NodeVolumeSize       int32
-	Project              string
-	KubernetesVersion    string
 	ContainerRuntime     string
 	OutDir               string
 	Image                string
 	NodeImage            string
 	MasterImage          string
-	UtilitySubnetIDs     []string
 	DisableSubnetTags    bool
 	NetworkCIDR          string
 	DNSZone              string
 	AdminAccess          []string
 	SSHAccess            []string
-	Networking           string
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
@@ -83,15 +72,6 @@ type CreateClusterOptions struct {
 
 	// Overrides allows settings values direct in the spec
 	Overrides []string
-
-	// The network topology to use
-	Topology string
-
-	// The DNS type to use (public/private)
-	DNSType string
-
-	// Enable/Disable Bastion Host complete setup
-	Bastion bool
 
 	// Specify tags for AWS instance groups
 	CloudLabels string
@@ -109,14 +89,7 @@ type CreateClusterOptions struct {
 	// Allow custom public master name
 	MasterPublicName string
 
-	// Spotinst options
-	SpotinstProduct     string
-	SpotinstOrientation string
-
 	OpenstackNetworkID string
-
-	// GCEServiceAccount specifies the service account with which the GCE VM runs
-	GCEServiceAccount string
 
 	// DryRun mode output a cluster manifest of Output type.
 	DryRun bool
@@ -129,10 +102,6 @@ func (o *CreateClusterOptions) InitDefaults() {
 
 	o.Yes = false
 	o.Target = cloudup.TargetDirect
-	o.Networking = "kubenet"
-	o.Topology = api.TopologyPublic
-	o.DNSType = string(api.DNSTypePublic)
-	o.Bastion = false
 
 	// Default to open API & SSH access
 	o.AdminAccess = []string{"0.0.0.0/0"}
@@ -508,264 +477,22 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.DNSZone = c.DNSZone
 	}
 
-	// TODO: push more of the following logic into cloudup.NewCluster()
-	channel := clusterResult.Channel
-	allZones := clusterResult.AllZones
-
-	if c.CloudProvider != "" {
-		if featureflag.Spotinst.Enabled() {
-			if cluster.Spec.CloudConfig == nil {
-				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-			}
-			if c.SpotinstProduct != "" {
-				cluster.Spec.CloudConfig.SpotinstProduct = fi.String(c.SpotinstProduct)
-			}
-			if c.SpotinstOrientation != "" {
-				cluster.Spec.CloudConfig.SpotinstOrientation = fi.String(c.SpotinstOrientation)
-			}
-		}
-	}
-
-	// Populate project
-	if c.Project != "" {
-		cluster.Spec.Project = c.Project
-	}
-	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
-		if cluster.Spec.CloudConfig == nil {
-			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-		}
-		if cluster.Spec.Project == "" {
-			project, err := gce.DefaultProject()
-			if err != nil {
-				klog.Warningf("unable to get default google cloud project: %v", err)
-			} else if project == "" {
-				klog.Warningf("default google cloud project not set (try `gcloud config set project <name>`")
-			} else {
-				klog.Infof("using google cloud project: %s", project)
-			}
-			cluster.Spec.Project = project
-		}
-		if c.GCEServiceAccount != "" {
-			klog.Infof("VMs will be configured to use specified Service Account: %v", c.GCEServiceAccount)
-			cluster.Spec.CloudConfig.GCEServiceAccount = c.GCEServiceAccount
-		} else {
-			klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
-			klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
-			cluster.Spec.CloudConfig.GCEServiceAccount = "default"
-		}
-	}
-
-	if c.KubernetesVersion != "" {
-		cluster.Spec.KubernetesVersion = c.KubernetesVersion
-	}
-
 	if c.ContainerRuntime != "" {
 		cluster.Spec.ContainerRuntime = c.ContainerRuntime
 	}
-
-	cluster.Spec.Networking = &api.NetworkingSpec{}
-	switch c.Networking {
-	case "kubenet":
-		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
-	case "external":
-		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
-	case "cni":
-		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
-	case "kopeio-vxlan", "kopeio":
-		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
-	case "weave":
-		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-
-		if cluster.Spec.CloudProvider == "aws" {
-			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
-			// sets the default to the largest number that leaves enough overhead and is divisible by 4
-			jumboFrameMTUSize := int32(8912)
-			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
-		}
-	case "flannel", "flannel-vxlan":
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
-			Backend: "vxlan",
-		}
-	case "flannel-udp":
-		klog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
-			Backend: "udp",
-		}
-	case "calico":
-		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{
-			MajorVersion: "v3",
-		}
-		// Validate to check if etcd clusters have an acceptable version
-		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("spec", "networking", "calico")); len(errList) != 0 {
-
-			// This is not a special version but simply of the 3 series
-			for _, etcd := range cluster.Spec.EtcdClusters {
-				etcd.Version = components.DefaultEtcd3Version_1_11
-			}
-		}
-	case "canal":
-		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
-	case "kube-router":
-		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
-		if cluster.Spec.KubeProxy == nil {
-			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-		}
-		enabled := false
-		cluster.Spec.KubeProxy.Enabled = &enabled
-	case "amazonvpc", "amazon-vpc-routed-eni":
-		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
-	case "cilium":
-		cilium := &api.CiliumNetworkingSpec{}
-		cluster.Spec.Networking.Cilium = cilium
-		nodeport := false
-		if c.KubernetesVersion == "" {
-			nodeport = true
-		} else {
-			k8sVersion, err := semver.ParseTolerant(c.KubernetesVersion)
-			if err == nil {
-				if version.IsKubernetesGTE("1.12", k8sVersion) {
-					nodeport = true
-				}
-			}
-		}
-		if nodeport {
-			cilium.EnableNodePort = true
-			if cluster.Spec.KubeProxy == nil {
-				cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-			}
-			enabled := false
-			cluster.Spec.KubeProxy.Enabled = &enabled
-		}
-	case "lyftvpc":
-		cluster.Spec.Networking.LyftVPC = &api.LyftVPCNetworkingSpec{}
-	case "gce":
-		cluster.Spec.Networking.GCE = &api.GCENetworkingSpec{}
-	default:
-		return fmt.Errorf("unknown networking mode %q", c.Networking)
-	}
-
-	klog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	if c.NetworkCIDR != "" {
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
 	}
 
-	// Network Topology
-	if c.Topology == "" {
-		// The flag default should have set this, but we might be being called as a library
-		klog.Infof("Empty topology. Defaulting to public topology")
-		c.Topology = api.TopologyPublic
-	}
-
 	cluster.Spec.DisableSubnetTags = c.DisableSubnetTags
-
-	switch c.Topology {
-	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{
-			Masters: api.TopologyPublic,
-			Nodes:   api.TopologyPublic,
-			//Bastion: &api.BastionSpec{Enable: c.Bastion},
-		}
-
-		if c.Bastion {
-			return fmt.Errorf("Bastion supports --topology='private' only.")
-		}
-
-		for i := range cluster.Spec.Subnets {
-			cluster.Spec.Subnets[i].Type = api.SubnetTypePublic
-		}
-
-	case api.TopologyPrivate:
-		if cluster.Spec.Networking.Kubenet != nil {
-			return fmt.Errorf("invalid networking option %s. Kubenet does not support private topology", c.Networking)
-		}
-		cluster.Spec.Topology = &api.TopologySpec{
-			Masters: api.TopologyPrivate,
-			Nodes:   api.TopologyPrivate,
-		}
-
-		for i := range cluster.Spec.Subnets {
-			cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
-		}
-
-		var utilitySubnets []api.ClusterSubnetSpec
-
-		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 {
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
-				zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
-				if err != nil {
-					return err
-				}
-			} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
-				tags := make(map[string]string)
-				tags[openstack.TagClusterName] = c.ClusterName
-				zoneToSubnetProviderID, err = getSubnetProviderID(&cluster.Spec, allZones.List(), c.UtilitySubnetIDs, tags)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		for _, s := range cluster.Spec.Subnets {
-			if s.Type == api.SubnetTypeUtility {
-				continue
-			}
-			subnet := api.ClusterSubnetSpec{
-				Name: "utility-" + s.Name,
-				Zone: s.Zone,
-				Type: api.SubnetTypeUtility,
-			}
-			if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
-				subnet.ProviderID = subnetID
-			}
-			utilitySubnets = append(utilitySubnets, subnet)
-		}
-		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
-
-		if c.Bastion {
-			bastionGroup := &api.InstanceGroup{}
-			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
-			bastionGroup.ObjectMeta.Name = "bastions"
-			bastionGroup.Spec.Image = c.Image
-			instanceGroups = append(instanceGroups, bastionGroup)
-
-			if !dns.IsGossipHostname(cluster.Name) {
-				cluster.Spec.Topology.Bastion = &api.BastionSpec{
-					BastionPublicName: "bastion." + cluster.Name,
-				}
-			}
-		}
-
-	default:
-		return fmt.Errorf("Invalid topology %s.", c.Topology)
-	}
-
-	// DNS
-	if c.DNSType == "" {
-		// The flag default should have set this, but we might be being called as a library
-		klog.Infof("Empty DNS. Defaulting to public DNS")
-		c.DNSType = string(api.DNSTypePublic)
-	}
-
-	if cluster.Spec.Topology == nil {
-		cluster.Spec.Topology = &api.TopologySpec{}
-	}
-	if cluster.Spec.Topology.DNS == nil {
-		cluster.Spec.Topology.DNS = &api.DNSSpec{}
-	}
-	switch strings.ToLower(c.DNSType) {
-	case "public":
-		cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
-	case "private":
-		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
-	default:
-		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
-	}
 
 	if c.MasterPublicName != "" {
 		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
+
+	// TODO: push more of the following logic into cloudup.NewCluster()
+	channel := clusterResult.Channel
 
 	// check if we should set anonymousAuth to false
 	{
@@ -1063,74 +790,6 @@ func initializeOpenstackAPI(c *CreateClusterOptions, cluster *api.Cluster) {
 			cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(c.OpenstackLbSubnet)
 		}
 	}
-}
-
-// TODO dedup or remove
-func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
-	res := make(map[string]string)
-	cloudTags := map[string]string{}
-	awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
-	if err != nil {
-		return res, fmt.Errorf("error loading cloud: %v", err)
-	}
-	vpcInfo, err := awsCloud.FindVPCInfo(VPCID)
-	if err != nil {
-		return res, fmt.Errorf("error describing VPC: %v", err)
-	}
-	if vpcInfo == nil {
-		return res, fmt.Errorf("VPC %q not found", VPCID)
-	}
-	subnetByID := make(map[string]*fi.SubnetInfo)
-	for _, subnetInfo := range vpcInfo.Subnets {
-		subnetByID[subnetInfo.ID] = subnetInfo
-	}
-	for _, subnetID := range subnetIDs {
-		subnet, ok := subnetByID[subnetID]
-		if !ok {
-			return res, fmt.Errorf("subnet %s not found in VPC %s", subnetID, VPCID)
-		}
-		if res[subnet.Zone] != "" {
-			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
-		}
-		res[subnet.Zone] = subnetID
-	}
-	return res, nil
-}
-
-// TODO dedup or remove
-func getSubnetProviderID(spec *api.ClusterSpec, zones []string, subnetIDs []string, tags map[string]string) (map[string]string, error) {
-	res := make(map[string]string)
-	osCloud, err := openstack.NewOpenstackCloud(tags, spec)
-	if err != nil {
-		return res, fmt.Errorf("error loading cloud: %v", err)
-	}
-	osCloud.UseZones(zones)
-
-	networkInfo, err := osCloud.FindVPCInfo(spec.NetworkID)
-	if err != nil {
-		return res, fmt.Errorf("error describing Network: %v", err)
-	}
-	if networkInfo == nil {
-		return res, fmt.Errorf("network %q not found", spec.NetworkID)
-	}
-
-	subnetByID := make(map[string]*fi.SubnetInfo)
-	for _, subnetInfo := range networkInfo.Subnets {
-		subnetByID[subnetInfo.ID] = subnetInfo
-	}
-
-	for _, subnetID := range subnetIDs {
-		subnet, ok := subnetByID[subnetID]
-		if !ok {
-			return res, fmt.Errorf("subnet %s not found in network %s", subnetID, spec.NetworkID)
-		}
-
-		if res[subnet.Zone] != "" {
-			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
-		}
-		res[subnet.Zone] = subnetID
-	}
-	return res, nil
 }
 
 func loadSSHPublicKeys(sshPublicKey string) (map[string][]byte, error) {
