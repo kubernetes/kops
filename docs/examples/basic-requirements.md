@@ -41,14 +41,14 @@ mv kubectl kops  ~/bin
 
 Finally, some of our exercises use the `jq` utility which is available on modern linux distributions. Please ensure to install it as well. Some examples of how to do it:
 
-**Centos 7:**
+**Amazon Linux, CentOS, RHEL:**
 
 ```bash
 yum -y install epel-release
 yum -y install jq
 ```
 
-**Debian 9/10, Ubuntu 16.04/18.04/20.04:**
+**Debian, Ubuntu:**
 
 ```bash
 apt-get -y update
@@ -62,4 +62,3 @@ brew install jq
 ```
 
 More information on `jq` can be found [here](https://stedolan.github.io/jq/download/).
-
