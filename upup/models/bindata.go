@@ -7141,7 +7141,7 @@ func cloudupResourcesAddonsNetworkingKopeIoK8s16Yaml() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingKuberouterK8s112YamlTemplate = []byte(`# Pulled and modified from https://github.com/cloudnativelabs/kube-router/blob/v0.4.0/daemonset/kubeadm-kuberouter.yaml
+var _cloudupResourcesAddonsNetworkingKuberouterK8s112YamlTemplate = []byte(`# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.0.0/daemonset/kubeadm-kuberouter.yaml
 
 apiVersion: v1
 kind: ConfigMap
@@ -7192,7 +7192,7 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v0.4.0
+        image: docker.io/cloudnativelabs/kube-router:v1.0.0
         args:
         - --run-router=true
         - --run-firewall=true
@@ -7227,9 +7227,12 @@ spec:
         - name: kubeconfig
           mountPath: /var/lib/kube-router/kubeconfig
           readOnly: true
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
+          readOnly: false
       initContainers:
       - name: install-cni
-        image: busybox
+        image: docker.io/cloudnativelabs/kube-router:v1.0.0
         command:
         - /bin/sh
         - -c
@@ -7270,6 +7273,10 @@ spec:
       - name: kubeconfig
         hostPath:
           path: /var/lib/kube-router/kubeconfig
+      - name: xtables-lock
+        hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
 ---
 apiVersion: v1
 kind: ServiceAccount
