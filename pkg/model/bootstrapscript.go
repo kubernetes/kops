@@ -40,7 +40,7 @@ import (
 )
 
 type NodeUpConfigBuilder interface {
-	BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error)
+	BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string) (*nodeup.Config, error)
 }
 
 // BootstrapScriptBuilder creates the bootstrap script
@@ -55,14 +55,33 @@ type BootstrapScript struct {
 	ig       *kops.InstanceGroup
 	builder  *BootstrapScriptBuilder
 	resource fi.TaskDependentResource
+	// alternateNameTasks are tasks that contribute api-server IP addresses.
+	alternateNameTasks []fi.HasAddress
 }
 
 var _ fi.Task = &BootstrapScript{}
 var _ fi.HasName = &BootstrapScript{}
+var _ fi.HasDependencies = &BootstrapScript{}
 
 // kubeEnv returns the nodeup config for the instance group
-func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup) (string, error) {
-	config, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig)
+func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string, error) {
+	var alternateNames []string
+
+	for _, hasAddress := range b.alternateNameTasks {
+		address, err := hasAddress.FindIPAddress(c)
+		if err != nil {
+			return "", fmt.Errorf("error finding address for %v: %v", hasAddress, err)
+		}
+		if address == nil {
+			klog.Warningf("Task did not have an address: %v", hasAddress)
+			continue
+		}
+		klog.V(8).Infof("Resolved alternateName %q for %q", *address, hasAddress)
+		alternateNames = append(alternateNames, *address)
+	}
+
+	sort.Strings(alternateNames)
+	config, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, alternateNames)
 	if err != nil {
 		return "", err
 	}
@@ -169,6 +188,19 @@ func (b *BootstrapScript) GetName() *string {
 	return &b.Name
 }
 
+func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+
+	for _, task := range tasks {
+		if hasAddress, ok := task.(fi.HasAddress); ok && hasAddress.IsForAPIServer() {
+			deps = append(deps, task)
+			b.alternateNameTasks = append(b.alternateNameTasks, hasAddress)
+		}
+	}
+
+	return deps
+}
+
 func (b *BootstrapScript) Run(c *fi.Context) error {
 	functions := template.FuncMap{
 		"NodeUpSourceAmd64": func() string {
@@ -184,7 +216,7 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 			return b.builder.NodeUpSourceHash[architectures.ArchitectureArm64]
 		},
 		"KubeEnv": func() (string, error) {
-			return b.kubeEnv(b.ig)
+			return b.kubeEnv(b.ig, c)
 		},
 
 		"EnvironmentVariables": func() (string, error) {
