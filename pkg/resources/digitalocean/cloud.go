@@ -356,7 +356,7 @@ func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error)
 				Members:           append(masterDroplets, strconv.Itoa(droplet.ID)),
 			})
 
-		} else {
+		} else if strings.Contains(doInstanceGroup, "nodes") {
 			// This is a node (add this instance group only once)
 			nodeExists = true
 			workerDroplets = append(workerDroplets, strconv.Itoa(droplet.ID))
@@ -446,7 +446,7 @@ func buildCloudInstanceGroup(c *Cloud, ig *kops.InstanceGroup, g DOInstanceGroup
 
 	for _, member := range g.Members {
 
-		// DO doesn't have a notion of Auto Scaling Group - use the same config Type for both current config and new config.
+		// TODO use a hash of the godo.DropletCreateRequest fields for second and third parameters.
 		err := cg.NewCloudInstanceGroupMember(member, g.GroupType, g.GroupType, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
