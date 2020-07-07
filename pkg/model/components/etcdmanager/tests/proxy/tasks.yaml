@@ -1,7 +1,6 @@
 Lifecycle: null
 Name: etcd-clients-ca
 Signer: null
-alternateNameTasks: null
 alternateNames: null
 oldFormat: false
 subject: cn=etcd-clients-ca
@@ -10,7 +9,6 @@ type: ca
 Lifecycle: null
 Name: etcd-manager-ca-events
 Signer: null
-alternateNameTasks: null
 alternateNames: null
 oldFormat: false
 subject: cn=etcd-manager-ca-events
@@ -19,7 +17,6 @@ type: ca
 Lifecycle: null
 Name: etcd-manager-ca-main
 Signer: null
-alternateNameTasks: null
 alternateNames: null
 oldFormat: false
 subject: cn=etcd-manager-ca-main
@@ -28,7 +25,6 @@ type: ca
 Lifecycle: null
 Name: etcd-peers-ca-events
 Signer: null
-alternateNameTasks: null
 alternateNames: null
 oldFormat: false
 subject: cn=etcd-peers-ca-events
@@ -37,7 +33,6 @@ type: ca
 Lifecycle: null
 Name: etcd-peers-ca-main
 Signer: null
-alternateNameTasks: null
 alternateNames: null
 oldFormat: false
 subject: cn=etcd-peers-ca-main

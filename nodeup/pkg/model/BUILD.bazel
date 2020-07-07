@@ -93,6 +93,7 @@ go_test(
         "kubectl_test.go",
         "kubelet_test.go",
         "protokube_test.go",
+        "secrets_test.go",
     ],
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
