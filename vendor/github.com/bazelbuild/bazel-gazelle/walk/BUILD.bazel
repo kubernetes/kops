@@ -14,5 +14,6 @@ go_library(
         "//vendor/github.com/bazelbuild/bazel-gazelle/flag:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/pathtools:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
+        "//vendor/github.com/bmatcuk/doublestar:go_default_library",
     ],
 )

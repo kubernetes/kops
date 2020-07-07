@@ -49,6 +49,7 @@ func (p Platform) String() string {
 //
 // DEPRECATED: do not use outside language/go.
 var KnownPlatforms = []Platform{
+	{"aix", "ppc64"},
 	{"android", "386"},
 	{"android", "amd64"},
 	{"android", "arm"},
@@ -61,10 +62,13 @@ var KnownPlatforms = []Platform{
 	{"freebsd", "386"},
 	{"freebsd", "amd64"},
 	{"freebsd", "arm"},
+	{"freebsd", "arm64"},
+	{"illumos", "amd64"},
 	{"ios", "386"},
 	{"ios", "amd64"},
 	{"ios", "arm"},
 	{"ios", "arm64"},
+	{"js", "wasm"},
 	{"linux", "386"},
 	{"linux", "amd64"},
 	{"linux", "arm"},
@@ -75,6 +79,7 @@ var KnownPlatforms = []Platform{
 	{"linux", "mipsle"},
 	{"linux", "ppc64"},
 	{"linux", "ppc64le"},
+	{"linux", "riscv64"},
 	{"linux", "s390x"},
 	{"nacl", "386"},
 	{"nacl", "amd64p32"},
@@ -82,15 +87,18 @@ var KnownPlatforms = []Platform{
 	{"netbsd", "386"},
 	{"netbsd", "amd64"},
 	{"netbsd", "arm"},
+	{"netbsd", "arm64"},
 	{"openbsd", "386"},
 	{"openbsd", "amd64"},
 	{"openbsd", "arm"},
+	{"openbsd", "arm64"},
 	{"plan9", "386"},
 	{"plan9", "amd64"},
 	{"plan9", "arm"},
 	{"solaris", "amd64"},
 	{"windows", "386"},
 	{"windows", "amd64"},
+	{"windows", "arm"},
 }
 
 var OSAliases = map[string][]string{

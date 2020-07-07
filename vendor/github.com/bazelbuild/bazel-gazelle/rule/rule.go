@@ -831,9 +831,11 @@ func ShouldKeep(e bzl.Expr) bool {
 // CheckInternalVisibility overrides the given visibility if the package is
 // internal.
 func CheckInternalVisibility(rel, visibility string) string {
-	if i := strings.LastIndex(rel, "/internal/"); i >= 0 {
+	if strings.HasSuffix(rel, "/internal") {
+		visibility = fmt.Sprintf("//%s:__subpackages__", rel[:len(rel)-len("/internal")])
+	} else if i := strings.LastIndex(rel, "/internal/"); i >= 0 {
 		visibility = fmt.Sprintf("//%s:__subpackages__", rel[:i])
-	} else if strings.HasPrefix(rel, "internal/") {
+	} else if strings.HasPrefix(rel, "internal/") || rel == "internal" {
 		visibility = "//:__subpackages__"
 	}
 	return visibility

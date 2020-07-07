@@ -16,24 +16,35 @@ limitations under the License.
 package golang
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"go/build"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
 	gzflag "github.com/bazelbuild/bazel-gazelle/flag"
+	"github.com/bazelbuild/bazel-gazelle/internal/version"
 	"github.com/bazelbuild/bazel-gazelle/language/proto"
+	"github.com/bazelbuild/bazel-gazelle/repo"
 	"github.com/bazelbuild/bazel-gazelle/rule"
 	bzl "github.com/bazelbuild/buildtools/build"
 )
 
+var minimumRulesGoVersion = version.Version{0, 20, 0}
+
 // goConfig contains configuration values related to Go rules.
 type goConfig struct {
+	// rulesGoVersion is the version of io_bazel_rules_go being used. Determined
+	// by reading go/def.bzl. May be unset if the version can't be read.
+	rulesGoVersion version.Version
+
 	// genericTags is a set of tags that Gazelle considers to be true. Set with
 	// -build_tags or # gazelle:build_tags. Some tags, like gc, are always on.
 	genericTags map[string]bool
@@ -336,6 +347,25 @@ func (*goLang) Configure(c *config.Config, rel string, f *rule.File) {
 	}
 	c.Exts[goName] = gc
 
+	if rel == "" {
+		const message = `Gazelle may not be compatible with this version of rules_go.
+Update io_bazel_rules_go to a newer version in your WORKSPACE file.`
+		var err error
+		gc.rulesGoVersion, err = findRulesGoVersion(c.RepoRoot)
+		if c.ShouldFix {
+			// Only check the version when "fix" is run. Generated build files
+			// frequently work with older version of rules_go, and we don't want to
+			// nag too much since there's no way to disable this warning.
+			// Also, don't print a warning if the rules_go repo hasn't been fetched,
+			// since that's a common issue when Gazelle is run as a separate binary.
+			if err != nil && err != errRulesGoRepoNotFound && c.ShouldFix {
+				log.Printf("%v\n%s", err, message)
+			} else if err == nil && gc.rulesGoVersion.Compare(minimumRulesGoVersion) < 0 {
+				log.Printf("Found RULES_GO_VERSION %s. Minimum compatible version is %s.\n%s", gc.rulesGoVersion, minimumRulesGoVersion, message)
+			}
+		}
+	}
+
 	if !gc.moduleMode {
 		st, err := os.Stat(filepath.Join(c.RepoRoot, filepath.FromSlash(rel), "go.mod"))
 		if err == nil && !st.IsDir() {
@@ -344,7 +374,7 @@ func (*goLang) Configure(c *config.Config, rel string, f *rule.File) {
 	}
 
 	if path.Base(rel) == "vendor" {
-		gc.importMapPrefix = inferImportPath(gc, rel)
+		gc.importMapPrefix = InferImportPath(c, rel)
 		gc.importMapPrefixRel = rel
 		gc.prefix = ""
 		gc.prefixRel = rel
@@ -445,3 +475,31 @@ func splitValue(value string) []string {
 	}
 	return values
 }
+
+// findRulesGoVersion reads the version of io_bazel_rules_go being used from
+// the bazel external workspace directory.
+func findRulesGoVersion(repoRoot string) (version.Version, error) {
+	const message = `Gazelle may not be compatible with this version of rules_go.
+Update io_bazel_rules_go to a newer version in your WORKSPACE file.`
+
+	rulesGoPath, err := repo.FindExternalRepo(repoRoot, config.RulesGoRepoName)
+	if err != nil {
+		// This is likely because io_bazel_rules_go hasn't been fetched yet.
+		// This error should generally not be reported.
+		return version.Version{}, errRulesGoRepoNotFound
+	}
+	defBzlPath := filepath.Join(rulesGoPath, "go", "def.bzl")
+	defBzlContent, err := ioutil.ReadFile(defBzlPath)
+	if err != nil {
+		return version.Version{}, err
+	}
+	versionRe := regexp.MustCompile(`(?m)^RULES_GO_VERSION = ['"]([0-9.]*)['"]`)
+	match := versionRe.FindSubmatch(defBzlContent)
+	if match == nil {
+		return version.Version{}, fmt.Errorf("RULES_GO_VERSION not found in @%s//go:def.bzl.\n%s", config.RulesGoRepoName, message)
+	}
+	vstr := string(match[1])
+	return version.ParseVersion(vstr)
+}
+
+var errRulesGoRepoNotFound = errors.New(config.RulesGoRepoName + " external repository not found")

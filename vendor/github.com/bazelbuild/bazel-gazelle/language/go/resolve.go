@@ -39,7 +39,10 @@ func (_ *goLang) Imports(_ *config.Config, r *rule.Rule, f *rule.File) []resolve
 	if importPath := r.AttrString("importpath"); importPath == "" {
 		return []resolve.ImportSpec{}
 	} else {
-		return []resolve.ImportSpec{{goName, importPath}}
+		return []resolve.ImportSpec{{
+			Lang: goName,
+			Imp:  importPath,
+		}}
 	}
 }
 

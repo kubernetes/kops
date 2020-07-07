@@ -33,6 +33,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
+	"github.com/bazelbuild/bazel-gazelle/internal/version"
 	"github.com/bazelbuild/bazel-gazelle/language/proto"
 	"github.com/bazelbuild/bazel-gazelle/rule"
 )
@@ -631,6 +632,54 @@ func checkConstraints(c *config.Config, os, arch, osSuffix, archSuffix string, f
 		}
 	}
 	if len(cgoTags) > 0 && !cgoTags.check(c, os, arch) {
+		return false
+	}
+	return true
+}
+
+// rulesGoSupportsOS returns whether the os tag is recognized by the version of
+// rules_go being used. This avoids incompatibility between new versions of
+// Gazelle and old versions of rules_go.
+func rulesGoSupportsOS(v version.Version, os string) bool {
+	if len(v) == 0 {
+		return true
+	}
+	if v.Compare(version.Version{0, 23, 0}) < 0 &&
+		os == "illumos" {
+		return false
+	}
+	return true
+}
+
+// rulesGoSupportsArch returns whether the arch tag is recognized by the version
+// of rules_go being used. This avoids incompatibility between new versions of
+// Gazelle and old versions of rules_go.
+func rulesGoSupportsArch(v version.Version, arch string) bool {
+	if len(v) == 0 {
+		return true
+	}
+	if v.Compare(version.Version{0, 23, 0}) < 0 &&
+		arch == "riscv64" {
+		return false
+	}
+	return true
+}
+
+// rulesGoSupportsPlatform returns whether the os and arch tag combination is
+// recognized by the version of rules_go being used. This avoids incompatibility
+// between new versions of Gazelle and old versions of rules_go.
+func rulesGoSupportsPlatform(v version.Version, p rule.Platform) bool {
+	if len(v) == 0 {
+		return true
+	}
+	if v.Compare(version.Version{0, 23, 0}) < 0 &&
+		(p.OS == "aix" && p.Arch == "ppc64" ||
+			p.OS == "freebsd" && p.Arch == "arm64" ||
+			p.OS == "illumos" && p.Arch == "amd64" ||
+			p.OS == "linux" && p.Arch == "riscv64" ||
+			p.OS == "netbsd" && p.Arch == "arm64" ||
+			p.OS == "openbsd" && p.Arch == "arm64" ||
+			p.OS == "windows" && p.Arch == "arm") {
 		return false
 	}
 	return true

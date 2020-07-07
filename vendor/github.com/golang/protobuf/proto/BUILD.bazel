@@ -12,6 +12,7 @@ go_library(
         "extensions.go",
         "lib.go",
         "message_set.go",
+        "pointer_reflect.go",
         "pointer_unsafe.go",
         "properties.go",
         "table_marshal.go",

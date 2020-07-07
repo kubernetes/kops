@@ -89,6 +89,7 @@ var goKinds = map[string]rule.KindInfo{
 		},
 		MergeableAttrs: map[string]bool{
 			"commit":       true,
+			"build_tags":   true,
 			"importpath":   true,
 			"remote":       true,
 			"replace":      true,

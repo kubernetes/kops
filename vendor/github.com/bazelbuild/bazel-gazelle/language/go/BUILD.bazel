@@ -26,6 +26,7 @@ go_library(
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/config:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/flag:go_default_library",
+        "//vendor/github.com/bazelbuild/bazel-gazelle/internal/version:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/label:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/language:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/language/proto:go_default_library",

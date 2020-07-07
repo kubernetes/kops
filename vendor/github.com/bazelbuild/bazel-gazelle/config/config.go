@@ -85,6 +85,10 @@ type Config struct {
 	// generation and dependency resolution.
 	Repos []*rule.Rule
 
+	// Langs is a list of language names which Gazelle should process.
+	// An empty list means "all languages".
+	Langs []string
+
 	// Exts is a set of configurable extensions. Generally, each language
 	// has its own set of extensions, but other modules may provide their own
 	// extensions as well. Values in here may be populated by command line
@@ -177,6 +181,7 @@ type Configurer interface {
 type CommonConfigurer struct {
 	repoRoot, buildFileNames, readBuildFilesDir, writeBuildFilesDir string
 	indexLibraries                                                  bool
+	langCsv                                                         string
 }
 
 func (cc *CommonConfigurer) RegisterFlags(fs *flag.FlagSet, cmd string, c *Config) {
@@ -185,12 +190,13 @@ func (cc *CommonConfigurer) RegisterFlags(fs *flag.FlagSet, cmd string, c *Confi
 	fs.BoolVar(&cc.indexLibraries, "index", true, "when true, gazelle will build an index of libraries in the workspace for dependency resolution")
 	fs.StringVar(&cc.readBuildFilesDir, "experimental_read_build_files_dir", "", "path to a directory where build files should be read from (instead of -repo_root)")
 	fs.StringVar(&cc.writeBuildFilesDir, "experimental_write_build_files_dir", "", "path to a directory where build files should be written to (instead of -repo_root)")
+	fs.StringVar(&cc.langCsv, "lang", "", "if non-empty, process only these languages (e.g. \"go,proto\")")
 }
 
 func (cc *CommonConfigurer) CheckFlags(fs *flag.FlagSet, c *Config) error {
 	var err error
 	if cc.repoRoot == "" {
-		cc.repoRoot, err = wspace.Find(".")
+		cc.repoRoot, err = wspace.FindRepoRoot(".")
 		if err != nil {
 			return fmt.Errorf("-repo_root not specified, and WORKSPACE cannot be found: %v", err)
 		}
@@ -217,11 +223,14 @@ func (cc *CommonConfigurer) CheckFlags(fs *flag.FlagSet, c *Config) error {
 		}
 	}
 	c.IndexLibraries = cc.indexLibraries
+	if len(cc.langCsv) > 0 {
+		c.Langs = strings.Split(cc.langCsv, ",")
+	}
 	return nil
 }
 
 func (cc *CommonConfigurer) KnownDirectives() []string {
-	return []string{"build_file_name", "map_kind"}
+	return []string{"build_file_name", "map_kind", "lang"}
 }
 
 func (cc *CommonConfigurer) Configure(c *Config, rel string, f *rule.File) {
@@ -246,6 +255,13 @@ func (cc *CommonConfigurer) Configure(c *Config, rel string, f *rule.File) {
 				FromKind: vals[0],
 				KindName: vals[1],
 				KindLoad: vals[2],
+			}
+
+		case "lang":
+			if len(d.Value) > 0 {
+				c.Langs = strings.Split(d.Value, ",")
+			} else {
+				c.Langs = nil
 			}
 		}
 	}

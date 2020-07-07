@@ -106,7 +106,7 @@ func buildProtoRegexp() *regexp.Regexp {
 	importStmt := `\bimport\s*(?:public|weak)?\s*(?P<import>` + strLit + `)\s*;`
 	packageStmt := `\bpackage\s*(?P<package>` + fullIdent + `)\s*;`
 	optionStmt := `\boption\s*(?P<optkey>` + fullIdent + `)\s*=\s*(?P<optval>` + strLit + `)\s*;`
-	serviceStmt := `(?P<service>service)`
+	serviceStmt := `(?P<service>service\s*`+ ident +`\s*{)`
 	comment := `//[^\n]*`
 	protoReSrc := strings.Join([]string{importStmt, packageStmt, optionStmt, serviceStmt, comment}, "|")
 	return regexp.MustCompile(protoReSrc)

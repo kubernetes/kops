@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "affinity_linux.go",
         "aliases.go",
-        "asm_aix_ppc64.s",
         "asm_darwin_386.s",
         "asm_darwin_amd64.s",
         "asm_darwin_arm.s",
@@ -62,6 +61,7 @@ go_library(
         "sockcmsg_unix_other.go",
         "str.go",
         "syscall.go",
+        "syscall_aix.go",
         "syscall_bsd.go",
         "syscall_darwin.1_12.go",
         "syscall_darwin.1_13.go",

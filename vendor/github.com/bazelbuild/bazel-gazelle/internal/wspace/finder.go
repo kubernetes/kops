@@ -19,23 +19,50 @@ import (
 	"strings"
 )
 
-const workspaceFile = "WORKSPACE"
+var workspaceFiles = []string{"WORKSPACE.bazel", "WORKSPACE"}
 
-// Find searches from the given dir and up for the WORKSPACE file
+// IsWORKSPACE checks whether path is a WORKSPACE or WORKSPACE.bazel file
+func IsWORKSPACE(path string) bool {
+	base := filepath.Base(path)
+	for _, workspaceFile := range workspaceFiles {
+		if base == workspaceFile {
+			return true
+		}
+	}
+	return false
+}
+
+// FindWORKSPACEFile returns a path to a file in the provided root directory,
+// either to an existing WORKSPACE or WORKSPACE.bazel file, or to root/WORKSPACE
+// if neither exists. Note that this function does NOT recursively check parent directories.
+func FindWORKSPACEFile(root string) string {
+	for _, workspaceFile := range workspaceFiles {
+		path := filepath.Join(root, workspaceFile)
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+	return filepath.Join(root, "WORKSPACE")
+}
+
+// FindRepoRoot searches from the given dir and up for a directory containing a WORKSPACE file
 // returning the directory containing it, or an error if none found in the tree.
-func Find(dir string) (string, error) {
+func FindRepoRoot(dir string) (string, error) {
 	dir, err := filepath.Abs(dir)
 	if err != nil {
 		return "", err
 	}
 
 	for {
-		_, err = os.Stat(filepath.Join(dir, workspaceFile))
-		if err == nil {
-			return dir, nil
-		}
-		if !os.IsNotExist(err) {
-			return "", err
+		for _, workspaceFile := range workspaceFiles {
+			filepath := filepath.Join(dir, workspaceFile)
+			_, err = os.Stat(filepath)
+			if err == nil {
+				return dir, nil
+			}
+			if !os.IsNotExist(err) {
+				return "", err
+			}
 		}
 		if strings.HasSuffix(dir, string(os.PathSeparator)) { // stop at root dir
 			return "", os.ErrNotExist

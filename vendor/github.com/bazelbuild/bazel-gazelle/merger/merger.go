@@ -38,6 +38,7 @@ package merger
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/rule"
@@ -222,19 +223,15 @@ func Match(rules []*rule.Rule, x *rule.Rule, info rule.KindInfo) (*rule.Rule, er
 
 	for _, key := range info.MatchAttrs {
 		var attrMatches []*rule.Rule
-		xvalue := x.AttrString(key)
-		if xvalue == "" {
-			continue
-		}
 		for _, y := range kindMatches {
-			if xvalue == y.AttrString(key) {
+			if attrMatch(x, y, key) {
 				attrMatches = append(attrMatches, y)
 			}
 		}
 		if len(attrMatches) == 1 {
 			return attrMatches[0], nil
 		} else if len(attrMatches) > 1 {
-			return nil, fmt.Errorf("could not merge %s(%s): multiple rules have the same attribute %s = %q", xkind, xname, key, xvalue)
+			return nil, fmt.Errorf("could not merge %s(%s): multiple rules have the same attribute %s", xkind, xname, key)
 		}
 	}
 
@@ -247,4 +244,24 @@ func Match(rules []*rule.Rule, x *rule.Rule, info rule.KindInfo) (*rule.Rule, er
 	}
 
 	return nil, nil
+}
+
+func attrMatch(x, y *rule.Rule, key string) bool {
+	xValue := x.AttrString(key)
+	if xValue != "" && xValue == y.AttrString(key) {
+		return true
+	}
+	xValues := x.AttrStrings(key)
+	yValues := y.AttrStrings(key)
+	if xValues == nil || yValues == nil || len(xValues) != len(yValues) {
+		return false
+	}
+	sort.Strings(xValues)
+	sort.Strings(yValues)
+	for i, v := range xValues {
+		if v != yValues[i] {
+			return false
+		}
+	}
+	return true
 }

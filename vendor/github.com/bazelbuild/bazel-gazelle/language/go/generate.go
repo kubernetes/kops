@@ -36,7 +36,6 @@ func (gl *goLang) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	// Extract information about proto files. We need this to exclude .pb.go
 	// files and generate go_proto_library rules.
 	c := args.Config
-	gc := getGoConfig(c)
 	pcMode := getProtoMode(c)
 
 	// This is a collection of proto_library rule names that have a corresponding
@@ -133,7 +132,7 @@ func (gl *goLang) GenerateRules(args language.GenerateArgs) language.GenerateRes
 					}
 					pkg = &goPackage{
 						name:       goProtoPackageName(ppkg),
-						importPath: goProtoImportPath(gc, ppkg, args.Rel),
+						importPath: goProtoImportPath(c, ppkg, args.Rel),
 						proto:      protoTargetFromProtoPackage(name, ppkg),
 					}
 					protoName = name
@@ -156,7 +155,7 @@ func (gl *goLang) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 		for _, name := range protoRuleNames {
 			ppkg := protoPackages[name]
-			if pkg.importPath == goProtoImportPath(gc, ppkg, args.Rel) {
+			if pkg.importPath == goProtoImportPath(c, ppkg, args.Rel) {
 				protoName = name
 				pkg.proto = protoTargetFromProtoPackage(name, ppkg)
 				break
@@ -188,7 +187,7 @@ func (gl *goLang) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			protoEmbed, rs = g.generateProto(pcMode, pkg.proto, pkg.importPath)
 		} else {
 			target := protoTargetFromProtoPackage(name, ppkg)
-			importPath := goProtoImportPath(gc, ppkg, args.Rel)
+			importPath := goProtoImportPath(c, ppkg, args.Rel)
 			_, rs = g.generateProto(pcMode, target, importPath)
 		}
 		rules = append(rules, rs...)
@@ -403,7 +402,7 @@ func (g *generator) generateProto(mode proto.Mode, target protoTarget, importPat
 	filegroupName := legacyProtoFilegroupName
 	protoName := target.name
 	if protoName == "" {
-		importPath := inferImportPath(gc, g.rel)
+		importPath := InferImportPath(g.c, g.rel)
 		protoName = proto.RuleName(importPath)
 	}
 	goProtoName := strings.TrimSuffix(protoName, "_proto") + "_go_proto"

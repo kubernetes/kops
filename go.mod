@@ -57,7 +57,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.30.16
-	github.com/bazelbuild/bazel-gazelle v0.19.1
+	github.com/bazelbuild/bazel-gazelle v0.21.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
 	github.com/client9/misspell v0.3.4

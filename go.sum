@@ -83,6 +83,8 @@ github.com/bazelbuild/bazel-gazelle v0.18.2/go.mod h1:D0ehMSbS+vesFsLGiD6JXu3mVE
 github.com/bazelbuild/bazel-gazelle v0.19.1-0.20191105222053-70208cbdc798/go.mod h1:rPwzNHUqEzngx1iVBfO/2X2npKaT3tqPqqHW6rVsn/A=
 github.com/bazelbuild/bazel-gazelle v0.19.1 h1:TSCGVqpHStCj1MTszuDfZt6Z2Ca8ekq2oWiqcHKVEAE=
 github.com/bazelbuild/bazel-gazelle v0.19.1/go.mod h1:rPwzNHUqEzngx1iVBfO/2X2npKaT3tqPqqHW6rVsn/A=
+github.com/bazelbuild/bazel-gazelle v0.21.1 h1:buszGdD9d/Z691sxFDgOdcEUWli0ZT2tBXUxfbLMrb4=
+github.com/bazelbuild/bazel-gazelle v0.21.1/go.mod h1:xM5AuwJJYa2OUDBT+YqrZrcD8DW//aauZ+U424Wadlo=
 github.com/bazelbuild/buildtools v0.0.0-20190731111112-f720930ceb60 h1:OfyUN/Msd8yqJww6deQ9vayJWw+Jrbe6Qp9giv51QQI=
 github.com/bazelbuild/buildtools v0.0.0-20190731111112-f720930ceb60/go.mod h1:5JP0TXzWDHXv8qvxRC4InIazwdyDseBDbzESUMKk1yU=
 github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89 h1:3B/ZE1a6eEJ/4Jf/M6RM2KBouN8yKCUcMmXzSyWqa3g=
@@ -101,6 +103,8 @@ github.com/blang/semver v3.5.0+incompatible h1:CGxCgetQ64DKk7rdZ++Vfnb1+ogGNnB17
 github.com/blang/semver v3.5.0+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
 github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
+github.com/bmatcuk/doublestar v1.2.2 h1:oC24CykoSAB8zd7XgruHo33E0cHJf/WhQA/7BeXj+x0=
+github.com/bmatcuk/doublestar v1.2.2/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
 github.com/caddyserver/caddy v1.0.3/go.mod h1:G+ouvOY32gENkJC+jhgl62TyhvqEsFaDiZ4uw0RzP1E=

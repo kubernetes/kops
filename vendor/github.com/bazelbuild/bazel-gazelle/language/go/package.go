@@ -155,7 +155,7 @@ func (pkg *goPackage) inferImportPath(c *config.Config) error {
 	if !gc.prefixSet {
 		return fmt.Errorf("%s: go prefix is not set, so importpath can't be determined for rules. Set a prefix with a '# gazelle:prefix' comment or with -go_prefix on the command line", pkg.dir)
 	}
-	pkg.importPath = inferImportPath(gc, pkg.rel)
+	pkg.importPath = InferImportPath(c, pkg.rel)
 
 	if pkg.rel == gc.prefixRel {
 		pkg.importPath = gc.prefix
@@ -166,7 +166,8 @@ func (pkg *goPackage) inferImportPath(c *config.Config) error {
 	return nil
 }
 
-func inferImportPath(gc *goConfig, rel string) string {
+func InferImportPath(c *config.Config, rel string) string {
+	gc := getGoConfig(c)
 	if rel == gc.prefixRel {
 		return gc.prefix
 	} else {
@@ -190,17 +191,17 @@ func goProtoPackageName(pkg proto.Package) string {
 	return strings.Replace(pkg.Name, ".", "_", -1)
 }
 
-func goProtoImportPath(gc *goConfig, pkg proto.Package, rel string) string {
+func goProtoImportPath(c *config.Config, pkg proto.Package, rel string) string {
 	if value, ok := pkg.Options["go_package"]; ok {
 		if strings.LastIndexByte(value, '/') == -1 {
-			return inferImportPath(gc, rel)
+			return InferImportPath(c, rel)
 		} else if i := strings.LastIndexByte(value, ';'); i != -1 {
 			return value[:i]
 		} else {
 			return value
 		}
 	}
-	return inferImportPath(gc, rel)
+	return InferImportPath(c, rel)
 }
 
 func (t *goTarget) addFile(c *config.Config, info fileInfo) {
@@ -249,6 +250,7 @@ func (t *protoTarget) addFile(c *config.Config, info fileInfo) {
 // performance optimization to avoid evaluating constraints repeatedly.
 func getPlatformStringsAddFunction(c *config.Config, info fileInfo, cgoTags tagLine) func(sb *platformStringsBuilder, ss ...string) {
 	isOSSpecific, isArchSpecific := isOSArchSpecific(info, cgoTags)
+	v := getGoConfig(c).rulesGoVersion
 
 	switch {
 	case !isOSSpecific && !isArchSpecific:
@@ -263,7 +265,8 @@ func getPlatformStringsAddFunction(c *config.Config, info fileInfo, cgoTags tagL
 	case isOSSpecific && !isArchSpecific:
 		var osMatch []string
 		for _, os := range rule.KnownOSs {
-			if checkConstraints(c, os, "", info.goos, info.goarch, info.tags, cgoTags) {
+			if rulesGoSupportsOS(v, os) &&
+				checkConstraints(c, os, "", info.goos, info.goarch, info.tags, cgoTags) {
 				osMatch = append(osMatch, os)
 			}
 		}
@@ -278,7 +281,8 @@ func getPlatformStringsAddFunction(c *config.Config, info fileInfo, cgoTags tagL
 	case !isOSSpecific && isArchSpecific:
 		var archMatch []string
 		for _, arch := range rule.KnownArchs {
-			if checkConstraints(c, "", arch, info.goos, info.goarch, info.tags, cgoTags) {
+			if rulesGoSupportsArch(v, arch) &&
+				checkConstraints(c, "", arch, info.goos, info.goarch, info.tags, cgoTags) {
 				archMatch = append(archMatch, arch)
 			}
 		}
@@ -293,7 +297,8 @@ func getPlatformStringsAddFunction(c *config.Config, info fileInfo, cgoTags tagL
 	default:
 		var platformMatch []rule.Platform
 		for _, platform := range rule.KnownPlatforms {
-			if checkConstraints(c, platform.OS, platform.Arch, info.goos, info.goarch, info.tags, cgoTags) {
+			if rulesGoSupportsPlatform(v, platform) &&
+				checkConstraints(c, platform.OS, platform.Arch, info.goos, info.goarch, info.tags, cgoTags) {
 				platformMatch = append(platformMatch, platform)
 			}
 		}

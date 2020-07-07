@@ -17,6 +17,7 @@ package golang
 
 import (
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/language"
@@ -83,6 +84,7 @@ func (*goLang) ImportRepos(args language.ImportReposArgs) language.ImportReposRe
 			}
 		}
 	}
+	sortRules(res.Gen)
 	return res
 }
 
@@ -97,7 +99,8 @@ func setBuildAttrs(gc *goConfig, r *rule.Rule) {
 		r.SetAttr("build_file_generation", gc.buildFileGenerationAttr)
 	}
 	if gc.buildTagsAttr != "" {
-		r.SetAttr("build_tags", gc.buildTagsAttr)
+		buildTags := strings.Split(gc.buildTagsAttr, ",")
+		r.SetAttr("build_tags", buildTags)
 	}
 	if gc.buildFileProtoModeAttr != "" {
 		r.SetAttr("build_file_proto_mode", gc.buildFileProtoModeAttr)
@@ -106,4 +109,13 @@ func setBuildAttrs(gc *goConfig, r *rule.Rule) {
 		extraArgs := strings.Split(gc.buildExtraArgsAttr, ",")
 		r.SetAttr("build_extra_args", extraArgs)
 	}
+}
+
+func sortRules(rules []*rule.Rule) {
+	sort.SliceStable(rules, func(i, j int) bool {
+		if cmp := strings.Compare(rules[i].Name(), rules[j].Name()); cmp != 0 {
+			return cmp < 0
+		}
+		return rules[i].AttrString("importpath") < rules[j].AttrString("importpath")
+	})
 }

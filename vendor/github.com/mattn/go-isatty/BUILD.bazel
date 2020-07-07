@@ -15,6 +15,9 @@ go_library(
     importpath = "github.com/mattn/go-isatty",
     visibility = ["//visibility:public"],
     deps = select({
+        "@io_bazel_rules_go//go/platform:aix": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
         "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],

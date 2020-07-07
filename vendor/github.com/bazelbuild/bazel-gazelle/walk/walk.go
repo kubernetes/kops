@@ -197,7 +197,9 @@ func buildUpdateRelMap(root string, dirs []string) map[string]bool {
 				break
 			}
 			prefix := rel[:next]
-			relMap[prefix] = relMap[prefix] // set to false if not present
+			if _, ok := relMap[prefix]; !ok {
+				relMap[prefix] = false
+			}
 			i = next + 1
 		}
 	}

@@ -113,7 +113,7 @@ github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/bazelbuild/bazel-gazelle v0.19.1
+# github.com/bazelbuild/bazel-gazelle v0.21.1
 github.com/bazelbuild/bazel-gazelle/cmd/gazelle
 github.com/bazelbuild/bazel-gazelle/config
 github.com/bazelbuild/bazel-gazelle/flag
@@ -138,6 +138,8 @@ github.com/beorn7/perks/quantile
 github.com/blang/semver
 # github.com/blang/semver/v4 v4.0.0
 github.com/blang/semver/v4
+# github.com/bmatcuk/doublestar v1.2.2
+github.com/bmatcuk/doublestar
 # github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1
 github.com/chai2010/gettext-go/gettext
 github.com/chai2010/gettext-go/gettext/mo

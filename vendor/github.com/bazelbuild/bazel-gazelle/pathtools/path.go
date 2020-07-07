@@ -107,5 +107,4 @@ func Index(p, sub string) int {
 			return -1
 		}
 	}
-	return -1
 }

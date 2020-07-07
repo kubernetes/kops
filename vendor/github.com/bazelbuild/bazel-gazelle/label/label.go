@@ -185,17 +185,19 @@ func (l Label) Contains(other Label) bool {
 	return result
 }
 
+var nonWordRe = regexp.MustCompile(`\W+`)
+
 // ImportPathToBazelRepoName converts a Go import path into a bazel repo name
 // following the guidelines in http://bazel.io/docs/be/functions.html#workspace
 func ImportPathToBazelRepoName(importpath string) string {
 	importpath = strings.ToLower(importpath)
 	components := strings.Split(importpath, "/")
 	labels := strings.Split(components[0], ".")
-	var reversed []string
+	reversed := make([]string, 0, len(labels)+len(components)-1)
 	for i := range labels {
 		l := labels[len(labels)-i-1]
 		reversed = append(reversed, l)
 	}
-	repo := strings.Join(append(reversed, components[1:]...), "_")
-	return strings.NewReplacer("-", "_", ".", "_").Replace(repo)
+	repo := strings.Join(append(reversed, components[1:]...), ".")
+	return nonWordRe.ReplaceAllString(repo, "_")
 }

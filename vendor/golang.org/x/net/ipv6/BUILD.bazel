@@ -29,6 +29,7 @@ go_library(
         "sockopt.go",
         "sockopt_posix.go",
         "sockopt_stub.go",
+        "sys_aix.go",
         "sys_asmreq.go",
         "sys_asmreq_stub.go",
         "sys_bpf.go",
