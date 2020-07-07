@@ -60,7 +60,7 @@ type nodeupConfigBuilder struct {
 	cluster *kops.Cluster
 }
 
-func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup) (*nodeup.Config, error) {
+func (n *nodeupConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string) (*nodeup.Config, error) {
 	return nodeup.NewConfig(n.cluster, ig), nil
 }
 
