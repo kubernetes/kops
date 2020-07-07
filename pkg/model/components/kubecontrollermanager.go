@@ -35,7 +35,7 @@ const (
 
 // KubeControllerManagerOptionsBuilder adds options for the kubernetes controller manager to the model.
 type KubeControllerManagerOptionsBuilder struct {
-	Context *OptionsContext
+	*OptionsContext
 }
 
 var _ loader.OptionsBuilder = &KubeControllerManagerOptionsBuilder{}
@@ -49,17 +49,12 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 	kcm := clusterSpec.KubeControllerManager
 
-	kubernetesVersion, err := KubernetesVersion(clusterSpec)
-	if err != nil {
-		return fmt.Errorf("unable to parse kubernetesVersion %s", err)
-	}
-
 	// Tune the duration upon which the volume attach detach component is called.
 	// See https://github.com/kubernetes/kubernetes/pull/39551
 	// TLDR; set this too low, and have a few EBS Volumes, and you will spam AWS api
 
 	{
-		klog.V(4).Infof("Kubernetes version %q supports AttachDetachReconcileSyncPeriod; will configure", kubernetesVersion)
+		klog.V(4).Infof("Kubernetes version %q supports AttachDetachReconcileSyncPeriod; will configure", b.KubernetesVersion)
 		// If not set ... or set to 0s ... which is stupid
 		if kcm.AttachDetachReconcileSyncPeriod == nil ||
 			kcm.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
@@ -80,14 +75,14 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		}
 	}
 
-	kcm.ClusterName = b.Context.ClusterName
+	kcm.ClusterName = b.ClusterName
 	switch kops.CloudProviderID(clusterSpec.CloudProvider) {
 	case kops.CloudProviderAWS:
 		kcm.CloudProvider = "aws"
 
 	case kops.CloudProviderGCE:
 		kcm.CloudProvider = "gce"
-		kcm.ClusterName = gce.SafeClusterName(b.Context.ClusterName)
+		kcm.ClusterName = gce.SafeClusterName(b.ClusterName)
 
 	case kops.CloudProviderDO:
 		kcm.CloudProvider = "external"
@@ -108,7 +103,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	kcm.LogLevel = 2
 
-	image, err := Image("kube-controller-manager", clusterSpec, b.Context.AssetBuilder)
+	image, err := Image("kube-controller-manager", clusterSpec, b.AssetBuilder)
 	if err != nil {
 		return err
 	}
