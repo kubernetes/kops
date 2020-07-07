@@ -77,6 +77,19 @@ spec:
 ```
 The masters will poll for changes in the bucket and keep the addons up to date.
 
+### Ambassador
+
+The [Ambassador API Gateway](https://getambassador.io/) provides all the functionality of a traditional ingress
+controller (i.e., path-based routing) while exposing many additional capabilities such as authentication, URL rewriting,
+CORS, rate limiting, and automatic metrics collection.
+
+Install using:
+```
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/ambassador/ambassador-operator.yaml
+```
+
+Detailed installation instructions in the [addon documentation](https://github.com/kubernetes/kops/blob/master/addons/ambassador/README.md).
+See [Ambassador documentation](https://www.getambassador.io/docs/) on configuration and usage.
 
 ### Dashboard
 
