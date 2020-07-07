@@ -226,6 +226,10 @@ type Route53API interface {
 	ListHostedZonesByNameWithContext(aws.Context, *route53.ListHostedZonesByNameInput, ...request.Option) (*route53.ListHostedZonesByNameOutput, error)
 	ListHostedZonesByNameRequest(*route53.ListHostedZonesByNameInput) (*request.Request, *route53.ListHostedZonesByNameOutput)
 
+	ListHostedZonesByVPC(*route53.ListHostedZonesByVPCInput) (*route53.ListHostedZonesByVPCOutput, error)
+	ListHostedZonesByVPCWithContext(aws.Context, *route53.ListHostedZonesByVPCInput, ...request.Option) (*route53.ListHostedZonesByVPCOutput, error)
+	ListHostedZonesByVPCRequest(*route53.ListHostedZonesByVPCInput) (*request.Request, *route53.ListHostedZonesByVPCOutput)
+
 	ListQueryLoggingConfigs(*route53.ListQueryLoggingConfigsInput) (*route53.ListQueryLoggingConfigsOutput, error)
 	ListQueryLoggingConfigsWithContext(aws.Context, *route53.ListQueryLoggingConfigsInput, ...request.Option) (*route53.ListQueryLoggingConfigsOutput, error)
 	ListQueryLoggingConfigsRequest(*route53.ListQueryLoggingConfigsInput) (*request.Request, *route53.ListQueryLoggingConfigsOutput)
