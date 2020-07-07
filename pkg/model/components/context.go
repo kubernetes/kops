@@ -51,23 +51,6 @@ func (c *OptionsContext) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
 }
 
-// KubernetesVersion parses the semver version of kubernetes, from the cluster spec
-// Deprecated: prefer using OptionsContext.KubernetesVersion
-func KubernetesVersion(clusterSpec *kops.ClusterSpec) (*semver.Version, error) {
-	kubernetesVersion := clusterSpec.KubernetesVersion
-
-	if kubernetesVersion == "" {
-		return nil, fmt.Errorf("KubernetesVersion is required")
-	}
-
-	sv, err := util.ParseKubernetesVersion(kubernetesVersion)
-	if err != nil {
-		return nil, fmt.Errorf("unable to determine kubernetes version from %q", kubernetesVersion)
-	}
-
-	return sv, nil
-}
-
 // UsesKubenet returns true if our networking is derived from kubenet
 func UsesKubenet(networking *kops.NetworkingSpec) bool {
 	if networking == nil {

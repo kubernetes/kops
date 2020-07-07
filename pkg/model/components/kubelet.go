@@ -29,7 +29,7 @@ import (
 
 // KubeletOptionsBuilder adds options for kubelets
 type KubeletOptionsBuilder struct {
-	Context *OptionsContext
+	*OptionsContext
 }
 
 var _ loader.OptionsBuilder = &KubeletOptionsBuilder{}
@@ -37,11 +37,6 @@ var _ loader.OptionsBuilder = &KubeletOptionsBuilder{}
 // BuildOptions is responsible for filling the defaults for the kubelet
 func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
-
-	kubernetesVersion, err := KubernetesVersion(clusterSpec)
-	if err != nil {
-		return err
-	}
 
 	if clusterSpec.Kubelet == nil {
 		clusterSpec.Kubelet = &kops.KubeletConfigSpec{}
@@ -67,7 +62,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// AllowPrivileged is deprecated and removed in v1.14.
 	// See https://github.com/kubernetes/kubernetes/pull/71835
-	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor >= 14 {
+	if b.IsKubernetesGTE("1.14") {
 		if clusterSpec.Kubelet.AllowPrivileged != nil {
 			// If it is explicitly set to false, return an error, because this
 			// behavior is no longer supported in v1.14 (the default was true, prior).
@@ -110,7 +105,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			// Disk based evictions are not detecting the correct disk capacity in Kubernetes 1.19 and are
 			// blocking scheduling by tainting worker nodes with "node.kubernetes.io/disk-pressure:NoSchedule"
 			// TODO: Re-enable once the Kubelet issue is fixed
-			if b.Context.IsKubernetesLT("1.19") {
+			if b.IsKubernetesLT("1.19") {
 				// Disk based eviction (evict old images)
 				// We don't need to specify both, but it seems harmless / safer
 				evictionHard = append(evictionHard, "nodefs.available<10%")
@@ -162,7 +157,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			clusterSpec.CloudConfig = &kops.CloudConfiguration{}
 		}
 		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
-		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.Context.ClusterName, kops.InstanceGroupRoleNode))
+		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
 
 		// Use the hostname from the GCE metadata service
 		// if hostnameOverride is not set.
@@ -199,7 +194,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 		// Specify our pause image
 		image := "k8s.gcr.io/pause:3.2"
-		if image, err = b.Context.AssetBuilder.RemapImage(image); err != nil {
+		var err error
+		if image, err = b.AssetBuilder.RemapImage(image); err != nil {
 			return err
 		}
 		clusterSpec.Kubelet.PodInfraContainerImage = image
@@ -209,7 +205,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
 	}
 	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
-		if b.Context.IsKubernetesLT("1.16") {
+		if b.IsKubernetesLT("1.16") {
 			clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
 		}
 	}
