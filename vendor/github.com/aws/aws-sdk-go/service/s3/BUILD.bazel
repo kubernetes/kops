@@ -36,6 +36,7 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/signer/v4:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/internal/s3err:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/internal/sdkio:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/private/checksum:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/eventstream:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi:go_default_library",
