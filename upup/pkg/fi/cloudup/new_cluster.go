@@ -62,6 +62,10 @@ type NewClusterOptions struct {
 	ConfigBase string
 	// KubernetesVersion is the version of Kubernetes to deploy. It defaults to the version recommended by the channel.
 	KubernetesVersion string
+	// AdminAccess is the set of CIDR blocks permitted to connect to the Kubernetes API. It defaults to "0.0.0.0/0".
+	AdminAccess []string
+	// SSHAccess is the set of CIDR blocks permitted to connect to SSH on the nodes. It defaults to the value of AdminAccess.
+	SSHAccess []string
 
 	// CloudProvider is the name of the cloud provider. The default is to guess based on the Zones name.
 	CloudProvider string
@@ -91,13 +95,13 @@ type NewClusterOptions struct {
 	// Egress defines the method of traffic egress for subnets.
 	Egress string
 
-	// OpenstackExternalNet is the name of the external network for the openstack router
+	// OpenstackExternalNet is the name of the external network for the openstack router.
 	OpenstackExternalNet     string
 	OpenstackExternalSubnet  string
 	OpenstackStorageIgnoreAZ bool
 	OpenstackDNSServers      string
-	OpenstackLbSubnet        string
-	// OpenstackLBOctavia is boolean value should we use octavia or old loadbalancer api
+	OpenstackLBSubnet        string
+	// OpenstackLBOctavia is whether to use use octavia instead of haproxy.
 	OpenstackLBOctavia bool
 
 	// MasterCount is the number of masters to create. Defaults to the length of MasterZones
@@ -120,11 +124,19 @@ type NewClusterOptions struct {
 	Topology string
 	// DNSType is the DNS type to use; "public" or "private". Defaults to "public".
 	DNSType string
+
+	// APILoadBalancerType is the Kubernetes API loadbalancer type to use; "public" or "internal".
+	// Defaults to using DNS instead of a load balancer if using public topology and not gossip, otherwise "public".
+	APILoadBalancerType string
+	// APISSLCertificate is the SSL certificate to use for the API loadbalancer.
+	// Currently only supported in AWS.
+	APISSLCertificate string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
 	o.Channel = api.DefaultChannel
 	o.Authorization = AuthorizationFlagRBAC
+	o.AdminAccess = []string{"0.0.0.0/0"}
 	o.Networking = "kubenet"
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
@@ -135,13 +147,14 @@ type NewClusterResult struct {
 	Cluster *api.Cluster
 	// InstanceGroups are the initialized InstanceGroup resources.
 	InstanceGroups []*api.InstanceGroup
-
-	// TODO remove after more create_cluster logic refactored in
+	// Channel is the loaded Channel object.
 	Channel *api.Channel
 }
 
 // NewCluster initializes cluster and instance groups specifications as
 // intended for newly created clusters.
+// It is the responsibility of the caller to call cloudup.PerformAssignments() on
+// the returned cluster spec.
 func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewClusterResult, error) {
 	if opt.ClusterName == "" {
 		return nil, fmt.Errorf("name is required")
@@ -188,6 +201,24 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.Authorization.RBAC = &api.RBACAuthorizationSpec{}
 	} else {
 		return nil, fmt.Errorf("unknown authorization mode %q", opt.Authorization)
+	}
+
+	cluster.Spec.IAM = &api.IAMSpec{
+		AllowContainerRegistry: true,
+		Legacy:                 false,
+	}
+	cluster.Spec.Kubelet = &api.KubeletConfigSpec{
+		AnonymousAuth: fi.Bool(false),
+	}
+
+	if len(opt.AdminAccess) == 0 {
+		opt.AdminAccess = []string{"0.0.0.0/0"}
+	}
+	cluster.Spec.KubernetesAPIAccess = opt.AdminAccess
+	if len(opt.SSHAccess) != 0 {
+		cluster.Spec.SSHAccess = opt.SSHAccess
+	} else {
+		cluster.Spec.SSHAccess = opt.AdminAccess
 	}
 
 	allZones := sets.NewString()
@@ -238,6 +269,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	}
 
 	bastions, err := setupTopology(opt, &cluster, allZones)
+	if err != nil {
+		return nil, err
+	}
+
+	err = setupAPI(opt, &cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -910,4 +946,68 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	}
 
 	return bastions, nil
+}
+
+func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
+	// Populate the API access, so that it can be discoverable
+	cluster.Spec.API = &api.AccessSpec{}
+	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
+		initializeOpenstackAPI(opt, cluster)
+	} else if opt.APILoadBalancerType != "" {
+		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+	} else {
+		switch cluster.Spec.Topology.Masters {
+		case api.TopologyPublic:
+			if dns.IsGossipHostname(cluster.Name) {
+				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
+				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+			} else {
+				cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+			}
+
+		case api.TopologyPrivate:
+			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+
+		default:
+			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+		}
+	}
+
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
+		switch opt.APILoadBalancerType {
+		case "", "public":
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+		case "internal":
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
+		default:
+			return fmt.Errorf("unknown api-loadbalancer-type: %q", opt.APILoadBalancerType)
+		}
+	}
+
+	if cluster.Spec.API.LoadBalancer != nil && opt.APISSLCertificate != "" {
+		cluster.Spec.API.LoadBalancer.SSLCertificate = opt.APISSLCertificate
+	}
+
+	return nil
+}
+
+func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
+	if opt.APILoadBalancerType != "" {
+		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+		provider := "haproxy"
+		if opt.OpenstackLBOctavia {
+			provider = "octavia"
+		}
+
+		cluster.Spec.CloudConfig.Openstack.Loadbalancer = &api.OpenstackLoadbalancerConfig{
+			FloatingNetwork: fi.String(opt.OpenstackExternalNet),
+			Method:          fi.String("ROUND_ROBIN"),
+			Provider:        fi.String(provider),
+			UseOctavia:      fi.Bool(opt.OpenstackLBOctavia),
+		}
+
+		if opt.OpenstackLBSubnet != "" {
+			cluster.Spec.CloudConfig.Openstack.Loadbalancer.FloatingSubnet = fi.String(opt.OpenstackLBSubnet)
+		}
+	}
 }

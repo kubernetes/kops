@@ -66,7 +66,6 @@ go_library(
         "//pkg/client/simple:go_default_library",
         "//pkg/cloudinstances:go_default_library",
         "//pkg/commands:go_default_library",
-        "//pkg/dns:go_default_library",
         "//pkg/edit:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/formatter:go_default_library",
