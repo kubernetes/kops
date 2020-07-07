@@ -166,9 +166,10 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 		klog.V(2).Infof("Creating SecurityGroup with Name:%q VPC:%q", *e.Name, *e.VPC.ID)
 
 		request := &ec2.CreateSecurityGroupInput{
-			VpcId:       e.VPC.ID,
-			GroupName:   e.Name,
-			Description: e.Description,
+			VpcId:             e.VPC.ID,
+			GroupName:         e.Name,
+			Description:       e.Description,
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeSecurityGroup, e.Tags),
 		}
 
 		response, err := t.Cloud.EC2().CreateSecurityGroup(request)
