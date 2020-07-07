@@ -335,10 +335,6 @@ type AccessSpec struct {
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
 }
 
-func (s *AccessSpec) IsEmpty() bool {
-	return s.DNS == nil && s.LoadBalancer == nil
-}
-
 type DNSAccessSpec struct {
 }
 

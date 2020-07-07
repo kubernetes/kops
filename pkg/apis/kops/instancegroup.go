@@ -17,8 +17,6 @@ limitations under the License.
 package kops
 
 import (
-	"fmt"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 )
@@ -249,33 +247,6 @@ type IAMProfileSpec struct {
 	// Profile is the AWS IAM Profile to attach to instances in this instance group.
 	// Specify the ARN for the IAM instance profile. (AWS only)
 	Profile *string `json:"profile,omitempty"`
-}
-
-// PerformAssignmentsInstanceGroups populates InstanceGroups with default values
-func PerformAssignmentsInstanceGroups(groups []*InstanceGroup) error {
-	names := map[string]bool{}
-	for _, group := range groups {
-		names[group.ObjectMeta.Name] = true
-	}
-
-	for _, group := range groups {
-		// We want to give them a stable Name as soon as possible
-		if group.ObjectMeta.Name == "" {
-			// Loop to find the first unassigned name like `nodes-%d`
-			i := 0
-			for {
-				key := fmt.Sprintf("nodes-%d", i)
-				if !names[key] {
-					group.ObjectMeta.Name = key
-					names[key] = true
-					break
-				}
-				i++
-			}
-		}
-	}
-
-	return nil
 }
 
 // IsMaster checks if instanceGroup is a master
