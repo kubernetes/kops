@@ -178,3 +178,22 @@ func AWSErrorMessage(err error) string {
 	}
 	return ""
 }
+
+// EC2TagSpecification converts a map of tags to an EC2 TagSpecification
+func EC2TagSpecification(resourceType string, tags map[string]string) []*ec2.TagSpecification {
+	if len(tags) == 0 {
+		return nil
+	}
+	specification := &ec2.TagSpecification{
+		ResourceType: aws.String(resourceType),
+		Tags:         make([]*ec2.Tag, 0),
+	}
+	for k, v := range tags {
+		specification.Tags = append(specification.Tags, &ec2.Tag{
+			Key:   aws.String(k),
+			Value: aws.String(v),
+		})
+	}
+
+	return []*ec2.TagSpecification{specification}
+}

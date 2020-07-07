@@ -149,7 +149,9 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 	if a == nil {
 		klog.V(2).Infof("Creating InternetGateway")
 
-		request := &ec2.CreateInternetGatewayInput{}
+		request := &ec2.CreateInternetGatewayInput{
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeInternetGateway, e.Tags),
+		}
 
 		response, err := t.Cloud.EC2().CreateInternetGateway(request)
 		if err != nil {
