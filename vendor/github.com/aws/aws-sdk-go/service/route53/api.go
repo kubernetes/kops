@@ -132,6 +132,13 @@ func (c *Route53) AssociateVPCWithHostedZoneRequest(input *AssociateVPCWithHoste
 //   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
 //   with the AWS Support Center.
 //
+//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//   If Amazon Route 53 can't process a request before the next request arrives,
+//   it will reject subsequent requests for the same hosted zone and return an
+//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//   the same request, we recommend that you wait, in intervals of increasing
+//   duration, before you try the request again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/AssociateVPCWithHostedZone
 func (c *Route53) AssociateVPCWithHostedZone(input *AssociateVPCWithHostedZoneInput) (*AssociateVPCWithHostedZoneOutput, error) {
 	req, out := c.AssociateVPCWithHostedZoneRequest(input)
@@ -2290,16 +2297,25 @@ func (c *Route53) DisassociateVPCFromHostedZoneRequest(input *DisassociateVPCFro
 
 // DisassociateVPCFromHostedZone API operation for Amazon Route 53.
 //
-// Disassociates a VPC from a Amazon Route 53 private hosted zone. Note the
-// following:
+// Disassociates an Amazon Virtual Private Cloud (Amazon VPC) from an Amazon
+// Route 53 private hosted zone. Note the following:
 //
-//    * You can't disassociate the last VPC from a private hosted zone.
+//    * You can't disassociate the last Amazon VPC from a private hosted zone.
 //
 //    * You can't convert a private hosted zone into a public hosted zone.
 //
 //    * You can submit a DisassociateVPCFromHostedZone request using either
 //    the account that created the hosted zone or the account that created the
-//    VPC.
+//    Amazon VPC.
+//
+//    * Some services, such as AWS Cloud Map and Amazon Elastic File System
+//    (Amazon EFS) automatically create hosted zones and associate VPCs with
+//    the hosted zones. A service can create a hosted zone using your account
+//    or using its own account. You can disassociate a VPC from a hosted zone
+//    only if the service created the hosted zone using your account. When you
+//    run DisassociateVPCFromHostedZone (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListHostedZonesByVPC.html),
+//    if the hosted zone has a value for OwningAccount, you can use DisassociateVPCFromHostedZone.
+//    If the hosted zone has a value for OwningService, you can't use DisassociateVPCFromHostedZone.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4292,6 +4308,99 @@ func (c *Route53) ListHostedZonesByName(input *ListHostedZonesByNameInput) (*Lis
 // for more information on using Contexts.
 func (c *Route53) ListHostedZonesByNameWithContext(ctx aws.Context, input *ListHostedZonesByNameInput, opts ...request.Option) (*ListHostedZonesByNameOutput, error) {
 	req, out := c.ListHostedZonesByNameRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListHostedZonesByVPC = "ListHostedZonesByVPC"
+
+// ListHostedZonesByVPCRequest generates a "aws/request.Request" representing the
+// client's request for the ListHostedZonesByVPC operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListHostedZonesByVPC for more information on using the ListHostedZonesByVPC
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ListHostedZonesByVPCRequest method.
+//    req, resp := client.ListHostedZonesByVPCRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZonesByVPC
+func (c *Route53) ListHostedZonesByVPCRequest(input *ListHostedZonesByVPCInput) (req *request.Request, output *ListHostedZonesByVPCOutput) {
+	op := &request.Operation{
+		Name:       opListHostedZonesByVPC,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2013-04-01/hostedzonesbyvpc",
+	}
+
+	if input == nil {
+		input = &ListHostedZonesByVPCInput{}
+	}
+
+	output = &ListHostedZonesByVPCOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListHostedZonesByVPC API operation for Amazon Route 53.
+//
+// Lists all the private hosted zones that a specified VPC is associated with,
+// regardless of which AWS account or AWS service owns the hosted zones. The
+// HostedZoneOwner structure in the response contains one of the following values:
+//
+//    * An OwningAccount element, which contains the account number of either
+//    the current AWS account or another AWS account. Some services, such as
+//    AWS Cloud Map, create hosted zones using the current account.
+//
+//    * An OwningService element, which identifies the AWS service that created
+//    and owns the hosted zone. For example, if a hosted zone was created by
+//    Amazon Elastic File System (Amazon EFS), the value of Owner is efs.amazonaws.com.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Route 53's
+// API operation ListHostedZonesByVPC for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidInput "InvalidInput"
+//   The input is not valid.
+//
+//   * ErrCodeInvalidPaginationToken "InvalidPaginationToken"
+//   The value that you specified to get the second or subsequent page of results
+//   is invalid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZonesByVPC
+func (c *Route53) ListHostedZonesByVPC(input *ListHostedZonesByVPCInput) (*ListHostedZonesByVPCOutput, error) {
+	req, out := c.ListHostedZonesByVPCRequest(input)
+	return out, req.Send()
+}
+
+// ListHostedZonesByVPCWithContext is the same as ListHostedZonesByVPC with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListHostedZonesByVPC for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53) ListHostedZonesByVPCWithContext(ctx aws.Context, input *ListHostedZonesByVPCInput, opts ...request.Option) (*ListHostedZonesByVPCOutput, error) {
+	req, out := c.ListHostedZonesByVPCRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -10776,6 +10885,103 @@ func (s *HostedZoneLimit) SetValue(v int64) *HostedZoneLimit {
 	return s
 }
 
+// A complex type that identifies a hosted zone that a specified Amazon VPC
+// is associated with and the owner of the hosted zone. If there is a value
+// for OwningAccount, there is no value for OwningService, and vice versa.
+type HostedZoneOwner struct {
+	_ struct{} `type:"structure"`
+
+	// If the hosted zone was created by an AWS account, or was created by an AWS
+	// service that creates hosted zones using the current account, OwningAccount
+	// contains the account ID of that account. For example, when you use AWS Cloud
+	// Map to create a hosted zone, Cloud Map creates the hosted zone using the
+	// current AWS account.
+	OwningAccount *string `type:"string"`
+
+	// If an AWS service uses its own account to create a hosted zone and associate
+	// the specified VPC with that hosted zone, OwningService contains an abbreviation
+	// that identifies the service. For example, if Amazon Elastic File System (Amazon
+	// EFS) created a hosted zone and associated a VPC with the hosted zone, the
+	// value of OwningService is efs.amazonaws.com.
+	OwningService *string `type:"string"`
+}
+
+// String returns the string representation
+func (s HostedZoneOwner) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s HostedZoneOwner) GoString() string {
+	return s.String()
+}
+
+// SetOwningAccount sets the OwningAccount field's value.
+func (s *HostedZoneOwner) SetOwningAccount(v string) *HostedZoneOwner {
+	s.OwningAccount = &v
+	return s
+}
+
+// SetOwningService sets the OwningService field's value.
+func (s *HostedZoneOwner) SetOwningService(v string) *HostedZoneOwner {
+	s.OwningService = &v
+	return s
+}
+
+// In the response to a ListHostedZonesByVPC request, the HostedZoneSummaries
+// element contains one HostedZoneSummary element for each hosted zone that
+// the specified Amazon VPC is associated with. Each HostedZoneSummary element
+// contains the hosted zone name and ID, and information about who owns the
+// hosted zone.
+type HostedZoneSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Route 53 hosted zone ID of a private hosted zone that the specified VPC
+	// is associated with.
+	//
+	// HostedZoneId is a required field
+	HostedZoneId *string `type:"string" required:"true"`
+
+	// The name of the private hosted zone, such as example.com.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+
+	// The owner of a private hosted zone that the specified VPC is associated with.
+	// The owner can be either an AWS account or an AWS service.
+	//
+	// Owner is a required field
+	Owner *HostedZoneOwner `type:"structure" required:"true"`
+}
+
+// String returns the string representation
+func (s HostedZoneSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s HostedZoneSummary) GoString() string {
+	return s.String()
+}
+
+// SetHostedZoneId sets the HostedZoneId field's value.
+func (s *HostedZoneSummary) SetHostedZoneId(v string) *HostedZoneSummary {
+	s.HostedZoneId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *HostedZoneSummary) SetName(v string) *HostedZoneSummary {
+	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *HostedZoneSummary) SetOwner(v *HostedZoneOwner) *HostedZoneSummary {
+	s.Owner = v
+	return s
+}
+
 // If a health check or hosted zone was created by another service, LinkedService
 // is a complex type that describes the service that created the resource. When
 // a resource is created by another service, you can't edit or delete it using
@@ -11275,6 +11481,144 @@ func (s *ListHostedZonesByNameOutput) SetNextDNSName(v string) *ListHostedZonesB
 // SetNextHostedZoneId sets the NextHostedZoneId field's value.
 func (s *ListHostedZonesByNameOutput) SetNextHostedZoneId(v string) *ListHostedZonesByNameOutput {
 	s.NextHostedZoneId = &v
+	return s
+}
+
+// Lists all the private hosted zones that a specified VPC is associated with,
+// regardless of which AWS account created the hosted zones.
+type ListHostedZonesByVPCInput struct {
+	_ struct{} `locationName:"ListHostedZonesByVPCRequest" type:"structure"`
+
+	// (Optional) The maximum number of hosted zones that you want Amazon Route
+	// 53 to return. If the specified VPC is associated with more than MaxItems
+	// hosted zones, the response includes a NextToken element. NextToken contains
+	// the hosted zone ID of the first hosted zone that Route 53 will return if
+	// you submit another request.
+	MaxItems *string `location:"querystring" locationName:"maxitems" type:"string"`
+
+	// If the previous response included a NextToken element, the specified VPC
+	// is associated with more hosted zones. To get more hosted zones, submit another
+	// ListHostedZonesByVPC request.
+	//
+	// For the value of NextToken, specify the value of NextToken from the previous
+	// response.
+	//
+	// If the previous response didn't include a NextToken element, there are no
+	// more hosted zones to get.
+	NextToken *string `location:"querystring" locationName:"nexttoken" type:"string"`
+
+	// The ID of the Amazon VPC that you want to list hosted zones for.
+	//
+	// VPCId is a required field
+	VPCId *string `location:"querystring" locationName:"vpcid" type:"string" required:"true"`
+
+	// For the Amazon VPC that you specified for VPCId, the AWS Region that you
+	// created the VPC in.
+	//
+	// VPCRegion is a required field
+	VPCRegion *string `location:"querystring" locationName:"vpcregion" min:"1" type:"string" required:"true" enum:"VPCRegion"`
+}
+
+// String returns the string representation
+func (s ListHostedZonesByVPCInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListHostedZonesByVPCInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListHostedZonesByVPCInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListHostedZonesByVPCInput"}
+	if s.VPCId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VPCId"))
+	}
+	if s.VPCRegion == nil {
+		invalidParams.Add(request.NewErrParamRequired("VPCRegion"))
+	}
+	if s.VPCRegion != nil && len(*s.VPCRegion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VPCRegion", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListHostedZonesByVPCInput) SetMaxItems(v string) *ListHostedZonesByVPCInput {
+	s.MaxItems = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListHostedZonesByVPCInput) SetNextToken(v string) *ListHostedZonesByVPCInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVPCId sets the VPCId field's value.
+func (s *ListHostedZonesByVPCInput) SetVPCId(v string) *ListHostedZonesByVPCInput {
+	s.VPCId = &v
+	return s
+}
+
+// SetVPCRegion sets the VPCRegion field's value.
+func (s *ListHostedZonesByVPCInput) SetVPCRegion(v string) *ListHostedZonesByVPCInput {
+	s.VPCRegion = &v
+	return s
+}
+
+type ListHostedZonesByVPCOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list that contains one HostedZoneSummary element for each hosted zone that
+	// the specified Amazon VPC is associated with. Each HostedZoneSummary element
+	// contains the hosted zone name and ID, and information about who owns the
+	// hosted zone.
+	//
+	// HostedZoneSummaries is a required field
+	HostedZoneSummaries []*HostedZoneSummary `locationNameList:"HostedZoneSummary" type:"list" required:"true"`
+
+	// The value that you specified for MaxItems in the most recent ListHostedZonesByVPC
+	// request.
+	//
+	// MaxItems is a required field
+	MaxItems *string `type:"string" required:"true"`
+
+	// The value that you specified for NextToken in the most recent ListHostedZonesByVPC
+	// request.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ListHostedZonesByVPCOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListHostedZonesByVPCOutput) GoString() string {
+	return s.String()
+}
+
+// SetHostedZoneSummaries sets the HostedZoneSummaries field's value.
+func (s *ListHostedZonesByVPCOutput) SetHostedZoneSummaries(v []*HostedZoneSummary) *ListHostedZonesByVPCOutput {
+	s.HostedZoneSummaries = v
+	return s
+}
+
+// SetMaxItems sets the MaxItems field's value.
+func (s *ListHostedZonesByVPCOutput) SetMaxItems(v string) *ListHostedZonesByVPCOutput {
+	s.MaxItems = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListHostedZonesByVPCOutput) SetNextToken(v string) *ListHostedZonesByVPCOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -15194,6 +15538,9 @@ const (
 	// CloudWatchRegionAfSouth1 is a CloudWatchRegion enum value
 	CloudWatchRegionAfSouth1 = "af-south-1"
 
+	// CloudWatchRegionEuSouth1 is a CloudWatchRegion enum value
+	CloudWatchRegionEuSouth1 = "eu-south-1"
+
 	// CloudWatchRegionUsGovWest1 is a CloudWatchRegion enum value
 	CloudWatchRegionUsGovWest1 = "us-gov-west-1"
 
@@ -15415,6 +15762,9 @@ const (
 
 	// ResourceRecordSetRegionAfSouth1 is a ResourceRecordSetRegion enum value
 	ResourceRecordSetRegionAfSouth1 = "af-south-1"
+
+	// ResourceRecordSetRegionEuSouth1 is a ResourceRecordSetRegion enum value
+	ResourceRecordSetRegionEuSouth1 = "eu-south-1"
 )
 
 const (
@@ -15522,4 +15872,7 @@ const (
 
 	// VPCRegionAfSouth1 is a VPCRegion enum value
 	VPCRegionAfSouth1 = "af-south-1"
+
+	// VPCRegionEuSouth1 is a VPCRegion enum value
+	VPCRegionEuSouth1 = "eu-south-1"
 )
