@@ -45,7 +45,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 		b := assets.NewAssetBuilder(c, "")
 
 		kcm := &KubeControllerManagerOptionsBuilder{
-			Context: &OptionsContext{
+			OptionsContext: &OptionsContext{
 				AssetBuilder: b,
 			},
 		}
@@ -68,7 +68,7 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 	b := assets.NewAssetBuilder(c, "")
 
 	kcm := &KubeControllerManagerOptionsBuilder{
-		Context: &OptionsContext{
+		OptionsContext: &OptionsContext{
 			AssetBuilder: b,
 		},
 	}
