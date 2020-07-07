@@ -155,7 +155,8 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		klog.V(2).Infof("Creating VPC with CIDR: %q", *e.CIDR)
 
 		request := &ec2.CreateVpcInput{
-			CidrBlock: e.CIDR,
+			CidrBlock:         e.CIDR,
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeVpc, e.Tags),
 		}
 
 		response, err := t.Cloud.EC2().CreateVpc(request)
