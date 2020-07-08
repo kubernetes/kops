@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -1014,11 +1013,13 @@ func addCiliumNetwork(cluster *api.Cluster) {
 	if cluster.Spec.KubernetesVersion == "" {
 		nodeport = true
 	} else {
-		k8sVersion, err := semver.ParseTolerant(cluster.Spec.KubernetesVersion)
+		k8sVersion, err := version.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 		if err == nil {
-			if version.IsKubernetesGTE("1.12", k8sVersion) {
+			if version.IsKubernetesGTE("1.12", *k8sVersion) {
 				nodeport = true
 			}
+		} else {
+			klog.Error(err.Error())
 		}
 	}
 	if nodeport {
