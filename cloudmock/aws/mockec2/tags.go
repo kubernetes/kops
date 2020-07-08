@@ -27,12 +27,6 @@ import (
 	"k8s.io/klog"
 )
 
-const (
-	// Not (yet?) in aws-sdk-go
-	ResourceTypeNatGateway = "nat-gateway"
-	ResourceTypeAddress    = "elastic-ip"
-)
-
 func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
 	panic("Not implemented")
 }
@@ -70,13 +64,13 @@ func (m *MockEC2) addTag(resourceId string, tag *ec2.Tag) {
 	} else if strings.HasPrefix(resourceId, "igw-") {
 		resourceType = ec2.ResourceTypeInternetGateway
 	} else if strings.HasPrefix(resourceId, "nat-") {
-		resourceType = ResourceTypeNatGateway
+		resourceType = ec2.ResourceTypeNatgateway
 	} else if strings.HasPrefix(resourceId, "dopt-") {
 		resourceType = ec2.ResourceTypeDhcpOptions
 	} else if strings.HasPrefix(resourceId, "rtb-") {
 		resourceType = ec2.ResourceTypeRouteTable
 	} else if strings.HasPrefix(resourceId, "eipalloc-") {
-		resourceType = ResourceTypeAddress
+		resourceType = ec2.ResourceTypeElasticIp
 	} else {
 		klog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
 	}

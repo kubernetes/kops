@@ -128,7 +128,7 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 				}
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ResourceTypeNatGateway, *ngw.NatGatewayId, filter)
+					match = m.hasTag(ec2.ResourceTypeNatgateway, *ngw.NatGatewayId, filter)
 				} else {
 					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 				}
@@ -145,7 +145,7 @@ func (m *MockEC2) DescribeNatGateways(request *ec2.DescribeNatGatewaysInput) (*e
 		}
 
 		copy := *ngw
-		copy.Tags = m.getTags(ResourceTypeNatGateway, id)
+		copy.Tags = m.getTags(ec2.ResourceTypeNatgateway, id)
 		ngws = append(ngws, &copy)
 	}
 
