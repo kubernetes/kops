@@ -181,9 +181,10 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		klog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
 
 		request := &ec2.CreateSubnetInput{
-			CidrBlock:        e.CIDR,
-			AvailabilityZone: e.AvailabilityZone,
-			VpcId:            e.VPC.ID,
+			CidrBlock:         e.CIDR,
+			AvailabilityZone:  e.AvailabilityZone,
+			VpcId:             e.VPC.ID,
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeSubnet, e.Tags),
 		}
 
 		response, err := t.Cloud.EC2().CreateSubnet(request)

@@ -149,8 +149,13 @@ func TestSecurityGroupCreate(t *testing.T) {
 			Description: s("Description"),
 			GroupId:     sg1.ID,
 			VpcId:       vpc1.ID,
-			Tags:        []*ec2.Tag{},
-			GroupName:   s("sg1"),
+			Tags: []*ec2.Tag{
+				{
+					Key:   aws.String("Name"),
+					Value: aws.String("sg1"),
+				},
+			},
+			GroupName: s("sg1"),
 		}
 		actual := c.SecurityGroups[*sg1.ID]
 		if !reflect.DeepEqual(actual, expected) {
