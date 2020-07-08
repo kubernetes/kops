@@ -30,9 +30,12 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeNatgateway)
+
 	ngw := &ec2.NatGateway{
 		NatGatewayId: s(id),
 		SubnetId:     request.SubnetId,
+		Tags:         tags,
 	}
 
 	if request.AllocationId != nil {
@@ -56,6 +59,8 @@ func (m *MockEC2) CreateNatGatewayWithId(request *ec2.CreateNatGatewayInput, id 
 		m.NatGateways = make(map[string]*ec2.NatGateway)
 	}
 	m.NatGateways[*ngw.NatGatewayId] = ngw
+
+	m.addTags(id, tags...)
 
 	copy := *ngw
 
