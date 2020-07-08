@@ -17,6 +17,7 @@ limitations under the License.
 package awsup
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -64,4 +65,43 @@ func TestFindRegion(t *testing.T) {
 		}
 	}
 
+}
+
+func TestEC2TagSpecification(t *testing.T) {
+	cases := []struct {
+		Name          string
+		ResourceType  string
+		Tags          map[string]string
+		Specification []*ec2.TagSpecification
+	}{
+		{
+			Name: "No tags",
+		},
+		{
+			Name:         "simple tag",
+			ResourceType: "vpc",
+			Tags: map[string]string{
+				"foo": "bar",
+			},
+			Specification: []*ec2.TagSpecification{
+				{
+					ResourceType: aws.String("vpc"),
+					Tags: []*ec2.Tag{
+						{
+							Key:   aws.String("foo"),
+							Value: aws.String("bar"),
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.Name, func(t *testing.T) {
+			s := EC2TagSpecification(tc.ResourceType, tc.Tags)
+			if !reflect.DeepEqual(s, tc.Specification) {
+				t.Fatalf("tag specifications did not match: %q vs %q", s, tc.Specification)
+			}
+		})
+	}
 }
