@@ -306,6 +306,13 @@
             ]
           }
         ],
+        "tags": {
+          "KubernetesCluster": "minimal-json.example.com",
+          "Name": "master-us-test-1a.masters.minimal-json.example.com",
+          "k8s.io/role/master": "1",
+          "kops.k8s.io/instancegroup": "master-us-test-1a",
+          "kubernetes.io/cluster/minimal-json.example.com": "owned"
+        },
         "tag_specifications": [
           {
             "resource_type": "instance",
@@ -364,6 +371,13 @@
             ]
           }
         ],
+        "tags": {
+          "KubernetesCluster": "minimal-json.example.com",
+          "Name": "nodes.minimal-json.example.com",
+          "k8s.io/role/node": "1",
+          "kops.k8s.io/instancegroup": "nodes",
+          "kubernetes.io/cluster/minimal-json.example.com": "owned"
+        },
         "tag_specifications": [
           {
             "resource_type": "instance",

@@ -438,6 +438,13 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
       "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "master-us-test-1a.masters.mixedinstances.example.com"
+    "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.mixedinstances.example.com_user_data")
 }
 
@@ -488,6 +495,13 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
       "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
       "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "master-us-test-1b.masters.mixedinstances.example.com"
+    "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1b.masters.mixedinstances.example.com_user_data")
 }
@@ -540,6 +554,13 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
       "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "master-us-test-1c.masters.mixedinstances.example.com"
+    "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1c"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1c.masters.mixedinstances.example.com_user_data")
 }
 
@@ -586,6 +607,13 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
       "kops.k8s.io/instancegroup"                        = "nodes"
       "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "nodes.mixedinstances.example.com"
+    "k8s.io/role/node"                                 = "1"
+    "kops.k8s.io/instancegroup"                        = "nodes"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.mixedinstances.example.com_user_data")
 }

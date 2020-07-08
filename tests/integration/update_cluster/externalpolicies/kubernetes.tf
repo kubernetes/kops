@@ -353,6 +353,15 @@ resource "aws_launch_template" "master-us-test-1a-masters-externalpolicies-examp
       "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "master-us-test-1a.masters.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "k8s.io/role/master"                                 = "1"
+    "kops.k8s.io/instancegroup"                          = "master-us-test-1a"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.externalpolicies.example.com_user_data")
 }
 
@@ -403,6 +412,15 @@ resource "aws_launch_template" "nodes-externalpolicies-example-com" {
       "kops.k8s.io/instancegroup"                          = "nodes"
       "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                                  = "externalpolicies.example.com"
+    "Name"                                               = "nodes.externalpolicies.example.com"
+    "Owner"                                              = "John Doe"
+    "foo/bar"                                            = "fib+baz"
+    "k8s.io/role/node"                                   = "1"
+    "kops.k8s.io/instancegroup"                          = "nodes"
+    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.externalpolicies.example.com_user_data")
 }

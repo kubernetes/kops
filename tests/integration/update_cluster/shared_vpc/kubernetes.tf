@@ -264,6 +264,13 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedvpc-example-com"
       "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "master-us-test-1a.masters.sharedvpc.example.com"
+    "k8s.io/role/master"                          = "1"
+    "kops.k8s.io/instancegroup"                   = "master-us-test-1a"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.sharedvpc.example.com_user_data")
 }
 
@@ -310,6 +317,13 @@ resource "aws_launch_template" "nodes-sharedvpc-example-com" {
       "kops.k8s.io/instancegroup"                   = "nodes"
       "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                           = "sharedvpc.example.com"
+    "Name"                                        = "nodes.sharedvpc.example.com"
+    "k8s.io/role/node"                            = "1"
+    "kops.k8s.io/instancegroup"                   = "nodes"
+    "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.sharedvpc.example.com_user_data")
 }
