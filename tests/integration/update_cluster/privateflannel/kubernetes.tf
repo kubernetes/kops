@@ -430,6 +430,13 @@ resource "aws_launch_template" "bastion-privateflannel-example-com" {
       "kubernetes.io/cluster/privateflannel.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "bastion.privateflannel.example.com"
+    "k8s.io/role/bastion"                              = "1"
+    "kops.k8s.io/instancegroup"                        = "bastion"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
 }
 
 resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example-com" {
@@ -480,6 +487,13 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example
       "kubernetes.io/cluster/privateflannel.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "master-us-test-1a.masters.privateflannel.example.com"
+    "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privateflannel.example.com_user_data")
 }
 
@@ -526,6 +540,13 @@ resource "aws_launch_template" "nodes-privateflannel-example-com" {
       "kops.k8s.io/instancegroup"                        = "nodes"
       "kubernetes.io/cluster/privateflannel.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "nodes.privateflannel.example.com"
+    "k8s.io/role/node"                                 = "1"
+    "kops.k8s.io/instancegroup"                        = "nodes"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.privateflannel.example.com_user_data")
 }
