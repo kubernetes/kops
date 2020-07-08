@@ -32,10 +32,9 @@ func (m *MockEC2) AddRouteTable(rt *ec2.RouteTable) {
 	if m.RouteTables == nil {
 		m.RouteTables = make(map[string]*ec2.RouteTable)
 	}
-	for _, tag := range rt.Tags {
-		m.addTag(*rt.RouteTableId, tag)
-	}
-	rt.Tags = nil
+
+	m.addTags(*rt.RouteTableId, rt.Tags...)
+
 	m.RouteTables[*rt.RouteTableId] = rt
 }
 
