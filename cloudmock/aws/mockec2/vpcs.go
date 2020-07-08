@@ -55,11 +55,14 @@ func (m *MockEC2) CreateVpcWithId(request *ec2.CreateVpcInput, id string) (*ec2.
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeVpc)
+
 	vpc := &vpcInfo{
 		main: ec2.Vpc{
 			VpcId:     s(id),
 			CidrBlock: request.CidrBlock,
 			IsDefault: aws.Bool(false),
+			Tags:      tags,
 		},
 		attributes: ec2.DescribeVpcAttributeOutput{
 			EnableDnsHostnames: &ec2.AttributeBooleanValue{Value: aws.Bool(true)},
@@ -71,6 +74,8 @@ func (m *MockEC2) CreateVpcWithId(request *ec2.CreateVpcInput, id string) (*ec2.
 		m.Vpcs = make(map[string]*vpcInfo)
 	}
 	m.Vpcs[id] = vpc
+
+	m.addTags(id, tags...)
 
 	response := &ec2.CreateVpcOutput{
 		Vpc: &vpc.main,
