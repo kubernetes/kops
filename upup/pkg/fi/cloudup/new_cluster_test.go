@@ -19,6 +19,9 @@ package cloudup
 import (
 	"reflect"
 	"testing"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func TestRemoveSharedPrefix(t *testing.T) {
@@ -53,4 +56,21 @@ func TestRemoveSharedPrefix(t *testing.T) {
 			t.Errorf("unexpected result from %q.  actual=%v, expected=%v", g.Input, actual, g.Output)
 		}
 	}
+}
+
+func TestCreateEtcdCluster(t *testing.T) {
+	masters := []*kops.InstanceGroup{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "master1",
+			},
+		},
+	}
+	name := "foo"
+	etcd := createEtcdCluster(name, masters, false, "")
+
+	if name != etcd.Name {
+		t.Errorf("Expected: %v, Got: %v", name, etcd.Name)
+	}
+
 }
