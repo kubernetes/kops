@@ -1015,7 +1015,7 @@ func addCiliumNetwork(cluster *api.Cluster) {
 	} else {
 		k8sVersion, err := version.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 		if err == nil {
-			if version.IsKubernetesGTE("1.12", *k8sVersion) {
+			if version.IsKubernetesGTE("1.18", *k8sVersion) {
 				nodeport = true
 			}
 		} else {
