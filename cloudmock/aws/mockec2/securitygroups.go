@@ -41,17 +41,22 @@ func (m *MockEC2) CreateSecurityGroup(request *ec2.CreateSecurityGroupInput) (*e
 
 	m.securityGroupNumber++
 	n := m.securityGroupNumber
+	id := fmt.Sprintf("sg-%d", n)
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSecurityGroup)
 
 	sg := &ec2.SecurityGroup{
 		GroupName:   request.GroupName,
-		GroupId:     s(fmt.Sprintf("sg-%d", n)),
+		GroupId:     s(id),
 		VpcId:       request.VpcId,
 		Description: request.Description,
+		Tags:        tags,
 	}
 	if m.SecurityGroups == nil {
 		m.SecurityGroups = make(map[string]*ec2.SecurityGroup)
 	}
 	m.SecurityGroups[*sg.GroupId] = sg
+
+	m.addTags(id, tags...)
 
 	response := &ec2.CreateSecurityGroupOutput{
 		GroupId: sg.GroupId,

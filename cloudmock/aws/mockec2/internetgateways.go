@@ -66,15 +66,19 @@ func (m *MockEC2) CreateInternetGateway(request *ec2.CreateInternetGatewayInput)
 	klog.Infof("CreateInternetGateway: %v", request)
 
 	id := m.allocateId("igw")
+	tags := tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeInternetGateway)
 
 	igw := &ec2.InternetGateway{
 		InternetGatewayId: s(id),
+		Tags:              tags,
 	}
 
 	if m.InternetGateways == nil {
 		m.InternetGateways = make(map[string]*ec2.InternetGateway)
 	}
 	m.InternetGateways[id] = igw
+
+	m.addTags(id, tags...)
 
 	response := &ec2.CreateInternetGatewayOutput{
 		InternetGateway: igw,

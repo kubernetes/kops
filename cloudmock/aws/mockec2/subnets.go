@@ -81,6 +81,8 @@ func (m *MockEC2) CreateSubnetWithId(request *ec2.CreateSubnetInput, id string) 
 		main: *subnet,
 	}
 
+	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeSubnet)...)
+
 	response := &ec2.CreateSubnetOutput{
 		Subnet: subnet,
 	}
