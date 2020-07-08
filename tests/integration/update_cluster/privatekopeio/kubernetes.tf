@@ -436,6 +436,13 @@ resource "aws_launch_template" "bastion-privatekopeio-example-com" {
       "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "bastion.privatekopeio.example.com"
+    "k8s.io/role/bastion"                             = "1"
+    "kops.k8s.io/instancegroup"                       = "bastion"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
 }
 
 resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-com" {
@@ -486,6 +493,13 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-
       "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "master-us-test-1a.masters.privatekopeio.example.com"
+    "k8s.io/role/master"                              = "1"
+    "kops.k8s.io/instancegroup"                       = "master-us-test-1a"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privatekopeio.example.com_user_data")
 }
 
@@ -532,6 +546,13 @@ resource "aws_launch_template" "nodes-privatekopeio-example-com" {
       "kops.k8s.io/instancegroup"                       = "nodes"
       "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                               = "privatekopeio.example.com"
+    "Name"                                            = "nodes.privatekopeio.example.com"
+    "k8s.io/role/node"                                = "1"
+    "kops.k8s.io/instancegroup"                       = "nodes"
+    "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.privatekopeio.example.com_user_data")
 }

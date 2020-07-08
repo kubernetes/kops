@@ -285,6 +285,14 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
     security_groups             = ["${aws_security_group.masters-minimal-tf11-example-com.id}"]
   }
 
+  tags = {
+    KubernetesCluster                                = "minimal-tf11.example.com"
+    Name                                             = "master-us-test-1a.masters.minimal-tf11.example.com"
+    "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
+    "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+  }
+
   tag_specifications = {
     resource_type = "instance"
 
@@ -341,6 +349,14 @@ resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
     associate_public_ip_address = true
     delete_on_termination       = true
     security_groups             = ["${aws_security_group.nodes-minimal-tf11-example-com.id}"]
+  }
+
+  tags = {
+    KubernetesCluster                                = "minimal-tf11.example.com"
+    Name                                             = "nodes.minimal-tf11.example.com"
+    "k8s.io/role/node"                               = "1"
+    "kops.k8s.io/instancegroup"                      = "nodes"
+    "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
   }
 
   tag_specifications = {

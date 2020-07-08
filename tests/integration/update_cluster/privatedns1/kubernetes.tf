@@ -476,6 +476,15 @@ resource "aws_launch_template" "bastion-privatedns1-example-com" {
       "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "bastion.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "k8s.io/role/bastion"                           = "1"
+    "kops.k8s.io/instancegroup"                     = "bastion"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-com" {
@@ -530,6 +539,15 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
       "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "master-us-test-1a.masters.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "k8s.io/role/master"                            = "1"
+    "kops.k8s.io/instancegroup"                     = "master-us-test-1a"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privatedns1.example.com_user_data")
 }
 
@@ -580,6 +598,15 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
       "kops.k8s.io/instancegroup"                     = "nodes"
       "kubernetes.io/cluster/privatedns1.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "nodes.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "k8s.io/role/node"                              = "1"
+    "kops.k8s.io/instancegroup"                     = "nodes"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.privatedns1.example.com_user_data")
 }
