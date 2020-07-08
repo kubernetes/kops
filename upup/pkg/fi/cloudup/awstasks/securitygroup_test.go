@@ -149,6 +149,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 			Description: s("Description"),
 			GroupId:     sg1.ID,
 			VpcId:       vpc1.ID,
+			Tags:        []*ec2.Tag{},
 			GroupName:   s("sg1"),
 		}
 		actual := c.SecurityGroups[*sg1.ID]

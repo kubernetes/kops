@@ -155,6 +155,7 @@ func TestSharedVolume(t *testing.T) {
 	sharedVolume, err := c.CreateVolume(&ec2.CreateVolumeInput{
 		TagSpecifications: []*ec2.TagSpecification{
 			{
+				ResourceType: aws.String(ec2.ResourceTypeVolume),
 				Tags: []*ec2.Tag{
 					{
 						Key:   aws.String(ownershipTagKey),
