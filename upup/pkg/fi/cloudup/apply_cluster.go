@@ -1073,20 +1073,12 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(u, hash))
 		}
 
-		// TODO: Update Kops version in integration tests to 1.19 after 1.19 is released
-		// Integration tests fake the Kops version to 1.15 and will not be able to find NodeUp
-		kopsVersion, err := semver.Parse(kopsbase.Version)
-		if err != nil && !strings.HasPrefix(kopsbase.Version, "pull-") {
-			return fmt.Errorf("unable to parse kubernetes version %q", kopsbase.Version)
+		asset, err := NodeUpAsset(assetBuilder, arch)
+		if err != nil {
+			return err
 		}
-		if arch != architectures.ArchitectureArm64 || err != nil || kopsVersion.NE(semver.MustParse("1.15.0")) {
-			asset, err := NodeUpAsset(assetBuilder, arch)
-			if err != nil {
-				return err
-			}
-			c.NodeUpSource[arch] = strings.Join(asset.Locations, ",")
-			c.NodeUpHash[arch] = asset.Hash.Hex()
-		}
+		c.NodeUpSource[arch] = strings.Join(asset.Locations, ",")
+		c.NodeUpHash[arch] = asset.Hash.Hex()
 	}
 
 	// Explicitly add the protokube image,
