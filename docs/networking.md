@@ -31,7 +31,7 @@ The following table provides the support status for various networking providers
 
 Kops maintainers have no bias over the CNI provider that you run, we only aim to be flexible and provide a working setup of the CNIs.
 
-We do recommended something other than `kubenet` for production clusters due to `kubenet`'s limitations, as explained [below][#kubenet-default].
+We do recommended something other than `kubenet` for production clusters due to `kubenet`'s limitations, as explained [below](#kubenet-default).
 
 ### Specifying network option for cluster creation
 
