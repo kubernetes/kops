@@ -134,6 +134,8 @@ type terraformLaunchTemplate struct {
 	NetworkInterfaces []*terraformLaunchTemplateNetworkInterface `json:"network_interfaces,omitempty" cty:"network_interfaces"`
 	// Placement are the tenancy options
 	Placement []*terraformLaunchTemplatePlacement `json:"placement,omitempty" cty:"placement"`
+	// Tags is a map of tags applied to the launch template itself
+	Tags map[string]string `json:"tags,omitempty" cty:"tags"`
 	// TagSpecifications are the tags to apply to a resource when it is created.
 	TagSpecifications []*terraformLaunchTemplateTagSpecification `json:"tag_specifications,omitempty" cty:"tag_specifications"`
 	// UserData is the user data for the instances
@@ -289,6 +291,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			ResourceType: fi.String("volume"),
 			Tags:         e.Tags,
 		})
+		tf.Tags = e.Tags
 	}
 
 	return target.RenderResource("aws_launch_template", fi.StringValue(e.Name), tf)

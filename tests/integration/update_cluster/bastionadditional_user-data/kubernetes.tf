@@ -430,6 +430,13 @@ resource "aws_launch_template" "bastion-bastionuserdata-example-com" {
       "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "bastion.bastionuserdata.example.com"
+    "k8s.io/role/bastion"                               = "1"
+    "kops.k8s.io/instancegroup"                         = "bastion"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_bastion.bastionuserdata.example.com_user_data")
 }
 
@@ -481,6 +488,13 @@ resource "aws_launch_template" "master-us-test-1a-masters-bastionuserdata-exampl
       "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "master-us-test-1a.masters.bastionuserdata.example.com"
+    "k8s.io/role/master"                                = "1"
+    "kops.k8s.io/instancegroup"                         = "master-us-test-1a"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.bastionuserdata.example.com_user_data")
 }
 
@@ -527,6 +541,13 @@ resource "aws_launch_template" "nodes-bastionuserdata-example-com" {
       "kops.k8s.io/instancegroup"                         = "nodes"
       "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "nodes.bastionuserdata.example.com"
+    "k8s.io/role/node"                                  = "1"
+    "kops.k8s.io/instancegroup"                         = "nodes"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.bastionuserdata.example.com_user_data")
 }
