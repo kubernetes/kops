@@ -126,9 +126,10 @@ func (m *MockEC2) CreateDhcpOptions(request *ec2.CreateDhcpOptionsInput) (*ec2.C
 	}
 
 	n := len(m.DhcpOptions) + 1
+	id := fmt.Sprintf("dopt-%d", n)
 
 	dhcpOptions := &ec2.DhcpOptions{
-		DhcpOptionsId: s(fmt.Sprintf("dopt-%d", n)),
+		DhcpOptionsId: s(id),
 	}
 
 	for _, o := range request.DhcpConfigurations {
@@ -146,6 +147,8 @@ func (m *MockEC2) CreateDhcpOptions(request *ec2.CreateDhcpOptionsInput) (*ec2.C
 		m.DhcpOptions = make(map[string]*ec2.DhcpOptions)
 	}
 	m.DhcpOptions[*dhcpOptions.DhcpOptionsId] = dhcpOptions
+
+	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeDhcpOptions)...)
 
 	copy := *dhcpOptions
 	copy.Tags = m.getTags(ec2.ResourceTypeDhcpOptions, *dhcpOptions.DhcpOptionsId)
