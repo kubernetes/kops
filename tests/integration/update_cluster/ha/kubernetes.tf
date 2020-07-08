@@ -420,6 +420,13 @@ resource "aws_launch_template" "master-us-test-1a-masters-ha-example-com" {
       "kubernetes.io/cluster/ha.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "master-us-test-1a.masters.ha.example.com"
+    "k8s.io/role/master"                   = "1"
+    "kops.k8s.io/instancegroup"            = "master-us-test-1a"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.ha.example.com_user_data")
 }
 
@@ -470,6 +477,13 @@ resource "aws_launch_template" "master-us-test-1b-masters-ha-example-com" {
       "kops.k8s.io/instancegroup"            = "master-us-test-1b"
       "kubernetes.io/cluster/ha.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "master-us-test-1b.masters.ha.example.com"
+    "k8s.io/role/master"                   = "1"
+    "kops.k8s.io/instancegroup"            = "master-us-test-1b"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1b.masters.ha.example.com_user_data")
 }
@@ -522,6 +536,13 @@ resource "aws_launch_template" "master-us-test-1c-masters-ha-example-com" {
       "kubernetes.io/cluster/ha.example.com" = "owned"
     }
   }
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "master-us-test-1c.masters.ha.example.com"
+    "k8s.io/role/master"                   = "1"
+    "kops.k8s.io/instancegroup"            = "master-us-test-1c"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
+  }
   user_data = file("${path.module}/data/aws_launch_template_master-us-test-1c.masters.ha.example.com_user_data")
 }
 
@@ -568,6 +589,13 @@ resource "aws_launch_template" "nodes-ha-example-com" {
       "kops.k8s.io/instancegroup"            = "nodes"
       "kubernetes.io/cluster/ha.example.com" = "owned"
     }
+  }
+  tags = {
+    "KubernetesCluster"                    = "ha.example.com"
+    "Name"                                 = "nodes.ha.example.com"
+    "k8s.io/role/node"                     = "1"
+    "kops.k8s.io/instancegroup"            = "nodes"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
   user_data = file("${path.module}/data/aws_launch_template_nodes.ha.example.com_user_data")
 }

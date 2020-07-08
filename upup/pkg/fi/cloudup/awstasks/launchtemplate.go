@@ -64,7 +64,7 @@ type LaunchTemplate struct {
 	SpotPrice string
 	// SpotDurationInMinutes is set for requesting spot blocks
 	SpotDurationInMinutes *int64
-	// Tags are the keypairs to apply to the instance and volume on launch.
+	// Tags are the keypairs to apply to the instance and volume on launch as well as the launch template itself.
 	Tags map[string]string
 	// Tenancy. Can be either default or dedicated.
 	Tenancy *string
