@@ -141,7 +141,9 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 	if a == nil {
 		klog.V(2).Infof("Creating DHCPOptions with Name:%q", *e.Name)
 
-		request := &ec2.CreateDhcpOptionsInput{}
+		request := &ec2.CreateDhcpOptionsInput{
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeDhcpOptions, e.Tags),
+		}
 		if e.DomainNameServers != nil {
 			o := &ec2.NewDhcpConfiguration{
 				Key:    aws.String("domain-name-servers"),
