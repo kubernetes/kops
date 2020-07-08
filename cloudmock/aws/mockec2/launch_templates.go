@@ -23,6 +23,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
+type launchTemplateInfo struct {
+	data *ec2.ResponseLaunchTemplateData
+	name *string
+}
+
 // DescribeLaunchTemplates mocks the describing the launch templates
 func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesInput) (*ec2.DescribeLaunchTemplatesOutput, error) {
 	m.mutex.Lock()
@@ -34,9 +39,9 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 		return o, nil
 	}
 
-	for name := range m.LaunchTemplates {
+	for _, ltInfo := range m.LaunchTemplates {
 		o.LaunchTemplates = append(o.LaunchTemplates, &ec2.LaunchTemplate{
-			LaunchTemplateName: aws.String(name),
+			LaunchTemplateName: ltInfo.name,
 		})
 	}
 
@@ -54,16 +59,17 @@ func (m *MockEC2) DescribeLaunchTemplateVersions(request *ec2.DescribeLaunchTemp
 		return o, nil
 	}
 
-	lt, found := m.LaunchTemplates[aws.StringValue(request.LaunchTemplateName)]
-	if !found {
-		return o, nil
+	for id, ltInfo := range m.LaunchTemplates {
+		if aws.StringValue(ltInfo.name) != aws.StringValue(request.LaunchTemplateName) {
+			continue
+		}
+		o.LaunchTemplateVersions = append(o.LaunchTemplateVersions, &ec2.LaunchTemplateVersion{
+			DefaultVersion:     aws.Bool(true),
+			LaunchTemplateId:   aws.String(id),
+			LaunchTemplateData: ltInfo.data,
+			LaunchTemplateName: request.LaunchTemplateName,
+		})
 	}
-	o.LaunchTemplateVersions = append(o.LaunchTemplateVersions, &ec2.LaunchTemplateVersion{
-		DefaultVersion:     aws.Bool(true),
-		LaunchTemplateData: lt,
-		LaunchTemplateName: request.LaunchTemplateName,
-	})
-
 	return o, nil
 }
 
@@ -72,11 +78,15 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	m.launchTemplateNumber++
+	n := m.launchTemplateNumber
+	id := fmt.Sprintf("lt-%d", n)
+
 	if m.LaunchTemplates == nil {
-		m.LaunchTemplates = make(map[string]*ec2.ResponseLaunchTemplateData)
+		m.LaunchTemplates = make(map[string]*launchTemplateInfo)
 	}
-	if m.LaunchTemplates[aws.StringValue(request.LaunchTemplateName)] != nil {
-		return nil, fmt.Errorf("duplicate LaunchTemplateName %s", aws.StringValue(request.LaunchTemplateName))
+	if m.LaunchTemplates[id] != nil {
+		return nil, fmt.Errorf("duplicate LaunchTemplateName %s", id)
 	}
 	resp := &ec2.ResponseLaunchTemplateData{
 		DisableApiTermination: request.LaunchTemplateData.DisableApiTermination,
@@ -88,9 +98,10 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 		SecurityGroups:        request.LaunchTemplateData.SecurityGroups,
 		UserData:              request.LaunchTemplateData.UserData,
 	}
-	m.LaunchTemplates[aws.StringValue(request.LaunchTemplateName)] = resp
-
-	// @GOD DAMN AWS request vs response .. fu@@@@@ .. so much typing!!#@#@#
+	m.LaunchTemplates[id] = &launchTemplateInfo{
+		data: resp,
+		name: request.LaunchTemplateName,
+	}
 
 	if request.LaunchTemplateData.Monitoring != nil {
 		resp.Monitoring = &ec2.LaunchTemplatesMonitoring{Enabled: request.LaunchTemplateData.Monitoring.Enabled}
@@ -169,6 +180,8 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 			})
 		}
 	}
+	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeLaunchTemplate)...)
+
 	return &ec2.CreateLaunchTemplateOutput{}, nil
 }
 
@@ -182,7 +195,11 @@ func (m *MockEC2) DeleteLaunchTemplate(request *ec2.DeleteLaunchTemplateInput) (
 	if m.LaunchTemplates == nil {
 		return o, nil
 	}
-	delete(m.LaunchTemplates, aws.StringValue(request.LaunchTemplateName))
+	for id, lt := range m.LaunchTemplates {
+		if aws.StringValue(lt.name) == aws.StringValue(request.LaunchTemplateName) {
+			delete(m.LaunchTemplates, id)
+		}
+	}
 
 	return o, nil
 }

@@ -55,7 +55,8 @@ type MockEC2 struct {
 
 	InternetGateways map[string]*ec2.InternetGateway
 
-	LaunchTemplates map[string]*ec2.ResponseLaunchTemplateData
+	launchTemplateNumber int
+	LaunchTemplates      map[string]*launchTemplateInfo
 
 	NatGateways map[string]*ec2.NatGateway
 
@@ -96,6 +97,9 @@ func (m *MockEC2) All() map[string]interface{} {
 		all[id] = o
 	}
 	for id, o := range m.InternetGateways {
+		all[id] = o
+	}
+	for id, o := range m.LaunchTemplates {
 		all[id] = o
 	}
 	for id, o := range m.NatGateways {
