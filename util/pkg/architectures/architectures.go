@@ -18,6 +18,7 @@ package architectures
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 
 	"k8s.io/klog"
@@ -42,6 +43,12 @@ func FindArchitecture() (Architecture, error) {
 }
 
 func GetSupprted() []Architecture {
+	// Force support for AMD64 only if env var is set
+	arch := os.Getenv("KOPS_ARCH_AMD64")
+	if arch != "" {
+		return []Architecture{ArchitectureAmd64}
+	}
+
 	return []Architecture{
 		ArchitectureAmd64,
 		ArchitectureArm64,
