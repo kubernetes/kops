@@ -437,7 +437,7 @@ resource "aws_launch_template" "bastion-bastionuserdata-example-com" {
     "kops.k8s.io/instancegroup"                         = "bastion"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_bastion.bastionuserdata.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_bastion.bastionuserdata.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1a-masters-bastionuserdata-example-com" {
@@ -495,7 +495,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-bastionuserdata-exampl
     "kops.k8s.io/instancegroup"                         = "master-us-test-1a"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.bastionuserdata.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.bastionuserdata.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-bastionuserdata-example-com" {
@@ -549,7 +549,7 @@ resource "aws_launch_template" "nodes-bastionuserdata-example-com" {
     "kops.k8s.io/instancegroup"                         = "nodes"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.bastionuserdata.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.bastionuserdata.example.com_user_data")
 }
 
 resource "aws_nat_gateway" "us-test-1a-bastionuserdata-example-com" {

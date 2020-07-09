@@ -24,6 +24,13 @@ import (
 	"k8s.io/klog"
 )
 
+type fileFn string
+
+const (
+	fileFnFile       fileFn = "file"
+	fileFnFileBase64 fileFn = "filebase64"
+)
+
 // Literal represents a literal in terraform syntax
 type Literal struct {
 	// Value is only used in terraform 0.11 and represents the literal string to use as a value.
@@ -37,8 +44,10 @@ type Literal struct {
 	ResourceName string `cty:"resource_name"`
 	// ResourceProp represents the property of a resource in a literal reference
 	ResourceProp string `cty:"resource_prop"`
-	// FilePath represents the path for a file() reference
+	// FilePath represents the path for a file reference
 	FilePath string `cty:"file_path"`
+	// FileFn represents the function used to reference the file
+	FileFn fileFn `cty:"file_fn"`
 }
 
 var _ json.Marshaler = &Literal{}
@@ -48,13 +57,16 @@ func (l *Literal) MarshalJSON() ([]byte, error) {
 }
 
 func LiteralFileExpression(modulePath string, base64 bool) *Literal {
-	fn := "file"
+	fn := fileFnFile
 	if base64 {
-		fn = "filebase64"
+		fn = fileFnFileBase64
 	}
 	return &Literal{
-		Value:    fmt.Sprintf("${%v(%q)}", fn, modulePath),
+		// file() is hardcoded here because this field is
+		// used for Terraform 0.11 which does not have filebase64()
+		Value:    fmt.Sprintf("${file(%q)}", modulePath),
 		FilePath: modulePath,
+		FileFn:   fn,
 	}
 }
 

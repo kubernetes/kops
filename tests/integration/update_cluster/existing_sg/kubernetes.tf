@@ -469,7 +469,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
     "kops.k8s.io/instancegroup"                    = "master-us-test-1a"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.existingsg.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.existingsg.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com" {
@@ -527,7 +527,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
     "kops.k8s.io/instancegroup"                    = "master-us-test-1b"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1b.masters.existingsg.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1b.masters.existingsg.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com" {
@@ -585,7 +585,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
     "kops.k8s.io/instancegroup"                    = "master-us-test-1c"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1c.masters.existingsg.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1c.masters.existingsg.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-existingsg-example-com" {
@@ -639,7 +639,7 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
     "kops.k8s.io/instancegroup"                    = "nodes"
     "kubernetes.io/cluster/existingsg.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.existingsg.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.existingsg.example.com_user_data")
 }
 
 resource "aws_route53_record" "api-existingsg-example-com" {
