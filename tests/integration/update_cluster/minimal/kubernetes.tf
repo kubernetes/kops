@@ -285,7 +285,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-minimal-example-com" {
@@ -339,7 +339,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
     "kops.k8s.io/instancegroup"                 = "nodes"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.minimal.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.minimal.example.com_user_data")
 }
 
 resource "aws_route_table_association" "us-test-1a-minimal-example-com" {

@@ -466,7 +466,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-subnet-
     "kops.k8s.io/instancegroup"                               = "master-us-test-1a"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.private-shared-subnet.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.private-shared-subnet.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-private-shared-subnet-example-com" {
@@ -520,7 +520,7 @@ resource "aws_launch_template" "nodes-private-shared-subnet-example-com" {
     "kops.k8s.io/instancegroup"                               = "nodes"
     "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.private-shared-subnet.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.private-shared-subnet.example.com_user_data")
 }
 
 resource "aws_route53_record" "api-private-shared-subnet-example-com" {

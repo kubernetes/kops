@@ -106,7 +106,7 @@ func writeLiteral(body *hclwrite.Body, key string, literal *Literal) {
 		tokens := hclwrite.Tokens{
 			{
 				Type:  hclsyntax.TokenIdent,
-				Bytes: []byte(fmt.Sprintf("file(%q)", literal.FilePath)),
+				Bytes: []byte(fmt.Sprintf("%v(%q)", literal.FileFn, literal.FilePath)),
 			},
 		}
 		body.SetAttributeRaw(key, tokens)
@@ -193,7 +193,7 @@ func writeMap(body *hclwrite.Body, key string, values map[string]cty.Value) {
 			// For maps of literals we currently only support file references
 			// If we ever need to support a map of strings to resource property references that can be added here
 			if literal.FilePath != "" {
-				tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(fmt.Sprintf("file(%q)", literal.FilePath))})
+				tokens = append(tokens, &hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte(fmt.Sprintf("%v(%q)", literal.FileFn, literal.FilePath))})
 			} else if literal.Value != "" {
 				tokens = append(tokens, []*hclwrite.Token{
 					{Type: hclsyntax.TokenOQuote, Bytes: []byte{'"'}, SpacesBefore: 1},

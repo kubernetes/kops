@@ -427,7 +427,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-ha-example-com" {
     "kops.k8s.io/instancegroup"            = "master-us-test-1a"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.ha.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.ha.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1b-masters-ha-example-com" {
@@ -485,7 +485,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-ha-example-com" {
     "kops.k8s.io/instancegroup"            = "master-us-test-1b"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1b.masters.ha.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1b.masters.ha.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1c-masters-ha-example-com" {
@@ -543,7 +543,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-ha-example-com" {
     "kops.k8s.io/instancegroup"            = "master-us-test-1c"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1c.masters.ha.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1c.masters.ha.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-ha-example-com" {
@@ -597,7 +597,7 @@ resource "aws_launch_template" "nodes-ha-example-com" {
     "kops.k8s.io/instancegroup"            = "nodes"
     "kubernetes.io/cluster/ha.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.ha.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.ha.example.com_user_data")
 }
 
 resource "aws_route_table_association" "us-test-1a-ha-example-com" {

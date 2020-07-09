@@ -300,7 +300,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-externallb-example-com
     "kops.k8s.io/instancegroup"                    = "master-us-test-1a"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.externallb.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.externallb.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-externallb-example-com" {
@@ -354,7 +354,7 @@ resource "aws_launch_template" "nodes-externallb-example-com" {
     "kops.k8s.io/instancegroup"                    = "nodes"
     "kubernetes.io/cluster/externallb.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.externallb.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.externallb.example.com_user_data")
 }
 
 resource "aws_route_table_association" "us-test-1a-externallb-example-com" {
