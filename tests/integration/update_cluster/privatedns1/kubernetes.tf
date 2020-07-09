@@ -426,6 +426,13 @@ resource "aws_internet_gateway" "privatedns1-example-com" {
 resource "aws_key_pair" "kubernetes-privatedns1-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
   key_name   = "kubernetes.privatedns1.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57"
   public_key = file("${path.module}/data/aws_key_pair_kubernetes.privatedns1.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_launch_template" "bastion-privatedns1-example-com" {
