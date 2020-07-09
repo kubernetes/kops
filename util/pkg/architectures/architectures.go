@@ -43,10 +43,14 @@ func FindArchitecture() (Architecture, error) {
 }
 
 func GetSupported() []Architecture {
-	// Force support for AMD64 only if env var is set
-	arch := os.Getenv("KOPS_ARCH_AMD64")
-	if arch != "" {
+	// Kubernetes PR builds only generate AMD64 binaries at the moment
+	// Force support only for AMD64 or ARM64
+	arch := os.Getenv("KOPS_ARCH")
+	switch arch {
+	case "amd64":
 		return []Architecture{ArchitectureAmd64}
+	case "arm64":
+		return []Architecture{ArchitectureArm64}
 	}
 
 	return []Architecture{
