@@ -251,7 +251,7 @@ func validateCloudLabels(labels map[string]string, fldPath *field.Path) field.Er
 	allErrs := field.ErrorList{}
 	for tag, val := range labels {
 		if tag == "" {
-			allErrs = append(allErrs, field.Invalid(fldPath, tag, "cloud labels cannot be cannot be empty strings"))
+			allErrs = append(allErrs, field.Invalid(fldPath, tag, "cloud labels cannot be empty strings"))
 		}
 		if val == "" {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child(tag), val, "cloud labels cannot have empty values"))
