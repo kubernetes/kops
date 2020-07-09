@@ -1316,11 +1316,12 @@ data:
         }
         kubernetes {{ KubeDNS.Domain }}. in-addr.arpa ip6.arpa {
           pods insecure
-          upstream
           fallthrough in-addr.arpa ip6.arpa
         }
         prometheus :9153
-        forward . /etc/resolv.conf
+        forward . /etc/resolv.conf {
+          max_concurrent 1000
+        }
         loop
         cache 30
         loadbalance
@@ -1419,7 +1420,7 @@ spec:
           beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns:1.6.7{{ end }}
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns:1.7.0{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -1657,11 +1658,12 @@ data:
         }
         kubernetes {{ KubeDNS.Domain }}. in-addr.arpa ip6.arpa {
           pods insecure
-          upstream
           fallthrough in-addr.arpa ip6.arpa
         }
         prometheus :9153
-        forward . /etc/resolv.conf
+        forward . /etc/resolv.conf {
+          max_concurrent 1000
+        }
         loop
         cache 30
         loadbalance
@@ -1701,7 +1703,7 @@ spec:
           beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns:1.6.7{{ end }}
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}k8s.gcr.io/coredns:1.7.0{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
