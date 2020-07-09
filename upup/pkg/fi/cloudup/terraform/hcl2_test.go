@@ -134,6 +134,7 @@ func TestWriteLiteral(t *testing.T) {
 			name: "file",
 			literal: &Literal{
 				FilePath: "${path.module}/foo",
+				FileFn:   fileFnFile,
 			},
 			expected: `foo = file("${path.module}/foo")`,
 		},
@@ -273,13 +274,13 @@ func TestWriteMapLiterals(t *testing.T) {
 		{
 			name: "literal values",
 			values: map[string]Literal{
-				"key1": {FilePath: "${module.path}/path/to/value1"},
-				"key2": {FilePath: "${module.path}/path/to/value2"},
+				"key1": {FilePath: "${module.path}/path/to/value1", FileFn: fileFnFile},
+				"key2": {FilePath: "${module.path}/path/to/value2", FileFn: fileFnFileBase64},
 			},
 			expected: `
 metadata = {
   "key1" = file("${module.path}/path/to/value1")
-  "key2" = file("${module.path}/path/to/value2")
+  "key2" = filebase64("${module.path}/path/to/value2")
 }
 			`,
 		},
