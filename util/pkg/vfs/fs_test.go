@@ -25,8 +25,17 @@ import (
 )
 
 func TestCreateFile(t *testing.T) {
-	var TempDir, _ = ioutil.TempDir("", "test")
-	defer os.RemoveAll(TempDir)
+	TempDir, err := ioutil.TempDir("", "test")
+	if err != nil {
+		t.Fatalf("error creating temp dir: %v", err)
+	}
+	defer func() {
+		err := os.RemoveAll(TempDir)
+		if err != nil {
+			t.Errorf("failed to remove temp dir %q: %v", TempDir, err)
+		}
+	}()
+
 	tests := []struct {
 		path string
 		data []byte
@@ -62,8 +71,17 @@ func TestCreateFile(t *testing.T) {
 }
 
 func TestWriteTo(t *testing.T) {
-	var TempDir, _ = ioutil.TempDir("", "test")
-	defer os.RemoveAll(TempDir)
+	TempDir, err := ioutil.TempDir("", "test")
+	if err != nil {
+		t.Fatalf("error creating temp dir: %v", err)
+	}
+	defer func() {
+		err := os.RemoveAll(TempDir)
+		if err != nil {
+			t.Errorf("failed to remove temp dir %q: %v", TempDir, err)
+		}
+	}()
+
 	tests := []struct {
 		path string
 		data []byte
