@@ -674,15 +674,15 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 func DeleteKeypair(cloud fi.Cloud, r *resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
-	name := r.Name
+	id := r.ID
 
-	klog.V(2).Infof("Deleting EC2 Keypair %q", name)
+	klog.V(2).Infof("Deleting EC2 Keypair %q", id)
 	request := &ec2.DeleteKeyPairInput{
-		KeyName: &name,
+		KeyPairId: &id,
 	}
 	_, err := c.EC2().DeleteKeyPair(request)
 	if err != nil {
-		return fmt.Errorf("error deleting KeyPair %q: %v", name, err)
+		return fmt.Errorf("error deleting KeyPair %q: %v", id, err)
 	}
 	return nil
 }
@@ -711,12 +711,13 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 
 	for _, keypair := range response.KeyPairs {
 		name := aws.StringValue(keypair.KeyName)
+		id := aws.StringValue(keypair.KeyPairId)
 		if name != keypairName && !strings.HasPrefix(name, keypairName+"-") {
 			continue
 		}
 		resourceTracker := &resources.Resource{
 			Name:    name,
-			ID:      name,
+			ID:      id,
 			Type:    "keypair",
 			Deleter: DeleteKeypair,
 		}
