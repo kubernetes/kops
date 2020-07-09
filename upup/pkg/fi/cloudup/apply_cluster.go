@@ -1008,7 +1008,7 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 	c.Assets = make(map[architectures.Architecture][]*MirroredAsset)
 	c.NodeUpSource = make(map[architectures.Architecture]string)
 	c.NodeUpHash = make(map[architectures.Architecture]string)
-	for _, arch := range architectures.GetSupprted() {
+	for _, arch := range architectures.GetSupported() {
 		c.Assets[arch] = []*MirroredAsset{}
 		c.NodeUpSource[arch] = ""
 		c.NodeUpHash[arch] = ""
@@ -1177,7 +1177,7 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
 			}
 
-			for _, arch := range architectures.GetSupprted() {
+			for _, arch := range architectures.GetSupported() {
 				for _, component := range components {
 					baseURL, err := url.Parse(cluster.Spec.KubernetesVersion)
 					if err != nil {
@@ -1203,7 +1203,7 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 		// `docker load` our images when using a KOPS_BASE_URL, so we
 		// don't need to push/pull from a registry
 		if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
-			for _, arch := range architectures.GetSupprted() {
+			for _, arch := range architectures.GetSupported() {
 				// TODO: Build multi-arch Kops images
 				if arch != architectures.ArchitectureAmd64 {
 					continue
@@ -1287,7 +1287,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Tags = append(config.Tags, n.nodeUpTags...)
 
 	config.Assets = make(map[architectures.Architecture][]string)
-	for _, arch := range architectures.GetSupprted() {
+	for _, arch := range architectures.GetSupported() {
 		config.Assets[arch] = []string{}
 		for _, a := range n.Assets[arch] {
 			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
