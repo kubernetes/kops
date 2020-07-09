@@ -445,7 +445,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
     "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.mixedinstances.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.mixedinstances.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example-com" {
@@ -503,7 +503,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
     "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1b.masters.mixedinstances.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1b.masters.mixedinstances.example.com_user_data")
 }
 
 resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example-com" {
@@ -561,7 +561,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
     "kops.k8s.io/instancegroup"                        = "master-us-test-1c"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1c.masters.mixedinstances.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1c.masters.mixedinstances.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-mixedinstances-example-com" {
@@ -615,7 +615,7 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
     "kops.k8s.io/instancegroup"                        = "nodes"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.mixedinstances.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.mixedinstances.example.com_user_data")
 }
 
 resource "aws_route_table_association" "us-test-1a-mixedinstances-example-com" {
