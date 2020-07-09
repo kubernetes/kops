@@ -285,6 +285,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 		"kube-controller-manager": mustParsePrivateKey(dummyKey),
 		"kube-proxy":              mustParsePrivateKey(dummyKey),
 		"kube-scheduler":          mustParsePrivateKey(dummyKey),
+		"master":                  mustParsePrivateKey(dummyKey),
 	}
 	keystore.certs = map[string]*pki.Certificate{
 		"ca":                      mustParseCertificate(dummyCertificate),
