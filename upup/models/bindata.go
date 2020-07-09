@@ -274,6 +274,91 @@ func cloudupResourcesAddonsAuthenticationAwsK8s110YamlTemplate() (*asset, error)
 }
 
 var _cloudupResourcesAddonsAuthenticationAwsK8s112YamlTemplate = []byte(`---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: iamidentitymappings.iamauthenticator.k8s.aws
+spec:
+  group: iamauthenticator.k8s.aws
+  version: v1alpha1
+  scope: Cluster
+  names:
+    plural: iamidentitymappings
+    singular: iamidentitymapping
+    kind: IAMIdentityMapping
+    categories:
+    - all
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          required:
+          - arn
+          - username
+          properties:
+            arn:
+              type: string
+            username:
+              type: string
+            groups:
+              type: array
+              items:
+                type: string
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: aws-iam-authenticator
+rules:
+- apiGroups:
+  - iamauthenticator.k8s.aws
+  resources:
+  - iamidentitymappings
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - iamauthenticator.k8s.aws
+  resources:
+  - iamidentitymappings/status
+  verbs:
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+  - patch
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-iam-authenticator
+  namespace: kube-system
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: aws-iam-authenticator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-iam-authenticator
+subjects:
+- kind: ServiceAccount
+  name: aws-iam-authenticator
+  namespace: kube-system
+
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -294,6 +379,8 @@ spec:
       labels:
         k8s-app: aws-iam-authenticator
     spec:
+      serviceAccountName: aws-iam-authenticator
+
       # run on the host network (don't depend on CNI)
       hostNetwork: true
 
@@ -313,13 +400,12 @@ spec:
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
       - name: aws-iam-authenticator
-        image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.4.0" }}
+        image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.1-debian-stretch" }}
         args:
         - server
         - --config=/etc/aws-iam-authenticator/config.yaml
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
-
         resources:
           requests:
             memory: {{ or .Authentication.Aws.MemoryRequest "20Mi" }}
@@ -327,7 +413,6 @@ spec:
           limits:
             memory: {{ or .Authentication.Aws.MemoryLimit "20Mi" }}
             cpu: {{ or .Authentication.Aws.CPULimit "100m" }}
-
         volumeMounts:
         - name: config
           mountPath: /etc/aws-iam-authenticator/
@@ -335,7 +420,6 @@ spec:
           mountPath: /var/aws-iam-authenticator/
         - name: output
           mountPath: /etc/kubernetes/aws-iam-authenticator/
-
       volumes:
       - name: config
         configMap:
