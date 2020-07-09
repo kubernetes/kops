@@ -25,7 +25,10 @@ import (
 )
 
 func TestCreateFile(t *testing.T) {
-	var TempDir, _ = ioutil.TempDir("", "test")
+	TempDir, err := ioutil.TempDir("", "test")
+	if err != nil {
+		t.Fatalf("error creating temp dir: %v", err)
+	}
 	defer os.RemoveAll(TempDir)
 	tests := []struct {
 		path string
@@ -62,7 +65,10 @@ func TestCreateFile(t *testing.T) {
 }
 
 func TestWriteTo(t *testing.T) {
-	var TempDir, _ = ioutil.TempDir("", "test")
+	TempDir, err := ioutil.TempDir("", "test")
+	if err != nil {
+		t.Fatalf("error creating temp dir: %v", err)
+	}
 	defer os.RemoveAll(TempDir)
 	tests := []struct {
 		path string
