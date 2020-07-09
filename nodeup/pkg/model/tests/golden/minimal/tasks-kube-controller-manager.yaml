@@ -24,7 +24,7 @@ contents: |
       - --kubeconfig=/var/lib/kube-controller-manager/kubeconfig
       - --leader-elect=true
       - --root-ca-file=/srv/kubernetes/ca.crt
-      - --service-account-private-key-file=/srv/kubernetes/server.key
+      - --service-account-private-key-file=/srv/kubernetes/service-account.key
       - --use-service-account-credentials=true
       - --v=2
       - --logtostderr=false
