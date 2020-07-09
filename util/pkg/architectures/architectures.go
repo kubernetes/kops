@@ -42,7 +42,7 @@ func FindArchitecture() (Architecture, error) {
 	}
 }
 
-func GetSupprted() []Architecture {
+func GetSupported() []Architecture {
 	// Force support for AMD64 only if env var is set
 	arch := os.Getenv("KOPS_ARCH_AMD64")
 	if arch != "" {
