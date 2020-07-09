@@ -25,7 +25,10 @@ import (
 )
 
 func TestWriteFile(t *testing.T) {
-	var TempDir, _ = ioutil.TempDir("", "fitest")
+	TempDir, err := ioutil.TempDir("", "fitest")
+	if err != nil {
+		t.Fatalf("error creating temp dir: %v", err)
+	}
 	defer os.RemoveAll(TempDir)
 	tests := []struct {
 		path     string
