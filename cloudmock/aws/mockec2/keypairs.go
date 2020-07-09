@@ -50,18 +50,25 @@ func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKey
 		return nil, err
 	}
 
+	n := len(m.KeyPairs) + 1
+	id := fmt.Sprintf("key-%d", n)
+
 	kp := &ec2.KeyPairInfo{
 		KeyFingerprint: aws.String(fp),
 		KeyName:        request.KeyName,
+		KeyPairId:      aws.String(id),
 	}
 	if m.KeyPairs == nil {
 		m.KeyPairs = make(map[string]*ec2.KeyPairInfo)
 	}
-	m.KeyPairs[aws.StringValue(request.KeyName)] = kp
+	m.KeyPairs[id] = kp
 	response := &ec2.ImportKeyPairOutput{
 		KeyFingerprint: kp.KeyFingerprint,
 		KeyName:        kp.KeyName,
 	}
+
+	m.addTags(id, tagSpecificationsToTags(request.TagSpecifications, ec2.ResourceTypeKeyPair)...)
+
 	return response, nil
 }
 func (m *MockEC2) CreateKeyPairRequest(*ec2.CreateKeyPairInput) (*request.Request, *ec2.CreateKeyPairOutput) {
@@ -122,6 +129,7 @@ func (m *MockEC2) DescribeKeyPairs(request *ec2.DescribeKeyPairsInput) (*ec2.Des
 		}
 
 		copy := *keypair
+		copy.Tags = m.getTags(ec2.ResourceTypeKeyPair, *copy.KeyPairId)
 		keypairs = append(keypairs, &copy)
 	}
 
@@ -138,12 +146,17 @@ func (m *MockEC2) DeleteKeyPair(request *ec2.DeleteKeyPairInput) (*ec2.DeleteKey
 
 	klog.Infof("DeleteKeyPair: %v", request)
 
-	id := aws.StringValue(request.KeyName)
-	o := m.KeyPairs[id]
-	if o == nil {
-		return nil, fmt.Errorf("KeyPairs %q not found", id)
+	keyID := aws.StringValue(request.KeyPairId)
+	found := false
+	for id, kp := range m.KeyPairs {
+		if aws.StringValue(kp.KeyPairId) == keyID {
+			found = true
+			delete(m.KeyPairs, id)
+		}
 	}
-	delete(m.KeyPairs, id)
+	if !found {
+		return nil, fmt.Errorf("KeyPairs %q not found", keyID)
+	}
 
 	return &ec2.DeleteKeyPairOutput{}, nil
 }
