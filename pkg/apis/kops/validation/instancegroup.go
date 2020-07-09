@@ -119,6 +119,8 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 		allErrs = append(allErrs, awsValidateInstanceGroup(g, cloud.(awsup.AWSCloud))...)
 	}
 
+	allErrs = append(allErrs, validateCloudLabels(g.Spec.CloudLabels, field.NewPath("spec", "cloudLabels"))...)
+
 	return allErrs
 }
 
@@ -240,6 +242,19 @@ func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) field.
 		if err != nil || !strings.HasPrefix(parsedARN.Resource, "instance-profile") {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("profile"), instanceProfileARN,
 				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole"))
+		}
+	}
+	return allErrs
+}
+
+func validateCloudLabels(labels map[string]string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	for tag, val := range labels {
+		if tag == "" {
+			allErrs = append(allErrs, field.Invalid(fldPath, tag, "cloud labels cannot be cannot be empty strings"))
+		}
+		if val == "" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child(tag), val, "cloud labels cannot have empty values"))
 		}
 	}
 	return allErrs

@@ -221,3 +221,19 @@ func TestValidBootDevice(t *testing.T) {
 		testErrors(t, g.volumeType, errs, g.expected)
 	}
 }
+
+func TestValidateCloudLabels(t *testing.T) {
+	labels := map[string]string{
+		"nonEmptyLabel": "value",
+		"emptyValue":    "",
+		"":              "emptyTag",
+	}
+
+	expected := []string{
+		"Invalid value::spec.cloudLabels.emptyValue",
+		"Invalid value::spec.cloudLabels",
+	}
+	errs := validateCloudLabels(labels, field.NewPath("spec", "cloudLabels"))
+	testErrors(t, "cloudLabels", errs, expected)
+
+}
