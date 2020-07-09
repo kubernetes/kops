@@ -1018,7 +1018,10 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 		if b.Cluster.Spec.Authentication.Aws != nil {
 			key := "authentication.aws"
-			version := "0.4.0-kops.2"
+			versions := map[string]string{
+				"k8s-1.10": "0.4.0-kops.2",
+				"k8s-1.12": "0.5.1-kops.1",
+			}
 
 			{
 				location := key + "/k8s-1.10.yaml"
@@ -1026,7 +1029,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 					Name:              fi.String(key),
-					Version:           fi.String(version),
+					Version:           fi.String(versions[id]),
 					Selector:          authenticationSelector,
 					Manifest:          fi.String(location),
 					KubernetesVersion: ">=1.10.0 <1.12.0",
@@ -1040,7 +1043,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 					Name:              fi.String(key),
-					Version:           fi.String(version),
+					Version:           fi.String(versions[id]),
 					Selector:          authenticationSelector,
 					Manifest:          fi.String(location),
 					KubernetesVersion: ">=1.12.0",
