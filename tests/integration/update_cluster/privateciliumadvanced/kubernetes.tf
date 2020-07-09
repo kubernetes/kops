@@ -508,7 +508,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
     "kops.k8s.io/instancegroup"                               = "master-us-test-1a"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privateciliumadvanced.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privateciliumadvanced.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-privateciliumadvanced-example-com" {
@@ -562,7 +562,7 @@ resource "aws_launch_template" "nodes-privateciliumadvanced-example-com" {
     "kops.k8s.io/instancegroup"                               = "nodes"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.privateciliumadvanced.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privateciliumadvanced.example.com_user_data")
 }
 
 resource "aws_nat_gateway" "us-test-1a-privateciliumadvanced-example-com" {

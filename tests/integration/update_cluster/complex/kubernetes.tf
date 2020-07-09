@@ -346,7 +346,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
     "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.complex.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.complex.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-complex-example-com" {
@@ -413,7 +413,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     "kops.k8s.io/instancegroup"                 = "nodes"
     "kubernetes.io/cluster/complex.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.complex.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.complex.example.com_user_data")
 }
 
 resource "aws_route53_record" "api-complex-example-com" {
