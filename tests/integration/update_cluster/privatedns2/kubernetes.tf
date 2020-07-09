@@ -480,7 +480,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns2-example-co
     "kops.k8s.io/instancegroup"                     = "master-us-test-1a"
     "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privatedns2.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privatedns2.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-privatedns2-example-com" {
@@ -534,7 +534,7 @@ resource "aws_launch_template" "nodes-privatedns2-example-com" {
     "kops.k8s.io/instancegroup"                     = "nodes"
     "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.privatedns2.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privatedns2.example.com_user_data")
 }
 
 resource "aws_nat_gateway" "us-test-1a-privatedns2-example-com" {

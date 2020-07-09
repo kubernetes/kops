@@ -271,7 +271,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedsubnet-example-c
     "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
     "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_master-us-test-1a.masters.sharedsubnet.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.sharedsubnet.example.com_user_data")
 }
 
 resource "aws_launch_template" "nodes-sharedsubnet-example-com" {
@@ -325,7 +325,7 @@ resource "aws_launch_template" "nodes-sharedsubnet-example-com" {
     "kops.k8s.io/instancegroup"                      = "nodes"
     "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
-  user_data = file("${path.module}/data/aws_launch_template_nodes.sharedsubnet.example.com_user_data")
+  user_data = filebase64("${path.module}/data/aws_launch_template_nodes.sharedsubnet.example.com_user_data")
 }
 
 resource "aws_security_group_rule" "all-master-to-master" {
