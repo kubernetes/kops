@@ -71,6 +71,8 @@ func (m *MockEC2) addTags(resourceId string, tags ...*ec2.Tag) {
 		resourceType = ec2.ResourceTypeElasticIp
 	} else if strings.HasPrefix(resourceId, "lt-") {
 		resourceType = ec2.ResourceTypeLaunchTemplate
+	} else if strings.HasPrefix(resourceId, "key-") {
+		resourceType = ec2.ResourceTypeKeyPair
 	} else {
 		klog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
 	}
