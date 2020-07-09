@@ -1063,6 +1063,11 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 				}
 			} else {
 				klog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
+				hashString := os.Getenv("LYFT_VPC_DOWNLOAD_HASH")
+				hash, err = hashing.FromString(hashString)
+				if err != nil {
+					return fmt.Errorf("invalid hash supplied for lyft: %q", hashString)
+				}
 			}
 
 			u, err := url.Parse(urlString)
