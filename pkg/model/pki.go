@@ -171,6 +171,18 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(aggregatorCA)
 	}
 
+	{
+		serviceAccount := &fitasks.Keypair{
+			// We only need the private key, but it's easier to create a certificate as well.
+			// The strange name is because Kops prior to 1.19 used the api-server TLS key for this.
+			Name:      fi.String("master"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=service-account",
+			Type:      "ca",
+		}
+		c.AddTask(serviceAccount)
+	}
+
 	// @TODO this is VERY presumptuous, i'm going on the basis we can make it configurable in the future.
 	// But I'm conscious not to do too much work on bootstrap tokens as it might overlay further down the
 	// line with the machines api
