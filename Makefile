@@ -48,7 +48,7 @@ GCFLAGS?=
 # This can be removed when we upgrade to go 1.14
 export GOFLAGS=-mod=vendor
 
-UPLOAD_CMD=$(KOPS_ROOT)/hack/upload
+UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
 
 # Unexport environment variables that can affect tests and are not used in builds
 unexport AWS_ACCESS_KEY_ID AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CNI_VERSION_URL DNS_IGNORE_NS_CHECK DNSCONTROLLER_IMAGE DO_ACCESS_TOKEN GOOGLE_APPLICATION_CREDENTIALS
