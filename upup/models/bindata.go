@@ -7347,14 +7347,7 @@ spec:
           name: kube-router-cfg
       hostNetwork: true
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-        operator: Exists
-      - effect: NoSchedule
-        key: node.kubernetes.io/not-ready
-        operator: Exists
+      - operator: Exists
       volumes:
       - name: lib-modules
         hostPath:
@@ -7537,10 +7530,7 @@ spec:
       hostNetwork: true
       serviceAccountName: kube-router
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - effect: NoSchedule
-        operator: Exists
+      - operator: Exists
       volumes:
       - hostPath:
           path: /lib/modules

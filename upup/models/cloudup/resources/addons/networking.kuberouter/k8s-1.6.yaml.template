@@ -90,10 +90,7 @@ spec:
       hostNetwork: true
       serviceAccountName: kube-router
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - effect: NoSchedule
-        operator: Exists
+      - operator: Exists
       volumes:
       - hostPath:
           path: /lib/modules
