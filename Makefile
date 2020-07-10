@@ -154,11 +154,11 @@ kops-gobindata: ${BINDATA_TARGETS}
 
 .PHONY: update-bindata
 update-bindata:
-	GO111MODULE=on go run github.com/go-bindata/go-bindata/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	GO111MODULE=on go run github.com/go-bindata/go-bindata/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models upup/models/cloudup/...
 	GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v ${BINDATA_TARGETS}
 	gofmt -w -s ${BINDATA_TARGETS}
 
-UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
+UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/cloudup)
 upup/models/bindata.go: ${UPUP_MODELS_BINDATA_SOURCES}
 	make update-bindata
 
