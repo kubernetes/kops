@@ -145,6 +145,7 @@ clean:
 .PHONY: kops
 kops: ${KOPS}
 
+.PHONY: ${KOPS}
 ${KOPS}: ${BINDATA_TARGETS}
 	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
@@ -195,10 +196,12 @@ hooks: # Install Git hooks
 test: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v ./...
 
+.PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
+.PHONY: ${DIST}/linux/arm64/nodeup
 ${DIST}/linux/arm64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=arm64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
@@ -228,18 +231,22 @@ nodeup-dist: crossbuild-nodeup-in-docker
 	tools/sha256 ${DIST}/linux/amd64/nodeup ${DIST}/linux/amd64/nodeup.sha256
 	tools/sha256 ${DIST}/linux/arm64/nodeup ${DIST}/linux/arm64/nodeup.sha256
 
+.PHONY: ${DIST}/darwin/amd64/kops
 ${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=darwin GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
+.PHONY: ${DIST}/linux/amd64/kops
 ${DIST}/linux/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
+.PHONY: ${DIST}/linux/arm64/kops
 ${DIST}/linux/arm64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=arm64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
+.PHONY: ${DIST}/windows/amd64/kops.exe
 ${DIST}/windows/amd64/kops.exe: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} -a ${EXTRA_BUILDFLAGS} -o $@ ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
@@ -427,6 +434,7 @@ protokube-push: protokube-image
 .PHONY: nodeup
 nodeup: ${NODEUP}
 
+.PHONY: ${NODEUP}
 ${NODEUP}: ${BINDATA_TARGETS}
 	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
 
