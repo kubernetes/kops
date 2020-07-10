@@ -413,6 +413,12 @@ spec:
           limits:
             memory: {{ or .Authentication.Aws.MemoryLimit "20Mi" }}
             cpu: {{ or .Authentication.Aws.CPULimit "100m" }}
+        livenessProbe:
+          httpGet:
+            host: 127.0.0.1
+            path: /healthz
+            port: 21362
+            scheme: HTTPS
         volumeMounts:
         - name: config
           mountPath: /etc/aws-iam-authenticator/
