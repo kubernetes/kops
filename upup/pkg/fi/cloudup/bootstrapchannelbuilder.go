@@ -841,8 +841,8 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 	if b.Cluster.Spec.Networking.Kuberouter != nil {
 		key := "networking.kuberouter"
 		versions := map[string]string{
-			"k8s-1.6":  "0.3.1-kops.3",
-			"k8s-1.12": "1.0.0-kops.1",
+			"k8s-1.6":  "0.3.1-kops.4",
+			"k8s-1.12": "1.0.0-kops.2",
 		}
 
 		{
