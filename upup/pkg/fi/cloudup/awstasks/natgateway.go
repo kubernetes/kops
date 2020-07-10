@@ -307,7 +307,9 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 
 		klog.V(2).Infof("Creating Nat Gateway")
 
-		request := &ec2.CreateNatGatewayInput{}
+		request := &ec2.CreateNatGatewayInput{
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeNatgateway, e.Tags),
+		}
 		request.AllocationId = e.ElasticIP.ID
 		request.SubnetId = e.Subnet.ID
 		response, err := t.Cloud.EC2().CreateNatGateway(request)
