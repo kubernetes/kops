@@ -4,10 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "calico.go",
-        "canal.go",
         "cilium.go",
         "common.go",
-        "flannel.go",
         "kube_router.go",
         "lyft.go",
     ],
@@ -16,7 +14,6 @@ go_library(
     deps = [
         "//nodeup/pkg/model:go_default_library",
         "//pkg/apis/kops:go_default_library",
-        "//pkg/systemd:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
