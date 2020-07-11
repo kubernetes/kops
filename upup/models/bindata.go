@@ -1,6 +1,5 @@
 // Code generated for package models by go-bindata DO NOT EDIT. (@generated)
 // sources:
-// upup/models/BUILD.bazel
 // upup/models/cloudup/resources/addons/OWNERS
 // upup/models/cloudup/resources/addons/authentication.aws/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template
@@ -114,57 +113,6 @@ func (fi bindataFileInfo) IsDir() bool {
 // Sys return file is sys mode
 func (fi bindataFileInfo) Sys() interface{} {
 	return nil
-}
-
-var _buildBazel = []byte(`load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "go_default_library",
-    srcs = [
-        "bindata.go",
-        "vfs.go",
-    ],
-    importpath = "k8s.io/kops/upup/models",
-    visibility = ["//visibility:public"],
-    deps = ["//util/pkg/vfs:go_default_library"],
-)
-
-genrule(
-    name = "bindata",
-    srcs = glob(
-        [
-            "cloudup/**",
-            "nodeup/**",
-        ],
-    ),
-    outs = ["bindata.go"],
-    cmd = """
-$(location //vendor/github.com/go-bindata/go-bindata/go-bindata:go-bindata) \
-  -o "$(OUTS)" -pkg models \
-  -nometadata \
-  -nocompress \
-  -prefix $$(pwd) \
-  -prefix upup/models $(SRCS)
-""",
-    tools = [
-        "//vendor/github.com/go-bindata/go-bindata/go-bindata",
-    ],
-)
-`)
-
-func buildBazelBytes() ([]byte, error) {
-	return _buildBazel, nil
-}
-
-func buildBazel() (*asset, error) {
-	bytes, err := buildBazelBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "BUILD.bazel", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
 }
 
 var _cloudupResourcesAddonsOwners = []byte(`# See the OWNERS docs at https://go.k8s.io/owners
@@ -19794,8 +19742,7 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"BUILD.bazel":                     buildBazel,
-	"cloudup/resources/addons/OWNERS": cloudupResourcesAddonsOwners,
+	"cloudup/resources/addons/OWNERS":                                                                     cloudupResourcesAddonsOwners,
 	"cloudup/resources/addons/authentication.aws/k8s-1.10.yaml.template":                                  cloudupResourcesAddonsAuthenticationAwsK8s110YamlTemplate,
 	"cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsAuthenticationAwsK8s112YamlTemplate,
 	"cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml":                                       cloudupResourcesAddonsAuthenticationKopeIoK8s112Yaml,
@@ -19900,7 +19847,6 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"BUILD.bazel": {buildBazel, map[string]*bintree{}},
 	"cloudup": {nil, map[string]*bintree{
 		"resources": {nil, map[string]*bintree{
 			"addons": {nil, map[string]*bintree{
