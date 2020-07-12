@@ -26,7 +26,8 @@ theme:
     accent: 'green'
 plugins:
   - search
-
+  - macros:
+      module_name: mkdocs_macros
 extra_css: [extra.css]
 
 nav:
