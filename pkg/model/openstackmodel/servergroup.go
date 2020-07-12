@@ -174,7 +174,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 					instanceTask.FloatingIP = t
 				}
 			default:
-				if !b.UsesSSHBastion() {
+				if b.Cluster.Spec.Topology.Nodes == "public" {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,
