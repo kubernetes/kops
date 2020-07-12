@@ -115,32 +115,36 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// We create a CA keypair to enable secure communication
 		c.AddTask(&fitasks.Keypair{
-			Name:    fi.String("etcd-manager-ca-" + etcdCluster.Name),
-			Subject: "cn=etcd-manager-ca-" + etcdCluster.Name,
-			Type:    "ca",
+			Name:      fi.String("etcd-manager-ca-" + etcdCluster.Name),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=etcd-manager-ca-" + etcdCluster.Name,
+			Type:      "ca",
 		})
 
 		// We create a CA for etcd peers and a separate one for clients
 		c.AddTask(&fitasks.Keypair{
-			Name:    fi.String("etcd-peers-ca-" + etcdCluster.Name),
-			Subject: "cn=etcd-peers-ca-" + etcdCluster.Name,
-			Type:    "ca",
+			Name:      fi.String("etcd-peers-ca-" + etcdCluster.Name),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=etcd-peers-ca-" + etcdCluster.Name,
+			Type:      "ca",
 		})
 
 		// Because API server can only have a single client-cert, we need to share a client CA
 		if err := c.EnsureTask(&fitasks.Keypair{
-			Name:    fi.String("etcd-clients-ca"),
-			Subject: "cn=etcd-clients-ca",
-			Type:    "ca",
+			Name:      fi.String("etcd-clients-ca"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=etcd-clients-ca",
+			Type:      "ca",
 		}); err != nil {
 			return err
 		}
 
 		if etcdCluster.Name == "cilium" {
 			c.AddTask(&fitasks.Keypair{
-				Name:    fi.String("etcd-clients-ca-cilium"),
-				Subject: "cn=etcd-clients-ca-cilium",
-				Type:    "ca",
+				Name:      fi.String("etcd-clients-ca-cilium"),
+				Lifecycle: b.Lifecycle,
+				Subject:   "cn=etcd-clients-ca-cilium",
+				Type:      "ca",
 			})
 		}
 	}
