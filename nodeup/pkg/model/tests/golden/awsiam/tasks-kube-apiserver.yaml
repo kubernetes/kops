@@ -62,6 +62,7 @@ contents: |
       - --requestheader-group-headers=X-Remote-Group
       - --requestheader-username-headers=X-Remote-User
       - --secure-port=443
+      - --service-account-key-file=/srv/kubernetes/service-account.key
       - --service-cluster-ip-range=100.64.0.0/13
       - --storage-backend=etcd3
       - --tls-cert-file=/srv/kubernetes/server.crt

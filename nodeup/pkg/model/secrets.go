@@ -128,6 +128,10 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	if err := b.BuildPrivateKeyTask(c, "master", "service-account.key"); err != nil {
+		return err
+	}
+
 	// Support for basic auth was deprecated 1.16 and removed in 1.19
 	// https://github.com/kubernetes/kubernetes/pull/89069
 	if b.IsKubernetesLT("1.19") && b.SecretStore != nil {
