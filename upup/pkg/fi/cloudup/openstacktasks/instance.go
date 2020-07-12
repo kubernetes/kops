@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -45,6 +46,7 @@ type Instance struct {
 	Metadata         map[string]string
 	AvailabilityZone *string
 	SecurityGroups   []string
+	FloatingIP       *FloatingIP
 
 	Lifecycle    *fi.Lifecycle
 	ForAPIServer bool
@@ -62,6 +64,9 @@ func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			deps = append(deps, task)
 		}
 		if _, ok := task.(*Port); ok {
+			deps = append(deps, task)
+		}
+		if _, ok := task.(*FloatingIP); ok {
 			deps = append(deps, task)
 		}
 	}
@@ -109,7 +114,8 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if e == nil || e.Name == nil {
 		return nil, nil
 	}
-	serverPage, err := servers.List(c.Cloud.(openstack.OpenstackCloud).ComputeClient(), servers.ListOpts{
+	client := c.Cloud.(openstack.OpenstackCloud).ComputeClient()
+	serverPage, err := servers.List(client, servers.ListOpts{
 		Name: fmt.Sprintf("^%s$", fi.StringValue(e.Name)),
 	}).AllPages()
 	if err != nil {
@@ -160,7 +166,11 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 }
 
 func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
-	return a == nil, nil
+	if a == nil {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
@@ -214,12 +224,29 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 		e.ID = fi.String(v.ID)
 		e.ServerGroup.Members = append(e.ServerGroup.Members, fi.StringValue(e.ID))
 
+		if e.FloatingIP != nil {
+			err = associateFloatingIP(t, e)
+		}
+		if err != nil {
+			return err
+		}
+
 		klog.V(2).Infof("Creating a new Openstack instance, id=%s", v.ID)
 
-		return nil
 	}
 
-	klog.V(2).Infof("Openstack task Instance::RenderOpenstack did nothing")
+	return nil
+}
+
+func associateFloatingIP(t *openstack.OpenstackAPITarget, e *Instance) error {
+	cloud := t.Cloud.(openstack.OpenstackCloud)
+
+	err := cloud.AssociateFloatingIPToInstance(fi.StringValue(e.ID), floatingips.AssociateOpts{
+		FloatingIP: fi.StringValue(e.FloatingIP.IP),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to associated floating IP to instance %s: %v", *e.Name, err)
+	}
 	return nil
 }
 
@@ -269,4 +296,16 @@ func bootFromVolume(m map[string]string) bool {
 	default:
 		return false
 	}
+}
+
+func (e *Instance) findServerFloatingIP(context *fi.Context, cloud openstack.OpenstackCloud) (*string, error) {
+	ips, err := cloud.ListServerFloatingIPs(fi.StringValue(e.ID))
+	if err != nil {
+		return nil, err
+	}
+	// assumes that we do have only one interface and 0-1 floatingip in server, the setup that kops does
+	if len(ips) > 0 {
+		return ips[0], nil
+	}
+	return nil, nil
 }
