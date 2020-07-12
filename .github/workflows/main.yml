@@ -41,10 +41,10 @@ jobs:
       with:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
-    - name: make nodeup examples test
+    - name: make kops examples test
       working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
       run: |
-        make nodeup examples test
+        make kops examples test
 
   verify:
     runs-on: ubuntu-20.04
