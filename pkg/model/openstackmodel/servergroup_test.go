@@ -224,6 +224,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 							Region: "region",
 						},
 					},
+					Topology: &kops.TopologySpec{
+						Nodes: "private",
+					},
 				},
 			},
 			instanceGroups: []*kops.InstanceGroup{
