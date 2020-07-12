@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
@@ -33,8 +32,8 @@ import (
 type FloatingIP struct {
 	Name         *string
 	ID           *string
-	Server       *Instance
 	LB           *LB
+	IP           *string
 	Lifecycle    *fi.Lifecycle
 	ForAPIServer bool
 }
@@ -71,27 +70,12 @@ func findL3Floating(cloud openstack.OpenstackCloud, opts l3floatingip.ListOpts) 
 	return result, nil
 }
 
-func (e *FloatingIP) findServerFloatingIP(context *fi.Context, cloud openstack.OpenstackCloud) (*string, error) {
-	ips, err := cloud.ListServerFloatingIPs(fi.StringValue(e.Server.ID))
-	if err != nil {
-		return nil, err
-	}
-	// assumes that we do have only one interface and 0-1 floatingip in server, the setup that kops does
-	if len(ips) > 0 {
-		return ips[0], nil
-	}
-	return nil, nil
-}
-
 func (e *FloatingIP) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
 func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 	if e.ID == nil {
-		if e.Server != nil && e.Server.ID == nil {
-			return nil, nil
-		}
 		if e.LB != nil && e.LB.ID == nil {
 			return nil, nil
 		}
@@ -110,12 +94,6 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 			return &fips[0].FloatingIP, nil
 		}
 		return nil, fmt.Errorf("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
-	} else if e.ID == nil && e.Server != nil {
-		floating, err := e.findServerFloatingIP(context, cloud)
-		if err != nil {
-			return nil, fmt.Errorf("Could not find server (\"%s\") floating ip: %v", fi.StringValue(e.Server.ID), err)
-		}
-		return floating, nil
 	}
 
 	fip, err := cloud.GetFloatingIP(fi.StringValue(e.ID))
@@ -129,9 +107,6 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 func (e *FloatingIP) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	for _, task := range tasks {
-		if _, ok := task.(*Instance); ok {
-			deps = append(deps, task)
-		}
 		if _, ok := task.(*LB); ok {
 			deps = append(deps, task)
 		}
@@ -177,34 +152,25 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 		}
 		e.ID = actual.ID
 		return actual, nil
-	} else if e.Server != nil {
-		fips, err := cloud.ListFloatingIPs()
-		if err != nil {
-			return nil, fmt.Errorf("Failed to list floating ip's: %v", err)
-		}
-		if len(fips) == 0 {
-			return nil, nil
-		}
-		var actual *FloatingIP
-		for i, fip := range fips {
-			if fip.InstanceID == fi.StringValue(e.Server.ID) {
-				if actual != nil {
-					return nil, fmt.Errorf("Multiple floating ip's associated to server: %s", fi.StringValue(e.Server.ID))
-				}
-				actual = &FloatingIP{
-					Name:      e.Name,
-					ID:        fi.String(fips[i].ID),
-					Server:    e.Server,
-					Lifecycle: e.Lifecycle,
-				}
-				break
-			}
-		}
-		if actual != nil {
-			e.ID = actual.ID
-		}
-		return actual, nil
 	}
+	fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list layer 3 floating ip's: %v", err)
+	}
+	for _, fip := range fips {
+		if fip.Description == fi.StringValue(e.Name) {
+			actual := &FloatingIP{
+				ID:        fi.String(fips[0].ID),
+				Name:      e.Name,
+				IP:        fi.String(fip.FloatingIP),
+				Lifecycle: e.Lifecycle,
+			}
+			e.ID = actual.ID
+			e.IP = actual.IP
+			return actual, nil
+		}
+	}
+
 	return nil, nil
 }
 
@@ -262,43 +228,18 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 
 			e.ID = fi.String(fip.ID)
 
-		} else if e.Server != nil {
-
-			if err := e.Server.WaitForStatusActive(t); err != nil {
-				return fmt.Errorf("Failed to associate floating IP to instance %s", *e.Name)
-			}
-
-			// recheck is there floatingip already in port
-			// this can happen for instance when recreating bastion host
-			fips, err := cloud.ListFloatingIPs()
-			if err != nil {
-				return fmt.Errorf("Failed to list floating ip's: %v", err)
-			}
-			for _, fip := range fips {
-				if fip.InstanceID == fi.StringValue(e.Server.ID) {
-					e.ID = fi.String(fip.ID)
-					klog.V(2).Infof("Openstack::RenderOpenstack floatingip found after server is active")
-					return nil
-				}
-			}
-
-			fip, err := cloud.CreateFloatingIP(floatingips.CreateOpts{
-				Pool: external.Name,
-			})
-			if err != nil {
-				return fmt.Errorf("Failed to create floating IP: %v", err)
-			}
-			err = cloud.AssociateFloatingIPToInstance(fi.StringValue(e.Server.ID), floatingips.AssociateOpts{
-				FloatingIP: fip.IP,
-			})
-			if err != nil {
-				return fmt.Errorf("Failed to associated floating IP to instance %s: %v", *e.Name, err)
-			}
-
-			e.ID = fi.String(fip.ID)
-
 		} else {
-			return fmt.Errorf("Must specify either Port or Server!")
+
+			fip, err := cloud.CreateL3FloatingIP(l3floatingip.CreateOpts{
+				FloatingNetworkID: external.ID,
+				Description:       fi.StringValue(e.Name),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create floating IP: %v", err)
+			}
+			e.ID = fi.String(fip.ID)
+			e.IP = fi.String(fip.FloatingIP)
+
 		}
 		return nil
 	}
