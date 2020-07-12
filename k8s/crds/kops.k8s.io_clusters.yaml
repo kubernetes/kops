@@ -1571,8 +1571,8 @@ spec:
                       a valid PEM-encoded CA bundle.
                     type: string
                   serviceAccountPrivateKeyFile:
-                    description: ServiceAccountPrivateKeyFile the location for a certificate
-                      for service account signing
+                    description: ServiceAccountPrivateKeyFile is the location of the
+                      private key for service account token signing.
                     type: string
                   terminatedPodGCThreshold:
                     description: TerminatedPodGCThreshold is the number of terminated

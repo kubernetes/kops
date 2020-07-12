@@ -483,7 +483,7 @@ type KubeControllerManagerConfig struct {
 	Master string `json:"master,omitempty" flag:"master"`
 	// LogLevel is the defined logLevel
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
-	// ServiceAccountPrivateKeyFile the location for a certificate for service account signing
+	// ServiceAccountPrivateKeyFile is the location of the private key for service account token signing.
 	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
 	// Image is the docker image to use
 	Image string `json:"image,omitempty"`

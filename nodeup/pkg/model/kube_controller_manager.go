@@ -104,7 +104,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 
 	kcm := b.Cluster.Spec.KubeControllerManager
 	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-	kcm.ServiceAccountPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
+	kcm.ServiceAccountPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "service-account.key")
 
 	flags, err := flagbuilder.BuildFlagsList(kcm)
 	if err != nil {
