@@ -174,8 +174,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		serviceAccount := &fitasks.Keypair{
 			// We only need the private key, but it's easier to create a certificate as well.
-			// The strange name is because Kops prior to 1.19 used the api-server TLS key for this.
-			Name:      fi.String("master"),
+			Name:      fi.String("service-account"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=service-account",
 			Type:      "ca",
