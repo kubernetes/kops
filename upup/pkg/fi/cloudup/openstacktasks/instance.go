@@ -297,15 +297,3 @@ func bootFromVolume(m map[string]string) bool {
 		return false
 	}
 }
-
-func (e *Instance) findServerFloatingIP(context *fi.Context, cloud openstack.OpenstackCloud) (*string, error) {
-	ips, err := cloud.ListServerFloatingIPs(fi.StringValue(e.ID))
-	if err != nil {
-		return nil, err
-	}
-	// assumes that we do have only one interface and 0-1 floatingip in server, the setup that kops does
-	if len(ips) > 0 {
-		return ips[0], nil
-	}
-	return nil, nil
-}
