@@ -23,10 +23,10 @@ jobs:
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
-      - name: make nodeup examples test
+      - name: make all examples test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
         run: |
-          make nodeup examples test
+          make all examples test
 
   build-macos-amd64:
     runs-on: macos-10.15
