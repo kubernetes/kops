@@ -256,6 +256,14 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 
 func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
 	cert, legacyFormat, err := c.findCert(id)
+
+	if os.IsNotExist(err) && id == "service-account" {
+		// The strange name is because Kops prior to 1.19 used the api-server TLS key for this.
+		id = "master"
+		cert, _, err = c.findCert(id)
+		legacyFormat = true
+	}
+
 	if err != nil {
 		return nil, nil, false, err
 	}
