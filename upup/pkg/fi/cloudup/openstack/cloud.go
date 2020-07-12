@@ -83,7 +83,7 @@ var readBackoff = wait.Backoff{
 // writeBackoff is the backoff strategy for openstack write retries.
 var writeBackoff = wait.Backoff{
 	Duration: time.Second,
-	Factor:   1.5,
+	Factor:   2,
 	Jitter:   0.1,
 	Steps:    5,
 }
