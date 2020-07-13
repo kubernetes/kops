@@ -237,10 +237,19 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 			"--net=host",
 			"--pid=host",   // Needed for mounting in a container (when using systemd mounting?)
 			"--privileged", // We execute in the host namespace
-			"--volume /:/rootfs/",
+			"--volume /:/rootfs",
+			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
+		}...)
+
+		// Mount bin dirs from host, required for "k8s.io/utils/mount" and "k8s.io/utils/nsenter"
+		containerRunArgs = append(containerRunArgs, []string{
+			"--volume /bin:/bin:ro",
+			"--volume /lib:/lib:ro",
+			"--volume /lib64:/lib64:ro",
+			"--volume /sbin:/sbin:ro",
+			"--volume /usr/bin:/usr/bin:ro",
 			"--volume /var/run/dbus:/var/run/dbus",
 			"--volume /run/systemd:/run/systemd",
-			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		}...)
 
 		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
@@ -255,7 +264,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		if t.IsMaster {
 			containerRunArgs = append(containerRunArgs, []string{
 				"--volume " + t.KubectlPath() + ":/opt/kops/bin:ro",
-				"--env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kops/bin",
+				"--env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin",
 			}...)
 		}
 
@@ -269,7 +278,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		containerRunArgs = append(containerRunArgs, []string{
 			"--name", "protokube",
 			t.ProtokubeImageName(),
-			"/usr/bin/protokube",
+			"/protokube",
 		}...)
 
 	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
@@ -279,9 +288,18 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 			"--with-ns pid:/proc/1/ns/pid",
 			"--privileged",
 			"--mount type=bind,src=/,dst=/rootfs,options=rbind:rslave",
+			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
+		}...)
+
+		// Mount bin dirs from host, required for "k8s.io/utils/mount" and "k8s.io/utils/nsenter"
+		containerRunArgs = append(containerRunArgs, []string{
+			"--mount type=bind,src=/bin,dst=/bin,options=rbind:ro:rprivate",
+			"--mount type=bind,src=/lib,dst=/lib,options=rbind:ro:rprivate",
+			"--mount type=bind,src=/lib64,dst=/lib64,options=rbind:ro:rprivate",
+			"--mount type=bind,src=/sbin,dst=/sbin,options=rbind:ro:rprivate",
+			"--mount type=bind,src=/usr/bin,dst=/usr/bin,options=rbind:ro:rprivate",
 			"--mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate",
 			"--mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate",
-			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		}...)
 
 		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
@@ -293,7 +311,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		if t.IsMaster {
 			containerRunArgs = append(containerRunArgs, []string{
 				"--mount type=bind,src=" + t.KubectlPath() + ",dst=/opt/kops/bin,options=rbind:ro:rprivate",
-				"--env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kops/bin",
+				"--env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin",
 			}...)
 		}
 
@@ -307,7 +325,7 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		containerRunArgs = append(containerRunArgs, []string{
 			"docker.io/library/" + t.ProtokubeImageName(),
 			"protokube",
-			"/usr/bin/protokube",
+			"/protokube",
 		}...)
 	} else {
 		return "", fmt.Errorf("unable to create protokube run command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)

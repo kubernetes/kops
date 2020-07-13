@@ -47,7 +47,7 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
-  name: nodes
+  name: master-1a
   labels:
     kops.k8s.io/cluster: minimal.example.com
 spec:
@@ -56,6 +56,6 @@ spec:
   machineType: t2.medium
   maxSize: 2
   minSize: 2
-  role: Node
+  role: Master
   subnets:
   - us-test-1a

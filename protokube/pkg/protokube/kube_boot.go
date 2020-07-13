@@ -18,14 +18,11 @@ package protokube
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"path/filepath"
 	"time"
 
 	"k8s.io/klog"
-	utilexec "k8s.io/utils/exec"
-	"k8s.io/utils/nsenter"
 )
 
 var (
@@ -144,14 +141,6 @@ func (k *KubeBoot) syncOnce(ctx context.Context) error {
 		klog.V(4).Infof("protokube management of etcd not enabled; won't scan for volumes")
 	}
 
-	// Ensure kubelet is running. We avoid doing this automatically so
-	// that when kubelet comes up the first time, all volume mounts
-	// and DNS are available, avoiding the scenario where
-	// etcd/apiserver retry too many times and go into backoff.
-	if err := startKubeletService(); err != nil {
-		klog.Warningf("error ensuring kubelet started: %v", err)
-	}
-
 	if k.Master {
 		if k.BootstrapMasterNodeLabels {
 			if err := bootstrapMasterNodeLabels(ctx, k.Kubernetes, k.NodeName); err != nil {
@@ -174,43 +163,6 @@ func (k *KubeBoot) syncOnce(ctx context.Context) error {
 			}
 		}
 	}
-
-	return nil
-}
-
-// startKubeletService is responsible for checking and if not starting the kubelet service
-func startKubeletService() error {
-	// TODO: Check/log status of kubelet
-	// (in particular, we want to avoid kubernetes/kubernetes#40123 )
-	klog.V(2).Infof("ensuring that kubelet systemd service is running")
-
-	// We run systemctl from the hostfs so we don't need systemd in our image
-	// (and we don't risk version skew)
-
-	exec := utilexec.New()
-	if Containerized {
-		e, err := nsenter.NewNsenter(pathFor("/"), utilexec.New())
-		if err != nil {
-			return fmt.Errorf("error building nsenter executor: %v", err)
-		}
-		exec = e
-	}
-
-	systemctlCommand := "systemctl"
-
-	output, err := exec.Command(systemctlCommand, "status", "--no-block", "kubelet").CombinedOutput()
-	klog.V(2).Infof("'systemctl status kubelet' output:\n%s", string(output))
-	if err == nil {
-		klog.V(2).Infof("kubelet systemd service already running")
-		return nil
-	}
-
-	klog.Infof("kubelet systemd service not running. Starting")
-	output, err = exec.Command(systemctlCommand, "start", "--no-block", "kubelet").CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("error starting kubelet: %v\nOutput: %s", err, output)
-	}
-	klog.V(2).Infof("'systemctl start kubelet' output:\n%s", string(output))
 
 	return nil
 }

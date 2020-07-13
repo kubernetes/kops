@@ -279,11 +279,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 		Definition: s(manifestString),
 	}
 
-	// @check if we are a master allow protokube to start kubelet
-	if b.IsMaster {
-		service.Running = fi.Bool(false)
-	}
-
 	service.InitDefaults()
 
 	return service
