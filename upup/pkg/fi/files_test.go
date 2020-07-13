@@ -21,18 +21,22 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"syscall"
 	"testing"
 )
 
 func TestWriteFile(t *testing.T) {
-	TempDir, err := ioutil.TempDir("", "fitest")
+	// Clear the umask so an unusual umask doesn't break our test (for directory mode)
+	syscall.Umask(0)
+
+	tempDir, err := ioutil.TempDir("", "fitest")
 	if err != nil {
 		t.Fatalf("error creating temp dir: %v", err)
 	}
 	defer func() {
-		err := os.RemoveAll(TempDir)
+		err := os.RemoveAll(tempDir)
 		if err != nil {
-			t.Errorf("failed to remove temp dir %q: %v", TempDir, err)
+			t.Errorf("failed to remove temp dir %q: %v", tempDir, err)
 		}
 	}()
 
@@ -43,7 +47,7 @@ func TestWriteFile(t *testing.T) {
 		dirMode  os.FileMode
 	}{
 		{
-			path:     path.Join(TempDir, "SubDir", "test1.tmp"),
+			path:     path.Join(tempDir, "SubDir", "test1.tmp"),
 			data:     []byte("test data\nline 1\r\nline 2"),
 			fileMode: 0644,
 			dirMode:  0755,
