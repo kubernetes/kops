@@ -2,50 +2,19 @@ package(default_visibility = ["//visibility:public"])
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
-    "container_bundle",
     "container_image",
+    "container_bundle",
 )
-load("@package_bundle//file:packages.bzl", "packages")
 
 container_image(
     name = "protokube-image",
-    base = "@debian_hyperkube_base_amd64//image",
-    cmd = ["/usr/bin/protokube"],
-    # Packages needed:
-    # ca-certificates: Needed to talk to EC2 API (in base)
-    # e2fsprogs: Needed to mount / format ext4 filesytems (in base)
-    # systemd: needed to start kubelet
-    # TODO: Replace systemd with direct calls, or chroot into rootfs
-    debs = [
-        packages["cgmanager"],
-        packages["dbus"],
-        packages["libapparmor1"],
-        packages["libcgmanager0"],
-        packages["libcryptsetup4"],
-        packages["libdbus-1-3"],
-        packages["libnih-dbus1"],
-        packages["libnih1"],
-        packages["libpam-systemd"],
-        packages["libprocps6"],
-        packages["libseccomp2"],
-        packages["procps"],
-        packages["systemd-shim"],
-        packages["systemd"],
-    ],
+    base = "@distroless_base//image",
+    cmd = ["/protokube"],
     files = [
         "//channels/cmd/channels",
         "//protokube/cmd/protokube",
     ],
-    # Cannot use directory with packages or they get installed with
-    # directory as the root.
-    # directory = "/usr/bin/",
-    # TODO: figure out if there's a way to add files
-    # to actual /usr/bin while using debs above.
-    symlinks = {
-        "/usr/bin/channels": "/channels",
-        "/usr/bin/protokube": "/protokube",
-    },
-    tags = ["local"],  # TODO(fejta): make xz toolchain hermetic
+    stamp = True,
 )
 
 container_bundle(
