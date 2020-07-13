@@ -41,6 +41,8 @@ go_library(
         "rollingupdate.go",
         "rollingupdatecluster.go",
         "root.go",
+        "rotate.go",
+        "rotate_secret.go",
         "set.go",
         "set_cluster.go",
         "set_instancegroups.go",
