@@ -50,6 +50,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	needRouter := true
+	//Do not need router if there is no external network
+	if b.Cluster.Spec.CloudConfig.Openstack.Router.ExternalNetwork == nil {
+		needRouter = false
+	}
 	routerName := strings.Replace(clusterName, ".", "-", -1)
 	for _, sp := range b.Cluster.Spec.Subnets {
 		// assumes that we do not need to create routers if we use existing subnets
