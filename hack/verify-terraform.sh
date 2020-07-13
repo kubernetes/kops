@@ -29,8 +29,7 @@ CLUSTERS_0_11=(
 TAG_0_13=0.13.0-beta2
 TAG_0_11=0.11.14
 
-PROVIDER_CACHE=$(mktemp -d)
-trap '{ rm -rf ${PROVIDER_CACHE}; }' EXIT
+PROVIDER_CACHE="${KOPS_ROOT}/.cache/terraform"
 
 RC=0
 while IFS= read -r -d '' -u 3 test_dir; do
