@@ -1,3 +1,25 @@
+# How to rotate the service account token signing key
+
+There are up to three keys used to validate service account tokens:
+
+* The primary `service-account` key, which is used to create new service account tokens.
+* Optionally a "previous" key, which was the primary key prior to the last rotation.
+* Optionally a "next" key, which is staged to rotate into the primary key on the next rotation.
+
+The command:
+ 
+```
+kops rotate secret service-account
+```
+
+rotates these keys, moving the primary key into the "previous" slot, moving the "next" key into the primary slot, and deleting all keys in other slots.
+The next `kops update cluster` will then generate a new key for the "next" slot.
+
+You must then apply the update and perform a rolling update of the control plane in order to make the rotation effective.
+
+You should then wait for all service account tokens to be reissued before rotating the service account token signing key again.
+Otherwise, you risk disruption.
+
 # How to rotate all secrets / credentials
 
 **This is a disruptive procedure.**
