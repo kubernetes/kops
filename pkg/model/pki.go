@@ -180,6 +180,14 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:      "ca",
 		}
 		c.AddTask(serviceAccount)
+		serviceAccountNext := &fitasks.Keypair{
+			// We only need the private key, but it's easier to create a certificate as well.
+			Name:      fi.String("service-account-next"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=service-account",
+			Type:      "ca",
+		}
+		c.AddTask(serviceAccountNext)
 	}
 
 	// @TODO this is VERY presumptuous, i'm going on the basis we can make it configurable in the future.

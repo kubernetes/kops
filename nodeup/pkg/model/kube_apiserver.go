@@ -84,8 +84,17 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		}
 	}
+
+	serviceAccountKeys := []string{"service-account"}
+	for _, name := range []string{"service-account-previous", "service-account-next"} {
+		err := b.BuildPrivateKeyTask(c, name, name+".key")
+		if err == nil {
+			serviceAccountKeys = append(serviceAccountKeys, name)
+		}
+	}
+
 	{
-		pod, err := b.buildPod()
+		pod, err := b.buildPod(serviceAccountKeys)
 		if err != nil {
 			return fmt.Errorf("error building kube-apiserver manifest: %v", err)
 		}
@@ -285,10 +294,12 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 }
 
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
-func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
+func (b *KubeAPIServerBuilder) buildPod(serviceAccountKeys []string) (*v1.Pod, error) {
 	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
-	// TODO pass the public key instead. We would first need to segregate the secrets better.
-	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.key"))
+	for _, key := range serviceAccountKeys {
+		// TODO pass the public key instead. We would first need to segregate the secrets better.
+		kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), key+".key"))
+	}
 	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.crt")
 	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
