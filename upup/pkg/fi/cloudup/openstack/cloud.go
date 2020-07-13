@@ -690,14 +690,26 @@ func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIng
 			if ok && val == cluster.Name && ok2 {
 				role, success := kops.ParseInstanceGroupRole(val2, false)
 				if success && role == kops.InstanceGroupRoleMaster {
-					ips, err := c.ListServerFloatingIPs(instance.ID)
-					if err != nil {
-						return ingresses, err
-					}
-					for _, ip := range ips {
+					if cluster.Spec.Topology != nil && cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+						ifName := instance.Metadata[TagKopsNetwork]
+						address, err := GetServerFixedIP(&instance, ifName)
+						if err != nil {
+							return ingresses, fmt.Errorf("failed to get interface address: %v", err)
+						}
 						ingresses = append(ingresses, kops.ApiIngressStatus{
-							IP: fi.StringValue(ip),
+							IP: address,
 						})
+
+					} else {
+						ips, err := c.ListServerFloatingIPs(instance.ID)
+						if err != nil {
+							return ingresses, err
+						}
+						for _, ip := range ips {
+							ingresses = append(ingresses, kops.ApiIngressStatus{
+								IP: fi.StringValue(ip),
+							})
+						}
 					}
 				}
 			}
