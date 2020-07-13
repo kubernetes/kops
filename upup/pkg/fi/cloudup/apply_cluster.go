@@ -971,6 +971,11 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 		return nil
 	}
 
+	if c.channel == nil {
+		klog.Warning("channel unavailable, skipping version validation")
+		return nil
+	}
+
 	versionInfo := kops.FindKopsVersionSpec(c.channel.Spec.KopsVersions, kopsVersion)
 	if versionInfo == nil {
 		klog.Warningf("unable to find version information for kops version %q in channel", kopsVersion)
@@ -1082,6 +1087,11 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 
 	// TODO: make util.ParseKubernetesVersion not return a pointer
 	kubernetesVersion := *parsed
+
+	if c.channel == nil {
+		klog.Warning("unable to load channel, skipping kubernetes version recommendation/requirements checks")
+		return nil
+	}
 
 	versionInfo := kops.FindKubernetesVersionSpec(c.channel.Spec.KubernetesVersions, kubernetesVersion)
 	if versionInfo == nil {
