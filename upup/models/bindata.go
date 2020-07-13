@@ -6515,9 +6515,12 @@ spec:
         - name: kubeconfig
           mountPath: /var/lib/kube-router/kubeconfig
           readOnly: true
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
+          readOnly: false
       initContainers:
       - name: install-cni
-        image: busybox
+        image: docker.io/cloudnativelabs/kube-router:v1.0.0
         command:
         - /bin/sh
         - -c
@@ -6700,12 +6703,9 @@ spec:
         - name: kubeconfig
           mountPath: /var/lib/kube-router/kubeconfig
           readOnly: true
-        - name: xtables-lock
-          mountPath: /run/xtables.lock
-          readOnly: false
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v1.0.0
+        image: busybox
         command:
         - /bin/sh
         - -c
