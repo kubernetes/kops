@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# -*- coding: utf-8 -*-
-
 
 def define_env(env):
     """Hook function"""
@@ -64,5 +62,5 @@ def main():
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
