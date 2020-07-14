@@ -324,9 +324,7 @@ func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.Inst
 // FindInstanceGroups finds instance groups matching the specified tags
 func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error) {
 	var result []DOInstanceGroup
-	var masterDroplets []string
-	var workerDroplets []string
-	nodeExists := false
+	instanceGroupMap := make(map[string][]string) // map of instance group name with droplet ids
 
 	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
 	droplets, err := getAllDropletsByTag(c, clusterTag)
@@ -341,36 +339,14 @@ func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error)
 			return nil, fmt.Errorf("get droplets Instance group for tags %v returned error. Error=%v", droplet.Tags, err)
 		}
 
-		if strings.Contains(doInstanceGroup, "master") {
-			// This is a master instance group, get the index.
-			k8sIndex, err := getDropletIndexFromTag(droplet.Tags)
-			if err != nil {
-				klog.Warningf("tag check returned err = %v", err)
-			}
-			instanceGroupName = fmt.Sprintf("%s-%s-%s", clusterName, doInstanceGroup, k8sIndex)
-
-			result = append(result, DOInstanceGroup{
-				InstanceGroupName: instanceGroupName,
-				GroupType:         "master",
-				ClusterName:       clusterName,
-				Members:           append(masterDroplets, strconv.Itoa(droplet.ID)),
-			})
-
-		} else if strings.Contains(doInstanceGroup, "nodes") {
-			// This is a node (add this instance group only once)
-			nodeExists = true
-			workerDroplets = append(workerDroplets, strconv.Itoa(droplet.ID))
-		}
-	}
-
-	if nodeExists {
-		instanceGroupName = fmt.Sprintf("%s-%s", clusterName, "nodes")
+		instanceGroupName = fmt.Sprintf("%s-%s", clusterName, doInstanceGroup)
+		instanceGroupMap[instanceGroupName] = append(instanceGroupMap[instanceGroupName], strconv.Itoa(droplet.ID))
 
 		result = append(result, DOInstanceGroup{
 			InstanceGroupName: instanceGroupName,
-			GroupType:         "node",
+			GroupType:         instanceGroupName,
 			ClusterName:       clusterName,
-			Members:           workerDroplets,
+			Members:           instanceGroupMap[instanceGroupName],
 		})
 	}
 
@@ -391,22 +367,7 @@ func getDropletInstanceGroup(tags []string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Didn't find k8s-index for tag %v", tags)
-}
-
-func getDropletIndexFromTag(tags []string) (string, error) {
-	for _, tag := range tags {
-		klog.V(8).Infof("Check tag = %s", tag)
-		if strings.Contains(strings.ToLower(tag), TagKubernetesClusterIndex) {
-			tagParts := strings.Split(tag, ":")
-			if len(tagParts) < 2 {
-				return "", fmt.Errorf("tag split failed, too few components for tag %q", tag)
-			}
-			return tagParts[1], nil
-		}
-	}
-
-	return "", fmt.Errorf("Didn't find k8s-index for tag %v", tags)
+	return "", fmt.Errorf("Didn't find k8s-instancegroup for tag %v", tags)
 }
 
 // matchInstanceGroup filters a list of instancegroups for recognized cloud groups
