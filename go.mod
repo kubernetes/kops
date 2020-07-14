@@ -1,6 +1,6 @@
 module k8s.io/kops
 
-go 1.13
+go 1.14
 
 // Version kubernetes-1.18.0 => tag v0.18.1
 

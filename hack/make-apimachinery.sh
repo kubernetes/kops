@@ -30,16 +30,15 @@ mkdir -p "${WORK_DIR}/go/"
 cp -R "${GOPATH}/src/k8s.io/kops/vendor/" "${WORK_DIR}/go/src"
 
 unset GOBIN
-unset GOFLAGS
 
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -v k8s.io/code-generator/cmd/conversion-gen/
+env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod -v k8s.io/code-generator/cmd/conversion-gen/
 cp "${WORK_DIR}/go/bin/conversion-gen" "${GOPATH}/bin/"
 
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install k8s.io/code-generator/cmd/deepcopy-gen/
+env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod k8s.io/code-generator/cmd/deepcopy-gen/
 cp "${WORK_DIR}/go/bin/deepcopy-gen" "${GOPATH}/bin/"
 
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install k8s.io/code-generator/cmd/defaulter-gen/
+env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod k8s.io/code-generator/cmd/defaulter-gen/
 cp "${WORK_DIR}/go/bin/defaulter-gen" "${GOPATH}/bin/"
 
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install k8s.io/code-generator/cmd/client-gen/
+env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod k8s.io/code-generator/cmd/client-gen/
 cp "${WORK_DIR}/go/bin/client-gen" "${GOPATH}/bin/"
