@@ -150,9 +150,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		// associate it to a node if bastion is not used
 		if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router != nil {
 			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
-				if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-					b.associateFixedIPToKeypair(instanceTask)
-				}
 				continue
 			}
 			switch ig.Spec.Role {
@@ -183,21 +180,10 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 					instanceTask.FloatingIP = t
 				}
 			}
-		} else if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router == nil {
-			// No external router, but we need to add master fixed ips to certificates
-			if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-				b.associateFixedIPToKeypair(instanceTask)
-			}
 		}
 	}
 
 	return nil
-}
-
-func (b *ServerGroupModelBuilder) associateFixedIPToKeypair(fipTask *openstacktasks.Instance) {
-	// Ensure the floating IP is included in the TLS certificate,
-	// if we're not going to use an alias for it
-	fipTask.ForAPIServer = true
 }
 
 func (b *ServerGroupModelBuilder) associateFIPToKeypair(fipTask *openstacktasks.FloatingIP) {
