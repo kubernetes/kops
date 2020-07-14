@@ -55,7 +55,9 @@ def define_env(env):
             separators,
             values
         ]
-        return '\n'.join(table)
+        table = '\n'.join(table)
+        table = f'<div class="kops_feature_table">{table}</div>'
+        return table
 
 
 def main():
