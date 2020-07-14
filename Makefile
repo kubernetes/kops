@@ -23,7 +23,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.13.9
+GOVERSION=1.14.4
 BUILD=$(KOPS_ROOT)/.build
 LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go
@@ -44,9 +44,6 @@ BAZEL_OPTIONS?=
 BAZEL_CONFIG?=
 API_OPTIONS?=
 GCFLAGS?=
-
-# This can be removed when we upgrade to go 1.14
-export GOFLAGS=-mod=vendor
 
 UPLOAD_CMD=$(KOPS_ROOT)/hack/upload ${UPLOAD_ARGS}
 
@@ -456,7 +453,7 @@ gomod-prereqs:
 
 .PHONY: gomod
 gomod: gomod-prereqs
-	GO111MODULE=on GOFLAGS= go mod vendor
+	GO111MODULE=on go mod vendor
 	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
 	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
 	sed -i -e 's/peer_name_hash/!peer_name_mac/g' vendor/github.com/weaveworks/mesh/peer_name_hash.go
