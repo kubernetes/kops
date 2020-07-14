@@ -1,5 +1,5 @@
 ---
-name: build
+name: CI
 
 'on':
   - push
@@ -10,46 +10,50 @@ env:
   GOPATH: ${{ github.workspace }}/go
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-18.04, macos-10.15]
-        go: [1.13]
-      fail-fast: true
-
-    runs-on: ${{ matrix.os }}
-
+  build-linux-amd64:
+    runs-on: ubuntu-20.04
     steps:
       - name: Set up go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go }}
-        id: go
+          go-version: 1.13
+          stable: true
 
       - uses: actions/checkout@v2
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
-      - name: make nodeup examples test
+      - name: make all examples test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
         run: |
-          make nodeup examples test
+          make all examples test
+
+  build-macos-amd64:
+    runs-on: macos-10.15
+    steps:
+    - name: Set up go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13
+        stable: true
+
+    - uses: actions/checkout@v2
+      with:
+        path: ${{ env.GOPATH }}/src/k8s.io/kops
+
+    - name: make kops examples test
+      working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
+      run: |
+        make kops examples test
 
   verify:
-    strategy:
-      matrix:
-        os: [ubuntu-18.04]
-        go: [1.13]
-      fail-fast: true
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-20.04
     steps:
       - name: Set up go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go }}
-        id: go
+          go-version: 1.13
+          stable: true
 
       - uses: actions/checkout@v2
         with:
