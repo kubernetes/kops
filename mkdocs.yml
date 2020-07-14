@@ -27,7 +27,7 @@ theme:
 plugins:
   - search
   - macros:
-      module_name: mkdocs_macros
+      module_name: hack.mkdocs_macros
 extra_css: [extra.css]
 
 nav:
