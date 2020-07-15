@@ -108,6 +108,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-exam
     value               = "master-us-test-1a.masters.launchtemplates.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -141,6 +151,16 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-exam
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1b.masters.launchtemplates.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/master"
@@ -178,6 +198,16 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-exam
     value               = "master-us-test-1c.masters.launchtemplates.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -212,6 +242,16 @@ resource "aws_autoscaling_group" "nodes-launchtemplates-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.launchtemplates.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"

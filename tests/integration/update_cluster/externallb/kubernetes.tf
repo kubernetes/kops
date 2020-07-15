@@ -116,6 +116,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     value               = "master-us-test-1a.masters.externallb.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -152,6 +162,16 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.externallb.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -281,29 +301,35 @@ resource "aws_launch_template" "master-us-test-1a-masters-externallb-example-com
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                            = "externallb.example.com"
-      "Name"                                         = "master-us-test-1a.masters.externallb.example.com"
-      "k8s.io/role/master"                           = "1"
-      "kops.k8s.io/instancegroup"                    = "master-us-test-1a"
-      "kubernetes.io/cluster/externallb.example.com" = "owned"
+      "KubernetesCluster"                                                            = "externallb.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.externallb.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/externallb.example.com"                                 = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                            = "externallb.example.com"
-      "Name"                                         = "master-us-test-1a.masters.externallb.example.com"
-      "k8s.io/role/master"                           = "1"
-      "kops.k8s.io/instancegroup"                    = "master-us-test-1a"
-      "kubernetes.io/cluster/externallb.example.com" = "owned"
+      "KubernetesCluster"                                                            = "externallb.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.externallb.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/externallb.example.com"                                 = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                            = "externallb.example.com"
-    "Name"                                         = "master-us-test-1a.masters.externallb.example.com"
-    "k8s.io/role/master"                           = "1"
-    "kops.k8s.io/instancegroup"                    = "master-us-test-1a"
-    "kubernetes.io/cluster/externallb.example.com" = "owned"
+    "KubernetesCluster"                                                            = "externallb.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.externallb.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/externallb.example.com"                                 = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.externallb.example.com_user_data")
 }
@@ -335,29 +361,35 @@ resource "aws_launch_template" "nodes-externallb-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                            = "externallb.example.com"
-      "Name"                                         = "nodes.externallb.example.com"
-      "k8s.io/role/node"                             = "1"
-      "kops.k8s.io/instancegroup"                    = "nodes"
-      "kubernetes.io/cluster/externallb.example.com" = "owned"
+      "KubernetesCluster"                                                          = "externallb.example.com"
+      "Name"                                                                       = "nodes.externallb.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/externallb.example.com"                               = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                            = "externallb.example.com"
-      "Name"                                         = "nodes.externallb.example.com"
-      "k8s.io/role/node"                             = "1"
-      "kops.k8s.io/instancegroup"                    = "nodes"
-      "kubernetes.io/cluster/externallb.example.com" = "owned"
+      "KubernetesCluster"                                                          = "externallb.example.com"
+      "Name"                                                                       = "nodes.externallb.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/externallb.example.com"                               = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                            = "externallb.example.com"
-    "Name"                                         = "nodes.externallb.example.com"
-    "k8s.io/role/node"                             = "1"
-    "kops.k8s.io/instancegroup"                    = "nodes"
-    "kubernetes.io/cluster/externallb.example.com" = "owned"
+    "KubernetesCluster"                                                          = "externallb.example.com"
+    "Name"                                                                       = "nodes.externallb.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/externallb.example.com"                               = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.externallb.example.com_user_data")
 }
