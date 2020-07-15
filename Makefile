@@ -571,7 +571,7 @@ bazel-crossbuild-protokube:
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
-	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar
 
 .PHONY: bazel-crossbuild-node-authorizer-image
 bazel-crossbuild-node-authorizer-image:
@@ -623,9 +623,9 @@ push-node-authorizer:
 .PHONY: bazel-protokube-export
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
-	bazel build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar.gz //images:protokube.tar.gz.sha256
-	cp -fp bazel-bin/images/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz
-	cp -fp bazel-bin/images/protokube.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
+	bazel build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar.gz //protokube/cmd/protokube:image-bundle.tar.gz.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz ${BAZELIMAGES}/protokube.tar.gz
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
 
 .PHONY: bazel-kube-apiserver-healthcheck-export
 bazel-kube-apiserver-healthcheck-export:
