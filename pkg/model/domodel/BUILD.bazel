@@ -13,6 +13,7 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/dns:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/resources/digitalocean:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/do:go_default_library",
         "//upup/pkg/fi/cloudup/dotasks:go_default_library",

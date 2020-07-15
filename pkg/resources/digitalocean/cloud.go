@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/digitalocean/godo"
@@ -38,6 +39,7 @@ import (
 
 const TagKubernetesClusterIndex = "k8s-index"
 const TagKubernetesClusterNamePrefix = "KubernetesCluster"
+const TagKubernetesInstanceGroup = "kops-instancegroup"
 
 // TokenSource implements oauth2.TokenSource
 type TokenSource struct {
@@ -60,6 +62,13 @@ type Cloud struct {
 
 	// RegionName holds the region, renamed to avoid conflict with Region()
 	RegionName string
+}
+
+type DOInstanceGroup struct {
+	ClusterName       string
+	InstanceGroupName string
+	GroupType         string   // will be either "master" or "worker"
+	Members           []string // will store the droplet names that matches.
 }
 
 var _ fi.Cloud = &Cloud{}
@@ -88,8 +97,7 @@ func NewCloud(region string) (*Cloud, error) {
 
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	klog.V(8).Info("digitalocean cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("digital ocean cloud provider does not support getting cloud groups at this time")
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
@@ -277,4 +285,134 @@ func (c *Cloud) getEtcdClusterSpec(volumeName string, dropletName string) (*etcd
 		NodeName:   dropletName,
 		NodeNames:  []string{dropletName},
 	}, nil
+}
+
+func getCloudGroups(c *Cloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	instanceGroups, err := FindInstanceGroups(c, cluster.ObjectMeta.Name)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
+	}
+
+	for _, doGroup := range instanceGroups {
+		name := doGroup.InstanceGroupName
+
+		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
+		if err != nil {
+			return nil, fmt.Errorf("error getting instance group for doGroup %q", name)
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				klog.Warningf("Found doGroup with no corresponding instance group %q", name)
+			}
+			continue
+		}
+
+		groups[instancegroup.ObjectMeta.Name], err = buildCloudInstanceGroup(c, instancegroup, doGroup, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
+		}
+	}
+
+	klog.V(8).Infof("Cloud Instance Group Info = %v", groups)
+	return groups, nil
+
+}
+
+// FindInstanceGroups finds instance groups matching the specified tags
+func FindInstanceGroups(c *Cloud, clusterName string) ([]DOInstanceGroup, error) {
+	var result []DOInstanceGroup
+	instanceGroupMap := make(map[string][]string) // map of instance group name with droplet ids
+
+	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
+	droplets, err := getAllDropletsByTag(c, clusterTag)
+	if err != nil {
+		return nil, fmt.Errorf("get all droplets for tag %s returned error. Error=%v", clusterTag, err)
+	}
+
+	instanceGroupName := ""
+	for _, droplet := range droplets {
+		doInstanceGroup, err := getDropletInstanceGroup(droplet.Tags)
+		if err != nil {
+			return nil, fmt.Errorf("get droplets Instance group for tags %v returned error. Error=%v", droplet.Tags, err)
+		}
+
+		instanceGroupName = fmt.Sprintf("%s-%s", clusterName, doInstanceGroup)
+		instanceGroupMap[instanceGroupName] = append(instanceGroupMap[instanceGroupName], strconv.Itoa(droplet.ID))
+
+		result = append(result, DOInstanceGroup{
+			InstanceGroupName: instanceGroupName,
+			GroupType:         instanceGroupName,
+			ClusterName:       clusterName,
+			Members:           instanceGroupMap[instanceGroupName],
+		})
+	}
+
+	klog.V(8).Infof("InstanceGroup Info = %v", result)
+
+	return result, nil
+}
+
+func getDropletInstanceGroup(tags []string) (string, error) {
+	for _, tag := range tags {
+		klog.V(8).Infof("Check tag = %s", tag)
+		if strings.Contains(strings.ToLower(tag), TagKubernetesInstanceGroup) {
+			tagParts := strings.Split(tag, ":")
+			if len(tagParts) < 2 {
+				return "", fmt.Errorf("tag split failed, too few components for tag %q", tag)
+			}
+			return tagParts[1], nil
+		}
+	}
+
+	return "", fmt.Errorf("Didn't find k8s-instancegroup for tag %v", tags)
+}
+
+// matchInstanceGroup filters a list of instancegroups for recognized cloud groups
+func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.InstanceGroup) (*kops.InstanceGroup, error) {
+	var instancegroup *kops.InstanceGroup
+	for _, g := range instancegroups {
+		var groupName string
+
+		switch g.Spec.Role {
+		case kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleNode:
+			groupName = clusterName + "-" + g.ObjectMeta.Name
+		default:
+			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+			continue
+		}
+
+		if name == groupName {
+			if instancegroup != nil {
+				return nil, fmt.Errorf("found multiple instance groups matching servergrp %q", groupName)
+			}
+			instancegroup = g
+		}
+	}
+
+	return instancegroup, nil
+}
+
+func buildCloudInstanceGroup(c *Cloud, ig *kops.InstanceGroup, g DOInstanceGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	cg := &cloudinstances.CloudInstanceGroup{
+		HumanName:     g.InstanceGroupName,
+		InstanceGroup: ig,
+		Raw:           g,
+		MinSize:       int(fi.Int32Value(ig.Spec.MinSize)),
+		TargetSize:    int(fi.Int32Value(ig.Spec.MinSize)),
+		MaxSize:       int(fi.Int32Value(ig.Spec.MaxSize)),
+	}
+
+	for _, member := range g.Members {
+
+		// TODO use a hash of the godo.DropletCreateRequest fields for second and third parameters.
+		err := cg.NewCloudInstanceGroupMember(member, g.GroupType, g.GroupType, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+		}
+	}
+
+	return cg, nil
 }
