@@ -91,6 +91,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existing-iam-example
     value               = "master-us-test-1a.masters.existing-iam.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -127,6 +137,16 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existing-iam-example
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1b.masters.existing-iam.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/master"
@@ -167,6 +187,16 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existing-iam-example
     value               = "master-us-test-1c.masters.existing-iam.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -203,6 +233,16 @@ resource "aws_autoscaling_group" "nodes-existing-iam-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.existing-iam.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -356,29 +396,35 @@ resource "aws_launch_template" "master-us-test-1a-masters-existing-iam-example-c
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "master-us-test-1a.masters.existing-iam.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                            = "existing-iam.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "master-us-test-1a.masters.existing-iam.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                            = "existing-iam.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "master-us-test-1a.masters.existing-iam.example.com"
-    "k8s.io/role/master"                             = "1"
-    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+    "KubernetesCluster"                                                            = "existing-iam.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.existing-iam.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.existing-iam.example.com_user_data")
 }
@@ -414,29 +460,35 @@ resource "aws_launch_template" "master-us-test-1b-masters-existing-iam-example-c
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "master-us-test-1b.masters.existing-iam.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1b"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                            = "existing-iam.example.com"
+      "Name"                                                                         = "master-us-test-1b.masters.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1b"
+      "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "master-us-test-1b.masters.existing-iam.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1b"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                            = "existing-iam.example.com"
+      "Name"                                                                         = "master-us-test-1b.masters.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1b"
+      "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "master-us-test-1b.masters.existing-iam.example.com"
-    "k8s.io/role/master"                             = "1"
-    "kops.k8s.io/instancegroup"                      = "master-us-test-1b"
-    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+    "KubernetesCluster"                                                            = "existing-iam.example.com"
+    "Name"                                                                         = "master-us-test-1b.masters.existing-iam.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1b"
+    "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1b.masters.existing-iam.example.com_user_data")
 }
@@ -472,29 +524,35 @@ resource "aws_launch_template" "master-us-test-1c-masters-existing-iam-example-c
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "master-us-test-1c.masters.existing-iam.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1c"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                            = "existing-iam.example.com"
+      "Name"                                                                         = "master-us-test-1c.masters.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1c"
+      "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "master-us-test-1c.masters.existing-iam.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1c"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                            = "existing-iam.example.com"
+      "Name"                                                                         = "master-us-test-1c.masters.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1c"
+      "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "master-us-test-1c.masters.existing-iam.example.com"
-    "k8s.io/role/master"                             = "1"
-    "kops.k8s.io/instancegroup"                      = "master-us-test-1c"
-    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+    "KubernetesCluster"                                                            = "existing-iam.example.com"
+    "Name"                                                                         = "master-us-test-1c.masters.existing-iam.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1c"
+    "kubernetes.io/cluster/existing-iam.example.com"                               = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1c.masters.existing-iam.example.com_user_data")
 }
@@ -526,29 +584,35 @@ resource "aws_launch_template" "nodes-existing-iam-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "nodes.existing-iam.example.com"
-      "k8s.io/role/node"                               = "1"
-      "kops.k8s.io/instancegroup"                      = "nodes"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                          = "existing-iam.example.com"
+      "Name"                                                                       = "nodes.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/existing-iam.example.com"                             = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                              = "existing-iam.example.com"
-      "Name"                                           = "nodes.existing-iam.example.com"
-      "k8s.io/role/node"                               = "1"
-      "kops.k8s.io/instancegroup"                      = "nodes"
-      "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+      "KubernetesCluster"                                                          = "existing-iam.example.com"
+      "Name"                                                                       = "nodes.existing-iam.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/existing-iam.example.com"                             = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                              = "existing-iam.example.com"
-    "Name"                                           = "nodes.existing-iam.example.com"
-    "k8s.io/role/node"                               = "1"
-    "kops.k8s.io/instancegroup"                      = "nodes"
-    "kubernetes.io/cluster/existing-iam.example.com" = "owned"
+    "KubernetesCluster"                                                          = "existing-iam.example.com"
+    "Name"                                                                       = "nodes.existing-iam.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/existing-iam.example.com"                             = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.existing-iam.example.com_user_data")
 }

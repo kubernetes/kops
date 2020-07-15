@@ -151,6 +151,16 @@ resource "aws_autoscaling_group" "bastion-privatedns1-example-com" {
     value               = "fib+baz"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -199,6 +209,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns1-example-
     value               = "fib+baz"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -245,6 +265,16 @@ resource "aws_autoscaling_group" "nodes-privatedns1-example-com" {
     key                 = "foo/bar"
     propagate_at_launch = true
     value               = "fib+baz"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -460,35 +490,41 @@ resource "aws_launch_template" "bastion-privatedns1-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                             = "privatedns1.example.com"
-      "Name"                                          = "bastion.privatedns1.example.com"
-      "Owner"                                         = "John Doe"
-      "foo/bar"                                       = "fib+baz"
-      "k8s.io/role/bastion"                           = "1"
-      "kops.k8s.io/instancegroup"                     = "bastion"
-      "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privatedns1.example.com"
+      "Name"                                                                       = "bastion.privatedns1.example.com"
+      "Owner"                                                                      = "John Doe"
+      "foo/bar"                                                                    = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/bastion"                                                        = "1"
+      "kops.k8s.io/instancegroup"                                                  = "bastion"
+      "kubernetes.io/cluster/privatedns1.example.com"                              = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                             = "privatedns1.example.com"
-      "Name"                                          = "bastion.privatedns1.example.com"
-      "Owner"                                         = "John Doe"
-      "foo/bar"                                       = "fib+baz"
-      "k8s.io/role/bastion"                           = "1"
-      "kops.k8s.io/instancegroup"                     = "bastion"
-      "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privatedns1.example.com"
+      "Name"                                                                       = "bastion.privatedns1.example.com"
+      "Owner"                                                                      = "John Doe"
+      "foo/bar"                                                                    = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/bastion"                                                        = "1"
+      "kops.k8s.io/instancegroup"                                                  = "bastion"
+      "kubernetes.io/cluster/privatedns1.example.com"                              = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "bastion.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "k8s.io/role/bastion"                           = "1"
-    "kops.k8s.io/instancegroup"                     = "bastion"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+    "KubernetesCluster"                                                          = "privatedns1.example.com"
+    "Name"                                                                       = "bastion.privatedns1.example.com"
+    "Owner"                                                                      = "John Doe"
+    "foo/bar"                                                                    = "fib+baz"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/bastion"                                                        = "1"
+    "kops.k8s.io/instancegroup"                                                  = "bastion"
+    "kubernetes.io/cluster/privatedns1.example.com"                              = "owned"
   }
 }
 
@@ -523,35 +559,41 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                             = "privatedns1.example.com"
-      "Name"                                          = "master-us-test-1a.masters.privatedns1.example.com"
-      "Owner"                                         = "John Doe"
-      "foo/bar"                                       = "fib+baz"
-      "k8s.io/role/master"                            = "1"
-      "kops.k8s.io/instancegroup"                     = "master-us-test-1a"
-      "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+      "KubernetesCluster"                                                            = "privatedns1.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.privatedns1.example.com"
+      "Owner"                                                                        = "John Doe"
+      "foo/bar"                                                                      = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/privatedns1.example.com"                                = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                             = "privatedns1.example.com"
-      "Name"                                          = "master-us-test-1a.masters.privatedns1.example.com"
-      "Owner"                                         = "John Doe"
-      "foo/bar"                                       = "fib+baz"
-      "k8s.io/role/master"                            = "1"
-      "kops.k8s.io/instancegroup"                     = "master-us-test-1a"
-      "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+      "KubernetesCluster"                                                            = "privatedns1.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.privatedns1.example.com"
+      "Owner"                                                                        = "John Doe"
+      "foo/bar"                                                                      = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/privatedns1.example.com"                                = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "master-us-test-1a.masters.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "k8s.io/role/master"                            = "1"
-    "kops.k8s.io/instancegroup"                     = "master-us-test-1a"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+    "KubernetesCluster"                                                            = "privatedns1.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.privatedns1.example.com"
+    "Owner"                                                                        = "John Doe"
+    "foo/bar"                                                                      = "fib+baz"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/privatedns1.example.com"                                = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privatedns1.example.com_user_data")
 }
@@ -583,35 +625,41 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                             = "privatedns1.example.com"
-      "Name"                                          = "nodes.privatedns1.example.com"
-      "Owner"                                         = "John Doe"
-      "foo/bar"                                       = "fib+baz"
-      "k8s.io/role/node"                              = "1"
-      "kops.k8s.io/instancegroup"                     = "nodes"
-      "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privatedns1.example.com"
+      "Name"                                                                       = "nodes.privatedns1.example.com"
+      "Owner"                                                                      = "John Doe"
+      "foo/bar"                                                                    = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/privatedns1.example.com"                              = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                             = "privatedns1.example.com"
-      "Name"                                          = "nodes.privatedns1.example.com"
-      "Owner"                                         = "John Doe"
-      "foo/bar"                                       = "fib+baz"
-      "k8s.io/role/node"                              = "1"
-      "kops.k8s.io/instancegroup"                     = "nodes"
-      "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privatedns1.example.com"
+      "Name"                                                                       = "nodes.privatedns1.example.com"
+      "Owner"                                                                      = "John Doe"
+      "foo/bar"                                                                    = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/privatedns1.example.com"                              = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                             = "privatedns1.example.com"
-    "Name"                                          = "nodes.privatedns1.example.com"
-    "Owner"                                         = "John Doe"
-    "foo/bar"                                       = "fib+baz"
-    "k8s.io/role/node"                              = "1"
-    "kops.k8s.io/instancegroup"                     = "nodes"
-    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+    "KubernetesCluster"                                                          = "privatedns1.example.com"
+    "Name"                                                                       = "nodes.privatedns1.example.com"
+    "Owner"                                                                      = "John Doe"
+    "foo/bar"                                                                    = "fib+baz"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/privatedns1.example.com"                              = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privatedns1.example.com_user_data")
 }
