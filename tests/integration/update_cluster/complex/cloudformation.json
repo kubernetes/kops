@@ -44,6 +44,16 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "master",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/role/master",
             "Value": "1",
             "PropagateAtLaunch": true
@@ -122,6 +132,16 @@
           {
             "Key": "foo/bar",
             "Value": "fib+baz",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "node",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+            "Value": "",
             "PropagateAtLaunch": true
           },
           {
@@ -275,6 +295,14 @@
                   "Value": "fib+baz"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/role/master",
                   "Value": "1"
                 },
@@ -306,6 +334,14 @@
                 {
                   "Key": "foo/bar",
                   "Value": "fib+baz"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/role/master",
@@ -392,6 +428,14 @@
                   "Value": "fib+baz"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/role/node",
                   "Value": "1"
                 },
@@ -423,6 +467,14 @@
                 {
                   "Key": "foo/bar",
                   "Value": "fib+baz"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/role/node",

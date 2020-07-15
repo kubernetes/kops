@@ -101,6 +101,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-example-com"
     value               = "master-us-test-1a.masters.minimal.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -137,6 +147,16 @@ resource "aws_autoscaling_group" "nodes-minimal-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.minimal.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -266,29 +286,35 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                         = "minimal.example.com"
-      "Name"                                      = "master-us-test-1a.masters.minimal.example.com"
-      "k8s.io/role/master"                        = "1"
-      "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
-      "kubernetes.io/cluster/minimal.example.com" = "owned"
+      "KubernetesCluster"                                                            = "minimal.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/minimal.example.com"                                    = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                         = "minimal.example.com"
-      "Name"                                      = "master-us-test-1a.masters.minimal.example.com"
-      "k8s.io/role/master"                        = "1"
-      "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
-      "kubernetes.io/cluster/minimal.example.com" = "owned"
+      "KubernetesCluster"                                                            = "minimal.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/minimal.example.com"                                    = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "master-us-test-1a.masters.minimal.example.com"
-    "k8s.io/role/master"                        = "1"
-    "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "KubernetesCluster"                                                            = "minimal.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/minimal.example.com"                                    = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal.example.com_user_data")
 }
@@ -320,29 +346,35 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                         = "minimal.example.com"
-      "Name"                                      = "nodes.minimal.example.com"
-      "k8s.io/role/node"                          = "1"
-      "kops.k8s.io/instancegroup"                 = "nodes"
-      "kubernetes.io/cluster/minimal.example.com" = "owned"
+      "KubernetesCluster"                                                          = "minimal.example.com"
+      "Name"                                                                       = "nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                         = "minimal.example.com"
-      "Name"                                      = "nodes.minimal.example.com"
-      "k8s.io/role/node"                          = "1"
-      "kops.k8s.io/instancegroup"                 = "nodes"
-      "kubernetes.io/cluster/minimal.example.com" = "owned"
+      "KubernetesCluster"                                                          = "minimal.example.com"
+      "Name"                                                                       = "nodes.minimal.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "nodes.minimal.example.com"
-    "k8s.io/role/node"                          = "1"
-    "kops.k8s.io/instancegroup"                 = "nodes"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "KubernetesCluster"                                                          = "minimal.example.com"
+    "Name"                                                                       = "nodes.minimal.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/minimal.example.com"                                  = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.minimal.example.com_user_data")
 }
