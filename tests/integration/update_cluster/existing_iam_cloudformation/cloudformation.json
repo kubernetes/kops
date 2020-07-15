@@ -34,6 +34,16 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "master",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/role/master",
             "Value": "1",
             "PropagateAtLaunch": true
@@ -97,6 +107,16 @@
           {
             "Key": "Name",
             "Value": "nodes.minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "node",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+            "Value": "",
             "PropagateAtLaunch": true
           },
           {
@@ -224,6 +244,14 @@
                   "Value": "master-us-test-1a.masters.minimal.example.com"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/role/master",
                   "Value": "1"
                 },
@@ -247,6 +275,14 @@
                 {
                   "Key": "Name",
                   "Value": "master-us-test-1a.masters.minimal.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/role/master",
@@ -313,6 +349,14 @@
                   "Value": "nodes.minimal.example.com"
                 },
                 {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
                   "Key": "k8s.io/role/node",
                   "Value": "1"
                 },
@@ -336,6 +380,14 @@
                 {
                   "Key": "Name",
                   "Value": "nodes.minimal.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
                 },
                 {
                   "Key": "k8s.io/role/node",

@@ -25,6 +25,8 @@ Metadata:
   cluster_generation: "0"
   ig_generation: "0"
   k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-a
 Name: master-a-1-cluster
@@ -95,6 +97,8 @@ Metadata:
   cluster_generation: "0"
   ig_generation: "0"
   k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-b
 Name: master-b-1-cluster
@@ -165,6 +169,8 @@ Metadata:
   cluster_generation: "0"
   ig_generation: "0"
   k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: master
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_master: ""
   k8s.io_role_master: "1"
   kops.k8s.io_instancegroup: master-c
 Name: master-c-1-cluster
@@ -235,6 +241,8 @@ Metadata:
   cluster_generation: "0"
   ig_generation: "0"
   k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: node
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_node: ""
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node-a
 Name: node-a-1-cluster
@@ -299,6 +307,8 @@ Metadata:
   cluster_generation: "0"
   ig_generation: "0"
   k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: node
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_node: ""
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node-b
 Name: node-b-1-cluster
@@ -363,6 +373,8 @@ Metadata:
   cluster_generation: "0"
   ig_generation: "0"
   k8s: cluster
+  k8s.io_cluster-autoscaler_node-template_label_kubernetes.io_role: node
+  k8s.io_cluster-autoscaler_node-template_label_node-role.kubernetes.io_node: ""
   k8s.io_role_node: "1"
   kops.k8s.io_instancegroup: node-c
 Name: node-c-1-cluster
