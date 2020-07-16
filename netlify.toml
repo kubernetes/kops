@@ -2,6 +2,6 @@
 [build]
 publish = "site"
 command = "make build-docs-netlify"
-ignore = "git diff --quiet HEAD^ HEAD netlify.toml Makefile mkdocs.yml docs/ images/"
+ignore = "git diff --quiet HEAD^ HEAD netlify.toml Makefile mkdocs.yml docs/ images/ hack/"
 # available here https://github.com/netlify/build-image/blob/xenial/included_software.md#languages
 environment = { PYTHON_VERSION = "3.7" }
