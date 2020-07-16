@@ -18,6 +18,7 @@ package model
 
 import (
 	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
@@ -33,7 +34,7 @@ var _ fi.ModelBuilder = &EtcdBuilder{}
 
 // Build is responsible for creating the etcd user
 func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.IsMaster || b.UseEtcdManager() {
 		return nil
 	}
 
@@ -50,8 +51,8 @@ func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
 	// TODO: Do we actually use the user anywhere?
 
 	c.AddTask(&nodetasks.UserTask{
-		// TODO: Should we set a consistent UID in case we remount?
 		Name:  "user",
+		UID:   wellknownusers.LegacyEtcd,
 		Shell: "/sbin/nologin",
 		Home:  "/var/etcd",
 	})
