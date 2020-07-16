@@ -2,3 +2,4 @@ mkdocs-material~=5.2.3
 mkdocs~=1.1.2
 pymdown-extensions==7.1
 pygments~=2.6.1
+mkdocs-macros-plugin~=0.4.9
