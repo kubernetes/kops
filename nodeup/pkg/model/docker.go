@@ -558,6 +558,11 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
+	// Restore the default SELinux security contexts for the Docker binaries
+	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.BoolValue(b.Cluster.Spec.Docker.SelinuxEnabled) {
+		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/docker*'")
+	}
+
 	// the default is not to use systemd for cgroups because the delegate issues still
 	// exists and systemd currently does not support the cgroup feature set required
 	// for containers run by docker
