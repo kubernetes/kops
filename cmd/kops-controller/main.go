@@ -29,6 +29,7 @@ import (
 	"k8s.io/klog/klogr"
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/cmd/kops-controller/pkg/server"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
@@ -81,6 +82,18 @@ func main() {
 	}
 
 	ctrl.SetLogger(klogr.New())
+	if opt.Server != nil {
+		srv, err := server.NewServer(&opt)
+		if err != nil {
+			setupLog.Error(err, "unable to create server")
+			os.Exit(1)
+		}
+		go func() {
+			err := srv.Start()
+			setupLog.Error(err, "unable to start server")
+			os.Exit(1)
+		}()
+	}
 
 	if err := buildScheme(); err != nil {
 		setupLog.Error(err, "error building scheme")
