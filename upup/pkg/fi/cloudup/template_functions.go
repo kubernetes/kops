@@ -31,6 +31,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -379,6 +380,15 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		ConfigBase: cluster.Spec.ConfigBase,
 	}
 
+	if tf.UseKopsControllerForNodeBootstrap() {
+		pkiDir := "/etc/kubernetes/kops-controller/pki"
+		config.Server = &kopscontrollerconfig.ServerOptions{
+			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
+			ServerCertificatePath: path.Join(pkiDir, "kops-controller.crt"),
+			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
+		}
+	}
+
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
 	b, err := json.Marshal(config)
 	if err != nil {
@@ -397,7 +407,7 @@ func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 	// Verbose, but not excessive logging
 	argv = append(argv, "--v=2")
 
-	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config.yaml")
+	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config/config.yaml")
 
 	return argv, nil
 }

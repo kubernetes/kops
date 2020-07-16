@@ -17,9 +17,20 @@ limitations under the License.
 package config
 
 type Options struct {
-	Cloud      string `json:"cloud,omitempty"`
-	ConfigBase string `json:"configBase,omitempty"`
+	Cloud      string         `json:"cloud,omitempty"`
+	ConfigBase string         `json:"configBase,omitempty"`
+	Server     *ServerOptions `json:"server,omitempty"`
 }
 
 func (o *Options) PopulateDefaults() {
+}
+
+type ServerOptions struct {
+	// Listen is the network endpoint (ip and port) we should listen on.
+	Listen string
+
+	// ServerKeyPath is the path to our TLS serving private key.
+	ServerKeyPath string `json:"serverKeyPath,omitempty"`
+	// ServerCertificatePath is the path to our TLS serving certificate.
+	ServerCertificatePath string `json:"serverCertificatePath,omitempty"`
 }

@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/systemd"
@@ -324,6 +325,11 @@ func (c *NodeupModelContext) UseEtcdTLSAuth() bool {
 	}
 
 	return false
+}
+
+// UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
+func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
+	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
 }
 
 // UseNodeAuthorization checks if have a node authorization policy

@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//cmd/kops-controller/controllers:go_default_library",
         "//cmd/kops-controller/pkg/config:go_default_library",
+        "//cmd/kops-controller/pkg/server:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",
         "//pkg/nodeidentity/do:go_default_library",
@@ -47,7 +48,7 @@ ARCH = [
     architecture = arch,
     base = "@distroless_base//image",
     cmd = ["/kops-controller"],
-    user = "10001",
+    user = "10011",
     files = [
         "//cmd/kops-controller",
     ],

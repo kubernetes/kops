@@ -244,6 +244,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdManagerTLSBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KopsControllerBuilder{NodeupModelContext: modelContext})
 
 	loader.Builders = append(loader.Builders, &networking.CommonBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.CalicoBuilder{NodeupModelContext: modelContext})
