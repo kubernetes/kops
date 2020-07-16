@@ -21,7 +21,7 @@ package wellknownusers
 
 const (
 	// Generic is the user id we use for non-privileged containers, where we don't need extra permissions
-	// Used by e.g. dns-controller, kops-controller
+	// Used by e.g. dns-controller
 	Generic = 10001
 
 	// LegacyEtcd is the user id for the etcd user under the legacy provider
@@ -29,6 +29,13 @@ const (
 
 	// AWSAuthenticator is the user-id for the aws-iam-authenticator (built externally)
 	AWSAuthenticator = 10000
+
+	// KopsControllerID is the user id for kops-controller, which needs some extra permissions e.g. to write local logs
+	// This should match the user in cmd/kops-controller/BUILD.bazel
+	KopsControllerID = 10011
+
+	// KopsControllerName is the username for the kops-controller user
+	KopsControllerName = "kops-controller"
 
 	// KubeApiserverHealthcheckID is the user id for kube-apiserver-healthcheck sidecar
 	// The user needs some extra permissions e.g. to read local secrets

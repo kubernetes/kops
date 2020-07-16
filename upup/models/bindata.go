@@ -2536,8 +2536,10 @@ spec:
           name: etc-ssl-certs
           readOnly: true
 {{ end }}
-        - mountPath: /etc/kubernetes/kops-controller/
+        - mountPath: /etc/kubernetes/kops-controller/config/
           name: kops-controller-config
+        - mountPath: /etc/kubernetes/kops-controller/pki/
+          name: kops-controller-pki
         command:
 {{ range $arg := KopsControllerArgv }}
         - "{{ $arg }}"
@@ -2565,7 +2567,10 @@ spec:
       - name: kops-controller-config
         configMap:
           name: kops-controller
-
+      - name: kops-controller-pki
+        hostPath:
+          path: /etc/kubernetes/kops-controller/
+          type: Directory
 ---
 
 apiVersion: v1
