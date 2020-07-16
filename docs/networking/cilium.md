@@ -121,6 +121,8 @@ Note that since Cilium Operator is the entity that interacts with the EC2 API to
 Also note that this feature has only been tested on the default kops AMIs.
 
 #### Enabling Encryption in Cilium
+{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.17') }}
+
 As of Kops 1.19, it is possible to enable encryption for Cilium agent.
 In order to enable encryption, you must first generate the pre-shared key using this command:
 ```bash
