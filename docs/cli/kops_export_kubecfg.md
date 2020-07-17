@@ -7,7 +7,7 @@ Export kubecfg.
 
 ### Synopsis
 
-Export a kubecfg file for a cluster from the state store. The configuration will be saved into a users $HOME/.kube/config file. To export the kubectl configuration to a specific file set the KUBECONFIG environment variable.
+Export a kubecfg file for a cluster from the state store. By default the configuration will be saved into a users $HOME/.kube/config file. Kops will respect the KUBECONFIG environment variable if the --kubeconfig flag is not set.
 
 ```
 kops export kubecfg CLUSTERNAME [flags]
@@ -16,16 +16,21 @@ kops export kubecfg CLUSTERNAME [flags]
 ### Examples
 
 ```
-  # export a kubecfg file
-  kops export kubecfg kubernetes-cluster.example.com
+  # export a kubeconfig file with the cluster admin user (make sure you keep this user safe!)
+  kops export kubecfg kubernetes-cluster.example.com --admin
+  
+  # export using a user already existing in the kubeconfig file
+  kops export kubecfg kubernetes-cluster.example.com --user my-oidc-user
 ```
 
 ### Options
 
 ```
+      --admin               export the cluster admin user and add it to the context
       --all                 export all clusters from the kops state store
   -h, --help                help for kubecfg
-      --kubeconfig string   The location of the kubeconfig file to create.
+      --kubeconfig string   the location of the kubeconfig file to create.
+      --user string         add an existing user to the cluster context
 ```
 
 ### Options inherited from parent commands
