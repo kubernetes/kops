@@ -19,6 +19,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: master-us-test-1a
     name: events
+  iam: {}
   kubelet:
     featureGates:
       ExperimentalCriticalPodAnnotation: "true"
