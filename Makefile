@@ -159,16 +159,6 @@ UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/cloudup)
 upup/models/bindata.go: ${UPUP_MODELS_BINDATA_SOURCES}
 	make update-bindata
 
-# Build in a docker container with golang 1.X
-# Used to test we have not broken 1.X
-.PHONY: check-builds-in-go112
-check-builds-in-go112:
-	docker run -e GO111MODULE=on -e EXTRA_BUILDFLAGS=-mod=vendor -v ${KOPS_ROOT}:/go/src/k8s.io/kops golang:1.12 make -C /go/src/k8s.io/kops all
-
-.PHONY: check-builds-in-go113
-check-builds-in-go113:
-	docker run -e EXTRA_BUILDFLAGS=-mod=vendor -v ${KOPS_ROOT}:/go/src/k8s.io/kops golang:1.13 make -C /go/src/k8s.io/kops all
-
 .PHONY: codegen
 codegen: kops-gobindata
 	go install k8s.io/kops/upup/tools/generators/...
@@ -212,22 +202,6 @@ crossbuild-nodeup-arm64: ${DIST}/linux/arm64/nodeup
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup: crossbuild-nodeup-amd64 crossbuild-nodeup-arm64
 
-.PHONY: crossbuild-nodeup-in-docker
-crossbuild-nodeup-in-docker:
-	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${KOPS_ROOT}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild-nodeup
-	docker start nodeup-build-${UNIQUE}
-	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
-	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
-	docker kill nodeup-build-${UNIQUE}
-	docker rm nodeup-build-${UNIQUE}
-
-.PHONY: nodeup-dist
-nodeup-dist: crossbuild-nodeup-in-docker
-	mkdir -p ${DIST}
-	tools/sha256 ${DIST}/linux/amd64/nodeup ${DIST}/linux/amd64/nodeup.sha256
-	tools/sha256 ${DIST}/linux/arm64/nodeup ${DIST}/linux/arm64/nodeup.sha256
-
 .PHONY: ${DIST}/darwin/amd64/kops
 ${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
@@ -251,51 +225,13 @@ ${DIST}/windows/amd64/kops.exe: ${BINDATA_TARGETS}
 .PHONY: crossbuild
 crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops ${DIST}/linux/arm64/kops
 
-.PHONY: crossbuild-in-docker
-crossbuild-in-docker:
-	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${KOPS_ROOT}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild
-	docker start kops-build-${UNIQUE}
-	docker exec kops-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
-	docker cp kops-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
-	docker kill kops-build-${UNIQUE}
-	docker rm kops-build-${UNIQUE}
-
-.PHONY: kops-dist
-kops-dist: crossbuild-in-docker
-	mkdir -p ${DIST}
-	tools/sha256 ${DIST}/darwin/amd64/kops ${DIST}/darwin/amd64/kops.sha256
-	tools/sha256 ${DIST}/linux/amd64/kops ${DIST}/linux/amd64/kops.sha256
-	tools/sha256 ${DIST}/linux/arm64/kops ${DIST}/linux/arm64/kops.sha256
-	tools/sha256 ${DIST}/windows/amd64/kops.exe ${DIST}/windows/amd64/kops.exe.sha256
-
-.PHONY: version-dist
-version-dist: nodeup-dist kops-dist protokube-export
-	rm -rf ${UPLOAD}
-	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
-	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/arm64/
-	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
-	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
-	cp ${DIST}/linux/amd64/nodeup ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup
-	cp ${DIST}/linux/amd64/nodeup.sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
-	cp ${DIST}/linux/arm64/nodeup ${UPLOAD}/kops/${VERSION}/linux/arm64/nodeup
-	cp ${DIST}/linux/arm64/nodeup.sha256 ${UPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	cp ${IMAGES}/protokube.tar.gz ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz
-	cp ${IMAGES}/protokube.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
-	cp ${DIST}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops
-	cp ${DIST}/linux/amd64/kops.sha256 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
-	cp ${DIST}/linux/arm64/kops ${UPLOAD}/kops/${VERSION}/linux/arm64/kops
-	cp ${DIST}/linux/arm64/kops.sha256 ${UPLOAD}/kops/${VERSION}/linux/arm64/kops.sha256
-	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
-	cp ${DIST}/darwin/amd64/kops.sha256 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
-
 .PHONY: upload
-upload: version-dist # Upload kops to S3
+upload: bazel-version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
 # oss-upload builds kops and uploads to OSS
 .PHONY: oss-upload
-oss-upload: version-dist
+oss-upload: bazel-version-dist
 	@echo "== Uploading kops =="
 	aliyun oss cp --acl public-read -r -f --include "*" ${UPLOAD}/ ${OSS_BUCKET}
 
@@ -401,32 +337,6 @@ ${PROTOKUBE}:
 
 .PHONY: protokube
 protokube: ${PROTOKUBE}
-
-.PHONY: protokube-builder-image
-protokube-builder-image:
-	docker build -t protokube-builder images/protokube-builder
-
-.PHONY: protokube-build-in-docker
-protokube-build-in-docker: protokube-builder-image
-	mkdir -p ${IMAGES} # We have to create the directory first, so docker doesn't mess up the ownership of the dir
-	docker run -t -e VERSION=${VERSION} -e HOST_UID=${UID} -e HOST_GID=${GID} -v `pwd`:/src protokube-builder /onbuild.sh
-
-.PHONY: protokube-image
-protokube-image: protokube-build-in-docker
-	docker build -t protokube:${PROTOKUBE_TAG} -f images/protokube/Dockerfile .
-
-.PHONY: protokube-export
-protokube-export: protokube-image
-	docker save protokube:${PROTOKUBE_TAG} > ${IMAGES}/protokube.tar
-	gzip --no-name --force --best ${IMAGES}/protokube.tar
-	tools/sha256 ${IMAGES}/protokube.tar.gz ${IMAGES}/protokube.tar.gz.sha256
-
-# protokube-push is no longer used (we upload a docker image tar file to S3 instead),
-# but we're keeping it around in case it is useful for development etc
-.PHONY: protokube-push
-protokube-push: protokube-image
-	docker tag protokube:${PROTOKUBE_TAG} ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
-	docker push ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
 
 .PHONY: nodeup
 nodeup: ${NODEUP}
@@ -661,7 +571,7 @@ bazel-crossbuild-protokube:
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
-	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar
+	bazel build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar
 
 .PHONY: bazel-crossbuild-node-authorizer-image
 bazel-crossbuild-node-authorizer-image:
@@ -713,9 +623,9 @@ push-node-authorizer:
 .PHONY: bazel-protokube-export
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
-	bazel build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:protokube.tar.gz //images:protokube.tar.gz.sha256
-	cp -fp bazel-bin/images/protokube.tar.gz ${BAZELIMAGES}/protokube.tar.gz
-	cp -fp bazel-bin/images/protokube.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
+	bazel build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar.gz //protokube/cmd/protokube:image-bundle.tar.gz.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz ${BAZELIMAGES}/protokube.tar.gz
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
 
 .PHONY: bazel-kube-apiserver-healthcheck-export
 bazel-kube-apiserver-healthcheck-export:
