@@ -715,8 +715,6 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		count := countPerIG
 		if i < remainder {
 			count++
-		} else if count == 0 {
-			break
 		}
 
 		g := &api.InstanceGroup{}
