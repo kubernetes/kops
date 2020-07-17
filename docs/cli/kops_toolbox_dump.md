@@ -23,6 +23,7 @@ kops toolbox dump [flags]
 ### Options
 
 ```
+      --dir string      target directory; if specified will collect logs and other information.
   -h, --help            help for dump
   -o, --output string   output format.  One of: yaml, json (default "yaml")
 ```

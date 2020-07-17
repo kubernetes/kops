@@ -150,7 +150,7 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 		}
 
 		// TODO: We need to find the correct SSH user, ideally per IP
-		sshUser := "admin"
+		sshUser := "ubuntu"
 		sshConfig := &ssh.ClientConfig{
 			User: sshUser,
 			Auth: []ssh.AuthMethod{
