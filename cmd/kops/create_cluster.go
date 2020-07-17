@@ -613,13 +613,11 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		updateClusterOptions.Yes = c.Yes
 		updateClusterOptions.Target = c.Target
 		updateClusterOptions.OutDir = c.OutDir
+		updateClusterOptions.admin = true
+		updateClusterOptions.CreateKubecfg = true
 
 		// SSHPublicKey has already been mapped
 		updateClusterOptions.SSHPublicKey = ""
-
-		// No equivalent options:
-		//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
-		//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
 
 		_, err := RunUpdateCluster(ctx, f, cluster.Name, out, updateClusterOptions)
 		if err != nil {
@@ -641,7 +639,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", cluster.Name, masters[0].ObjectMeta.Name)
 			}
 			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes\n", cluster.Name)
+			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster --name %s --yes --admin\n", cluster.Name)
 			fmt.Fprintf(&sb, "\n")
 
 			_, err := out.Write(sb.Bytes())
