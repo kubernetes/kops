@@ -22,6 +22,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: cilium
+  iam: {}
   kubelet:
     anonymousAuth: false
   kubeProxy:
