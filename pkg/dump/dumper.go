@@ -20,15 +20,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"io"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
 	"log"
 	"net"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/crypto/ssh"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 )
 
 // logDumper gets all the nodes from a kubernetes cluster and dumps a well-known set of logs
@@ -235,7 +236,7 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 		errors = append(errors, err)
 	}
 
-	// Capture logs from any systemd services in our list, that are registered
+	// Capture logs from any systemd services in our list that are registered
 	services, err := n.listSystemdUnits(ctx)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("error listing systemd services: %v", err))
@@ -262,7 +263,7 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 			if !strings.HasPrefix(f, prefix) {
 				continue
 			}
-			if err := n.shellToFile(ctx, "sudo cat "+f, filepath.Join(n.dir, filepath.Base(f))); err != nil {
+			if err := n.shellToFile(ctx, "sudo cat '"+strings.ReplaceAll(f, "'", "'\\''")+"'", filepath.Join(n.dir, filepath.Base(f))); err != nil {
 				errors = append(errors, err)
 			}
 		}
