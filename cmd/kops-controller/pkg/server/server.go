@@ -18,9 +18,15 @@ package server
 
 import (
 	"crypto/tls"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"runtime/debug"
 
+	"github.com/gorilla/mux"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/pkg/apis/nodeup"
 )
 
 type Server struct {
@@ -36,12 +42,64 @@ func NewServer(opt *config.Options) (*Server, error) {
 			PreferServerCipherSuites: true,
 		},
 	}
-	return &Server{
+
+	s := &Server{
 		opt:    opt,
 		server: server,
-	}, nil
+	}
+	r := mux.NewRouter()
+	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
+	server.Handler = recovery(r)
+
+	return s, nil
 }
 
 func (s *Server) Start() error {
 	return s.server.ListenAndServeTLS(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
+}
+
+func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		klog.Infof("bootstrap %s no body", r.RemoteAddr)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// TODO: authenticate request
+
+	req := &nodeup.BootstrapRequest{}
+	err := json.NewDecoder(r.Body).Decode(req)
+	if err != nil {
+		klog.Infof("bootstrap %s decode err: %v", r.RemoteAddr, err)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(fmt.Sprintf("failed to decode: %v", err)))
+		return
+	}
+
+	if req.APIVersion != nodeup.BootstrapAPIVersion {
+		klog.Infof("bootstrap %s wrong APIVersion", r.RemoteAddr)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("unexpected APIVersion"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	resp := &nodeup.BootstrapResponse{}
+	_ = json.NewEncoder(w).Encode(resp)
+	klog.Infof("bootstrap %s success", r.RemoteAddr)
+}
+
+// recovery is responsible for ensuring we don't exit on a panic.
+func recovery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+
+				klog.Errorf("failed to handle request: threw exception: %v: %s", err, debug.Stack())
+			}
+		}()
+
+		next.ServeHTTP(w, req)
+	})
 }
