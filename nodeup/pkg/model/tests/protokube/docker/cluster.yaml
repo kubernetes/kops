@@ -21,6 +21,7 @@ spec:
       name: master-us-test-1a
     name: events
     provider: Manager
+  iam: {}
   kubelet:
     hostnameOverride: master.override.invalid
   kubernetesVersion: v1.17.0

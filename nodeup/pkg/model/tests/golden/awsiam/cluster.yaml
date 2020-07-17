@@ -29,6 +29,7 @@ spec:
     provider: Manager
     backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
+  iam: {}
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.18.0
