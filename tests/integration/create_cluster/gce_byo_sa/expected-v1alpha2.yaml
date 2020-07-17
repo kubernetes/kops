@@ -83,15 +83,15 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: gce.example.com
-  name: nodes
+  name: nodes-us-test1-a
 spec:
   image: cos-cloud/cos-stable-65-10323-99-0
   machineType: n1-standard-2
-  maxSize: 2
-  minSize: 2
+  maxSize: 1
+  minSize: 1
   nodeLabels:
     cloud.google.com/metadata-proxy-ready: "true"
-    kops.k8s.io/instancegroup: nodes
+    kops.k8s.io/instancegroup: nodes-us-test1-a
   role: Node
   subnets:
   - us-test1
