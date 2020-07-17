@@ -73,6 +73,8 @@ spec:
 ```
 
 ### Additional security groups to ELB
+{{ kops_feature_table(kops_added_default='1.18') }}
+
 If you want to add security groups to the bastion ELB
 
 ```yaml
