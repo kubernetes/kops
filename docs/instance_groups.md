@@ -116,6 +116,7 @@ spec:
 ```
 
 ## sysctlParameters
+{{ kops_feature_table(kops_added_default='1.17') }}
 
 To add custom kernel runtime parameters to your instance group, specify the
 `sysctlParameters` field as an array of strings. Each string must take the form
