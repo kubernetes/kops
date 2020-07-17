@@ -33,6 +33,7 @@ type KubeconfigBuilder struct {
 	Context   string
 	Namespace string
 
+	User            string
 	KubeBearerToken string
 	KubeUser        string
 	KubePassword    string
@@ -116,17 +117,7 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 			cluster = clientcmdapi.NewCluster()
 		}
 		cluster.Server = b.Server
-
-		if b.CACert == nil {
-			// For now, we assume that the cluster has a "real" cert issued by a CA
-			cluster.InsecureSkipTLSVerify = false
-			cluster.CertificateAuthority = ""
-			cluster.CertificateAuthorityData = nil
-		} else {
-			cluster.InsecureSkipTLSVerify = false
-			cluster.CertificateAuthority = ""
-			cluster.CertificateAuthorityData = b.CACert
-		}
+		cluster.CertificateAuthorityData = b.CACert
 
 		if config.Clusters == nil {
 			config.Clusters = make(map[string]*clientcmdapi.Cluster)
@@ -134,7 +125,8 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 		config.Clusters[b.Context] = cluster
 	}
 
-	{
+	// If the user has the same name as the context, it is the admin user
+	if b.User == b.Context {
 		authInfo := config.AuthInfos[b.Context]
 		if authInfo == nil {
 			authInfo = clientcmdapi.NewAuthInfo()
@@ -158,6 +150,10 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 			config.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
 		}
 		config.AuthInfos[b.Context] = authInfo
+	} else if b.User != "" {
+		if config.AuthInfos[b.User] == nil {
+			return fmt.Errorf("could not find user %q", b.User)
+		}
 	}
 
 	// If we have a bearer token, also create a credential entry with basic auth
@@ -186,7 +182,9 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 		}
 
 		context.Cluster = b.Context
-		context.AuthInfo = b.Context
+		if b.User != "" {
+			context.AuthInfo = b.User
+		}
 
 		if b.Namespace != "" {
 			context.Namespace = b.Namespace
