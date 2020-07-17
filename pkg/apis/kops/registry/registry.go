@@ -29,6 +29,8 @@ const (
 	PathCluster = "config"
 	// Path for completed cluster spec in the state store
 	PathClusterCompleted = "cluster.spec"
+	// PathKopsVersionUpdated is the path for the version of kops last used to apply the cluster.
+	PathKopsVersionUpdated = "kops-version.txt"
 )
 
 func ConfigBase(c *api.Cluster) (vfs.Path, error) {
