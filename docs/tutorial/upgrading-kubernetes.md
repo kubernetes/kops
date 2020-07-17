@@ -13,7 +13,7 @@ Upgrading kubernetes is similar to changing the image on an InstanceGroup, excep
 controlled at the cluster level.  So instead of `kops edit ig <name>`, we `kops edit cluster`, and change the
 `kubernetesVersion` field.  `kops edit cluster` will open your editor with the cluster, similar to:
 
-```
+```yaml
 # Please edit the object below. Lines beginning with a '#' will be ignored,
 # and an empty file will abort the edit. If an error occurs while saving this file will be
 # reopened with the relevant failures.
@@ -21,7 +21,6 @@ controlled at the cluster level.  So instead of `kops edit ig <name>`, we `kops 
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
-  creationTimestamp: 2017-10-04T03:52:25Z
   name: simple.k8s.local
 spec:
   api:

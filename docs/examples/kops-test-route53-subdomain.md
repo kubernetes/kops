@@ -685,11 +685,10 @@ kops edit ig nodes
 
 An editor (whatever you have on the $EDITOR shell variable) will open with the following text:
 
-```
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-09-06T13:40:39Z
   labels:
     kops.k8s.io/cluster: mycluster01.kopsclustertest.example.org
   name: nodes
@@ -707,11 +706,10 @@ spec:
 
 Let's change minSize and maxSize to "3"
 
-```
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-09-06T13:40:39Z
   labels:
     kops.k8s.io/cluster: mycluster01.kopsclustertest.example.org
   name: nodes
