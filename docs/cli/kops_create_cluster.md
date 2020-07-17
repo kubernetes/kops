@@ -95,7 +95,7 @@ kops create cluster [flags]
       --master-zones strings             Zones in which to run masters (must be an odd number)
       --network-cidr string              Set to override the default network CIDR
       --networking string                Networking mode to use.  kubenet, external, weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni, lyftvpc. (default "kubenet")
-      --node-count int32                 Set number of nodes. Defaults to one node per zone
+      --node-count int32                 Set total number of nodes. Defaults to one node per zone
       --node-image string                Set image for nodes. Takes precedence over --image
       --node-security-groups strings     Add precreated additional security groups to nodes.
       --node-size string                 Set instance size for nodes
