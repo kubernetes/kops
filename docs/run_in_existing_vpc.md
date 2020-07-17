@@ -19,7 +19,6 @@ When launching into a shared VPC, the VPC & the Internet Gateway will be reused.
 
   ```yaml
   metadata:
-    creationTimestamp: "2016-06-27T14:23:34Z"
     name: ${CLUSTER_NAME}
   spec:
     cloudProvider: aws
@@ -73,7 +72,6 @@ AWS now allows you to add more CIDRs to a VPC, the param `additionalNetworkCIDRs
 
 ```yaml
 metadata:
-  creationTimestamp: "2016-06-27T14:23:34Z"
   name: ${CLUSTER_NAME}
 spec:
   cloudProvider: aws
@@ -122,7 +120,6 @@ spec:
 
   ```yaml
   metadata:
-    creationTimestamp: "2016-06-27T14:23:34Z"
     name: ${CLUSTER_NAME}
   spec:
     cloudProvider: aws

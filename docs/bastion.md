@@ -34,7 +34,6 @@ You should now be able to edit and configure your bastion instance group.
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-05T13:37:07Z"
   name: bastions
 spec:
   associatePublicIp: true
