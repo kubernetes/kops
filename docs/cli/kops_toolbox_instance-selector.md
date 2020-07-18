@@ -16,21 +16,24 @@ kops toolbox instance-selector [flags]
 ### Examples
 
 ```
+  kops toolbox instance-selector <ig name> [flags ...]
+  
   ## Create a best-practices spot instance-group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy
   ## --flexible defaults to a 1:2 vcpus to memory ratio and 4 vcpus
-  kops toolbox instance-selector --usage-class spot --flexible --instance-group-name my-spot-mig
+  kops toolbox instance-selector my-spot-mig --usage-class spot --flexible
   
   ## Create a best-practices on-demand instance-group with custom vcpus and memory range filters
-  kops toolbox instance-selector --instance-group-name ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2048 --memory-max 4096
+  kops toolbox instance-selector ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2048 --memory-max 4096
 ```
 
 ### Options
 
 ```
       --allow-list string                 List of allowed instance types to select from w/ regex syntax (Example: m[3-5]\.*)
+      --base-instance-type string         Base instance type to retrieve similarly spec'd instance types
       --burst-support                     Burstable instance types
       --cluster-autoscaler                Add auto-discovery tags for cluster-autoscaler to manage the instance-group
-      --cpu-architecture string           CPU architecture [x86_64, i386, arm64] (default "x86_64")
+      --cpu-architecture string           CPU architecture [amd64, arm64] (default "amd64")
       --deny-list string                  List of instance types which should be excluded w/ regex syntax (Example: m[1-2]\.*)
       --dry-run                           If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --ena-support                       Instance types where ENA is supported or required
@@ -42,9 +45,7 @@ kops toolbox instance-selector [flags]
       --gpus-max int                      Maximum Total number of GPUs (Example: 4) If --gpus-min is not specified, the lower bound will be 0
       --gpus-min int                      Minimum Total number of GPUs (Example: 4) If --gpus-max is not specified, the upper bound will be infinity
   -h, --help                              help for instance-selector
-      --instance-group-count int          Number of instance groups to create w/ different vcpus-to-memory-ratios starting at 1:2 and doubling.
-      --instance-group-name string        Name of the Instance-Group
-      --instance-type-base string         Base instance type to retrieve similarly spec'd instance types
+      --ig-count int                      Number of instance groups to create w/ different vcpus-to-memory-ratios starting at 1:2 and doubling.
       --max-results int                   Maximum number of instance types to return back (default 20)
       --memory int                        Amount of memory available in MiB (Example: 4096) (sets --memory-min and -max to the same value)
       --memory-max int                    Maximum Amount of memory available in MiB (Example: 4096) If --memory-min is not specified, the lower bound will be 0
@@ -58,12 +59,12 @@ kops toolbox instance-selector [flags]
       --node-volume-size int              Set instance volume size (in GiB) for nodes
   -o, --output string                     Output format. One of json|yaml. Used with the --dry-run flag. (default "yaml")
       --placement-group-strategy string   Placement group strategy: [cluster, partition, spread]
+      --subnets strings                   Subnet(s) in which to create the instance group. One of Availability Zone like eu-west-1a or utility-eu-west-1a,
       --usage-class string                Usage class: [spot, on-demand] (default "on-demand")
       --vcpus int                         Number of vcpus available to the instance type. (sets --vcpus-min and -max to the same value)
       --vcpus-max int                     Maximum Number of vcpus available to the instance type. If --vcpus-min is not specified, the lower bound will be 0
       --vcpus-min int                     Minimum Number of vcpus available to the instance type. If --vcpus-max is not specified, the upper bound will be infinity
       --vcpus-to-memory-ratio string      The ratio of vcpus to memory in MiB. (Example: 1:2)
-      --zones strings                     Availability zones or zone ids to check only EC2 capacity offered in those specific AZs
 ```
 
 ### Options inherited from parent commands
