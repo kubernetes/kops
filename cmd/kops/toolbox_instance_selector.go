@@ -57,7 +57,7 @@ const (
 
 // Aggregate Filter Flag Constants
 const (
-	instanceTypeBase = "instance-type-base"
+	instanceTypeBase = "base-instance-type"
 	flexible         = "flexible"
 )
 
