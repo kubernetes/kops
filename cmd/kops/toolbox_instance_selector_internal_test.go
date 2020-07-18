@@ -47,6 +47,7 @@ func TestGetInstanceSelectorOpts(t *testing.T) {
 	outputStr := "json"
 	commandline := cli.New("test", "test", "test", "test", nil)
 	commandline.Flags = map[string]interface{}{
+		instanceGroupName:  "test",
 		instanceGroupCount: count,
 		nodeCountMax:       count,
 		nodeCountMin:       count,
@@ -55,7 +56,6 @@ func TestGetInstanceSelectorOpts(t *testing.T) {
 		output:             outputStr,
 		dryRun:             true,
 		clusterAutoscaler:  true,
-		igName:             "test",
 	}
 
 	instanceSelectorOpts := getInstanceSelectorOpts(&commandline)

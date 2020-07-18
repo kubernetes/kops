@@ -64,7 +64,8 @@ const (
 
 // Control Flag Constants
 const (
-	instanceGroupCount = "instance-group-count"
+	instanceGroupName  = "ig-name"
+	instanceGroupCount = "ig-count"
 	nodeCountMin       = "node-count-min"
 	nodeCountMax       = "node-count-max"
 	nodeVolumeSize     = "node-volume-size"
@@ -72,7 +73,6 @@ const (
 	clusterAutoscaler  = "cluster-autoscaler"
 	usageClassSpot     = "spot"
 	usageClassOndemand = "on-demand"
-	igName             = "instance-group-name"
 	dryRun             = "dry-run"
 	output             = "output"
 )
@@ -102,10 +102,10 @@ var (
 
 	## Create a best-practices spot instance-group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy
 	## --flexible defaults to a 1:2 vcpus to memory ratio and 4 vcpus
-	kops toolbox instance-selector --usage-class spot --flexible --instance-group-name my-spot-mig
+	kops toolbox instance-selector --usage-class spot --flexible --ig-name my-spot-mig
 
 	## Create a best-practices on-demand instance-group with custom vcpus and memory range filters
-	kops toolbox instance-selector --instance-group-name ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2048 --memory-max 4096
+	kops toolbox instance-selector --ig-name ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2048 --memory-max 4096
 	`))
 
 	toolboxInstanceSelectorShort = i18n.T(`Generate on-demand or spot instance-group specs by providing resource specs like vcpus and memory.`)
@@ -132,7 +132,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 		}
 	}
 
-	cpuArchs := []string{"x86_64", "i386", "arm64"}
+	cpuArchs := []string{"x86_64", "arm64"}
 	cpuArchDefault := "x86_64"
 	placementGroupStrategies := []string{"cluster", "partition", "spread"}
 	usageClasses := []string{usageClassSpot, usageClassOndemand}
@@ -144,9 +144,9 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	nodeCountMaxDefault := 15
 	maxResultsDefault := 20
 
-	commandline.StringFlag(igName, nil, nil, "Name of the Instance-Group", func(val interface{}) error {
+	commandline.StringFlag(instanceGroupName, nil, nil, "Name of the Instance-Group", func(val interface{}) error {
 		if val == nil {
-			return fmt.Errorf("error you must supply --%s", igName)
+			return fmt.Errorf("error you must supply --%s", instanceGroupName)
 		}
 		matched, err := regexp.MatchString(nameRegex, *val.(*string))
 		if err != nil {
@@ -155,7 +155,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 		if matched {
 			return nil
 		}
-		return fmt.Errorf("error --%s must conform to the regex: \"%s\"", igName, nameRegex)
+		return fmt.Errorf("error --%s must conform to the regex: \"%s\"", instanceGroupName, nameRegex)
 	})
 
 	// Instance Group Node Configurations
@@ -211,12 +211,26 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 	if err != nil {
 		return err
 	}
+	
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
+		return fmt.Errorf("cannot select instance types from non-aws cluster")
+	}
 
-	zones, err := getClusterZones(cluster.Spec.Subnets)
+	clusterZones, err := getClusterZones(cluster.Spec.Subnets)
 	if err != nil {
 		return err
 	}
-	region := zones[0][:len(zones[0])-1]
+	region := clusterZones[0][:len(clusterZones[0])-1]
+
+	zones := clusterZones
+	if commandline.Flags[availabilityZones] != nil {
+		userZones := *commandline.StringSliceMe(commandline.Flags[availabilityZones])
+		zonesValid := validateZonesForCluster(userZones, clusterZones)
+		if !zonesValid {
+			fmt.Errorf("cannot pass in zones that the cluster does not have a subnet in: %v", err)
+		}
+		zones = userZones
+	} 
 
 	tags := map[string]string{"KubernetesCluster": clusterName}
 	cloud, err := awsup.NewAWSCloud(region, tags)
@@ -241,13 +255,13 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 		}
 	}
 
-	instanceGroupName := instanceSelectorOpts.InstanceGroupName
+	igName := instanceSelectorOpts.InstanceGroupName
 	newInstanceGroups := []*kops.InstanceGroup{}
 
 	for i := 0; i < igCount; i++ {
-		igNameForRun := instanceGroupName
+		igNameForRun := igName
 		if igCount != 1 {
-			igNameForRun = fmt.Sprintf("%s%d", instanceGroupName, i+1)
+			igNameForRun = fmt.Sprintf("%s%d", igName, i+1)
 		}
 		selectedInstanceTypes, err := instanceSelector.Filter(mutatedFilters)
 		if err != nil {
@@ -258,7 +272,16 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 		}
 		usageClass := *filters.UsageClass
 
-		ig := createInstanceGroup(igNameForRun, clusterName, zones)
+		subnets := []string{}
+		for _, zone := range zones {
+			subnetName, err := getClusterSubnetNameFromZone(cluster.Spec.Subnets, zone)
+			if err != nil {
+				return err
+			}
+			subnets = append(subnets, subnetName)
+		}
+
+		ig := createInstanceGroup(igNameForRun, clusterName, subnets)
 		ig = decorateWithInstanceGroupSpecs(ig, instanceSelectorOpts)
 		ig, err = decorateWithMixedInstancesPolicy(ig, usageClass, selectedInstanceTypes)
 		if err != nil {
@@ -389,7 +412,7 @@ func getInstanceSelectorOpts(commandline *cli.CommandLineInterface) InstanceSele
 	flags := commandline.Flags
 	opts.NodeCountMin = int32(*commandline.IntMe(flags[nodeCountMin]))
 	opts.NodeCountMax = int32(*commandline.IntMe(flags[nodeCountMax]))
-	opts.InstanceGroupName = *commandline.StringMe(flags[igName])
+	opts.InstanceGroupName = *commandline.StringMe(flags[instanceGroupName])
 	opts.Output = *commandline.StringMe(flags[output])
 	opts.DryRun = *commandline.BoolMe(flags[dryRun])
 	opts.ClusterAutoscaler = *commandline.BoolMe(flags[clusterAutoscaler])
@@ -423,11 +446,30 @@ func getClusterZones(subnets []kops.ClusterSubnetSpec) ([]string, error) {
 	return zones, nil
 }
 
-func createInstanceGroup(groupName, clusterName string, zones []string) *kops.InstanceGroup {
+func validateZonesForCluster(userZones []string, clusterZones []string) bool {
+	allClusterZones := strings.Join(clusterZones, ", ") 
+	for _, userZone := range userZones {
+		if !strings.Contains(allClusterZones, userZone) {
+			return false
+		}
+	}
+	return true
+}
+
+func getClusterSubnetNameFromZone(subnets []kops.ClusterSubnetSpec, zone string) (string, error) {
+	for _, subnet := range subnets {
+		if subnet.Zone == zone {
+			return subnet.Name, nil
+		}
+	}
+	return "", fmt.Errorf("error no subnets found for zone %s", zone)
+}
+
+func createInstanceGroup(groupName, clusterName string, subnets []string) *kops.InstanceGroup {
 	ig := &kops.InstanceGroup{}
 	ig.ObjectMeta.Name = groupName
 	ig.Spec.Role = kops.InstanceGroupRoleNode
-	ig.Spec.Subnets = zones
+	ig.Spec.Subnets = subnets
 	ig.ObjectMeta.Labels = make(map[string]string)
 	ig.ObjectMeta.Labels[kops.LabelClusterName] = clusterName
 
@@ -481,7 +523,7 @@ func decorateWithClusterAutoscalerLabels(instanceGroup *kops.InstanceGroup) *kop
 	if ig.Spec.CloudLabels == nil {
 		ig.Spec.CloudLabels = make(map[string]string)
 	}
-	ig.Spec.CloudLabels["k8s.io/cluster-autoscaler/enabled"] = igName
-	ig.Spec.CloudLabels["k8s.io/cluster-autoscaler/"+clusterName] = igName
+	ig.Spec.CloudLabels["k8s.io/cluster-autoscaler/enabled"] = "1"
+	ig.Spec.CloudLabels["k8s.io/cluster-autoscaler/"+clusterName] = "1"
 	return ig
 }
