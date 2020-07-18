@@ -25,7 +25,7 @@ kops update cluster [flags]
 ### Options
 
 ```
-      --admin                         Also export the admin user. Implies --create-kube-config
+      --admin duration[=18h0m0s]      Also export a cluster admin user credential with the specified lifetime and add it to the cluster context
       --allow-kops-downgrade          Allow an older version of kops to update the cluster than last used
       --create-kube-config            Will control automatically creating the kube config file on your local filesystem
   -h, --help                          help for cluster
