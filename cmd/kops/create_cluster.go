@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -613,7 +614,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		updateClusterOptions.Yes = c.Yes
 		updateClusterOptions.Target = c.Target
 		updateClusterOptions.OutDir = c.OutDir
-		updateClusterOptions.admin = true
+		updateClusterOptions.admin = kubeconfig.DefaultKubecfgAdminLifetime
 		updateClusterOptions.CreateKubecfg = true
 
 		// SSHPublicKey has already been mapped
