@@ -48,7 +48,7 @@ const (
 	usageClass             = "usage-class"
 	enaSupport             = "ena-support"
 	burstSupport           = "burst-support"
-	availabilityZones      = "zones"
+	subnets                = "subnets"
 	networkInterfaces      = "network-interfaces"
 	networkPerformance     = "network-performance"
 	allowList              = "allow-list"
@@ -184,7 +184,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	commandline.StringOptionsFlag(usageClass, nil, &usageClassDefault, fmt.Sprintf("Usage class: [%s]", strings.Join(usageClasses, ", ")), usageClasses)
 	commandline.BoolFlag(enaSupport, nil, nil, "Instance types where ENA is supported or required")
 	commandline.BoolFlag(burstSupport, nil, nil, "Burstable instance types")
-	commandline.StringSliceFlag(availabilityZones, nil, nil, "Availability zones or zone ids to check only EC2 capacity offered in those specific AZs")
+	commandline.StringSliceFlag(subnets, nil, nil, "Subnet(s) in which to create the instance group. One of Availability Zone like eu-west-1a or utility-eu-west-1a,")
 	commandline.IntMinMaxRangeFlags(networkInterfaces, nil, nil, "Number of network interfaces (ENIs) that can be attached to the instance")
 	commandline.RegexFlag(allowList, nil, nil, "List of allowed instance types to select from w/ regex syntax (Example: m[3-5]\\.*)")
 	commandline.RegexFlag(denyList, nil, nil, "List of instance types which should be excluded w/ regex syntax (Example: m[1-2]\\.*)")
@@ -216,21 +216,30 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 		return fmt.Errorf("cannot select instance types from non-aws cluster")
 	}
 
-	clusterZones, err := getClusterZones(cluster.Spec.Subnets)
-	if err != nil {
-		return err
+	if len(cluster.Spec.Subnets) == 0 {
+		return fmt.Errorf("error the cluster must have at least 1 subnet")
 	}
-	region := clusterZones[0][:len(clusterZones[0])-1]
+	firstClusterSubnet := strings.ReplaceAll(cluster.Spec.Subnets[0].Name, "utility-", "")
+	region := firstClusterSubnet[:len(firstClusterSubnet)-1]
 
-	zones := clusterZones
-	if commandline.Flags[availabilityZones] != nil {
-		userZones := *commandline.StringSliceMe(commandline.Flags[availabilityZones])
-		zonesValid := validateZonesForCluster(userZones, clusterZones)
-		if !zonesValid {
-			fmt.Errorf("cannot pass in zones that the cluster does not have a subnet in: %v", err)
+	igSubnets := []string{}
+	for _, clusterSubnet := range cluster.Spec.Subnets {
+		igSubnets = append(igSubnets, clusterSubnet.Name)
+	}
+	
+	if commandline.Flags[subnets] != nil {
+		userSubnets := *commandline.StringSliceMe(commandline.Flags[subnets])
+		err := validateUserSubnets(userSubnets, cluster.Spec.Subnets)
+		if err != nil {
+			return err
 		}
-		zones = userZones
-	} 
+		igSubnets = userSubnets
+	}
+	
+	zones := []string{}
+	for _, igSubnet := range igSubnets {
+		zones = append(zones, strings.ReplaceAll(igSubnet, "utility-", ""))
+	}
 
 	tags := map[string]string{"KubernetesCluster": clusterName}
 	cloud, err := awsup.NewAWSCloud(region, tags)
@@ -246,7 +255,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 	if flags[instanceGroupCount] == nil {
 		igCount = 1
 	}
-	filters := getFilters(commandline, region)
+	filters := getFilters(commandline, region, zones)
 	mutatedFilters := filters
 	if flags[instanceGroupCount] != nil || filters.Flexible != nil {
 		if filters.VCpusToMemoryRatio == nil {
@@ -272,16 +281,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 		}
 		usageClass := *filters.UsageClass
 
-		subnets := []string{}
-		for _, zone := range zones {
-			subnetName, err := getClusterSubnetNameFromZone(cluster.Spec.Subnets, zone)
-			if err != nil {
-				return err
-			}
-			subnets = append(subnets, subnetName)
-		}
-
-		ig := createInstanceGroup(igNameForRun, clusterName, subnets)
+		ig := createInstanceGroup(igNameForRun, clusterName, igSubnets)
 		ig = decorateWithInstanceGroupSpecs(ig, instanceSelectorOpts)
 		ig, err = decorateWithMixedInstancesPolicy(ig, usageClass, selectedInstanceTypes)
 		if err != nil {
@@ -382,7 +382,7 @@ func retrieveClusterRefs(ctx context.Context, f *util.Factory, clusterName strin
 	return clientset, cluster, channel, nil
 }
 
-func getFilters(commandline *cli.CommandLineInterface, region string) selector.Filters {
+func getFilters(commandline *cli.CommandLineInterface, region string, zones []string) selector.Filters {
 	flags := commandline.Flags
 	return selector.Filters{
 		VCpusRange:             commandline.IntRangeMe(flags[vcpus]),
@@ -396,7 +396,7 @@ func getFilters(commandline *cli.CommandLineInterface, region string) selector.F
 		EnaSupport:             commandline.BoolMe(flags[enaSupport]),
 		Burstable:              commandline.BoolMe(flags[burstSupport]),
 		Region:                 commandline.StringMe(region),
-		AvailabilityZones:      commandline.StringSliceMe(flags[availabilityZones]),
+		AvailabilityZones:      commandline.StringSliceMe(zones),
 		MaxResults:             commandline.IntMe(flags[maxResults]),
 		NetworkInterfaces:      commandline.IntRangeMe(flags[networkInterfaces]),
 		NetworkPerformance:     commandline.IntRangeMe(flags[networkPerformance]),
@@ -429,40 +429,47 @@ func getInstanceSelectorOpts(commandline *cli.CommandLineInterface) InstanceSele
 	return opts
 }
 
-func getClusterZones(subnets []kops.ClusterSubnetSpec) ([]string, error) {
-	region := ""
-	zones := []string{}
-	for _, subnet := range subnets {
-		zoneRegion := subnet.Zone[:len(subnet.Zone)-1]
-		zones = append(zones, subnet.Zone)
-		if region != "" && zoneRegion != region {
-			return nil, fmt.Errorf("clusters cannot span multiple regions")
-		}
-		region = zoneRegion
+func validateUserSubnets(userSubnets []string, clusterSubnets []kops.ClusterSubnetSpec) error {
+	err := validateUserSubnetsWithClusterSubnets(userSubnets, clusterSubnets)
+	if err != nil {
+		return err
 	}
-	if len(zones) == 0 {
-		return nil, fmt.Errorf("the cluster must include at least 1 subnet")
+	err = validateAllPrivateOrPublicSubnets(userSubnets)
+	if err != nil {
+		return err
 	}
-	return zones, nil
+	return nil
 }
 
-func validateZonesForCluster(userZones []string, clusterZones []string) bool {
-	allClusterZones := strings.Join(clusterZones, ", ") 
-	for _, userZone := range userZones {
-		if !strings.Contains(allClusterZones, userZone) {
-			return false
+// validateUserSubnetsWithClusterSubnets makes sure the userSubnets are part of the cluster subnets
+func validateUserSubnetsWithClusterSubnets(userSubnets []string, clusterSubnets []kops.ClusterSubnetSpec) error {
+	for _, clusterSubnet := range clusterSubnets {
+		userSubnetValid := false
+		for _, userSubnet := range userSubnets {
+			if clusterSubnet.Name == userSubnet {
+				userSubnetValid = true
+				break
+			}
+		}
+		if !userSubnetValid {
+			return fmt.Errorf("error subnets must exist in the cluster")
 		}
 	}
-	return true
-}
+	return nil
+} 
 
-func getClusterSubnetNameFromZone(subnets []kops.ClusterSubnetSpec, zone string) (string, error) {
-	for _, subnet := range subnets {
-		if subnet.Zone == zone {
-			return subnet.Name, nil
+// validateAllPrivateOrPublicSubnets makes sure the passed in subnets are all utility (public) subnets or private subnets
+func validateAllPrivateOrPublicSubnets(userSubnets []string) error {
+	utilitySubnets := 0
+	for _, userSubnet := range userSubnets {
+		if strings.HasPrefix("utility-", userSubnet) {
+			utilitySubnets++
 		}
 	}
-	return "", fmt.Errorf("error no subnets found for zone %s", zone)
+	if utilitySubnets != 0 && len(userSubnets) == utilitySubnets {
+		return fmt.Errorf("error instance group cannot span public and private subnets")
+	}
+	return nil
 }
 
 func createInstanceGroup(groupName, clusterName string, subnets []string) *kops.InstanceGroup {
@@ -486,6 +493,7 @@ func decorateWithInstanceGroupSpecs(instanceGroup *kops.InstanceGroup, instanceG
 	return ig
 }
 
+// decorateWithMixedInstancesPolicy adds a mixed instance policy based on usageClass to the instance-group
 func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageClass string, instanceSelections []string) (*kops.InstanceGroup, error) {
 	ig := instanceGroup
 	ig.Spec.MachineType = instanceSelections[0]
@@ -517,6 +525,7 @@ func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageCl
 	return ig, nil
 }
 
+// decorateWithClusterAutoscalerLabels adds cluster-autoscaler discovery tags to the cloudlabels slice
 func decorateWithClusterAutoscalerLabels(instanceGroup *kops.InstanceGroup) *kops.InstanceGroup {
 	ig := instanceGroup
 	clusterName := instanceGroup.ObjectMeta.Name

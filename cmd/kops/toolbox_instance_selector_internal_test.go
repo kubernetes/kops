@@ -33,7 +33,7 @@ func TestGetFilters(t *testing.T) {
 		denyList:  regexp.MustCompile("t3.nano"),
 	}
 
-	filters := getFilters(&commandline, "us-east-2")
+	filters := getFilters(&commandline, "us-east-2", []string{"us-east-2a"})
 	if !*filters.Flexible {
 		t.Fatalf("Flexible should be true")
 	}
@@ -75,32 +75,72 @@ func TestGetInstanceSelectorOpts(t *testing.T) {
 	}
 }
 
-func TestGetClusterZones(t *testing.T) {
-	subnets := []kops.ClusterSubnetSpec{
-		{
-			Name: "subnet-1234",
-			Zone: "us-east-2a",
-		},
-		{
-			Name: "subnet-987",
-			Zone: "us-east-2b",
-		},
-	}
-	zones, err := getClusterZones(subnets)
+func TestValidateAllPrivateOrPublicSubnets(t *testing.T) {
+	userSubnets := []string{"utility-us-east-2a", "utility-us-east-2b", "utility-us-east-2c"}
+	err := validateAllPrivateOrPublicSubnets(userSubnets)
 	if err != nil {
-		t.Fatalf("an error occurred getting cluster zones")
-	}
-	if len(zones) != 2 {
-		t.Fatalf("should have received two zones from the cluster subnets but only received %d", len(zones))
+		t.Fatalf("should have passed validation since all user subnets were utility- subnets")
 	}
 
-	// Cross-Region Failure Case
-	subnets[0].Zone = "us-west-2a"
-	_, err = getClusterZones(subnets)
+	userSubnets = []string{"us-east-2a", "us-east-2b", "us-east-2c"}
+	err = validateAllPrivateOrPublicSubnets(userSubnets)
+	if err != nil {
+		t.Fatalf("should have passed validation since all user subnets were private subnets")
+	}
+
+	userSubnets = []string{"utility-us-east-2a", "utility-us-east-2b", "us-east-2c"}
+	err = validateAllPrivateOrPublicSubnets(userSubnets)
 	if err == nil {
-		t.Fatalf("should receive an error when passing in subnets that span multiple regions")
+		t.Fatalf("should have failed validation since one zone is not a utility- subnet")
+	}
+}
+
+func TestValidateUserSubnetsWithClusterSubnets(t *testing.T) {
+	clusterSubnets := []kops.ClusterSubnetSpec{
+		{ 
+			Name: "us-east-2a", 
+		}, 
+		{ 
+			Name: "us-east-2b", 
+		},
+	}
+	userSubnets := []string{"us-east-2a", "us-east-2b"}
+
+	err := validateUserSubnetsWithClusterSubnets(userSubnets, clusterSubnets)
+	if err != nil {
+		t.Fatalf("should have passed since userSubnets and clusterSubnets match")
 	}
 
+	clusterSubnets = []kops.ClusterSubnetSpec{
+		{
+			Name: "us-east-2a",
+		},
+		{
+			Name: "us-east-2b",
+		},
+	}
+	userSubnets = []string{"us-east-2a"}
+
+	err = validateUserSubnetsWithClusterSubnets(userSubnets, clusterSubnets)
+	if err != nil {
+		t.Fatalf("should have passed since userSubnets are a subset of clusterSubnets")
+	}
+
+
+	clusterSubnets = []kops.ClusterSubnetSpec{
+		{
+			Name: "us-east-2a",
+		},
+		{
+			Name: "us-east-2b",
+		},
+	}
+	userSubnets = []string{"us-east-2c"}
+
+	err = validateUserSubnetsWithClusterSubnets(userSubnets, clusterSubnets)
+	if err == nil {
+		t.Fatalf("should have failed since userSubnets are not a subset of clusterSubnets")
+	}
 }
 
 func TestCreateInstanceGroup(t *testing.T) {
