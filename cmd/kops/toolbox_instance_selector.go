@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
 	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli"
@@ -64,21 +63,19 @@ const (
 
 // Control Flag Constants
 const (
-	instanceGroupName  = "ig-name"
-	instanceGroupCount = "ig-count"
-	nodeCountMin       = "node-count-min"
-	nodeCountMax       = "node-count-max"
-	nodeVolumeSize     = "node-volume-size"
-	nodeSecurityGroups = "node-security-groups"
-	clusterAutoscaler  = "cluster-autoscaler"
-	usageClassSpot     = "spot"
-	usageClassOndemand = "on-demand"
-	dryRun             = "dry-run"
-	output             = "output"
-)
-
-const (
-	nameRegex = `^[a-zA-Z0-9\-_]{1,128}$`
+	instanceGroupCount   = "ig-count"
+	nodeCountMin         = "node-count-min"
+	nodeCountMax         = "node-count-max"
+	nodeVolumeSize       = "node-volume-size"
+	nodeSecurityGroups   = "node-security-groups"
+	clusterAutoscaler    = "cluster-autoscaler"
+	usageClassSpot       = "spot"
+	usageClassOndemand   = "on-demand"
+	dryRun               = "dry-run"
+	output               = "output"
+	cpuArchitectureAMD64 = "amd64"
+	cpuArchitectureX8664 = "x86_64"
+	cpuArchitectureARM64 = "arm64"
 )
 
 // InstanceSelectorOptions is a struct representing non-filter flags passed into instance-selector
@@ -100,12 +97,14 @@ var (
 
 	toolboxInstanceSelectorExample = templates.Examples(i18n.T(`
 
+	kops toolbox instance-selector <ig name> [flags ...]
+
 	## Create a best-practices spot instance-group using a MixInstancesPolicy and Capacity-Optimized spot allocation strategy
 	## --flexible defaults to a 1:2 vcpus to memory ratio and 4 vcpus
-	kops toolbox instance-selector --usage-class spot --flexible --ig-name my-spot-mig
+	kops toolbox instance-selector my-spot-mig --usage-class spot --flexible
 
 	## Create a best-practices on-demand instance-group with custom vcpus and memory range filters
-	kops toolbox instance-selector --ig-name ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2048 --memory-max 4096
+	kops toolbox instance-selector ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2048 --memory-max 4096
 	`))
 
 	toolboxInstanceSelectorShort = i18n.T(`Generate on-demand or spot instance-group specs by providing resource specs like vcpus and memory.`)
@@ -123,17 +122,14 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	commandline.Command.Run = func(cmd *cobra.Command, args []string) {
 		ctx := context.TODO()
 
-		if err := rootCommand.ProcessArgs(args); err != nil {
-			exitWithError(err)
-		}
-		err := RunToolboxInstanceSelector(ctx, f, out, rootCommand.ClusterName(), &commandline)
+		err := RunToolboxInstanceSelector(ctx, f, args, out, &commandline)
 		if err != nil {
 			exitWithError(err)
 		}
 	}
 
-	cpuArchs := []string{"x86_64", "arm64"}
-	cpuArchDefault := "x86_64"
+	cpuArchs := []string{cpuArchitectureAMD64, cpuArchitectureARM64}
+	cpuArchDefault := cpuArchitectureAMD64
 	placementGroupStrategies := []string{"cluster", "partition", "spread"}
 	usageClasses := []string{usageClassSpot, usageClassOndemand}
 	usageClassDefault := usageClassOndemand
@@ -143,20 +139,6 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	nodeCountMinDefault := 2
 	nodeCountMaxDefault := 15
 	maxResultsDefault := 20
-
-	commandline.StringFlag(instanceGroupName, nil, nil, "Name of the Instance-Group", func(val interface{}) error {
-		if val == nil {
-			return fmt.Errorf("error you must supply --%s", instanceGroupName)
-		}
-		matched, err := regexp.MatchString(nameRegex, *val.(*string))
-		if err != nil {
-			return err
-		}
-		if matched {
-			return nil
-		}
-		return fmt.Errorf("error --%s must conform to the regex: \"%s\"", instanceGroupName, nameRegex)
-	})
 
 	// Instance Group Node Configurations
 
@@ -177,7 +159,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	commandline.IntMinMaxRangeFlags(vcpus, nil, nil, "Number of vcpus available to the instance type.")
 	commandline.IntMinMaxRangeFlags(memory, nil, nil, "Amount of memory available in MiB (Example: 4096)")
 	commandline.RatioFlag(vcpusToMemoryRatio, nil, nil, "The ratio of vcpus to memory in MiB. (Example: 1:2)")
-	commandline.StringOptionsFlag(cpuArchitecture, nil, &cpuArchDefault, fmt.Sprintf("CPU architecture [%s]", strings.Join(cpuArchs, ", ")), cpuArchs)
+	commandline.StringOptionsFlag(cpuArchitecture, nil, &cpuArchDefault, fmt.Sprintf("CPU architecture [%s]", strings.Join(cpuArchs, ", ")), append(cpuArchs, cpuArchitectureX8664))
 	commandline.IntMinMaxRangeFlags(gpus, nil, nil, "Total number of GPUs (Example: 4)")
 	commandline.IntMinMaxRangeFlags(gpuMemoryTotal, nil, nil, "Number of GPUs' total memory in MiB (Example: 4096)")
 	commandline.StringOptionsFlag(placementGroupStrategy, nil, nil, fmt.Sprintf("Placement group strategy: [%s]", strings.Join(placementGroupStrategies, ", ")), placementGroupStrategies)
@@ -199,26 +181,31 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 }
 
 // RunToolboxInstanceSelector executes the instance-selector tool to create instance groups with declarative resource specifications
-func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Writer, clusterName string, commandline *cli.CommandLineInterface) error {
+func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []string, out io.Writer, commandline *cli.CommandLineInterface) error {
+	if len(args) == 0 {
+		return fmt.Errorf("Specify name of instance group to create")
+	}
+	if len(args) != 1 {
+		return fmt.Errorf("Can only specify one instance group name at a time")
+	}
+	igName := args[0]
 
-	flags, err := processAndValidateFlags(commandline, clusterName)
+	flags, err := processAndValidateFlags(commandline)
 	if err != nil {
 		return err
 	}
 	instanceSelectorOpts := getInstanceSelectorOpts(commandline)
+	instanceSelectorOpts.InstanceGroupName = igName
 
-	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f, clusterName)
+	clientset, cluster, channel, err := retrieveClusterRefs(ctx, f)
 	if err != nil {
 		return err
 	}
-	
+
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
 		return fmt.Errorf("cannot select instance types from non-aws cluster")
 	}
 
-	if len(cluster.Spec.Subnets) == 0 {
-		return fmt.Errorf("error the cluster must have at least 1 subnet")
-	}
 	firstClusterSubnet := strings.ReplaceAll(cluster.Spec.Subnets[0].Name, "utility-", "")
 	region := firstClusterSubnet[:len(firstClusterSubnet)-1]
 
@@ -226,22 +213,23 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 	for _, clusterSubnet := range cluster.Spec.Subnets {
 		igSubnets = append(igSubnets, clusterSubnet.Name)
 	}
-	
+
 	if commandline.Flags[subnets] != nil {
 		userSubnets := *commandline.StringSliceMe(commandline.Flags[subnets])
+		dryRun := *commandline.BoolMe(commandline.Flags[dryRun])
 		err := validateUserSubnets(userSubnets, cluster.Spec.Subnets)
-		if err != nil {
+		if err != nil && !dryRun {
 			return err
 		}
 		igSubnets = userSubnets
 	}
-	
+
 	zones := []string{}
 	for _, igSubnet := range igSubnets {
 		zones = append(zones, strings.ReplaceAll(igSubnet, "utility-", ""))
 	}
 
-	tags := map[string]string{"KubernetesCluster": clusterName}
+	tags := map[string]string{"KubernetesCluster": cluster.ClusterName}
 	cloud, err := awsup.NewAWSCloud(region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
@@ -264,7 +252,6 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 		}
 	}
 
-	igName := instanceSelectorOpts.InstanceGroupName
 	newInstanceGroups := []*kops.InstanceGroup{}
 
 	for i := 0; i < igCount; i++ {
@@ -281,7 +268,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 		}
 		usageClass := *filters.UsageClass
 
-		ig := createInstanceGroup(igNameForRun, clusterName, igSubnets)
+		ig := createInstanceGroup(igNameForRun, cluster.ClusterName, igSubnets)
 		ig = decorateWithInstanceGroupSpecs(ig, instanceSelectorOpts)
 		ig, err = decorateWithMixedInstancesPolicy(ig, usageClass, selectedInstanceTypes)
 		if err != nil {
@@ -335,7 +322,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, out io.Wri
 	return nil
 }
 
-func processAndValidateFlags(commandline *cli.CommandLineInterface, clusterName string) (map[string]interface{}, error) {
+func processAndValidateFlags(commandline *cli.CommandLineInterface) (map[string]interface{}, error) {
 	if err := commandline.SetUntouchedFlagValuesToNil(); err != nil {
 		return nil, err
 	}
@@ -348,26 +335,22 @@ func processAndValidateFlags(commandline *cli.CommandLineInterface, clusterName 
 		return nil, err
 	}
 
-	if clusterName == "" {
-		return nil, fmt.Errorf("ClusterName is required")
-	}
-
 	return commandline.Flags, nil
 }
 
-func retrieveClusterRefs(ctx context.Context, f *util.Factory, clusterName string) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
+func retrieveClusterRefs(ctx context.Context, f *util.Factory) (simple.Clientset, *kops.Cluster, *kops.Channel, error) {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	cluster, err := clientset.GetCluster(ctx, clusterName)
+	cluster, err := rootCommand.Cluster(ctx)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
 	if cluster == nil {
-		return nil, nil, nil, fmt.Errorf("cluster %q not found", clusterName)
+		return nil, nil, nil, fmt.Errorf("cluster not found")
 	}
 
 	channel, err := cloudup.ChannelForCluster(cluster)
@@ -384,7 +367,7 @@ func retrieveClusterRefs(ctx context.Context, f *util.Factory, clusterName strin
 
 func getFilters(commandline *cli.CommandLineInterface, region string, zones []string) selector.Filters {
 	flags := commandline.Flags
-	return selector.Filters{
+	filters := selector.Filters{
 		VCpusRange:             commandline.IntRangeMe(flags[vcpus]),
 		MemoryRange:            commandline.IntRangeMe(flags[memory]),
 		VCpusToMemoryRatio:     commandline.Float64Me(flags[vcpusToMemoryRatio]),
@@ -405,6 +388,11 @@ func getFilters(commandline *cli.CommandLineInterface, region string, zones []st
 		InstanceTypeBase:       commandline.StringMe(flags[instanceTypeBase]),
 		Flexible:               commandline.BoolMe(flags[flexible]),
 	}
+	// convert amd64 to x86_64 for the ec2 api
+	if filters.CPUArchitecture != nil && *filters.CPUArchitecture == cpuArchitectureAMD64 {
+		filters.CPUArchitecture = commandline.StringMe(cpuArchitectureX8664)
+	}
+	return filters
 }
 
 func getInstanceSelectorOpts(commandline *cli.CommandLineInterface) InstanceSelectorOptions {
@@ -412,7 +400,6 @@ func getInstanceSelectorOpts(commandline *cli.CommandLineInterface) InstanceSele
 	flags := commandline.Flags
 	opts.NodeCountMin = int32(*commandline.IntMe(flags[nodeCountMin]))
 	opts.NodeCountMax = int32(*commandline.IntMe(flags[nodeCountMax]))
-	opts.InstanceGroupName = *commandline.StringMe(flags[instanceGroupName])
 	opts.Output = *commandline.StringMe(flags[output])
 	opts.DryRun = *commandline.BoolMe(flags[dryRun])
 	opts.ClusterAutoscaler = *commandline.BoolMe(flags[clusterAutoscaler])
@@ -443,9 +430,9 @@ func validateUserSubnets(userSubnets []string, clusterSubnets []kops.ClusterSubn
 
 // validateUserSubnetsWithClusterSubnets makes sure the userSubnets are part of the cluster subnets
 func validateUserSubnetsWithClusterSubnets(userSubnets []string, clusterSubnets []kops.ClusterSubnetSpec) error {
-	for _, clusterSubnet := range clusterSubnets {
+	for _, userSubnet := range userSubnets {
 		userSubnetValid := false
-		for _, userSubnet := range userSubnets {
+		for _, clusterSubnet := range clusterSubnets {
 			if clusterSubnet.Name == userSubnet {
 				userSubnetValid = true
 				break
@@ -456,17 +443,18 @@ func validateUserSubnetsWithClusterSubnets(userSubnets []string, clusterSubnets 
 		}
 	}
 	return nil
-} 
+}
 
 // validateAllPrivateOrPublicSubnets makes sure the passed in subnets are all utility (public) subnets or private subnets
 func validateAllPrivateOrPublicSubnets(userSubnets []string) error {
 	utilitySubnets := 0
 	for _, userSubnet := range userSubnets {
-		if strings.HasPrefix("utility-", userSubnet) {
+		if strings.HasPrefix(userSubnet, "utility-") {
 			utilitySubnets++
 		}
 	}
-	if utilitySubnets != 0 && len(userSubnets) == utilitySubnets {
+
+	if utilitySubnets != 0 && len(userSubnets) != utilitySubnets {
 		return fmt.Errorf("error instance group cannot span public and private subnets")
 	}
 	return nil
