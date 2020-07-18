@@ -353,6 +353,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 					},
 				},
 			},
+			IAM: &kops.IAMSpec{},
 		}
 		errs := validateClusterSpec(clusterSpec, &kops.Cluster{Spec: *clusterSpec}, field.NewPath("spec"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)

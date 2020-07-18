@@ -90,6 +90,8 @@ var (
 	TerraformJSON = New("TerraformJSON", Bool(false))
 	// Terraform012 will output terraform in the 0.12 (hcl2) syntax
 	Terraform012 = New("Terraform-0.12", Bool(true))
+	// LegacyIAM will permit use of legacy IAM permissions.
+	LegacyIAM = New("LegacyIAM", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

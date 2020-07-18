@@ -22,6 +22,7 @@ spec:
       name: master-us-test-1a
     version: 3.1.12
     name: events
+  iam: {}
   kubernetesVersion: 1.14.11
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
