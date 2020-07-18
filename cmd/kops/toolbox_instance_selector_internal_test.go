@@ -47,7 +47,6 @@ func TestGetInstanceSelectorOpts(t *testing.T) {
 	outputStr := "json"
 	commandline := cli.New("test", "test", "test", "test", nil)
 	commandline.Flags = map[string]interface{}{
-		instanceGroupName:  "test",
 		instanceGroupCount: count,
 		nodeCountMax:       count,
 		nodeCountMin:       count,
@@ -69,9 +68,6 @@ func TestGetInstanceSelectorOpts(t *testing.T) {
 	}
 	if !instanceSelectorOpts.DryRun || !instanceSelectorOpts.ClusterAutoscaler {
 		t.Fatalf("dryRun and clusterAutoscaler should be true, got false instead")
-	}
-	if instanceSelectorOpts.InstanceGroupName != "test" {
-		t.Fatalf("instance group name should have been test")
 	}
 }
 
@@ -97,11 +93,11 @@ func TestValidateAllPrivateOrPublicSubnets(t *testing.T) {
 
 func TestValidateUserSubnetsWithClusterSubnets(t *testing.T) {
 	clusterSubnets := []kops.ClusterSubnetSpec{
-		{ 
-			Name: "us-east-2a", 
-		}, 
-		{ 
-			Name: "us-east-2b", 
+		{
+			Name: "us-east-2a",
+		},
+		{
+			Name: "us-east-2b",
 		},
 	}
 	userSubnets := []string{"us-east-2a", "us-east-2b"}
@@ -125,7 +121,6 @@ func TestValidateUserSubnetsWithClusterSubnets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("should have passed since userSubnets are a subset of clusterSubnets")
 	}
-
 
 	clusterSubnets = []kops.ClusterSubnetSpec{
 		{
