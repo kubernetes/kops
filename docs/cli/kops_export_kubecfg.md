@@ -26,11 +26,11 @@ kops export kubecfg CLUSTERNAME [flags]
 ### Options
 
 ```
-      --admin               export the cluster admin user and add it to the context
-      --all                 export all clusters from the kops state store
-  -h, --help                help for kubecfg
-      --kubeconfig string   the location of the kubeconfig file to create.
-      --user string         add an existing user to the cluster context
+      --admin duration[=18h0m0s]   export a cluster admin user credential with the given lifetime and add it to the cluster context
+      --all                        export all clusters from the kops state store
+  -h, --help                       help for kubecfg
+      --kubeconfig string          the location of the kubeconfig file to create.
+      --user string                add an existing user to the cluster context
 ```
 
 ### Options inherited from parent commands
