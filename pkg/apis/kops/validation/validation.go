@@ -179,6 +179,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		}
 	}
 
+	if (spec.IAM == nil || spec.IAM.Legacy) && !featureflag.LegacyIAM.Enabled() {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("iam", "legacy"), "legacy IAM permissions are no longer supported"))
+	}
+
 	if spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
