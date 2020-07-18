@@ -27,6 +27,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  iam: {}
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
     auditWebhookBatchThrottleQps: 3.14
