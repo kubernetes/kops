@@ -35,6 +35,8 @@ import (
 )
 
 type BootstrapClient struct {
+	// Authenticator generates authentication credentials for requests.
+	Authenticator fi.Authenticator
 	// CA is the CA certificate for kops-controller.
 	CA []byte
 
@@ -43,6 +45,11 @@ type BootstrapClient struct {
 
 var _ fi.Task = &BootstrapClient{}
 var _ fi.HasName = &BootstrapClient{}
+var _ fi.HasDependencies = &BootstrapClient{}
+
+func (b *BootstrapClient) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
 
 func (b *BootstrapClient) GetName() *string {
 	name := "BootstrapClient"
@@ -91,7 +98,19 @@ func (b *BootstrapClient) queryBootstrap(c *fi.Context, req nodeup.BootstrapRequ
 		Host:   net.JoinHostPort(c.Cluster.Spec.MasterInternalName, strconv.Itoa(wellknownports.KopsControllerPort)),
 		Path:   "/bootstrap",
 	}
-	resp, err := b.client.Post(bootstrapUrl.String(), "application/json", bytes.NewReader(reqBytes))
+	httpReq, err := http.NewRequest("POST", bootstrapUrl.String(), bytes.NewReader(reqBytes))
+	if err != nil {
+		return err
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	token, err := b.Authenticator.CreateToken(reqBytes)
+	if err != nil {
+		return err
+	}
+	httpReq.Header.Set("Authorization", token)
+
+	resp, err := b.client.Do(httpReq)
 	if err != nil {
 		return err
 	}

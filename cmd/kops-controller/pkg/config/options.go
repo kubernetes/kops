@@ -16,6 +16,8 @@ limitations under the License.
 
 package config
 
+import "k8s.io/kops/pkg/apis/kops"
+
 type Options struct {
 	Cloud      string         `json:"cloud,omitempty"`
 	ConfigBase string         `json:"configBase,omitempty"`
@@ -28,6 +30,9 @@ func (o *Options) PopulateDefaults() {
 type ServerOptions struct {
 	// Listen is the network endpoint (ip and port) we should listen on.
 	Listen string
+
+	// Provider is the cloud provider.
+	Provider kops.CloudProviderID `json:"provider"`
 
 	// ServerKeyPath is the path to our TLS serving private key.
 	ServerKeyPath string `json:"serverKeyPath,omitempty"`
