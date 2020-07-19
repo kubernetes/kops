@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "assetstore.go",
+        "authenticate.go",
         "ca.go",
         "changes.go",
         "clientset_castore.go",

@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"runtime/debug"
 
@@ -27,14 +28,16 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type Server struct {
-	opt    *config.Options
-	server *http.Server
+	opt      *config.Options
+	server   *http.Server
+	verifier fi.Verifier
 }
 
-func NewServer(opt *config.Options) (*Server, error) {
+func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 	server := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
@@ -44,8 +47,9 @@ func NewServer(opt *config.Options) (*Server, error) {
 	}
 
 	s := &Server{
-		opt:    opt,
-		server: server,
+		opt:      opt,
+		server:   server,
+		verifier: verifier,
 	}
 	r := mux.NewRouter()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
@@ -65,10 +69,26 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: authenticate request
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		klog.Infof("bootstrap %s read err: %v", r.RemoteAddr, err)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(fmt.Sprintf("bootstrap %s failed to read body: %v", r.RemoteAddr, err)))
+		return
+	}
+
+	id, err := s.verifier.VerifyToken(r.Header.Get("Authorization"), body)
+	if err != nil {
+		klog.Infof("bootstrap %s verify err: %v", r.RemoteAddr, err)
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(fmt.Sprintf("failed to verify token: %v", err)))
+		return
+	}
+
+	klog.Infof("id is %s", id) // todo do something with id
 
 	req := &nodeup.BootstrapRequest{}
-	err := json.NewDecoder(r.Body).Decode(req)
+	err = json.Unmarshal(body, req)
 	if err != nil {
 		klog.Infof("bootstrap %s decode err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusBadRequest)

@@ -30,11 +30,14 @@ import (
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -83,7 +86,20 @@ func main() {
 
 	ctrl.SetLogger(klogr.New())
 	if opt.Server != nil {
-		srv, err := server.NewServer(&opt)
+		var verifier fi.Verifier
+		var err error
+		switch opt.Server.Provider {
+		case kops.CloudProviderAWS:
+			verifier, err = awsup.NewAWSVerifier()
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+		default:
+			klog.Fatalf("server for cloud provider %s is not supported", opt.Server.Provider)
+		}
+
+		srv, err := server.NewServer(&opt, verifier)
 		if err != nil {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
