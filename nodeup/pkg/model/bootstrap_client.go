@@ -17,7 +17,11 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -31,13 +35,26 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	var authenticator fi.Authenticator
+	var err error
+	switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
+		authenticator, err = awsup.NewAWSAuthenticator()
+	default:
+		return fmt.Errorf("unsupported cloud provider %s", b.Cluster.Spec.CloudProvider)
+	}
+	if err != nil {
+		return err
+	}
+
 	cert, err := b.GetCert(fi.CertificateIDCA)
 	if err != nil {
 		return err
 	}
 
 	bootstrapClient := &nodetasks.BootstrapClient{
-		CA: cert,
+		Authenticator: authenticator,
+		CA:            cert,
 	}
 	c.AddTask(bootstrapClient)
 	return nil
