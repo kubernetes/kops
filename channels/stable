@@ -87,7 +87,7 @@ spec:
     requiredVersion: 1.11.10
   kopsVersions:
   - range: ">=1.19.0-alpha.1"
-    recommendedVersion: "1.19.0-alpha.1"
+    #recommendedVersion: "1.19.0-alpha.1"
     #requiredVersion: 1.19.0
     kubernetesVersion: 1.19.0-rc.1
   - range: ">=1.18.0-alpha.1"
