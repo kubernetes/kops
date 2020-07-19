@@ -31,7 +31,7 @@ def define_env(env):
 
         # this dict object maps the kwarg to its description, which will be used in the final table
         supported_args = {
-            'kops_added_ff':  'Alpha (Feature Flag)',
+            'kops_added_ff': 'Alpha (Feature Flag)',
             'kops_added_default': 'Default',
             'k8s_min': 'Minimum K8s Version'
         }
@@ -42,10 +42,17 @@ def define_env(env):
         values = '|'
 
         # Iterate over provided supported kwargs and match them with the provided values.
-        for arg in supported_args.keys():
-            if arg in kwargs.keys():
-                title += f' {supported_args[arg]}  |'
-                separators += ' :-: |'
+        for arg, header in supported_args.items():
+            if arg not in kwargs.keys():
+                continue
+            if arg == 'kops_added_default' and 'kops_added_ff' not in kwargs.keys():
+                title += ' Introduced |'
+            else:
+                title += f' {header} |'
+            separators += ' :-: |'
+            if arg == 'k8s_min':
+                values += f' K8s {kwargs[arg]}  |'
+            else:
                 values += f' Kops {kwargs[arg]}  |'
 
         # Create a list object containing all the table rows,
