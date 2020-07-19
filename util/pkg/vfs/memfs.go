@@ -57,6 +57,9 @@ func (c *MemFSContext) MarkClusterReadable() {
 }
 
 func (c *MemFSPath) HasChildren() bool {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	return len(c.children) != 0
 }
 
@@ -90,6 +93,8 @@ func (p *MemFSPath) Join(relativePath ...string) Path {
 			current.children[token] = child
 		}
 		current = child
+		current.mutex.Lock()
+		defer current.mutex.Unlock()
 	}
 	return current
 }
@@ -131,6 +136,9 @@ func (p *MemFSPath) WriteTo(out io.Writer) (int64, error) {
 }
 
 func (p *MemFSPath) ReadDir() ([]Path, error) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	var paths []Path
 	for _, f := range p.children {
 		paths = append(paths, f)
@@ -145,6 +153,9 @@ func (p *MemFSPath) ReadTree() ([]Path, error) {
 }
 
 func (p *MemFSPath) readTree(dest *[]Path) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	for _, f := range p.children {
 		if !f.HasChildren() {
 			*dest = append(*dest, f)
