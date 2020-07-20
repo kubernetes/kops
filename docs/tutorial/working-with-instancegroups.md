@@ -80,11 +80,10 @@ Let's change the number of nodes to 3.  We'll edit the InstanceGroup configurati
 should be very familiar to you if you've used `kubectl edit`).  `kops edit ig nodes` will open
 the InstanceGroup in your editor, looking a bit like this:
 
-```YAML
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-10-03T15:17:31Z
   labels:
     kops.k8s.io/cluster: simple.k8s.local
   name: nodes

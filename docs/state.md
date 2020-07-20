@@ -47,6 +47,7 @@ There are a few ways to configure your state store.  In priority order:
 + config file `$HOME/.kops/config`
 
 ## Local filesystem state stores
+{{ kops_feature_table(kops_added_default='1.17') }}
 
 The local filesystem state store (`file://`) is **not** functional for running clusters. It is permitted so as to enable review workflows.
 
@@ -188,8 +189,9 @@ gcsClient, err := storage.New(httpClient)
 ```
 
 ## Vault (vault://)
+{{ kops_feature_table(kops_added_ff='1.19') }}
 
-As of 1.19, Kops has support for using Vault as state store. It is currently an experimental feature and you have to enable the `VFSVaultSupport` feature flag to enable it.
+Kops has support for using Vault as state store. It is currently an experimental feature and you have to enable the `VFSVaultSupport` feature flag to enable it.
 
 The goal of the vault store is to be a safe storage for the kops keys and secrets store. It will not work to use this as a kops registry/config store. Among other things, etcd-manager is unable to read VFS control files from vault. Vault also cannot be used as backend for etcd backups.
 

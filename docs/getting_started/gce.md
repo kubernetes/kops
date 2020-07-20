@@ -59,52 +59,53 @@ objects on a kubernetes cluster.
 
 You can see the details of your Cluster object by doing:
 
-    > kops get cluster --state ${KOPS_STATE_STORE}/ simple.k8s.local -oyaml
+`kops get cluster --state ${KOPS_STATE_STORE}/ simple.k8s.local -oyaml`
 
-    apiVersion: kops.k8s.io/v1alpha2
-    kind: Cluster
-    metadata:
-      creationTimestamp: 2017-10-03T05:07:27Z
-      name: simple.k8s.local
-    spec:
-      api:
-        loadBalancer:
-          type: Public
-      authorization:
-        alwaysAllow: {}
-      channel: stable
-      cloudProvider: gce
-      configBase: gs://kubernetes-clusters/simple.k8s.local
-      etcdClusters:
-      - etcdMembers:
-        - instanceGroup: master-us-central1-a
-          name: a
-        name: main
-      - etcdMembers:
-        - instanceGroup: master-us-central1-a
-          name: a
-        name: events
-      iam:
-        legacy: false
-      kubernetesApiAccess:
-      - 0.0.0.0/0
-      kubernetesVersion: 1.7.2
-      masterPublicName: api.simple.k8s.local
-      networking:
-        kubenet: {}
-      nonMasqueradeCIDR: 100.64.0.0/10
-      project: my-gce-project
-      sshAccess:
-      - 0.0.0.0/0
-      subnets:
-      - name: us-central1
-        region: us-central1
-        type: Public
-      topology:
-        dns:
-          type: Public
-        masters: public
-        nodes: public
+```yaml
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: simple.k8s.local
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudProvider: gce
+  configBase: gs://kubernetes-clusters/simple.k8s.local
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-central1-a
+      name: a
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-central1-a
+      name: a
+    name: events
+  iam:
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.7.2
+  masterPublicName: api.simple.k8s.local
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  project: my-gce-project
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - name: us-central1
+    region: us-central1
+    type: Public
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+```
 
 Similarly, you can also see your InstanceGroups using:
 

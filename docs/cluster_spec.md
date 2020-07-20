@@ -131,6 +131,7 @@ etcdClusters:
 ```
 
 ### etcd metrics
+{{ kops_feature_table(kops_added_default='1.18') }}
 
 You cam expose /metrics endpoint for the etcd instances and control their type (`basic` or `extensive`) by defining env vars:
 
@@ -149,6 +150,7 @@ etcdClusters:
 ```
 
 ### etcd backups retention
+{{ kops_feature_table(kops_added_default='1.18') }}
 
 You can set the retention duration for the hourly and yearly backups by defining env vars:
 
@@ -283,6 +285,7 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
 ### dynamic audit configuration
+{{ kops_feature_table(kops_added_default='1.16', k8s_min='1.13') }}
 
 Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#dynamic-backend
 
@@ -292,7 +295,7 @@ spec:
     auditDynamicConfiguration: true
 ```
 
-By enabling this feature you are allowing for auditsinks to be registered with the API server.  For information on audit sinks please read [Audit Sink](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#auditsink-v1alpha1-auditregistration).  This feature is only supported in kubernetes versions greater than 1.13.  Currently, this feature is alpha and requires enabling the feature gate and a runtime config.
+By enabling this feature you are allowing for auditsinks to be registered with the API server.  For information on audit sinks please read [Audit Sink](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#auditsink-v1alpha1-auditregistration). Currently, this feature is alpha and requires enabling the feature gate and a runtime config.
 
 **Note** For kubernetes versions greater than 1.13, this is an alpha feature that requires the API auditregistration.k8s.io/v1alpha1 to be enabled as a runtime-config option, and the feature gate DynamicAuditing to be also enabled.  The options --feature-gates=DynamicAuditing=true and --runtime-config=auditregistration.k8s.io/v1alpha1=true must be enabled on the API server in addition to this flag.  See the sections for how to enable feature gates [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#feature-gates).  See the section on how to enable alphas APIs in the runtime config [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#runtimeconfig).
 Also, an audit policy should be provided in the file assets section.  If the flag is omitted, no events are logged.
@@ -334,6 +337,7 @@ spec:
     maxMutatingRequestsInflight: 450
 ```
 ### Profiling
+{{ kops_feature_table(kops_added_default='1.18') }}
 
 Profiling via web interface `host:port/debug/pprof/`. (default: true)
 
@@ -499,6 +503,7 @@ spec:
 ```
 
 ### Protect Kernel Defaults
+{{ kops_feature_table(kops_added_default='1.18', k8s_min='1.4') }}
 
 Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
 
@@ -582,8 +587,9 @@ spec:
 **Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`.
 
 ## Node local DNS cache
+{{ kops_feature_table(kops_added_default='1.18', k8s_min='1.15') }}
 
-As of kops 1.18, you can enable NodeLocal DNSCache if you are using CoreDNS. It is used to improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
+NodeLocal DNSCache can be enabled if you are using CoreDNS. It is used to improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
 
 ```yaml
 spec:
@@ -816,6 +822,7 @@ spec:
 ```
 
 ## containerRuntime
+{{ kops_feature_table(kops_added_default='1.18', k8s_min='1.11') }}
 
 Alternative [container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/) can be used to run Kubernetes. Docker is still the default container runtime, but [containerd](https://kubernetes.io/blog/2018/05/24/kubernetes-containerd-integration-goes-ga/) can also be selected.
 
@@ -970,6 +977,7 @@ spec:
 ```
 
 ## sysctlParameters
+{{ kops_feature_table(kops_added_default='1.17') }}
 
 To add custom kernel runtime parameters to your all instance groups in the
 cluster, specify the `sysctlParameters` field as an array of strings. Each

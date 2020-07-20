@@ -20,7 +20,6 @@ Example:
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
-  creationTimestamp: "2016-12-10T22:42:27Z"
   name: mycluster.example.com
 spec:
   api:
@@ -34,7 +33,6 @@ spec:
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: mycluster.example.com
   name: master-us-test-1a
