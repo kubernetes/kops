@@ -367,7 +367,7 @@ func retrieveClusterRefs(ctx context.Context, f *util.Factory) (simple.Clientset
 
 func getFilters(commandline *cli.CommandLineInterface, region string, zones []string) selector.Filters {
 	flags := commandline.Flags
-	filters := selector.Filters{
+	return selector.Filters{
 		VCpusRange:             commandline.IntRangeMe(flags[vcpus]),
 		MemoryRange:            commandline.IntRangeMe(flags[memory]),
 		VCpusToMemoryRatio:     commandline.Float64Me(flags[vcpusToMemoryRatio]),
@@ -388,11 +388,6 @@ func getFilters(commandline *cli.CommandLineInterface, region string, zones []st
 		InstanceTypeBase:       commandline.StringMe(flags[instanceTypeBase]),
 		Flexible:               commandline.BoolMe(flags[flexible]),
 	}
-	// convert amd64 to x86_64 for the ec2 api
-	if filters.CPUArchitecture != nil && *filters.CPUArchitecture == cpuArchitectureAMD64 {
-		filters.CPUArchitecture = commandline.StringMe(cpuArchitectureX8664)
-	}
-	return filters
 }
 
 func getInstanceSelectorOpts(commandline *cli.CommandLineInterface) InstanceSelectorOptions {
