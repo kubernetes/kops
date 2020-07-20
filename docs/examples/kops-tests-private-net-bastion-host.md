@@ -142,11 +142,10 @@ kops create instancegroup bastions --role Bastion --subnet utility-us-east-1a --
 
 You'll see the following output in your editor when you can change your bastion group size and add more networks.
 
-```bash
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: null
   name: bastions
 spec:
   image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
@@ -320,11 +319,10 @@ kops edit ig bastions --name ${NAME}
 
 And change minSize/maxSize to 3 (3 instances) and add more subnets:
 
-```bash
+```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-08-28T17:05:23Z
   labels:
     kops.k8s.io/cluster: privatekopscluster.k8s.local
   name: bastions
