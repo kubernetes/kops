@@ -34,7 +34,6 @@ You should now be able to edit and configure your bastion instance group.
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-05T13:37:07Z"
   name: bastions
 spec:
   associatePublicIp: true
@@ -74,6 +73,8 @@ spec:
 ```
 
 ### Additional security groups to ELB
+{{ kops_feature_table(kops_added_default='1.18') }}
+
 If you want to add security groups to the bastion ELB
 
 ```yaml

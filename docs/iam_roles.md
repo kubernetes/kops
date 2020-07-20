@@ -108,7 +108,6 @@ After you're finished editing, your cluster spec should look something like this
 
 ```yaml
 metadata:
-  creationTimestamp: "2016-06-27T14:23:34Z"
   name: ${CLUSTER_NAME}
 spec:
   cloudProvider: aws

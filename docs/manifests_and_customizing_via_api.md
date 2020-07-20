@@ -60,7 +60,6 @@ The following is the contents of the exported YAML file.
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
-  creationTimestamp: 2017-05-04T23:21:47Z
   name: k8s.example.com
 spec:
   api:
@@ -137,7 +136,6 @@ spec:
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-05-04T23:21:48Z
   labels:
     kops.k8s.io/cluster: k8s.example.com
   name: bastions
@@ -158,7 +156,6 @@ spec:
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-05-04T23:21:47Z
   labels:
     kops.k8s.io/cluster: k8s.example.com
   name: master-us-east-2d
@@ -177,7 +174,6 @@ spec:
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-05-04T23:21:47Z
   labels:
     kops.k8s.io/cluster: k8s.example.com
   name: master-us-east-2b
@@ -196,7 +192,6 @@ spec:
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-05-04T23:21:48Z
   labels:
     kops.k8s.io/cluster: k8s.example.com
   name: master-us-east-2c
@@ -215,7 +210,6 @@ spec:
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-05-04T23:21:48Z
   labels:
     kops.k8s.io/cluster: k8s.example.com
   name: nodes
@@ -239,7 +233,6 @@ With the above YAML file, a user can add configurations that are not available v
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-05-04T23:21:48Z
   labels:
     kops.k8s.io/cluster: k8s.example.com
   name: my-crazy-big-nodes
@@ -292,7 +285,6 @@ Please refer to the rolling-update [documentation](cli/kops_rolling-update_clust
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
-  creationTimestamp: 2017-05-04T23:21:47Z
   name: k8s.example.com
 spec:
   api:
@@ -325,7 +317,6 @@ This command prints the entire YAML configuration. But _do not_ use the full doc
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  creationTimestamp: 2017-05-04T23:21:48Z
   name: foo
 spec:
 ```
