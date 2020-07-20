@@ -23,25 +23,25 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.10.0 <1.11.0"
     # Stretch is the default for 1.11 (for nvme)
-    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2020-01-17
+    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.11.0 <1.12.0"
-    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2020-01-17
+    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.12.0 <1.13.0"
-    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2020-01-17
+    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.13.0 <1.14.0"
-    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2020-01-17
+    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.14.0 <1.15.0"
-    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
+    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.15.0 <1.16.0"
-    - name: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2020-01-17
+    - name: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.16.0 <1.17.0"
-    - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2020-01-17
+    - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.17.0 <1.18.0"
     - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200716
