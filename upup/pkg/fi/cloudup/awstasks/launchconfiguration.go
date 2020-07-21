@@ -94,15 +94,10 @@ type LaunchConfiguration struct {
 }
 
 var _ fi.CompareWithID = &LaunchConfiguration{}
-var _ fi.HasDependencies = &LaunchConfiguration{}
 var _ fi.ProducesDeletions = &LaunchConfiguration{}
 
 func (e *LaunchConfiguration) CompareWithID() *string {
 	return e.ID
-}
-
-func (l *LaunchConfiguration) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return l.UserData.GetDependencies(tasks)
 }
 
 // findLaunchConfigurations returns matching LaunchConfigurations, sorted by CreatedTime (ascending)

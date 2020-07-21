@@ -47,14 +47,9 @@ type Droplet struct {
 
 var _ fi.Task = &Droplet{}
 var _ fi.CompareWithID = &Droplet{}
-var _ fi.HasDependencies = &Droplet{}
 
 func (d *Droplet) CompareWithID() *string {
 	return d.Name
-}
-
-func (l *Droplet) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return l.UserData.GetDependencies(tasks)
 }
 
 func (d *Droplet) Find(c *fi.Context) (*Droplet, error) {
