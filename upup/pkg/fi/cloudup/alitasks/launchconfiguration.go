@@ -74,14 +74,9 @@ type LaunchConfiguration struct {
 
 var _ fi.Task = &LaunchConfiguration{}
 var _ fi.CompareWithID = &LaunchConfiguration{}
-var _ fi.HasDependencies = &LaunchConfiguration{}
 
 func (l *LaunchConfiguration) CompareWithID() *string {
 	return l.ID
-}
-
-func (l *LaunchConfiguration) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return l.UserData.GetDependencies(tasks)
 }
 
 func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
