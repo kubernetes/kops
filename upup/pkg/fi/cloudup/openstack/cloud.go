@@ -83,7 +83,7 @@ var readBackoff = wait.Backoff{
 // writeBackoff is the backoff strategy for openstack write retries.
 var writeBackoff = wait.Backoff{
 	Duration: time.Second,
-	Factor:   1.5,
+	Factor:   2,
 	Jitter:   0.1,
 	Steps:    5,
 }
@@ -296,7 +296,6 @@ type OpenstackCloud interface {
 
 	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)
 	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
-	CreateFloatingIP(opts floatingips.CreateOpts) (*floatingips.FloatingIP, error)
 	CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error)
 	DeleteFloatingIP(id string) error
 	DeleteL3FloatingIP(id string) error

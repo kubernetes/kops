@@ -479,18 +479,16 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.UseLoadBalancerForAPI() && b.UseVIPACL() {
 		useVIPACL = true
 	}
-	if b.UseLoadBalancerForAPI() {
-		sg := &openstacktasks.SecurityGroup{
-			Name:             s(b.Cluster.Spec.MasterPublicName),
-			Lifecycle:        b.Lifecycle,
-			RemoveExtraRules: []string{"port=443"},
-		}
-		if useVIPACL {
-			sg.RemoveGroup = true
-		}
-		c.AddTask(sg)
-		sgMap[b.Cluster.Spec.MasterPublicName] = sg
+	sg := &openstacktasks.SecurityGroup{
+		Name:             s(b.Cluster.Spec.MasterPublicName),
+		Lifecycle:        b.Lifecycle,
+		RemoveExtraRules: []string{"port=443"},
 	}
+	if useVIPACL {
+		sg.RemoveGroup = true
+	}
+	c.AddTask(sg)
+	sgMap[b.Cluster.Spec.MasterPublicName] = sg
 	for _, role := range roles {
 
 		// Create Security Group for Role
