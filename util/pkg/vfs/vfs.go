@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -74,6 +75,13 @@ type Path interface {
 	// ReadTree lists all files (recursively) in the subtree rooted at the current Path
 	/// Note: returns only files, not directories
 	ReadTree() ([]Path, error)
+}
+
+// TerraformPath is a Path that can render to Terraform.
+type TerraformPath interface {
+	Path
+	// RenderTerraform renders the file to a TerraformWriter.
+	RenderTerraform(writer *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error
 }
 
 type HasHash interface {
