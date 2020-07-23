@@ -159,28 +159,28 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			case kops.InstanceGroupRoleBastion:
 				t := &openstacktasks.FloatingIP{
 					Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-					Server:    instanceTask,
 					Lifecycle: b.Lifecycle,
 				}
 				c.AddTask(t)
+				instanceTask.FloatingIP = t
 			case kops.InstanceGroupRoleMaster:
 				if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-						Server:    instanceTask,
 						Lifecycle: b.Lifecycle,
 					}
 					c.AddTask(t)
 					b.associateFIPToKeypair(t)
+					instanceTask.FloatingIP = t
 				}
 			default:
-				if !b.UsesSSHBastion() {
+				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.Nodes == "public" {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
-						Server:    instanceTask,
 						Lifecycle: b.Lifecycle,
 					}
 					c.AddTask(t)
+					instanceTask.FloatingIP = t
 				}
 			}
 		} else if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router == nil {

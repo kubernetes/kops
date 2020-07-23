@@ -46,25 +46,28 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Topology.DNS.Type = DNSTypePublic
 	}
 
-	if obj.API == nil {
-		obj.API = &AccessSpec{}
-	}
-
-	if obj.API.IsEmpty() {
-		switch obj.Topology.Masters {
-		case TopologyPublic:
-			obj.API.DNS = &DNSAccessSpec{}
-
-		case TopologyPrivate:
-			obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
-
-		default:
-			klog.Infof("unknown master topology type: %q", obj.Topology.Masters)
+	if obj.CloudProvider != "openstack" {
+		if obj.API == nil {
+			obj.API = &AccessSpec{}
 		}
-	}
 
-	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
-		obj.API.LoadBalancer.Type = LoadBalancerTypePublic
+		if obj.API.IsEmpty() {
+			switch obj.Topology.Masters {
+			case TopologyPublic:
+				obj.API.DNS = &DNSAccessSpec{}
+
+			case TopologyPrivate:
+				obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
+
+			default:
+				klog.Infof("unknown master topology type: %q", obj.Topology.Masters)
+			}
+		}
+
+		if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
+			obj.API.LoadBalancer.Type = LoadBalancerTypePublic
+		}
+
 	}
 
 	if obj.Authorization == nil {

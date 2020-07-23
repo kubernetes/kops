@@ -140,7 +140,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-1-cluster"),
-					Server:    masterInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeServerGroup := &openstacktasks.ServerGroup{
@@ -186,7 +185,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-1-cluster"),
-					Server:    nodeInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				return map[string]fi.Task{
@@ -225,6 +223,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 							Name:   "utility-subnet",
 							Region: "region",
 						},
+					},
+					Topology: &kops.TopologySpec{
+						Nodes: "private",
 					},
 				},
 			},
@@ -325,7 +326,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-1-cluster"),
-					Server:    masterInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeServerGroup := &openstacktasks.ServerGroup{
@@ -411,7 +411,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				bastionFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-bastion-1-cluster"),
-					Server:    bastionInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				return map[string]fi.Task{
@@ -592,7 +591,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-a-1-cluster"),
-					Server:    masterAInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				masterBServerGroup := &openstacktasks.ServerGroup{
@@ -639,7 +637,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-b-1-cluster"),
-					Server:    masterBInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				masterCServerGroup := &openstacktasks.ServerGroup{
@@ -686,7 +683,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-c-1-cluster"),
-					Server:    masterCInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeAServerGroup := &openstacktasks.ServerGroup{
@@ -732,7 +728,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-a-1-cluster"),
-					Server:    nodeAInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeBServerGroup := &openstacktasks.ServerGroup{
@@ -778,7 +773,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-b-1-cluster"),
-					Server:    nodeBInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeCServerGroup := &openstacktasks.ServerGroup{
@@ -824,7 +818,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-c-1-cluster"),
-					Server:    nodeCInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				return map[string]fi.Task{
@@ -1144,7 +1137,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-a-1-cluster"),
-					Server:    nodeAInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeBServerGroup := &openstacktasks.ServerGroup{
@@ -1190,7 +1182,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-b-1-cluster"),
-					Server:    nodeBInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeCServerGroup := &openstacktasks.ServerGroup{
@@ -1236,7 +1227,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-c-1-cluster"),
-					Server:    nodeCInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				loadbalancer := &openstacktasks.LB{
@@ -1827,7 +1817,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-1-cluster"),
-					Server:    masterAInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				masterBPort := &openstacktasks.Port{
@@ -1866,7 +1855,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-2-cluster"),
-					Server:    masterBInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				masterCPort := &openstacktasks.Port{
@@ -1905,7 +1893,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				masterCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-master-3-cluster"),
-					Server:    masterCInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeServerGroup := &openstacktasks.ServerGroup{
@@ -1951,7 +1938,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeAFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-1-cluster"),
-					Server:    nodeAInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeBPort := &openstacktasks.Port{
@@ -1989,7 +1975,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeBFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-2-cluster"),
-					Server:    nodeBInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				nodeCPort := &openstacktasks.Port{
@@ -2027,7 +2012,6 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 				}
 				nodeCFloatingIP := &openstacktasks.FloatingIP{
 					Name:      s("fip-node-3-cluster"),
-					Server:    nodeCInstance,
 					Lifecycle: &clusterLifecycle,
 				}
 				return map[string]fi.Task{
@@ -3040,11 +3024,7 @@ func compareFloatingIPs(t *testing.T, actualTask fi.Task, expected *openstacktas
 
 	compareStrings(t, "Name", actual.Name, expected.Name)
 	compareLifecycles(t, actual.Lifecycle, expected.Lifecycle)
-	if pointersAreBothNil(t, "Server", actual.Server, expected.Server) {
-		compareLoadbalancers(t, actual.LB, expected.LB)
-	} else {
-		compareInstances(t, actual.Server, expected.Server)
-	}
+	compareLoadbalancers(t, actual.LB, expected.LB)
 }
 
 func compareLifecycles(t *testing.T, actual, expected *fi.Lifecycle) {
