@@ -134,17 +134,6 @@ var dockerVersions = []packageVersion{
 		Hash:           "1c52a80430d4dda213a01e6859e7c403b4bebe642accaa6358f5c75f5f2ba682",
 	},
 
-	// 18.06.3 - Xenial
-	{
-		PackageVersion: "18.06.3",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionXenial},
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Version:        "18.06.3~ce~3-0~ubuntu",
-		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
-		Hash:           "6e9da7303cfa7ef7d4d8035bdc205229dd84e572f29957a9fb36e1351fe88a24",
-	},
-
 	// 17.09.0 - Centos / Rhel7 (two packages)
 	{
 		PackageVersion: "17.09.0",
@@ -201,18 +190,6 @@ var dockerVersions = []packageVersion{
 		Hash:           "cbbd2afc85b2a46d55abfd5d362595e39a54022b6c6baab0a5ddc4a85a74e318",
 	},
 
-	// 18.06.3 - Debian Buster
-	{
-
-		PackageVersion: "18.06.3",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian10},
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Version:        "18.06.3~ce~3-0~debian",
-		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
-		Hash:           "0c8ca09635553f0c6cb70a08bdef6f3b8d89b1247e4dab54896c93aad3bf3f25",
-	},
-
 	// 18.06.1 - CentOS / Rhel7 (two packages)
 	{
 		PackageVersion: "18.06.1",
@@ -253,22 +230,35 @@ var dockerVersions = []packageVersion{
 		Hash:           "0e5d98c359d93e8a892a07ab1f8eb8153964b535cadda61a8791ca2db3c6b76c",
 	},
 
-	// 18.06.3 (contains fix for CVE-2019-5736)
+	// 18.06.3 - Kubernetes 1.12+
 
-	// 18.06.3 - Bionic
+	// 18.06.3 - Xenial
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionBionic},
+		Distros:        []distros.Distribution{distros.DistributionXenial},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~ubuntu",
-		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
-		Hash:           "f8cc02112a125007f5c70f009ce9a91dd536018f139131074ee55cea555ba85d",
+		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
+		Hash:           "6e9da7303cfa7ef7d4d8035bdc205229dd84e572f29957a9fb36e1351fe88a24",
+	},
+
+	// 18.06.3 - Bionic / Focal
+	{
+		PackageVersion: "18.06.3",
+		Name:           "docker-ce",
+		Distros: []distros.Distribution{
+			distros.DistributionBionic,
+			distros.DistributionFocal,
+		},
+		Architectures: []architectures.Architecture{architectures.ArchitectureAmd64},
+		Version:       "18.06.3~ce~3-0~ubuntu",
+		Source:        "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
+		Hash:          "f8cc02112a125007f5c70f009ce9a91dd536018f139131074ee55cea555ba85d",
 	},
 
 	// 18.06.3 - Debian Stretch
 	{
-
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
 		Distros:        []distros.Distribution{distros.DistributionDebian9},
@@ -278,28 +268,35 @@ var dockerVersions = []packageVersion{
 		Hash:           "0de184cc79d9f9c99b2a6fa4fdd8b29645e9a858106a9814bb11047073a4e8cb",
 	},
 
-	// 18.06.3 - CentOS / Rhel7 (two packages)
+	// 18.06.3 - Debian Buster
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
+		Distros:        []distros.Distribution{distros.DistributionDebian10},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Version:        "18.06.3.ce",
-		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
-		Hash:           "f3703698cab918ab41b1244f699c8718a5e3bf4070fdf4894b5b6e8d92545a62",
-	},
-	// 18.06.3 - CentOS / Rhel8 (two packages)
-	{
-		PackageVersion: "18.06.3",
-		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel8, distros.DistributionCentos8},
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Version:        "18.06.3.ce",
-		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
-		Hash:           "f3703698cab918ab41b1244f699c8718a5e3bf4070fdf4894b5b6e8d92545a62",
+		Version:        "18.06.3~ce~3-0~debian",
+		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
+		Hash:           "0c8ca09635553f0c6cb70a08bdef6f3b8d89b1247e4dab54896c93aad3bf3f25",
 	},
 
-	// 18.09.9 - Linux Generic
+	// 18.06.3 - Amazon Linux 2 / CentOS 7 / CentOS 8 / RHEL 7 / RHEL 8
+	{
+		PackageVersion: "18.06.3",
+		Name:           "docker-ce",
+		Distros: []distros.Distribution{
+			distros.DistributionAmazonLinux2,
+			distros.DistributionCentos7,
+			distros.DistributionCentos8,
+			distros.DistributionRhel7,
+			distros.DistributionRhel8,
+		},
+		Architectures: []architectures.Architecture{architectures.ArchitectureAmd64},
+		Version:       "18.06.3.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.3.ce-3.el7.x86_64.rpm",
+		Hash:          "f3703698cab918ab41b1244f699c8718a5e3bf4070fdf4894b5b6e8d92545a62",
+	},
+
+	// 18.09.9 - Linux Generic - Kubernetes 1.16+
 	{
 		PackageVersion: "18.09.9",
 		PlainBinary:    true,
@@ -335,7 +332,7 @@ var dockerVersions = []packageVersion{
 		},
 	},
 
-	// 19.03.11 - Linux Generic AMD64
+	// 19.03.11 - Linux Generic AMD64 - Kubernetes 1.17+
 	{
 		PackageVersion: "19.03.11",
 		PlainBinary:    true,
@@ -347,7 +344,7 @@ var dockerVersions = []packageVersion{
 		},
 	},
 
-	// 19.03.11 - Linux Generic ARM64
+	// 19.03.11 - Linux Generic ARM64 - Kubernetes 1.17+
 	{
 		PackageVersion: "19.03.11",
 		PlainBinary:    true,
