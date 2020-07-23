@@ -43,24 +43,6 @@ func (c *openstackCloud) GetFloatingIP(id string) (fip *floatingips.FloatingIP, 
 	return fip, nil
 }
 
-func (c *openstackCloud) CreateFloatingIP(opts floatingips.CreateOpts) (fip *floatingips.FloatingIP, err error) {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-
-		fip, err = floatingips.Create(c.ComputeClient(), opts).Extract()
-		if err != nil {
-			return false, fmt.Errorf("CreateFloatingIP: create floating IP failed: %v", err)
-		}
-		return true, nil
-	})
-	if !done {
-		if err == nil {
-			err = wait.ErrWaitTimeout
-		}
-		return fip, err
-	}
-	return fip, nil
-}
-
 func (c *openstackCloud) AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error) {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err = floatingips.AssociateInstance(c.ComputeClient(), serverID, opts).ExtractErr()
