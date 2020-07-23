@@ -92,6 +92,9 @@ type WeaveNetworkingSpec struct {
 type FlannelNetworkingSpec struct {
 	// Backend is the backend overlay type we want to use (vxlan or udp)
 	Backend string `json:"backend,omitempty"`
+	// DisableTxChecksumOffloading creates a systemd unit that disables the Tx checksum offloading for "flannel.1",
+	// required in Kubernetes < 1.18.6 to avoid traffic being discarded because of "bad checksum" errors
+	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`
 	// IptablesResyncSeconds sets resync period for iptables rules, in seconds
 	IptablesResyncSeconds *int32 `json:"iptablesResyncSeconds,omitempty"`
 }
@@ -148,6 +151,9 @@ type CanalNetworkingSpec struct {
 	// DisableFlannelForwardRules configures Flannel to NOT add the
 	// default ACCEPT traffic rules to the iptables FORWARD chain
 	DisableFlannelForwardRules bool `json:"disableFlannelForwardRules,omitempty"`
+	// DisableTxChecksumOffloading creates a systemd unit that disables the Tx checksum offloading for "flannel.1",
+	// required in Kubernetes < 1.18.6 to avoid traffic being discarded because of "bad checksum" errors
+	DisableTxChecksumOffloading bool `json:"disableTxChecksumOffloading,omitempty"`
 	// IptablesBackend controls which variant of iptables binary Felix uses
 	// Default: Auto (other options: Legacy, NFT)
 	IptablesBackend string `json:"iptablesBackend,omitempty"`
