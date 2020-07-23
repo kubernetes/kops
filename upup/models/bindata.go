@@ -12170,15 +12170,22 @@ spec:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       nodeSelector:
         kubernetes.io/os: linux
-        kubernetes.io/role: master
       hostNetwork: true
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
           operator: Exists
-        - key: "node-role.kubernetes.io/master"
+        - key: node-role.kubernetes.io/master
           effect: NoSchedule
       # Since Calico can't network a pod until Typha is up, we need to run Typha itself
       # as a host-networked pod.
