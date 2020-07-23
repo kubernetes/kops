@@ -20,6 +20,7 @@ go_library(
         "//pkg/acls:go_default_library",
         "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/terraform:go_default_library",
         "//upup/pkg/fi/secrets:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
