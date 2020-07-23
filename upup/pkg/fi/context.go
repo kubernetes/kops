@@ -204,7 +204,12 @@ func (c *Context) Render(a, e, changes Task) error {
 		}
 		if match {
 			if renderer != nil {
-				return fmt.Errorf("found multiple Render methods that could be involved on %T", e)
+				if method.Name == "Render" {
+					continue
+				}
+				if renderer.Name != "Render" {
+					return fmt.Errorf("found multiple Render methods that could be involved on %T", e)
+				}
 			}
 			renderer = &method
 			rendererArgs = args
