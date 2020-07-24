@@ -51,7 +51,6 @@
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/BUILD.bazel
-// upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.11.yaml.template
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template
 // upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.12.yaml.template
@@ -18325,253 +18324,6 @@ func cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplate = []byte(`---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cloud-controller-manager
-  namespace: kube-system
-  labels:
-    k8s-addon: openstack.addons.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: system:cloud-node-controller
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:cloud-node-controller
-subjects:
-- kind: ServiceAccount
-  name: cloud-node-controller
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: system:pvl-controller
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:pvl-controller
-subjects:
-- kind: ServiceAccount
-  name: pvl-controller
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: system:cloud-controller-manager
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:cloud-controller-manager
-subjects:
-- kind: ServiceAccount
-  name: cloud-controller-manager
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: system:cloud-controller-manager
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
-  - nodes/status
-  verbs:
-  - patch
-- apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - serviceaccounts
-  verbs:
-  - create
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumes
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
-  - endpoints
-  verbs:
-  - create
-  - get
-  - list
-  - watch
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - list
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: system:cloud-node-controller
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
-  - nodes/status
-  verbs:
-  - patch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
-  - update
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: system:pvl-controller
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumes
-  verbs:
-  - '*'
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
-  - update
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  namespace: kube-system
-  name: openstack-cloud-provider
-  labels:
-    k8s-app: openstack-cloud-provider
-    k8s-addon: openstack.addons.k8s.io
-  annotations:
-    scheduler.alpha.kubernetes.io/critical-pod: ""
-spec:
-  updateStrategy:
-    type: RollingUpdate
-  selector:
-    matchLabels:
-      name: openstack-cloud-provider
-  template:
-    metadata:
-      labels:
-        name: openstack-cloud-provider
-    spec:
-      # run on the host network (don't depend on CNI)
-      hostNetwork: true
-      # run on each master node
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
-      securityContext:
-        runAsUser: 1001
-      serviceAccountName: cloud-controller-manager
-      tolerations:
-      - effect: NoSchedule
-        operator: Exists
-      - key: CriticalAddonsOnly
-        operator: Exists
-      containers:
-      - name: openstack-cloud-controller-manager
-        image: "{{- .ExternalCloudControllerManager.Image }}"
-        args:
-          - /bin/openstack-cloud-controller-manager
-{{- range $arg := CloudControllerConfigArgv }}
-          - {{ $arg }}
-{{- end }}
-          - --cloud-config=/etc/kubernetes/cloud.config
-          - --address=127.0.0.1
-        volumeMounts:
-        - mountPath: /etc/kubernetes/cloud.config
-          name: cloudconfig
-          readOnly: true
-{{ if .UseHostCertificates }}
-        - mountPath: /etc/ssl/certs
-          name: etc-ssl-certs
-          readOnly: true
-{{ end }}
-      volumes:
-      - hostPath:
-          path: /etc/kubernetes/cloud.config
-        name: cloudconfig
-{{ if .UseHostCertificates }}
-      - hostPath:
-          path: /etc/ssl/certs
-          type: DirectoryOrCreate
-        name: etc-ssl-certs
-{{ end }}
-`)
-
-func cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplateBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplate, nil
-}
-
-func cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplate() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplateBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.11.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
 var _cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate = []byte(`---
 apiVersion: v1
 kind: ServiceAccount
@@ -19790,7 +19542,6 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template":                          cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/openstack.addons.k8s.io/BUILD.bazel":                                        cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel,
-	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.11.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplate,
 	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate,
 	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template":                     cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s110YamlTemplate,
 	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.12.yaml.template":                     cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s112YamlTemplate,
@@ -19943,7 +19694,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				}},
 				"openstack.addons.k8s.io": {nil, map[string]*bintree{
 					"BUILD.bazel":            {cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel, map[string]*bintree{}},
-					"k8s-1.11.yaml.template": {cloudupResourcesAddonsOpenstackAddonsK8sIoK8s111YamlTemplate, map[string]*bintree{}},
 					"k8s-1.13.yaml.template": {cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate, map[string]*bintree{}},
 				}},
 				"podsecuritypolicy.addons.k8s.io": {nil, map[string]*bintree{

@@ -480,7 +480,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	// in OpenStack we default to external cloud controller manager because legacy in-tree ccm is deprecated
-	if c.CloudProvider == api.CloudProviderOpenstack {
+	if api.CloudProviderID(c.CloudProvider) == api.CloudProviderOpenstack {
 		cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
 	}
 
