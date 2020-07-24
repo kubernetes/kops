@@ -57,20 +57,20 @@ one file per range of Kubernetes versions. These files are referenced by upup/pk
 First we add to the `cilium-config` ConfigMap:
 
 ```go
-  {{ with .Ipam }}
-  ipam: {{ . }}
-  {{ if eq . "eni" }}
+  {{ '{{ with .Ipam }}' }}
+  ipam: {{ '{{ . }}' }}
+  {{ '{{ if eq . "eni" }}' }}
   enable-endpoint-routes: "true"
   auto-create-cilium-node-resource: "true"
   blacklist-conflicting-routes: "false"
-  {{ end }}
-  {{ end }}
+  {{ '{{ end }}' }}
+  {{ '{{ end }}' }}
 ```
 
 Then we conditionally move cilium-operator to masters:
 
 ```go
-      {{ if eq .Ipam "eni" }}
+      {{ '{{ if eq .Ipam "eni" }}' }}
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:
@@ -84,7 +84,7 @@ Then we conditionally move cilium-operator to masters:
         key: node.kubernetes.io/unreachable
         operator: Exists
         tolerationSeconds: 300
-      {{ end }}
+      {{ '{{ end }}' }}
 ```
 
 ## Configuring kubelet
