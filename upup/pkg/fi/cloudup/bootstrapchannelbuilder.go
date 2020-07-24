@@ -1053,25 +1053,9 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
-	if featureflag.EnableExternalCloudController.Enabled() && b.Cluster.Spec.ExternalCloudControllerManager != nil {
+	if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 		// cloudprovider specific out-of-tree controller
 		if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
-			{
-				key := "openstack.addons.k8s.io"
-				version := "1.11.0"
-
-				location := key + "/k8s-1.11.yaml"
-				id := "k8s-1.11-ccm"
-
-				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-					Name:              fi.String(key),
-					Version:           fi.String(version),
-					Manifest:          fi.String(location),
-					Selector:          map[string]string{"k8s-addon": key},
-					KubernetesVersion: "<1.13.0",
-					Id:                id,
-				})
-			}
 			{
 				key := "openstack.addons.k8s.io"
 				version := "1.13.1-kops.1"

@@ -113,12 +113,6 @@ Kops should create instances to all three zones, but provision volumes from the 
 # Using external cloud controller manager
 If you want use [External CCM](https://github.com/kubernetes/cloud-provider-openstack) in your installation, this section contains instructions what you should do to get it up and running.
 
-Enable featureflag:
-
-```
-export KOPS_FEATURE_FLAGS=EnableExternalCloudController
-```
-
 Create cluster without `--yes` flag (or modify existing cluster):
 
 ```

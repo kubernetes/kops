@@ -251,7 +251,6 @@ func Test_executeTemplate(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			featureflag.EnableExternalCloudController = featureflag.New("TotalyNotEnableExternalCloudController", featureflag.Bool(true))
 			templateFileAbsolutePath, filePathError := filepath.Abs(testCase.templateFilename)
 			if filePathError != nil {
 				t.Fatalf("error getting path to template: %v", filePathError)
