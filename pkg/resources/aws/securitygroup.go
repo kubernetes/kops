@@ -93,6 +93,18 @@ func DumpSecurityGroup(op *resources.DumpOperation, r *resources.Resource) error
 }
 
 func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	isOwnedVPC := true
+	vpcs, err := DescribeVPCs(cloud, clusterName)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range vpcs {
+		vpcID := aws.StringValue(v.VpcId)
+		if !HasOwnedTag(ec2.ResourceTypeVpc+":"+vpcID, v.Tags, clusterName) {
+			isOwnedVPC = false
+		}
+	}
+
 	groups, err := DescribeSecurityGroups(cloud, clusterName)
 	if err != nil {
 		return nil, err
@@ -108,7 +120,7 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*resources.Resour
 			Deleter: DeleteSecurityGroup,
 			Dumper:  DumpSecurityGroup,
 			Obj:     sg,
-			Shared:  !HasOwnedTag(ec2.ResourceTypeSecurityGroup+":"+id, sg.Tags, clusterName),
+			Shared:  !isOwnedVPC && !HasOwnedTag(ec2.ResourceTypeSecurityGroup+":"+id, sg.Tags, clusterName),
 		}
 
 		var blocks []string
