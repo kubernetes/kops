@@ -29,6 +29,9 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
@@ -149,6 +152,35 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 			return fmt.Errorf("error parsing private key %q: %v", privateKeyPath, err)
 		}
 
+		cluster, err := GetCluster(ctx, f, options.ClusterName)
+		if err != nil {
+			return err
+		}
+
+		contextName := cluster.ObjectMeta.Name
+		clientGetter := genericclioptions.NewConfigFlags(true)
+		clientGetter.Context = &contextName
+
+		var nodes corev1.NodeList
+
+		config, err := clientGetter.ToRESTConfig()
+		if err != nil {
+			klog.Warningf("cannot load kubecfg settings for %q: %v", contextName, err)
+		} else {
+			k8sClient, err := kubernetes.NewForConfig(config)
+			if err != nil {
+				klog.Warningf("cannot build kube client for %q: %v", contextName, err)
+			} else {
+
+				nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+				if err != nil {
+					klog.Warningf("error listing nodes in cluster: %v", err)
+				} else {
+					nodes = *nodeList
+				}
+			}
+		}
+
 		// TODO: We need to find the correct SSH user, ideally per IP
 		sshUser := "ubuntu"
 		sshConfig := &ssh.ClientConfig{
@@ -160,9 +192,6 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 		}
 
 		dumper := dump.NewLogDumper(sshConfig, options.Dir)
-
-		// TODO: Should we try to get nodes?
-		var nodes corev1.NodeList
 
 		var additionalIPs []string
 		for _, instance := range d.Instances {
