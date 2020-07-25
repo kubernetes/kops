@@ -35,7 +35,7 @@ func (c *openstackCloud) CreateServerGroup(opt servergroups.CreateOptsBuilder) (
 	var i *servergroups.ServerGroup
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := servergroups.Create(c.novaClient, opt).Extract()
+		v, err := servergroups.Create(c.ComputeClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating server group: %v", err)
 		}
@@ -55,7 +55,7 @@ func (c *openstackCloud) ListServerGroups() ([]servergroups.ServerGroup, error) 
 	var sgs []servergroups.ServerGroup
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := servergroups.List(c.novaClient).AllPages()
+		allPages, err := servergroups.List(c.ComputeClient()).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing server groups: %v", err)
 		}
@@ -136,7 +136,7 @@ func (c *openstackCloud) osBuildCloudInstanceGroup(cluster *kops.Cluster, ig *ko
 
 func (c *openstackCloud) DeleteServerGroup(groupID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		err := servergroups.Delete(c.novaClient, groupID).ExtractErr()
+		err := servergroups.Delete(c.ComputeClient(), groupID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting server group: %v", err)
 		}
