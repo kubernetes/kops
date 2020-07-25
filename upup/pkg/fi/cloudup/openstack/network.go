@@ -30,7 +30,7 @@ import (
 
 func (c *openstackCloud) AppendTag(resource string, id string, tag string) error {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		err := attributestags.Add(c.neutronClient, resource, id, tag).ExtractErr()
+		err := attributestags.Add(c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
 			return false, fmt.Errorf("error appending tag %s: %v", tag, err)
 		}
@@ -47,7 +47,7 @@ func (c *openstackCloud) AppendTag(resource string, id string, tag string) error
 
 func (c *openstackCloud) DeleteTag(resource string, id string, tag string) error {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		err := attributestags.Delete(c.neutronClient, resource, id, tag).ExtractErr()
+		err := attributestags.Delete(c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
 			return false, fmt.Errorf("error deleting tag %s: %v", tag, err)
 		}
@@ -90,7 +90,7 @@ func (c *openstackCloud) FindNetworkBySubnetID(subnetID string) (*networks.Netwo
 func (c *openstackCloud) GetNetwork(id string) (*networks.Network, error) {
 	var network *networks.Network
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		r, err := networks.Get(c.neutronClient, id).Extract()
+		r, err := networks.Get(c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error retrieving network with id %s: %v", id, err)
 		}
@@ -110,7 +110,7 @@ func (c *openstackCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.
 	var ns []networks.Network
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := networks.List(c.neutronClient, opt).AllPages()
+		allPages, err := networks.List(c.NetworkingClient(), opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing networks: %v", err)
 		}
@@ -172,7 +172,7 @@ func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*network
 	var n *networks.Network
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		r, err := networks.Create(c.neutronClient, opt).Extract()
+		r, err := networks.Create(c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating network: %v", err)
 		}
@@ -190,7 +190,7 @@ func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*network
 
 func (c *openstackCloud) DeleteNetwork(networkID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		err := networks.Delete(c.neutronClient, networkID).ExtractErr()
+		err := networks.Delete(c.NetworkingClient(), networkID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting network: %v", err)
 		}
