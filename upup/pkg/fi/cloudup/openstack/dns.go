@@ -30,7 +30,7 @@ func (c *openstackCloud) ListDNSZones(opt zones.ListOptsBuilder) ([]zones.Zone, 
 	var zs []zones.Zone
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := zones.List(c.dnsClient, opt).AllPages()
+		allPages, err := zones.List(c.DNSClient(), opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("failed to list dns zones: %s", err)
 		}
@@ -55,7 +55,7 @@ func (c *openstackCloud) ListDNSRecordsets(zoneID string, opt recordsets.ListOpt
 	var rrs []recordsets.RecordSet
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := recordsets.ListByZone(c.dnsClient, zoneID, opt).AllPages()
+		allPages, err := recordsets.ListByZone(c.DNSClient(), zoneID, opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("failed to list dns recordsets: %s", err)
 		}

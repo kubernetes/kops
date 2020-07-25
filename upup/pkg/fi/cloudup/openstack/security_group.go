@@ -29,7 +29,7 @@ func (c *openstackCloud) ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, err
 	var groups []sg.SecGroup
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := sg.List(c.neutronClient, opt).AllPages()
+		allPages, err := sg.List(c.NetworkingClient(), opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing security groups %v: %v", opt, err)
 		}
@@ -54,7 +54,7 @@ func (c *openstackCloud) CreateSecurityGroup(opt sg.CreateOptsBuilder) (*sg.SecG
 	var group *sg.SecGroup
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		g, err := sg.Create(c.neutronClient, opt).Extract()
+		g, err := sg.Create(c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating security group %v: %v", opt, err)
 		}
@@ -74,7 +74,7 @@ func (c *openstackCloud) ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGrou
 	var rules []sgr.SecGroupRule
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := sgr.List(c.neutronClient, opt).AllPages()
+		allPages, err := sgr.List(c.NetworkingClient(), opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing security group rules %v: %v", opt, err)
 		}
@@ -99,7 +99,7 @@ func (c *openstackCloud) CreateSecurityGroupRule(opt sgr.CreateOptsBuilder) (*sg
 	var rule *sgr.SecGroupRule
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		r, err := sgr.Create(c.neutronClient, opt).Extract()
+		r, err := sgr.Create(c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating security group rule %v: %v", opt, err)
 		}
@@ -117,7 +117,7 @@ func (c *openstackCloud) CreateSecurityGroupRule(opt sgr.CreateOptsBuilder) (*sg
 
 func (c *openstackCloud) DeleteSecurityGroup(sgID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		err := sg.Delete(c.neutronClient, sgID).ExtractErr()
+		err := sg.Delete(c.NetworkingClient(), sgID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting security group: %v", err)
 		}
@@ -134,7 +134,7 @@ func (c *openstackCloud) DeleteSecurityGroup(sgID string) error {
 
 func (c *openstackCloud) DeleteSecurityGroupRule(ruleID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		err := sgr.Delete(c.neutronClient, ruleID).ExtractErr()
+		err := sgr.Delete(c.NetworkingClient(), ruleID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting security group rule: %v", err)
 		}
