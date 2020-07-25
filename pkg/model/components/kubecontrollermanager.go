@@ -23,7 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -97,7 +96,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
 
-	if featureflag.EnableExternalCloudController.Enabled() && clusterSpec.ExternalCloudControllerManager != nil {
+	if clusterSpec.ExternalCloudControllerManager != nil {
 		kcm.CloudProvider = "external"
 	}
 
