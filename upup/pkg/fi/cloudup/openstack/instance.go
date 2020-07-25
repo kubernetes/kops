@@ -49,7 +49,7 @@ func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := servers.Create(c.novaClient, opt).Extract()
+		v, err := servers.Create(c.ComputeClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating server %v: %v", opt, err)
 		}
@@ -107,7 +107,7 @@ func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMemb
 }
 
 func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
-	return servers.Delete(c.novaClient, instanceID).ExtractErr()
+	return servers.Delete(c.ComputeClient(), instanceID).ExtractErr()
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
@@ -120,7 +120,7 @@ func (c *openstackCloud) GetInstance(id string) (*servers.Server, error) {
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		instance, err := servers.Get(c.novaClient, id).Extract()
+		instance, err := servers.Get(c.ComputeClient(), id).Extract()
 		if err != nil {
 			return false, err
 		}
@@ -140,7 +140,7 @@ func (c *openstackCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.S
 	var instances []servers.Server
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := servers.List(c.novaClient, opt).AllPages()
+		allPages, err := servers.List(c.ComputeClient(), opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing servers %v: %v", opt, err)
 		}
