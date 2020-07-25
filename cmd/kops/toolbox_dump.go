@@ -60,11 +60,13 @@ type ToolboxDumpOptions struct {
 
 	ClusterName string
 
-	Dir string
+	Dir        string
+	PrivateKey string
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
 	o.Output = OutputYaml
+	o.PrivateKey = "~/.ssh/id_rsa"
 }
 
 func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
@@ -97,6 +99,7 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "output format.  One of: yaml, json")
 
 	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "target directory; if specified will collect logs and other information.")
+	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "private key to use for SSH acccess to instances")
 
 	return cmd
 }
@@ -137,8 +140,7 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 	}
 
 	if options.Dir != "" {
-		// TODO: Flag?
-		privateKeyPath := "~/.ssh/id_rsa"
+		privateKeyPath := options.PrivateKey
 		if strings.HasPrefix(privateKeyPath, "~/") {
 			privateKeyPath = filepath.Join(os.Getenv("HOME"), privateKeyPath[2:])
 		}
