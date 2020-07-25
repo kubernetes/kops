@@ -119,6 +119,12 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, c, fieldPath.Child("kubeAPIServer"))...)
 	}
 
+	if spec.ExternalCloudControllerManager != nil {
+		if kops.CloudProviderID(spec.CloudProvider) != kops.CloudProviderOpenstack && !featureflag.EnableExternalCloudController.Enabled() {
+			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("cloudControllerManager"), "external cloud controller manager is an experimental feature; set `export KOPS_FEATURE_FLAGS=EnableExternalCloudController`"))
+		}
+	}
+
 	if spec.KubeProxy != nil {
 		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
 	}
