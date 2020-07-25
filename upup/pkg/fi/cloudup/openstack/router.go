@@ -28,7 +28,7 @@ func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, er
 	var rs []routers.Router
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := routers.List(c.neutronClient, opt).AllPages()
+		allPages, err := routers.List(c.NetworkingClient(), opt).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("error listing routers: %v", err)
 		}
@@ -53,7 +53,7 @@ func (c *openstackCloud) CreateRouter(opt routers.CreateOptsBuilder) (*routers.R
 	var r *routers.Router
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := routers.Create(c.neutronClient, opt).Extract()
+		v, err := routers.Create(c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating router: %v", err)
 		}
@@ -73,7 +73,7 @@ func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddI
 	var i *routers.InterfaceInfo
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := routers.AddInterface(c.neutronClient, routerID, opt).Extract()
+		v, err := routers.AddInterface(c.NetworkingClient(), routerID, opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating router interface: %v", err)
 		}
@@ -91,7 +91,7 @@ func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddI
 
 func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		_, err := routers.RemoveInterface(c.neutronClient, routerID, opt).Extract()
+		_, err := routers.RemoveInterface(c.NetworkingClient(), routerID, opt).Extract()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting router interface: %v", err)
 		}
@@ -108,7 +108,7 @@ func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.Remo
 
 func (c *openstackCloud) DeleteRouter(routerID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		err := routers.Delete(c.neutronClient, routerID).ExtractErr()
+		err := routers.Delete(c.NetworkingClient(), routerID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting router: %v", err)
 		}
