@@ -1053,7 +1053,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		}
 	}
 
-	if featureflag.EnableExternalCloudController.Enabled() && b.Cluster.Spec.ExternalCloudControllerManager != nil {
+	if b.Cluster.Spec.ExternalCloudControllerManager != nil {
 		// cloudprovider specific out-of-tree controller
 		if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
 			{
