@@ -117,7 +117,6 @@ go_test(
         "//pkg/apis/kops/validation:go_default_library",
         "//pkg/assets:go_default_library",
         "//pkg/client/simple/vfsclientset:go_default_library",
-        "//pkg/featureflag:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/templates:go_default_library",
