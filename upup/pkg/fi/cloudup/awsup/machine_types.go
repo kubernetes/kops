@@ -50,7 +50,7 @@ func (m *AWSMachineTypeInfo) EphemeralDevices() []*EphemeralDevice {
 			// TODO: What drive letters do we use?
 			klog.Fatalf("ephemeral devices for > 20 not yet implemented")
 		}
-		d.DeviceName = "/dev/sd" + string('c'+i)
+		d.DeviceName = fmt.Sprintf("/dev/sd%c", 'c'+i)
 		d.VirtualName = fmt.Sprintf("ephemeral%d", i)
 
 		disks = append(disks, d)
