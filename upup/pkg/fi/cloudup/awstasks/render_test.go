@@ -41,7 +41,12 @@ func doRenderTests(t *testing.T, method string, cases []*renderTest) {
 		t.Errorf("failed to create local render directory: %s", err)
 		t.FailNow()
 	}
-	defer os.RemoveAll(outdir)
+	defer func() {
+		err := os.RemoveAll(outdir)
+		if err != nil {
+			t.Errorf("failed to remove temp dir %q: %v", outdir, err)
+		}
+	}()
 
 	for i, c := range cases {
 		var filename string
