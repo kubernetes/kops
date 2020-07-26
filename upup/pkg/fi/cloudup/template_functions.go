@@ -122,10 +122,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return tf.Region
 	}
 
-	if featureflag.EnableExternalCloudController.Enabled() {
-		// will return openstack external ccm image location for current kubernetes version
-		dest["OpenStackCCM"] = tf.OpenStackCCM
-	}
+	// will return openstack external ccm image location for current kubernetes version
+	dest["OpenStackCCM"] = tf.OpenStackCCM
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv

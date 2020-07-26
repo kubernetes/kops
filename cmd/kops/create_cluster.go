@@ -488,10 +488,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	if cluster.Spec.ExternalCloudControllerManager != nil && !featureflag.EnableExternalCloudController.Enabled() {
-		klog.Warningf("Without setting the feature flag `+EnableExternalCloudController` the external cloud controller manager configuration will be discarded")
-	}
-
 	strict := false
 	err = validation.DeepValidate(cluster, instanceGroups, strict, nil)
 	if err != nil {
