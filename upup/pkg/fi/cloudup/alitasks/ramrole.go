@@ -29,8 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=RAMRole
-
+// +kops:fitask
 type RAMRole struct {
 	ID                       *string
 	Lifecycle                *fi.Lifecycle

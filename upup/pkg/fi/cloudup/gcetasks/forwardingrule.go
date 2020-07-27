@@ -27,7 +27,7 @@ import (
 )
 
 // ForwardingRule represents a GCE ForwardingRule
-//go:generate fitask -type=ForwardingRule
+// +kops:fitask
 type ForwardingRule struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

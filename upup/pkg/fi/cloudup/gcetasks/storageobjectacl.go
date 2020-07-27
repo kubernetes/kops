@@ -27,7 +27,7 @@ import (
 )
 
 // StorageObjectAcl represents an ACL rule on a google cloud storage object
-//go:generate fitask -type=StorageObjectAcl
+// +kops:fitask
 type StorageObjectAcl struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

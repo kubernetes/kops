@@ -31,7 +31,7 @@ import (
 	"k8s.io/klog"
 )
 
-//go:generate fitask -type=IAMInstanceProfile
+// +kops:fitask
 type IAMInstanceProfile struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

@@ -31,7 +31,7 @@ const (
 	NatType = "Nat"
 )
 
-//go:generate fitask -type=EIP
+// +kops:fitask
 type EIP struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

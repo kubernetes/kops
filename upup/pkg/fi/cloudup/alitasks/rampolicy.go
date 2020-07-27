@@ -29,8 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=RAMPolicy
-
+// +kops:fitask
 type RAMPolicy struct {
 	Lifecycle      *fi.Lifecycle
 	Name           *string
