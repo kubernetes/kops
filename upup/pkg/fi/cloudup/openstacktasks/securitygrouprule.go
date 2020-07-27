@@ -38,7 +38,7 @@ func IntValue(v *int) int {
 
 // +kops:fitask
 type SecurityGroupRule struct {
-	ID             *string
+	Name           *string
 	Direction      *string
 	EtherType      *string
 	SecGroup       *SecurityGroup
@@ -64,7 +64,7 @@ func (e *SecurityGroupRule) GetDependencies(tasks map[string]fi.Task) []fi.Task 
 var _ fi.CompareWithID = &SecurityGroupRule{}
 
 func (r *SecurityGroupRule) CompareWithID() *string {
-	return r.ID
+	return r.Name
 }
 
 func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error) {
@@ -98,7 +98,7 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 	}
 	rule := rs[0]
 	actual := &SecurityGroupRule{
-		ID:             fi.String(rule.ID),
+		Name:           fi.String(rule.ID),
 		Direction:      fi.String(rule.Direction),
 		EtherType:      fi.String(rule.EtherType),
 		PortRangeMax:   Int(rule.PortRangeMax),
@@ -111,7 +111,7 @@ func (r *SecurityGroupRule) Find(context *fi.Context) (*SecurityGroupRule, error
 		SecGroup:  &SecurityGroup{ID: fi.String(rule.SecGroupID)},
 		Lifecycle: r.Lifecycle,
 	}
-	r.ID = actual.ID
+	r.Name = actual.Name
 	return actual, nil
 }
 
@@ -131,7 +131,7 @@ func (_ *SecurityGroupRule) CheckChanges(a, e, changes *SecurityGroupRule) error
 			return fi.RequiredField("SecGroup")
 		}
 	} else {
-		if changes.ID != nil {
+		if changes.Name != nil {
 			return fi.CannotChangeField("ID")
 		}
 		if changes.Direction != nil {
@@ -169,7 +169,7 @@ func (_ *SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, 
 			return fmt.Errorf("error creating SecurityGroupRule in SG %s: %v", fi.StringValue(e.SecGroup.GetName()), err)
 		}
 
-		e.ID = fi.String(r.ID)
+		e.Name = fi.String(r.ID)
 		return nil
 	}
 
