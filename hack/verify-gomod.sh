@@ -26,7 +26,7 @@ make gomod
 
 changes=$(git status --porcelain || true)
 if [ -n "${changes}" ]; then
-  echo "ERROR: go modules are not up to date; please run: go mod tidy"
+  echo "ERROR: go modules are not up to date; please run: make gomod"
   echo "changed files:"
   printf "%s" "${changes}\n"
   echo "git diff:"
