@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+// +kops:fitask
 type LoadBalancerACL struct {
 	ID                   *string
 	Name                 *string
