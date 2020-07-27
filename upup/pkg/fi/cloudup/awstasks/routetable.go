@@ -174,7 +174,8 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 		klog.V(2).Infof("Creating RouteTable with VPC: %q", *vpcID)
 
 		request := &ec2.CreateRouteTableInput{
-			VpcId: vpcID,
+			VpcId:             vpcID,
+			TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeRouteTable, e.Tags),
 		}
 
 		response, err := t.Cloud.EC2().CreateRouteTable(request)
