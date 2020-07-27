@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,22 @@ limitations under the License.
 package main
 
 import (
-	"k8s.io/kops/upup/tools/generators/pkg/codegen"
+	"os"
+
+	"k8s.io/gengo/args"
+	"k8s.io/klog/v2"
 )
 
 func main() {
-	generator := &FitaskGenerator{}
-	codegen.RunGenerator("fitask", generator)
+	klog.InitFlags(nil)
+	arguments := args.Default()
+	if err := arguments.Execute(
+		NameSystems(),
+		DefaultNameSystem(),
+		Packages,
+	); err != nil {
+		klog.Errorf("Error: %v", err)
+		os.Exit(1)
+	}
+	klog.V(2).Info("Completed successfully.")
 }

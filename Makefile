@@ -162,14 +162,8 @@ upup/models/bindata.go: ${UPUP_MODELS_BINDATA_SOURCES}
 .PHONY: codegen
 codegen: kops-gobindata
 	go install k8s.io/kops/upup/tools/generators/...
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/cloudup/dotasks
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/cloudup/alitasks
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/cloudup/spotinsttasks
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/assettasks
-	PATH="${GOPATH_1ST}/bin:${PATH}" go generate k8s.io/kops/upup/pkg/fi/fitasks
+	${GOPATH_1ST}/bin/fitask --input-dirs k8s.io/kops/upup/pkg/fi/... \
+	    --go-header-file "hack/boilerplate/boilerplate.go.txt"
 
 .PHONY: protobuf
 protobuf:
