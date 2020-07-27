@@ -275,7 +275,7 @@ github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/snappy
 # github.com/google/btree v1.0.0
 github.com/google/btree
-# github.com/google/go-cmp v0.3.1
+# github.com/google/go-cmp v0.4.0
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -655,6 +655,7 @@ golang.org/x/tools/go/packages
 golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/types/typeutil
 golang.org/x/tools/go/vcs
+golang.org/x/tools/imports
 golang.org/x/tools/internal/analysisinternal
 golang.org/x/tools/internal/event
 golang.org/x/tools/internal/event/core
@@ -1164,6 +1165,13 @@ k8s.io/component-base/metrics/prometheus/restclient
 k8s.io/component-base/version
 # k8s.io/csi-translation-lib v0.18.1 => k8s.io/csi-translation-lib v0.18.1
 k8s.io/csi-translation-lib/plugins
+# k8s.io/gengo v0.0.0-20200710205751-c0d492a0f3ca
+## explicit
+k8s.io/gengo/args
+k8s.io/gengo/generator
+k8s.io/gengo/namer
+k8s.io/gengo/parser
+k8s.io/gengo/types
 # k8s.io/helm v2.9.0+incompatible
 ## explicit
 k8s.io/helm/pkg/strvals
@@ -1171,6 +1179,9 @@ k8s.io/helm/pkg/strvals
 ## explicit
 k8s.io/klog
 k8s.io/klog/klogr
+# k8s.io/klog/v2 v2.0.0
+## explicit
+k8s.io/klog/v2
 # k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c
 k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/util/proto

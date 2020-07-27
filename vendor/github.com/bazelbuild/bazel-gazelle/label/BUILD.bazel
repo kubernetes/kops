@@ -8,3 +8,14 @@ go_library(
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/bazelbuild/bazel-gazelle/pathtools:go_default_library"],
 )
+
+filegroup(
+    name = "all_files",
+    testonly = True,
+    srcs = [
+        "BUILD.bazel",
+        "label.go",
+        "label_test.go",
+    ],
+    visibility = ["//visibility:public"],
+)

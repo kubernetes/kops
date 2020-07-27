@@ -22,3 +22,23 @@ go_library(
         "//vendor/github.com/bazelbuild/buildtools/tables:go_default_library",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    testonly = True,
+    srcs = [
+        "BUILD.bazel",
+        "directives.go",
+        "directives_test.go",
+        "expr.go",
+        "merge.go",
+        "platform.go",
+        "platform_strings.go",
+        "rule.go",
+        "rule_test.go",
+        "sort_labels.go",
+        "types.go",
+        "value.go",
+    ],
+    visibility = ["//visibility:public"],
+)
