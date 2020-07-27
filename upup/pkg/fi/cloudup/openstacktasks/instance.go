@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-//go:generate fitask -type=Instance
+// +kops:fitask
 type Instance struct {
 	ID               *string
 	Name             *string

@@ -30,7 +30,7 @@ import (
 
 var scopeAliases map[string]string
 
-//go:generate fitask -type=Instance
+// +kops:fitask
 type Instance struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

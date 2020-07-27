@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=VPCDHCPOptionsAssociation
+// +kops:fitask
 type VPCDHCPOptionsAssociation struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

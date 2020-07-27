@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=VPCCIDRBlock
+// +kops:fitask
 type VPCCIDRBlock struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
