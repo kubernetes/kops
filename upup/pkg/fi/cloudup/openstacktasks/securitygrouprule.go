@@ -17,6 +17,7 @@ limitations under the License.
 package openstacktasks
 
 import (
+	"encoding/json"
 	"fmt"
 
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -174,4 +175,53 @@ func (_ *SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, 
 
 	klog.V(2).Infof("Openstack task SecurityGroupRule::RenderOpenstack did nothing")
 	return nil
+}
+
+// JSON marshalling boilerplate
+type realSecurityGroupRule SecurityGroupRule
+
+// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
+func (o *SecurityGroupRule) UnmarshalJSON(data []byte) error {
+	var jsonName string
+	if err := json.Unmarshal(data, &jsonName); err == nil {
+		o.ID = &jsonName
+		return nil
+	}
+
+	var r realSecurityGroupRule
+	if err := json.Unmarshal(data, &r); err != nil {
+		return err
+	}
+	*o = SecurityGroupRule(r)
+	return nil
+}
+
+var _ fi.HasLifecycle = &SecurityGroupRule{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *SecurityGroupRule) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
+// SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
+func (o *SecurityGroupRule) SetLifecycle(lifecycle fi.Lifecycle) {
+	o.Lifecycle = &lifecycle
+}
+
+var _ fi.HasLifecycle = &SecurityGroupRule{}
+
+// GetName returns the Name of the object, implementing fi.HasName
+func (o *SecurityGroupRule) GetName() *string {
+	name := o.String()
+	return &name
+}
+
+// SetName sets the Name of the object, implementing fi.SetName
+func (o *SecurityGroupRule) SetName(name string) {
+	// o.ID = &name
+}
+
+// String is the stringer function for the task, producing readable output using fi.TaskAsString
+func (o *SecurityGroupRule) String() string {
+	return fi.TaskAsString(o)
 }
