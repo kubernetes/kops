@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=Address
+// +kops:fitask
 type Address struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

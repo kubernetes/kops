@@ -39,7 +39,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
-//go:generate fitask -type=Elastigroup
+// +kops:fitask
 type Elastigroup struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

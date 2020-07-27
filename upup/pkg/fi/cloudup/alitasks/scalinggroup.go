@@ -30,8 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=ScalingGroup
-
+// +kops:fitask
 type ScalingGroup struct {
 	Name           *string
 	Lifecycle      *fi.Lifecycle

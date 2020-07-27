@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-//go:generate fitask -type=RouterInterface
+// +kops:fitask
 type RouterInterface struct {
 	ID        *string
 	Name      *string

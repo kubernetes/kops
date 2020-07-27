@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=SecurityGroup
+// +kops:fitask
 type SecurityGroup struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

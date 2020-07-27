@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-//go:generate fitask -type=FloatingIP
+// +kops:fitask
 type FloatingIP struct {
 	Name         *string
 	ID           *string
