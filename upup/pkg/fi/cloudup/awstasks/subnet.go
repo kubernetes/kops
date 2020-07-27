@@ -29,7 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
-//go:generate fitask -type=Subnet
+// +kops:fitask
 type Subnet struct {
 	Name *string
 

@@ -29,9 +29,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=ElasticIP
-
 // ElasticIP manages an AWS Address (ElasticIP)
+// +kops:fitask
 type ElasticIP struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

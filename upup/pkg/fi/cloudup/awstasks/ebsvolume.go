@@ -28,7 +28,7 @@ import (
 	"k8s.io/klog"
 )
 
-//go:generate fitask -type=EBSVolume
+// +kops:fitask
 type EBSVolume struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

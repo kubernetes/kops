@@ -29,9 +29,9 @@ import (
 	_ "k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=Droplet
 // Droplet represents a group of droplets. In the future it
 // will be managed by the Machines API
+// +kops:fitask
 type Droplet struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

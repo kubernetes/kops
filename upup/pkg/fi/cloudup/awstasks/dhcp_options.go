@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=DHCPOptions
+// +kops:fitask
 type DHCPOptions struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

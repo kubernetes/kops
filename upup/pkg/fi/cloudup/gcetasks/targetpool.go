@@ -27,7 +27,7 @@ import (
 )
 
 // TargetPool represents a GCE TargetPool
-//go:generate fitask -type=TargetPool
+// +kops:fitask
 type TargetPool struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

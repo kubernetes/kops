@@ -29,8 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=SecurityGroupRule
-
+// +kops:fitask
 type SecurityGroupRule struct {
 	Name          *string
 	IpProtocol    *string

@@ -30,7 +30,7 @@ import (
 
 const ListenerRunningStatus = "running"
 
-//go:generate fitask -type=LoadBalancerListener
+// +kops:fitask
 type LoadBalancerListener struct {
 	LoadBalancer      *LoadBalancer
 	Name              *string
