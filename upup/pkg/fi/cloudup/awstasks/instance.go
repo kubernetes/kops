@@ -34,6 +34,7 @@ import (
 const MaxUserDataSize = 16384
 
 // Instance defines the instance specification
+// +kops:fitask
 type Instance struct {
 	ID        *string
 	Lifecycle *fi.Lifecycle
