@@ -75,8 +75,6 @@ github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:l
 github.com/auth0/go-jwt-middleware v0.0.0-20170425171159-5493cabe49f7/go.mod h1:LWMyo4iOLWXHGdBki7NIht1kHru/0wM179h+d3g8ATM=
 github.com/aws/aws-sdk-go v1.16.26/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.28.2/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
-github.com/aws/aws-sdk-go v1.29.21 h1:Q9XdxpJImp2HF/AqtIlonnAtG3qU9TvhpZiy1AeuQY4=
-github.com/aws/aws-sdk-go v1.29.21/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
 github.com/aws/aws-sdk-go v1.30.16 h1:1eabOZiVGl+XB02/VG9NpR+3fngaNc74pgb5RmyzgLY=
 github.com/aws/aws-sdk-go v1.30.16/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
 github.com/bazelbuild/bazel-gazelle v0.18.2/go.mod h1:D0ehMSbS+vesFsLGiD6JXu3mVEzOlfUl8wNnq+x/9p0=
@@ -735,8 +733,6 @@ github.com/spf13/viper v1.3.2 h1:VUFqw5KcqRf7i70GOzW7N+Q7+gxVBkSSqiXB12+JQ4M=
 github.com/spf13/viper v1.3.2/go.mod h1:ZiWeW+zYFKm7srdB9IoDzzZXaJaI5eL9QjNiN/DMA2s=
 github.com/spf13/viper v1.4.0 h1:yXHLWeravcrgGyFSyCgdYpXQ9dR9c/WED3pg1RhxqEU=
 github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/yZzE=
-github.com/spotinst/spotinst-sdk-go v1.43.0 h1:ba5LQrYHQaq6TeC2JR3Hau7pbymVFScj3zoDxhbRphs=
-github.com/spotinst/spotinst-sdk-go v1.43.0/go.mod h1:nWi2DyjUi1WUZclpsqZFXvImsU0T39ppqqHwC4/T5mw=
 github.com/spotinst/spotinst-sdk-go v1.49.0 h1:JmsLlsgd/cCKpcn04HrParo5r34owDzIC12IW1SpSEs=
 github.com/spotinst/spotinst-sdk-go v1.49.0/go.mod h1:nWi2DyjUi1WUZclpsqZFXvImsU0T39ppqqHwC4/T5mw=
 github.com/storageos/go-api v0.0.0-20180912212459-343b3eff91fc/go.mod h1:ZrLn+e0ZuF3Y65PNF6dIwbJPZqfmtCXxFm9ckv0agOY=
