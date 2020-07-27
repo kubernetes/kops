@@ -36,6 +36,7 @@ func IntValue(v *int) int {
 	return *v
 }
 
+// +kops:fitask
 type SecurityGroupRule struct {
 	ID             *string
 	Direction      *string
