@@ -1,17 +1,10 @@
-# gazelle:exclude parse.y.go
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load(":build_defs.bzl", "go_yacc")
-
-go_yacc(
-    src = "parse.y",
-    out = "parse.y.baz.go",
-)
 
 go_library(
     name = "go_default_library",
     srcs = [
         "lex.go",
-        "parse.y.baz.go",  # keep
+        "parse.y.go",
         "print.go",
         "quote.go",
         "rewrite.go",

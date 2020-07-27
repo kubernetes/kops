@@ -16,17 +16,3 @@ go_library(
         "//vendor/golang.org/x/tools/go/vcs:go_default_library",
     ],
 )
-
-filegroup(
-    name = "all_files",
-    testonly = True,
-    srcs = [
-        "BUILD.bazel",
-        "remote.go",
-        "remote_test.go",
-        "repo.go",
-        "repo_test.go",
-        "stubs_test.go",
-    ],
-    visibility = ["//visibility:public"],
-)

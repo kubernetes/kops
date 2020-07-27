@@ -5,16 +5,5 @@ go_library(
     srcs = ["version.go"],
     importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/internal/version",
     importpath = "github.com/bazelbuild/bazel-gazelle/internal/version",
-    visibility = ["//:__subpackages__"],
-)
-
-filegroup(
-    name = "all_files",
-    testonly = True,
-    srcs = [
-        "BUILD.bazel",
-        "version.go",
-        "version_test.go",
-    ],
-    visibility = ["//visibility:public"],
+    visibility = ["//vendor/github.com/bazelbuild/bazel-gazelle:__subpackages__"],
 )

@@ -1,35 +1,13 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
-load("@bazel_gazelle//:def.bzl", "DEFAULT_LANGUAGES", "gazelle_binary")
-
-gazelle_binary(
-    name = "gazelle",
-    languages = DEFAULT_LANGUAGES,
-    msan = "off",
-    pure = "off",
-    race = "off",
-    static = "off",
-    visibility = ["//visibility:public"],
-)
-
-gazelle_binary(
-    name = "gazelle_pure",
-    languages = DEFAULT_LANGUAGES,
-    msan = "off",
-    pure = "on",
-    race = "off",
-    static = "off",
-    tags = ["manual"],
-    visibility = ["//visibility:public"],
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
-    # keep
     srcs = [
         "diff.go",
         "fix.go",
         "fix-update.go",
         "gazelle.go",
+        "langs.go",
         "metaresolver.go",
         "print.go",
         "update-repos.go",
@@ -37,8 +15,7 @@ go_library(
     ],
     importmap = "k8s.io/kops/vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
     importpath = "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
-    tags = ["manual"],
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:private"],
     deps = [
         "//vendor/github.com/bazelbuild/bazel-gazelle/config:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/flag:go_default_library",
@@ -56,33 +33,8 @@ go_library(
     ],
 )
 
-go_test(
-    name = "go_default_test",
-    size = "small",
-    srcs = [
-        "langs.go",  # keep
-    ],
-    args = ["-go_sdk=go_sdk"],
-    data = ["@go_sdk//:files"],
-)
-
-filegroup(
-    name = "all_files",
-    testonly = True,
-    srcs = [
-        "BUILD.bazel",
-        "diff.go",
-        "diff_test.go",
-        "fix.go",
-        "fix-update.go",
-        "fix_test.go",
-        "gazelle.go",
-        "integration_test.go",
-        "langs.go",
-        "metaresolver.go",
-        "print.go",
-        "update-repos.go",
-        "version.go",
-    ],
+go_binary(
+    name = "gazelle",
+    embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )

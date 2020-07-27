@@ -16,16 +16,3 @@ go_library(
         "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
     ],
 )
-
-filegroup(
-    name = "all_files",
-    testonly = True,
-    srcs = [
-        "BUILD.bazel",
-        "lang.go",
-        "update.go",
-        "//language/go:all_files",
-        "//language/proto:all_files",
-    ],
-    visibility = ["//visibility:public"],
-)

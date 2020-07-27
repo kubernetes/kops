@@ -1,15 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
-# gazelle:exclude testdata
-
-genrule(
-    name = "known_imports",
-    srcs = ["proto.csv"],
-    outs = ["known_imports.go"],
-    cmd = "$(location //language/proto/gen:gen_known_imports) -proto_csv $< -known_imports $@ -package proto -var knownImports -key 0 -value 1",
-    tools = ["//language/proto/gen:gen_known_imports"],
-)
-
 go_library(
     name = "go_default_library",
     srcs = [
@@ -35,31 +25,4 @@ go_library(
         "//vendor/github.com/bazelbuild/bazel-gazelle/resolve:go_default_library",
         "//vendor/github.com/bazelbuild/bazel-gazelle/rule:go_default_library",
     ],
-)
-
-exports_files(["proto.csv"])
-
-filegroup(
-    name = "all_files",
-    testonly = True,
-    srcs = [
-        "BUILD.bazel",
-        "config.go",
-        "config_test.go",
-        "constants.go",
-        "fileinfo.go",
-        "fileinfo_test.go",
-        "fix.go",
-        "generate.go",
-        "generate_test.go",
-        "kinds.go",
-        "known_imports.go",
-        "lang.go",
-        "package.go",
-        "proto.csv",
-        "resolve.go",
-        "resolve_test.go",
-        "//language/proto/gen:all_files",
-    ],
-    visibility = ["//visibility:public"],
 )
