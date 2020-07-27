@@ -363,6 +363,7 @@ gomod-prereqs:
 
 .PHONY: gomod
 gomod: gomod-prereqs
+	GO111MODULE=on go mod tidy
 	GO111MODULE=on go mod vendor
 	# Switch weavemesh to use peer_name_hash - bazel rule-go doesn't support build tags yet
 	rm vendor/github.com/weaveworks/mesh/peer_name_mac.go
