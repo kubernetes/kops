@@ -39,6 +39,7 @@ import (
 const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
 // AutoscalingGroup provdes the definition for a autoscaling group in aws
+// +kops:fitask
 type AutoscalingGroup struct {
 	// Name is the name of the ASG
 	Name *string

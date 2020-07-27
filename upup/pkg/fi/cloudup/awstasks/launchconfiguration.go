@@ -51,6 +51,7 @@ func RetainLaunchConfigurationCount() int {
 }
 
 // LaunchConfiguration is the specification for a launch configuration
+// +kops:fitask
 type LaunchConfiguration struct {
 	// Name is the name of the configuration
 	Name *string
