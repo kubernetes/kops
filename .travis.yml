@@ -10,7 +10,7 @@ go: 1.14.x
 go_import_path: k8s.io/kops
 
 script:
-  - GOPROXY=https://proxy.golang.org travis_wait 30 make nodeup examples test
+  - GOPROXY=https://proxy.golang.org travis_wait 30 make all examples test
 
 jobs:
   include:
