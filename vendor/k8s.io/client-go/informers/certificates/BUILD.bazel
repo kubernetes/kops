@@ -7,6 +7,7 @@ go_library(
     importpath = "k8s.io/client-go/informers/certificates",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/k8s.io/client-go/informers/certificates/v1:go_default_library",
         "//vendor/k8s.io/client-go/informers/certificates/v1beta1:go_default_library",
         "//vendor/k8s.io/client-go/informers/internalinterfaces:go_default_library",
     ],
