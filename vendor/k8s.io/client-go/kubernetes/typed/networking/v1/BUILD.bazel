@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "doc.go",
         "generated_expansion.go",
+        "ingress.go",
+        "ingressclass.go",
         "networking_client.go",
         "networkpolicy.go",
     ],

@@ -9,6 +9,7 @@ go_library(
         "gce_pd.go",
         "in_tree_volume.go",
         "openstack_cinder.go",
+        "vsphere_volume.go",
     ],
     importmap = "k8s.io/kops/vendor/k8s.io/csi-translation-lib/plugins",
     importpath = "k8s.io/csi-translation-lib/plugins",
@@ -19,6 +20,6 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/cloud-provider/volume:go_default_library",
-        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )

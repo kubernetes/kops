@@ -1,6 +1,9 @@
 package dns
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // PrivateRdata is an interface used for implementing "Private Use" RR types, see
 // RFC 6895. This allows one to experiment with new RR types, without requesting an
@@ -15,7 +18,7 @@ type PrivateRdata interface {
 	// Unpack is used when unpacking a private RR from a buffer.
 	// TODO(miek): diff. signature than Pack, see edns0.go for instance.
 	Unpack([]byte) (int, error)
-	// Copy copies the Rdata into the PrivateRdata argument.
+	// Copy copies the Rdata.
 	Copy(PrivateRdata) error
 	// Len returns the length in octets of the Rdata.
 	Len() int
@@ -26,8 +29,22 @@ type PrivateRdata interface {
 type PrivateRR struct {
 	Hdr  RR_Header
 	Data PrivateRdata
+}
 
-	generator func() PrivateRdata // for copy
+func mkPrivateRR(rrtype uint16) *PrivateRR {
+	// Panics if RR is not an instance of PrivateRR.
+	rrfunc, ok := TypeToRR[rrtype]
+	if !ok {
+		panic(fmt.Sprintf("dns: invalid operation with Private RR type %d", rrtype))
+	}
+
+	anyrr := rrfunc()
+	rr, ok := anyrr.(*PrivateRR)
+	if !ok {
+		panic(fmt.Sprintf("dns: RR is not a PrivateRR, TypeToRR[%d] generator returned %T", rrtype, anyrr))
+	}
+
+	return rr
 }
 
 // Header return the RR header of r.
@@ -44,12 +61,13 @@ func (r *PrivateRR) len(off int, compression map[string]struct{}) int {
 
 func (r *PrivateRR) copy() RR {
 	// make new RR like this:
-	rr := &PrivateRR{r.Hdr, r.generator(), r.generator}
+	rr := mkPrivateRR(r.Hdr.Rrtype)
+	rr.Hdr = r.Hdr
 
-	if err := r.Data.Copy(rr.Data); err != nil {
-		panic("dns: got value that could not be used to copy Private rdata: " + err.Error())
+	err := r.Data.Copy(rr.Data)
+	if err != nil {
+		panic("dns: got value that could not be used to copy Private rdata")
 	}
-
 	return rr
 }
 
@@ -68,7 +86,7 @@ func (r *PrivateRR) unpack(msg []byte, off int) (int, error) {
 	return off, err
 }
 
-func (r *PrivateRR) parse(c *zlexer, origin string) *ParseError {
+func (r *PrivateRR) parse(c *zlexer, origin, file string) *ParseError {
 	var l lex
 	text := make([]string, 0, 2) // could be 0..N elements, median is probably 1
 Fetch:
@@ -85,7 +103,7 @@ Fetch:
 
 	err := r.Data.Parse(text)
 	if err != nil {
-		return &ParseError{"", err.Error(), l}
+		return &ParseError{file, err.Error(), l}
 	}
 
 	return nil
@@ -98,7 +116,7 @@ func (r1 *PrivateRR) isDuplicate(r2 RR) bool { return false }
 func PrivateHandle(rtypestr string, rtype uint16, generator func() PrivateRdata) {
 	rtypestr = strings.ToUpper(rtypestr)
 
-	TypeToRR[rtype] = func() RR { return &PrivateRR{RR_Header{}, generator(), generator} }
+	TypeToRR[rtype] = func() RR { return &PrivateRR{RR_Header{}, generator()} }
 	TypeToString[rtype] = rtypestr
 	StringToType[rtypestr] = rtype
 }
