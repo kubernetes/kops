@@ -7,6 +7,7 @@ go_library(
         "client_cache.go",
         "codec.go",
         "doc.go",
+        "dryrun.go",
         "interfaces.go",
         "options.go",
         "patch.go",

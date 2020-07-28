@@ -131,16 +131,14 @@ func (ip *informerCache) objectTypeForListObject(list runtime.Object) (*schema.G
 }
 
 // GetInformerForKind returns the informer for the GroupVersionKind
-func (ip *informerCache) GetInformerForKind(gvk schema.GroupVersionKind) (Informer, error) {
+func (ip *informerCache) GetInformerForKind(ctx context.Context, gvk schema.GroupVersionKind) (Informer, error) {
 	// Map the gvk to an object
 	obj, err := ip.Scheme.New(gvk)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO(djzager): before a context can be passed down, the Informers interface
-	// must be updated to accept a context when getting an informer
-	_, i, err := ip.InformersMap.Get(context.TODO(), gvk, obj)
+	_, i, err := ip.InformersMap.Get(ctx, gvk, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -148,15 +146,13 @@ func (ip *informerCache) GetInformerForKind(gvk schema.GroupVersionKind) (Inform
 }
 
 // GetInformer returns the informer for the obj
-func (ip *informerCache) GetInformer(obj runtime.Object) (Informer, error) {
+func (ip *informerCache) GetInformer(ctx context.Context, obj runtime.Object) (Informer, error) {
 	gvk, err := apiutil.GVKForObject(obj, ip.Scheme)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO(djzager): before a context can be passed down, the Informers interface
-	// must be updated to accept a context when getting an informer
-	_, i, err := ip.InformersMap.Get(context.TODO(), gvk, obj)
+	_, i, err := ip.InformersMap.Get(ctx, gvk, obj)
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +170,8 @@ func (ip *informerCache) NeedLeaderElection() bool {
 // to List. For one-to-one compatibility with "normal" field selectors, only return one value.
 // The values may be anything.  They will automatically be prefixed with the namespace of the
 // given object, if present.  The objects passed are guaranteed to be objects of the correct type.
-func (ip *informerCache) IndexField(obj runtime.Object, field string, extractValue client.IndexerFunc) error {
-	informer, err := ip.GetInformer(obj)
+func (ip *informerCache) IndexField(ctx context.Context, obj runtime.Object, field string, extractValue client.IndexerFunc) error {
+	informer, err := ip.GetInformer(ctx, obj)
 	if err != nil {
 		return err
 	}

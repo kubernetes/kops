@@ -19,6 +19,7 @@ package manager
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -50,9 +51,21 @@ type Manager interface {
 	// non-leaderelection mode (always running) or leader election mode (managed by leader election if enabled).
 	Add(Runnable) error
 
+	// Elected is closed when this manager is elected leader of a group of
+	// managers, either because it won a leader election or because no leader
+	// election was configured.
+	Elected() <-chan struct{}
+
 	// SetFields will set any dependencies on an object for which the object has implemented the inject
 	// interface - e.g. inject.Client.
 	SetFields(interface{}) error
+
+	// AddMetricsExtraHandler adds an extra handler served on path to the http server that serves metrics.
+	// Might be useful to register some diagnostic endpoints e.g. pprof. Note that these endpoints meant to be
+	// sensitive and shouldn't be exposed publicly.
+	// If the simple path -> handler mapping offered here is not enough, a new http server/listener should be added as
+	// Runnable to the manager via Add method.
+	AddMetricsExtraHandler(path string, handler http.Handler) error
 
 	// AddHealthzCheck allows you to add Healthz checker
 	AddHealthzCheck(name string, check healthz.Checker) error
@@ -131,7 +144,7 @@ type Options struct {
 	// wait to force acquire leadership. This is measured against time of
 	// last observed ack. Default is 15 seconds.
 	LeaseDuration *time.Duration
-	// RenewDeadline is the duration that the acting master will retry
+	// RenewDeadline is the duration that the acting controlplane will retry
 	// refreshing leadership before giving up. Default is 10 seconds.
 	RenewDeadline *time.Duration
 	// RetryPeriod is the duration the LeaderElector clients should wait
@@ -183,6 +196,10 @@ type Options struct {
 	// If not set this will create the default DelegatingClient that will
 	// use the cache for reads and the client for writes.
 	NewClient NewClientFunc
+
+	// DryRunClient specifies whether the client should be configured to enforce
+	// dryRun mode.
+	DryRunClient bool
 
 	// EventBroadcaster records Events emitted by the manager and sends them to the Kubernetes API
 	// Use this to customize the event correlator and spam filter
@@ -257,6 +274,11 @@ func New(config *rest.Config, options Options) (Manager, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if options.DryRunClient {
+		writeObj = client.NewDryRunClient(writeObj)
+	}
+
 	// Create the recorder provider to inject event recorders for the components.
 	// TODO(directxman12): the log for the event provider should have a context (name, tags, etc) specific
 	// to the particular controller that it's being injected into, rather than a generic one like is here.
@@ -282,6 +304,9 @@ func New(config *rest.Config, options Options) (Manager, error) {
 		return nil, err
 	}
 
+	// By default we have no extra endpoints to expose on metrics http server.
+	metricsExtraHandlers := make(map[string]http.Handler)
+
 	// Create health probes listener. This will throw an error if the bind
 	// address is invalid or already in use.
 	healthProbeListener, err := options.newHealthProbeListener(options.HealthProbeBindAddress)
@@ -302,8 +327,10 @@ func New(config *rest.Config, options Options) (Manager, error) {
 		resourceLock:          resourceLock,
 		mapper:                mapper,
 		metricsListener:       metricsListener,
+		metricsExtraHandlers:  metricsExtraHandlers,
 		internalStop:          stop,
 		internalStopper:       stop,
+		elected:               make(chan struct{}),
 		port:                  options.Port,
 		host:                  options.Host,
 		certDir:               options.CertDir,
@@ -316,8 +343,8 @@ func New(config *rest.Config, options Options) (Manager, error) {
 	}, nil
 }
 
-// defaultNewClient creates the default caching client
-func defaultNewClient(cache cache.Cache, config *rest.Config, options client.Options) (client.Client, error) {
+// DefaultNewClient creates the default caching client
+func DefaultNewClient(cache cache.Cache, config *rest.Config, options client.Options) (client.Client, error) {
 	// Create the Client for Write operations.
 	c, err := client.New(config, options)
 	if err != nil {
@@ -362,7 +389,7 @@ func setOptionsDefaults(options Options) Options {
 
 	// Allow newClient to be mocked
 	if options.NewClient == nil {
-		options.NewClient = defaultNewClient
+		options.NewClient = DefaultNewClient
 	}
 
 	// Allow newCache to be mocked
