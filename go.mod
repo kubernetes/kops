@@ -105,7 +105,7 @@ require (
 	google.golang.org/api v0.22.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 	honnef.co/go/tools v0.0.1-2020.1.4
 	k8s.io/api v0.19.0-rc.4
 	k8s.io/apimachinery v0.19.0-rc.4
@@ -119,7 +119,7 @@ require (
 	k8s.io/kubectl v0.0.0
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20200729134348-d5654de09c73
-	sigs.k8s.io/controller-runtime v0.5.1-0.20200326092940-754026bd8510
+	sigs.k8s.io/controller-runtime v0.6.1
 	sigs.k8s.io/controller-tools v0.2.8
 	sigs.k8s.io/yaml v1.2.0
 )
