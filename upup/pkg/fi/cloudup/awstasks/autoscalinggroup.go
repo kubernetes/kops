@@ -299,7 +299,13 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		// @step: attempt to create the autoscaling group for us
 		if _, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request); err != nil {
-			return fmt.Errorf("error creating AutoscalingGroup: %v", err)
+			code := awsup.AWSErrorCode(err)
+			message := awsup.AWSErrorMessage(err)
+			if code == "ValidationError" && strings.Contains(message, "Invalid IAM Instance Profile name") {
+				klog.V(4).Infof("error creating AutoscalingGroup: %s", message)
+				return fi.NewTryAgainLaterError("waiting for the IAM Instance Profile to be propagated")
+			}
+			return fmt.Errorf("error creating AutoScalingGroup: %s", message)
 		}
 
 		// @step: attempt to enable the metrics for us

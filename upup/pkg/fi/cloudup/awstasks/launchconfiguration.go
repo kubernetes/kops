@@ -22,10 +22,8 @@ import (
 	"math"
 	"sort"
 	"strings"
-	"time"
 
 	"k8s.io/kops/pkg/apis/kops"
-
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -353,32 +351,14 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		request.InstanceMonitoring = &autoscaling.InstanceMonitoring{Enabled: fi.Bool(false)}
 	}
 
-	attempt := 0
-	maxAttempts := 10
-	for {
-		attempt++
-
-		klog.V(8).Infof("AWS CreateLaunchConfiguration %s", aws.StringValue(request.LaunchConfigurationName))
-		_, err = t.Cloud.Autoscaling().CreateLaunchConfiguration(request)
-		if err == nil {
-			break
+	if _, err = t.Cloud.Autoscaling().CreateLaunchConfiguration(request); err != nil {
+		code := awsup.AWSErrorCode(err)
+		message := awsup.AWSErrorMessage(err)
+		if code == "ValidationError" && strings.Contains(message, "Invalid IamInstanceProfile") {
+			klog.V(4).Infof("error creating LaunchConfiguration: %s", message)
+			return fi.NewTryAgainLaterError("waiting for the IAM Instance Profile to be propagated")
 		}
-
-		if awsup.AWSErrorCode(err) == "ValidationError" {
-			message := awsup.AWSErrorMessage(err)
-			if strings.Contains(message, "not authorized") || strings.Contains(message, "Invalid IamInstance") {
-				if attempt > maxAttempts {
-					return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
-				}
-				klog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(e.IAMInstanceProfile.Name), message)
-				klog.Infof("waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
-				time.Sleep(10 * time.Second)
-				continue
-			}
-			klog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
-		}
-
-		return fmt.Errorf("error creating AutoscalingLaunchConfiguration: %v", err)
+		return fmt.Errorf("error creating LaunchConfiguration: %s", message)
 	}
 
 	e.ID = fi.String(launchConfigurationName)
