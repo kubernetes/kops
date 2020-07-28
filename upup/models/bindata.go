@@ -19159,6 +19159,9 @@ rules:
 - apiGroups: ["autoscaling"]
   resources: ["horizontalpodautoscalers"]
   verbs: ["get", "list"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list"]
 - nonResourceURLs: ["/version/", "/version"]
   verbs: ["get"]
   # ----------------------------------------------------------------------------
@@ -19272,7 +19275,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.61
+        image: spotinst/kubernetes-cluster-controller:1.0.62
         livenessProbe:
           httpGet:
             path: /healthcheck
