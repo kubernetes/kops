@@ -160,10 +160,6 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
 		} else if e.NatGateway != nil {
-			if err := e.NatGateway.waitAvailable(t.Cloud); err != nil {
-				return err
-			}
-
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
@@ -175,7 +171,13 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 
 		response, err := t.Cloud.EC2().CreateRoute(request)
 		if err != nil {
-			return fmt.Errorf("error creating Route: %v", err)
+			code := awsup.AWSErrorCode(err)
+			message := awsup.AWSErrorMessage(err)
+			if code == "InvalidNatGatewayID.NotFound" {
+				klog.V(4).Infof("error creating Route: %s", message)
+				return fi.NewTryAgainLaterError("waiting for the NAT Gateway to be created")
+			}
+			return fmt.Errorf("error creating Route: %s", message)
 		}
 
 		if !aws.BoolValue(response.Return) {
@@ -191,10 +193,6 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
 		} else if e.NatGateway != nil {
-			if err := e.NatGateway.waitAvailable(t.Cloud); err != nil {
-				return err
-			}
-
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
@@ -204,9 +202,14 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 
 		klog.V(2).Infof("Updating Route with RouteTable:%q CIDR:%q", *e.RouteTable.ID, *e.CIDR)
 
-		_, err := t.Cloud.EC2().ReplaceRoute(request)
-		if err != nil {
-			return fmt.Errorf("error updating Route: %v", err)
+		if _, err := t.Cloud.EC2().ReplaceRoute(request); err != nil {
+			code := awsup.AWSErrorCode(err)
+			message := awsup.AWSErrorMessage(err)
+			if code == "InvalidNatGatewayID.NotFound" {
+				klog.V(4).Infof("error creating Route: %s", message)
+				return fi.NewTryAgainLaterError("waiting for the NAT Gateway to be created")
+			}
+			return fmt.Errorf("error creating Route: %s", message)
 		}
 	}
 
