@@ -17,6 +17,7 @@ limitations under the License.
 package openstack
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -24,9 +25,13 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/apiversions"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"github.com/gophercloud/gophercloud/pagination"
 	version "github.com/hashicorp/go-version"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
+
+	cpoerrors "k8s.io/cloud-provider-openstack/pkg/util/errors"
 )
 
 const (
@@ -43,6 +48,12 @@ const (
 
 var (
 	octaviaVersion string
+
+	// ErrNotFound is used to inform that the object is missing
+	ErrNotFound = errors.New("failed to find object")
+
+	// ErrMultipleResults is used when we unexpectedly get back multiple results
+	ErrMultipleResults = errors.New("multiple results where only one expected")
 )
 
 // getOctaviaVersion returns the current Octavia API version.
@@ -151,4 +162,107 @@ func CreateListener(client *gophercloud.ServiceClient, lbID string, opts listene
 	}
 
 	return listener, nil
+}
+
+// GetLoadbalancerByName retrieves loadbalancer object
+func GetLoadbalancerByName(client *gophercloud.ServiceClient, name string) (*loadbalancers.LoadBalancer, error) {
+	opts := loadbalancers.ListOpts{
+		Name: name,
+	}
+	allPages, err := loadbalancers.List(client, opts).AllPages()
+	if err != nil {
+		return nil, err
+	}
+	loadbalancerList, err := loadbalancers.ExtractLoadBalancers(allPages)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(loadbalancerList) > 1 {
+		return nil, ErrMultipleResults
+	}
+	if len(loadbalancerList) == 0 {
+		return nil, ErrNotFound
+	}
+
+	return &loadbalancerList[0], nil
+}
+
+// GetListenerByName gets a listener by its name, raise error if not found or get multiple ones.
+func GetListenerByName(client *gophercloud.ServiceClient, name string, lbID string) (*listeners.Listener, error) {
+	opts := listeners.ListOpts{
+		Name:           name,
+		LoadbalancerID: lbID,
+	}
+	pager := listeners.List(client, opts)
+	var listenerList []listeners.Listener
+
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
+		v, err := listeners.ExtractListeners(page)
+		if err != nil {
+			return false, err
+		}
+		listenerList = append(listenerList, v...)
+		if len(listenerList) > 1 {
+			return false, ErrMultipleResults
+		}
+		return true, nil
+	})
+	if err != nil {
+		if cpoerrors.IsNotFound(err) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	if len(listenerList) == 0 {
+		return nil, ErrNotFound
+	}
+
+	return &listenerList[0], nil
+}
+
+// GetPoolByName gets a pool by its name, raise error if not found or get multiple ones.
+func GetPoolByName(client *gophercloud.ServiceClient, name string, lbID string) (*pools.Pool, error) {
+	var listenerPools []pools.Pool
+
+	opts := pools.ListOpts{
+		Name:           name,
+		LoadbalancerID: lbID,
+	}
+	err := pools.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
+		v, err := pools.ExtractPools(page)
+		if err != nil {
+			return false, err
+		}
+		listenerPools = append(listenerPools, v...)
+		if len(listenerPools) > 1 {
+			return false, ErrMultipleResults
+		}
+		return true, nil
+	})
+	if err != nil {
+		if cpoerrors.IsNotFound(err) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	if len(listenerPools) == 0 {
+		return nil, ErrNotFound
+	} else if len(listenerPools) > 1 {
+		return nil, ErrMultipleResults
+	}
+
+	return &listenerPools[0], nil
+}
+
+// DeleteLoadbalancer deletes a loadbalancer with all its child objects.
+func DeleteLoadbalancer(client *gophercloud.ServiceClient, lbID string) error {
+	err := loadbalancers.Delete(client, lbID, loadbalancers.DeleteOpts{Cascade: true}).ExtractErr()
+	if err != nil && !cpoerrors.IsNotFound(err) {
+		return fmt.Errorf("error deleting loadbalancer %s: %v", lbID, err)
+	}
+
+	return nil
 }

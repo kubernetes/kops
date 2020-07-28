@@ -24,6 +24,7 @@ go_library(
         "gce_loadbalancer.go",
         "gce_loadbalancer_external.go",
         "gce_loadbalancer_internal.go",
+        "gce_loadbalancer_metrics.go",
         "gce_loadbalancer_naming.go",
         "gce_networkendpointgroup.go",
         "gce_routes.go",
@@ -84,7 +85,7 @@ go_library(
         "//vendor/k8s.io/cloud-provider/volume/helpers:go_default_library",
         "//vendor/k8s.io/component-base/metrics:go_default_library",
         "//vendor/k8s.io/component-base/metrics/legacyregistry:go_default_library",
-        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/klog/v2:go_default_library",
         "//vendor/k8s.io/utils/net:go_default_library",
     ],
 )
