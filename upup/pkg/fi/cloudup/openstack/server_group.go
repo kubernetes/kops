@@ -32,6 +32,10 @@ import (
 )
 
 func (c *openstackCloud) CreateServerGroup(opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error) {
+	return createServerGroup(c, opt)
+}
+
+func createServerGroup(c OpenstackCloud, opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error) {
 	var i *servergroups.ServerGroup
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
@@ -52,6 +56,9 @@ func (c *openstackCloud) CreateServerGroup(opt servergroups.CreateOptsBuilder) (
 }
 
 func (c *openstackCloud) ListServerGroups() ([]servergroups.ServerGroup, error) {
+	return listServerGroups(c)
+}
+func listServerGroups(c OpenstackCloud) ([]servergroups.ServerGroup, error) {
 	var sgs []servergroups.ServerGroup
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
@@ -101,7 +108,7 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 	return instancegroup, nil
 }
 
-func (c *openstackCloud) osBuildCloudInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup, g *servergroups.ServerGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, g *servergroups.ServerGroup, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	newLaunchConfigName := g.Name
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     newLaunchConfigName,
@@ -135,6 +142,10 @@ func (c *openstackCloud) osBuildCloudInstanceGroup(cluster *kops.Cluster, ig *ko
 }
 
 func (c *openstackCloud) DeleteServerGroup(groupID string) error {
+	return deleteServerGroup(c, groupID)
+}
+
+func deleteServerGroup(c OpenstackCloud, groupID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err := servergroups.Delete(c.ComputeClient(), groupID).ExtractErr()
 		if err != nil && !isNotFound(err) {

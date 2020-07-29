@@ -96,6 +96,7 @@ type OpenstackCloud interface {
 	NetworkingClient() *gophercloud.ServiceClient
 	LoadBalancerClient() *gophercloud.ServiceClient
 	DNSClient() *gophercloud.ServiceClient
+	ImageClient() *gophercloud.ServiceClient
 	UseOctavia() bool
 	UseZones([]string)
 
@@ -320,8 +321,21 @@ type openstackCloud struct {
 
 var _ fi.Cloud = &openstackCloud{}
 
+var openstackCloudInstances map[string]OpenstackCloud = make(map[string]OpenstackCloud)
+
 func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (OpenstackCloud, error) {
+
 	config := vfs.OpenstackConfig{}
+
+	region, err := config.GetRegion()
+	if err != nil {
+		return nil, fmt.Errorf("error finding openstack region: %v", err)
+	}
+
+	raw := openstackCloudInstances[region]
+	if raw != nil {
+		return raw, nil
+	}
 
 	authOption, err := config.GetCredential()
 	if err != nil {
@@ -331,11 +345,6 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 	provider, err := os.NewClient(authOption.IdentityEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
-	}
-
-	region, err := config.GetRegion()
-	if err != nil {
-		return nil, fmt.Errorf("error finding openstack region: %v", err)
 	}
 
 	if spec != nil && spec.CloudConfig != nil && spec.CloudConfig.Openstack != nil && spec.CloudConfig.Openstack.InsecureSkipVerify != nil {
@@ -470,6 +479,8 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 		}
 	}
 	c.lbClient = lbClient
+	openstackCloudInstances[region] = c
+
 	return c, nil
 }
 
@@ -502,6 +513,10 @@ func (c *openstackCloud) DNSClient() *gophercloud.ServiceClient {
 	return c.dnsClient
 }
 
+func (c *openstackCloud) ImageClient() *gophercloud.ServiceClient {
+	return c.glanceClient
+}
+
 func (c *openstackCloud) Region() string {
 	return c.region
 }
@@ -520,10 +535,14 @@ func (c *openstackCloud) DNS() (dnsprovider.Interface, error) {
 
 // FindVPCInfo list subnets in network
 func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+	return findVPCInfo(c, id, c.zones)
+}
+
+func findVPCInfo(c OpenstackCloud, id string, zones []string) (*fi.VPCInfo, error) {
 	vpcInfo := &fi.VPCInfo{}
 	// Find subnets in the network
 	{
-		if len(c.zones) == 0 {
+		if len(zones) == 0 {
 			return nil, fmt.Errorf("could not initialize zones")
 		}
 		klog.V(2).Infof("Calling ListSubnets for subnets in Network %q", id)
@@ -536,7 +555,7 @@ func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 		}
 
 		for index, subnet := range subnets {
-			zone := c.zones[int(index)%len(c.zones)]
+			zone := zones[int(index)%len(zones)]
 			subnetInfo := &fi.SubnetInfo{
 				ID:   subnet.ID,
 				CIDR: subnet.CIDR,
@@ -550,6 +569,10 @@ func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 
 // DeleteGroup in openstack will delete servergroup, instances and ports
 func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	return deleteGroup(c, g)
+}
+
+func deleteGroup(c OpenstackCloud, g *cloudinstances.CloudInstanceGroup) error {
 	grp := g.Raw.(*servergroups.ServerGroup)
 
 	for _, id := range grp.Members {
@@ -582,6 +605,10 @@ func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error
 }
 
 func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+}
+
+func getCloudGroups(c OpenstackCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
@@ -602,7 +629,7 @@ func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []
 			}
 			continue
 		}
-		groups[instancegroup.ObjectMeta.Name], err = c.osBuildCloudInstanceGroup(cluster, instancegroup, &grp, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = osBuildCloudInstanceGroup(c, cluster, instancegroup, &grp, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
 		}
@@ -620,6 +647,10 @@ type Address struct {
 }
 
 func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+	return getApiIngressStatus(c, cluster)
+}
+
+func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	var ingresses []kops.ApiIngressStatus
 	if cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
 		if cluster.Spec.MasterPublicName != "" {
