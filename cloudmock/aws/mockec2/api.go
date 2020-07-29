@@ -91,7 +91,7 @@ func (m *MockEC2) All() map[string]interface{} {
 		all[id] = o
 	}
 	for id, o := range m.KeyPairs {
-		all["sshkey-"+id] = o
+		all[id] = o
 	}
 	for id, o := range m.Vpcs {
 		all[id] = o
