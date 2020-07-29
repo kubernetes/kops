@@ -21,31 +21,10 @@ limitations under the License.
 package alitasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // EIP
-
-// JSON marshaling boilerplate
-type realEIP EIP
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *EIP) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realEIP
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = EIP(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &EIP{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &EIP{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *EIP) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *EIP) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString

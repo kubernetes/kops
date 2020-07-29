@@ -21,31 +21,10 @@ limitations under the License.
 package alitasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // VSwitch
-
-// JSON marshaling boilerplate
-type realVSwitch VSwitch
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *VSwitch) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realVSwitch
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = VSwitch(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &VSwitch{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &VSwitch{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *VSwitch) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *VSwitch) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
