@@ -24,11 +24,14 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/pagination"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 func (c *openstackCloud) AppendTag(resource string, id string, tag string) error {
+	return appendTag(c, resource, id, tag)
+}
+
+func appendTag(c OpenstackCloud, resource string, id string, tag string) error {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		err := attributestags.Add(c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
@@ -46,6 +49,10 @@ func (c *openstackCloud) AppendTag(resource string, id string, tag string) error
 }
 
 func (c *openstackCloud) DeleteTag(resource string, id string, tag string) error {
+	return deleteTag(c, resource, id, tag)
+}
+
+func deleteTag(c OpenstackCloud, resource string, id string, tag string) error {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		err := attributestags.Delete(c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
@@ -63,6 +70,10 @@ func (c *openstackCloud) DeleteTag(resource string, id string, tag string) error
 }
 
 func (c *openstackCloud) FindNetworkBySubnetID(subnetID string) (*networks.Network, error) {
+	return findNetworkBySubnetID(c, subnetID)
+}
+
+func findNetworkBySubnetID(c OpenstackCloud, subnetID string) (*networks.Network, error) {
 	var rslt *networks.Network
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		subnet, err := c.GetSubnet(subnetID)
@@ -88,6 +99,10 @@ func (c *openstackCloud) FindNetworkBySubnetID(subnetID string) (*networks.Netwo
 }
 
 func (c *openstackCloud) GetNetwork(id string) (*networks.Network, error) {
+	return getNetwork(c, id)
+}
+
+func getNetwork(c OpenstackCloud, id string) (*networks.Network, error) {
 	var network *networks.Network
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		r, err := networks.Get(c.NetworkingClient(), id).Extract()
@@ -107,6 +122,10 @@ func (c *openstackCloud) GetNetwork(id string) (*networks.Network, error) {
 }
 
 func (c *openstackCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error) {
+	return listNetworks(c, opt)
+}
+
+func listNetworks(c OpenstackCloud, opt networks.ListOptsBuilder) ([]networks.Network, error) {
 	var ns []networks.Network
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
@@ -132,6 +151,10 @@ func (c *openstackCloud) ListNetworks(opt networks.ListOptsBuilder) ([]networks.
 }
 
 func (c *openstackCloud) GetExternalNetwork() (net *networks.Network, err error) {
+	return getExternalNetwork(c, *c.extNetworkName)
+}
+
+func getExternalNetwork(c OpenstackCloud, networkName string) (net *networks.Network, err error) {
 	type NetworkWithExternalExt struct {
 		networks.Network
 		external.NetworkExternalExt
@@ -146,7 +169,7 @@ func (c *openstackCloud) GetExternalNetwork() (net *networks.Network, err error)
 				return false, err
 			}
 			for _, externalNet := range externalNetwork {
-				if externalNet.External && externalNet.Name == fi.StringValue(c.extNetworkName) {
+				if externalNet.External && externalNet.Name == networkName {
 					net = &externalNet.Network
 					return true, nil
 				}
@@ -169,6 +192,10 @@ func (c *openstackCloud) GetExternalNetwork() (net *networks.Network, err error)
 }
 
 func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error) {
+	return createNetwork(c, opt)
+}
+
+func createNetwork(c OpenstackCloud, opt networks.CreateOptsBuilder) (*networks.Network, error) {
 	var n *networks.Network
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
@@ -189,6 +216,10 @@ func (c *openstackCloud) CreateNetwork(opt networks.CreateOptsBuilder) (*network
 }
 
 func (c *openstackCloud) DeleteNetwork(networkID string) error {
+	return deleteNetwork(c, networkID)
+}
+
+func deleteNetwork(c OpenstackCloud, networkID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err := networks.Delete(c.NetworkingClient(), networkID).ExtractErr()
 		if err != nil && !isNotFound(err) {
