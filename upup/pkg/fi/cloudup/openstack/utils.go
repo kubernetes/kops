@@ -52,6 +52,10 @@ func (s flavorList) Less(i, j int) bool {
 }
 
 func (c *openstackCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
+	return defaultInstanceType(c, cluster, ig)
+}
+
+func defaultInstanceType(c OpenstackCloud, cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	flavorPage, err := flavors.ListDetail(c.ComputeClient(), flavors.ListOpts{
 		MinRAM: 1024,
 	}).AllPages()
