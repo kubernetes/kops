@@ -126,8 +126,8 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource)
 					if err != nil {
 						mutex.Lock()
 						if awsresources.IsDependencyViolation(err) {
-							fmt.Printf("%s\tstill has dependencies, will retry: %v\n", human, err)
-							klog.V(4).Infof("API call made when had dependency: %s", human)
+							fmt.Printf("%s\tstill has dependencies, will retry\n", human)
+							klog.V(4).Infof("resource %q generated a dependency error: %v", human, err)
 						} else {
 							fmt.Printf("%s\terror deleting resources, will retry: %v\n", human, err)
 						}
