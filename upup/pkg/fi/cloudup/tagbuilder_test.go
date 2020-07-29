@@ -210,42 +210,6 @@ func TestBuildTags_KubernetesVersions(t *testing.T) {
 	}
 }
 
-func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
-	c := buildCluster(nil)
-
-	tags, err := buildCloudupTags(c)
-	if err != nil {
-		t.Fatalf("buildCloudupTags error: %v", err)
-	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_automatic_upgrades") {
-		t.Fatal("nodeUpTag _automatic_upgrades not found")
-	}
-}
-
-func TestBuildTags_UpdatePolicy_None(t *testing.T) {
-	c := buildCluster(ClusterParams{CloudProvider: "aws", UpdatePolicy: api.UpdatePolicyExternal})
-
-	tags, err := buildCloudupTags(c)
-	if err != nil {
-		t.Fatalf("buildTags error: %v", err)
-	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if nodeUpTags.Has("_automatic_upgrades") {
-		t.Fatal("nodeUpTag _automatic_upgrades found unexpectedly")
-	}
-}
-
 func TestBuildTags_CloudProvider_AWS_Cilium(t *testing.T) {
 
 	c := buildCluster(nil)
