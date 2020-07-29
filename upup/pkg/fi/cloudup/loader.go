@@ -81,6 +81,8 @@ func (l *Loader) Init() {
 }
 
 func (l *Loader) executeTemplate(key string, d string, args []string) (string, error) {
+	// TODO remove after proving it's dead code
+	klog.Fatalf("need to execute template %q", key)
 	t := template.New(key)
 
 	funcMap := make(template.FuncMap)
@@ -214,6 +216,7 @@ func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi
 }
 
 func (l *Loader) processDeferrals() error {
+	// TODO remove after proving it's not used
 	for taskKey, task := range l.tasks {
 		taskValue := reflect.ValueOf(task)
 
@@ -238,6 +241,7 @@ func (l *Loader) processDeferrals() error {
 							typeNameForTask := fi.TypeNameForTask(intf)
 							primary := l.tasks[typeNameForTask+"/"+*name]
 							if primary == nil {
+								klog.Fatalf("task %q needed deferral resolution", typeNameForTask+"/"+*name)
 								primary = l.tasks[*name]
 							}
 							if primary == nil {
@@ -259,6 +263,7 @@ func (l *Loader) processDeferrals() error {
 						return reflectutils.SkipReflection
 					} else if rh, ok := intf.(*fi.ResourceHolder); ok {
 						if rh.Resource == nil {
+							klog.Fatalf("resource %s needed deferral resolution", rh.Name)
 							//Resources can contain template 'arguments', separated by spaces
 							// <resourcename> <arg1> <arg2>
 							tokens := strings.Split(rh.Name, " ")
