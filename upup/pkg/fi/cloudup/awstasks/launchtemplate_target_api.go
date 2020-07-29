@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -142,31 +141,8 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 		}
 	}
 	// @step: attempt to create the launch template
-	err = func() error {
-		for attempt := 0; attempt < 10; attempt++ {
-			if _, err = c.Cloud.EC2().CreateLaunchTemplate(input); err == nil {
-				return nil
-			}
-
-			if awsup.AWSErrorCode(err) == "ValidationError" {
-				message := awsup.AWSErrorMessage(err)
-				if strings.Contains(message, "not authorized") || strings.Contains(message, "Invalid IamInstance") {
-					if attempt > 10 {
-						return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
-					}
-					klog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(ep.IAMInstanceProfile.Name), message)
-
-					time.Sleep(5 * time.Second)
-					continue
-				}
-				klog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
-			}
-		}
-
-		return err
-	}()
-	if err != nil {
-		return fmt.Errorf("failed to create aws launch template: %s", err)
+	if _, err = c.Cloud.EC2().CreateLaunchTemplate(input); err != nil {
+		return fmt.Errorf("error creating LaunchTemplate: %v", err)
 	}
 
 	ep.ID = fi.String(name)
