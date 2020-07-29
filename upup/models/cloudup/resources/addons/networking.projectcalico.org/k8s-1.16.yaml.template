@@ -3947,8 +3947,16 @@ metadata:
     role.kubernetes.io/networking: "1"
 
 {{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
-# This manifest installs the k8s-ec2-srcdst container, which disables
-# src/dst ip checks to allow BGP to function for calico for hosts within subnets
+# This manifest installs the "k8s-ec2-srcdst" container, which
+# disables source/destination IP address checks for ENIs attached to
+# EC2 instances hosting Kubernetes nodes.
+#
+# Disabling these checks allows Calico to send unencapsulated packets
+# to and from pods within the same VPC subnet, where either a given
+# packet's source address (originating from a pod) may not match the
+# sending machine's address or the destination address (heading to a
+# pod) may not match the receiving machine's address.
+#
 # This only applies for AWS environments.
 ---
 
@@ -4026,7 +4034,7 @@ spec:
       serviceAccountName: k8s-ec2-srcdst
       priorityClassName: system-cluster-critical
       containers:
-        - image: ottoyiu/k8s-ec2-srcdst:v0.2.2
+        - image: ottoyiu/k8s-ec2-srcdst:v0.3.0
           name: k8s-ec2-srcdst
           resources:
             requests:
