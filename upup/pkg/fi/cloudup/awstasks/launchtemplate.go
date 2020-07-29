@@ -27,7 +27,8 @@ import (
 	"k8s.io/klog"
 )
 
-// LaunchTemplate defines the specificate for a template
+// LaunchTemplate defines the specification for a launch template.
+// +kops:fitask
 type LaunchTemplate struct {
 	// Name is the name of the configuration
 	Name *string
