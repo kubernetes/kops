@@ -356,6 +356,11 @@ resource "aws_iam_role" "nodes-private-shared-subnet-example-com" {
 resource "aws_key_pair" "kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
   key_name   = "kubernetes.private-shared-subnet.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57"
   public_key = file("${path.module}/data/aws_key_pair_kubernetes.private-shared-subnet.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
+  tags = {
+    "KubernetesCluster"                                       = "private-shared-subnet.example.com"
+    "Name"                                                    = "private-shared-subnet.example.com"
+    "kubernetes.io/cluster/private-shared-subnet.example.com" = "owned"
+  }
 }
 
 resource "aws_launch_template" "bastion-private-shared-subnet-example-com" {
