@@ -316,9 +316,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatese
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/launchtemplates.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
@@ -654,9 +651,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatese
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/launchtemplates.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
@@ -992,9 +986,6 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatese
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/launchtemplates.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
@@ -1245,9 +1236,6 @@ Resources.AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom.Proper
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/launchtemplates.example.com/addons/bootstrap-channel.yaml
 
