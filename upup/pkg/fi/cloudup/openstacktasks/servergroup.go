@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-//go:generate fitask -type=ServerGroup
+// +kops:fitask
 type ServerGroup struct {
 	ID          *string
 	Name        *string

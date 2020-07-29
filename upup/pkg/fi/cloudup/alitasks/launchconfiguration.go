@@ -36,8 +36,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=LaunchConfiguration
-
 const dateFormat = "2006-01-02T15:04Z"
 
 // defaultRetainLaunchConfigurationCount is the number of launch configurations (matching the name prefix) that we should
@@ -53,6 +51,7 @@ func RetainLaunchConfigurationCount() int {
 }
 
 // LaunchConfiguration is the specification for a launch configuration
+// +kops:fitask
 type LaunchConfiguration struct {
 	Lifecycle *fi.Lifecycle
 	ID        *string

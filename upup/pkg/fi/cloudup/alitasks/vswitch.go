@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=VSwitch
+// +kops:fitask
 type VSwitch struct {
 	Name      *string
 	VSwitchId *string

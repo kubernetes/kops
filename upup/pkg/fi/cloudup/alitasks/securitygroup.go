@@ -29,9 +29,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=SecurityGroup
 const SecurityResource = "securitygroup"
 
+// +kops:fitask
 type SecurityGroup struct {
 	Name            *string
 	SecurityGroupId *string

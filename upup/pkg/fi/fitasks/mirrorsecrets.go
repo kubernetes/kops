@@ -23,7 +23,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-//go:generate fitask -type=MirrorSecrets
+// +kops:fitask
 type MirrorSecrets struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

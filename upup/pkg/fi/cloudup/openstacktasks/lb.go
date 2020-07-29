@@ -31,7 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-//go:generate fitask -type=LB
+// +kops:fitask
 type LB struct {
 	ID            *string
 	Name          *string

@@ -36,7 +36,7 @@ import (
 
 // LoadBalancer manages an ELB.  We find the existing ELB using the Name tag.
 
-//go:generate fitask -type=LoadBalancer
+// +kops:fitask
 type LoadBalancer struct {
 	// We use the Name tag to find the existing ELB, because we are (more or less) unrestricted when
 	// it comes to tag values, but the LoadBalancerName is length limited
