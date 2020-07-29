@@ -21,31 +21,10 @@ limitations under the License.
 package gcetasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // InstanceTemplate
-
-// JSON marshaling boilerplate
-type realInstanceTemplate InstanceTemplate
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *InstanceTemplate) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realInstanceTemplate
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = InstanceTemplate(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &InstanceTemplate{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &InstanceTemplate{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *InstanceTemplate) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *InstanceTemplate) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString

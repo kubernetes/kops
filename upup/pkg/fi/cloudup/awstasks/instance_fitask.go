@@ -21,31 +21,10 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // Instance
-
-// JSON marshaling boilerplate
-type realInstance Instance
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *Instance) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realInstance
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = Instance(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &Instance{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &Instance{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Instance) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *Instance) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString

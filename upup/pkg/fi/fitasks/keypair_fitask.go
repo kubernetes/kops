@@ -21,31 +21,10 @@ limitations under the License.
 package fitasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // Keypair
-
-// JSON marshaling boilerplate
-type realKeypair Keypair
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *Keypair) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realKeypair
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = Keypair(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &Keypair{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &Keypair{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Keypair) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *Keypair) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
