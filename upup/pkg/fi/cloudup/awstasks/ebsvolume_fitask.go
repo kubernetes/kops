@@ -21,31 +21,10 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // EBSVolume
-
-// JSON marshaling boilerplate
-type realEBSVolume EBSVolume
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *EBSVolume) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realEBSVolume
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = EBSVolume(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &EBSVolume{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &EBSVolume{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *EBSVolume) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *EBSVolume) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
