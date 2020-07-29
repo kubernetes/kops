@@ -22,13 +22,19 @@ http_archive(
     ],
 )
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies", "go_download_sdk")
 
 go_rules_dependencies()
 
-go_register_toolchains(
-    go_version = "1.14.5",
+go_download_sdk(
+    name = "go_sdk",
+    sdks = {
+        "darwin_amd64": ("go1.15rc1.darwin-amd64.tar.gz", "0572e053ed5fd6e8d6ed24f62832b747d46787288e146e8ba99b574b6e0d67b0"),
+        "linux_amd64": ("go1.15rc1.linux-amd64.tar.gz", "ac092ebb92f88366786063e68a9531d5eccac51371f9becb128f064721731b2e"),
+    },
 )
+
+go_register_toolchains()
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
