@@ -65,19 +65,3 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 
 	return tags, nil
 }
-
-func buildNodeupTags(cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
-	tags := sets.NewString()
-
-	if clusterTags.Has("_gce") {
-		tags.Insert("_gce")
-	}
-	if clusterTags.Has("_aws") {
-		tags.Insert("_aws")
-	}
-	if clusterTags.Has("_do") {
-		tags.Insert("_do")
-	}
-
-	return tags, nil
-}
