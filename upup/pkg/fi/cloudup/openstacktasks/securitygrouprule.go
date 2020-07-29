@@ -17,7 +17,6 @@ limitations under the License.
 package openstacktasks
 
 import (
-	"encoding/json"
 	"fmt"
 
 	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -177,25 +176,6 @@ func (_ *SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, 
 	return nil
 }
 
-// JSON marshalling boilerplate
-type realSecurityGroupRule SecurityGroupRule
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *SecurityGroupRule) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.ID = &jsonName
-		return nil
-	}
-
-	var r realSecurityGroupRule
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = SecurityGroupRule(r)
-	return nil
-}
-
 var _ fi.HasLifecycle = &SecurityGroupRule{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
@@ -214,11 +194,6 @@ var _ fi.HasLifecycle = &SecurityGroupRule{}
 func (o *SecurityGroupRule) GetName() *string {
 	name := o.String()
 	return &name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *SecurityGroupRule) SetName(name string) {
-	// o.ID = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
