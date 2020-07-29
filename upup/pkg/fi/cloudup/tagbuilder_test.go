@@ -78,15 +78,6 @@ func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
 	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_aws") {
-		t.Fatal("nodeUpTag _aws not found")
-	}
 }
 
 func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
@@ -103,15 +94,6 @@ func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
-	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_aws") {
-		t.Fatal("nodeUpTag _aws not found")
 	}
 }
 
@@ -130,15 +112,6 @@ func TestBuildTags_CloudProvider_AWS_Calico(t *testing.T) {
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
 	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_aws") {
-		t.Fatal("nodeUpTag _aws not found")
-	}
 }
 
 func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
@@ -156,15 +129,6 @@ func TestBuildTags_CloudProvider_AWS_Canal(t *testing.T) {
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
 	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_aws") {
-		t.Fatal("nodeUpTag _aws not found")
-	}
 }
 
 func TestBuildTags_CloudProvider_AWS(t *testing.T) {
@@ -178,15 +142,6 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
-	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_aws") {
-		t.Fatal("nodeUpTag _aws not found")
 	}
 }
 
@@ -224,14 +179,5 @@ func TestBuildTags_CloudProvider_AWS_Cilium(t *testing.T) {
 
 	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
-	}
-
-	nodeUpTags, err := buildNodeupTags(c, tags)
-	if err != nil {
-		t.Fatalf("buildNodeupTags error: %v", err)
-	}
-
-	if !nodeUpTags.Has("_aws") {
-		t.Fatal("nodeUpTag _aws not found")
 	}
 }

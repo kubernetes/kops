@@ -173,11 +173,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	distroTags := distribution.BuildTags()
 
 	nodeTags := sets.NewString()
-	nodeTags.Insert(c.config.Tags...)
 	nodeTags.Insert(archTags...)
 	nodeTags.Insert(distroTags...)
 
-	klog.Infof("Config tags: %v", c.config.Tags)
 	klog.Infof("Arch tags: %v", archTags)
 	klog.Infof("Distro tags: %v", distroTags)
 

@@ -1172,7 +1172,6 @@ type nodeUpConfigBuilder struct {
 	cluster        *kops.Cluster
 	etcdManifests  map[kops.InstanceGroupRole][]string
 	images         map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
-	nodeUpTags     []string
 	protokubeImage map[kops.InstanceGroupRole]*nodeup.Image
 }
 
@@ -1184,23 +1183,12 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 		return nil, fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
 	}
 
-	// TODO: Remove
-	clusterTags, err := buildCloudupTags(cluster)
-	if err != nil {
-		return nil, err
-	}
-
 	channels := []string{
 		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
 	}
 
 	for i := range cluster.Spec.Addons {
 		channels = append(channels, cluster.Spec.Addons[i].Manifest)
-	}
-
-	nodeUpTags, err := buildNodeupTags(cluster, clusterTags)
-	if err != nil {
-		return nil, err
 	}
 
 	useGossip := dns.IsGossipHostname(cluster.Spec.MasterInternalName)
@@ -1307,7 +1295,6 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 		cluster:         cluster,
 		etcdManifests:   etcdManifests,
 		images:          images,
-		nodeUpTags:      nodeUpTags.List(),
 		protokubeImage:  protokubeImage,
 	}
 	return &configBuilder, nil
@@ -1327,8 +1314,6 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	config := nodeup.NewConfig(cluster, ig)
-	config.Tags = append(config.Tags, n.nodeUpTags...)
-
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupported() {
 		config.Assets[arch] = []string{}
