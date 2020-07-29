@@ -26,6 +26,7 @@ import (
 	"sync"
 
 	"k8s.io/klog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -194,9 +195,7 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 		}
 	}
 
-	target := c.Target.(*local.LocalTarget)
-	updates := target.HasTag(tags.TagUpdatePolicyAuto)
-	if updates || !installed {
+	if fi.StringValue(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
 		return nil, nil
 	}
 
@@ -244,9 +243,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 		healthy = fi.Bool(true)
 	}
 
-	target := c.Target.(*local.LocalTarget)
-	updates := target.HasTag(tags.TagUpdatePolicyAuto)
-	if updates || !installed {
+	if fi.StringValue(c.Cluster.Spec.UpdatePolicy) != kops.UpdatePolicyExternal || !installed {
 		return nil, nil
 	}
 
