@@ -467,8 +467,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		tags:             clusterTags,
 	}
 
-	l.Tags = clusterTags
-
 	{
 		templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
 		if err != nil {
