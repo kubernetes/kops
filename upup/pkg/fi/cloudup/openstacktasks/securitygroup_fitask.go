@@ -21,31 +21,10 @@ limitations under the License.
 package openstacktasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // SecurityGroup
-
-// JSON marshaling boilerplate
-type realSecurityGroup SecurityGroup
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *SecurityGroup) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realSecurityGroup
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = SecurityGroup(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &SecurityGroup{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &SecurityGroup{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *SecurityGroup) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *SecurityGroup) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString

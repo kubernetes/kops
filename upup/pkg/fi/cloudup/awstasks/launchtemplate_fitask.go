@@ -17,33 +17,13 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
-
-type realLaunchTemplate LaunchTemplate
 
 var (
 	_ fi.HasLifecycle = &LaunchTemplate{}
 	_ fi.HasName      = &LaunchTemplate{}
 )
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *LaunchTemplate) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realLaunchTemplate
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = LaunchTemplate(r)
-	return nil
-}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *LaunchTemplate) GetLifecycle() *fi.Lifecycle {
@@ -58,11 +38,6 @@ func (o *LaunchTemplate) SetLifecycle(lifecycle fi.Lifecycle) {
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *LaunchTemplate) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *LaunchTemplate) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString

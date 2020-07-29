@@ -21,31 +21,10 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // IAMInstanceProfileRole
-
-// JSON marshaling boilerplate
-type realIAMInstanceProfileRole IAMInstanceProfileRole
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *IAMInstanceProfileRole) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realIAMInstanceProfileRole
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = IAMInstanceProfileRole(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &IAMInstanceProfileRole{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &IAMInstanceProfileRole{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *IAMInstanceProfileRole) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *IAMInstanceProfileRole) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
