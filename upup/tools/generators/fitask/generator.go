@@ -41,25 +41,6 @@ func extractTag(comments []string) []string {
 const perTypeDef = `
 // {{.Name}}
 
-// JSON marshaling boilerplate
-type real{{.Name}} {{.Name}}
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *{{.Name}}) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r real{{.Name}}
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = {{.Name}}(r)
-	return nil
-}
-
 var _ fi.HasLifecycle = &{{.Name}}{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
@@ -77,11 +58,6 @@ var _ fi.HasName = &{{.Name}}{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *{{.Name}}) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *{{.Name}}) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
@@ -169,7 +145,6 @@ func (g *genFitask) Filter(c *generator.Context, t *types.Type) bool { return t 
 
 func (g *genFitask) Imports(c *generator.Context) (imports []string) {
 	return []string{
-		"encoding/json",
 		"k8s.io/kops/upup/pkg/fi",
 	}
 }

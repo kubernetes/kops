@@ -21,31 +21,10 @@ limitations under the License.
 package openstacktasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // LB
-
-// JSON marshaling boilerplate
-type realLB LB
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *LB) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realLB
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = LB(r)
-	return nil
-}
 
 var _ fi.HasLifecycle = &LB{}
 
@@ -64,11 +43,6 @@ var _ fi.HasName = &LB{}
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *LB) GetName() *string {
 	return o.Name
-}
-
-// SetName sets the Name of the object, implementing fi.SetName
-func (o *LB) SetName(name string) {
-	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
