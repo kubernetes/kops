@@ -22,7 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-//go:generate fitask -type=Secret
+// +kops:fitask
 type Secret struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

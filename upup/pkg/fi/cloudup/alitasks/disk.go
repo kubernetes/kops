@@ -28,13 +28,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-// Disk represents a ALI Cloud Disk
-//go:generate fitask -type=Disk
 const (
 	DiskResource = "disk"
 	DiskType     = ecs.DiskTypeAllData
 )
 
+// Disk represents an ALI Cloud Disk.
+// +kops:fitask
 type Disk struct {
 	Lifecycle    *fi.Lifecycle
 	Name         *string

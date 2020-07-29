@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-//go:generate fitask -type=LBListener
+// +kops:fitask
 type LBListener struct {
 	ID           *string
 	Name         *string

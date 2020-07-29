@@ -32,7 +32,7 @@ import (
 
 // CopyFile copies an from a source file repository, to a target repository,
 // typically used for highly secure clusters.
-//go:generate fitask -type=CopyFile
+// +kops:fitask
 type CopyFile struct {
 	Name       *string
 	SourceFile *string

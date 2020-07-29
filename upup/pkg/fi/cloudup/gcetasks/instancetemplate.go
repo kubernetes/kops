@@ -36,7 +36,7 @@ import (
 const InstanceTemplateNamePrefixMaxLength = 32
 
 // InstanceTemplate represents a GCE InstanceTemplate
-//go:generate fitask -type=InstanceTemplate
+// +kops:fitask
 type InstanceTemplate struct {
 	Name *string
 

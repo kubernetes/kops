@@ -6,7 +6,7 @@ go_library(
         "elastigroup.go",
         "elastigroup_fitask.go",
         "launch_spec.go",
-        "launch_spec_fitask.go",
+        "launchspec_fitask.go",
         "ocean.go",
         "ocean_fitask.go",
     ],

@@ -27,7 +27,7 @@ import (
 )
 
 // StorageBucketAcl represents an ACL rule on a google cloud storage bucket
-//go:generate fitask -type=StorageBucketAcl
+// +kops:fitask
 type StorageBucketAcl struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

@@ -32,7 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 )
 
-//go:generate fitask -type=LoadBalancer
+// +kops:fitask
 type LoadBalancer struct {
 	Name      *string
 	ID        *string

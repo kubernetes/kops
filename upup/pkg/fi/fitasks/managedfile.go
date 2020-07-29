@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-//go:generate fitask -type=ManagedFile
+// +kops:fitask
 type ManagedFile struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

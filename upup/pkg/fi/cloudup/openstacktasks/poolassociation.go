@@ -29,7 +29,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-//go:generate fitask -type=PoolAssociation
+// +kops:fitask
 type PoolAssociation struct {
 	ID            *string
 	Name          *string

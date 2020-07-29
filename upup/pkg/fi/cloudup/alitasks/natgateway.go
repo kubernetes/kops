@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=NatGateway
+// +kops:fitask
 type NatGateway struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

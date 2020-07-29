@@ -17,45 +17,26 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"io"
+	"path/filepath"
+	"strings"
 	"text/template"
 
-	"k8s.io/kops/upup/tools/generators/pkg/codegen"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/gengo/args"
+	"k8s.io/gengo/generator"
+	"k8s.io/gengo/namer"
+	"k8s.io/gengo/types"
+	"k8s.io/klog/v2"
 )
 
-type FitaskGenerator struct {
-	Package string
+// These are the comment tags that carry parameters for fitask generation.
+const tagName = "kops:fitask"
+
+func extractTag(comments []string) []string {
+	return types.ExtractCommentTags("+", comments)[tagName]
 }
-
-var _ codegen.Generator = &FitaskGenerator{}
-
-const fileHeaderDef = `/*
-Copyright 2019 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-`
-
-var preambleDef = `
-package {{.Package}}
-
-import (
-	"encoding/json"
-
-	"k8s.io/kops/upup/pkg/fi"
-)
-`
 
 const perTypeDef = `
 // {{.Name}}
@@ -109,33 +90,99 @@ func (o *{{.Name}}) String() string {
 }
 `
 
-func (g *FitaskGenerator) Init(parser *codegen.GoParser) error {
-	g.Package = parser.Package.Name
-
-	return nil
+// NameSystems returns the name system used by the generators in this package.
+func NameSystems() namer.NameSystems {
+	return namer.NameSystems{
+		"public":  namer.NewPublicNamer(0),
+		"private": namer.NewPrivateNamer(0),
+		"raw":     namer.NewRawNamer("", nil),
+	}
 }
 
-func (g *FitaskGenerator) WriteFileHeader(w io.Writer) error {
-	t := template.Must(template.New("FileHeader").Parse(fileHeaderDef))
-
-	return t.Execute(w, g)
+// DefaultNameSystem returns the default name system for ordering the types to be
+// processed by the generators in this package.
+func DefaultNameSystem() string {
+	return "public"
 }
 
-func (g *FitaskGenerator) WritePreamble(w io.Writer) error {
-	t := template.Must(template.New("Preamble").Parse(preambleDef))
+// Packages makes the sets package definition.
+func Packages(context *generator.Context, arguments *args.GeneratorArgs) generator.Packages {
+	boilerplate, err := arguments.LoadGoBoilerplate()
+	if err != nil {
+		klog.Fatalf("Failed loading boilerplate: %v", err)
+	}
 
-	return t.Execute(w, g)
+	inputs := sets.NewString(context.Inputs...)
+	packages := generator.Packages{}
+	header := append([]byte(fmt.Sprintf("// +build !%s\n\n", arguments.GeneratedBuildTag)), boilerplate...)
+
+	for i := range inputs {
+		klog.V(5).Infof("considering pkg %q", i)
+		pkg := context.Universe[i]
+		if pkg == nil {
+			// If the input had no Go files, for example.
+			continue
+		}
+
+		fitasks := map[*types.Type]bool{}
+		for _, t := range pkg.Types {
+			if t.Kind == types.Struct && len(extractTag(t.CommentLines)) > 0 {
+				fitasks[t] = true
+			}
+		}
+
+		packages = append(packages, &generator.DefaultPackage{
+			PackageName: filepath.Base(pkg.Path),
+			PackagePath: strings.TrimPrefix(pkg.Path, "k8s.io/kops/"),
+			HeaderText:  header,
+			GeneratorFunc: func(c *generator.Context) (generators []generator.Generator) {
+				for t := range fitasks {
+					generators = append(generators, NewGenFitask(t))
+				}
+				return generators
+			},
+			FilterFunc: func(c *generator.Context, t *types.Type) bool {
+				return fitasks[t]
+			},
+		})
+	}
+
+	return packages
+}
+
+type genFitask struct {
+	generator.DefaultGen
+	typeToMatch *types.Type
+}
+
+func NewGenFitask(t *types.Type) generator.Generator {
+	return &genFitask{
+		DefaultGen: generator.DefaultGen{
+			OptionalName: strings.ToLower(t.Name.Name) + "_fitask",
+		},
+		typeToMatch: t,
+	}
+}
+
+// Filter ignores all but one type because we're making a single file per type.
+func (g *genFitask) Filter(c *generator.Context, t *types.Type) bool { return t == g.typeToMatch }
+
+func (g *genFitask) Imports(c *generator.Context) (imports []string) {
+	return []string{
+		"encoding/json",
+		"k8s.io/kops/upup/pkg/fi",
+	}
 }
 
 type TypeData struct {
 	Name string
 }
 
-func (g *FitaskGenerator) WriteType(w io.Writer, typeName string) error {
-	t := template.Must(template.New("PerType").Parse(perTypeDef))
+func (g *genFitask) GenerateType(_ *generator.Context, t *types.Type, w io.Writer) error {
+	tmpl := template.Must(template.New("PerType").Parse(perTypeDef))
 
 	d := &TypeData{}
-	d.Name = typeName
+	d.Name = t.Name.Name
 
-	return t.Execute(w, d)
+	return tmpl.Execute(w, d)
 }

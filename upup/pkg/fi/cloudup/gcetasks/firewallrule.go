@@ -27,7 +27,7 @@ import (
 )
 
 // FirewallRule represents a GCE firewall rules
-//go:generate fitask -type=FirewallRule
+// +kops:fitask
 type FirewallRule struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

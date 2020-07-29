@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-//go:generate fitask -type=LBPool
+// +kops:fitask
 type LBPool struct {
 	ID           *string
 	Name         *string
