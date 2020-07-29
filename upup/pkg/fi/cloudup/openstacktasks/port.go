@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
-//go:generate fitask -type=Port
+// +kops:fitask
 type Port struct {
 	ID                       *string
 	Name                     *string

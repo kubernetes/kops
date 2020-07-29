@@ -27,7 +27,7 @@ import (
 )
 
 // StorageBucketIam represents an IAM policy on a google cloud storage bucket
-//go:generate fitask -type=StorageBucketIam
+// +kops:fitask
 type StorageBucketIam struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

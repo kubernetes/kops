@@ -26,7 +26,6 @@ go_library(
         "securitygroup.go",
         "securitygroup_fitask.go",
         "securitygrouprule.go",
-        "securitygrouprule_fitask.go",
         "servergroup.go",
         "servergroup_fitask.go",
         "sshkey.go",

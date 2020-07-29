@@ -25,7 +25,7 @@ import (
 
 // CopyDockerImage copies a docker image from a source registry, to a target registry,
 // typically used for highly secure clusters.
-//go:generate fitask -type=CopyDockerImage
+// +kops:fitask
 type CopyDockerImage struct {
 	Name        *string
 	SourceImage *string

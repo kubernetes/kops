@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=Route
+// +kops:fitask
 type Route struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

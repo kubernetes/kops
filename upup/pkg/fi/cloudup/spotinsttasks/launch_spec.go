@@ -34,7 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=LaunchSpec
+// +kops:fitask
 type LaunchSpec struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

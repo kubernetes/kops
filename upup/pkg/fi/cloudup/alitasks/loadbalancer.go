@@ -30,8 +30,7 @@ import (
 )
 
 // LoadBalancer represents a ALI Cloud LoadBalancer
-//go:generate fitask -type=LoadBalancer
-
+// +kops:fitask
 type LoadBalancer struct {
 	Name                *string
 	LoadbalancerId      *string

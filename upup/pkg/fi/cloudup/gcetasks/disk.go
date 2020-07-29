@@ -28,7 +28,7 @@ import (
 )
 
 // Disk represents a GCE PD
-//go:generate fitask -type=Disk
+// +kops:fitask
 type Disk struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

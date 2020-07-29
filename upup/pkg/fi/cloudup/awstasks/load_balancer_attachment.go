@@ -29,7 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=LoadBalancerAttachment
+// +kops:fitask
 type LoadBalancerAttachment struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle

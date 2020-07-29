@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-//go:generate fitask -type=Keypair
+// +kops:fitask
 type Keypair struct {
 	// Name is the name of the keypair
 	Name *string

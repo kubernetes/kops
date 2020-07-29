@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package codegen
-
-import "io"
-
-type Generator interface {
-	Init(parser *GoParser) error
-	WriteFileHeader(w io.Writer) error
-	WritePreamble(w io.Writer) error
-	WriteType(w io.Writer, typeName string) error
-}
+// Package types contains go type information, packaged in a way that makes
+// auto-generation convenient, whether by template or straight go functions.
+package types // import "k8s.io/gengo/types"

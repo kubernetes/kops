@@ -35,7 +35,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=IAMRole
+// +kops:fitask
 type IAMRole struct {
 	ID        *string
 	Lifecycle *fi.Lifecycle
