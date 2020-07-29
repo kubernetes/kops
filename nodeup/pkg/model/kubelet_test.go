@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"k8s.io/klog"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
@@ -208,7 +207,6 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 	nodeUpModelContext := &NodeupModelContext{
 		Cluster:      model.Cluster,
 		Architecture: "amd64",
-		Distribution: distros.DistributionXenial,
 		NodeupConfig: &nodeup.Config{},
 	}
 
