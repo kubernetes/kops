@@ -20,8 +20,3 @@ package fi
 type HasName interface {
 	GetName() *string
 }
-
-// HasSetName indicates that the task can set its Name.
-type HasSetName interface {
-	SetName(name string)
-}
