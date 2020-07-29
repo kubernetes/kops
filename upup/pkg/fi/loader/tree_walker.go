@@ -18,20 +18,14 @@ package loader
 
 import (
 	"fmt"
-	"os"
 	"path"
-	"strings"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 type TreeWalker struct {
-	Contexts       map[string]Handler
-	Extensions     map[string]Handler
-	DefaultHandler Handler
-	Tags           sets.String
+	Contexts map[string]Handler
 }
 
 type TreeWalkItem struct {
@@ -39,16 +33,6 @@ type TreeWalkItem struct {
 	Name         string
 	Path         vfs.Path
 	RelativePath string
-	Meta         string
-	Tags         []string
-}
-
-func (i *TreeWalkItem) ReadString() (string, error) {
-	b, err := i.ReadBytes()
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
 }
 
 func (i *TreeWalkItem) ReadBytes() ([]byte, error) {
@@ -61,16 +45,11 @@ func (i *TreeWalkItem) ReadBytes() ([]byte, error) {
 
 type Handler func(item *TreeWalkItem) error
 
-func IsTag(name string) bool {
-	return len(name) != 0 && name[0] == '_'
-}
-
 func (t *TreeWalker) Walk(basedir vfs.Path) error {
 	i := &TreeWalkItem{
 		Context:      "",
 		Path:         basedir,
 		RelativePath: "",
-		Tags:         nil,
 	}
 
 	return t.walkDirectory(i)
@@ -92,40 +71,12 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 			Path:         f,
 			RelativePath: path.Join(parent.RelativePath, fileName),
 			Name:         fileName,
-			Tags:         parent.Tags,
 		}
 
 		klog.V(4).Infof("visit %q", f)
 
-		hasMeta := false
-		{
-			metaPath := parent.Path.Join(fileName + ".meta")
-			metaBytes, err := metaPath.ReadFile()
-			if err != nil {
-				if !os.IsNotExist(err) {
-					return fmt.Errorf("error reading file %q: %v", metaPath, err)
-				}
-				metaBytes = nil
-			}
-			if metaBytes != nil {
-				hasMeta = true
-				i.Meta = string(metaBytes)
-			}
-		}
-
 		if _, err := f.ReadDir(); err == nil {
-			if IsTag(fileName) {
-				// Only descend into the tag directory if we have the tag
-				_, found := t.Tags[fileName]
-				if !found {
-					klog.V(2).Infof("Skipping directory %q as tag %q not present", f, fileName)
-					continue
-				} else {
-					i.Tags = append(i.Tags, fileName)
-					klog.V(2).Infof("Descending into directory, as tag is present: %q", f)
-					err = t.walkDirectory(i)
-				}
-			} else if _, found := t.Contexts[fileName]; found {
+			if _, found := t.Contexts[fileName]; found {
 				// Entering a new context (mode of operation)
 				if parent.Context != "" {
 					return fmt.Errorf("found context %q inside context %q at %q", fileName, parent.Context, f)
@@ -141,38 +92,10 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 				return err
 			}
 
-			// So that we can manage directories, we do not ignore directories which have a .meta file
-			if hasMeta {
-				klog.V(4).Infof("Found .meta file for directory %q; will process", f)
-			} else {
-				continue
-			}
-		}
-
-		if strings.HasSuffix(fileName, ".meta") {
-			// We'll read it when we see the actual file
-			// But check the actual file is there
-			primaryPath := strings.TrimSuffix(f.Base(), ".meta")
-			if _, err := parent.Path.Join(primaryPath).ReadFile(); os.IsNotExist(err) {
-				return fmt.Errorf("found .meta file without corresponding file: %q", f)
-			}
-
 			continue
 		}
 
-		var handler Handler
-		if i.Context != "" {
-			handler = t.Contexts[i.Context]
-		} else {
-			// TODO: Just remove extensions.... we barely use them!
-			// (or remove default handler and replace with lots of small files?)
-			extension := path.Ext(fileName)
-			handler = t.Extensions[extension]
-			if handler == nil {
-				handler = t.DefaultHandler
-			}
-		}
-
+		handler := t.Contexts[i.Context]
 		err = handler(i)
 		if err != nil {
 			return fmt.Errorf("error handling file %q: %v", f, err)
