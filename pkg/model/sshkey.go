@@ -41,6 +41,8 @@ func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	t := &awstasks.SSHKey{
 		Name:      s(name),
 		Lifecycle: b.Lifecycle,
+		Tags:      b.CloudTags(b.ClusterName(), false),
+		Shared:    fi.StringValue(b.Cluster.Spec.SSHKeyName) != "",
 	}
 	if len(b.SSHPublicKeys) >= 1 {
 		t.PublicKey = fi.WrapResource(fi.NewStringResource(string(b.SSHPublicKeys[0])))

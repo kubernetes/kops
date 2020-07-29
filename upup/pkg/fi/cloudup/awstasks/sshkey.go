@@ -33,12 +33,16 @@ import (
 
 //go:generate fitask -type=SSHKey
 type SSHKey struct {
+	ID        *string
 	Name      *string
 	Lifecycle *fi.Lifecycle
+	Shared    bool
 
 	PublicKey *fi.ResourceHolder
 
 	KeyFingerprint *string
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &SSHKey{}
@@ -77,10 +81,12 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	}
 
 	k := response.KeyPairs[0]
-
 	actual := &SSHKey{
+		ID:             k.KeyPairId,
 		Name:           k.KeyName,
 		KeyFingerprint: k.KeyFingerprint,
+		Tags:           mapEC2TagsToMap(k.Tags),
+		Shared:         e.Shared,
 	}
 
 	// Avoid spurious changes
@@ -91,7 +97,10 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 		klog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(actual.KeyFingerprint))
 	}
 	actual.Lifecycle = e.Lifecycle
-
+	if actual.Shared {
+		// Don't report tag changes on shared keys
+		actual.Tags = e.Tags
+	}
 	return actual, nil
 }
 
@@ -108,16 +117,19 @@ func (e *SSHKey) Run(c *fi.Context) error {
 		}
 		klog.V(2).Infof("Computed SSH key fingerprint as %q", keyFingerprint)
 		e.KeyFingerprint = &keyFingerprint
-	} else if e.IsExistingKey() && *e.Name != "" {
-		a, err := e.Find(c)
-		if err != nil {
-			return err
-		}
+	}
+	a, err := e.Find(c)
+	if err != nil {
+		return err
+	}
+	if e.IsExistingKey() && *e.Name != "" {
 		if a == nil {
 			return fmt.Errorf("unable to find specified SSH key %q", *e.Name)
 		}
-
 		e.KeyFingerprint = a.KeyFingerprint
+	}
+	if a != nil {
+		e.ID = a.ID
 	}
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -135,7 +147,8 @@ func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
 	klog.V(2).Infof("Creating SSHKey with Name:%q", *e.Name)
 
 	request := &ec2.ImportKeyPairInput{
-		KeyName: e.Name,
+		KeyName:           e.Name,
+		TagSpecifications: awsup.EC2TagSpecification(ec2.ResourceTypeKeyPair, e.Tags),
 	}
 
 	if e.PublicKey != nil {
@@ -152,6 +165,7 @@ func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
 	}
 
 	e.KeyFingerprint = response.KeyFingerprint
+	e.ID = response.KeyPairId
 
 	return nil
 }
@@ -161,13 +175,16 @@ func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 		return e.createKeypair(t.Cloud)
 	}
 
-	// No tags on SSH public key
-	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
+	if !e.Shared {
+		return t.AddAWSTags(*e.ID, e.Tags)
+	}
+	return nil
 }
 
 type terraformSSHKey struct {
 	Name      *string            `json:"key_name" cty:"key_name"`
 	PublicKey *terraform.Literal `json:"public_key" cty:"public_key"`
+	Tags      map[string]string  `json:"tags" cty:"tags"`
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
@@ -184,6 +201,7 @@ func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SS
 	tf := &terraformSSHKey{
 		Name:      e.Name,
 		PublicKey: publicKey,
+		Tags:      e.Tags,
 	}
 
 	return t.RenderResource("aws_key_pair", tfName, tf)
@@ -231,5 +249,5 @@ func (_ *SSHKey) RenderCloudformation(t *cloudformation.CloudformationTarget, a,
 }
 
 func (e *SSHKey) NoSSHKey() bool {
-	return *e == SSHKey{}
+	return e.ID == nil && e.Name == nil && e.PublicKey == nil && e.KeyFingerprint == nil
 }
