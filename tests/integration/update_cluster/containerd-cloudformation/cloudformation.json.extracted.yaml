@@ -303,9 +303,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/containerd.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
@@ -547,9 +544,6 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
       node-role.kubernetes.io/node: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/containerd.example.com/addons/bootstrap-channel.yaml
 
