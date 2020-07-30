@@ -194,10 +194,13 @@ func TestDecorateWithMixedInstancesPolicy(t *testing.T) {
 
 func TestDecorateWithClusterAutoscalerLabels(t *testing.T) {
 	initialIG := kops.InstanceGroup{}
-	initialIG.ObjectMeta.Name = "testInstanceGroup"
+	clusterName := "testClusterName"
 
-	actualIG := decorateWithClusterAutoscalerLabels(&initialIG)
+	actualIG := decorateWithClusterAutoscalerLabels(&initialIG, clusterName)
 	if _, ok := actualIG.Spec.CloudLabels["k8s.io/cluster-autoscaler/enabled"]; !ok {
-		t.Fatalf("cloudLabels for cluster autoscaler should have been added to the instance group spec")
+		t.Fatalf("enabled cloudLabel for cluster autoscaler should have been added to the instance group spec")
+	}
+	if _, ok := actualIG.Spec.CloudLabels["k8s.io/cluster-autoscaler/"+clusterName]; !ok {
+		t.Fatalf("cluster cloudLabel for cluster autoscaler should have been added to the instance group spec")
 	}
 }

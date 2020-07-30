@@ -157,11 +157,11 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	// Raw Filters
 
 	commandline.IntMinMaxRangeFlags(vcpus, nil, nil, "Number of vcpus available to the instance type.")
-	commandline.IntMinMaxRangeFlags(memory, nil, nil, "Amount of memory available in MiB (Example: 4096)")
+	commandline.ByteQuantityMinMaxRangeFlags(memory, nil, nil, "Amount of memory available (Example: 4 GiB)")
 	commandline.RatioFlag(vcpusToMemoryRatio, nil, nil, "The ratio of vcpus to memory in MiB. (Example: 1:2)")
 	commandline.StringOptionsFlag(cpuArchitecture, nil, &cpuArchDefault, fmt.Sprintf("CPU architecture [%s]", strings.Join(cpuArchs, ", ")), append(cpuArchs, cpuArchitectureX8664))
 	commandline.IntMinMaxRangeFlags(gpus, nil, nil, "Total number of GPUs (Example: 4)")
-	commandline.IntMinMaxRangeFlags(gpuMemoryTotal, nil, nil, "Number of GPUs' total memory in MiB (Example: 4096)")
+	commandline.ByteQuantityMinMaxRangeFlags(gpuMemoryTotal, nil, nil, "Number of GPUs' total memory (Example: 4 GiB)")
 	commandline.StringOptionsFlag(placementGroupStrategy, nil, nil, fmt.Sprintf("Placement group strategy: [%s]", strings.Join(placementGroupStrategies, ", ")), placementGroupStrategies)
 	commandline.StringOptionsFlag(usageClass, nil, &usageClassDefault, fmt.Sprintf("Usage class: [%s]", strings.Join(usageClasses, ", ")), usageClasses)
 	commandline.BoolFlag(enaSupport, nil, nil, "Instance types where ENA is supported or required")
@@ -275,7 +275,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 			return err
 		}
 		if instanceSelectorOpts.ClusterAutoscaler {
-			ig = decorateWithClusterAutoscalerLabels(ig)
+			ig = decorateWithClusterAutoscalerLabels(ig, cluster.ClusterName)
 		}
 		ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 		if err != nil {
@@ -369,11 +369,11 @@ func getFilters(commandline *cli.CommandLineInterface, region string, zones []st
 	flags := commandline.Flags
 	return selector.Filters{
 		VCpusRange:             commandline.IntRangeMe(flags[vcpus]),
-		MemoryRange:            commandline.IntRangeMe(flags[memory]),
+		MemoryRange:            commandline.ByteQuantityRangeMe(flags[memory]),
 		VCpusToMemoryRatio:     commandline.Float64Me(flags[vcpusToMemoryRatio]),
 		CPUArchitecture:        commandline.StringMe(flags[cpuArchitecture]),
 		GpusRange:              commandline.IntRangeMe(flags[gpus]),
-		GpuMemoryRange:         commandline.IntRangeMe(flags[gpuMemoryTotal]),
+		GpuMemoryRange:         commandline.ByteQuantityRangeMe(flags[gpuMemoryTotal]),
 		PlacementGroupStrategy: commandline.StringMe(flags[placementGroupStrategy]),
 		UsageClass:             commandline.StringMe(flags[usageClass]),
 		EnaSupport:             commandline.BoolMe(flags[enaSupport]),
@@ -509,9 +509,8 @@ func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageCl
 }
 
 // decorateWithClusterAutoscalerLabels adds cluster-autoscaler discovery tags to the cloudlabels slice
-func decorateWithClusterAutoscalerLabels(instanceGroup *kops.InstanceGroup) *kops.InstanceGroup {
+func decorateWithClusterAutoscalerLabels(instanceGroup *kops.InstanceGroup, clusterName string) *kops.InstanceGroup {
 	ig := instanceGroup
-	clusterName := instanceGroup.ObjectMeta.Name
 	if ig.Spec.CloudLabels == nil {
 		ig.Spec.CloudLabels = make(map[string]string)
 	}
