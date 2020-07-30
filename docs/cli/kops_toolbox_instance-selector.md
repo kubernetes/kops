@@ -38,18 +38,18 @@ kops toolbox instance-selector [flags]
       --dry-run                           If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --ena-support                       Instance types where ENA is supported or required
       --flexible                          Retrieves a group of instance types spanning multiple generations based on opinionated defaults and user overridden resource filters
-      --gpu-memory-total int              Number of GPUs' total memory in MiB (Example: 4096) (sets --gpu-memory-total-min and -max to the same value)
-      --gpu-memory-total-max int          Maximum Number of GPUs' total memory in MiB (Example: 4096) If --gpu-memory-total-min is not specified, the lower bound will be 0
-      --gpu-memory-total-min int          Minimum Number of GPUs' total memory in MiB (Example: 4096) If --gpu-memory-total-max is not specified, the upper bound will be infinity
+      --gpu-memory-total string           Number of GPUs' total memory (Example: 4 GiB) (sets --gpu-memory-total-min and -max to the same value)
+      --gpu-memory-total-max string       Maximum Number of GPUs' total memory (Example: 4 GiB) If --gpu-memory-total-min is not specified, the lower bound will be 0
+      --gpu-memory-total-min string       Minimum Number of GPUs' total memory (Example: 4 GiB) If --gpu-memory-total-max is not specified, the upper bound will be infinity
       --gpus int                          Total number of GPUs (Example: 4) (sets --gpus-min and -max to the same value)
       --gpus-max int                      Maximum Total number of GPUs (Example: 4) If --gpus-min is not specified, the lower bound will be 0
       --gpus-min int                      Minimum Total number of GPUs (Example: 4) If --gpus-max is not specified, the upper bound will be infinity
   -h, --help                              help for instance-selector
       --ig-count int                      Number of instance groups to create w/ different vcpus-to-memory-ratios starting at 1:2 and doubling.
       --max-results int                   Maximum number of instance types to return back (default 20)
-      --memory int                        Amount of memory available in MiB (Example: 4096) (sets --memory-min and -max to the same value)
-      --memory-max int                    Maximum Amount of memory available in MiB (Example: 4096) If --memory-min is not specified, the lower bound will be 0
-      --memory-min int                    Minimum Amount of memory available in MiB (Example: 4096) If --memory-max is not specified, the upper bound will be infinity
+      --memory string                     Amount of memory available (Example: 4 GiB) (sets --memory-min and -max to the same value)
+      --memory-max string                 Maximum Amount of memory available (Example: 4 GiB) If --memory-min is not specified, the lower bound will be 0
+      --memory-min string                 Minimum Amount of memory available (Example: 4 GiB) If --memory-max is not specified, the upper bound will be infinity
       --network-interfaces int            Number of network interfaces (ENIs) that can be attached to the instance (sets --network-interfaces-min and -max to the same value)
       --network-interfaces-max int        Maximum Number of network interfaces (ENIs) that can be attached to the instance If --network-interfaces-min is not specified, the lower bound will be 0
       --network-interfaces-min int        Minimum Number of network interfaces (ENIs) that can be attached to the instance If --network-interfaces-max is not specified, the upper bound will be infinity
