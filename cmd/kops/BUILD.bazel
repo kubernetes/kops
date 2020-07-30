@@ -44,6 +44,7 @@ go_library(
         "toolbox.go",
         "toolbox_convert_imported.go",
         "toolbox_dump.go",
+        "toolbox_instance_selector.go",
         "toolbox_template.go",
         "update.go",
         "update_cluster.go",
@@ -137,6 +138,7 @@ go_test(
         "delete_confirm_test.go",
         "integration_test.go",
         "lifecycle_integration_test.go",
+        "toolbox_instance_selector_internal_test.go",
         "toolbox_template_test.go",
     ],
     data = [
