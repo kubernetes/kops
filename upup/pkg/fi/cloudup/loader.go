@@ -38,7 +38,6 @@ import (
 type Loader struct {
 	Cluster *kopsapi.Cluster
 
-	Tags              sets.String
 	TemplateFunctions template.FuncMap
 
 	Resources map[string]fi.Resource
@@ -82,6 +81,8 @@ func (l *Loader) Init() {
 }
 
 func (l *Loader) executeTemplate(key string, d string, args []string) (string, error) {
+	// TODO remove after proving it's dead code
+	klog.Fatalf("need to execute template %q", key)
 	t := template.New(key)
 
 	funcMap := make(template.FuncMap)
@@ -114,23 +115,12 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	return buffer.String(), nil
 }
 
-func ignoreHandler(i *loader.TreeWalkItem) error {
-	// TODO remove after proving it's dead code
-	klog.Fatalf("ignoreHandler called on %s", i.Path)
-	return fmt.Errorf("ignoreHandler not implemented")
-}
-
 func (l *Loader) BuildTasks(modelStore vfs.Path, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	// Second pass: load everything else
 	tw := &loader.TreeWalker{
-		DefaultHandler: l.objectHandler,
 		Contexts: map[string]loader.Handler{
 			"resources": l.resourceHandler,
 		},
-		Extensions: map[string]loader.Handler{
-			".options": ignoreHandler,
-		},
-		Tags: l.Tags,
 	}
 
 	modelDir := modelStore.Join("cloudup")
@@ -226,6 +216,7 @@ func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi
 }
 
 func (l *Loader) processDeferrals() error {
+	// TODO remove after proving it's not used
 	for taskKey, task := range l.tasks {
 		taskValue := reflect.ValueOf(task)
 
@@ -250,6 +241,7 @@ func (l *Loader) processDeferrals() error {
 							typeNameForTask := fi.TypeNameForTask(intf)
 							primary := l.tasks[typeNameForTask+"/"+*name]
 							if primary == nil {
+								klog.Fatalf("task %q needed deferral resolution", typeNameForTask+"/"+*name)
 								primary = l.tasks[*name]
 							}
 							if primary == nil {
@@ -271,6 +263,7 @@ func (l *Loader) processDeferrals() error {
 						return reflectutils.SkipReflection
 					} else if rh, ok := intf.(*fi.ResourceHolder); ok {
 						if rh.Resource == nil {
+							klog.Fatalf("resource %s needed deferral resolution", rh.Name)
 							//Resources can contain template 'arguments', separated by spaces
 							// <resourcename> <arg1> <arg2>
 							tokens := strings.Split(rh.Name, " ")
@@ -334,12 +327,6 @@ func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
 
 	l.Resources[key] = a
 	return nil
-}
-
-func (l *Loader) objectHandler(i *loader.TreeWalkItem) error {
-	// TODO remove after proving it's dead code
-	klog.Fatalf("objectHandler called on %s", i.Path)
-	return fmt.Errorf("objectHandler not implemented")
 }
 
 func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, args []string) error {
