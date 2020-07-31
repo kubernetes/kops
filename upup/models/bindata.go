@@ -11436,7 +11436,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.15.0
+      - image: calico/typha:v3.15.1
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -11548,7 +11548,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.15.0
+          image: calico/cni:v3.15.1
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -11570,7 +11570,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.15.0
+          image: calico/cni:v3.15.1
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -11606,7 +11606,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.15.0
+          image: calico/pod2daemon-flexvol:v3.15.1
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -11617,7 +11617,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.15.0
+          image: calico/node:v3.15.1
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -11833,7 +11833,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.15.0
+          image: calico/kube-controllers:v3.15.1
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
