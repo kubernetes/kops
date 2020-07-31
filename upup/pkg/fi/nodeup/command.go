@@ -173,11 +173,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	distroTags := distribution.BuildTags()
 
 	nodeTags := sets.NewString()
-	nodeTags.Insert(c.config.Tags...)
 	nodeTags.Insert(archTags...)
 	nodeTags.Insert(distroTags...)
 
-	klog.Infof("Config tags: %v", c.config.Tags)
 	klog.Infof("Arch tags: %v", archTags)
 	klog.Infof("Distro tags: %v", distroTags)
 
@@ -304,7 +302,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewContext(target, nil, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
+	context, err := fi.NewContext(target, c.cluster, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
 		klog.Exitf("error building context: %v", err)
 	}

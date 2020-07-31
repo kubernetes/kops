@@ -28,8 +28,6 @@ import (
 
 // Config is the configuration for the nodeup binary
 type Config struct {
-	// Tags enable/disable chunks of the model
-	Tags []string `json:",omitempty"`
 	// Assets are locations where we can find files to be installed
 	// TODO: Remove once everything is in containers?
 	Assets map[architectures.Architecture][]string `json:",omitempty"`

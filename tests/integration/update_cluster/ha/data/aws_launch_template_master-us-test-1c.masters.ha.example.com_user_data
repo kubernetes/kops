@@ -312,9 +312,6 @@ KubeletConfig:
   podInfraContainerImage: k8s.gcr.io/pause:3.2
   podManifestPath: /etc/kubernetes/manifests
   registerSchedulable: false
-Tags:
-- _automatic_upgrades
-- _aws
 channels:
 - memfs://tests/ha.example.com/addons/bootstrap-channel.yaml
 etcdManifests:
