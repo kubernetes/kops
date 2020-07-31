@@ -1,3 +1,7 @@
+** This file documents the release process used through kops 1.18.
+For the new process that will be used for 1.19, please see
+[the new release process](../release-process.md)**
+
 # Release Process
 
 The kops project is released on an as-needed basis. The process is as follows:
@@ -121,7 +125,6 @@ Use [shipbot](https://github.com/kopeio/shipbot) to upload the release:
 ```
 make release-github
 ```
-
 
 ## Compile release notes
 
