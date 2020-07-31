@@ -486,7 +486,7 @@ release-tag:
 
 .PHONY: release-github
 release-github:
-	shipbot -tag v${KOPS_RELEASE_VERSION} -config .shipbot.yaml
+	shipbot -tag v${KOPS_RELEASE_VERSION} -config .shipbot.yaml -src .build/dist/
 
 # --------------------------------------------------
 # API / embedding examples
