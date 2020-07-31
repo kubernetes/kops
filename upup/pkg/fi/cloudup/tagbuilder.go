@@ -29,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
@@ -63,37 +62,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	tags.Insert("_k8s_1_6")
 
 	klog.V(4).Infof("tags: %s", tags.List())
-
-	return tags, nil
-}
-
-func buildNodeupTags(cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
-	tags := sets.NewString()
-
-	networking := cluster.Spec.Networking
-
-	if networking == nil {
-		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
-	}
-
-	switch fi.StringValue(cluster.Spec.UpdatePolicy) {
-	case "": // default
-		tags.Insert("_automatic_upgrades")
-	case api.UpdatePolicyExternal:
-	// Skip applying the tag
-	default:
-		klog.Warningf("Unrecognized value for UpdatePolicy: %v", fi.StringValue(cluster.Spec.UpdatePolicy))
-	}
-
-	if clusterTags.Has("_gce") {
-		tags.Insert("_gce")
-	}
-	if clusterTags.Has("_aws") {
-		tags.Insert("_aws")
-	}
-	if clusterTags.Has("_do") {
-		tags.Insert("_do")
-	}
 
 	return tags, nil
 }

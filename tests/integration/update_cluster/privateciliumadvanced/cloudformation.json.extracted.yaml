@@ -314,9 +314,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivateciliumadvancedexamplec
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/privateciliumadvanced.example.com/addons/bootstrap-channel.yaml
   etcdManifests:
@@ -565,9 +562,6 @@ Resources.AWSEC2LaunchTemplatenodesprivateciliumadvancedexamplecom.Properties.La
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2
     podManifestPath: /etc/kubernetes/manifests
-  Tags:
-  - _automatic_upgrades
-  - _aws
   channels:
   - memfs://clusters.example.com/privateciliumadvanced.example.com/addons/bootstrap-channel.yaml
 
