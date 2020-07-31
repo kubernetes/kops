@@ -50,7 +50,7 @@ func New() (nodeidentity.Identifier, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// node-controller should be able to renew it tokens against OpenStack API
 	env.AllowReauth = true
 
