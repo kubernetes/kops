@@ -52,11 +52,11 @@ unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_ST
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.19.0-alpha.1
+DNS_CONTROLLER_TAG=1.19.0-alpha.2
 # Keep in sync with upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
-KOPS_CONTROLLER_TAG=1.19.0-alpha.1
+KOPS_CONTROLLER_TAG=1.19.0-alpha.2
 # Keep in sync with pkg/model/components/kubeapiserver/model.go
-KUBE_APISERVER_HEALTHCHECK_TAG=1.19.0-alpha.1
+KUBE_APISERVER_HEALTHCHECK_TAG=1.19.0-alpha.2
 
 
 VERSION=$(shell tools/get_version.sh | grep VERSION | awk '{print $$2}')
