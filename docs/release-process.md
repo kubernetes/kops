@@ -218,7 +218,7 @@ hub pull-request
 We are in the process of moving to k8s.gcr.io for all images and to
 artifacts.k8s.io for all non-image artifacts.
 
-In the meantime (and for compatability), we must also promote to the old locations:
+In the meantime (and for compatibility), we must also promote to the old locations:
 
 Images to dockerhub:
 
@@ -307,4 +307,3 @@ Once we are satisfied the release is stable:
 ## Update conformance results with CNCF
 
 Use the following instructions: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
-
