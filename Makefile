@@ -340,7 +340,7 @@ ${NODEUP}: ${BINDATA_TARGETS}
 
 .PHONY: bazel-crossbuild-dns-controller
 bazel-crossbuild-dns-controller:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
 
 
 .PHONY: dns-controller-push
@@ -537,39 +537,39 @@ bazel-test:
 
 .PHONY: bazel-build
 bazel-build:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //util/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //util/...
 
 .PHONY: bazel-build-cli
 bazel-build-cli:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure //cmd/kops/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure //cmd/kops/...
 
 .PHONY: bazel-crossbuild-kops
 bazel-crossbuild-kops:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops/...
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
 
 .PHONY: bazel-crossbuild-kops-ci
 bazel-crossbuild-kops-ci:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
 
 .PHONY: bazel-crossbuild-nodeup
 bazel-crossbuild-nodeup:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/nodeup/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/nodeup/...
 
 .PHONY: bazel-crossbuild-protokube
 bazel-crossbuild-protokube:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar
 
 .PHONY: bazel-crossbuild-node-authorizer-image
 bazel-crossbuild-node-authorizer-image:
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
@@ -617,28 +617,28 @@ push-node-authorizer:
 .PHONY: bazel-protokube-export
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
-	bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar.gz //protokube/cmd/protokube:image-bundle.tar.gz.sha256
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar.gz //protokube/cmd/protokube:image-bundle.tar.gz.sha256
 	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz ${BAZELIMAGES}/protokube.tar.gz
 	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
 
 .PHONY: bazel-kube-apiserver-healthcheck-export
 bazel-kube-apiserver-healthcheck-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:image-bundle.tar.gz //cmd/kube-apiserver-healthcheck:image-bundle.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:image-bundle.tar.gz //cmd/kube-apiserver-healthcheck:image-bundle.tar.gz.sha256
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz.sha256
 
 .PHONY: bazel-kops-controller-export
 bazel-kops-controller-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle.tar.gz //cmd/kops-controller:image-bundle.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle.tar.gz //cmd/kops-controller:image-bundle.tar.gz.sha256
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle.tar.gz ${BAZELIMAGES}/kops-controller.tar.gz
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/kops-controller.tar.gz.sha256
 
 .PHONY: bazel-dns-controller-export
 bazel-dns-controller-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build  ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle.tar.gz //dns-controller/cmd/dns-controller:image-bundle.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle.tar.gz //dns-controller/cmd/dns-controller:image-bundle.tar.gz.sha256
 	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle.tar.gz ${BAZELIMAGES}/dns-controller.tar.gz
 	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/dns-controller.tar.gz.sha256
 
