@@ -36,88 +36,127 @@ import (
 
 const (
 	// defaultCNIAssetAmd64K8s_11 is the CNI tarball for k8s >= 1.11
-	defaultCNIAssetAmd64K8s_11              = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz"
-	defaultCNIAssetAmd64SHA256StringK8s1_11 = "3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64"
-	defaultCNIAssetArm64K8s_11              = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz"
-	defaultCNIAssetArm64SHA256StringK8s1_11 = "7fec91af78e9548df306f0ec43bea527c8c10cc3a9682c33e971c8522a7fcded"
+	defaultCNIAssetAmd64K8s_11 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz"
+	defaultCNIAssetArm64K8s_11 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz"
 
 	// defaultCNIAssetAmd64K8s_15 is the CNI tarball for k8s >= 1.15
-	defaultCNIAssetAmd64K8s_15              = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz"
-	defaultCNIAssetAmd64SHA256StringK8s1_15 = "994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5"
-	defaultCNIAssetArm64K8s_15              = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz"
-	defaultCNIAssetArm64SHA256StringK8s1_15 = "43fbf750c5eccb10accffeeb092693c32b236fb25d919cf058c91a677822c999"
+	defaultCNIAssetAmd64K8s_15 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz"
+	defaultCNIAssetArm64K8s_15 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz"
 
 	// Environment variable for overriding CNI url
-	ENV_VAR_CNI_VERSION_URL       = "CNI_VERSION_URL"
-	ENV_VAR_CNI_ASSET_HASH_STRING = "CNI_ASSET_HASH_STRING"
+	ENV_VAR_CNI_ASSET_URL  = "CNI_VERSION_URL"
+	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
+
+	// Default LyftVPC packages
+	defaultLyftVPCAssetAmd64       = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
+	defaultLyftVPCAssetAmd64SHA256 = "871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566"
+	defaultLyftVPCAssetArm64       = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-arm64-v0.6.0.tar.gz"
+	defaultLyftVPCAssetArm64SHA256 = "3aadcb32ffda53990153790203eb72898e55a985207aa5b4451357f9862286f0"
+
+	// Environment variable for overriding LyftVPC url
+	ENV_VAR_LYFT_VPC_ASSET_URL  = "LYFT_VPC_DOWNLOAD_URL"
+	ENV_VAR_LYFT_VPC_ASSET_HASH = "LYFT_VPC_DOWNLOAD_HASH"
 )
 
 func findCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+	// Override CNI packages from env vars
+	cniAssetURL := os.Getenv(ENV_VAR_CNI_ASSET_URL)
+	cniAssetHash := os.Getenv(ENV_VAR_CNI_ASSET_HASH)
 
-	if cniVersionURL := os.Getenv(ENV_VAR_CNI_VERSION_URL); cniVersionURL != "" {
-		u, err := url.Parse(cniVersionURL)
+	if cniAssetURL != "" && cniAssetHash != "" {
+		klog.V(2).Infof("Using CNI asset URL %q, as set in %s", cniAssetURL, ENV_VAR_CNI_ASSET_URL)
+		klog.V(2).Infof("Using CNI asset hash %q, as set in %s", cniAssetHash, ENV_VAR_CNI_ASSET_HASH)
+
+		u, err := url.Parse(cniAssetURL)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse %q as a URL: %v", cniVersionURL, err)
+			return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
 		}
 
-		klog.Infof("Using CNI asset version %q, as set in %s", cniVersionURL, ENV_VAR_CNI_VERSION_URL)
-
-		if cniAssetHashString := os.Getenv(ENV_VAR_CNI_ASSET_HASH_STRING); cniAssetHashString != "" {
-
-			klog.Infof("Using CNI asset hash %q, as set in %s", cniAssetHashString, ENV_VAR_CNI_ASSET_HASH_STRING)
-
-			hash, err := hashing.FromString(cniAssetHashString)
-			if err != nil {
-				return nil, nil, fmt.Errorf("unable to parse CNI asset hash %q", cniAssetHashString)
-			}
-			return u, hash, nil
+		h, err := hashing.FromString(cniAssetHash)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset hash %q: %v", cniAssetHash, err)
 		}
-		return u, nil, nil
+
+		u, err = assetBuilder.RemapFileAndSHAValue(u, cniAssetHash)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
+		}
+
+		return u, h, nil
 	}
 
 	sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to lookup kubernetes version: %v", err)
+		return nil, nil, fmt.Errorf("unable to find Kubernetes version: %v", err)
 	}
 
-	var cniAsset, cniAssetHash string
 	switch arch {
 	case architectures.ArchitectureAmd64:
 		if util.IsKubernetesGTE("1.15", *sv) {
-			cniAsset = defaultCNIAssetAmd64K8s_15
-			cniAssetHash = defaultCNIAssetAmd64SHA256StringK8s1_15
+			cniAssetURL = defaultCNIAssetAmd64K8s_15
 		} else {
-			cniAsset = defaultCNIAssetAmd64K8s_11
-			cniAssetHash = defaultCNIAssetAmd64SHA256StringK8s1_11
+			cniAssetURL = defaultCNIAssetAmd64K8s_11
 		}
-		klog.V(2).Infof("Adding default ARM64 CNI plugin binaries asset : %s", cniAsset)
+		klog.V(2).Infof("Adding default ARM64 CNI plugin binaries asset: %s", cniAssetURL)
 	case architectures.ArchitectureArm64:
 		if util.IsKubernetesGTE("1.15", *sv) {
-			cniAsset = defaultCNIAssetArm64K8s_15
-			cniAssetHash = defaultCNIAssetArm64SHA256StringK8s1_15
+			cniAssetURL = defaultCNIAssetArm64K8s_15
 		} else {
-			cniAsset = defaultCNIAssetArm64K8s_11
-			cniAssetHash = defaultCNIAssetArm64SHA256StringK8s1_11
+			cniAssetURL = defaultCNIAssetArm64K8s_11
 		}
-		klog.V(2).Infof("Adding default AMD64 CNI plugin binaries asset : %s", cniAsset)
+		klog.V(2).Infof("Adding default AMD64 CNI plugin binaries asset: %s", cniAssetURL)
 	default:
-		return nil, nil, fmt.Errorf("unknown arch for CNI plugin binaries asset %s", arch)
+		return nil, nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)
 	}
 
-	u, err := url.Parse(cniAsset)
+	u, err := url.Parse(cniAssetURL)
 	if err != nil {
-		return nil, nil, nil
+		return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset URL %q: %v", cniAssetURL, err)
 	}
 
-	hash, err := hashing.FromString(cniAssetHash)
+	u, h, err := assetBuilder.RemapFileAndSHA(u)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to parse CNI plugin binaries asset hash %q", cniAssetHash)
+		return nil, nil, fmt.Errorf("unable to remap CNI plugin binaries asset: %v", err)
 	}
 
-	u, err = assetBuilder.RemapFileAndSHAValue(u, cniAssetHash)
+	return u, h, nil
+}
+
+func findLyftVPCAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+	// Override LyftVPC packages from env vars
+	lyftAssetURL := os.Getenv(ENV_VAR_LYFT_VPC_ASSET_URL)
+	lyftAssetHash := os.Getenv(ENV_VAR_LYFT_VPC_ASSET_HASH)
+
+	if lyftAssetURL != "" && lyftAssetHash != "" {
+		klog.V(2).Infof("Using LyftVPC package URL %q, as set in %s", lyftAssetURL, ENV_VAR_LYFT_VPC_ASSET_URL)
+		klog.V(2).Infof("Using LyftVPC package hash %q, as set in %s", lyftAssetHash, ENV_VAR_LYFT_VPC_ASSET_HASH)
+	} else {
+		switch arch {
+		case architectures.ArchitectureAmd64:
+			lyftAssetURL = defaultLyftVPCAssetAmd64
+			lyftAssetHash = defaultLyftVPCAssetAmd64SHA256
+		case architectures.ArchitectureArm64:
+			lyftAssetURL = defaultLyftVPCAssetArm64
+			lyftAssetHash = defaultLyftVPCAssetArm64SHA256
+		default:
+			return nil, nil, fmt.Errorf("unknown arch for LyftVPC asset: %s", arch)
+		}
+	}
+
+	u, err := url.Parse(lyftAssetURL)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("unable to parse LyftVPC asset URL %q: %v", lyftAssetURL, err)
 	}
 
-	return u, hash, nil
+	h, err := hashing.FromString(lyftAssetHash)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to parse LyftVPC asset hash %q: %v", lyftAssetHash, err)
+	}
+
+	u, err = assetBuilder.RemapFileAndSHAValue(u, lyftAssetHash)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to remap LyftVPC asset: %v", err)
+	}
+
+	return u, h, nil
 }
