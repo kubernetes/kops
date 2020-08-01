@@ -210,7 +210,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	return image, nil
 }
 
-// RemapFileAndSHA returns a remapped url for the file, if AssetsLocation is defined.
+// RemapFileAndSHA returns a remapped URL for the file, if AssetsLocation is defined.
 // It also returns the SHA hash of the file.
 func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Hash, error) {
 	if fileURL == nil {
@@ -240,15 +240,13 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 	}
 	fileAsset.SHAValue = h.Hex()
 
-	a.FileAssets = append(a.FileAssets, fileAsset)
 	klog.V(8).Infof("adding file: %+v", fileAsset)
+	a.FileAssets = append(a.FileAssets, fileAsset)
 
 	return fileAsset.DownloadURL, h, nil
 }
 
-// TODO - remove this method as CNI does now have a SHA file
-
-// RemapFileAndSHAValue is used exclusively to remap the cni tarball, as the tarball does not have a sha file in object storage.
+// RemapFileAndSHAValue returns a remapped URL for the file without a SHA file in object storage, if AssetsLocation is defined.
 func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (*url.URL, error) {
 	if fileURL == nil {
 		return nil, fmt.Errorf("unable to remap a nil URL")
@@ -271,6 +269,7 @@ func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (
 		klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
 	}
 
+	klog.V(8).Infof("adding file: %+v", fileAsset)
 	a.FileAssets = append(a.FileAssets, fileAsset)
 
 	return fileAsset.DownloadURL, nil
