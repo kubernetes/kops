@@ -388,6 +388,8 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
 			ServerCertificatePath: path.Join(pkiDir, "kops-controller.crt"),
 			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
+			CABasePath:            pkiDir,
+			SigningCAs:            []string{fi.CertificateIDCA},
 		}
 
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
