@@ -9,7 +9,6 @@ go_library(
         "//cmd/kops-controller/controllers:go_default_library",
         "//cmd/kops-controller/pkg/config:go_default_library",
         "//cmd/kops-controller/pkg/server:go_default_library",
-        "//pkg/apis/kops:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",
         "//pkg/nodeidentity/do:go_default_library",

@@ -85,7 +85,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	klog.Infof("id is %s", id) // todo do something with id
+	klog.Infof("id is %s", id.Instance) // todo do something with id
 
 	req := &nodeup.BootstrapRequest{}
 	err = json.Unmarshal(body, req)
