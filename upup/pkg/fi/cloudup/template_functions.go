@@ -38,6 +38,7 @@ import (
 
 	"github.com/Masterminds/sprig"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
@@ -48,6 +49,7 @@ import (
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/env"
 )
@@ -384,9 +386,27 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		pkiDir := "/etc/kubernetes/kops-controller/pki"
 		config.Server = &kopscontrollerconfig.ServerOptions{
 			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
-			Provider:              kops.CloudProviderID(cluster.Spec.CloudProvider),
 			ServerCertificatePath: path.Join(pkiDir, "kops-controller.crt"),
 			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
+		}
+
+		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		case kops.CloudProviderAWS:
+			nodesRoles := sets.String{}
+			for _, ig := range tf.InstanceGroups {
+				if ig.Spec.Role == kops.InstanceGroupRoleNode {
+					profile, err := tf.LinkToIAMInstanceProfile(ig)
+					if err != nil {
+						return "", fmt.Errorf("getting role for ig %s: %v", ig.Name, err)
+					}
+					nodesRoles.Insert(*profile.Name)
+				}
+			}
+			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{
+				NodesRoles: nodesRoles.List(),
+			}
+		default:
+			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.CloudProvider)
 		}
 	}
 

@@ -30,7 +30,6 @@ import (
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
@@ -88,15 +87,14 @@ func main() {
 	if opt.Server != nil {
 		var verifier fi.Verifier
 		var err error
-		switch opt.Server.Provider {
-		case kops.CloudProviderAWS:
-			verifier, err = awsup.NewAWSVerifier()
+		if opt.Server.Provider.AWS != nil {
+			verifier, err = awsup.NewAWSVerifier(opt.Server.Provider.AWS)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
 			}
-		default:
-			klog.Fatalf("server for cloud provider %s is not supported", opt.Server.Provider)
+		} else {
+			klog.Fatalf("server cloud provider config not provided")
 		}
 
 		srv, err := server.NewServer(&opt, verifier)
