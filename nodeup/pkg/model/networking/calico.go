@@ -46,13 +46,13 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 		certificate := filepath.Join(dirname, name+".pem")
 		key := filepath.Join(dirname, name+"-key.pem")
 
-		if err := b.BuildCertificateTask(c, name, certificate); err != nil {
+		if err := b.BuildCertificateTask(c, name, certificate, nil); err != nil {
 			return err
 		}
-		if err := b.BuildPrivateKeyTask(c, name, key); err != nil {
+		if err := b.BuildPrivateKeyTask(c, name, key, nil); err != nil {
 			return err
 		}
-		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, ca); err != nil {
+		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, ca, nil); err != nil {
 			return err
 		}
 	}

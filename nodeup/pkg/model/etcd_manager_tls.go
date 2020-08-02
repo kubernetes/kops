@@ -54,10 +54,10 @@ func (b *EtcdManagerTLSBuilder) Build(ctx *fi.ModelBuilderContext) error {
 				return fmt.Errorf("keypair %q not found", keystoreName)
 			}
 
-			if err := b.BuildCertificateTask(ctx, keystoreName, d+"/"+fileName+".crt"); err != nil {
+			if err := b.BuildCertificateTask(ctx, keystoreName, d+"/"+fileName+".crt", nil); err != nil {
 				return err
 			}
-			if err := b.BuildPrivateKeyTask(ctx, keystoreName, d+"/"+fileName+".key"); err != nil {
+			if err := b.BuildPrivateKeyTask(ctx, keystoreName, d+"/"+fileName+".key", nil); err != nil {
 				return err
 			}
 		}

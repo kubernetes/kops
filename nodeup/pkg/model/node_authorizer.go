@@ -43,11 +43,11 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.UseBootstrapTokens() && b.IsMaster {
 		name := "node-authorizer"
 		// creates /src/kubernetes/node-authorizer/{tls,tls-key}.pem
-		if err := b.BuildCertificatePairTask(c, name, name, "tls"); err != nil {
+		if err := b.BuildCertificatePairTask(c, name, name, "tls", nil); err != nil {
 			return err
 		}
 		// creates /src/kubernetes/node-authorizer/ca.pem
-		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, filepath.Join(name, "ca.pem")); err != nil {
+		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, filepath.Join(name, "ca.pem"), nil); err != nil {
 			return err
 		}
 	}
@@ -55,10 +55,10 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 	authorizerDir := "node-authorizer"
 	// @check if bootstrap tokens are enabled and download client certificates for nodes
 	if b.UseBootstrapTokens() && !b.IsMaster {
-		if err := b.BuildCertificatePairTask(c, "node-authorizer-client", authorizerDir, "tls"); err != nil {
+		if err := b.BuildCertificatePairTask(c, "node-authorizer-client", authorizerDir, "tls", nil); err != nil {
 			return err
 		}
-		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, authorizerDir+"/ca.pem"); err != nil {
+		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, authorizerDir+"/ca.pem", nil); err != nil {
 			return err
 		}
 	}

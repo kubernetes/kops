@@ -50,7 +50,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// @step: retrieve the platform ca
-	if err := b.BuildCertificateTask(c, fi.CertificateIDCA, "ca.crt"); err != nil {
+	if err := b.BuildCertificateTask(c, fi.CertificateIDCA, "ca.crt", nil); err != nil {
 		return err
 	}
 
@@ -142,7 +142,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if err := b.BuildPrivateKeyTask(c, "master", "service-account.key"); err != nil {
+	if err := b.BuildPrivateKeyTask(c, "master", "service-account.key", nil); err != nil {
 		return err
 	}
 
