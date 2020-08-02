@@ -62,7 +62,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -1079,39 +1078,11 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(cniAsset, cniAssetHash))
 
 		if c.Cluster.Spec.Networking.LyftVPC != nil {
-			var hash *hashing.Hash
-
-			urlString := os.Getenv("LYFT_VPC_DOWNLOAD_URL")
-			if urlString == "" {
-				switch arch {
-				case architectures.ArchitectureAmd64:
-					urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-amd64-v0.6.0.tar.gz"
-					hash, err = hashing.FromString("871757d381035f64020a523e7a3e139b6177b98eb7a61b547813ff25957fc566")
-				case architectures.ArchitectureArm64:
-					urlString = "https://github.com/lyft/cni-ipvlan-vpc-k8s/releases/download/v0.6.0/cni-ipvlan-vpc-k8s-arm64-v0.6.0.tar.gz"
-					hash, err = hashing.FromString("3aadcb32ffda53990153790203eb72898e55a985207aa5b4451357f9862286f0")
-				default:
-					return fmt.Errorf("unknown arch for lyft asset %s", arch)
-				}
-				if err != nil {
-					// Should be impossible
-					return fmt.Errorf("invalid hard-coded hash for lyft url")
-				}
-			} else {
-				klog.Warningf("Using url from LYFT_VPC_DOWNLOAD_URL env var: %q", urlString)
-				hashString := os.Getenv("LYFT_VPC_DOWNLOAD_HASH")
-				hash, err = hashing.FromString(hashString)
-				if err != nil {
-					return fmt.Errorf("invalid hash supplied for lyft: %q", hashString)
-				}
-			}
-
-			u, err := url.Parse(urlString)
+			lyftAsset, lyftAssetHash, err := findLyftVPCAssets(c.Cluster, assetBuilder, arch)
 			if err != nil {
-				return fmt.Errorf("unable to parse lyft-vpc URL %q", urlString)
+				return err
 			}
-
-			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(u, hash))
+			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(lyftAsset, lyftAssetHash))
 		}
 
 		asset, err := NodeUpAsset(assetBuilder, arch)
