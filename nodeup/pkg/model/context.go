@@ -57,6 +57,7 @@ type NodeupModelContext struct {
 	IsMaster bool
 
 	kubernetesVersion semver.Version
+	bootstrapCerts    map[string]*nodetasks.BootstrapCert
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
@@ -66,6 +67,7 @@ func (c *NodeupModelContext) Init() error {
 		return fmt.Errorf("unable to parse KubernetesVersion %q", c.Cluster.Spec.KubernetesVersion)
 	}
 	c.kubernetesVersion = *k8sVersion
+	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
 
 	if c.NodeupConfig.InstanceGroupRole == kops.InstanceGroupRoleMaster {
 		c.IsMaster = true
@@ -216,6 +218,51 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 	}
 	ctx.AddTask(kubeConfig)
 	return kubeConfig.GetConfig()
+}
+
+// BuildBootstrapKubeconfig generates a kubeconfig with a client certificate from either kops-controller or the state store.
+func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.ModelBuilderContext) (fi.Resource, error) {
+	if c.UseKopsControllerForNodeBootstrap() {
+		b, ok := c.bootstrapCerts[name]
+		if !ok {
+			b = &nodetasks.BootstrapCert{
+				Cert: &fi.TaskDependentResource{},
+				Key:  &fi.TaskDependentResource{},
+			}
+			c.bootstrapCerts[name] = b
+		}
+
+		ca, err := c.GetCert(fi.CertificateIDCA)
+		if err != nil {
+			return nil, err
+		}
+
+		kubeConfig := &nodetasks.KubeConfig{
+			Name: name,
+			Cert: b.Cert,
+			Key:  b.Key,
+			CA:   fi.NewBytesResource(ca),
+		}
+		if c.IsMaster {
+			// @note: use https even for local connections, so we can turn off the insecure port
+			kubeConfig.ServerURL = "https://127.0.0.1"
+		} else {
+			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+		}
+
+		err = ctx.EnsureTask(kubeConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		return kubeConfig.GetConfig(), nil
+	} else {
+		config, err := c.BuildPKIKubeconfig(name)
+		if err != nil {
+			return nil, err
+		}
+		return fi.NewStringResource(config), nil
+	}
 }
 
 // BuildPKIKubeconfig generates a kubeconfig

@@ -274,7 +274,7 @@ func (m *KopsModelContext) UseKopsControllerForNodeBootstrap() bool {
 
 // UseBootstrapTokens checks if bootstrap tokens are enabled
 func (m *KopsModelContext) UseBootstrapTokens() bool {
-	if m.Cluster.Spec.KubeAPIServer == nil {
+	if m.Cluster.Spec.KubeAPIServer == nil || m.UseKopsControllerForNodeBootstrap() {
 		return false
 	}
 
