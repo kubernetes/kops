@@ -378,20 +378,20 @@ func (c *NodeupModelContext) KubectlPath() string {
 	return kubeletCommand
 }
 
-// BuildCertificatePairTask creates the tasks to pull down the certificate and private key
-func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string) error {
+// BuildCertificatePairTask creates the tasks to create the certificate and private key files.
+func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string, owner *string) error {
 	certificateName := filepath.Join(path, filename+".pem")
 	keyName := filepath.Join(path, filename+"-key.pem")
 
-	if err := c.BuildCertificateTask(ctx, key, certificateName); err != nil {
+	if err := c.BuildCertificateTask(ctx, key, certificateName, owner); err != nil {
 		return err
 	}
 
-	return c.BuildPrivateKeyTask(ctx, key, keyName)
+	return c.BuildPrivateKeyTask(ctx, key, keyName, owner)
 }
 
-// BuildCertificateTask is responsible for build a certificate request task
-func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+// BuildCertificateTask builds a task to create a certificate file.
+func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
 	cert, err := c.KeyStore.FindCert(name)
 	if err != nil {
 		return err
@@ -416,13 +416,14 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
+		Owner:    owner,
 	})
 
 	return nil
 }
 
-// BuildPrivateKeyTask is responsible for build a certificate request task
-func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+// BuildPrivateKeyTask builds a task to create a private key file.
+func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
 	cert, err := c.KeyStore.FindPrivateKey(name)
 	if err != nil {
 		return err
@@ -447,6 +448,7 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
+		Owner:    owner,
 	})
 
 	return nil

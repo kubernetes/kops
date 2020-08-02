@@ -123,10 +123,10 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 				return err
 			}
 
-			if err := b.BuildCertificateTask(c, keystoreName, d+"/"+fileName+".crt"); err != nil {
+			if err := b.BuildCertificateTask(c, keystoreName, d+"/"+fileName+".crt", nil); err != nil {
 				return err
 			}
-			if err := b.BuildPrivateKeyTask(c, keystoreName, d+"/"+fileName+".key"); err != nil {
+			if err := b.BuildPrivateKeyTask(c, keystoreName, d+"/"+fileName+".key", nil); err != nil {
 				return err
 			}
 		}
