@@ -35,7 +35,7 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin time.Duration, configUser string, internal bool) (*KubeconfigBuilder, error) {
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	var master string
@@ -141,7 +141,6 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		if err != nil {
 			return nil, err
 		}
-
 		b.ClientCert, err = cert.AsBytes()
 		if err != nil {
 			return nil, err
@@ -149,6 +148,16 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		b.ClientKey, err = privateKey.AsBytes()
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	if useKopsAuthenticationPlugin {
+		b.AuthenticationExec = []string{
+			"kops",
+			"helpers",
+			"kubectl-auth",
+			"--cluster=" + clusterName,
+			"--state=" + kopsStateStore,
 		}
 	}
 
