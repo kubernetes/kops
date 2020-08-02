@@ -84,6 +84,8 @@ k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/cloudinstances
 k8s.io/kops/pkg/clusteraddons
 k8s.io/kops/pkg/commands
+k8s.io/kops/pkg/commands/commandutils
+k8s.io/kops/pkg/commands/helpers
 k8s.io/kops/pkg/configbuilder
 k8s.io/kops/pkg/diff
 k8s.io/kops/pkg/dns

@@ -69,6 +69,7 @@ go_library(
         "//pkg/cloudinstances:go_default_library",
         "//pkg/clusteraddons:go_default_library",
         "//pkg/commands:go_default_library",
+        "//pkg/commands/commandutils:go_default_library",
         "//pkg/dump:go_default_library",
         "//pkg/edit:go_default_library",
         "//pkg/featureflag:go_default_library",

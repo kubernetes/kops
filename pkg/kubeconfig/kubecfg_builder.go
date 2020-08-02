@@ -43,6 +43,8 @@ type KubeconfigBuilder struct {
 	ClientKey  []byte
 
 	configAccess clientcmd.ConfigAccess
+
+	AuthenticationExec []string
 }
 
 // Create new KubeconfigBuilder
@@ -144,6 +146,14 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 			authInfo.ClientCertificateData = b.ClientCert
 			authInfo.ClientKey = ""
 			authInfo.ClientKeyData = b.ClientKey
+		}
+
+		if len(b.AuthenticationExec) != 0 {
+			authInfo.Exec = &clientcmdapi.ExecConfig{
+				APIVersion: "client.authentication.k8s.io/v1beta1",
+				Command:    b.AuthenticationExec[0],
+				Args:       b.AuthenticationExec[1:],
+			}
 		}
 
 		if config.AuthInfos == nil {
