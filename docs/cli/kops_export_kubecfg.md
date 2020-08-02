@@ -31,6 +31,7 @@ kops export kubecfg CLUSTERNAME [flags]
 ```
       --admin duration[=18h0m0s]   export a cluster admin user credential with the given lifetime and add it to the cluster context
       --all                        export all clusters from the kops state store
+      --auth-plugin                use the kops authentication plugin
   -h, --help                       help for kubecfg
       --internal                   use the cluster's internal DNS name
       --kubeconfig string          the location of the kubeconfig file to create.

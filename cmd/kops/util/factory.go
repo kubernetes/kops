@@ -124,3 +124,8 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 
 	return f.clientset, nil
 }
+
+// KopsStateStore returns the configured KOPS_STATE_STORE in use
+func (f *Factory) KopsStateStore() string {
+	return f.options.RegistryPath
+}

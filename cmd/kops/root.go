@@ -35,6 +35,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/commands"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -143,6 +144,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdEdit(f, out))
 	cmd.AddCommand(NewCmdExport(f, out))
 	cmd.AddCommand(NewCmdGet(f, out))
+	cmd.AddCommand(commands.NewCmdHelpers(f, out))
 	cmd.AddCommand(NewCmdUpdate(f, out))
 	cmd.AddCommand(NewCmdReplace(f, out))
 	cmd.AddCommand(NewCmdRollingUpdate(f, out))
