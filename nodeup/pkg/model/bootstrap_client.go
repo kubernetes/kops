@@ -55,7 +55,14 @@ func (b BootstrapClientBuilder) Build(c *fi.ModelBuilderContext) error {
 	bootstrapClient := &nodetasks.BootstrapClient{
 		Authenticator: authenticator,
 		CA:            cert,
+		Certs:         b.bootstrapCerts,
 	}
+
+	for _, cert := range b.bootstrapCerts {
+		cert.Cert.Task = bootstrapClient
+		cert.Key.Task = bootstrapClient
+	}
+
 	c.AddTask(bootstrapClient)
 	return nil
 }

@@ -218,7 +218,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	loader := &Loader{}
-	loader.Builders = append(loader.Builders, &model.BootstrapClientBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.NTPBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.MiscUtilsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
@@ -253,6 +252,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &networking.KuberouterBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.LyftVPCBuilder{NodeupModelContext: modelContext})
 
+	loader.Builders = append(loader.Builders, &model.BootstrapClientBuilder{NodeupModelContext: modelContext})
 	taskMap, err := loader.Build()
 	if err != nil {
 		return fmt.Errorf("error building loader: %v", err)

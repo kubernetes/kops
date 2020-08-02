@@ -92,7 +92,10 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			if err != nil {
 				return err
 			}
-			c.EnsureTask(t)
+			err = c.EnsureTask(t)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	{
@@ -103,26 +106,20 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			Mode: s("0755"),
 		})
 
-		// @check if bootstrap tokens are enabled and create the appropreiate certificates
-		if b.UseBootstrapTokens() {
-			// @check if a master and if so, we bypass the token strapping and instead generate our own kubeconfig
+		if b.IsMaster || !b.UseBootstrapTokens() {
+			var kubeconfig fi.Resource
 			if b.IsMaster {
-				klog.V(3).Info("kubelet bootstrap tokens are enabled and running on a master")
-
-				err := b.buildMasterKubeletKubeconfig(c)
-				if err != nil {
-					return err
-				}
+				kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
+			} else {
+				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
 			}
-		} else {
-			kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
 			if err != nil {
 				return err
 			}
 
 			c.AddTask(&nodetasks.File{
 				Path:     b.KubeletKubeConfig(),
-				Contents: fi.NewStringResource(kubeconfig),
+				Contents: kubeconfig,
 				Type:     nodetasks.FileType_File,
 				Mode:     s("0400"),
 			})
@@ -525,23 +522,15 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 }
 
 // buildMasterKubeletKubeconfig builds a kubeconfig for the master kubelet, self-signing the kubelet cert
-func (b *KubeletBuilder) buildMasterKubeletKubeconfig(c *fi.ModelBuilderContext) error {
+func (b *KubeletBuilder) buildMasterKubeletKubeconfig(c *fi.ModelBuilderContext) (fi.Resource, error) {
 	nodeName, err := b.NodeName()
 	if err != nil {
-		return fmt.Errorf("error getting NodeName: %v", err)
+		return nil, fmt.Errorf("error getting NodeName: %v", err)
 	}
 	certName := nodetasks.PKIXName{
 		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
 		Organization: []string{rbac.NodesGroup},
 	}
 
-	kubeconfig := b.BuildIssuedKubeconfig("kubelet", certName, c)
-	c.AddTask(&nodetasks.File{
-		Path:     b.KubeletKubeConfig(),
-		Contents: kubeconfig,
-		Type:     nodetasks.FileType_File,
-		Mode:     s("600"),
-	})
-
-	return nil
+	return b.BuildIssuedKubeconfig("kubelet", certName, c), nil
 }
