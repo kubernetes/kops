@@ -21,7 +21,13 @@ type Authenticator interface {
 	CreateToken(body []byte) (string, error)
 }
 
+// VerifyResult is the result of a successfully verified request.
+type VerifyResult struct {
+	// Instance is the hostname of the instance.
+	Instance string
+}
+
 // Verifier verifies authentication credentials for requests.
 type Verifier interface {
-	VerifyToken(token string, body []byte) (string, error)
+	VerifyToken(token string, body []byte) (*VerifyResult, error)
 }

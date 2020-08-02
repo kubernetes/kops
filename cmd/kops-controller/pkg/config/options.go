@@ -16,7 +16,7 @@ limitations under the License.
 
 package config
 
-import "k8s.io/kops/pkg/apis/kops"
+import "k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 type Options struct {
 	Cloud      string         `json:"cloud,omitempty"`
@@ -32,10 +32,14 @@ type ServerOptions struct {
 	Listen string
 
 	// Provider is the cloud provider.
-	Provider kops.CloudProviderID `json:"provider"`
+	Provider ServerProviderOptions `json:"provider"`
 
 	// ServerKeyPath is the path to our TLS serving private key.
 	ServerKeyPath string `json:"serverKeyPath,omitempty"`
 	// ServerCertificatePath is the path to our TLS serving certificate.
 	ServerCertificatePath string `json:"serverCertificatePath,omitempty"`
+}
+
+type ServerProviderOptions struct {
+	AWS *awsup.AWSVerifierOptions `json:"aws,omitempty"`
 }
