@@ -48,9 +48,9 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(defaultCA)
 
 	{
-		// @check of bootstrap tokens are enable if so, disable the creation of the kubelet certificate - we also
+		// @check if kops-controller bootstrap or bootstrap tokens are enabled. If so, disable the creation of the kubelet certificate - we also
 		// block at the IAM level for AWS cluster for pre-existing clusters.
-		if !b.UseBootstrapTokens() {
+		if !b.UseKopsControllerForNodeBootstrap() && !b.UseBootstrapTokens() {
 			c.AddTask(&fitasks.Keypair{
 				Name:      fi.String("kubelet"),
 				Lifecycle: b.Lifecycle,
