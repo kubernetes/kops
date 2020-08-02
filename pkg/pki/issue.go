@@ -17,6 +17,7 @@ limitations under the License.
 package pki
 
 import (
+	"crypto"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
@@ -43,7 +44,9 @@ type IssueCertRequest struct {
 	// AlternateNames is a list of alternative names for this certificate.
 	AlternateNames []string
 
-	// PrivateKey is the private key for this certificate. If nil, a new private key will be generated.
+	// PublicKey is the public key for this certificate. If nil, it will be calculated from PrivateKey.
+	PublicKey crypto.PublicKey
+	// PrivateKey is the private key for this certificate. If both this and PublicKey are nil, a new private key will be generated.
 	PrivateKey *PrivateKey
 	// Validity is the certificate validity. The default is 10 years.
 	Validity time.Duration
@@ -130,7 +133,9 @@ func IssueCert(request *IssueCertRequest, keystore Keystore) (issuedCertificate 
 	}
 
 	privateKey := request.PrivateKey
-	if privateKey == nil {
+	if request.PublicKey != nil {
+		template.PublicKey = request.PublicKey
+	} else if privateKey == nil {
 		var err error
 		privateKey, err = GeneratePrivateKey()
 		if err != nil {

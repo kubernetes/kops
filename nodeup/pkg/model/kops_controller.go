@@ -81,5 +81,13 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Owner:    s(wellknownusers.KopsControllerName),
 	})
 
+	for _, cert := range []string{fi.CertificateIDCA} {
+		owner := wellknownusers.KopsControllerName
+		err := b.BuildCertificatePairTask(c, cert, pkiDir, cert, &owner)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

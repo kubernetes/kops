@@ -38,6 +38,11 @@ type ServerOptions struct {
 	ServerKeyPath string `json:"serverKeyPath,omitempty"`
 	// ServerCertificatePath is the path to our TLS serving certificate.
 	ServerCertificatePath string `json:"serverCertificatePath,omitempty"`
+
+	// CABasePath is a base of the path to CA certificate and key files.
+	CABasePath string `json:"caBasePath"`
+	// SigningCAs is the list of active signing CAs.
+	SigningCAs []string `json:"signingCAs"`
 }
 
 type ServerProviderOptions struct {

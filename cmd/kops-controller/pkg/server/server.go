@@ -18,16 +18,23 @@ package server
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
+	"hash/fnv"
 	"io/ioutil"
 	"net/http"
 	"runtime/debug"
+	"time"
 
 	"github.com/gorilla/mux"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -35,6 +42,7 @@ type Server struct {
 	opt      *config.Options
 	server   *http.Server
 	verifier fi.Verifier
+	keystore pki.Keystore
 }
 
 func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
@@ -59,6 +67,12 @@ func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 }
 
 func (s *Server) Start() error {
+	var err error
+	s.keystore, err = newKeystore(s.opt.Server.CABasePath, s.opt.Server.SigningCAs)
+	if err != nil {
+		return err
+	}
+
 	return s.server.ListenAndServeTLS(s.opt.Server.ServerCertificatePath, s.opt.Server.ServerKeyPath)
 }
 
@@ -85,8 +99,6 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	klog.Infof("id is %s", id.Instance) // todo do something with id
-
 	req := &nodeup.BootstrapRequest{}
 	err = json.Unmarshal(body, req)
 	if err != nil {
@@ -103,10 +115,66 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := &nodeup.BootstrapResponse{
+		Certs: map[string]string{},
+	}
+
+	// Skew the certificate lifetime by up to 30 days based on information about the requesting node.
+	// This is so that different nodes created at the same time have the certificates they generated
+	// expire at different times, but all certificates on a given node expire around the same time.
+	hash := fnv.New32()
+	_, _ = hash.Write([]byte(r.RemoteAddr))
+	validHours := (455 * 24) + (hash.Sum32() % (30 * 24))
+
+	for name, pubKey := range req.Certs {
+		cert, err := s.issueCert(name, pubKey, id, validHours)
+		if err != nil {
+			klog.Infof("bootstrap %s cert %q issue err: %v", r.RemoteAddr, name, err)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(fmt.Sprintf("failed to issue %q: %v", name, err)))
+			return
+		}
+		resp.Certs[name] = cert
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	resp := &nodeup.BootstrapResponse{}
 	_ = json.NewEncoder(w).Encode(resp)
-	klog.Infof("bootstrap %s success", r.RemoteAddr)
+	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.Instance)
+}
+
+func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, validHours uint32) (string, error) {
+	block, _ := pem.Decode([]byte(pubKey))
+	if block.Type != "RSA PUBLIC KEY" {
+		return "", fmt.Errorf("unexpected key type %q", block.Type)
+	}
+	key, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("parsing key: %v", err)
+	}
+
+	issueReq := &pki.IssueCertRequest{
+		Signer:    fi.CertificateIDCA,
+		Type:      "client",
+		PublicKey: key,
+		Validity:  time.Hour * time.Duration(validHours),
+	}
+
+	switch name {
+	case "kubelet":
+		issueReq.Subject = pkix.Name{
+			CommonName:   fmt.Sprintf("system:node:%s", id.Instance),
+			Organization: []string{rbac.NodesGroup},
+		}
+	default:
+		return "", fmt.Errorf("unexpected key name")
+	}
+
+	cert, _, _, err := pki.IssueCert(issueReq, s.keystore)
+	if err != nil {
+		return "", fmt.Errorf("issuing certificate: %v", err)
+	}
+
+	return cert.AsString()
 }
 
 // recovery is responsible for ensuring we don't exit on a panic.

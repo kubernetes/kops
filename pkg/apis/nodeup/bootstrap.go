@@ -22,8 +22,12 @@ const BootstrapAPIVersion = "bootstrap.kops.k8s.io/v1alpha1"
 type BootstrapRequest struct {
 	// APIVersion defines the versioned schema of this representation of a request.
 	APIVersion string `json:"apiVersion"`
+	// Certs are the requested certificates and their respective public keys.
+	Certs map[string]string `json:"certs"`
 }
 
 // BootstrapRespose is a response to a BootstrapRequest.
 type BootstrapResponse struct {
+	// Certs are the issued certificates.
+	Certs map[string]string
 }
