@@ -35,12 +35,22 @@ type Address struct {
 	ForAPIServer bool
 }
 
+var _ fi.CompareWithID = &ForwardingRule{}
+
+func (e *Address) CompareWithID() *string {
+	return e.Name
+}
+
 func (e *Address) Find(c *fi.Context) (*Address, error) {
 	actual, err := e.find(c.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		if e.IPAddress == nil {
 			e.IPAddress = actual.IPAddress
 		}
+
+		// Ignore system fields
+		actual.Lifecycle = e.Lifecycle
+		actual.ForAPIServer = e.ForAPIServer
 	}
 	return actual, err
 }
