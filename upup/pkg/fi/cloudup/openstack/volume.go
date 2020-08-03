@@ -27,6 +27,10 @@ import (
 )
 
 func (c *openstackCloud) ListVolumes(opt cinder.ListOptsBuilder) ([]cinder.Volume, error) {
+	return listVolumes(c, opt)
+}
+
+func listVolumes(c OpenstackCloud, opt cinder.ListOptsBuilder) ([]cinder.Volume, error) {
 	var volumes []cinder.Volume
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
@@ -52,6 +56,10 @@ func (c *openstackCloud) ListVolumes(opt cinder.ListOptsBuilder) ([]cinder.Volum
 }
 
 func (c *openstackCloud) CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Volume, error) {
+	return createVolume(c, opt)
+}
+
+func createVolume(c OpenstackCloud, opt cinder.CreateOptsBuilder) (*cinder.Volume, error) {
 	var volume *cinder.Volume
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
@@ -72,6 +80,10 @@ func (c *openstackCloud) CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Vol
 }
 
 func (c *openstackCloud) AttachVolume(serverID string, opts volumeattach.CreateOpts) (attachment *volumeattach.VolumeAttachment, err error) {
+	return attachVolume(c, serverID, opts)
+}
+
+func attachVolume(c OpenstackCloud, serverID string, opts volumeattach.CreateOpts) (attachment *volumeattach.VolumeAttachment, err error) {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		volumeAttachment, err := volumeattach.Create(c.ComputeClient(), serverID, opts).Extract()
 		if err != nil {
@@ -90,6 +102,10 @@ func (c *openstackCloud) AttachVolume(serverID string, opts volumeattach.CreateO
 }
 
 func (c *openstackCloud) SetVolumeTags(id string, tags map[string]string) error {
+	return setVolumeTags(c, id, tags)
+}
+
+func setVolumeTags(c OpenstackCloud, id string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -116,6 +132,10 @@ func (c *openstackCloud) SetVolumeTags(id string, tags map[string]string) error 
 }
 
 func (c *openstackCloud) DeleteVolume(volumeID string) error {
+	return deleteVolume(c, volumeID)
+}
+
+func deleteVolume(c OpenstackCloud, volumeID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err := cinder.Delete(c.BlockStorageClient(), volumeID, cinder.DeleteOpts{}).ExtractErr()
 		if err != nil && !isNotFound(err) {

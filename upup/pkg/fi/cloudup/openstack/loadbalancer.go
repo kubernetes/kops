@@ -29,6 +29,10 @@ import (
 )
 
 func (c *openstackCloud) ListMonitors(opts monitors.ListOpts) (monitorList []monitors.Monitor, err error) {
+	return listMonitors(c, opts)
+}
+
+func listMonitors(c OpenstackCloud, opts monitors.ListOpts) (monitorList []monitors.Monitor, err error) {
 	if c.LoadBalancerClient() == nil {
 		return monitorList, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -53,6 +57,10 @@ func (c *openstackCloud) ListMonitors(opts monitors.ListOpts) (monitorList []mon
 }
 
 func (c *openstackCloud) DeleteMonitor(monitorID string) error {
+	return deleteMonitor(c, monitorID)
+}
+
+func deleteMonitor(c OpenstackCloud, monitorID string) error {
 	if c.LoadBalancerClient() == nil {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -73,6 +81,10 @@ func (c *openstackCloud) DeleteMonitor(monitorID string) error {
 }
 
 func (c *openstackCloud) DeletePool(poolID string) error {
+	return deletePool(c, poolID)
+}
+
+func deletePool(c OpenstackCloud, poolID string) error {
 	if c.LoadBalancerClient() == nil {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -94,6 +106,10 @@ func (c *openstackCloud) DeletePool(poolID string) error {
 }
 
 func (c *openstackCloud) DeleteListener(listenerID string) error {
+	return deleteListener(c, listenerID)
+}
+
+func deleteListener(c OpenstackCloud, listenerID string) error {
 	if c.LoadBalancerClient() == nil {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -115,6 +131,10 @@ func (c *openstackCloud) DeleteListener(listenerID string) error {
 }
 
 func (c *openstackCloud) DeleteLB(lbID string, opts loadbalancers.DeleteOpts) error {
+	return deleteLB(c, lbID, opts)
+}
+
+func deleteLB(c OpenstackCloud, lbID string, opts loadbalancers.DeleteOpts) error {
 	if c.LoadBalancerClient() == nil {
 		return fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -136,6 +156,10 @@ func (c *openstackCloud) DeleteLB(lbID string, opts loadbalancers.DeleteOpts) er
 }
 
 func (c *openstackCloud) CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error) {
+	return createLB(c, opt)
+}
+
+func createLB(c OpenstackCloud, opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error) {
 	if c.LoadBalancerClient() == nil {
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -159,6 +183,10 @@ func (c *openstackCloud) CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbal
 }
 
 func (c *openstackCloud) GetLB(loadbalancerID string) (lb *loadbalancers.LoadBalancer, err error) {
+	return getLB(c, loadbalancerID)
+}
+
+func getLB(c OpenstackCloud, loadbalancerID string) (lb *loadbalancers.LoadBalancer, err error) {
 	if c.LoadBalancerClient() == nil {
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -181,6 +209,10 @@ func (c *openstackCloud) GetLB(loadbalancerID string) (lb *loadbalancers.LoadBal
 
 // ListLBs will list load balancers
 func (c *openstackCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadbalancers.LoadBalancer, err error) {
+	return listLBs(c, opt)
+}
+
+func listLBs(c OpenstackCloud, opt loadbalancers.ListOptsBuilder) (lbs []loadbalancers.LoadBalancer, err error) {
 	if c.LoadBalancerClient() == nil {
 		// skip error because cluster delete will otherwise fail
 		return lbs, nil
@@ -207,6 +239,10 @@ func (c *openstackCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadb
 }
 
 func (c *openstackCloud) GetPool(poolID string, memberID string) (member *v2pools.Member, err error) {
+	return getPool(c, poolID, memberID)
+}
+
+func getPool(c OpenstackCloud, poolID string, memberID string) (member *v2pools.Member, err error) {
 	if c.LoadBalancerClient() == nil {
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -228,6 +264,10 @@ func (c *openstackCloud) GetPool(poolID string, memberID string) (member *v2pool
 }
 
 func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
+	return associateToPool(c, server, poolID, opts)
+}
+
+func associateToPool(c OpenstackCloud, server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
 	if c.LoadBalancerClient() == nil {
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -255,6 +295,10 @@ func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, 
 }
 
 func (c *openstackCloud) CreatePool(opts v2pools.CreateOpts) (pool *v2pools.Pool, err error) {
+	return createPool(c, opts)
+}
+
+func createPool(c OpenstackCloud, opts v2pools.CreateOpts) (pool *v2pools.Pool, err error) {
 	if c.LoadBalancerClient() == nil {
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -276,6 +320,10 @@ func (c *openstackCloud) CreatePool(opts v2pools.CreateOpts) (pool *v2pools.Pool
 }
 
 func (c *openstackCloud) ListPools(opts v2pools.ListOpts) (poolList []v2pools.Pool, err error) {
+	return listPools(c, opts)
+}
+
+func listPools(c OpenstackCloud, opts v2pools.ListOpts) (poolList []v2pools.Pool, err error) {
 	if c.LoadBalancerClient() == nil {
 		return poolList, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -301,6 +349,10 @@ func (c *openstackCloud) ListPools(opts v2pools.ListOpts) (poolList []v2pools.Po
 }
 
 func (c *openstackCloud) ListListeners(opts listeners.ListOpts) (listenerList []listeners.Listener, err error) {
+	return listListeners(c, opts)
+}
+
+func listListeners(c OpenstackCloud, opts listeners.ListOpts) (listenerList []listeners.Listener, err error) {
 	if c.LoadBalancerClient() == nil {
 		return listenerList, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
@@ -326,6 +378,10 @@ func (c *openstackCloud) ListListeners(opts listeners.ListOpts) (listenerList []
 }
 
 func (c *openstackCloud) CreateListener(opts listeners.CreateOpts) (listener *listeners.Listener, err error) {
+	return createListener(c, opts)
+}
+
+func createListener(c OpenstackCloud, opts listeners.CreateOpts) (listener *listeners.Listener, err error) {
 	if c.LoadBalancerClient() == nil {
 		return nil, fmt.Errorf("loadbalancer support not available in this deployment")
 	}
