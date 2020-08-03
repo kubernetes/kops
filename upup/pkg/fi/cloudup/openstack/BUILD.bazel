@@ -12,6 +12,7 @@ go_library(
         "instance.go",
         "keypair.go",
         "loadbalancer.go",
+        "mock_cloud.go",
         "network.go",
         "port.go",
         "router.go",

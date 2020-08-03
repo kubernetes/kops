@@ -23,8 +23,12 @@ import (
 )
 
 func (c *openstackCloud) GetImage(name string) (*images.Image, error) {
+	return getImage(c, name)
+}
+
+func getImage(c OpenstackCloud, name string) (*images.Image, error) {
 	opts := images.ListOpts{Name: name}
-	pager := images.List(c.glanceClient, opts)
+	pager := images.List(c.ImageClient(), opts)
 	page, err := pager.AllPages()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list images: %v", err)
