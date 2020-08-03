@@ -139,6 +139,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 			for _, scope := range serviceAccount.Scopes {
 				actual.Scopes = append(actual.Scopes, scopeToShortForm(scope))
 			}
+			actual.ServiceAccounts = append(actual.ServiceAccounts, serviceAccount.Email)
 		}
 
 		// When we deal with additional disks (local disks), we'll need to map them like this...
