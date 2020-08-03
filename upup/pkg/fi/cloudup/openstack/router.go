@@ -25,6 +25,10 @@ import (
 )
 
 func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, error) {
+	return listRouters(c, opt)
+}
+
+func listRouters(c OpenstackCloud, opt routers.ListOpts) ([]routers.Router, error) {
 	var rs []routers.Router
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
@@ -50,6 +54,10 @@ func (c *openstackCloud) ListRouters(opt routers.ListOpts) ([]routers.Router, er
 }
 
 func (c *openstackCloud) CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error) {
+	return createRouter(c, opt)
+}
+
+func createRouter(c OpenstackCloud, opt routers.CreateOptsBuilder) (*routers.Router, error) {
 	var r *routers.Router
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
@@ -70,6 +78,10 @@ func (c *openstackCloud) CreateRouter(opt routers.CreateOptsBuilder) (*routers.R
 }
 
 func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error) {
+	return createRouterInterface(c, routerID, opt)
+}
+
+func createRouterInterface(c OpenstackCloud, routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error) {
 	var i *routers.InterfaceInfo
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
@@ -90,6 +102,10 @@ func (c *openstackCloud) CreateRouterInterface(routerID string, opt routers.AddI
 }
 
 func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
+	return deleteRouterInterface(c, routerID, opt)
+}
+
+func deleteRouterInterface(c OpenstackCloud, routerID string, opt routers.RemoveInterfaceOptsBuilder) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		_, err := routers.RemoveInterface(c.NetworkingClient(), routerID, opt).Extract()
 		if err != nil && !isNotFound(err) {
@@ -107,6 +123,10 @@ func (c *openstackCloud) DeleteRouterInterface(routerID string, opt routers.Remo
 }
 
 func (c *openstackCloud) DeleteRouter(routerID string) error {
+	return deleteRouter(c, routerID)
+}
+
+func deleteRouter(c OpenstackCloud, routerID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		err := routers.Delete(c.NetworkingClient(), routerID).ExtractErr()
 		if err != nil && !isNotFound(err) {

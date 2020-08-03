@@ -46,6 +46,10 @@ var floatingBackoff = wait.Backoff{
 }
 
 func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
+	return createInstance(c, opt)
+}
+
+func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder) (*servers.Server, error) {
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
@@ -66,6 +70,11 @@ func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers
 }
 
 func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, error) {
+	return listServerFloatingIPs(c, instanceID, c.floatingEnabled)
+}
+
+func listServerFloatingIPs(c OpenstackCloud, instanceID string, floatingEnabled bool) ([]*string, error) {
+
 	var result []*string
 	_, err := vfs.RetryWithBackoff(floatingBackoff, func() (bool, error) {
 		server, err := c.GetInstance(instanceID)
@@ -81,7 +90,7 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 
 		for _, addrList := range addresses {
 			for _, props := range addrList {
-				if c.floatingEnabled {
+				if floatingEnabled {
 					if props.IPType == "floating" {
 						result = append(result, fi.String(props.Addr))
 					}
@@ -102,21 +111,37 @@ func (c *openstackCloud) ListServerFloatingIPs(instanceID string) ([]*string, er
 }
 
 func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return deleteInstance(c, i)
+}
+
+func deleteInstance(c OpenstackCloud, i *cloudinstances.CloudInstanceGroupMember) error {
 	klog.Warning("This does not work without running kops update cluster --yes in another terminal")
-	return c.DeleteInstanceWithID(i.ID)
+	return deleteInstanceWithID(c, i.ID)
 }
 
 func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
+	return deleteInstanceWithID(c, instanceID)
+}
+
+func deleteInstanceWithID(c OpenstackCloud, instanceID string) error {
 	return servers.Delete(c.ComputeClient(), instanceID).ExtractErr()
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
 func (c *openstackCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return detachInstance(c, i)
+}
+
+func detachInstance(c OpenstackCloud, i *cloudinstances.CloudInstanceGroupMember) error {
 	klog.V(8).Info("openstack cloud provider DetachInstance not implemented yet")
 	return fmt.Errorf("openstack cloud provider does not support surging")
 }
 
 func (c *openstackCloud) GetInstance(id string) (*servers.Server, error) {
+	return getInstance(c, id)
+}
+
+func getInstance(c OpenstackCloud, id string) (*servers.Server, error) {
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
@@ -137,6 +162,10 @@ func (c *openstackCloud) GetInstance(id string) (*servers.Server, error) {
 }
 
 func (c *openstackCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.Server, error) {
+	return listInstances(c, opt)
+}
+
+func listInstances(c OpenstackCloud, opt servers.ListOptsBuilder) ([]servers.Server, error) {
 	var instances []servers.Server
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {

@@ -42,6 +42,10 @@ import (
 
 // FindClusterStatus discovers the status of the cluster, by looking for the tagged etcd volumes
 func (c *openstackCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
+	return findClusterStatus(c, cluster)
+}
+
+func findClusterStatus(c OpenstackCloud, cluster *kops.Cluster) (*kops.ClusterStatus, error) {
 	etcdStatus, err := findEtcdStatus(c, cluster)
 	if err != nil {
 		return nil, err
@@ -54,11 +58,11 @@ func (c *openstackCloud) FindClusterStatus(cluster *kops.Cluster) (*kops.Cluster
 }
 
 // findEtcdStatus discovers the status of etcd, by looking for the tagged etcd volumes
-func findEtcdStatus(c *openstackCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
+func findEtcdStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.EtcdClusterStatus, error) {
 	statusMap := make(map[string]*kops.EtcdClusterStatus)
 	klog.V(2).Infof("Querying Openstack for etcd volumes")
 	opt := cinderv3.ListOpts{
-		Metadata: c.tags,
+		Metadata: c.GetCloudTags(),
 	}
 	volumes, err := c.ListVolumes(opt)
 	if err != nil {
