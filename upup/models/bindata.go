@@ -1305,7 +1305,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.8.1
+        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.2
         resources:
             requests:
                 cpu: "20m"
@@ -2732,7 +2732,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.8.1
+        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.2
         resources:
             requests:
                 cpu: "20m"
@@ -3092,7 +3092,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.8.1
+        image: k8s.gcr.io/cpa/cluster-proportional-autoscaler:1.8.2
         resources:
             requests:
                 cpu: "20m"
