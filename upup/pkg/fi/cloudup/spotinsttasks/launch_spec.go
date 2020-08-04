@@ -601,16 +601,28 @@ type terraformLaunchSpec struct {
 	Name    *string            `json:"name,omitempty" cty:"name"`
 	OceanID *terraform.Literal `json:"ocean_id,omitempty" cty:"ocean_id"`
 
-	*terraformOceanLaunchSpec
+	Monitoring               *bool                          `json:"monitoring,omitempty" cty:"monitoring"`
+	EBSOptimized             *bool                          `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
+	ImageID                  *string                        `json:"image_id,omitempty" cty:"image_id"`
+	AssociatePublicIPAddress *bool                          `json:"associate_public_ip_address,omitempty" cty:"associate_public_ip_address"`
+	RootVolumeSize           *int32                         `json:"root_volume_size,omitempty" cty:"root_volume_size"`
+	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
+	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
+	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
+	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
+	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
+	Taints                   []*corev1.Taint                `json:"taints,omitempty" cty:"taints"`
+	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
+	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
+	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
 }
 
 func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchSpec) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformLaunchSpec{
-		Name:                     e.Name,
-		OceanID:                  e.Ocean.TerraformLink(),
-		terraformOceanLaunchSpec: &terraformOceanLaunchSpec{},
+		Name:    e.Name,
+		OceanID: e.Ocean.TerraformLink(),
 	}
 
 	// Image.

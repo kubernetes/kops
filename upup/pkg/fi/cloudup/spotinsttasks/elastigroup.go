@@ -1257,32 +1257,19 @@ type terraformElastigroup struct {
 	Tags                 []*terraformKV                          `json:"tags,omitempty" cty:"tags"`
 	Lifecycle            *terraformLifecycle                     `json:"lifecycle,omitempty" cty:"lifecycle"`
 
-	*terraformElastigroupCapacity
-	*terraformElastigroupStrategy
-	*terraformElastigroupInstanceTypes
-	*terraformElastigroupLaunchSpec
-}
-
-type terraformElastigroupCapacity struct {
 	MinSize         *int64  `json:"min_size,omitempty" cty:"min_size"`
 	MaxSize         *int64  `json:"max_size,omitempty" cty:"max_size"`
 	DesiredCapacity *int64  `json:"desired_capacity,omitempty" cty:"desired_capacity"`
 	CapacityUnit    *string `json:"capacity_unit,omitempty" cty:"capacity_unit"`
-}
 
-type terraformElastigroupStrategy struct {
 	SpotPercentage           *float64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
 	Orientation              *string  `json:"orientation,omitempty" cty:"orientation"`
 	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
 	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
-}
 
-type terraformElastigroupInstanceTypes struct {
 	OnDemand *string  `json:"instance_types_ondemand,omitempty" cty:"instance_types_ondemand"`
 	Spot     []string `json:"instance_types_spot,omitempty" cty:"instance_types_spot"`
-}
 
-type terraformElastigroupLaunchSpec struct {
 	Monitoring         *bool                `json:"enable_monitoring,omitempty" cty:"enable_monitoring"`
 	EBSOptimized       *bool                `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
 	ImageID            *string              `json:"image_id,omitempty" cty:"image_id"`
@@ -1312,7 +1299,12 @@ type terraformElastigroupIntegration struct {
 	IntegrationMode   *string `json:"integration_mode,omitempty" cty:"integration_mode"`
 	ClusterIdentifier *string `json:"cluster_identifier,omitempty" cty:"cluster_identifier"`
 
-	*terraformAutoScaler
+	Enabled    *bool                        `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
+	AutoConfig *bool                        `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
+	Cooldown   *int                         `json:"autoscale_cooldown,omitempty" cty:"autoscale_cooldown"`
+	Headroom   *terraformAutoScalerHeadroom `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
+	Down       *terraformAutoScalerDown     `json:"autoscale_down,omitempty" cty:"autoscale_down"`
+	Labels     []*terraformKV               `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
 }
 
 type terraformAutoScaler struct {
@@ -1354,23 +1346,19 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		Description: e.Name,
 		Product:     e.Product,
 		Region:      fi.String(cloud.Region()),
-		terraformElastigroupCapacity: &terraformElastigroupCapacity{
-			DesiredCapacity: e.MinSize,
-			MinSize:         e.MinSize,
-			MaxSize:         e.MaxSize,
-			CapacityUnit:    fi.String("instance"),
-		},
-		terraformElastigroupStrategy: &terraformElastigroupStrategy{
-			SpotPercentage:           e.SpotPercentage,
-			Orientation:              fi.String(string(normalizeOrientation(e.Orientation))),
-			FallbackToOnDemand:       e.FallbackToOnDemand,
-			UtilizeReservedInstances: e.UtilizeReservedInstances,
-		},
-		terraformElastigroupInstanceTypes: &terraformElastigroupInstanceTypes{
-			OnDemand: e.OnDemandInstanceType,
-			Spot:     e.SpotInstanceTypes,
-		},
-		terraformElastigroupLaunchSpec: &terraformElastigroupLaunchSpec{},
+
+		DesiredCapacity: e.MinSize,
+		MinSize:         e.MinSize,
+		MaxSize:         e.MaxSize,
+		CapacityUnit:    fi.String("instance"),
+
+		SpotPercentage:           e.SpotPercentage,
+		Orientation:              fi.String(string(normalizeOrientation(e.Orientation))),
+		FallbackToOnDemand:       e.FallbackToOnDemand,
+		UtilizeReservedInstances: e.UtilizeReservedInstances,
+
+		OnDemand: e.OnDemandInstanceType,
+		Spot:     e.SpotInstanceTypes,
 	}
 
 	// Image.
@@ -1522,11 +1510,9 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 			}
 
 			if opts.Enabled != nil {
-				tf.Integration.terraformAutoScaler = &terraformAutoScaler{
-					Enabled:    opts.Enabled,
-					AutoConfig: fi.Bool(true),
-					Cooldown:   opts.Cooldown,
-				}
+				tf.Integration.Enabled = opts.Enabled
+				tf.Integration.AutoConfig = fi.Bool(true)
+				tf.Integration.Cooldown = opts.Cooldown
 
 				// Headroom.
 				if headroom := opts.Headroom; headroom != nil {
