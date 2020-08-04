@@ -4678,6 +4678,8 @@ func (c *EC2) CreateLaunchTemplateRequest(input *CreateLaunchTemplateInput) (req
 // Creates a launch template. A launch template contains the parameters to launch
 // an instance. When you launch an instance using RunInstances, you can specify
 // a launch template instead of providing the launch parameters in the request.
+// For more information, see Launching an instance from a launch template (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html)in
+// the Amazon Elastic Compute Cloud User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4756,6 +4758,9 @@ func (c *EC2) CreateLaunchTemplateVersionRequest(input *CreateLaunchTemplateVers
 //
 // Launch template versions are numbered in the order in which they are created.
 // You cannot specify, change, or replace the numbering of launch template versions.
+//
+// For more information, see Managing launch template versions (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#manage-launch-template-versions)in
+// the Amazon Elastic Compute Cloud User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -26018,6 +26023,8 @@ func (c *EC2) DisableVpcClassicLinkDnsSupportRequest(input *DisableVpcClassicLin
 // ClassicLink (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/vpc-classiclink.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
+// You must specify a VPC ID in the request.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -26334,7 +26341,7 @@ func (c *EC2) DisassociateRouteTableRequest(input *DisassociateRouteTableInput) 
 
 // DisassociateRouteTable API operation for Amazon Elastic Compute Cloud.
 //
-// Disassociates a subnet from a route table.
+// Disassociates a subnet or gateway from a route table.
 //
 // After you perform this action, the subnet no longer uses the routes in the
 // route table. Instead, it uses the routes in the VPC's main route table. For
@@ -27203,6 +27210,8 @@ func (c *EC2) EnableVpcClassicLinkDnsSupportRequest(input *EnableVpcClassicLinkD
 // IP address when addressed from a linked EC2-Classic instance. For more information,
 // see ClassicLink (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/vpc-classiclink.html)
 // in the Amazon Elastic Compute Cloud User Guide.
+//
+// You must specify a VPC ID in the request.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -45783,8 +45792,6 @@ type CreateFlowLogsInput struct {
 	//
 	// Specify the fields using the ${field-id} format, separated by spaces. For
 	// the AWS CLI, use single quotation marks (' ') to surround the parameter value.
-	//
-	// Only applicable to flow logs that are published to an Amazon S3 bucket.
 	LogFormat *string `type:"string"`
 
 	// The name of a new or existing CloudWatch Logs log group where Amazon EC2
@@ -46590,6 +46597,11 @@ type CreateLaunchTemplateOutput struct {
 
 	// Information about the launch template.
 	LaunchTemplate *LaunchTemplate `locationName:"launchTemplate" type:"structure"`
+
+	// If the launch template contains parameters or parameter combinations that
+	// are not valid, an error code and an error message are returned for each issue
+	// that's found.
+	Warning *ValidationWarning `locationName:"warning" type:"structure"`
 }
 
 // String returns the string representation
@@ -46605,6 +46617,12 @@ func (s CreateLaunchTemplateOutput) GoString() string {
 // SetLaunchTemplate sets the LaunchTemplate field's value.
 func (s *CreateLaunchTemplateOutput) SetLaunchTemplate(v *LaunchTemplate) *CreateLaunchTemplateOutput {
 	s.LaunchTemplate = v
+	return s
+}
+
+// SetWarning sets the Warning field's value.
+func (s *CreateLaunchTemplateOutput) SetWarning(v *ValidationWarning) *CreateLaunchTemplateOutput {
+	s.Warning = v
 	return s
 }
 
@@ -46725,6 +46743,11 @@ type CreateLaunchTemplateVersionOutput struct {
 
 	// Information about the launch template version.
 	LaunchTemplateVersion *LaunchTemplateVersion `locationName:"launchTemplateVersion" type:"structure"`
+
+	// If the new version of the launch template contains parameters or parameter
+	// combinations that are not valid, an error code and an error message are returned
+	// for each issue that's found.
+	Warning *ValidationWarning `locationName:"warning" type:"structure"`
 }
 
 // String returns the string representation
@@ -46740,6 +46763,12 @@ func (s CreateLaunchTemplateVersionOutput) GoString() string {
 // SetLaunchTemplateVersion sets the LaunchTemplateVersion field's value.
 func (s *CreateLaunchTemplateVersionOutput) SetLaunchTemplateVersion(v *LaunchTemplateVersion) *CreateLaunchTemplateVersionOutput {
 	s.LaunchTemplateVersion = v
+	return s
+}
+
+// SetWarning sets the Warning field's value.
+func (s *CreateLaunchTemplateVersionOutput) SetWarning(v *ValidationWarning) *CreateLaunchTemplateVersionOutput {
+	s.Warning = v
 	return s
 }
 
@@ -46859,6 +46888,9 @@ type CreateLocalGatewayRouteTableVpcAssociationInput struct {
 	// LocalGatewayRouteTableId is a required field
 	LocalGatewayRouteTableId *string `type:"string" required:"true"`
 
+	// The tags to assign to the local gateway route table VPC association.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The ID of the VPC.
 	//
 	// VpcId is a required field
@@ -46900,6 +46932,12 @@ func (s *CreateLocalGatewayRouteTableVpcAssociationInput) SetDryRun(v bool) *Cre
 // SetLocalGatewayRouteTableId sets the LocalGatewayRouteTableId field's value.
 func (s *CreateLocalGatewayRouteTableVpcAssociationInput) SetLocalGatewayRouteTableId(v string) *CreateLocalGatewayRouteTableVpcAssociationInput {
 	s.LocalGatewayRouteTableId = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateLocalGatewayRouteTableVpcAssociationInput) SetTagSpecifications(v []*TagSpecification) *CreateLocalGatewayRouteTableVpcAssociationInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -48378,6 +48416,9 @@ type CreateSubnetInput struct {
 	// for example us-west-2-lax-1a. For information about the Regions that support
 	// Local Zones, see Available Regions (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions)
 	// in the Amazon Elastic Compute Cloud User Guide.
+	//
+	// To create a subnet in an Outpost, set this value to the Availability Zone
+	// for the Outpost and specify the Outpost ARN.
 	AvailabilityZone *string `type:"string"`
 
 	// The AZ ID or the Local Zone ID of the subnet.
@@ -48398,7 +48439,8 @@ type CreateSubnetInput struct {
 	// must use a /64 prefix length.
 	Ipv6CidrBlock *string `type:"string"`
 
-	// The Amazon Resource Name (ARN) of the Outpost.
+	// The Amazon Resource Name (ARN) of the Outpost. If you specify an Outpost
+	// ARN, you must also specify the Availability Zone of the Outpost subnet.
 	OutpostArn *string `type:"string"`
 
 	// The ID of the VPC.
@@ -61439,6 +61481,18 @@ type DescribeLocalGatewayRouteTableVirtualInterfaceGroupAssociationsInput struct
 	DryRun *bool `type:"boolean"`
 
 	// One or more filters.
+	//
+	//    * local-gateway-id - The ID of a local gateway.
+	//
+	//    * local-gateway-route-table-id - The ID of the local gateway route table.
+	//
+	//    * local-gateway-route-table-virtual-interface-group-association-id - The
+	//    ID of the association.
+	//
+	//    * local-gateway-route-table-virtual-interface-group-id - The ID of the
+	//    virtual interface group.
+	//
+	//    * state - The state of the association.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
 	// The IDs of the associations.
@@ -61548,6 +61602,16 @@ type DescribeLocalGatewayRouteTableVpcAssociationsInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// One or more filters.
+	//
+	//    * local-gateway-id - The ID of a local gateway.
+	//
+	//    * local-gateway-route-table-id - The ID of the local gateway route table.
+	//
+	//    * local-gateway-route-table-vpc-association-id - The ID of the association.
+	//
+	//    * state - The state of the association.
+	//
+	//    * vpc-id - The ID of the VPC.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
 	// The IDs of the associations.
@@ -61657,6 +61721,14 @@ type DescribeLocalGatewayRouteTablesInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// One or more filters.
+	//
+	//    * local-gateway-id - The ID of a local gateway.
+	//
+	//    * local-gateway-route-table-id - The ID of a local gateway route table.
+	//
+	//    * outpost-arn - The Amazon Resource Name (ARN) of the Outpost.
+	//
+	//    * state - The state of the local gateway route table.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
 	// The IDs of the local gateway route tables.
@@ -61766,6 +61838,13 @@ type DescribeLocalGatewayVirtualInterfaceGroupsInput struct {
 	DryRun *bool `type:"boolean"`
 
 	// One or more filters.
+	//
+	//    * local-gateway-id - The ID of a local gateway.
+	//
+	//    * local-gateway-virtual-interface-id - The ID of the virtual interface.
+	//
+	//    * local-gateway-virtual-interface-group-id - The ID of the virtual interface
+	//    group.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
 	// The IDs of the virtual interface groups.
@@ -61986,7 +62065,21 @@ type DescribeLocalGatewaysInput struct {
 	// One or more filters.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The IDs of the local gateways.
+	// One or more filters.
+	//
+	//    * local-gateway-id - The ID of a local gateway.
+	//
+	//    * local-gateway-route-table-id - The ID of the local gateway route table.
+	//
+	//    * local-gateway-route-table-virtual-interface-group-association-id - The
+	//    ID of the association.
+	//
+	//    * local-gateway-route-table-virtual-interface-group-id - The ID of the
+	//    virtual interface group.
+	//
+	//    * outpost-arn - The Amazon Resource Name (ARN) of the Outpost.
+	//
+	//    * state - The state of the association.
 	LocalGatewayIds []*string `locationName:"LocalGatewayId" locationNameList:"item" type:"list"`
 
 	// The maximum number of results to return with a single call. To retrieve the
@@ -70661,7 +70754,7 @@ type DisassociateRouteTableInput struct {
 	_ struct{} `type:"structure"`
 
 	// The association ID representing the current association between the route
-	// table and subnet.
+	// table and subnet or gateway.
 	//
 	// AssociationId is a required field
 	AssociationId *string `locationName:"associationId" type:"string" required:"true"`
@@ -87531,8 +87624,20 @@ type ModifySubnetAttributeInput struct {
 	// or later of the Amazon EC2 API.
 	AssignIpv6AddressOnCreation *AttributeBooleanValue `type:"structure"`
 
-	// Specify true to indicate that ENIs attached to instances created in the specified
-	// subnet should be assigned a public IPv4 address.
+	// The customer-owned IPv4 address pool associated with the subnet.
+	//
+	// You must set this value when you specify true for MapCustomerOwnedIpOnLaunch.
+	CustomerOwnedIpv4Pool *string `type:"string"`
+
+	// Specify true to indicate that network interfaces attached to instances created
+	// in the specified subnet should be assigned a customer-owned IPv4 address.
+	//
+	// When this value is true, you must specify the customer-owned IP pool using
+	// CustomerOwnedIpv4Pool.
+	MapCustomerOwnedIpOnLaunch *AttributeBooleanValue `type:"structure"`
+
+	// Specify true to indicate that network interfaces attached to instances created
+	// in the specified subnet should be assigned a public IPv4 address.
 	MapPublicIpOnLaunch *AttributeBooleanValue `type:"structure"`
 
 	// The ID of the subnet.
@@ -87567,6 +87672,18 @@ func (s *ModifySubnetAttributeInput) Validate() error {
 // SetAssignIpv6AddressOnCreation sets the AssignIpv6AddressOnCreation field's value.
 func (s *ModifySubnetAttributeInput) SetAssignIpv6AddressOnCreation(v *AttributeBooleanValue) *ModifySubnetAttributeInput {
 	s.AssignIpv6AddressOnCreation = v
+	return s
+}
+
+// SetCustomerOwnedIpv4Pool sets the CustomerOwnedIpv4Pool field's value.
+func (s *ModifySubnetAttributeInput) SetCustomerOwnedIpv4Pool(v string) *ModifySubnetAttributeInput {
+	s.CustomerOwnedIpv4Pool = &v
+	return s
+}
+
+// SetMapCustomerOwnedIpOnLaunch sets the MapCustomerOwnedIpOnLaunch field's value.
+func (s *ModifySubnetAttributeInput) SetMapCustomerOwnedIpOnLaunch(v *AttributeBooleanValue) *ModifySubnetAttributeInput {
+	s.MapCustomerOwnedIpOnLaunch = v
 	return s
 }
 
@@ -103284,11 +103401,19 @@ type Subnet struct {
 	// The IPv4 CIDR block assigned to the subnet.
 	CidrBlock *string `locationName:"cidrBlock" type:"string"`
 
+	// The customer-owned IPv4 address pool associated with the subnet.
+	CustomerOwnedIpv4Pool *string `locationName:"customerOwnedIpv4Pool" type:"string"`
+
 	// Indicates whether this is the default subnet for the Availability Zone.
 	DefaultForAz *bool `locationName:"defaultForAz" type:"boolean"`
 
 	// Information about the IPv6 CIDR blocks associated with the subnet.
 	Ipv6CidrBlockAssociationSet []*SubnetIpv6CidrBlockAssociation `locationName:"ipv6CidrBlockAssociationSet" locationNameList:"item" type:"list"`
+
+	// Indicates whether a network interface created in this subnet (including a
+	// network interface created by RunInstances) receives a customer-owned IPv4
+	// address.
+	MapCustomerOwnedIpOnLaunch *bool `locationName:"mapCustomerOwnedIpOnLaunch" type:"boolean"`
 
 	// Indicates whether instances launched in this subnet receive a public IPv4
 	// address.
@@ -103356,6 +103481,12 @@ func (s *Subnet) SetCidrBlock(v string) *Subnet {
 	return s
 }
 
+// SetCustomerOwnedIpv4Pool sets the CustomerOwnedIpv4Pool field's value.
+func (s *Subnet) SetCustomerOwnedIpv4Pool(v string) *Subnet {
+	s.CustomerOwnedIpv4Pool = &v
+	return s
+}
+
 // SetDefaultForAz sets the DefaultForAz field's value.
 func (s *Subnet) SetDefaultForAz(v bool) *Subnet {
 	s.DefaultForAz = &v
@@ -103365,6 +103496,12 @@ func (s *Subnet) SetDefaultForAz(v bool) *Subnet {
 // SetIpv6CidrBlockAssociationSet sets the Ipv6CidrBlockAssociationSet field's value.
 func (s *Subnet) SetIpv6CidrBlockAssociationSet(v []*SubnetIpv6CidrBlockAssociation) *Subnet {
 	s.Ipv6CidrBlockAssociationSet = v
+	return s
+}
+
+// SetMapCustomerOwnedIpOnLaunch sets the MapCustomerOwnedIpOnLaunch field's value.
+func (s *Subnet) SetMapCustomerOwnedIpOnLaunch(v bool) *Subnet {
+	s.MapCustomerOwnedIpOnLaunch = &v
 	return s
 }
 
@@ -107223,6 +107360,70 @@ func (s *VCpuInfo) SetValidCores(v []*int64) *VCpuInfo {
 // SetValidThreadsPerCore sets the ValidThreadsPerCore field's value.
 func (s *VCpuInfo) SetValidThreadsPerCore(v []*int64) *VCpuInfo {
 	s.ValidThreadsPerCore = v
+	return s
+}
+
+// The error code and error message that is returned for a parameter or parameter
+// combination that is not valid when a new launch template or new version of
+// a launch template is created.
+type ValidationError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code that indicates why the parameter or parameter combination
+	// is not valid. For more information about error codes, see Error Codes (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html.html).
+	Code *string `locationName:"code" type:"string"`
+
+	// The error message that describes why the parameter or parameter combination
+	// is not valid. For more information about error messages, see Error Codes
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html.html).
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation
+func (s ValidationError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ValidationError) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *ValidationError) SetCode(v string) *ValidationError {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *ValidationError) SetMessage(v string) *ValidationError {
+	s.Message = &v
+	return s
+}
+
+// The error codes and error messages that are returned for the parameters or
+// parameter combinations that are not valid when a new launch template or new
+// version of a launch template is created.
+type ValidationWarning struct {
+	_ struct{} `type:"structure"`
+
+	// The error codes and error messages.
+	Errors []*ValidationError `locationName:"errorSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s ValidationWarning) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ValidationWarning) GoString() string {
+	return s.String()
+}
+
+// SetErrors sets the Errors field's value.
+func (s *ValidationWarning) SetErrors(v []*ValidationError) *ValidationWarning {
+	s.Errors = v
 	return s
 }
 
@@ -111280,6 +111481,33 @@ const (
 
 	// InstanceTypeInf124xlarge is a InstanceType enum value
 	InstanceTypeInf124xlarge = "inf1.24xlarge"
+
+	// InstanceTypeM6gMetal is a InstanceType enum value
+	InstanceTypeM6gMetal = "m6g.metal"
+
+	// InstanceTypeM6gMedium is a InstanceType enum value
+	InstanceTypeM6gMedium = "m6g.medium"
+
+	// InstanceTypeM6gLarge is a InstanceType enum value
+	InstanceTypeM6gLarge = "m6g.large"
+
+	// InstanceTypeM6gXlarge is a InstanceType enum value
+	InstanceTypeM6gXlarge = "m6g.xlarge"
+
+	// InstanceTypeM6g2xlarge is a InstanceType enum value
+	InstanceTypeM6g2xlarge = "m6g.2xlarge"
+
+	// InstanceTypeM6g4xlarge is a InstanceType enum value
+	InstanceTypeM6g4xlarge = "m6g.4xlarge"
+
+	// InstanceTypeM6g8xlarge is a InstanceType enum value
+	InstanceTypeM6g8xlarge = "m6g.8xlarge"
+
+	// InstanceTypeM6g12xlarge is a InstanceType enum value
+	InstanceTypeM6g12xlarge = "m6g.12xlarge"
+
+	// InstanceTypeM6g16xlarge is a InstanceType enum value
+	InstanceTypeM6g16xlarge = "m6g.16xlarge"
 )
 
 const (
