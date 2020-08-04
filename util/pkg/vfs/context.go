@@ -117,6 +117,9 @@ func (c *VFSContext) ReadFile(location string, options ...VFSOption) ([]byte, er
 			case "alicloud":
 				httpURL := "http://100.100.100.200/latest/meta-data/" + u.Path
 				return c.readHTTPLocation(httpURL, nil, opts)
+			case "openstack":
+				httpURL := "http://169.254.169.254/latest/meta-data/" + u.Path
+				return c.readHTTPLocation(httpURL, nil, opts)
 			default:
 				return nil, fmt.Errorf("unknown metadata type: %q in %q", u.Host, location)
 			}
