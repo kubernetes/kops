@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	// FileCredentialsProviderName provides a name of File provider.
+	// FileCredentialsProviderName specifies the name of the File provider.
 	FileCredentialsProviderName = "FileCredentialsProvider"
 
 	// FileCredentialsEnvVarFile specifies the name of the environment variable
@@ -25,13 +25,13 @@ const (
 )
 
 var (
-	// ErrFileCredentialsLoadFailed is emitted when the provider is unable to load
+	// ErrFileCredentialsLoadFailed is returned when the provider is unable to load
 	// credentials from the credentials file.
 	ErrFileCredentialsLoadFailed = errors.New("spotinst: failed to load credentials file")
 
-	// ErrFileCredentialsTokenNotFound is emitted when the loaded credentials
-	// do not contain a valid token.
-	ErrFileCredentialsTokenNotFound = errors.New("spotinst: credentials do not contain token")
+	// ErrFileCredentialsNotFound is returned when the loaded credentials
+	// are empty.
+	ErrFileCredentialsNotFound = errors.New("spotinst: credentials file or profile is empty")
 )
 
 // DefaultProfile returns the SDK's default profile name to use when loading
@@ -93,11 +93,10 @@ func (p *FileProvider) Retrieve() (Value, error) {
 	return value, nil
 }
 
-func (p *FileProvider) String() string {
-	return FileCredentialsProviderName
-}
+// String returns the string representation of the provider.
+func (p *FileProvider) String() string { return FileCredentialsProviderName }
 
-// profile returns the profile to use to read Spotinst credentials.
+// profile returns the profile to use to read the user credentials.
 func (p *FileProvider) profile() string {
 	if p.Profile == "" {
 		if p.Profile = os.Getenv(FileCredentialsEnvVarProfile); p.Profile != "" {
@@ -110,7 +109,7 @@ func (p *FileProvider) profile() string {
 	return p.Profile
 }
 
-// filename returns the filename to use to read Spotinst credentials.
+// filename returns the filename to use to read the user credentials.
 func (p *FileProvider) filename() string {
 	if p.Filename == "" {
 		if p.Filename = os.Getenv(FileCredentialsEnvVarFile); p.Filename != "" {
@@ -136,8 +135,8 @@ func (p *FileProvider) loadCredentials(profile, filename string) (Value, error) 
 		}
 	}
 
-	if len(value.Token) == 0 {
-		return value, ErrFileCredentialsTokenNotFound
+	if value.IsEmpty() {
+		return value, ErrFileCredentialsNotFound
 	}
 
 	return value, nil
@@ -151,13 +150,33 @@ func (p *FileProvider) loadCredentialsINI(profile, filename string) (Value, erro
 		return value, err
 	}
 
+	value, err = getCredentialsFromINIProfile(profile, config)
+	if err != nil {
+		return value, err
+	}
+
+	// Try to complete missing fields with default profile.
+	if profile != DefaultProfile() && !value.IsComplete() {
+		defaultValue, err := getCredentialsFromINIProfile(DefaultProfile(), config)
+		if err == nil {
+			value.Merge(defaultValue)
+		}
+	}
+
+	return value, nil
+}
+
+func getCredentialsFromINIProfile(profile string, config *ini.File) (Value, error) {
+	var value Value
+
 	section, err := config.GetSection(profile)
 	if err != nil {
 		return value, err
 	}
 
-	value.Token = section.Key("token").String()
-	value.Account = section.Key("account").String()
+	if err := section.StrictMapTo(&value); err != nil {
+		return value, err
+	}
 
 	return value, nil
 }
