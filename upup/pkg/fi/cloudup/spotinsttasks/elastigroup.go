@@ -96,7 +96,7 @@ type AutoScalerHeadroomOpts struct {
 }
 
 type AutoScalerDownOpts struct {
-	MaxPercentage     *int
+	MaxPercentage     *float64
 	EvaluationPeriods *int
 }
 
@@ -1349,8 +1349,8 @@ type terraformAutoScalerHeadroom struct {
 }
 
 type terraformAutoScalerDown struct {
-	MaxPercentage     *int `json:"max_scale_down_percentage,omitempty" cty:"max_scale_down_percentage"`
-	EvaluationPeriods *int `json:"evaluation_periods,omitempty" cty:"evaluation_periods"`
+	MaxPercentage     *float64 `json:"max_scale_down_percentage,omitempty" cty:"max_scale_down_percentage"`
+	EvaluationPeriods *int     `json:"evaluation_periods,omitempty" cty:"evaluation_periods"`
 }
 
 type terraformKV struct {
