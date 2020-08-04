@@ -104,7 +104,7 @@ var (
 	kops toolbox instance-selector my-spot-mig --usage-class spot --flexible
 
 	## Create a best-practices on-demand instance-group with custom vcpus and memory range filters
-	kops toolbox instance-selector ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2048 --memory-max 4096
+	kops toolbox instance-selector ondemand-ig --vcpus-min=2 --vcpus-max=4 --memory-min 2gb --memory-max 4gb
 	`))
 
 	toolboxInstanceSelectorShort = i18n.T(`Generate on-demand or spot instance-group specs by providing resource specs like vcpus and memory.`)
@@ -157,11 +157,11 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	// Raw Filters
 
 	commandline.IntMinMaxRangeFlags(vcpus, nil, nil, "Number of vcpus available to the instance type.")
-	commandline.ByteQuantityMinMaxRangeFlags(memory, nil, nil, "Amount of memory available (Example: 4 GiB)")
+	commandline.ByteQuantityMinMaxRangeFlags(memory, nil, nil, "Amount of memory available (Example: 4gb)")
 	commandline.RatioFlag(vcpusToMemoryRatio, nil, nil, "The ratio of vcpus to memory in MiB. (Example: 1:2)")
 	commandline.StringOptionsFlag(cpuArchitecture, nil, &cpuArchDefault, fmt.Sprintf("CPU architecture [%s]", strings.Join(cpuArchs, ", ")), append(cpuArchs, cpuArchitectureX8664))
 	commandline.IntMinMaxRangeFlags(gpus, nil, nil, "Total number of GPUs (Example: 4)")
-	commandline.ByteQuantityMinMaxRangeFlags(gpuMemoryTotal, nil, nil, "Number of GPUs' total memory (Example: 4 GiB)")
+	commandline.ByteQuantityMinMaxRangeFlags(gpuMemoryTotal, nil, nil, "Number of GPUs' total memory (Example: 4gb)")
 	commandline.StringOptionsFlag(placementGroupStrategy, nil, nil, fmt.Sprintf("Placement group strategy: [%s]", strings.Join(placementGroupStrategies, ", ")), placementGroupStrategies)
 	commandline.StringOptionsFlag(usageClass, nil, &usageClassDefault, fmt.Sprintf("Usage class: [%s]", strings.Join(usageClasses, ", ")), usageClasses)
 	commandline.BoolFlag(enaSupport, nil, nil, "Instance types where ENA is supported or required")
@@ -189,6 +189,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		return fmt.Errorf("Can only specify one instance group name at a time")
 	}
 	igName := args[0]
+	clusterName := rootCommand.ClusterName()
 
 	flags, err := processAndValidateFlags(commandline)
 	if err != nil {
@@ -229,7 +230,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		zones = append(zones, strings.ReplaceAll(igSubnet, "utility-", ""))
 	}
 
-	tags := map[string]string{"KubernetesCluster": cluster.ClusterName}
+	tags := map[string]string{"KubernetesCluster": clusterName}
 	cloud, err := awsup.NewAWSCloud(region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
@@ -268,14 +269,14 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		}
 		usageClass := *filters.UsageClass
 
-		ig := createInstanceGroup(igNameForRun, cluster.ClusterName, igSubnets)
+		ig := createInstanceGroup(igNameForRun, clusterName, igSubnets)
 		ig = decorateWithInstanceGroupSpecs(ig, instanceSelectorOpts)
 		ig, err = decorateWithMixedInstancesPolicy(ig, usageClass, selectedInstanceTypes)
 		if err != nil {
 			return err
 		}
 		if instanceSelectorOpts.ClusterAutoscaler {
-			ig = decorateWithClusterAutoscalerLabels(ig, cluster.ClusterName)
+			ig = decorateWithClusterAutoscalerLabels(ig, clusterName)
 		}
 		ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 		if err != nil {
@@ -327,7 +328,7 @@ func processAndValidateFlags(commandline *cli.CommandLineInterface) (map[string]
 		return nil, err
 	}
 
-	if err := commandline.ProcessRangeFilterFlags(); err != nil {
+	if err := commandline.ProcessFlags(); err != nil {
 		return nil, err
 	}
 
