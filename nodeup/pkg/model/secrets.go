@@ -21,6 +21,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"k8s.io/kops/util/pkg/vfs"
+
+	"k8s.io/kops/pkg/apis/kops"
+
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
@@ -98,6 +102,16 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// We also want to be able to reference it locally via https://127.0.0.1
 		alternateNames = append(alternateNames, "127.0.0.1")
+
+		if b.Cluster.Spec.CloudProvider == "openstack" {
+			if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+				instanceAddress, err := getInstanceAddress()
+				if err != nil {
+					return err
+				}
+				alternateNames = append(alternateNames, instanceAddress)
+			}
+		}
 
 		issueCert := &nodetasks.IssueCert{
 			Name:           "master",
@@ -196,4 +210,14 @@ func (b *SecretBuilder) allAuthTokens() (map[string]string, error) {
 		}
 	}
 	return tokens, nil
+}
+
+func getInstanceAddress() (string, error) {
+
+	addrBytes, err := vfs.Context.ReadFile("metadata://openstack/local-ipv4")
+	if err != nil {
+		return "", nil
+	}
+	return string(addrBytes), nil
+
 }
