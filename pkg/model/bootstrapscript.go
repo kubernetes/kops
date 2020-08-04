@@ -108,17 +108,30 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 		env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
 	}
 
-	// Pass in required credentials when using user-defined swift endpoint
-	if os.Getenv("OS_AUTH_URL") != "" {
-		for _, envVar := range []string{
-			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
-			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
-			"OS_DOMAIN_NAME", "OS_DOMAIN_ID",
+	osEnvs := []string{
+		"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+		"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+		"OS_DOMAIN_NAME", "OS_DOMAIN_ID",
+		"OS_AUTH_URL",
+		"OS_REGION_NAME",
+	}
+
+	if os.Getenv("OS_APPLICATION_CREDENTIAL_ID") != "" && os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET") != "" {
+		osEnvs = append(osEnvs,
+			"OS_APPLICATION_CREDENTIAL_ID",
+			"OS_APPLICATION_CREDENTIAL_SECRET",
+		)
+	} else {
+		klog.Warning("exporting username and password. Consider using application credentials instead.")
+		osEnvs = append(osEnvs,
 			"OS_USERNAME",
 			"OS_PASSWORD",
-			"OS_AUTH_URL",
-			"OS_REGION_NAME",
-		} {
+		)
+	}
+
+	// Pass in required credentials when using user-defined swift endpoint
+	if os.Getenv("OS_AUTH_URL") != "" {
+		for _, envVar := range osEnvs {
 			env[envVar] = fmt.Sprintf("'%s'", os.Getenv(envVar))
 		}
 	}
