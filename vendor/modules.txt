@@ -42,7 +42,7 @@ github.com/aokoli/goutils
 github.com/apparentlymart/go-textseg/textseg
 # github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
 github.com/armon/go-metrics
-# github.com/aws/aws-sdk-go v1.30.16
+# github.com/aws/aws-sdk-go v1.30.29
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr

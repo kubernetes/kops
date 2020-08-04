@@ -55,7 +55,7 @@ require (
 	github.com/Masterminds/sprig v2.17.1+incompatible
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
-	github.com/aws/aws-sdk-go v1.30.16
+	github.com/aws/aws-sdk-go v1.30.29
 	github.com/bazelbuild/bazel-gazelle v0.19.1
 	github.com/blang/semver v3.5.0+incompatible
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
