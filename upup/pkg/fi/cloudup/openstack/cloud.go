@@ -77,7 +77,7 @@ var readBackoff = wait.Backoff{
 	Duration: time.Second,
 	Factor:   1.5,
 	Jitter:   0.1,
-	Steps:    4,
+	Steps:    10,
 }
 
 // writeBackoff is the backoff strategy for openstack write retries.
@@ -651,38 +651,49 @@ func (c *openstackCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiI
 }
 
 func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
-	var ingresses []kops.ApiIngressStatus
 	if cluster.Spec.CloudConfig.Openstack.Loadbalancer != nil {
-		if cluster.Spec.MasterPublicName != "" {
-			// Note that this must match OpenstackModel lb name
-			klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
-			lbList, err := c.ListLBs(loadbalancers.ListOpts{
-				Name: cluster.Spec.MasterPublicName,
+		return getLoadBalancerIngressStatus(c, cluster)
+	} else {
+		return getIPIngressStatus(c, cluster)
+	}
+}
+
+func getLoadBalancerIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+	var ingresses []kops.ApiIngressStatus
+	if cluster.Spec.MasterPublicName != "" {
+		// Note that this must match OpenstackModel lb name
+		klog.V(2).Infof("Querying Openstack to find Loadbalancers for API (%q)", cluster.Name)
+		lbList, err := c.ListLBs(loadbalancers.ListOpts{
+			Name: cluster.Spec.MasterPublicName,
+		})
+		if err != nil {
+			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
+		}
+		for _, lb := range lbList {
+			// Must Find Floating IP related to this lb
+			fips, err := c.ListL3FloatingIPs(l3floatingip.ListOpts{
+				PortID: lb.VipPortID,
 			})
 			if err != nil {
-				return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list openstack loadbalancers: %v", err)
+				return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
 			}
-			for _, lb := range lbList {
-				// Must Find Floating IP related to this lb
-				fips, err := c.ListL3FloatingIPs(l3floatingip.ListOpts{
-					PortID: lb.VipPortID,
-				})
-				if err != nil {
-					return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list floating IP's: %v", err)
-				}
-				for _, fip := range fips {
-					if fip.PortID == lb.VipPortID {
-						ingresses = append(ingresses, kops.ApiIngressStatus{
-							IP: fip.FloatingIP,
-						})
-					}
+			for _, fip := range fips {
+				if fip.PortID == lb.VipPortID {
+					ingresses = append(ingresses, kops.ApiIngressStatus{
+						IP: fip.FloatingIP,
+					})
 				}
 			}
 		}
-	} else {
+	}
+	return ingresses, nil
+}
+
+func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []kops.ApiIngressStatus, err error) {
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 		instances, err := c.ListInstances(servers.ListOpts{})
 		if err != nil {
-			return ingresses, fmt.Errorf("GetApiIngressStatus: Failed to list master nodes: %v", err)
+			return false, fmt.Errorf("GetApiIngressStatus: Failed to list master nodes: %v", err)
 		}
 		for _, instance := range instances {
 			val, ok := instance.Metadata["k8s"]
@@ -690,21 +701,39 @@ func getApiIngressStatus(c OpenstackCloud, cluster *kops.Cluster) ([]kops.ApiIng
 			if ok && val == cluster.Name && ok2 {
 				role, success := kops.ParseInstanceGroupRole(val2, false)
 				if success && role == kops.InstanceGroupRoleMaster {
-					ips, err := c.ListServerFloatingIPs(instance.ID)
-					if err != nil {
-						return ingresses, err
-					}
-					for _, ip := range ips {
+					if cluster.Spec.Topology != nil && cluster.Spec.Topology.Masters == kops.TopologyPrivate {
+						ifName := instance.Metadata[TagKopsNetwork]
+						address, err := GetServerFixedIP(&instance, ifName)
+						if err != nil {
+							return false, fmt.Errorf("failed to get interface address: %v", err)
+						}
 						ingresses = append(ingresses, kops.ApiIngressStatus{
-							IP: fi.StringValue(ip),
+							IP: address,
 						})
+					} else {
+						ips, err := c.ListServerFloatingIPs(instance.ID)
+						if err != nil {
+							return false, err
+						}
+						for _, ip := range ips {
+							ingresses = append(ingresses, kops.ApiIngressStatus{
+								IP: fi.StringValue(ip),
+							})
+						}
 					}
 				}
 			}
 		}
+		return true, nil
+	})
+	if done {
+		return ingresses, nil
+	} else {
+		if err == nil {
+			err = wait.ErrWaitTimeout
+		}
+		return ingresses, err
 	}
-
-	return ingresses, nil
 }
 
 func isNotFound(err error) bool {

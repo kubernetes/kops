@@ -49,7 +49,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	osSpec := b.Cluster.Spec.CloudConfig.Openstack
+
 	needRouter := true
+	//Do not need router if there is no external network
+	if osSpec.Router == nil || osSpec.Router.ExternalNetwork == nil {
+		needRouter = false
+	}
 	routerName := strings.Replace(clusterName, ".", "-", -1)
 	for _, sp := range b.Cluster.Spec.Subnets {
 		// assumes that we do not need to create routers if we use existing subnets
@@ -68,8 +74,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle:  b.Lifecycle,
 			Tag:        s(clusterName),
 		}
-		if b.Cluster.Spec.CloudConfig.Openstack.Router != nil && b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers != nil {
-			dnsSplitted := strings.Split(fi.StringValue(b.Cluster.Spec.CloudConfig.Openstack.Router.DNSServers), ",")
+		if osSpec.Router != nil && osSpec.Router.DNSServers != nil {
+			dnsSplitted := strings.Split(fi.StringValue(osSpec.Router.DNSServers), ",")
 			dnsNameSrv := make([]*string, len(dnsSplitted))
 			for i, ns := range dnsSplitted {
 				dnsNameSrv[i] = fi.String(ns)
