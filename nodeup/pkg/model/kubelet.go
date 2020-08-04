@@ -108,7 +108,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if b.IsMaster || !b.UseBootstrapTokens() {
 			var kubeconfig fi.Resource
-			if b.IsMaster {
+			if b.IsMaster && (b.IsKubernetesGTE("1.19") || b.UseBootstrapTokens()) {
 				kubeconfig, err = b.buildMasterKubeletKubeconfig(c)
 			} else {
 				kubeconfig, err = b.BuildBootstrapKubeconfig("kubelet", c)
