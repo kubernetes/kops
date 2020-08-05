@@ -338,7 +338,7 @@ func (this *KVState) String() string {
 		return "nil"
 	}
 	keysForRecords := make([]string, 0, len(this.Records))
-	for k, _ := range this.Records {
+	for k := range this.Records {
 		keysForRecords = append(keysForRecords, k)
 	}
 	github_com_gogo_protobuf_sortkeys.Strings(keysForRecords)
