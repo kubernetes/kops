@@ -182,7 +182,7 @@ spec:
           mountPath: /kube-dns-config
 
       - name: dnsmasq
-        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.13
+        image: k8s.gcr.io/k8s-dns-dnsmasq-nanny-{{Arch}}:1.15.13
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
