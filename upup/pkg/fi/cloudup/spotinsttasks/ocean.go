@@ -982,25 +982,15 @@ type terraformOcean struct {
 	Tags                   []*terraformKV       `json:"tags,omitempty" cty:"tags"`
 	Lifecycle              *terraformLifecycle  `json:"lifecycle,omitempty" cty:"lifecycle"`
 
-	*terraformOceanCapacity
-	*terraformOceanStrategy
-	*terraformOceanLaunchSpec
-}
-
-type terraformOceanCapacity struct {
 	MinSize         *int64 `json:"min_size,omitempty" cty:"min_size"`
 	MaxSize         *int64 `json:"max_size,omitempty" cty:"max_size"`
 	DesiredCapacity *int64 `json:"desired_capacity,omitempty" cty:"desired_capacity"`
-}
 
-type terraformOceanStrategy struct {
 	SpotPercentage           *float64 `json:"spot_percentage,omitempty" cty:"spot_percentage"`
 	FallbackToOnDemand       *bool    `json:"fallback_to_ondemand,omitempty" cty:"fallback_to_ondemand"`
 	UtilizeReservedInstances *bool    `json:"utilize_reserved_instances,omitempty" cty:"utilize_reserved_instances"`
 	GracePeriod              *int64   `json:"grace_period,omitempty" cty:"grace_period"`
-}
 
-type terraformOceanLaunchSpec struct {
 	Monitoring               *bool                          `json:"monitoring,omitempty" cty:"monitoring"`
 	EBSOptimized             *bool                          `json:"ebs_optimized,omitempty" cty:"ebs_optimized"`
 	ImageID                  *string                        `json:"image_id,omitempty" cty:"image_id"`
@@ -1009,11 +999,9 @@ type terraformOceanLaunchSpec struct {
 	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
 	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
 	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
-	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
 	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
 	Taints                   []*corev1.Taint                `json:"taints,omitempty" cty:"taints"`
 	Labels                   []*terraformKV                 `json:"labels,omitempty" cty:"labels"`
-	Tags                     []*terraformKV                 `json:"tags,omitempty" cty:"tags"`
 	Headrooms                []*terraformAutoScalerHeadroom `json:"autoscale_headrooms,omitempty" cty:"autoscale_headrooms"`
 }
 
@@ -1024,18 +1012,15 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 	tf := &terraformOcean{
 		Name:   e.Name,
 		Region: fi.String(cloud.Region()),
-		terraformOceanCapacity: &terraformOceanCapacity{
-			DesiredCapacity: e.MinSize,
-			MinSize:         e.MinSize,
-			MaxSize:         e.MaxSize,
-		},
-		terraformOceanStrategy: &terraformOceanStrategy{
-			SpotPercentage:           e.SpotPercentage,
-			FallbackToOnDemand:       e.FallbackToOnDemand,
-			UtilizeReservedInstances: e.UtilizeReservedInstances,
-			GracePeriod:              e.GracePeriod,
-		},
-		terraformOceanLaunchSpec: &terraformOceanLaunchSpec{},
+
+		DesiredCapacity: e.MinSize,
+		MinSize:         e.MinSize,
+		MaxSize:         e.MaxSize,
+
+		SpotPercentage:           e.SpotPercentage,
+		FallbackToOnDemand:       e.FallbackToOnDemand,
+		UtilizeReservedInstances: e.UtilizeReservedInstances,
+		GracePeriod:              e.GracePeriod,
 	}
 
 	// Image.
