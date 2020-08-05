@@ -368,6 +368,11 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			udpPorts = append(udpPorts, 4789)
 		}
 
+		if b.Cluster.Spec.Networking.Cilium != nil {
+			udpPorts = append(udpPorts, 4789)
+			tcpPorts = append(udpPorts, 4240)
+		}
+
 		if b.Cluster.Spec.Networking.Weave != nil {
 			udpPorts = append(udpPorts, 6783)
 			tcpPorts = append(tcpPorts, 6783)
