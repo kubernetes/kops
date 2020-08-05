@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	// EnvCredentialsProviderName provides a name of Env provider.
+	// EnvCredentialsProviderName specifies the name of the Env provider.
 	EnvCredentialsProviderName = "EnvCredentialsProvider"
 
 	// EnvCredentialsVarToken specifies the name of the environment variable
@@ -18,9 +18,10 @@ const (
 	EnvCredentialsVarAccount = "SPOTINST_ACCOUNT"
 )
 
-// ErrEnvCredentialsTokenNotFound is returned when the Spotinst Token can't be
-// found in the process's environment.
-var ErrEnvCredentialsTokenNotFound = fmt.Errorf("spotinst: %s not found in environment", EnvCredentialsVarToken)
+// ErrEnvCredentialsNotFound is returned when no credentials can be found in the
+// process's environment.
+var ErrEnvCredentialsNotFound = fmt.Errorf("spotinst: %s and %s not found "+
+	"in environment", EnvCredentialsVarToken, EnvCredentialsVarAccount)
 
 // A EnvProvider retrieves credentials from the environment variables of the
 // running process.
@@ -38,21 +39,18 @@ func NewEnvCredentials() *Credentials {
 
 // Retrieve retrieves the keys from the environment.
 func (e *EnvProvider) Retrieve() (Value, error) {
-	token := os.Getenv(EnvCredentialsVarToken)
-	if token == "" {
-		return Value{ProviderName: EnvCredentialsProviderName},
-			ErrEnvCredentialsTokenNotFound
-	}
-
 	value := Value{
-		Token:        token,
+		Token:        os.Getenv(EnvCredentialsVarToken),
 		Account:      os.Getenv(EnvCredentialsVarAccount),
 		ProviderName: EnvCredentialsProviderName,
+	}
+
+	if value.IsEmpty() {
+		return value, ErrEnvCredentialsNotFound
 	}
 
 	return value, nil
 }
 
-func (e *EnvProvider) String() string {
-	return EnvCredentialsProviderName
-}
+// String returns the string representation of the provider.
+func (e *EnvProvider) String() string { return EnvCredentialsProviderName }

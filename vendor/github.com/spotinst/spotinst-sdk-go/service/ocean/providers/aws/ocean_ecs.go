@@ -156,7 +156,7 @@ type ECSAutoScalerResourceLimits struct {
 }
 
 type ECSAutoScalerDown struct {
-	MaxScaleDownPercentage *int `json:"maxScaleDownPercentage,omitempty"`
+	MaxScaleDownPercentage *float64 `json:"maxScaleDownPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -207,8 +207,14 @@ type ECSRollClusterOutput struct {
 }
 
 type ECSRoll struct {
-	ClusterID           *string `json:"clusterId,omitempty"`
-	BatchSizePercentage *int    `json:"batchSizePercentage,omitempty"`
+	ClusterID           *string  `json:"clusterId,omitempty"`
+	Comment             *string  `json:"comment,omitempty"`
+	BatchSizePercentage *int     `json:"batchSizePercentage,omitempty"`
+	LaunchSpecIDs       []string `json:"launchSpecIds,omitempty"`
+	InstanceIDs         []string `json:"instanceIds,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
 }
 
 type ECSRollClusterStatus struct {
@@ -912,9 +918,47 @@ func (o ECSAutoScalerDown) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *ECSAutoScalerDown) SetMaxScaleDownPercentage(v *int) *ECSAutoScalerDown {
+func (o *ECSAutoScalerDown) SetMaxScaleDownPercentage(v *float64) *ECSAutoScalerDown {
 	if o.MaxScaleDownPercentage = v; o.MaxScaleDownPercentage == nil {
 		o.nullFields = append(o.nullFields, "MaxScaleDownPercentage")
+	}
+	return o
+}
+
+// endregion
+
+// region ECSRoll
+
+func (o ECSRoll) MarshalJSON() ([]byte, error) {
+	type noMethod ECSRoll
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSRoll) SetComment(v *string) *ECSRoll {
+	if o.Comment = v; o.Comment == nil {
+		o.nullFields = append(o.nullFields, "Comment")
+	}
+	return o
+}
+
+func (o *ECSRoll) SetBatchSizePercentage(v *int) *ECSRoll {
+	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *ECSRoll) SetLaunchSpecIDs(v []string) *ECSRoll {
+	if o.LaunchSpecIDs = v; o.LaunchSpecIDs == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecIDs")
+	}
+	return o
+}
+
+func (o *ECSRoll) SetInstanceIDs(v []string) *ECSRoll {
+	if o.InstanceIDs = v; o.InstanceIDs == nil {
+		o.nullFields = append(o.nullFields, "InstanceIDs")
 	}
 	return o
 }

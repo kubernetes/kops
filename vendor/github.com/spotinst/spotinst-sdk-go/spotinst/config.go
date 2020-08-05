@@ -154,11 +154,11 @@ func (c *Config) WithLogger(logger log.Logger) *Config {
 // Merge merges the passed in configs into the existing config object.
 func (c *Config) Merge(cfgs ...*Config) {
 	for _, cfg := range cfgs {
-		mergeConfig(c, cfg)
+		mergeConfigs(c, cfg)
 	}
 }
 
-func mergeConfig(c1, c2 *Config) {
+func mergeConfigs(c1, c2 *Config) {
 	if c2 == nil {
 		return
 	}
