@@ -240,7 +240,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 
 		{
 			key := "kube-dns.addons.k8s.io"
-			version := "1.15.13-kops.1"
+			version := "1.15.13-kops.2"
 
 			{
 				location := key + "/k8s-1.6.yaml"
