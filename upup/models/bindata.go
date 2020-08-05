@@ -7196,6 +7196,13 @@ data:
              "ipam":{
                 "type":"host-local"
              }
+          },
+          {
+             "type": "portmap",
+             "capabilities": {
+                "snat": true,
+                "portMappings": true
+             }
           }
        ]
     }
