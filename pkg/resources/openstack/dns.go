@@ -45,10 +45,8 @@ func (os *clusterDiscoveryOS) ListDNSRecordsets() ([]*resources.Resource, error)
 		return nil, fmt.Errorf("failed to list dns zones: %s", err)
 	}
 
-	switch len(zs) {
-	case 0:
-	case 1:
-	default:
+	if len(zs) == 0 {
+		return nil, fmt.Errorf("dns zone not found: %s", os.clusterName)
 	}
 
 	z := zs[0]
