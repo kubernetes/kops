@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "legacy.go",
+        "methods.go",
+    ],
+    importmap = "k8s.io/kops/vendor/google.golang.org/protobuf/runtime/protoiface",
+    importpath = "google.golang.org/protobuf/runtime/protoiface",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/google.golang.org/protobuf/internal/pragma:go_default_library",
+        "//vendor/google.golang.org/protobuf/reflect/protoreflect:go_default_library",
+    ],
+)
