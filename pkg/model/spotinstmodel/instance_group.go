@@ -323,7 +323,7 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 	{
 		// Single instance group.
 		if len(igs) == 1 {
-			ig = igs[0]
+			ig = igs[0].DeepCopy()
 		}
 
 		// Multiple instance groups.
@@ -343,21 +343,24 @@ func (b *InstanceGroupModelBuilder) buildOcean(c *fi.ModelBuilderContext, igs ..
 									InstanceGroupLabelOceanDefaultLaunchSpec)
 							}
 
-							ig = g
+							ig = g.DeepCopy()
 							break
 						}
 					}
 				}
 			}
+
+			// No default instance group. Use the first one.
 			if ig == nil {
-				return fmt.Errorf("unable to detect default launch spec: "+
-					"please label the desired default instance group with `%s: \"true\"`",
-					InstanceGroupLabelOceanDefaultLaunchSpec)
+				ig = igs[0].DeepCopy()
 			}
 		}
 
 		klog.V(4).Infof("Detected default launch spec: %q", b.AutoscalingGroupName(ig))
 	}
+
+	// Rename the instance group to avoid duplicate tasks with same name.
+	ig.Name = fi.StringValue(ocean.Name)
 
 	// Image.
 	ocean.ImageID = fi.String(ig.Spec.Image)
