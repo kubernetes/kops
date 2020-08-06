@@ -72,8 +72,5 @@ func (m *MockClient) All() map[string]interface{} {
 	for id, kp := range m.keyPairs {
 		all[id] = kp
 	}
-	for id, s := range m.servers {
-		all[id] = s
-	}
 	return all
 }
