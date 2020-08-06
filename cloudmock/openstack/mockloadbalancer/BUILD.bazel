@@ -12,6 +12,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cloudmock/openstack:go_default_library",
+        "//vendor/github.com/google/uuid:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools:go_default_library",
