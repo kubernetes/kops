@@ -43,6 +43,9 @@ func (m *MockEC2) DescribeImagesWithContext(aws.Context, *ec2.DescribeImagesInpu
 }
 
 func (m *MockEC2) DescribeImages(request *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	klog.Infof("DescribeImages: %v", request)
 
 	var images []*ec2.Image
