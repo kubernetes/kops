@@ -9,6 +9,12 @@ k8s.io/kops/cloudmock/aws/mockelb
 k8s.io/kops/cloudmock/aws/mockelbv2
 k8s.io/kops/cloudmock/aws/mockiam
 k8s.io/kops/cloudmock/aws/mockroute53
+k8s.io/kops/cloudmock/openstack
+k8s.io/kops/cloudmock/openstack/mockblockstorage
+k8s.io/kops/cloudmock/openstack/mockcompute
+k8s.io/kops/cloudmock/openstack/mockdns
+k8s.io/kops/cloudmock/openstack/mockloadbalancer
+k8s.io/kops/cloudmock/openstack/mocknetworking
 k8s.io/kops/cmd/kops
 k8s.io/kops/cmd/kops/util
 k8s.io/kops/cmd/kops-controller
