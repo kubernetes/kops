@@ -35,5 +35,11 @@ if [[ "${DEST:0:6}" == "oss://" ]]; then
   exit 0
 fi
 
+if [[ "${DEST:0:5}" == "do://" ]]; then
+  DO_BUCKET=`echo "${DEST}" | cut -c 6-`
+  s3cmd put "*" ${SRC}/ s3://$DO_BUCKET --recursive ${PUBLIC:+--acl-public}
+  exit 0
+fi
+
 echo "Unsupported destination - supports s3://, gs:// and oss:// urls: ${DEST}"
 exit 1
