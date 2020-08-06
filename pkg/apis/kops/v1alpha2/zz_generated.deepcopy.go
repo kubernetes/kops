@@ -3327,6 +3327,11 @@ func (in *OpenstackBlockStorageConfig) DeepCopyInto(out *OpenstackBlockStorageCo
 		*out = new(string)
 		**out = **in
 	}
+	if in.CreateStorageClass != nil {
+		in, out := &in.CreateStorageClass, &out.CreateStorageClass
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

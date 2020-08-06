@@ -124,7 +124,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	// will return openstack external ccm image location for current kubernetes version
-	dest["OpenStackCCM"] = tf.OpenStackCCM
+	dest["OpenStackCCMTag"] = tf.OpenStackCCMTag
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
@@ -470,7 +470,7 @@ func (tf *TemplateFunctions) KopsSystemEnv() []corev1.EnvVar {
 
 // OpenStackCCM returns OpenStack external cloud controller manager current image
 // with tag specified to k8s version
-func (tf *TemplateFunctions) OpenStackCCM() string {
+func (tf *TemplateFunctions) OpenStackCCMTag() string {
 	var tag string
 	parsed, err := util.ParseKubernetesVersion(tf.Cluster.Spec.KubernetesVersion)
 	if err != nil {
@@ -484,5 +484,5 @@ func (tf *TemplateFunctions) OpenStackCCM() string {
 			tag = fmt.Sprintf("v%d.%d.0", parsed.Major, parsed.Minor)
 		}
 	}
-	return fmt.Sprintf("docker.io/k8scloudprovider/openstack-cloud-controller-manager:%s", tag)
+	return tag
 }
