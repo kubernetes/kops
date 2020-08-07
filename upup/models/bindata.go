@@ -351,9 +351,18 @@ spec:
         image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.1-debian-stretch" }}
         args:
         - server
+        {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
         - --config=/etc/aws-iam-authenticator/config.yaml
+        {{- end }}
+        {{- if or .Authentication.Aws.ClusterID (not (contains "MountedFile" .Authentication.Aws.BackendMode))}}
+        - --cluster-id={{ or .Authentication.Aws.ClusterID .MasterPublicName }}
+        {{- end }}
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
+        {{- if .Authentication.Aws.BackendMode }}
+        - --backend-mode={{ .Authentication.Aws.BackendMode }}
+        {{- end }}
+
         resources:
           requests:
             memory: {{ or .Authentication.Aws.MemoryRequest "20Mi" }}
@@ -368,16 +377,20 @@ spec:
             port: 21362
             scheme: HTTPS
         volumeMounts:
+        {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
         - name: config
           mountPath: /etc/aws-iam-authenticator/
+        {{- end }}
         - name: state
           mountPath: /var/aws-iam-authenticator/
         - name: output
           mountPath: /etc/kubernetes/aws-iam-authenticator/
       volumes:
+      {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
       - name: config
         configMap:
           name: aws-iam-authenticator
+      {{- end }}
       - name: output
         hostPath:
           path: /srv/kubernetes/aws-iam-authenticator/

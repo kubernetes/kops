@@ -303,6 +303,10 @@ type KopeioAuthenticationSpec struct {
 type AwsAuthenticationSpec struct {
 	// Image is the AWS IAM Authenticator docker image to use
 	Image string `json:"image,omitempty"`
+	// BackendMode is the AWS IAM Authenticator backend to use. Default MountedFile
+	BackendMode string `json:"backendMode,omitempty"`
+	// ClusterID identifies the cluster performing authentication to prevent certain replay attacks. Default master public DNS name
+	ClusterID string `json:"clusterID,omitempty"`
 	// MemoryRequest memory request of AWS IAM Authenticator container. Default 20Mi
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
 	// CPURequest CPU request of AWS IAM Authenticator container. Default 10m

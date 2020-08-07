@@ -1,0 +1,153 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: iamidentitymappings.iamauthenticator.k8s.aws
+spec:
+  group: iamauthenticator.k8s.aws
+  names:
+    categories:
+    - all
+    kind: IAMIdentityMapping
+    plural: iamidentitymappings
+    singular: iamidentitymapping
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            arn:
+              type: string
+            groups:
+              items:
+                type: string
+              type: array
+            username:
+              type: string
+          required:
+          - arn
+          - username
+  version: v1alpha1
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: aws-iam-authenticator
+rules:
+- apiGroups:
+  - iamauthenticator.k8s.aws
+  resources:
+  - iamidentitymappings
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - iamauthenticator.k8s.aws
+  resources:
+  - iamidentitymappings/status
+  verbs:
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+  - patch
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-iam-authenticator
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: aws-iam-authenticator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-iam-authenticator
+subjects:
+- kind: ServiceAccount
+  name: aws-iam-authenticator
+  namespace: kube-system
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: aws-iam-authenticator
+  name: aws-iam-authenticator
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: aws-iam-authenticator
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        k8s-app: aws-iam-authenticator
+    spec:
+      containers:
+      - args:
+        - server
+        - --cluster-id=api.minimal.example.com
+        - --state-dir=/var/aws-iam-authenticator
+        - --kubeconfig-pregenerated=true
+        - --backend-mode=CRD
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.1-debian-stretch
+        livenessProbe:
+          httpGet:
+            host: 127.0.0.1
+            path: /healthz
+            port: 21362
+            scheme: HTTPS
+        name: aws-iam-authenticator
+        resources:
+          limits:
+            cpu: 100m
+            memory: 20Mi
+          requests:
+            cpu: 10m
+            memory: 20Mi
+        volumeMounts:
+        - mountPath: /var/aws-iam-authenticator/
+          name: state
+        - mountPath: /etc/kubernetes/aws-iam-authenticator/
+          name: output
+      hostNetwork: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      priorityClassName: system-node-critical
+      serviceAccountName: aws-iam-authenticator
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - key: CriticalAddonsOnly
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /srv/kubernetes/aws-iam-authenticator/
+        name: output
+      - hostPath:
+          path: /srv/kubernetes/aws-iam-authenticator/
+        name: state
+  updateStrategy:
+    type: RollingUpdate
