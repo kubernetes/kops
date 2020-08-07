@@ -92,6 +92,8 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 			fmt.Sprintf("tenant-name=\"%s\"", tenantName),
 			fmt.Sprintf("domain-name=\"%s\"", os.Getenv("OS_DOMAIN_NAME")),
 			fmt.Sprintf("domain-id=\"%s\"", os.Getenv("OS_DOMAIN_ID")),
+			fmt.Sprintf("application-credential-id=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_ID")),
+			fmt.Sprintf("application-credential-secret=\"%s\"", os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")),
 			"",
 		)
 
