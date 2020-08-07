@@ -614,6 +614,8 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 			"OS_PASSWORD",
 			"OS_AUTH_URL",
 			"OS_REGION_NAME",
+			"OS_APPLICATION_CREDENTIAL_ID",
+			"OS_APPLICATION_CREDENTIAL_SECRET",
 		} {
 			buffer.WriteString(" --env '")
 			buffer.WriteString(envVar)
