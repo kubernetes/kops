@@ -368,6 +368,11 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 			udpPorts = append(udpPorts, 4789)
 		}
 
+		if b.Cluster.Spec.Networking.Cilium != nil {
+			udpPorts = append(udpPorts, 8472)
+			tcpPorts = append(tcpPorts, 4240)
+		}
+
 		if b.Cluster.Spec.Networking.Weave != nil {
 			udpPorts = append(udpPorts, 6783)
 			tcpPorts = append(tcpPorts, 6783)
@@ -402,30 +407,33 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.ModelBuilderContext, sgMap map[
 
 	for _, udpPort := range udpPorts {
 		udpRule := &openstacktasks.SecurityGroupRule{
-			Lifecycle:      b.Lifecycle,
-			Direction:      s(string(rules.DirIngress)),
-			Protocol:       s(string(rules.ProtocolUDP)),
-			EtherType:      s(string(rules.EtherType4)),
-			PortRangeMin:   i(udpPort),
-			PortRangeMax:   i(udpPort),
-			RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolUDP)),
+			EtherType:    s(string(rules.EtherType4)),
+			PortRangeMin: i(udpPort),
+			PortRangeMax: i(udpPort),
 		}
-		addDirectionalGroupRule(c, masterSG, nil, udpRule)
-		addDirectionalGroupRule(c, nodeSG, nil, udpRule)
+		addDirectionalGroupRule(c, masterSG, masterSG, udpRule)
+		addDirectionalGroupRule(c, nodeSG, masterSG, udpRule)
+		addDirectionalGroupRule(c, masterSG, nodeSG, udpRule)
+		addDirectionalGroupRule(c, nodeSG, nodeSG, udpRule)
 	}
 	for _, tcpPort := range tcpPorts {
 		tcpRule := &openstacktasks.SecurityGroupRule{
-			Lifecycle:      b.Lifecycle,
-			Direction:      s(string(rules.DirIngress)),
-			Protocol:       s(string(rules.ProtocolTCP)),
-			EtherType:      s(string(rules.EtherType4)),
-			PortRangeMin:   i(tcpPort),
-			PortRangeMax:   i(tcpPort),
-			RemoteIPPrefix: s(b.Cluster.Spec.NetworkCIDR),
+			Lifecycle:    b.Lifecycle,
+			Direction:    s(string(rules.DirIngress)),
+			Protocol:     s(string(rules.ProtocolTCP)),
+			EtherType:    s(string(rules.EtherType4)),
+			PortRangeMin: i(tcpPort),
+			PortRangeMax: i(tcpPort),
 		}
-		addDirectionalGroupRule(c, masterSG, nil, tcpRule)
-		addDirectionalGroupRule(c, nodeSG, nil, tcpRule)
+		addDirectionalGroupRule(c, masterSG, masterSG, tcpRule)
+		addDirectionalGroupRule(c, nodeSG, masterSG, tcpRule)
+		addDirectionalGroupRule(c, masterSG, nodeSG, tcpRule)
+		addDirectionalGroupRule(c, nodeSG, nodeSG, tcpRule)
 	}
+
 	for _, protocol := range protocols {
 		protocolRule := &openstacktasks.SecurityGroupRule{
 			Lifecycle: b.Lifecycle,
