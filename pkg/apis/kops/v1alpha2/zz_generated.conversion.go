@@ -1184,6 +1184,8 @@ func Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in *kops.Autho
 
 func autoConvert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(in *AwsAuthenticationSpec, out *kops.AwsAuthenticationSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	out.BackendMode = in.BackendMode
+	out.ClusterID = in.ClusterID
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.MemoryLimit = in.MemoryLimit
@@ -1198,6 +1200,8 @@ func Convert_v1alpha2_AwsAuthenticationSpec_To_kops_AwsAuthenticationSpec(in *Aw
 
 func autoConvert_kops_AwsAuthenticationSpec_To_v1alpha2_AwsAuthenticationSpec(in *kops.AwsAuthenticationSpec, out *AwsAuthenticationSpec, s conversion.Scope) error {
 	out.Image = in.Image
+	out.BackendMode = in.BackendMode
+	out.ClusterID = in.ClusterID
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.MemoryLimit = in.MemoryLimit
