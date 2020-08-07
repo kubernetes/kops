@@ -139,6 +139,10 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 		// fallback to config file
 		return oc.getCredentialFromFile()
 	}
+
+	if env.ApplicationCredentialID != "" && env.Username == "" {
+		env.Scope = &gophercloud.AuthScope{}
+	}
 	return env, nil
 
 }
