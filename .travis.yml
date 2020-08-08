@@ -6,7 +6,7 @@ os:
   - linux
   - osx
 dist: focal
-go: 1.15rc1
+go: 1.15rc2
 
 go_import_path: k8s.io/kops
 
@@ -19,6 +19,6 @@ jobs:
       arch: amd64
       os: linux
       dist: focal
-      go: 1.15rc1
+      go: 1.15rc2
       script:
         - GOPROXY=https://proxy.golang.org make travis-ci
