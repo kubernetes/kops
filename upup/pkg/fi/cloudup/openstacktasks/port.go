@@ -61,7 +61,7 @@ func (s *Port) CompareWithID() *string {
 	return s.ID
 }
 
-func NewPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
+func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, port *ports.Port, find *Port) (*Port, error) {
 	additionalSecurityGroupIDs := map[string]struct{}{}
 	if find != nil {
 		for _, sg := range find.AdditionalSecurityGroups {
@@ -131,7 +131,7 @@ func (s *Port) Find(context *fi.Context) (*Port, error) {
 	} else if len(rs) != 1 {
 		return nil, fmt.Errorf("found multiple ports with name: %s", fi.StringValue(s.Name))
 	}
-	return NewPortTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
+	return newPortTaskFromCloud(cloud, s.Lifecycle, &rs[0], s)
 }
 
 func (s *Port) Run(context *fi.Context) error {
