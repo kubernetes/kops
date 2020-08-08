@@ -115,7 +115,7 @@ func (s *Subnet) Run(context *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(s, context)
 }
 
-func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
+func (*Subnet) CheckChanges(a, e, changes *Subnet) error {
 	if a == nil {
 		if e.Name == nil {
 			return fi.RequiredField("Name")
@@ -130,9 +130,6 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if changes.DNSServers != nil {
-			return fi.CannotChangeField("DNSServers")
-		}
 		if changes.Network != nil {
 			return fi.CannotChangeField("Network")
 		}
@@ -143,7 +140,7 @@ func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	return nil
 }
 
-func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Subnet) error {
+func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Subnet) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Subnet with name:%q", fi.StringValue(e.Name))
 
@@ -176,9 +173,27 @@ func (_ *Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 		klog.V(2).Infof("Creating a new Openstack subnet, id=%s", v.ID)
 		return nil
 	} else {
-		err := t.Cloud.AppendTag(openstack.ResourceTypeSubnet, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
-		if err != nil {
-			return fmt.Errorf("Error appending tag to subnet: %v", err)
+		if changes.Tag != nil {
+			err := t.Cloud.AppendTag(openstack.ResourceTypeSubnet, fi.StringValue(a.ID), fi.StringValue(changes.Tag))
+			if err != nil {
+				return fmt.Errorf("error appending tag to subnet: %v", err)
+			}
+		}
+		client := t.Cloud.(openstack.OpenstackCloud).NetworkingClient()
+
+		opt := subnets.UpdateOpts{}
+
+		if changes.DNSServers != nil {
+			dnsNameSrv := make([]string, len(e.DNSServers))
+			for i, ns := range e.DNSServers {
+				dnsNameSrv[i] = fi.StringValue(ns)
+			}
+			opt.DNSNameservers = &dnsNameSrv
+		}
+		result := subnets.Update(client, fi.StringValue(a.ID), opt)
+		klog.Infof("Updated %v", opt)
+		if result.Err != nil {
+			return fmt.Errorf("error updating subnet %v: %v", a.ID, result.Err)
 		}
 	}
 	e.ID = a.ID
