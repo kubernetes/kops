@@ -23,8 +23,8 @@ type Authenticator interface {
 
 // VerifyResult is the result of a successfully verified request.
 type VerifyResult struct {
-	// Instance is the hostname of the instance.
-	Instance string
+	// Nodename is the name that this node is authorized to use.
+	NodeName string
 }
 
 // Verifier verifies authentication credentials for requests.
