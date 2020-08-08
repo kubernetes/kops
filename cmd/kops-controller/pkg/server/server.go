@@ -29,7 +29,6 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/gorilla/mux"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -59,7 +58,7 @@ func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 		server:   server,
 		verifier: verifier,
 	}
-	r := mux.NewRouter()
+	r := http.NewServeMux()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
 	server.Handler = recovery(r)
 
@@ -139,7 +138,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(resp)
-	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.Instance)
+	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.NodeName)
 }
 
 func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, validHours uint32) (string, error) {
@@ -162,7 +161,7 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 	switch name {
 	case "kubelet":
 		issueReq.Subject = pkix.Name{
-			CommonName:   fmt.Sprintf("system:node:%s", id.Instance),
+			CommonName:   fmt.Sprintf("system:node:%s", id.NodeName),
 			Organization: []string{rbac.NodesGroup},
 		}
 	default:

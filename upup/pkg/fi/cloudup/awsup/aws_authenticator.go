@@ -51,7 +51,9 @@ func (a awsAuthenticator) CreateToken(body []byte) (string, error) {
 
 	stsRequest, _ := a.sts.GetCallerIdentityRequest(nil)
 
+	// Ensure the signature is only valid for this particular body content.
 	stsRequest.HTTPRequest.Header.Add("X-Kops-Request-SHA", base64.RawStdEncoding.EncodeToString(sha[:]))
+
 	err := stsRequest.Sign()
 	if err != nil {
 		return "", err
