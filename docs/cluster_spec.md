@@ -647,25 +647,27 @@ For more information, see the [feature gate documentation](https://kubernetes.io
 
 ###  Compute Resources Reservation
 
+In a scenario where node has 32Gi of memory, 16 CPUs and 100Gi of ephemeral storage, resource reservation could be set as in the following example:
+
 ```yaml
 spec:
   kubelet:
     kubeReserved:
-        cpu: "100m"
-        memory: "100Mi"
+        cpu: "1"
+        memory: "2Gi"
         ephemeral-storage: "1Gi"
     kubeReservedCgroup: "/kube-reserved"
     kubeletCgroups: "/kube-reserved"
     runtimeCgroups: "/kube-reserved"
     systemReserved:
-        cpu: "100m"
-        memory: "100Mi"
+        cpu: "500m"
+        memory: "1Gi"
         ephemeral-storage: "1Gi"
     systemReservedCgroup: "/system-reserved"
     enforceNodeAllocatable: "pods,system-reserved,kube-reserved"
 ```
 
-Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --kubelet-cgroups=/kube-reserved --runtime-cgroups=/kube-reserved --system-reserved=cpu=100m,memory=100Mi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
+The above will result in the flags `--kube-reserved=cpu=1,memory=2Gi,ephemeral-storage=1Gi --kube-reserved-cgroup=/kube-reserved --kubelet-cgroups=/kube-reserved --runtime-cgroups=/kube-reserved --system-reserved=cpu=500m,memory=1Gi,ephemeral-storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved` being added to the kubelet.
 
 Learn more about reserving compute resources [here](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/) and [here](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/).
 
