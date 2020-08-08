@@ -45,6 +45,8 @@ const (
 	ILBFinalizerV1 = "gke.networking.io/l4-ilb-v1"
 	// ILBFinalizerV2 is the finalizer used by newer controllers that implement Internal LoadBalancer services.
 	ILBFinalizerV2 = "gke.networking.io/l4-ilb-v2"
+	// maxInstancesPerInstanceGroup defines maximum number of VMs per InstanceGroup.
+	maxInstancesPerInstanceGroup = 1000
 )
 
 func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v1.Service, existingFwdRule *compute.ForwardingRule, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
@@ -61,6 +63,9 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 			"Skipped ensureInternalLoadBalancer as service contains '%s' finalizer.", ILBFinalizerV2)
 		return nil, cloudprovider.ImplementedElsewhere
 	}
+
+	loadBalancerName := g.GetLoadBalancerName(context.TODO(), clusterName, svc)
+	klog.V(2).Infof("ensureInternalLoadBalancer(%v): Attaching %q finalizer", loadBalancerName, ILBFinalizerV1)
 	if err := addFinalizer(svc, g.client.CoreV1(), ILBFinalizerV1); err != nil {
 		klog.Errorf("Failed to attach finalizer '%s' on service %s/%s - %v", ILBFinalizerV1, svc.Namespace, svc.Name, err)
 		return nil, err
@@ -84,7 +89,6 @@ func (g *Cloud) ensureInternalLoadBalancer(clusterName, clusterID string, svc *v
 		}
 	}
 
-	loadBalancerName := g.GetLoadBalancerName(context.TODO(), clusterName, svc)
 	sharedBackend := shareBackendService(svc)
 	backendServiceName := makeBackendServiceName(loadBalancerName, clusterID, sharedBackend, scheme, protocol, svc.Spec.SessionAffinity)
 	backendServiceLink := g.getBackendServiceLink(backendServiceName)
@@ -312,10 +316,12 @@ func (g *Cloud) ensureInternalLoadBalancerDeleted(clusterName, clusterID string,
 
 	// Try deleting instance groups - expect ResourceInuse error if needed by other LBs
 	igName := makeInstanceGroupName(clusterID)
+	klog.V(2).Infof("ensureInternalLoadBalancerDeleted(%v): Attempting delete of instanceGroup %v", loadBalancerName, igName)
 	if err := g.ensureInternalInstanceGroupsDeleted(igName); err != nil && !isInUsedByError(err) {
 		return err
 	}
 
+	klog.V(2).Infof("ensureInternalLoadBalancerDeleted(%v): Removing %q finalizer", loadBalancerName, ILBFinalizerV1)
 	if err := removeFinalizer(svc, g.client.CoreV1(), ILBFinalizerV1); err != nil {
 		klog.Errorf("Failed to remove finalizer '%s' on service %s/%s - %v", ILBFinalizerV1, svc.Namespace, svc.Name, err)
 		return err
@@ -510,6 +516,17 @@ func (g *Cloud) ensureInternalInstanceGroup(name, zone string, nodes []*v1.Node)
 	kubeNodes := sets.NewString()
 	for _, n := range nodes {
 		kubeNodes.Insert(n.Name)
+	}
+
+	// Individual InstanceGroup has a limit for 1000 instances in it.
+	// As a result, it's not possible to add more to it.
+	// Given that the long-term fix (AlphaFeatureILBSubsets) is already in-progress,
+	// to stop the bleeding we now simply cut down the contents to first 1000
+	// instances in the alphabetical order. Since there is a limitation for
+	// 250 backend VMs for ILB, this isn't making things worse.
+	if len(kubeNodes) > maxInstancesPerInstanceGroup {
+		klog.Warningf("Limiting number of VMs for InstanceGroup %s to %d", name, maxInstancesPerInstanceGroup)
+		kubeNodes = sets.NewString(kubeNodes.List()[:maxInstancesPerInstanceGroup]...)
 	}
 
 	gceNodes := sets.NewString()
