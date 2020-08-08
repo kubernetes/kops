@@ -139,6 +139,7 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, e
 		return nil, fmt.Errorf("unmarshalling authorization token: %v", err)
 	}
 
+	// Verify the token has signed the body content.
 	sha := sha256.Sum256(body)
 	if stsRequest.HTTPRequest.Header.Get("X-Kops-Request-SHA") != base64.RawStdEncoding.EncodeToString(sha[:]) {
 		return nil, fmt.Errorf("incorrect SHA")
@@ -150,7 +151,6 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, e
 		return nil, fmt.Errorf("incorrect content-length")
 	}
 
-	// TODO - implement retry?
 	response, err := a.client.Do(stsRequest.HTTPRequest)
 	if err != nil {
 		return nil, fmt.Errorf("sending STS request: %v", err)
@@ -225,6 +225,6 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, e
 	}
 
 	return &fi.VerifyResult{
-		Instance: aws.StringValue(instances.Reservations[0].Instances[0].PrivateDnsName),
+		NodeName: aws.StringValue(instances.Reservations[0].Instances[0].PrivateDnsName),
 	}, nil
 }
