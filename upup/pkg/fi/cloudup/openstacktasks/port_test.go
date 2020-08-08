@@ -207,7 +207,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
-			actual, err := NewPortTaskFromCloud(testCase.cloud, &testCase.lifecycle, testCase.cloudPort, testCase.foundPort)
+			actual, err := newPortTaskFromCloud(testCase.cloud, &testCase.lifecycle, testCase.cloudPort, testCase.foundPort)
 
 			if !reflect.DeepEqual(err, testCase.expectedError) {
 				t.Errorf("Error differs:\n%v\n\tinstead of\n%v", err, testCase.expectedError)
