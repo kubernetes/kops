@@ -1,6 +1,5 @@
 ./addons/cluster-autoscaler/cluster-autoscaler.sh
 ./addons/prometheus-operator/sync-repo.sh
-./docs/calico_cidr_migration/create_migration_manifest.sh
 ./hack/common.sh
 ./hack/dev-build.sh
 ./hack/make-apimachinery.sh
