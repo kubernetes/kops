@@ -46,6 +46,7 @@ type AWSVerifierOptions struct {
 
 type awsVerifier struct {
 	accountId string
+	partition string
 	opt       AWSVerifierOptions
 
 	ec2    *ec2.EC2
@@ -68,6 +69,8 @@ func NewAWSVerifier(opt *AWSVerifierOptions) (fi.Verifier, error) {
 		return nil, err
 	}
 
+	partition := strings.Split(aws.StringValue(identity.Arn), ":")[1]
+
 	metadata := ec2metadata.New(sess, config)
 	region, err := metadata.Region()
 	if err != nil {
@@ -78,6 +81,7 @@ func NewAWSVerifier(opt *AWSVerifierOptions) (fi.Verifier, error) {
 
 	return &awsVerifier{
 		accountId: aws.StringValue(identity.Account),
+		partition: partition,
 		opt:       *opt,
 		ec2:       ec2Client,
 		sts:       stsClient,
@@ -185,7 +189,9 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, e
 	if parts[0] != "arn" {
 		return nil, fmt.Errorf("arn %q doesn't start with \"arn:\"", arn)
 	}
-	// parts[1] is partition
+	if parts[1] != a.partition {
+		return nil, fmt.Errorf("arn %q not in partion %q", arn, a.partition)
+	}
 	if parts[2] != "iam" && parts[2] != "sts" {
 		return nil, fmt.Errorf("arn %q has unrecognized service", arn)
 	}
