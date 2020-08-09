@@ -864,6 +864,9 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 							},
 						},
 					},
+					Topology: &kops.TopologySpec{
+						Masters: kops.TopologyPrivate,
+					},
 					Subnets: []kops.ClusterSubnetSpec{
 						{
 							Name:   "subnet-a",

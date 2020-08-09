@@ -146,8 +146,8 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 		}
 		c.AddTask(instanceTask)
 
-		// Associate a floating IP to the master and bastion always if we have external network in router
-		// associate it to a node if bastion is not used
+		// Associate a floating IP to the instances if we have external network in router
+		// and respective topology is "public"
 		if b.Cluster.Spec.CloudConfig.Openstack != nil && b.Cluster.Spec.CloudConfig.Openstack.Router != nil {
 			if ig.Spec.AssociatePublicIP != nil && !fi.BoolValue(ig.Spec.AssociatePublicIP) {
 				continue
@@ -161,7 +161,8 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 				c.AddTask(t)
 				instanceTask.FloatingIP = t
 			case kops.InstanceGroupRoleMaster:
-				if b.Cluster.Spec.CloudConfig.Openstack.Loadbalancer == nil {
+
+				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.Masters != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,
@@ -171,7 +172,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 					instanceTask.FloatingIP = t
 				}
 			default:
-				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.Nodes == "public" {
+				if b.Cluster.Spec.Topology == nil || b.Cluster.Spec.Topology.Nodes != kops.TopologyPrivate {
 					t := &openstacktasks.FloatingIP{
 						Name:      fi.String(fmt.Sprintf("%s-%s", "fip", *instanceTask.Name)),
 						Lifecycle: b.Lifecycle,
