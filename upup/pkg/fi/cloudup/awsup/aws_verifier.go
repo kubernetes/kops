@@ -32,7 +32,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -42,6 +41,8 @@ import (
 type AWSVerifierOptions struct {
 	// NodesRoles are the IAM roles that worker nodes are permitted to have.
 	NodesRoles []string `json:"nodesRoles"`
+	// Region is the AWS region of the cluster.
+	Region string
 }
 
 type awsVerifier struct {
@@ -57,7 +58,7 @@ type awsVerifier struct {
 var _ fi.Verifier = &awsVerifier{}
 
 func NewAWSVerifier(opt *AWSVerifierOptions) (fi.Verifier, error) {
-	config := aws.NewConfig().WithCredentialsChainVerboseErrors(true)
+	config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(opt.Region)
 	sess, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
@@ -71,13 +72,7 @@ func NewAWSVerifier(opt *AWSVerifierOptions) (fi.Verifier, error) {
 
 	partition := strings.Split(aws.StringValue(identity.Arn), ":")[1]
 
-	metadata := ec2metadata.New(sess, config)
-	region, err := metadata.Region()
-	if err != nil {
-		return nil, fmt.Errorf("error querying ec2 metadata service (for region): %v", err)
-	}
-
-	ec2Client := ec2.New(sess, config.WithRegion(region))
+	ec2Client := ec2.New(sess, config)
 
 	return &awsVerifier{
 		accountId: aws.StringValue(identity.Account),
