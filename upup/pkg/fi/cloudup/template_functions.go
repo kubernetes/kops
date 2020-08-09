@@ -406,6 +406,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			}
 			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{
 				NodesRoles: nodesRoles.List(),
+				Region:     tf.Region,
 			}
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.CloudProvider)
