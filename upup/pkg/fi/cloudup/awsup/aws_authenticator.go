@@ -35,8 +35,8 @@ type awsAuthenticator struct {
 
 var _ fi.Authenticator = &awsAuthenticator{}
 
-func NewAWSAuthenticator() (fi.Authenticator, error) {
-	config := aws.NewConfig().WithCredentialsChainVerboseErrors(true)
+func NewAWSAuthenticator(region string) (fi.Authenticator, error) {
+	config := aws.NewConfig().WithCredentialsChainVerboseErrors(true).WithRegion(region)
 	sess, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
