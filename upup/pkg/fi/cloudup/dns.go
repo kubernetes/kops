@@ -73,7 +73,7 @@ func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 	}
 
 	if len(matches) > 1 {
-		klog.Infof("Found multiple DNS Zones matching %q, please set the cluster's Spec.DNSZone to the desired Zone ID:", cluster.Spec.DNSZone)
+		klog.Infof("Found multiple DNS Zones matching %q, please set the cluster's spec.dnsZone to the desired Zone ID:", cluster.Spec.DNSZone)
 		for _, zone := range zones {
 			id := zone.ID()
 			klog.Infof("\t%s", id)
