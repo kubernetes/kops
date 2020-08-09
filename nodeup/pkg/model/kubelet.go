@@ -513,6 +513,10 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.NodeLabels = nil
 	}
 
+	if c.AuthorizationMode == "" && b.Cluster.IsKubernetesGTE("1.19") {
+		c.AuthorizationMode = "Webhook"
+	}
+
 	return &c, nil
 }
 
