@@ -1,8 +1,8 @@
 ## Running in a shared VPC
 
-When launching into a shared VPC, the VPC & the Internet Gateway will be reused. If you are not using an internet gateway
- or NAT gateway you can tell _kops_ to ignore egress. By default we create a new subnet per zone, and a new route table, 
- but you can also use a shared subnet (see [below](#shared-subnets)).
+When launching into a shared VPC, kops will reuse the VPC and Internet Gateway. If you are not using an Internet Gateway
+ or NAT Gateway you can tell kops to ignore egress. By default, kops creates a new subnet per zone and a new route table, 
+ but you can instead use a shared subnet (see [below](#shared-subnets)).
 
 1. Use `kops create cluster` with the `--vpc` argument for your existing VPC:
 
@@ -32,17 +32,17 @@ When launching into a shared VPC, the VPC & the Internet Gateway will be reused.
       zone: us-east-1b
   ```
 
-  Verify that `networkCIDR` & `networkID` match your VPC CIDR & ID. 
-  You likely need to set the CIDR on each of the Zones, because subnets in a VPC cannot overlap.
+  Verify that `networkCIDR` and `networkID` match your VPC CIDR and ID. 
+  You probably need to set the CIDR on each of the Zones, as subnets in a VPC cannot overlap.
 
 3. You can then run `kops update cluster` in preview mode (without `--yes`). 
-  You don't need any arguments, because they're all in the cluster spec:
+  You don't need any arguments because they're all in the cluster spec:
 
   ```shell
   kops update cluster ${CLUSTER_NAME}
   ```
 
-  Review the changes to make sure they are OK - the Kubernetes settings might 
+  Review the changes to make sure they are OK—the Kubernetes settings might 
    not be ones you want on a shared VPC (in which case, open an issue!)
 
   **Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`. kops will detect the required change,
@@ -55,20 +55,17 @@ When launching into a shared VPC, the VPC & the Internet Gateway will be reused.
   kops update cluster ${CLUSTER_NAME} --yes
   ```
 
-  This will add an additional Tag to your aws vpc resource. This tag
+  This will add an additional tag to your AWS VPC resource. This tag
   will be removed automatically if you delete your kops cluster.
 
   ```
   "kubernetes.io/cluster/<cluster-name>" = "shared"
   ```
 
-  **Prior to kops 1.8 this Tag Key was `KubernetesCluster` which is obsolete and should
-  not be used anymore as it only supports one cluster.**
-
 
 ### VPC with multiple CIDRs
 
-AWS now allows you to add more CIDRs to a VPC, the param `additionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
+AWS allows you to add more CIDRs to a VPC. The parameter `additionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
 
 ```yaml
 metadata:
@@ -97,9 +94,9 @@ spec:
 
 ### Shared Subnets
 
-`kops` can create a cluster in shared subnets in both public and private network [topologies](topology.md). Doing so is not recommended unless you are using [external networking](networking.md#supported-cni-networking)
+`kops` can create a cluster in shared subnets in both public and private network [topologies](topology.md).
 
-1. Use kops create cluster with the `--subnets` argument for your existing subnets:
+1. Use `kops create cluster` with the `--subnets` argument for your existing subnets:
 
   ```shell
   export KOPS_STATE_STORE=s3://<somes3bucket>
@@ -161,12 +158,10 @@ spec:
   These tags are important, for example, your services will be unable to create public or private Elastic Load Balancers (ELBs) if the respective `elb` or `internal-elb` tags are missing.
   
   If you would like to manage these tags externally then specify `--disable-subnet-tags` during your cluster creation. This will prevent kops from tagging existing subnets and allow some custom control, such as separate subnets for internal ELBs.
-  
-  Prior to kops 1.8 `KubernetesCluster` tag was used instead of `kubernetes.io/cluster/<cluster-name>`. This lead to several problems if there were more than one Kubernetes Cluster in a subnet. After you upgraded to kops 1.8 ensure the `KubernetesCluster` Tag is removed from subnets otherwise `kubernetes.io/cluster/<clustername>` won't have any effect!
 
 ### Shared NAT Egress
 
-On AWS in private [topology](topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+On AWS in private [topology](topology.md), kops creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
 
 If you don't want to use NAT Gateways but have setup [EC2 NAT Instances](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html) in your VPC that you can share, it's possible to specify the IDs of said instances and have `kops`/`kubernetes` use them.
 
@@ -195,18 +190,18 @@ spec:
 
 Please note:
 
-* You must specify pre-create subnets for all the subnets, or for none of them.
-* kops won't alter your existing subnets.  Therefore they must be correctly set up with route tables etc.  The
-  Public or Utility subnets should have public IPs and an internet gateway configured as their default route
-  in their route table.  Private subnets should not have public IPs, and will typically have a NAT gateway
+* You must specify pre-created subnets for either all of the subnets or none of them.
+* kops won't alter your existing subnets. They must be correctly set up with route tables, etc.  The
+  Public or Utility subnets should have public IPs and an Internet Gateway configured as their default route
+  in their route table.  Private subnets should not have public IPs and will typically have a NAT Gateway
   configured as their default route.
-* kops won't create a route-table at all if we're not creating subnets.
+* kops won't create a route-table at all if it's not creating subnets.
 * In the example above the first subnet is using a shared NAT Gateway while the
   second one is using a shared NAT Instance
 
 ### Externally Managed Egress
 
-If you are using an unsupported egress configuration in your VPC, _kops_ can be told to ignore egress by using a configuration like:
+If you are using an unsupported egress configuration in your VPC, kops can be told to ignore egress by using a configuration such as:
 
 ```yaml
 spec:
@@ -228,7 +223,7 @@ spec:
     egress: External
 ```
 
-This tells _kops_ that egress is being managed externally. This is preferable when using virtual private gateways 
+This tells kops that egress is managed externally. This is preferable when using virtual private gateways 
 (currently unsupported) or using other configurations to handle egress routing. 
 
 ### Proxy VPC Egress
