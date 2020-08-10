@@ -1043,7 +1043,6 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error {
 
 	var baseURL string
-	var err error
 	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
 		baseURL = c.Cluster.Spec.KubernetesVersion
 	} else {
@@ -1101,17 +1100,17 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		}
 		c.NodeUpSource[arch] = strings.Join(asset.Locations, ",")
 		c.NodeUpHash[arch] = asset.Hash.Hex()
-	}
 
-	// TODO: Update Kops version in integration tests to 1.19.0 after it is released
-	// Integration tests fake the Kops version to 1.19.0-alpha.1 and will not be able to find Protokube
-	if kopsbase.Version != "1.19.0-alpha.1" {
-		// Explicitly add the protokube image,
-		// otherwise when the Target is DryRun this asset is not added
-		// Is there a better way to call this?
-		_, _, err = ProtokubeImageSource(assetBuilder)
-		if err != nil {
-			return err
+		// TODO: Update Kops version in integration tests to 1.19.0 after it is released
+		// Integration tests fake the Kops version to 1.19.0-alpha.1 and will not be able to find Protokube
+		if kopsbase.Version != "1.19.0-alpha.1" {
+			// Explicitly add the protokube image,
+			// otherwise when the Target is DryRun this asset is not added
+			// Is there a better way to call this?
+			_, _, err = ProtokubeImageSource(assetBuilder, arch)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1155,7 +1154,7 @@ type nodeUpConfigBuilder struct {
 	cluster        *kops.Cluster
 	etcdManifests  map[kops.InstanceGroupRole][]string
 	images         map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
-	protokubeImage map[kops.InstanceGroupRole]*nodeup.Image
+	protokubeImage map[kops.InstanceGroupRole]map[architectures.Architecture]*nodeup.Image
 }
 
 func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuilder) (model.NodeUpConfigBuilder, error) {
@@ -1178,7 +1177,7 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 
 	etcdManifests := map[kops.InstanceGroupRole][]string{}
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
-	protokubeImage := map[kops.InstanceGroupRole]*nodeup.Image{}
+	protokubeImage := map[kops.InstanceGroupRole]map[architectures.Architecture]*nodeup.Image{}
 
 	for _, role := range kops.AllInstanceGroupRoles {
 		isMaster := role == kops.InstanceGroupRoleMaster
@@ -1218,18 +1217,13 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 		// don't need to push/pull from a registry
 		if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
 			for _, arch := range architectures.GetSupported() {
-				// TODO: Build multi-arch Kops images
-				if arch != architectures.ArchitectureAmd64 {
-					continue
-				}
-
 				for _, name := range []string{"kops-controller", "dns-controller", "kube-apiserver-healthcheck"} {
 					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
 					if err != nil {
 						return nil, err
 					}
 
-					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+".tar.gz")
+					baseURL.Path = path.Join(baseURL.Path, "/images/"+name+"-"+string(arch)+".tar.gz")
 
 					u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
 					if err != nil {
@@ -1249,17 +1243,20 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 			// TODO: Update Kops version in integration tests to 1.19.0 after it is released
 			// Integration tests fake the Kops version to 1.19.0-alpha.1 and will not be able to find Protokube
 			if kopsbase.Version != "1.19.0-alpha.1" {
-				u, hash, err := ProtokubeImageSource(assetBuilder)
-				if err != nil {
-					return nil, err
-				}
+				protokubeImage[role] = make(map[architectures.Architecture]*nodeup.Image)
+				for _, arch := range architectures.GetSupported() {
+					u, hash, err := ProtokubeImageSource(assetBuilder, arch)
+					if err != nil {
+						return nil, err
+					}
 
-				asset := BuildMirroredAsset(u, hash)
+					asset := BuildMirroredAsset(u, hash)
 
-				protokubeImage[role] = &nodeup.Image{
-					Name:    kopsbase.DefaultProtokubeImageName(),
-					Sources: asset.Locations,
-					Hash:    asset.Hash.Hex(),
+					protokubeImage[role][arch] = &nodeup.Image{
+						Name:    kopsbase.DefaultProtokubeImageName(),
+						Sources: asset.Locations,
+						Hash:    asset.Hash.Hex(),
+					}
 				}
 			}
 		}
