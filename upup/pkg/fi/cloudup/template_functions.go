@@ -273,7 +273,7 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 
 	var argv []string
 
-	argv = append(argv, "/usr/bin/dns-controller")
+	argv = append(argv, "/dns-controller")
 
 	// @check if the dns controller has custom configuration
 	if cluster.Spec.ExternalDNS == nil {
@@ -401,7 +401,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 	var argv []string
 
-	argv = append(argv, "/usr/bin/kops-controller")
+	argv = append(argv, "/kops-controller")
 
 	// Verbose, but not excessive logging
 	argv = append(argv, "--v=2")
