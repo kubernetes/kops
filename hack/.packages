@@ -85,6 +85,7 @@ k8s.io/kops/pkg/commands
 k8s.io/kops/pkg/configbuilder
 k8s.io/kops/pkg/diff
 k8s.io/kops/pkg/dns
+k8s.io/kops/pkg/dump
 k8s.io/kops/pkg/edit
 k8s.io/kops/pkg/featureflag
 k8s.io/kops/pkg/flagbuilder
