@@ -9974,6 +9974,9 @@ spec:
   replicas: 0
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      k8s-app: calico-policy
   template:
     metadata:
       name: calico-policy-controller
