@@ -21,10 +21,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dump"
 	"k8s.io/kops/pkg/resources"
 	resourceops "k8s.io/kops/pkg/resources/ops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -48,10 +59,14 @@ type ToolboxDumpOptions struct {
 	Output string
 
 	ClusterName string
+
+	Dir        string
+	PrivateKey string
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
 	o.Output = OutputYaml
+	o.PrivateKey = "~/.ssh/id_rsa"
 }
 
 func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
@@ -83,10 +98,14 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 	// Yes please! (@kris-nova)
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "output format.  One of: yaml, json")
 
+	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "target directory; if specified will collect logs and other information.")
+	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "private key to use for SSH acccess to instances")
+
 	return cmd
 }
 
 func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options *ToolboxDumpOptions) error {
+
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -115,14 +134,85 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 	if err != nil {
 		return err
 	}
-	dump, err := resources.BuildDump(context.TODO(), cloud, resourceMap)
+	d, err := resources.BuildDump(ctx, cloud, resourceMap)
 	if err != nil {
 		return err
 	}
 
+	if options.Dir != "" {
+		privateKeyPath := options.PrivateKey
+		if strings.HasPrefix(privateKeyPath, "~/") {
+			privateKeyPath = filepath.Join(os.Getenv("HOME"), privateKeyPath[2:])
+		}
+		key, err := ioutil.ReadFile(privateKeyPath)
+		if err != nil {
+			return fmt.Errorf("error reading private key %q: %v", privateKeyPath, err)
+		}
+
+		signer, err := ssh.ParsePrivateKey(key)
+		if err != nil {
+			return fmt.Errorf("error parsing private key %q: %v", privateKeyPath, err)
+		}
+
+		cluster, err := GetCluster(ctx, f, options.ClusterName)
+		if err != nil {
+			return err
+		}
+
+		contextName := cluster.ObjectMeta.Name
+		clientGetter := genericclioptions.NewConfigFlags(true)
+		clientGetter.Context = &contextName
+
+		var nodes corev1.NodeList
+
+		config, err := clientGetter.ToRESTConfig()
+		if err != nil {
+			klog.Warningf("cannot load kubecfg settings for %q: %v", contextName, err)
+		} else {
+			k8sClient, err := kubernetes.NewForConfig(config)
+			if err != nil {
+				klog.Warningf("cannot build kube client for %q: %v", contextName, err)
+			} else {
+
+				nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+				if err != nil {
+					klog.Warningf("error listing nodes in cluster: %v", err)
+				} else {
+					nodes = *nodeList
+				}
+			}
+		}
+
+		// TODO: We need to find the correct SSH user, ideally per IP
+		sshUser := "ubuntu"
+		sshConfig := &ssh.ClientConfig{
+			User: sshUser,
+			Auth: []ssh.AuthMethod{
+				ssh.PublicKeys(signer),
+			},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		}
+
+		dumper := dump.NewLogDumper(sshConfig, options.Dir)
+
+		var additionalIPs []string
+		for _, instance := range d.Instances {
+			if len(instance.PublicAddresses) != 0 {
+				additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
+				continue
+			}
+
+			klog.Warningf("no public IP for node %q", instance.Name)
+		}
+
+		if err := dumper.DumpAllNodes(ctx, nodes, additionalIPs); err != nil {
+			return fmt.Errorf("error dumping nodes: %v", err)
+		}
+	}
+
 	switch options.Output {
 	case OutputYaml:
-		b, err := kops.ToRawYaml(dump)
+		b, err := kops.ToRawYaml(d)
 		if err != nil {
 			return fmt.Errorf("error marshaling yaml: %v", err)
 		}
@@ -133,7 +223,7 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 		return nil
 
 	case OutputJSON:
-		b, err := json.MarshalIndent(dump, "", "  ")
+		b, err := json.MarshalIndent(d, "", "  ")
 		if err != nil {
 			return fmt.Errorf("error marshaling json: %v", err)
 		}
