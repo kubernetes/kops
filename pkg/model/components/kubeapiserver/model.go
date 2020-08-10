@@ -106,7 +106,7 @@ spec:
       initialDelaySeconds: 5
       timeoutSeconds: 5
     command:
-    - /usr/bin/kube-apiserver-healthcheck
+    - /kube-apiserver-healthcheck
     args:
     - --ca-cert=/secrets/ca.crt
     - --client-cert=/secrets/client.crt
