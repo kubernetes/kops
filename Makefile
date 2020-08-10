@@ -176,6 +176,10 @@ hooks: # Install Git hooks
 test: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v ./...
 
+.PHONY: test-windows
+test: ${BINDATA_TARGETS}  # Run tests locally
+	go test -v $(go list ./... | grep -v /nodeup/)
+
 .PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
