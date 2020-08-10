@@ -1103,12 +1103,16 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.NodeUpHash[arch] = asset.Hash.Hex()
 	}
 
-	// Explicitly add the protokube image,
-	// otherwise when the Target is DryRun this asset is not added
-	// Is there a better way to call this?
-	_, _, err = ProtokubeImageSource(assetBuilder)
-	if err != nil {
-		return err
+	// TODO: Update Kops version in integration tests to 1.19.0 after it is released
+	// Integration tests fake the Kops version to 1.19.0-alpha.1 and will not be able to find Protokube
+	if kopsbase.Version != "1.19.0-alpha.1" {
+		// Explicitly add the protokube image,
+		// otherwise when the Target is DryRun this asset is not added
+		// Is there a better way to call this?
+		_, _, err = ProtokubeImageSource(assetBuilder)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -1242,17 +1246,21 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 		}
 
 		if isMaster || useGossip {
-			u, hash, err := ProtokubeImageSource(assetBuilder)
-			if err != nil {
-				return nil, err
-			}
+			// TODO: Update Kops version in integration tests to 1.19.0 after it is released
+			// Integration tests fake the Kops version to 1.19.0-alpha.1 and will not be able to find Protokube
+			if kopsbase.Version != "1.19.0-alpha.1" {
+				u, hash, err := ProtokubeImageSource(assetBuilder)
+				if err != nil {
+					return nil, err
+				}
 
-			asset := BuildMirroredAsset(u, hash)
+				asset := BuildMirroredAsset(u, hash)
 
-			protokubeImage[role] = &nodeup.Image{
-				Name:    kopsbase.DefaultProtokubeImageName(),
-				Sources: asset.Locations,
-				Hash:    asset.Hash.Hex(),
+				protokubeImage[role] = &nodeup.Image{
+					Name:    kopsbase.DefaultProtokubeImageName(),
+					Sources: asset.Locations,
+					Hash:    asset.Hash.Hex(),
+				}
 			}
 		}
 
