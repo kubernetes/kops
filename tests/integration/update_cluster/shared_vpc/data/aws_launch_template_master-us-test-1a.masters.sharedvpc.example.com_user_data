@@ -317,13 +317,6 @@ channels:
 etcdManifests:
 - memfs://clusters.example.com/sharedvpc.example.com/manifests/etcd/main.yaml
 - memfs://clusters.example.com/sharedvpc.example.com/manifests/etcd/events.yaml
-protokubeImage:
-  hash: 213116c510d6f3eeece0fcaaff5f168609288ad7705365d839a813f5cc8adeb4
-  name: protokube:1.19.0-alpha.1
-  sources:
-  - https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.1/images/protokube.tar.gz
-  - https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.1/images-protokube.tar.gz
-  - https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.1/images/protokube.tar.gz
 
 __EOF_KUBE_ENV
 
