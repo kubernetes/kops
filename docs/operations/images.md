@@ -204,7 +204,9 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ## Amazon Linux 2
 
-Amazon Linux 2 is based on Kernel version **4.19** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
+Amazon Linux 2 is based on Kernel version **4.14** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible, but it's still quite old.
+
+For _kops_ versions 1.16 and 1.17, the only supported Docker version is `18.06.3`. Newer versions of Docker cannot be installed due to missing dependencies for `container-selinux`. This issue is fixed in _kops_ **1.18**.
 
 Available images can be listed using:
 
