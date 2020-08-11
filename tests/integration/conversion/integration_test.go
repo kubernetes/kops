@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/util/pkg/text"
 )
 
 // TestConversionMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -63,7 +64,8 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 
 	var actual []string
 
-	for _, s := range strings.Split(string(sourceBytes), "\n---\n") {
+	sections := text.SplitContentToSections(sourceBytes)
+	for _, s := range sections {
 		o, gvk, err := kopscodecs.Decode([]byte(s), nil)
 		if err != nil {
 			t.Fatalf("error parsing file %q: %v", sourcePath, err)
