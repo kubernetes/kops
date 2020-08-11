@@ -74,6 +74,7 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl v1.0.0

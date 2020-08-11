@@ -1,0 +1,91 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal-openstack.k8s.local
+spec:
+  api:
+    dns: {}
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudConfig:
+    openstack: {}
+  cloudProvider: openstack
+  configBase: memfs://tests/minimal-openstack.k8s.local
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: "1"
+      volumeType: test
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: "1"
+      volumeType: test
+    name: events
+  openstackServiceAccount: default
+  iam:
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: v1.14.0
+  masterPublicName: api.minimal-openstack.k8s.local
+  networking:
+    kubenet: {}
+  networkCIDR: 192.168.0.0/16
+  nonMasqueradeCIDR: 100.64.0.0/10
+  project: testproject
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - name: us-test1
+    region: us-test1
+    type: Public
+  topology:
+    dns:
+      type: Private
+    masters: private
+    nodes: private
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-openstack.k8s.local
+  name: master-us-test1-a
+spec:
+  image: Ubuntu-20.04
+  machineType: n1-standard-1
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-openstack.k8s.local
+  name: nodes
+spec:
+  image: Ubuntu-20.04
+  machineType: n1-standard-2
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a

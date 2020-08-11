@@ -42,6 +42,11 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/kops/cloudmock/openstack/mockblockstorage"
+	"k8s.io/kops/cloudmock/openstack/mockcompute"
+	"k8s.io/kops/cloudmock/openstack/mockdns"
+	"k8s.io/kops/cloudmock/openstack/mockloadbalancer"
+	"k8s.io/kops/cloudmock/openstack/mocknetworking"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderdesignate "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	"k8s.io/kops/pkg/apis/kops"
@@ -50,12 +55,12 @@ import (
 )
 
 type MockCloud struct {
-	MockCinderClient  *gophercloud.ServiceClient
-	MockNeutronClient *gophercloud.ServiceClient
-	MockNovaClient    *gophercloud.ServiceClient
-	MockDNSClient     *gophercloud.ServiceClient
-	MockLBClient      *gophercloud.ServiceClient
-	MockGlanceClient  *gophercloud.ServiceClient
+	MockCinderClient  *mockblockstorage.MockClient
+	MockNeutronClient *mocknetworking.MockClient
+	MockNovaClient    *mockcompute.MockClient
+	MockDNSClient     *mockdns.MockClient
+	MockLBClient      *mockloadbalancer.MockClient
+	MockGlanceClient  *mockcompute.MockClient
 	region            string
 	tags              map[string]string
 	useOctavia        bool
@@ -80,27 +85,41 @@ func BuildMockOpenstackCloud(region string) *MockCloud {
 var _ fi.Cloud = (*MockCloud)(nil)
 
 func (c *MockCloud) ComputeClient() *gophercloud.ServiceClient {
-	return c.MockNovaClient
+	client := c.MockNovaClient.ServiceClient()
+	client.UserAgent.Prepend("compute")
+	return client
 }
 
 func (c *MockCloud) BlockStorageClient() *gophercloud.ServiceClient {
-	return c.MockCinderClient
+	client := c.MockCinderClient.ServiceClient()
+	client.UserAgent.Prepend("blockstorage")
+	return client
 }
 
 func (c *MockCloud) NetworkingClient() *gophercloud.ServiceClient {
-	return c.MockNeutronClient
+	client := c.MockNeutronClient.ServiceClient()
+	client.UserAgent.Prepend("networking")
+	return client
 }
 
 func (c *MockCloud) LoadBalancerClient() *gophercloud.ServiceClient {
-	return c.MockLBClient
+	client := c.MockLBClient.ServiceClient()
+	client.UserAgent.Prepend("loadbalancer")
+	return client
 }
 
 func (c *MockCloud) DNSClient() *gophercloud.ServiceClient {
-	return c.MockDNSClient
+	client := c.MockDNSClient.ServiceClient()
+	client.UserAgent.Prepend("dns")
+	return client
 }
 
 func (c *MockCloud) ImageClient() *gophercloud.ServiceClient {
-	return c.MockGlanceClient
+	// Some compute endpoints implicitly call image endpoints
+	// so it is easiest to share the same mock client
+	client := c.MockNovaClient.ServiceClient()
+	client.UserAgent.Prepend("image")
+	return client
 }
 
 func (c *MockCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -127,7 +146,7 @@ func (c *MockCloud) DNS() (dnsprovider.Interface, error) {
 	if c.MockDNSClient == nil {
 		return nil, fmt.Errorf("MockDNS not set")
 	}
-	return dnsproviderdesignate.New(c.MockDNSClient), nil
+	return dnsproviderdesignate.New(c.DNSClient()), nil
 }
 
 func (c *MockCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
