@@ -42,7 +42,7 @@ const (
 	vcpusToMemoryRatio     = "vcpus-to-memory-ratio"
 	cpuArchitecture        = "cpu-architecture"
 	gpus                   = "gpus"
-	gpuMemoryTotal         = "gpu-memory-total"
+	gpuMemory              = "gpu-memory"
 	placementGroupStrategy = "placement-group-strategy"
 	usageClass             = "usage-class"
 	enaSupport             = "ena-support"
@@ -135,9 +135,9 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	usageClassDefault := usageClassOndemand
 	outputDefault := "yaml"
 	dryRunDefault := false
-	clusterAutoscalerDefault := false
-	nodeCountMinDefault := 2
-	nodeCountMaxDefault := 15
+	clusterAutoscalerDefault := true
+	nodeCountMinDefault := 1
+	nodeCountMaxDefault := 10
 	maxResultsDefault := 20
 
 	// Instance Group Node Configurations
@@ -161,7 +161,7 @@ func NewCmdToolboxInstanceSelector(f *util.Factory, out io.Writer) *cobra.Comman
 	commandline.RatioFlag(vcpusToMemoryRatio, nil, nil, "The ratio of vcpus to memory in MiB. (Example: 1:2)")
 	commandline.StringOptionsFlag(cpuArchitecture, nil, &cpuArchDefault, fmt.Sprintf("CPU architecture [%s]", strings.Join(cpuArchs, ", ")), append(cpuArchs, cpuArchitectureX8664))
 	commandline.IntMinMaxRangeFlags(gpus, nil, nil, "Total number of GPUs (Example: 4)")
-	commandline.ByteQuantityMinMaxRangeFlags(gpuMemoryTotal, nil, nil, "Number of GPUs' total memory (Example: 4gb)")
+	commandline.ByteQuantityMinMaxRangeFlags(gpuMemory, nil, nil, "Number of GPUs' total memory (Example: 4gb)")
 	commandline.StringOptionsFlag(placementGroupStrategy, nil, nil, fmt.Sprintf("Placement group strategy: [%s]", strings.Join(placementGroupStrategies, ", ")), placementGroupStrategies)
 	commandline.StringOptionsFlag(usageClass, nil, &usageClassDefault, fmt.Sprintf("Usage class: [%s]", strings.Join(usageClasses, ", ")), usageClasses)
 	commandline.BoolFlag(enaSupport, nil, nil, "Instance types where ENA is supported or required")
@@ -374,7 +374,7 @@ func getFilters(commandline *cli.CommandLineInterface, region string, zones []st
 		VCpusToMemoryRatio:     commandline.Float64Me(flags[vcpusToMemoryRatio]),
 		CPUArchitecture:        commandline.StringMe(flags[cpuArchitecture]),
 		GpusRange:              commandline.IntRangeMe(flags[gpus]),
-		GpuMemoryRange:         commandline.ByteQuantityRangeMe(flags[gpuMemoryTotal]),
+		GpuMemoryRange:         commandline.ByteQuantityRangeMe(flags[gpuMemory]),
 		PlacementGroupStrategy: commandline.StringMe(flags[placementGroupStrategy]),
 		UsageClass:             commandline.StringMe(flags[usageClass]),
 		EnaSupport:             commandline.BoolMe(flags[enaSupport]),
