@@ -1361,6 +1361,14 @@ spec:
                       reconciler sync states loop wait between successive executions.
                       Is set to 1 min by kops by default
                     type: string
+                  authenticationKubeconfig:
+                    description: AuthenticationKubeconfig is the path to an Authentication
+                      Kubeconfig
+                    type: string
+                  authorizationKubeconfig:
+                    description: AuthorizationKubeconfig is the path to an Authorization
+                      Kubeconfig
+                    type: string
                   cidrAllocatorType:
                     description: CIDRAllocatorType specifies the type of CIDR allocator
                       to use.
@@ -1783,6 +1791,14 @@ spec:
               kubeScheduler:
                 description: KubeSchedulerConfig is the configuration for the kube-scheduler
                 properties:
+                  authenticationKubeconfig:
+                    description: AuthenticationKubeconfig is the path to an Authentication
+                      Kubeconfig
+                    type: string
+                  authorizationKubeconfig:
+                    description: AuthorizationKubeconfig is the path to an Authorization
+                      Kubeconfig
+                    type: string
                   burst:
                     description: Burst sets the maximum qps to send to apiserver after
                       the burst quota is exhausted
