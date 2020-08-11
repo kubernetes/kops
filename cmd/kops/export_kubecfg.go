@@ -46,6 +46,9 @@ var (
 
 	# export using a user already existing in the kubeconfig file
 	kops export kubecfg kubernetes-cluster.example.com --user my-oidc-user
+
+	# export using the internal DNS name, bypassing the cloud load balancer
+	kops export kubecfg kubernetes-cluster.example.com --internal
 		`))
 
 	exportKubecfgShort = i18n.T(`Export kubecfg.`)
@@ -56,6 +59,7 @@ type ExportKubecfgOptions struct {
 	all            bool
 	admin          time.Duration
 	user           string
+	internal       bool
 }
 
 func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
@@ -80,6 +84,7 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "export a cluster admin user credential with the given lifetime and add it to the cluster context")
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.user, "user", options.user, "add an existing user to the cluster context")
+	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "use the cluster's internal DNS name")
 
 	return cmd
 }
@@ -130,7 +135,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 			return err
 		}
 
-		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, buildPathOptions(options), options.admin, options.user)
+		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, buildPathOptions(options), options.admin, options.user, options.internal)
 		if err != nil {
 			return err
 		}
