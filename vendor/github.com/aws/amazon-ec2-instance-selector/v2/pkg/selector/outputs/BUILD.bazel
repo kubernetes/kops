@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "outputs.go",
+        "types.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs",
+    importpath = "github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+    ],
+)
