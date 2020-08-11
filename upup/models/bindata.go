@@ -62,6 +62,7 @@
 // upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml
 // upup/models/cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml
 // upup/models/cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml
+// upup/models/cloudup/resources/addons/storage-openstack.addons.k8s.io/k8s-1.16.yaml.template
 package models
 
 import (
@@ -18781,7 +18782,7 @@ spec:
         operator: Exists
       containers:
       - name: openstack-cloud-controller-manager
-        image: "{{- if .ExternalCloudControllerManager.Image -}} {{ .ExternalCloudControllerManager.Image }} {{- else -}} {{OpenStackCCM}} {{- end -}}"
+        image: "{{- if .ExternalCloudControllerManager.Image -}} {{ .ExternalCloudControllerManager.Image }} {{- else -}} docker.io/k8scloudprovider/openstack-cloud-controller-manager:{{OpenStackCCMTag}} {{- end -}}"
         args:
           - /bin/openstack-cloud-controller-manager
 {{- range $arg := CloudControllerConfigArgv }}
@@ -19706,6 +19707,555 @@ func cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml() (*asset, error) {
 	return a, nil
 }
 
+var _cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate = []byte(`# Sourced from https://github.com/kubernetes/cloud-provider-openstack/tree/master/manifests/cinder-csi-plugin
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-cinder-controller-sa
+  namespace: kube-system
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+
+---
+# external attacher
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-role
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-attacher-binding
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: csi-attacher-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# external Provisioner
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-provisioner-role
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["get", "list"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-provisioner-binding
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: csi-provisioner-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# external snapshotter
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-snapshotter-role
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["create", "get", "list", "watch", "update", "delete"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots/status"]
+    verbs: ["update"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["create", "list", "watch", "delete"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-snapshotter-binding
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: csi-snapshotter-role
+  apiGroup: rbac.authorization.k8s.io
+---
+
+# External Resizer
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-resizer-role
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+rules:
+  # The following rule should be uncommented for plugins that require secrets
+  # for provisioning.
+  # - apiGroups: [""]
+  #   resources: ["secrets"]
+  #   verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims/status"]
+    verbs: ["update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-resizer-binding
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: csi-resizer-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: kube-system
+  name: external-resizer-cfg
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "delete", "update", "create"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-resizer-role-cfg
+  namespace: kube-system
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-controller-sa
+    namespace: kube-system
+roleRef:
+  kind: Role
+  name: external-resizer-cfg
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# This YAML file contains CSI Controller Plugin Sidecars
+# external-attacher, external-provisioner, external-snapshotter
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-cinder-controller-service
+  namespace: kube-system
+  labels:
+    app: csi-cinder-controllerplugin
+    k8s-addon: storage-openstack.addons.k8s.io
+spec:
+  selector:
+    app: csi-cinder-controllerplugin
+  ports:
+    - name: placeholder
+      port: 12345
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-cinder-controllerplugin
+  namespace: kube-system
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+spec:
+  serviceName: "csi-cinder-controller-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-cinder-controllerplugin
+  template:
+    metadata:
+      labels:
+        app: csi-cinder-controllerplugin
+        k8s-addon: storage-openstack.addons.k8s.io
+    spec:
+      serviceAccount: csi-cinder-controller-sa
+      containers:
+        - name: csi-attacher
+          image: quay.io/k8scsi/csi-attacher:v2.1.1
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: csi-provisioner
+          image: quay.io/k8scsi/csi-provisioner:v1.4.0
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=3m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: csi-snapshotter
+          image: quay.io/k8scsi/csi-snapshotter:v1.2.2
+          args:
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
+        - name: csi-resizer
+          image: quay.io/k8scsi/csi-resizer:v0.4.0
+          args:
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: cinder-csi-plugin
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:{{ OpenStackCCMTag }}
+          args:
+            - /bin/cinder-csi-plugin
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cloud-config=$(CLOUD_CONFIG)"
+            - "--cluster=$(CLUSTER_NAME)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/kubernetes/cloud.config
+            - name: CLUSTER_NAME
+              value: kubernetes
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - mountPath: /etc/kubernetes/cloud.config
+              name: cloudconfig
+              readOnly: true
+      volumes:
+        - name: socket-dir
+          emptyDir: {}
+        - hostPath:
+            path: /etc/kubernetes/cloud.config
+            type: ""
+          name: cloudconfig
+
+---
+# This YAML defines all API objects to create RBAC roles for csi node plugin.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-cinder-node-sa
+  namespace: kube-system
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin-role
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: csi-nodeplugin-binding
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: csi-cinder-node-sa
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: csi-nodeplugin-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# This YAML file contains driver-registrar & csi driver nodeplugin API objects,
+# which are necessary to run csi nodeplugin for cinder.
+
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+  name: csi-cinder-nodeplugin
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: csi-cinder-nodeplugin
+  template:
+    metadata:
+      labels:
+        app: csi-cinder-nodeplugin
+        k8s-addon: storage-openstack.addons.k8s.io
+    spec:
+      serviceAccount: csi-cinder-node-sa
+      tolerations:
+      - operator: Exists
+      hostNetwork: true
+      containers:
+        - name: node-driver-registrar
+          image: quay.io/k8scsi/csi-node-driver-registrar:v1.2.0
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock"]
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+            - name: DRIVER_REG_SOCK_PATH
+              value: /var/lib/kubelet/plugins/cinder.csi.openstack.org/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: registration-dir
+              mountPath: /registration
+        - name: cinder-csi-plugin
+          securityContext:
+            privileged: true
+            runAsNonRoot: false
+            runAsUser: 0
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:{{ OpenStackCCMTag }}
+          args :
+            - /bin/cinder-csi-plugin
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cloud-config=$(CLOUD_CONFIG)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/kubernetes/cloud.config
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: kubelet-dir
+              mountPath: /var/lib/kubelet
+              mountPropagation: "Bidirectional"
+            - name: pods-cloud-data
+              mountPath: /var/lib/cloud/data
+              readOnly: true
+            - name: pods-probe-dir
+              mountPath: /dev
+              mountPropagation: "HostToContainer"
+            - mountPath: /etc/kubernetes/cloud.config
+              name: cloudconfig
+              readOnly: true
+      volumes:
+        - name: socket-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/cinder.csi.openstack.org
+            type: DirectoryOrCreate
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: Directory
+        - name: kubelet-dir
+          hostPath:
+            path: /var/lib/kubelet
+            type: Directory
+        - name: pods-cloud-data
+          hostPath:
+            path: /var/lib/cloud/data
+            type: Directory
+        - name: pods-probe-dir
+          hostPath:
+            path: /dev
+            type: Directory
+        - hostPath:
+            path: /etc/kubernetes/cloud.config
+            type: ""
+          name: cloudconfig
+---
+apiVersion: storage.k8s.io/v1beta1
+kind: CSIDriver
+metadata:
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+  name: cinder.csi.openstack.org
+spec:
+  attachRequired: true
+  podInfoOnMount: true
+  volumeLifecycleModes:
+  - Persistent
+  - Ephemeral
+
+{{ if .CloudConfig.Openstack.BlockStorage.CreateStorageClass }}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: default
+  annotations:
+    storageclass.beta.kubernetes.io/is-default-class: "true"
+  labels:
+    k8s-addon: storage-openstack.addons.k8s.io
+provisioner: cinder.csi.openstack.org
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+{{ end }}`)
+
+func cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate, nil
+}
+
+func cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "cloudup/resources/addons/storage-openstack.addons.k8s.io/k8s-1.16.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -19820,6 +20370,7 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.15.0.yaml":                                     cloudupResourcesAddonsStorageAwsAddonsK8sIoV1150Yaml,
 	"cloudup/resources/addons/storage-aws.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageAwsAddonsK8sIoV170Yaml,
 	"cloudup/resources/addons/storage-gce.addons.k8s.io/v1.7.0.yaml":                                      cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml,
+	"cloudup/resources/addons/storage-openstack.addons.k8s.io/k8s-1.16.yaml.template":                     cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate,
 }
 
 // AssetDir returns the file names below a certain
@@ -19985,6 +20536,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				}},
 				"storage-gce.addons.k8s.io": {nil, map[string]*bintree{
 					"v1.7.0.yaml": {cloudupResourcesAddonsStorageGceAddonsK8sIoV170Yaml, map[string]*bintree{}},
+				}},
+				"storage-openstack.addons.k8s.io": {nil, map[string]*bintree{
+					"k8s-1.16.yaml.template": {cloudupResourcesAddonsStorageOpenstackAddonsK8sIoK8s116YamlTemplate, map[string]*bintree{}},
 				}},
 			}},
 		}},

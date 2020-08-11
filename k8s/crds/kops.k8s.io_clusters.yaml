@@ -222,6 +222,10 @@ spec:
                         properties:
                           bs-version:
                             type: string
+                          createStorageClass:
+                            description: CreateStorageClass provisions a default class
+                              for the Cinder plugin
+                            type: boolean
                           ignore-volume-az:
                             type: boolean
                           override-volume-az:

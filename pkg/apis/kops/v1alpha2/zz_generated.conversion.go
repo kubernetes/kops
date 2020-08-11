@@ -4978,6 +4978,7 @@ func autoConvert_v1alpha2_OpenstackBlockStorageConfig_To_kops_OpenstackBlockStor
 	out.Version = in.Version
 	out.IgnoreAZ = in.IgnoreAZ
 	out.OverrideAZ = in.OverrideAZ
+	out.CreateStorageClass = in.CreateStorageClass
 	return nil
 }
 
@@ -4990,6 +4991,7 @@ func autoConvert_kops_OpenstackBlockStorageConfig_To_v1alpha2_OpenstackBlockStor
 	out.Version = in.Version
 	out.IgnoreAZ = in.IgnoreAZ
 	out.OverrideAZ = in.OverrideAZ
+	out.CreateStorageClass = in.CreateStorageClass
 	return nil
 }
 
