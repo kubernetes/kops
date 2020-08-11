@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"os"
 	"path"
 	"reflect"
 	"sort"
@@ -32,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 type LifecycleTestOptions struct {
@@ -60,6 +62,14 @@ func TestLifecycleMinimal(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
 		t:      t,
 		SrcDir: "minimal",
+	})
+}
+
+func TestLifecycleMinimalOpenstack(t *testing.T) {
+	runLifecycleTestOpenstack(&LifecycleTestOptions{
+		t:           t,
+		SrcDir:      "minimal_openstack",
+		ClusterName: "minimal-openstack.k8s.local",
 	})
 }
 
@@ -122,7 +132,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 
 	factory := util.NewFactory(factoryOptions)
 
-	beforeResources := AllResources(cloud)
+	beforeResources := AllAWSResources(cloud)
 
 	{
 		options := &CreateOptions{}
@@ -187,7 +197,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 
 	{
 		var ids []string
-		for id := range AllResources(cloud) {
+		for id := range AllAWSResources(cloud) {
 			ids = append(ids, id)
 		}
 		sort.Strings(ids)
@@ -255,10 +265,19 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 	}
 }
 
-// AllResources returns all resources
-func AllResources(c *awsup.MockAWSCloud) map[string]interface{} {
+// AllAWSResources returns all resources
+func AllAWSResources(c *awsup.MockAWSCloud) map[string]interface{} {
 	all := make(map[string]interface{})
 	for k, v := range c.MockEC2.(*mockec2.MockEC2).All() {
+		all[k] = v
+	}
+	return all
+}
+
+// AllOpenstackResources returns all resources
+func AllOpenstackResources(c *openstack.MockCloud) map[string]interface{} {
+	all := make(map[string]interface{})
+	for k, v := range c.MockNovaClient.All() {
 		all[k] = v
 	}
 	return all
@@ -276,7 +295,7 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	cloud := h.SetupMockAWS()
 
 	var beforeIds []string
-	for id := range AllResources(cloud) {
+	for id := range AllAWSResources(cloud) {
 		beforeIds = append(beforeIds, id)
 	}
 	sort.Strings(beforeIds)
@@ -284,12 +303,131 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	runLifecycleTest(h, o, cloud)
 
 	var afterIds []string
-	for id := range AllResources(cloud) {
+	for id := range AllAWSResources(cloud) {
 		afterIds = append(afterIds, id)
 	}
 	sort.Strings(afterIds)
 
 	if !reflect.DeepEqual(beforeIds, afterIds) {
 		t.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
+	}
+}
+
+func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
+	o.AddDefaults()
+
+	t := o.t
+
+	h := testutils.NewIntegrationTestHarness(o.t)
+	defer h.Close()
+
+	origRegion := os.Getenv("OS_REGION_NAME")
+	os.Setenv("OS_REGION_NAME", "us-test1")
+	defer func() {
+		os.Setenv("OS_REGION_NAME", origRegion)
+	}()
+
+	h.MockKopsVersion("1.19.0-alpha.1")
+	cloud := h.SetupMockOpenstack()
+
+	var beforeIds []string
+	for id := range AllOpenstackResources(cloud) {
+		beforeIds = append(beforeIds, id)
+	}
+	sort.Strings(beforeIds)
+
+	ctx := context.Background()
+
+	t.Logf("running lifecycle test for cluster %s", o.ClusterName)
+
+	var stdout bytes.Buffer
+
+	inputYAML := "in-" + o.Version + ".yaml"
+
+	factoryOptions := &util.FactoryOptions{}
+	factoryOptions.RegistryPath = "memfs://tests"
+
+	factory := util.NewFactory(factoryOptions)
+
+	{
+		options := &CreateOptions{}
+		options.Filenames = []string{path.Join(o.SrcDir, inputYAML)}
+
+		err := RunCreate(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	{
+		options := &CreateSecretPublickeyOptions{}
+		options.ClusterName = o.ClusterName
+		options.Name = "admin"
+		options.PublicKeyPath = path.Join(o.SrcDir, "id_rsa.pub")
+
+		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	{
+		options := &UpdateClusterOptions{}
+		options.InitDefaults()
+		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
+		options.Yes = true
+
+		// We don't test it here, and it adds a dependency on kubectl
+		options.CreateKubecfg = false
+
+		_, err := RunUpdateCluster(ctx, factory, o.ClusterName, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running update cluster %q: %v", o.ClusterName, err)
+		}
+	}
+
+	{
+		options := &UpdateClusterOptions{}
+		options.InitDefaults()
+		options.Target = cloudup.TargetDryRun
+		options.RunTasksOptions.MaxTaskDuration = 10 * time.Second
+
+		// We don't test it here, and it adds a dependency on kubectl
+		options.CreateKubecfg = false
+
+		results, err := RunUpdateCluster(ctx, factory, o.ClusterName, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running update cluster %q: %v", o.ClusterName, err)
+		}
+
+		target := results.Target.(*fi.DryRunTarget)
+		if target.HasChanges() {
+			var b bytes.Buffer
+			if err := target.PrintReport(results.TaskMap, &b); err != nil {
+				t.Fatalf("error building report: %v", err)
+			}
+			t.Fatalf("Target had changes after executing: %v", b.String())
+		}
+	}
+
+	{
+		options := &DeleteClusterOptions{}
+		options.Yes = true
+		options.ClusterName = o.ClusterName
+		if err := RunDeleteCluster(ctx, factory, &stdout, options); err != nil {
+			t.Fatalf("error running delete cluster %q: %v", o.ClusterName, err)
+		}
+	}
+
+	{
+		var afterIds []string
+		for id := range AllOpenstackResources(cloud) {
+			afterIds = append(afterIds, id)
+		}
+		sort.Strings(afterIds)
+
+		if !reflect.DeepEqual(beforeIds, afterIds) {
+			t.Fatalf("resources changed by cluster create / destroy: %v -> %v", beforeIds, afterIds)
+		}
 	}
 }
