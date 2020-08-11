@@ -2,15 +2,19 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
-  name: minimal-openstack.k8s.local
+  name: floatingip-openstack.k8s.local
 spec:
   api:
     dns: {}
   authorization:
     alwaysAllow: {}
   channel: stable
+  cloudConfig:
+    openstack:
+      router:
+        externalNetwork: external
   cloudProvider: openstack
-  configBase: memfs://tests/minimal-openstack.k8s.local
+  configBase: memfs://tests/floatingip-openstack.k8s.local
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test1-a
@@ -29,8 +33,8 @@ spec:
     anonymousAuth: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.14.0
-  masterPublicName: api.minimal-openstack.k8s.local
+  kubernetesVersion: v1.16.0
+  masterPublicName: api.floatingip-openstack.k8s.local
   networking:
     kubenet: {}
   networkCIDR: 192.168.0.0/16
@@ -55,7 +59,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: minimal-openstack.k8s.local
+    kops.k8s.io/cluster: floatingip-openstack.k8s.local
   name: master-us-test1-a
 spec:
   image: Ubuntu-20.04
@@ -75,7 +79,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
-    kops.k8s.io/cluster: minimal-openstack.k8s.local
+    kops.k8s.io/cluster: floatingip-openstack.k8s.local
   name: nodes
 spec:
   image: Ubuntu-20.04

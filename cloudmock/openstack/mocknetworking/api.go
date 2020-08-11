@@ -20,6 +20,8 @@ import (
 	"net/http/httptest"
 	"sync"
 
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -40,6 +42,7 @@ type MockClient struct {
 	securityGroups     map[string]groups.SecGroup
 	securityGroupRules map[string]rules.SecGroupRule
 	subnets            map[string]subnets.Subnet
+	floatingips        map[string]floatingips.FloatingIP
 }
 
 // CreateClient will create a new mock networking client
@@ -53,6 +56,7 @@ func CreateClient() *MockClient {
 	m.mockSecurityGroups()
 	m.mockSecurityGroupRules()
 	m.mockSubnets()
+	m.mockFloatingIPs()
 	m.Server = httptest.NewServer(m.Mux)
 	return m
 }
@@ -66,6 +70,7 @@ func (m *MockClient) Reset() {
 	m.securityGroups = make(map[string]groups.SecGroup)
 	m.securityGroupRules = make(map[string]rules.SecGroupRule)
 	m.subnets = make(map[string]subnets.Subnet)
+	m.floatingips = make(map[string]floatingips.FloatingIP)
 }
 
 // All returns a map of all resource IDs to their resources
@@ -90,6 +95,9 @@ func (m *MockClient) All() map[string]interface{} {
 		all[id] = sgr
 	}
 	for id, s := range m.subnets {
+		all[id] = s
+	}
+	for id, s := range m.floatingips {
 		all[id] = s
 	}
 	return all
