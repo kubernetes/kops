@@ -16,8 +16,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15.0-rc2
-          stable: false
+          go-version: 1.15.0
 
       - uses: actions/checkout@v2
         with:
@@ -34,8 +33,7 @@ jobs:
     - name: Set up go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.15.0-rc2
-        stable: false
+        go-version: 1.15.0
 
     - uses: actions/checkout@v2
       with:
@@ -52,8 +50,7 @@ jobs:
     - name: Set up go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.15.0-rc2
-        stable: false
+        go-version: 1.15.0
 
     - uses: actions/checkout@v2
       with:
@@ -70,8 +67,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15.0-rc2
-          stable: false
+          go-version: 1.15.0
 
       - uses: actions/checkout@v2
         with:
