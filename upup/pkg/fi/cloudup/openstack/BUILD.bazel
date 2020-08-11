@@ -26,6 +26,11 @@ go_library(
     importpath = "k8s.io/kops/upup/pkg/fi/cloudup/openstack",
     visibility = ["//visibility:public"],
     deps = [
+        "//cloudmock/openstack/mockblockstorage:go_default_library",
+        "//cloudmock/openstack/mockcompute:go_default_library",
+        "//cloudmock/openstack/mockdns:go_default_library",
+        "//cloudmock/openstack/mockloadbalancer:go_default_library",
+        "//cloudmock/openstack/mocknetworking:go_default_library",
         "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//dnsprovider/pkg/dnsprovider/providers/openstack/designate:go_default_library",
         "//pkg/apis/kops:go_default_library",

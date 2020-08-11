@@ -26,6 +26,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"k8s.io/klog"
 	kopsroot "k8s.io/kops"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
@@ -34,10 +40,17 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockelbv2"
 	"k8s.io/kops/cloudmock/aws/mockiam"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
+	"k8s.io/kops/cloudmock/openstack/mockblockstorage"
+	"k8s.io/kops/cloudmock/openstack/mockcompute"
+	"k8s.io/kops/cloudmock/openstack/mockdns"
+	"k8s.io/kops/cloudmock/openstack/mockloadbalancer"
+	"k8s.io/kops/cloudmock/openstack/mocknetworking"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -237,6 +250,62 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 // SetupMockGCE configures a mock GCE cloud provider
 func (h *IntegrationTestHarness) SetupMockGCE() {
 	gce.InstallMockGCECloud("us-test1", "testproject")
+}
+
+func (h *IntegrationTestHarness) SetupMockOpenstack() *openstack.MockCloud {
+	c := openstack.InstallMockOpenstackCloud("us-test1")
+	c.MockCinderClient = mockblockstorage.CreateClient()
+
+	c.MockNeutronClient = mocknetworking.CreateClient()
+
+	c.MockLBClient = mockloadbalancer.CreateClient()
+
+	c.MockNovaClient = mockcompute.CreateClient()
+
+	c.MockDNSClient = mockdns.CreateClient()
+
+	extNetworkName := "external"
+	networkCreateOpts := networks.CreateOpts{
+		Name:         extNetworkName,
+		AdminStateUp: fi.Bool(true),
+	}
+	extNetwork := external.CreateOptsExt{
+		CreateOptsBuilder: networkCreateOpts,
+		External:          fi.Bool(true),
+	}
+	c.CreateNetwork(extNetwork)
+	c.SetExternalNetwork(&extNetworkName)
+
+	extSubnetName := "external"
+	extSubnet := subnets.CreateOpts{
+		Name:       extSubnetName,
+		NetworkID:  extNetworkName,
+		EnableDHCP: fi.Bool(true),
+		CIDR:       "172.20.0.0/22",
+	}
+	c.CreateSubnet(extSubnet)
+	c.SetExternalSubnet(fi.String(extSubnetName))
+	c.SetLBFloatingSubnet(fi.String(extSubnetName))
+	images.Create(c.MockNovaClient.ServiceClient(), images.CreateOpts{
+		Name:    "Ubuntu-20.04",
+		MinDisk: 12,
+	})
+	flavors.Create(c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
+		Name:  "n1-standard-2",
+		RAM:   8192,
+		VCPUs: 4,
+		Disk:  fi.Int(16),
+	})
+	flavors.Create(c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
+		Name:  "n1-standard-1",
+		RAM:   8192,
+		VCPUs: 4,
+		Disk:  fi.Int(16),
+	})
+	zones.Create(c.MockDNSClient.ServiceClient(), zones.CreateOpts{
+		Name: "minimal-openstack.k8s.local",
+	})
+	return c
 }
 
 // MockKopsVersion will set the kops version to the specified value, until Close is called
