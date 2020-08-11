@@ -684,6 +684,8 @@ type OpenstackBlockStorageConfig struct {
 	Version    *string `json:"bs-version,omitempty"`
 	IgnoreAZ   *bool   `json:"ignore-volume-az,omitempty"`
 	OverrideAZ *string `json:"override-volume-az,omitempty"`
+	// CreateStorageClass provisions a default class for the Cinder plugin
+	CreateStorageClass *bool `json:"createStorageClass,omitempty"`
 }
 
 // OpenstackMonitor defines the config for a health monitor
