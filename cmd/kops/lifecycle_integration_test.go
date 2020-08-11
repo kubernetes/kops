@@ -73,6 +73,14 @@ func TestLifecycleMinimalOpenstack(t *testing.T) {
 	})
 }
 
+func TestLifecycleFloatingIPOpenstack(t *testing.T) {
+	runLifecycleTestOpenstack(&LifecycleTestOptions{
+		t:           t,
+		SrcDir:      "openstack_floatingip",
+		ClusterName: "floatingip-openstack.k8s.local",
+	})
+}
+
 // TestLifecyclePrivateCalico runs the test on a private topology
 func TestLifecyclePrivateCalico(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
