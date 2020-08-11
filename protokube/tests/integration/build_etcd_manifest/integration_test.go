@@ -47,6 +47,9 @@ func TestBuildEtcdManifest(t *testing.T) {
 		rendered := strings.TrimSpace(string(generated))
 		expected = strings.TrimSpace(expected)
 
+		rendered = strings.Replace(rendered, "\r", "", -1)
+		expected = strings.Replace(expected, "\r", "", -1)
+
 		if rendered != expected {
 			diffString := diff.FormatDiff(expected, string(rendered))
 			t.Logf("diff:\n%s\n", diffString)
