@@ -18,6 +18,7 @@ go_library(
     importpath = "k8s.io/kops/pkg/resources/openstack",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/dns:go_default_library",
         "//pkg/resources:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstack:go_default_library",

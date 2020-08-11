@@ -22,6 +22,9 @@ import (
 )
 
 func openstackValidateCluster(c *kops.Cluster) (errList field.ErrorList) {
+	if c.Spec.CloudConfig == nil || c.Spec.CloudConfig.Openstack == nil {
+		return errList
+	}
 	if c.Spec.CloudConfig.Openstack.Router == nil || c.Spec.CloudConfig.Openstack.Router.ExternalNetwork == nil {
 		topology := c.Spec.Topology
 		if topology == nil || topology.Nodes == kops.TopologyPublic {
