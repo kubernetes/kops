@@ -17,6 +17,7 @@ limitations under the License.
 package kubeconfig
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -78,6 +79,7 @@ func buildMinimalCluster(clusterName string, masterPublicName string) *kops.Clus
 	}
 
 	c.Spec.MasterPublicName = masterPublicName
+	c.Spec.MasterInternalName = fmt.Sprintf("internal.%v", masterPublicName)
 	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
 	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
 
@@ -128,6 +130,7 @@ func TestBuildKubecfg(t *testing.T) {
 		configAccess clientcmd.ConfigAccess
 		admin        time.Duration
 		user         string
+		internal     bool
 	}
 
 	publiccluster := buildMinimalCluster("testcluster", "testcluster.test.com")
@@ -157,6 +160,7 @@ func TestBuildKubecfg(t *testing.T) {
 				nil,
 				DefaultKubecfgAdminLifetime,
 				"",
+				false,
 			},
 			&KubeconfigBuilder{
 				Context: "testcluster",
@@ -183,6 +187,7 @@ func TestBuildKubecfg(t *testing.T) {
 				nil,
 				0,
 				"myuser",
+				false,
 			},
 			&KubeconfigBuilder{
 				Context: "testcluster",
@@ -209,6 +214,7 @@ func TestBuildKubecfg(t *testing.T) {
 				nil,
 				0,
 				"",
+				false,
 			},
 			&KubeconfigBuilder{
 				Context: "emptyMasterPublicNameCluster",
@@ -243,6 +249,7 @@ func TestBuildKubecfg(t *testing.T) {
 				nil,
 				0,
 				"",
+				false,
 			},
 			&KubeconfigBuilder{
 				Context: "testgossipcluster.k8s.local",
@@ -252,10 +259,39 @@ func TestBuildKubecfg(t *testing.T) {
 			},
 			false,
 		},
+		{
+			"Test Kube Config Data For internal DNS name with admin",
+			args{
+				publiccluster,
+				fakeKeyStore{
+					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+						return fakeCertificate(),
+							fakePrivateKey(),
+							true,
+							nil
+					},
+				},
+				nil,
+				fakeStatusStore{},
+				nil,
+				DefaultKubecfgAdminLifetime,
+				"",
+				true,
+			},
+			&KubeconfigBuilder{
+				Context:    "testcluster",
+				Server:     "https://internal.testcluster.test.com",
+				CACert:     []byte(certData),
+				ClientCert: []byte(certData),
+				ClientKey:  []byte(privatekeyData),
+				User:       "testcluster",
+			},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := BuildKubecfg(tt.args.cluster, tt.args.keyStore, tt.args.secretStore, tt.args.status, tt.args.configAccess, tt.args.admin, tt.args.user)
+			got, err := BuildKubecfg(tt.args.cluster, tt.args.keyStore, tt.args.secretStore, tt.args.status, tt.args.configAccess, tt.args.admin, tt.args.user, tt.args.internal)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BuildKubecfg() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -271,7 +307,7 @@ func TestBuildKubecfg(t *testing.T) {
 				tt.want.ClientKey = got.ClientKey
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BuildKubecfg() = %v, want %v", got, tt.want)
+				t.Errorf("BuildKubecfg() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}
