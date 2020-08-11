@@ -142,42 +142,47 @@ spec:
 
 which would end up in a drop-in file on nodes of the instance group in question.
 
-## mixedInstancePolicy (AWS Only)
+## mixedInstancesPolicy (AWS Only)
 
-### Example
+A Mixed Instances Policy utilizing EC2 Spot and the `capacity-optimized` allocation strategy allows an EC2 Autoscaling Group to 
+select the instance types with the highest capacity. This reduces the chance of a spot interruption on your instance group. 
+
+Instance groups with a mixedInstancesPolicy can be generated with the `kops toolbox instance-selector` command. 
+The instance-selector accepts user supplied resource parameters like vcpus, memory, and much more to dynamically select instance types
+that match your criteria. 
+
+```bash
+kops toolbox instance-selector --vcpus 4 --flexible --usage-class spot --instance-group-name spotgroup
+```
 
 ```yaml
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
-  generation: 2
   labels:
-    kops.k8s.io/cluster: <clustername>
-  name: spot-4vcpu-16gb
+    kops.k8s.io/cluster: spot.k8s.local
+  name: spotgroup
 spec:
-  cloudLabels:
-    autoscaler: enabled
-    cluster: kops-cluster
-  image: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2020-01-17
-  maxSize: 5
-  minSize: 1
-  machineType: m5.xlarge
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200528
+  machineType: c3.xlarge
+  maxSize: 15
+  minSize: 2
   mixedInstancesPolicy:
     instances:
-    - m5.xlarge
-    - m5d.xlarge
-    - m4.xlarge
-    - t3.xlarge
-    - t3a.xlarge
-    - m5a.xlarge
-    - m5ad.xlarge
-    - m5n.xlarge    
-    - m5dn.xlarge
-    onDemandBase: 0
+    - c3.xlarge
+    - c4.xlarge
+    - c5.xlarge
+    - c5a.xlarge
     onDemandAboveBase: 0
+    onDemandBase: 0
     spotAllocationStrategy: capacity-optimized
   nodeLabels:
-    lifecycle: Ec2Spot
+    kops.k8s.io/instancegroup: spotgroup
+  role: Node
+  subnets:
+  - us-east-1a
+  - us-east-1b
+  - us-east-1c
 ```
 
 ### Instances
