@@ -56,7 +56,6 @@ const MaxTaskDuration = 365 * 24 * time.Hour
 type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
-	FSRoot         string
 	Target         string
 	cluster        *api.Cluster
 	config         *nodeup.Config
@@ -65,10 +64,6 @@ type NodeUpCommand struct {
 
 // Run is responsible for perform the nodeup process
 func (c *NodeUpCommand) Run(out io.Writer) error {
-	if c.FSRoot == "" {
-		return fmt.Errorf("FSRoot is required")
-	}
-
 	if c.ConfigLocation != "" {
 		config, err := vfs.Context.ReadFile(c.ConfigLocation)
 		if err != nil {
@@ -162,7 +157,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error determining OS architecture: %v", err)
 	}
 
-	distribution, err := distros.FindDistribution(c.FSRoot)
+	distribution, err := distros.FindDistribution("/")
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
