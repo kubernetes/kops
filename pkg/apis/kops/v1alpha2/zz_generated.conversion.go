@@ -4003,6 +4003,9 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
 	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
+	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
+	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
+	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
@@ -4063,6 +4066,9 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.ConcurrentResourceQuotaSyncs = in.ConcurrentResourceQuotaSyncs
 	out.ConcurrentServiceaccountTokenSyncs = in.ConcurrentServiceaccountTokenSyncs
 	out.ConcurrentRcSyncs = in.ConcurrentRcSyncs
+	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
+	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
+	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
@@ -4212,6 +4218,9 @@ func autoConvert_v1alpha2_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
 	out.Qps = in.Qps
 	out.Burst = in.Burst
+	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
+	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
+	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
@@ -4239,6 +4248,9 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *ko
 	out.MaxPersistentVolumes = in.MaxPersistentVolumes
 	out.Qps = in.Qps
 	out.Burst = in.Burst
+	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
+	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
+	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
 	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
