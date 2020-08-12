@@ -32,14 +32,13 @@ import (
 )
 
 type Installation struct {
-	FSRoot          string
 	CacheDir        string
 	RunTasksOptions fi.RunTasksOptions
 	Command         []string
 }
 
 func (i *Installation) Run() error {
-	_, err := distros.FindDistribution(i.FSRoot)
+	_, err := distros.FindDistribution("/")
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
