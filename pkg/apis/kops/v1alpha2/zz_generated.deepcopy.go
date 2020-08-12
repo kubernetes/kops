@@ -2493,6 +2493,11 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 		*out = new(int32)
 		**out = **in
 	}
+	if in.AuthorizationAlwaysAllowPaths != nil {
+		in, out := &in.AuthorizationAlwaysAllowPaths, &out.AuthorizationAlwaysAllowPaths
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.EnableProfiling != nil {
 		in, out := &in.EnableProfiling, &out.EnableProfiling
 		*out = new(bool)
@@ -2659,6 +2664,11 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 		in, out := &in.Qps, &out.Qps
 		x := (*in).DeepCopy()
 		*out = &x
+	}
+	if in.AuthorizationAlwaysAllowPaths != nil {
+		in, out := &in.AuthorizationAlwaysAllowPaths, &out.AuthorizationAlwaysAllowPaths
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.EnableProfiling != nil {
 		in, out := &in.EnableProfiling, &out.EnableProfiling

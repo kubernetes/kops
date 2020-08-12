@@ -586,6 +586,8 @@ type KubeControllerManagerConfig struct {
 	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
 	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig
 	AuthorizationKubeconfig string `json:"authorizationKubeconfig,omitempty" flag:"authorization-kubeconfig"`
+	// AuthorizationAlwaysAllowPaths is the list of HTTP paths to skip during authorization
+	AuthorizationAlwaysAllowPaths []string `json:"authorizationAlwaysAllowPaths,omitempty" flag:"authorization-always-allow-paths"`
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
@@ -645,6 +647,8 @@ type KubeSchedulerConfig struct {
 	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
 	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig
 	AuthorizationKubeconfig string `json:"authorizationKubeconfig,omitempty" flag:"authorization-kubeconfig"`
+	// AuthorizationAlwaysAllowPaths is the list of HTTP paths to skip during authorization
+	AuthorizationAlwaysAllowPaths []string `json:"authorizationAlwaysAllowPaths,omitempty" flag:"authorization-always-allow-paths"`
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
