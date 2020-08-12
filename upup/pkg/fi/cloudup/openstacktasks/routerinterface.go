@@ -77,7 +77,7 @@ func (i *RouterInterface) Find(context *fi.Context) (*RouterInterface, error) {
 		for _, ip := range p.FixedIPs {
 			if ip.SubnetID == subnetID {
 				if actual != nil {
-					return nil, fmt.Errorf("find multiple interfaces which subnet:%s attach to", subnetID)
+					return nil, fmt.Errorf("found multiple interfaces which subnet:%s attach to", subnetID)
 				}
 				actual = &RouterInterface{
 					ID:        fi.String(p.ID),
@@ -97,7 +97,7 @@ func (i *RouterInterface) Run(context *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(i, context)
 }
 
-func (_ *RouterInterface) CheckChanges(a, e, changes *RouterInterface) error {
+func (*RouterInterface) CheckChanges(a, e, changes *RouterInterface) error {
 	if a == nil {
 		if e.Router == nil {
 			return fi.RequiredField("Router")
