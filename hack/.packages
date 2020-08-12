@@ -186,7 +186,6 @@ k8s.io/kops/upup/pkg/fi/nodeup
 k8s.io/kops/upup/pkg/fi/nodeup/cloudinit
 k8s.io/kops/upup/pkg/fi/nodeup/local
 k8s.io/kops/upup/pkg/fi/nodeup/nodetasks
-k8s.io/kops/upup/pkg/fi/nodeup/tags
 k8s.io/kops/upup/pkg/fi/secrets
 k8s.io/kops/upup/pkg/fi/utils
 k8s.io/kops/upup/pkg/kutil
