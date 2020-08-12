@@ -581,6 +581,12 @@ type KubeControllerManagerConfig struct {
 	ConcurrentServiceaccountTokenSyncs *int32 `json:"concurrentServiceaccountTokenSyncs,omitempty" flag:"concurrent-serviceaccount-token-syncs"`
 	// The number of replicationcontroller objects that are allowed to sync concurrently.
 	ConcurrentRcSyncs *int32 `json:"concurrentRcSyncs,omitempty" flag:"concurrent-rc-syncs"`
+	// AuthenticationKubeconfig is the path to an Authentication Kubeconfig
+	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
+	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig
+	AuthorizationKubeconfig string `json:"authorizationKubeconfig,omitempty" flag:"authorization-kubeconfig"`
+	// AuthorizationAlwaysAllowPaths is the list of HTTP paths to skip during authorization
+	AuthorizationAlwaysAllowPaths []string `json:"authorizationAlwaysAllowPaths,omitempty" flag:"authorization-always-allow-paths"`
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
@@ -636,6 +642,12 @@ type KubeSchedulerConfig struct {
 	Qps *resource.Quantity `json:"qps,omitempty" configfile:"ClientConnection.QPS"`
 	// Burst sets the maximum qps to send to apiserver after the burst quota is exhausted
 	Burst int32 `json:"burst,omitempty" configfile:"ClientConnection.Burst"`
+	// AuthenticationKubeconfig is the path to an Authentication Kubeconfig
+	AuthenticationKubeconfig string `json:"authenticationKubeconfig,omitempty" flag:"authentication-kubeconfig"`
+	// AuthorizationKubeconfig is the path to an Authorization Kubeconfig
+	AuthorizationKubeconfig string `json:"authorizationKubeconfig,omitempty" flag:"authorization-kubeconfig"`
+	// AuthorizationAlwaysAllowPaths is the list of HTTP paths to skip during authorization
+	AuthorizationAlwaysAllowPaths []string `json:"authorizationAlwaysAllowPaths,omitempty" flag:"authorization-always-allow-paths"`
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
