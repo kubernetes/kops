@@ -101,7 +101,6 @@ func main() {
 			i := bootstrap.Installation{
 				CacheDir: flagCacheDir,
 				Command:  command,
-				FSRoot:   flagRootFS,
 			}
 			i.RunTasksOptions.InitDefaults()
 			i.RunTasksOptions.MaxTaskDuration = 5 * time.Minute
@@ -115,7 +114,6 @@ func main() {
 				ConfigLocation: flagConf,
 				Target:         target,
 				CacheDir:       flagCacheDir,
-				FSRoot:         flagRootFS,
 			}
 			err = cmd.Run(os.Stdout)
 			if err == nil {
