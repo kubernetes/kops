@@ -36,4 +36,4 @@ for package in packages:
 
 print("packages %s" % paths)
 
-subprocess.call(['go', 'run', 'golang.org/x/tools/cmd/goimports', '-w'] + paths, cwd=path.join(gopath, 'src'))
+subprocess.call(['go', 'run', 'k8s.io/kops/vendor/golang.org/x/tools/cmd/goimports', '-w'] + paths, cwd=path.join(gopath, 'src'))

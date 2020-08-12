@@ -47,13 +47,19 @@ if process.returncode != 0:
 print("packages %s" % paths)
 
 env = os.environ
-env["GO111MODULE"] = "on"
 
-process = subprocess.Popen(['go', 'run', 'golang.org/x/tools/cmd/goimports', '-l'] + paths, stdout=subprocess.PIPE, cwd=path.join(gopath, 'src'), env=env)
+process = subprocess.Popen(
+  ['go', 'run', 'k8s.io/kops/vendor/golang.org/x/tools/cmd/goimports', '-l'] + paths,
+  stdout=subprocess.PIPE,
+  stderr=subprocess.PIPE,
+  cwd=path.join(gopath, 'src'),
+  env=env
+)
 stdout, stderr = process.communicate()
 
-if stdout.strip().decode('ascii') != "":
+if stdout.strip().decode('ascii') != "" or stderr.strip().decode('ascii') != "":
   print("FAIL: 'goimports -w' needs to be run on the following files: ")
-  print(stdout.decode('ascii'))
+  print("STDOUT:\n" + stdout.decode('ascii'))
+  print("STDERR:\n" + stderr.decode('ascii'))
   print('FAIL: Please run the following command: make goimports')
   sys.exit(1)
