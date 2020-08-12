@@ -46,7 +46,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 )
 
@@ -163,21 +162,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error determining OS architecture: %v", err)
 	}
 
-	archTags := architecture.BuildTags()
-
 	distribution, err := distros.FindDistribution(c.FSRoot)
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
-
-	distroTags := distribution.BuildTags()
-
-	nodeTags := sets.NewString()
-	nodeTags.Insert(archTags...)
-	nodeTags.Insert(distroTags...)
-
-	klog.Infof("Arch tags: %v", archTags)
-	klog.Infof("Distro tags: %v", distroTags)
 
 	configAssets := c.config.Assets[architecture]
 	assetStore := fi.NewAssetStore(c.CacheDir)
@@ -290,14 +278,13 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	case "direct":
 		target = &local.LocalTarget{
 			CacheDir: c.CacheDir,
-			Tags:     nodeTags,
 		}
 	case "dryrun":
 		assetBuilder := assets.NewAssetBuilder(c.cluster, "")
 		target = fi.NewDryRunTarget(assetBuilder, out)
 	case "cloudinit":
 		checkExisting = false
-		target = cloudinit.NewCloudInitTarget(out, nodeTags)
+		target = cloudinit.NewCloudInitTarget(out)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}

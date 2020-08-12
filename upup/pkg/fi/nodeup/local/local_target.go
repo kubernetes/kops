@@ -19,13 +19,11 @@ package local
 import (
 	"os/exec"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 type LocalTarget struct {
 	CacheDir string
-	Tags     sets.String
 }
 
 var _ fi.Target = &LocalTarget{}
@@ -37,11 +35,6 @@ func (t *LocalTarget) Finish(taskMap map[string]fi.Task) error {
 func (t *LocalTarget) ProcessDeletions() bool {
 	// We don't expect any, but it would be our job to process them
 	return true
-}
-
-func (t *LocalTarget) HasTag(tag string) bool {
-	_, found := t.Tags[tag]
-	return found
 }
 
 // CombinedOutput is a helper function that executes a command, returning stdout & stderr combined
