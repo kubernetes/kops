@@ -57,24 +57,50 @@ The following table provides the support status for various distros with regards
 | [Debian 9](#debian-9-stretch) | 1.8 | 1.10 | - | - |
 | [Debian 10](#debian-10-buster) | 1.13 | 1.17 | - | - |
 | [Flatcar](#flatcar) | 1.15.1 | 1.17 | - | - |
+| [Kope.io](#kope-io) | - | - | - | 1.18 |
 | [RHEL 7](#rhel-7) | - | 1.5 | - | - |
 | [RHEL 8](#rhel-8) | 1.15 | 1.18 | - | - |
 | [Ubuntu 16.04](#ubuntu-1604-xenial) | 1.5 | 1.10 | 1.17 | 1.20 |
 | [Ubuntu 18.04](#ubuntu-1804-bionic) | 1.10 | 1.16 | - | - |
 | [Ubuntu 20.04](#ubuntu-2004-focal) | 1.16.2 | 1.18 | - | - |
 
-## Kope.io
+## Amazon Linux 2
 
-The default images from `kope.io` are based on Debian 9 (Stretch). These images include all the necessary files and packages to run Kubernetes, making node startup faster. Other than that, the changes to the official Debian images are [minimal](https://github.com/kubernetes-sigs/image-builder/tree/master/images/kube-deploy/imagebuilder/templates).
+Amazon Linux 2 is based on Kernel version **4.14** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible, but it's still quite old.
 
-The latest image names are kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable), but all available images can be listed using:
+For _kops_ versions 1.16 and 1.17, the only supported Docker version is `18.06.3`. Newer versions of Docker cannot be installed due to missing dependencies for `container-selinux`. This issue is fixed in _kops_ **1.18**.
+
+Available images can be listed using:
 
 ```bash
 aws ec2 describe-images --region us-east-1 --output table \
-  --owners 383156758163 \
+  --owners 137112412989 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=*-debian-stretch-*"
+  --filters "Name=name,Values=amzn2-ami-hvm-2*-x86_64-gp2"
 ```
+
+## CentOS 7
+
+CentOS 7 is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
+
+* [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
+* [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
+
+Before using CentOS images you must accept the agreement at https://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce.
+
+The minimum supported version is **7.4**. Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 679593333241 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce" "Name=name,Values=CentOS*"
+```
+
+## CentOS 8
+
+The CentOS Project doesn't provide any official images in AWS at the moment.
+Please [report](https://github.com/kubernetes/kops/issues/new/choose) any changes.
 
 ## Debian 9 (Stretch)
 
@@ -119,6 +145,63 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=debian-10-amd64-*"
 ```
 
+## Flatcar
+
+Flatcar is a friendly fork of CoreOS and as such, compatible with it.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 075585003325 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=Flatcar-stable-*-hvm"
+```
+
+## Kope.io
+
+The default images from `kope.io` are based on Debian 9 (Stretch). These images include all the necessary files and packages to run Kubernetes, making node startup faster. Other than that, the changes to the official Debian images are [minimal](https://github.com/kubernetes-sigs/image-builder/tree/master/images/kube-deploy/imagebuilder/templates).
+
+The latest image names are kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable), but all available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 383156758163 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=*-debian-stretch-*"
+```
+
+## RHEL 7
+
+RHEL 7 is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
+
+* [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
+* [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
+
+The minimum supported version is **7.4**. Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 309956199498 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=RHEL-7.*x86_64*"
+```
+
+## RHEL 8
+
+RHEL 8 is based on Kernel version **4.18** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
+
+One notable change is the addition of `iptables` NFT, which is the only iptables backend available. This is not yet supported by most CNI plugins and should be used with care.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 309956199498 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=RHEL-8.*x86_64*"
+```
+
 ## Ubuntu 18.04 (Bionic)
 
 Ubuntu 18.04 is based on Kernel version **4.15** which has number of known bugs that affect it and may be noticed with larger clusters:
@@ -146,88 +229,6 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-*"
-```
-
-## CentOS 7
-
-CentOS 7 is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
-
-* [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
-* [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
-
-Before using CentOS images you must accept the agreement at https://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce.
-
-The minimum supported version is **7.4**. Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 679593333241 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce" "Name=name,Values=CentOS*"
-```
-
-## RHEL 7
-
-RHEL 7 is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
-
-* [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
-* [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
-
-The minimum supported version is **7.4**. Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 309956199498 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=RHEL-7.*x86_64*"
-```
-
-## CentOS 8
-
-The CentOS Project doesn't provide any official images in AWS at the moment.
-Please [report](https://github.com/kubernetes/kops/issues/new/choose) any changes.
-
-## RHEL 8
-
-RHEL 8 is based on Kernel version **4.18** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
-
-One notable change is the addition of `iptables` NFT, which is the only iptables backend available. This is not yet supported by most CNI plugins and should be used with care.
-
-Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 309956199498 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=RHEL-8.*x86_64*"
-```
-
-## Amazon Linux 2
-
-Amazon Linux 2 is based on Kernel version **4.14** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible, but it's still quite old.
-
-For _kops_ versions 1.16 and 1.17, the only supported Docker version is `18.06.3`. Newer versions of Docker cannot be installed due to missing dependencies for `container-selinux`. This issue is fixed in _kops_ **1.18**.
-
-Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 137112412989 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=amzn2-ami-hvm-2*-x86_64-gp2"
-```
-
-## Flatcar
-
-Flatcar is a friendly fork of CoreOS and as such, compatible with it.
-
-Available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 075585003325 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=Flatcar-stable-*-hvm"
 ```
 
 ## CoreOS
