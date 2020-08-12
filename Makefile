@@ -177,7 +177,7 @@ test: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v ./...
 
 .PHONY: test-windows
-test: ${BINDATA_TARGETS}  # Run tests locally
+test-windows: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v $(go list ./... | grep -v /nodeup/)
 
 .PHONY: ${DIST}/linux/amd64/nodeup
