@@ -23,10 +23,10 @@ import (
 	"syscall"
 
 	"k8s.io/klog"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 )
 
 type UpdatePackages struct {
@@ -65,11 +65,15 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 		klog.Infof("SKIP_PACKAGE_UPDATE was set; skipping package update")
 		return nil
 	}
+	d, err := distros.FindDistribution("/")
+	if err != nil {
+		return fmt.Errorf("unknown or unsupported distro: %v", err)
+	}
 	var args []string
-	if t.HasTag(tags.TagOSFamilyDebian) {
+	if d.IsDebianFamily() {
 		args = []string{"apt-get", "update"}
 
-	} else if t.HasTag(tags.TagOSFamilyRHEL) {
+	} else if d.IsRHELFamily() {
 		// Probably not technically needed
 		args = []string{"/usr/bin/yum", "check-update"}
 	} else {

@@ -26,10 +26,10 @@ import (
 	"time"
 
 	"k8s.io/klog"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 )
 
 const (
@@ -126,14 +126,19 @@ func getSystemdStatus(name string) (map[string]string, error) {
 	return properties, nil
 }
 
-func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
-	if target.HasTag(tags.TagOSFamilyDebian) {
+func (e *Service) systemdSystemPath() (string, error) {
+	d, err := distros.FindDistribution("/")
+	if err != nil {
+		return "", fmt.Errorf("unknown or unsupported distro: %v", err)
+	}
+
+	if d.IsDebianFamily() {
 		return debianSystemdSystemPath, nil
-	} else if target.HasTag(tags.TagOSFamilyRHEL) {
+	} else if d.IsRHELFamily() {
 		return centosSystemdSystemPath, nil
-	} else if target.HasTag("_flatcar") {
+	} else if d == distros.DistributionFlatcar {
 		return flatcarSystemdSystemPath, nil
-	} else if target.HasTag("_containeros") {
+	} else if d == distros.DistributionContainerOS {
 		return containerosSystemdSystemPath, nil
 	} else {
 		return "", fmt.Errorf("unsupported systemd system")
@@ -141,7 +146,7 @@ func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
 }
 
 func (e *Service) Find(c *fi.Context) (*Service, error) {
-	systemdSystemPath, err := e.systemdSystemPath(c.Target.(tags.HasTags))
+	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +244,7 @@ func (s *Service) CheckChanges(a, e, changes *Service) error {
 }
 
 func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) error {
-	systemdSystemPath, err := e.systemdSystemPath(t)
+	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return err
 	}
@@ -355,7 +360,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 }
 
 func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Service) error {
-	systemdSystemPath, err := e.systemdSystemPath(t)
+	systemdSystemPath, err := e.systemdSystemPath()
 	if err != nil {
 		return err
 	}
