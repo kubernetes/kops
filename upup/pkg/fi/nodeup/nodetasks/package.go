@@ -26,11 +26,11 @@ import (
 	"sync"
 
 	"k8s.io/klog"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -129,13 +129,16 @@ func (p *Package) String() string {
 }
 
 func (e *Package) Find(c *fi.Context) (*Package, error) {
-	target := c.Target.(*local.LocalTarget)
+	d, err := distros.FindDistribution("/")
+	if err != nil {
+		return nil, fmt.Errorf("unknown or unsupported distro: %v", err)
+	}
 
-	if target.HasTag(tags.TagOSFamilyDebian) {
+	if d.IsDebianFamily() {
 		return e.findDpkg(c)
 	}
 
-	if target.HasTag(tags.TagOSFamilyRHEL) {
+	if d.IsRHELFamily() {
 		return e.findYum(c)
 	}
 
@@ -270,6 +273,11 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 	packageManagerLock.Lock()
 	defer packageManagerLock.Unlock()
 
+	d, err := distros.FindDistribution("/")
+	if err != nil {
+		return fmt.Errorf("unknown or unsupported distro: %v", err)
+	}
+
 	if a == nil || changes.Version != nil {
 		klog.Infof("Installing package %q (dependencies: %v)", e.Name, e.Deps)
 		var pkgs []string
@@ -283,9 +291,9 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 			// Append file extension for local files
 			var ext string
-			if t.HasTag(tags.TagOSFamilyDebian) {
+			if d.IsDebianFamily() {
 				ext = ".deb"
-			} else if t.HasTag(tags.TagOSFamilyRHEL) {
+			} else if d.IsRHELFamily() {
 				ext = ".rpm"
 			} else {
 				return fmt.Errorf("unsupported package system")
@@ -315,11 +323,11 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 		var args []string
 		env := os.Environ()
-		if t.HasTag(tags.TagOSFamilyDebian) {
+		if d.IsDebianFamily() {
 			args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
 			env = append(env, "DEBIAN_FRONTEND=noninteractive")
-		} else if t.HasTag(tags.TagOSFamilyRHEL) {
-			if t.HasTag(tags.TagOSCentOS8) || t.HasTag(tags.TagOSRHEL8) {
+		} else if d.IsRHELFamily() {
+			if d == distros.DistributionCentos8 || d == distros.DistributionRhel8 {
 				args = []string{"/usr/bin/dnf", "install", "-y", "--setopt=install_weak_deps=False"}
 			} else {
 				args = []string{"/usr/bin/yum", "install", "-y"}
@@ -338,7 +346,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		}
 	} else {
 		if changes.Healthy != nil {
-			if t.HasTag(tags.TagOSFamilyDebian) {
+			if d.IsDebianFamily() {
 				args := []string{"dpkg", "--configure", "-a"}
 				klog.Infof("package is not healthy; running command %s", args)
 				cmd := exec.Command(args[0], args[1:]...)
@@ -348,7 +356,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				}
 
 				changes.Healthy = nil
-			} else if t.HasTag(tags.TagOSFamilyRHEL) {
+			} else if d.IsRHELFamily() {
 				// Not set on TagOSFamilyRHEL, we can't currently reach here anyway...
 				return fmt.Errorf("package repair not supported on RHEL/CentOS")
 			} else {
