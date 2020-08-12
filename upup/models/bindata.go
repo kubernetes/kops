@@ -3917,7 +3917,7 @@ func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s112YamlTemplate() (*as
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate = []byte(`# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.6/aws-k8s-cni.yaml
+var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate = []byte(`# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/release-1.6.4/config/v1.6/aws-k8s-cni.yaml
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -3998,6 +3998,7 @@ spec:
                 operator: In
                 values:
                 - amd64
+                - arm64
               - key: "eks.amazonaws.com/compute-type"
                 operator: NotIn
                 values:
@@ -4007,7 +4008,7 @@ spec:
       tolerations:
       - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.3" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.4" }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 61678
