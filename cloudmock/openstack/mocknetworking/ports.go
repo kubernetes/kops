@@ -78,8 +78,20 @@ func (m *MockClient) listPorts(w http.ResponseWriter, vals url.Values) {
 
 	ports := make([]ports.Port, 0)
 	nameFilter := vals.Get("name")
+	idFilter := vals.Get("id")
+	networkFilter := vals.Get("network_id")
+	deviceFilter := vals.Get("device_id")
 	for _, p := range m.ports {
 		if nameFilter != "" && nameFilter != p.Name {
+			continue
+		}
+		if deviceFilter != "" && deviceFilter != p.DeviceID {
+			continue
+		}
+		if networkFilter != "" && networkFilter != p.NetworkID {
+			continue
+		}
+		if idFilter != "" && idFilter != p.ID {
 			continue
 		}
 		ports = append(ports, p)
@@ -152,6 +164,7 @@ func (m *MockClient) createPort(w http.ResponseWriter, r *http.Request) {
 		Name:           create.Port.Name,
 		NetworkID:      create.Port.NetworkID,
 		SecurityGroups: *create.Port.SecurityGroups,
+		DeviceID:       create.Port.DeviceID,
 		FixedIPs:       fixedIPs,
 	}
 	m.ports[p.ID] = p
