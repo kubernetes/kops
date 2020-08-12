@@ -1365,6 +1365,12 @@ spec:
                     description: AuthenticationKubeconfig is the path to an Authentication
                       Kubeconfig
                     type: string
+                  authorizationAlwaysAllowPaths:
+                    description: AuthorizationAlwaysAllowPaths is the list of HTTP
+                      paths to skip during authorization
+                    items:
+                      type: string
+                    type: array
                   authorizationKubeconfig:
                     description: AuthorizationKubeconfig is the path to an Authorization
                       Kubeconfig
@@ -1795,6 +1801,12 @@ spec:
                     description: AuthenticationKubeconfig is the path to an Authentication
                       Kubeconfig
                     type: string
+                  authorizationAlwaysAllowPaths:
+                    description: AuthorizationAlwaysAllowPaths is the list of HTTP
+                      paths to skip during authorization
+                    items:
+                      type: string
+                    type: array
                   authorizationKubeconfig:
                     description: AuthorizationKubeconfig is the path to an Authorization
                       Kubeconfig
