@@ -26,7 +26,7 @@ CLUSTERS_0_11=(
 )
 
 # Terraform versions
-TAG_0_13=0.13.0-beta2
+TAG_0_13=0.13.0
 TAG_0_11=0.11.14
 
 PROVIDER_CACHE="${KOPS_ROOT}/.cache/terraform"
