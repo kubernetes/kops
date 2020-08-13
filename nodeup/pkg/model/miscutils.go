@@ -18,9 +18,9 @@ package model
 
 import (
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // MiscUtilsBuilder ensures that some system packages that are
@@ -34,10 +34,10 @@ var _ fi.ModelBuilder = &MiscUtilsBuilder{}
 // Build is responsible for configuring the miscellaneous packages we want installed
 func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 	switch b.Distribution {
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		klog.V(2).Infof("Detected ContainerOS; won't install misc. utils")
 		return nil
-	case distros.DistributionFlatcar:
+	case distributions.DistributionFlatcar:
 		klog.V(2).Infof("Detected Flatcar; won't install misc. utils")
 		return nil
 	}

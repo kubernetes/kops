@@ -22,11 +22,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 func TestContainerdPackageNames(t *testing.T) {
@@ -154,7 +154,7 @@ func runContainerdBuilderTest(t *testing.T, key string) {
 	basedir := path.Join("tests/containerdbuilder/", key)
 
 	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
-	nodeUpModelContext.Distribution = distros.DistributionXenial
+	nodeUpModelContext.Distribution = distributions.DistributionXenial
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return

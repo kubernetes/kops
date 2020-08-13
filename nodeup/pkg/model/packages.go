@@ -17,9 +17,9 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 
 	"k8s.io/klog/v2"
 )
@@ -64,14 +64,14 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
 		// Handle some packages differently for each distro
 		switch b.Distribution {
-		case distros.DistributionRhel7:
+		case distributions.DistributionRhel7:
 			// Easier to install container-selinux from CentOS than extras
 			c.AddTask(&nodetasks.Package{
 				Name:   "container-selinux",
 				Source: s("http://vault.centos.org/7.6.1810/extras/x86_64/Packages/container-selinux-2.107-1.el7_6.noarch.rpm"),
 				Hash:   s("7de4211fa0dfd240d8827b93763e1eb5f0d56411"),
 			})
-		case distros.DistributionAmazonLinux2:
+		case distributions.DistributionAmazonLinux2:
 			// Amazon Linux 2 doesn't have SELinux enabled by default
 		default:
 			c.AddTask(&nodetasks.Package{Name: "container-selinux"})

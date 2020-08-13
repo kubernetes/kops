@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package distros
+package distributions
 
 import (
 	"k8s.io/klog/v2"

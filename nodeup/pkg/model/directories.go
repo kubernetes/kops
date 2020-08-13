@@ -19,9 +19,9 @@ package model
 import (
 	"path/filepath"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // DirectoryBuilder creates required directories
@@ -33,7 +33,7 @@ var _ fi.ModelBuilder = &DirectoryBuilder{}
 
 // Build is responsible for specific directories are created - os dependent
 func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionContainerOS {
+	if b.Distribution == distributions.DistributionContainerOS {
 		dirname := "/home/kubernetes/bin"
 
 		c.AddTask(&nodetasks.File{
@@ -51,7 +51,7 @@ func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// We try to put things into /opt/kops
 	// On some OSes though, /opt/ is not writeable, and we can't even create the mountpoint
-	if b.Distribution == distros.DistributionContainerOS {
+	if b.Distribution == distributions.DistributionContainerOS {
 		src := "/mnt/stateful_partition/opt/"
 
 		c.AddTask(&nodetasks.File{

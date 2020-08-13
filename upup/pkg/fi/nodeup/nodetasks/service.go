@@ -26,10 +26,10 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 const (
@@ -127,7 +127,7 @@ func getSystemdStatus(name string) (map[string]string, error) {
 }
 
 func (e *Service) systemdSystemPath() (string, error) {
-	d, err := distros.FindDistribution("/")
+	d, err := distributions.FindDistribution("/")
 	if err != nil {
 		return "", fmt.Errorf("unknown or unsupported distro: %v", err)
 	}
@@ -136,9 +136,9 @@ func (e *Service) systemdSystemPath() (string, error) {
 		return debianSystemdSystemPath, nil
 	} else if d.IsRHELFamily() {
 		return centosSystemdSystemPath, nil
-	} else if d == distros.DistributionFlatcar {
+	} else if d == distributions.DistributionFlatcar {
 		return flatcarSystemdSystemPath, nil
-	} else if d == distros.DistributionContainerOS {
+	} else if d == distributions.DistributionContainerOS {
 		return containerosSystemdSystemPath, nil
 	} else {
 		return "", fmt.Errorf("unsupported systemd system")

@@ -28,7 +28,6 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/nodelabels"
@@ -37,6 +36,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 const (
@@ -145,10 +145,10 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 // kubeletPath returns the path of the kubelet based on distro
 func (b *KubeletBuilder) kubeletPath() string {
 	kubeletCommand := "/usr/local/bin/kubelet"
-	if b.Distribution == distros.DistributionFlatcar {
+	if b.Distribution == distributions.DistributionFlatcar {
 		kubeletCommand = "/opt/kubernetes/bin/kubelet"
 	}
-	if b.Distribution == distros.DistributionContainerOS {
+	if b.Distribution == distributions.DistributionContainerOS {
 		kubeletCommand = "/home/kubernetes/bin/kubelet"
 	}
 	return kubeletCommand
@@ -299,7 +299,7 @@ func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 // usesContainerizedMounter returns true if we use the containerized mounter
 func (b *KubeletBuilder) usesContainerizedMounter() bool {
 	switch b.Distribution {
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		return true
 	default:
 		return false
@@ -482,11 +482,11 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 
 	if c.VolumePluginDirectory == "" {
 		switch b.Distribution {
-		case distros.DistributionContainerOS:
+		case distributions.DistributionContainerOS:
 			// Default is different on ContainerOS, see https://github.com/kubernetes/kubernetes/pull/58171
 			c.VolumePluginDirectory = "/home/kubernetes/flexvolume/"
 
-		case distros.DistributionFlatcar:
+		case distributions.DistributionFlatcar:
 			// The /usr directory is read-only for Flatcar
 			c.VolumePluginDirectory = "/var/lib/kubelet/volumeplugins/"
 
@@ -498,7 +498,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	// In certain configurations systemd-resolved will put the loopback address 127.0.0.53 as a nameserver into /etc/resolv.conf
 	// https://github.com/coredns/coredns/blob/master/plugin/loop/README.md#troubleshooting-loops-in-kubernetes-clusters
 	if c.ResolverConfig == nil {
-		if b.Distribution == distros.DistributionBionic || b.Distribution == distros.DistributionFocal {
+		if b.Distribution == distributions.DistributionBionic || b.Distribution == distributions.DistributionFocal {
 			c.ResolverConfig = s("/run/systemd/resolve/resolv.conf")
 		}
 	}

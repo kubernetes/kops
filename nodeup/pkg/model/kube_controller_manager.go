@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -29,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/proxy"
 
@@ -146,11 +146,11 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	// Ensure the Volume Plugin dir is mounted on the same path as the host machine so DaemonSet deployment is possible
 	if volumePluginDir == "" {
 		switch b.Distribution {
-		case distros.DistributionContainerOS:
+		case distributions.DistributionContainerOS:
 			// Default is different on ContainerOS, see https://github.com/kubernetes/kubernetes/pull/58171
 			volumePluginDir = "/home/kubernetes/flexvolume/"
 
-		case distros.DistributionFlatcar:
+		case distributions.DistributionFlatcar:
 			// The /usr directory is read-only for Flatcar
 			volumePluginDir = "/var/lib/kubelet/volumeplugins/"
 
