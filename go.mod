@@ -93,7 +93,7 @@ require (
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
-	github.com/spotinst/spotinst-sdk-go v1.56.0
+	github.com/spotinst/spotinst-sdk-go v1.58.0
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli v1.20.0
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55

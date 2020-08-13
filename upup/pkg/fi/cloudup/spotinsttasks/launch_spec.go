@@ -45,6 +45,7 @@ type LaunchSpec struct {
 	Subnets            []*awstasks.Subnet
 	IAMInstanceProfile *awstasks.IAMInstanceProfile
 	ImageID            *string
+	InstanceTypes      []string
 	Tags               map[string]string
 	RootVolumeOpts     *RootVolumeOpts
 	AutoScalerOpts     *AutoScalerOpts
@@ -204,6 +205,13 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 			if subnetSlicesEqualIgnoreOrder(actual.Subnets, o.Subnets) {
 				actual.Subnets = o.Subnets
 			}
+		}
+	}
+
+	// Instance types.
+	{
+		if itypes := spec.InstanceTypes; itypes != nil {
+			actual.InstanceTypes = itypes
 		}
 	}
 
@@ -376,6 +384,13 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Instance types.
+	{
+		if e.InstanceTypes != nil {
+			spec.SetInstanceTypes(e.InstanceTypes)
+		}
+	}
+
 	// Tags.
 	{
 		if e.Tags != nil {
@@ -545,6 +560,15 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 		}
 	}
 
+	// Instance types.
+	{
+		if changes.InstanceTypes != nil {
+			spec.SetInstanceTypes(e.InstanceTypes)
+			changes.InstanceTypes = nil
+			changed = true
+		}
+	}
+
 	// Tags.
 	{
 		if changes.Tags != nil {
@@ -647,6 +671,7 @@ type terraformLaunchSpec struct {
 	UserData                 *terraform.Literal             `json:"user_data,omitempty" cty:"user_data"`
 	IAMInstanceProfile       *terraform.Literal             `json:"iam_instance_profile,omitempty" cty:"iam_instance_profile"`
 	KeyName                  *terraform.Literal             `json:"key_name,omitempty" cty:"key_name"`
+	InstanceTypes            []string                       `json:"instance_types,omitempty" cty:"instance_types"`
 	SubnetIDs                []*terraform.Literal           `json:"subnet_ids,omitempty" cty:"subnet_ids"`
 	SecurityGroups           []*terraform.Literal           `json:"security_groups,omitempty" cty:"security_groups"`
 	Taints                   []*corev1.Taint                `json:"taints,omitempty" cty:"taints"`
@@ -659,8 +684,9 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformLaunchSpec{
-		Name:    e.Name,
-		OceanID: e.Ocean.TerraformLink(),
+		Name:          e.Name,
+		OceanID:       e.Ocean.TerraformLink(),
+		InstanceTypes: e.InstanceTypes,
 	}
 
 	// Image.
