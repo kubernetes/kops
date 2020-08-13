@@ -22,6 +22,7 @@ type LaunchSpec struct {
 	RootVolumeSize      *int                  `json:"rootVolumeSize,omitempty"`
 	SecurityGroupIDs    []string              `json:"securityGroupIds,omitempty"`
 	SubnetIDs           []string              `json:"subnetIds,omitempty"`
+	InstanceTypes       []string              `json:"instanceTypes,omitempty"`
 	ResourceLimits      *ResourceLimits       `json:"resourceLimits,omitempty"`
 	IAMInstanceProfile  *IAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
 	AutoScale           *AutoScale            `json:"autoScale,omitempty"`
@@ -393,6 +394,13 @@ func (o *LaunchSpec) SetSecurityGroupIDs(v []string) *LaunchSpec {
 func (o *LaunchSpec) SetSubnetIDs(v []string) *LaunchSpec {
 	if o.SubnetIDs = v; o.SubnetIDs == nil {
 		o.nullFields = append(o.nullFields, "SubnetIDs")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetInstanceTypes(v []string) *LaunchSpec {
+	if o.InstanceTypes = v; o.InstanceTypes == nil {
+		o.nullFields = append(o.nullFields, "InstanceTypes")
 	}
 	return o
 }
