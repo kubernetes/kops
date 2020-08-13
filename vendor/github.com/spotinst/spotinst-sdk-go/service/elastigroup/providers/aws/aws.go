@@ -356,6 +356,7 @@ type Route53Integration struct {
 type Domain struct {
 	HostedZoneID      *string      `json:"hostedZoneId,omitempty"`
 	SpotinstAccountID *string      `json:"spotinstAccountId,omitempty"`
+	RecordSetType     *string      `json:"recordSetType,omitempty"`
 	RecordSets        []*RecordSet `json:"recordSets,omitempty"`
 
 	forceSendFields []string
@@ -363,8 +364,9 @@ type Domain struct {
 }
 
 type RecordSet struct {
-	UsePublicIP *bool   `json:"usePublicIp,omitempty"`
-	Name        *string `json:"name,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	UsePublicIP  *bool   `json:"usePublicIp,omitempty"`
+	UsePublicDNS *bool   `json:"usePublicDns,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -2083,6 +2085,13 @@ func (o *Domain) SetSpotinstAccountID(v *string) *Domain {
 	return o
 }
 
+func (o *Domain) SetRecordSetType(v *string) *Domain {
+	if o.RecordSetType = v; o.RecordSetType == nil {
+		o.nullFields = append(o.nullFields, "RecordSetType")
+	}
+	return o
+}
+
 func (o *Domain) SetRecordSets(v []*RecordSet) *Domain {
 	if o.RecordSets = v; o.RecordSets == nil {
 		o.nullFields = append(o.nullFields, "RecordSets")
@@ -2100,6 +2109,13 @@ func (o RecordSet) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
+func (o *RecordSet) SetName(v *string) *RecordSet {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
 func (o *RecordSet) SetUsePublicIP(v *bool) *RecordSet {
 	if o.UsePublicIP = v; o.UsePublicIP == nil {
 		o.nullFields = append(o.nullFields, "UsePublicIP")
@@ -2107,9 +2123,9 @@ func (o *RecordSet) SetUsePublicIP(v *bool) *RecordSet {
 	return o
 }
 
-func (o *RecordSet) SetName(v *string) *RecordSet {
-	if o.Name = v; o.Name == nil {
-		o.nullFields = append(o.nullFields, "Name")
+func (o *RecordSet) SetUsePublicDNS(v *bool) *RecordSet {
+	if o.UsePublicDNS = v; o.UsePublicDNS == nil {
+		o.nullFields = append(o.nullFields, "UsePublicDNS")
 	}
 	return o
 }
