@@ -18,7 +18,6 @@ package distros
 
 import (
 	"k8s.io/klog"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 )
 
 type Distribution string
@@ -37,50 +36,6 @@ var (
 	DistributionFlatcar      Distribution = "flatcar"
 	DistributionContainerOS  Distribution = "containeros"
 )
-
-func (d Distribution) BuildTags() []string {
-	var t []string
-
-	switch d {
-	case DistributionDebian9, DistributionDebian10:
-		t = []string{} // trying to move away from tags
-	case DistributionXenial:
-		t = []string{"_xenial"}
-	case DistributionBionic:
-		t = []string{"_bionic"}
-	case DistributionFocal:
-		t = []string{"_focal"}
-	case DistributionAmazonLinux2:
-		t = []string{"_amazonlinux2"}
-	case DistributionCentos7:
-		t = []string{"_centos7"}
-	case DistributionRhel7:
-		t = []string{"_rhel7"}
-	case DistributionCentos8:
-		t = []string{"_centos8"}
-	case DistributionRhel8:
-		t = []string{"_rhel8"}
-	case DistributionFlatcar:
-		t = []string{"_flatcar"}
-	case DistributionContainerOS:
-		t = []string{"_containeros"}
-	default:
-		klog.Fatalf("unknown distribution: %s", d)
-		return nil
-	}
-
-	if d.IsDebianFamily() {
-		t = append(t, tags.TagOSFamilyDebian)
-	}
-	if d.IsRHELFamily() {
-		t = append(t, tags.TagOSFamilyRHEL)
-	}
-	if d.IsSystemd() {
-		t = append(t, tags.TagSystemd)
-	}
-
-	return t
-}
 
 func (d Distribution) IsDebianFamily() bool {
 	switch d {
