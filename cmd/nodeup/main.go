@@ -36,7 +36,7 @@ const (
 func main() {
 	klog.InitFlags(nil)
 
-	var flagConf, flagCacheDir, flagRootFS, gitVersion string
+	var flagConf, flagCacheDir, gitVersion string
 	var flagRetries int
 	var dryrun, installSystemdUnit bool
 	target := "direct"
@@ -47,7 +47,6 @@ func main() {
 	fmt.Printf("nodeup version %s%s\n", kops.Version, gitVersion)
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
 	flag.StringVar(&flagCacheDir, "cache", "/var/cache/nodeup", "the location for the local asset cache")
-	flag.StringVar(&flagRootFS, "rootfs", "/", "the location of the machine root (for running in a container)")
 	flag.IntVar(&flagRetries, "retries", -1, "maximum number of retries on failure: -1 means retry forever")
 	flag.BoolVar(&dryrun, "dryrun", false, "Don't create cloud resources; just show what would be done")
 	flag.StringVar(&target, "target", target, "Target - direct, cloudinit")
@@ -101,7 +100,6 @@ func main() {
 			i := bootstrap.Installation{
 				CacheDir: flagCacheDir,
 				Command:  command,
-				FSRoot:   flagRootFS,
 			}
 			i.RunTasksOptions.InitDefaults()
 			i.RunTasksOptions.MaxTaskDuration = 5 * time.Minute
@@ -115,7 +113,6 @@ func main() {
 				ConfigLocation: flagConf,
 				Target:         target,
 				CacheDir:       flagCacheDir,
-				FSRoot:         flagRootFS,
 			}
 			err = cmd.Run(os.Stdout)
 			if err == nil {
