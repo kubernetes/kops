@@ -148,19 +148,6 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=Flatcar-stable-*-hvm"
 ```
 
-### Kope.io
-
-The images from _kope.io_ are based on [Debian 9 (Stretch)](#debian-9-stretch). These images include all the necessary files and packages to run Kubernetes, making node startup faster. Other than that, the changes to the official Debian images are [minimal](https://github.com/kubernetes-sigs/image-builder/blob/master/images/kube-deploy/imagebuilder/templates/1.18-stretch.yml#L174-L198).
-
-The latest image names are kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable), but all available images can be listed using:
-
-```bash
-aws ec2 describe-images --region us-east-1 --output table \
-  --owners 383156758163 \
-  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=*-debian-stretch-*"
-```
-
 ### RHEL 7
 
 RHEL 7 is based on Kernel version **3.10** which has a considerable number of known bugs that affect it and may be noticed in production clusters:
@@ -232,6 +219,12 @@ You should consider using [Flatcar](#flatcar) as a replacement.
 ### Debian 8 (Jessie)
 
 Support for Debian 8 (Jessie) is deprecated and was removed in Kops 1.18.
+
+### Kope.io
+
+Support for _kope.io_ images is deprecated. These images were the default until Kubernetes 1.18, when they were replaced by the [official Ubuntu 20.04](#ubuntu-2004-focal) images. 
+
+The _kope.io_ images were based on [Debian 9 (Stretch)](#debian-9-stretch) and had all packages required by Kops pre-installed. Other than that, the changes to the official Debian images were [minimal](https://github.com/kubernetes-sigs/image-builder/blob/master/images/kube-deploy/imagebuilder/templates/1.18-stretch.yml#L174-L198).
 
 ### Ubuntu 16.04 (Xenial)
 
