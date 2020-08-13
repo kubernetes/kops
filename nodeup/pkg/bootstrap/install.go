@@ -22,7 +22,6 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/systemd"
@@ -33,20 +32,16 @@ import (
 )
 
 type Installation struct {
-	FSRoot          string
 	CacheDir        string
 	RunTasksOptions fi.RunTasksOptions
 	Command         []string
 }
 
 func (i *Installation) Run() error {
-	distribution, err := distros.FindDistribution(i.FSRoot)
+	_, err := distros.FindDistribution("/")
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
-
-	tags := sets.NewString()
-	tags.Insert(distribution.BuildTags()...)
 
 	tasks := make(map[string]fi.Task)
 
@@ -75,7 +70,6 @@ func (i *Installation) Run() error {
 
 	target := &local.LocalTarget{
 		CacheDir: i.CacheDir,
-		Tags:     tags,
 	}
 
 	checkExisting := true
