@@ -1,6 +1,6 @@
 # Images
 
-Starting Kubernetes 1.18, the default images used by _kops_ are the **[official Ubuntu 20.04](#ubuntu-2004-focal)** images.
+As of Kubernetes 1.18 the default images used by _kops_ are the **[official Ubuntu 20.04](#ubuntu-2004-focal)** images.
 
 You can choose a different image for an instance group by editing it with `kops edit ig nodes`. You should see an `image` field in one of the following formats:
 
@@ -8,7 +8,7 @@ You can choose a different image for an instance group by editing it with `kops 
 * `<owner>/<name>` specifies an AMI by its owner's account ID  and name properties
 * `<alias>/<name>` specifies an AMI by its [owner's alias](#owner-aliases) and name properties
 
-Using the AMI id is precise, but ids vary by region. It is often more convenient to use the `<owner/alias>/<name>`, if equivalent images have been copied to various regions with the same name. 
+Using the AMI id is precise, but ids vary by region. It is often more convenient to use the `<owner/alias>/<name>` if equivalent images with the same name have been copied to other regions. 
 
 ```yaml
 image: ami-00579fbb15b954340
@@ -92,7 +92,7 @@ Please [report](https://github.com/kubernetes/kops/issues/new/choose) any change
 
 ### Debian 9 (Stretch)
 
-Debian 9 is based on Kernel version **4.9** which has number of known bugs that affect it and may be noticed with larger clusters:
+Debian 9 is based on Kernel version **4.9** which has a number of known bugs that affect it and which may be noticed with larger clusters:
 
 This release is **EOL**, which means that the Debian Security Team no longer handles security fixes. That is now the responsibility/purview of the LTS team, which is a group of volunteers who are paid by donations to Debian LTS.
 
@@ -181,7 +181,7 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ### Ubuntu 18.04 (Bionic)
 
-Ubuntu 18.04 is based on Kernel version **4.15** which has number of known bugs that affect it and may be noticed with larger clusters:
+Ubuntu 18.04 is based on Kernel version **4.15** which has a number of known bugs that affect it and which may be noticed with larger clusters:
 
 * [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
 * [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
@@ -212,13 +212,13 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ### CoreOS
 
-Support for CoreOS is deprecated and was removed in _kops_ 1.18.
+Support for CoreOS was removed in _kops_ 1.18.
 
 You should consider using [Flatcar](#flatcar) as a replacement.
 
 ### Debian 8 (Jessie)
 
-Support for Debian 8 (Jessie) is deprecated and was removed in _kops_ 1.18.
+Support for Debian 8 (Jessie) was removed in _kops_ 1.18.
 
 ### Kope.io
 
