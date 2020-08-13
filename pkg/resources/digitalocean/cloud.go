@@ -23,6 +23,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
@@ -108,8 +109,45 @@ func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 
 // DeleteInstance is not implemented yet, is func needs to delete a DO instance.
 func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
-	klog.V(8).Info("digitalocean cloud provider DeleteInstance not implemented yet")
-	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud instances at this time")
+
+	dropletID, err := strconv.Atoi(i.ID)
+	if err != nil {
+		return fmt.Errorf("failed to convert droplet ID to int: %s", err)
+	}
+
+	_, _, err = c.Client.DropletActions.Shutdown(context.TODO(), dropletID)
+	if err != nil {
+		return fmt.Errorf("error stopping instance %q: %v", dropletID, err)
+	}
+
+	// Wait for 5 min to stop the instance
+	for i := 0; i < 5; i++ {
+		droplet, _, err := c.Client.Droplets.Get(context.TODO(), dropletID)
+		if err != nil {
+			return fmt.Errorf("error describing instance %q: %v", dropletID, err)
+		}
+
+		klog.V(8).Infof("stopping DO instance %q, current Status: %q", droplet, droplet.Status)
+
+		if droplet.Status == "off" {
+			break
+		}
+
+		if i == 5 {
+			return fmt.Errorf("fail to stop DO instance %v in 5 mins", dropletID)
+		}
+
+		time.Sleep(time.Minute * 1)
+	}
+
+	_, err = c.Client.Droplets.Delete(context.TODO(), dropletID)
+	if err != nil {
+		return fmt.Errorf("error stopping instance %q: %v", dropletID, err)
+	}
+
+	klog.V(8).Infof("deleted droplet instance %q", dropletID)
+
+	return nil
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
@@ -145,6 +183,10 @@ func (c *Cloud) VolumeActions() godo.StorageActionsService {
 
 func (c *Cloud) Droplets() godo.DropletsService {
 	return c.Client.Droplets
+}
+
+func (c *Cloud) DropletActions() godo.DropletActionsService {
+	return c.Client.DropletActions
 }
 
 func (c *Cloud) LoadBalancers() godo.LoadBalancersService {
