@@ -21,7 +21,6 @@ go_library(
     importpath = "k8s.io/kops/upup/pkg/fi/nodeup/nodetasks",
     visibility = ["//visibility:public"],
     deps = [
-        "//nodeup/pkg/distros:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
         "//pkg/backoff:go_default_library",
@@ -32,6 +31,7 @@ go_library(
         "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
+        "//util/pkg/distributions:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
