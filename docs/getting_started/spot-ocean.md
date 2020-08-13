@@ -157,6 +157,7 @@ metadata:
 | `spotinst.io/ocean-default-launchspec` | Specify whether to use the InstanceGroup's spec as the default Launch Spec for the Ocean cluster. | none |
 | `spotinst.io/ocean-instance-types-whitelist` | Specify whether to whitelist specific instance types. | none |
 | `spotinst.io/ocean-instance-types-blacklist` | Specify whether to blacklist specific instance types. | none |
+| `spotinst.io/ocean-instance-types` | Specify a list of instance types that should be used by the Ocean Launch Spec. | none |
 | `spotinst.io/autoscaler-disabled` | Specify whether the auto scaler should be disabled. | `false` |
 | `spotinst.io/autoscaler-default-node-labels` | Specify whether default node labels should be set for the auto scaler. | `false` |
 | `spotinst.io/autoscaler-headroom-cpu-per-unit` | Specify the number of CPUs to allocate for headroom. CPUs are denoted in millicores, where 1000 millicores = 1 vCPU. | none |
