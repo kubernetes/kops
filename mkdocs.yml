@@ -148,22 +148,22 @@ nav:
     - Vendoring: "development/vendoring.md"
     - Ports: "development/ports.md"
   - Releases:
-    - 1.18-beta: releases/1.18-NOTES.md
-    - 1.17: releases/1.17-NOTES.md
-    - 1.16: releases/1.16-NOTES.md
-    - 1.15: releases/1.15-NOTES.md
-    - 1.14: releases/1.14-NOTES.md
-    - 1.13: releases/1.13-NOTES.md
-    - 1.12: releases/1.12-NOTES.md
-    - 1.11: releases/1.11-NOTES.md
-    - 1.10: releases/1.10-NOTES.md
-    - 1.9: releases/1.9-NOTES.md
-    - 1.8.1: releases/1.8.1.md
-    - 1.8: releases/1.8-NOTES.md
-    - 1.7.1: releases/1.7.1.md
-    - 1.7: releases/1.7-NOTES.md
-    - 1.6.2: releases/1.6.2.md
-    - 1.6.1: releases/1.6.1.md
-    - 1.6.0: releases/1.6-NOTES.md
-    - 1.6.0-alpha: releases/1.6.0-alpha.1.md
-    - legacy-changes.md: releases/legacy-changes.md
+    - "1.18": releases/1.18-NOTES.md
+    - "1.17": releases/1.17-NOTES.md
+    - "1.16": releases/1.16-NOTES.md
+    - "1.15": releases/1.15-NOTES.md
+    - "1.14": releases/1.14-NOTES.md
+    - "1.13": releases/1.13-NOTES.md
+    - "1.12": releases/1.12-NOTES.md
+    - "1.11": releases/1.11-NOTES.md
+    - "1.10": releases/1.10-NOTES.md
+    - "1.9": releases/1.9-NOTES.md
+    - "1.8.1": releases/1.8.1.md
+    - "1.8": releases/1.8-NOTES.md
+    - "1.7.1": releases/1.7.1.md
+    - "1.7": releases/1.7-NOTES.md
+    - "1.6.2": releases/1.6.2.md
+    - "1.6.1": releases/1.6.1.md
+    - "1.6.0": releases/1.6-NOTES.md
+    - "1.6.0-alpha": releases/1.6.0-alpha.1.md
+    - Legacy: releases/legacy-changes.md
