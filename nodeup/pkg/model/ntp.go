@@ -18,9 +18,9 @@ package model
 
 import (
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // NTPBuilder installs and starts NTP, to ensure accurate clock times.
@@ -35,10 +35,10 @@ var _ fi.ModelBuilder = &NTPBuilder{}
 // Build is responsible for configuring NTP
 func (b *NTPBuilder) Build(c *fi.ModelBuilderContext) error {
 	switch b.Distribution {
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install ntp")
 		return nil
-	case distros.DistributionFlatcar:
+	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install ntp")
 		return nil
 	}

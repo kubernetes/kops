@@ -21,10 +21,10 @@ import (
 	"sort"
 	"strconv"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -140,7 +140,7 @@ type packageVersion struct {
 	ExtraPackages map[string]packageInfo
 
 	PackageVersion string
-	Distros        []distros.Distribution
+	Distros        []distributions.Distribution
 	// List of dependencies that can be installed using the system's package
 	// manager (e.g. apt-get install or yum install).
 	Dependencies  []string
@@ -156,7 +156,7 @@ type packageVersion struct {
 }
 
 // Match package version against configured values
-func (d *packageVersion) matches(arch architectures.Architecture, packageVersion string, distro distros.Distribution) bool {
+func (d *packageVersion) matches(arch architectures.Architecture, packageVersion string, distro distributions.Distribution) bool {
 	if d.PackageVersion != packageVersion {
 		return false
 	}
