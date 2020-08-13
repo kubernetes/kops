@@ -516,7 +516,7 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.4.0
 ## explicit
 github.com/spf13/viper
-# github.com/spotinst/spotinst-sdk-go v1.56.0
+# github.com/spotinst/spotinst-sdk-go v1.58.0
 ## explicit
 github.com/spotinst/spotinst-sdk-go/service/elastigroup
 github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws
