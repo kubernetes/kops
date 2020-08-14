@@ -6492,6 +6492,7 @@ spec:
         - --run-router=true
         - --run-firewall=true
         - --run-service-proxy=true
+        - --bgp-graceful-restart=true
         - --kubeconfig=/var/lib/kube-router/kubeconfig
         - --metrics-port=12013
         env:
