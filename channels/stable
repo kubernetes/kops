@@ -58,7 +58,7 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
-  - range: ">=1.18.0-alpha.1"
+  - range: ">=1.18.0"
     recommendedVersion: 1.18.6
     requiredVersion: 1.18.0
   - range: ">=1.17.0"
