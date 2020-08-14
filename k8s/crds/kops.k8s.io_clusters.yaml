@@ -889,6 +889,8 @@ spec:
                     type: boolean
                   legacy:
                     type: boolean
+                  permissionsBoundary:
+                    type: string
                 required:
                 - legacy
                 type: object
