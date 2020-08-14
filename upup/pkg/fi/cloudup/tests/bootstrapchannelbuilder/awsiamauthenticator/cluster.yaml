@@ -8,7 +8,8 @@ spec:
     - manifest: s3://somebucket/example.yaml
   authentication:
     aws:
-      backendMode: CRD
+      backendMode: CRD,MountedFile
+      clusterID: custom-cluster-ID
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
