@@ -3203,6 +3203,7 @@ func Convert_kops_IAMProfileSpec_To_v1alpha2_IAMProfileSpec(in *kops.IAMProfileS
 func autoConvert_v1alpha2_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec, s conversion.Scope) error {
 	out.Legacy = in.Legacy
 	out.AllowContainerRegistry = in.AllowContainerRegistry
+	out.PermissionsBoundary = in.PermissionsBoundary
 	return nil
 }
 
@@ -3214,6 +3215,7 @@ func Convert_v1alpha2_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec, s 
 func autoConvert_kops_IAMSpec_To_v1alpha2_IAMSpec(in *kops.IAMSpec, out *IAMSpec, s conversion.Scope) error {
 	out.Legacy = in.Legacy
 	out.AllowContainerRegistry = in.AllowContainerRegistry
+	out.PermissionsBoundary = in.PermissionsBoundary
 	return nil
 }
 
