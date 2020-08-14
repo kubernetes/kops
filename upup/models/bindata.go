@@ -355,8 +355,8 @@ spec:
         {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
         - --config=/etc/aws-iam-authenticator/config.yaml
         {{- end }}
-        {{- if or .Authentication.Aws.ClusterID (not (contains "MountedFile" .Authentication.Aws.BackendMode))}}
-        - --cluster-id={{ or .Authentication.Aws.ClusterID .MasterPublicName }}
+        {{- if or .Authentication.Aws.ClusterID (and .Authentication.Aws.BackendMode (not (contains "MountedFile" .Authentication.Aws.BackendMode)))}}
+        - --cluster-id={{ or .Authentication.Aws.ClusterID ClusterName }}
         {{- end }}
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
