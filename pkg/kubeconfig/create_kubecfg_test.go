@@ -71,10 +71,17 @@ func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {
 }
 
 // build a generic minimal cluster
-func buildMinimalCluster(clusterName string, masterPublicName string) *kops.Cluster {
+func buildMinimalCluster(clusterName string, masterPublicName string, lbCert bool) *kops.Cluster {
 	cluster := testutils.BuildMinimalCluster(clusterName)
 	cluster.Spec.MasterPublicName = masterPublicName
 	cluster.Spec.MasterInternalName = fmt.Sprintf("internal.%v", masterPublicName)
+	if lbCert {
+		cluster.Spec.API = &kops.AccessSpec{
+			LoadBalancer: &kops.LoadBalancerAccessSpec{
+				SSLCertificate: "cert-arn",
+			},
+		}
+	}
 	return cluster
 }
 
@@ -107,9 +114,11 @@ func TestBuildKubecfg(t *testing.T) {
 		useKopsAuthenticationPlugin bool
 	}
 
-	publiccluster := buildMinimalCluster("testcluster", "testcluster.test.com")
-	emptyMasterPublicNameCluster := buildMinimalCluster("emptyMasterPublicNameCluster", "")
-	gossipCluster := buildMinimalCluster("testgossipcluster.k8s.local", "")
+	publicCluster := buildMinimalCluster("testcluster", "testcluster.test.com", false)
+	emptyMasterPublicNameCluster := buildMinimalCluster("emptyMasterPublicNameCluster", "", false)
+	gossipCluster := buildMinimalCluster("testgossipcluster.k8s.local", "", false)
+	certCluster := buildMinimalCluster("testcluster", "testcluster.test.com", true)
+	certGossipCluster := buildMinimalCluster("testgossipcluster.k8s.local", "", true)
 
 	tests := []struct {
 		name           string
@@ -121,7 +130,7 @@ func TestBuildKubecfg(t *testing.T) {
 		{
 			name: "Test Kube Config Data For Public DNS with admin",
 			args: args{
-				cluster: publiccluster,
+				cluster: publicCluster,
 				status:  fakeStatusStore{},
 				admin:   DefaultKubecfgAdminLifetime,
 				user:    "",
@@ -135,9 +144,43 @@ func TestBuildKubecfg(t *testing.T) {
 			wantClientCert: true,
 		},
 		{
+			name: "Test Kube Config Data For Public DNS with admin and secondary port",
+			args: args{
+				cluster: certCluster,
+				status:  fakeStatusStore{},
+				admin:   DefaultKubecfgAdminLifetime,
+			},
+			want: &KubeconfigBuilder{
+				Context:    "testcluster",
+				Server:     "https://testcluster.test.com:8443",
+				CACert:     []byte(certData),
+				ClientCert: []byte(certData),
+				ClientKey:  []byte(privatekeyData),
+				User:       "testcluster",
+			},
+			wantClientCert: false,
+		},
+		{
+			name: "Test Kube Config Data For Public DNS without admin and with ACM certificate",
+			args: args{
+				cluster: certCluster,
+				status:  fakeStatusStore{},
+				admin:   0,
+			},
+			want: &KubeconfigBuilder{
+				Context:    "testcluster",
+				Server:     "https://testcluster.test.com",
+				CACert:     nil,
+				ClientCert: nil,
+				ClientKey:  nil,
+				User:       "testcluster",
+			},
+			wantClientCert: false,
+		},
+		{
 			name: "Test Kube Config Data For Public DNS without admin",
 			args: args{
-				cluster: publiccluster,
+				cluster: publicCluster,
 				status:  fakeStatusStore{},
 				admin:   0,
 				user:    "myuser",
@@ -191,7 +234,7 @@ func TestBuildKubecfg(t *testing.T) {
 		{
 			name: "Public DNS with kops auth plugin",
 			args: args{
-				cluster:                     publiccluster,
+				cluster:                     publicCluster,
 				status:                      fakeStatusStore{},
 				admin:                       0,
 				useKopsAuthenticationPlugin: true,
@@ -214,7 +257,7 @@ func TestBuildKubecfg(t *testing.T) {
 		{
 			name: "Test Kube Config Data For internal DNS name with admin",
 			args: args{
-				cluster:  publiccluster,
+				cluster:  publicCluster,
 				status:   fakeStatusStore{},
 				admin:    DefaultKubecfgAdminLifetime,
 				internal: true,
@@ -226,6 +269,29 @@ func TestBuildKubecfg(t *testing.T) {
 				User:    "testcluster",
 			},
 			wantClientCert: true,
+		},
+		{
+			name: "Test Kube Config Data For Gossip cluster with admin and secondary port",
+			args: args{
+				cluster: certGossipCluster,
+				status: fakeStatusStore{
+					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+						return []kops.ApiIngressStatus{
+							{
+								Hostname: "elbHostName",
+							},
+						}, nil
+					},
+				},
+				admin: DefaultKubecfgAdminLifetime,
+			},
+			want: &KubeconfigBuilder{
+				Context: "testgossipcluster.k8s.local",
+				Server:  "https://elbHostName:8443",
+				CACert:  []byte(certData),
+				User:    "testgossipcluster.k8s.local",
+			},
+			wantClientCert: false,
 		},
 	}
 	for _, tt := range tests {

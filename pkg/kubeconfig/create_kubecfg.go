@@ -99,11 +99,17 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 
 	b := NewKubeconfigBuilder()
 
+	// Use the secondary load balancer port if a certificate is on the primary listener
+	if admin != 0 && cluster.Spec.API != nil && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+		server = server + ":8443"
+	}
+
 	b.Context = clusterName
 	b.Server = server
 
-	// add the CA Cert to the kubeconfig only if we didn't specify a SSL cert for the LB or are targeting the internal DNS name
-	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || internal {
+	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
+	//  or if we're using admin credentials and the secondary port
+	if admin != 0 || cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || internal {
 		cert, _, _, err := keyStore.FindKeypair(fi.CertificateIDCA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
