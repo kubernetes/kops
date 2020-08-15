@@ -456,14 +456,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	clusterTags, err := buildCloudupTags(cluster)
-	if err != nil {
-		return err
-	}
-
 	tf := &TemplateFunctions{
 		KopsModelContext: *modelContext,
-		tags:             clusterTags,
 	}
 
 	{
