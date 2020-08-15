@@ -151,17 +151,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		t := &fitasks.Keypair{
-			Name:      fi.String("kubecfg"),
-			Lifecycle: b.Lifecycle,
-			Subject:   "o=" + rbac.SystemPrivilegedGroup + ",cn=kubecfg",
-			Type:      "client",
-			Signer:    defaultCA,
-		}
-		c.AddTask(t)
-	}
-
-	{
 		aggregatorCA := &fitasks.Keypair{
 			Name:      fi.String("apiserver-aggregator-ca"),
 			Lifecycle: b.Lifecycle,

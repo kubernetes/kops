@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,7 +54,7 @@ var (
 type ExportKubecfgOptions struct {
 	KubeConfigPath string
 	all            bool
-	admin          bool
+	admin          time.Duration
 	user           string
 }
 
@@ -76,7 +77,8 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "the location of the kubeconfig file to create.")
 	cmd.Flags().BoolVar(&options.all, "all", options.all, "export all clusters from the kops state store")
-	cmd.Flags().BoolVar(&options.admin, "admin", options.admin, "export the cluster admin user and add it to the context")
+	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "export a cluster admin user credential with the given lifetime and add it to the cluster context")
+	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.user, "user", options.user, "add an existing user to the cluster context")
 
 	return cmd
@@ -92,7 +94,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 			return fmt.Errorf("cannot use both --all flag and positional arguments")
 		}
 	}
-	if options.admin && options.user != "" {
+	if options.admin != 0 && options.user != "" {
 		return fmt.Errorf("cannot use both --admin and --user")
 	}
 

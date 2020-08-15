@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -67,7 +68,7 @@ type UpdateClusterOptions struct {
 	AllowKopsDowngrade bool
 
 	CreateKubecfg bool
-	admin         bool
+	admin         time.Duration
 	user          string
 
 	Phase string
@@ -116,7 +117,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
-	cmd.Flags().BoolVar(&options.admin, "admin", options.admin, "Also export the admin user. Implies --create-kube-config")
+	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "Also export a cluster admin user credential with the specified lifetime and add it to the cluster context")
+	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.user, "user", options.user, "Existing user to add to the cluster context. Implies --create-kube-config")
 	cmd.Flags().BoolVar(&options.AllowKopsDowngrade, "allow-kops-downgrade", options.AllowKopsDowngrade, "Allow an older version of kops to update the cluster than last used")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
@@ -141,15 +143,15 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 	isDryrun := false
 	targetName := c.Target
 
-	if c.admin && c.user != "" {
+	if c.admin != 0 && c.user != "" {
 		return nil, fmt.Errorf("cannot use both --admin and --user")
 	}
 
-	if c.CreateKubecfg && !c.admin && c.user == "" {
+	if c.CreateKubecfg && c.admin == 0 && c.user == "" {
 		return nil, fmt.Errorf("--create-kube-config requires that either --admin or --user is set")
 	}
 
-	if c.admin && !c.CreateKubecfg {
+	if c.admin != 0 && !c.CreateKubecfg {
 		klog.Info("--admin implies --create-kube-config")
 		c.CreateKubecfg = true
 	}
@@ -296,25 +298,15 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		}
 		firstRun = !hasKubecfg
 
-		kubecfgCert, err := keyStore.FindCert("kubecfg")
+		klog.Infof("Exporting kubecfg for cluster")
+		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions(), c.admin, c.user)
 		if err != nil {
-			// This is only a convenience; don't error because of it
-			klog.Warningf("Ignoring error trying to fetch kubecfg cert - won't export kubecfg: %v", err)
-			kubecfgCert = nil
+			return nil, err
 		}
-		if kubecfgCert != nil {
-			klog.Infof("Exporting kubecfg for cluster")
-			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions(), c.admin, c.user)
-			if err != nil {
-				return nil, err
-			}
 
-			err = conf.WriteKubecfg()
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			klog.Infof("kubecfg cert not found; won't export kubecfg")
+		err = conf.WriteKubecfg()
+		if err != nil {
+			return nil, err
 		}
 	}
 
