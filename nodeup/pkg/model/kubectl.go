@@ -108,7 +108,7 @@ func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
 	switch b.Distribution {
 	case distributions.DistributionDebian9, distributions.DistributionDebian10:
 		users = []string{"admin", "root"}
-	case distributions.DistributionXenial, distributions.DistributionBionic, distributions.DistributionFocal:
+	case distributions.DistributionUbuntu1604, distributions.DistributionUbuntu1804, distributions.DistributionUbuntu2004:
 		users = []string{"ubuntu"}
 	case distributions.DistributionCentos7, distributions.DistributionCentos8:
 		users = []string{"centos"}

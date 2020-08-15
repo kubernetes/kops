@@ -250,7 +250,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 	basedir := path.Join("tests/dockerbuilder/", key)
 
 	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
-	nodeUpModelContext.Distribution = distributions.DistributionXenial
+	nodeUpModelContext.Distribution = distributions.DistributionUbuntu1604
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return
