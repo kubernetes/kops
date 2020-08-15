@@ -889,6 +889,16 @@ docker:
     - "dm.use_deferred_removal=true"
 ```
 
+### networking
+
+In order for containers started with `docker run` instead of Kubernetes to have network and internet access you need to enable the necessary [iptables](https://docs.docker.com/network/iptables/) rules:
+
+```yaml
+docker:
+  ipMasq: true
+  ipTables: true
+```
+ 
 ## sshKeyName
 
 In some cases, it may be desirable to use an existing AWS SSH key instead of allowing kops to create a new one.
