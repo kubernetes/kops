@@ -22,7 +22,7 @@ import (
 
 type Distribution string
 
-var (
+const (
 	DistributionDebian9      Distribution = "debian9"
 	DistributionDebian10     Distribution = "buster"
 	DistributionXenial       Distribution = "xenial"

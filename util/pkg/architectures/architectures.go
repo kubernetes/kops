@@ -24,7 +24,7 @@ import (
 
 type Architecture string
 
-var (
+const (
 	ArchitectureAmd64 Architecture = "amd64"
 	ArchitectureArm64 Architecture = "arm64"
 )
