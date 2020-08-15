@@ -19,6 +19,7 @@ package kubeconfig
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/pkg/apis/kops"
@@ -113,13 +114,19 @@ func fakePrivateKey() *pki.PrivateKey {
 }
 
 func TestBuildKubecfg(t *testing.T) {
+	originalPKIDefaultPrivateKeySize := pki.DefaultPrivateKeySize
+	pki.DefaultPrivateKeySize = 512
+	defer func() {
+		pki.DefaultPrivateKeySize = originalPKIDefaultPrivateKeySize
+	}()
+
 	type args struct {
 		cluster      *kops.Cluster
 		keyStore     fakeKeyStore
 		secretStore  fi.SecretStore
 		status       fakeStatusStore
 		configAccess clientcmd.ConfigAccess
-		admin        bool
+		admin        time.Duration
 		user         string
 	}
 
@@ -148,16 +155,14 @@ func TestBuildKubecfg(t *testing.T) {
 				nil,
 				fakeStatusStore{},
 				nil,
-				true,
+				DefaultKubecfgAdminLifetime,
 				"",
 			},
 			&KubeconfigBuilder{
-				Context:    "testcluster",
-				Server:     "https://testcluster.test.com",
-				CACert:     []byte(certData),
-				ClientCert: []byte(certData),
-				ClientKey:  []byte(privatekeyData),
-				User:       "testcluster",
+				Context: "testcluster",
+				Server:  "https://testcluster.test.com",
+				CACert:  []byte(certData),
+				User:    "testcluster",
 			},
 			false,
 		},
@@ -176,16 +181,14 @@ func TestBuildKubecfg(t *testing.T) {
 				nil,
 				fakeStatusStore{},
 				nil,
-				false,
+				0,
 				"myuser",
 			},
 			&KubeconfigBuilder{
-				Context:    "testcluster",
-				Server:     "https://testcluster.test.com",
-				CACert:     []byte(certData),
-				ClientCert: nil,
-				ClientKey:  nil,
-				User:       "myuser",
+				Context: "testcluster",
+				Server:  "https://testcluster.test.com",
+				CACert:  []byte(certData),
+				User:    "myuser",
 			},
 			false,
 		},
@@ -204,16 +207,14 @@ func TestBuildKubecfg(t *testing.T) {
 				nil,
 				fakeStatusStore{},
 				nil,
-				true,
+				0,
 				"",
 			},
 			&KubeconfigBuilder{
-				Context:    "emptyMasterPublicNameCluster",
-				Server:     "https://api.emptyMasterPublicNameCluster",
-				CACert:     []byte(certData),
-				ClientCert: []byte(certData),
-				ClientKey:  []byte(privatekeyData),
-				User:       "emptyMasterPublicNameCluster",
+				Context: "emptyMasterPublicNameCluster",
+				Server:  "https://api.emptyMasterPublicNameCluster",
+				CACert:  []byte(certData),
+				User:    "emptyMasterPublicNameCluster",
 			},
 			false,
 		},
@@ -240,16 +241,14 @@ func TestBuildKubecfg(t *testing.T) {
 					},
 				},
 				nil,
-				true,
+				0,
 				"",
 			},
 			&KubeconfigBuilder{
-				Context:    "testgossipcluster.k8s.local",
-				Server:     "https://elbHostName",
-				CACert:     []byte(certData),
-				ClientCert: []byte(certData),
-				ClientKey:  []byte(privatekeyData),
-				User:       "testgossipcluster.k8s.local",
+				Context: "testgossipcluster.k8s.local",
+				Server:  "https://elbHostName",
+				CACert:  []byte(certData),
+				User:    "testgossipcluster.k8s.local",
 			},
 			false,
 		},
@@ -260,6 +259,16 @@ func TestBuildKubecfg(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BuildKubecfg() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			if tt.args.admin != 0 {
+				if got.ClientCert == nil {
+					t.Errorf("Expected ClientCert, got nil")
+				}
+				if got.ClientKey == nil {
+					t.Errorf("Expected ClientKey, got nil")
+				}
+				tt.want.ClientCert = got.ClientCert
+				tt.want.ClientKey = got.ClientKey
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("BuildKubecfg() = %v, want %v", got, tt.want)
