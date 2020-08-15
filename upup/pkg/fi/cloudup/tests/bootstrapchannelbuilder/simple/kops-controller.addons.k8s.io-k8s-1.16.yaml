@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - command:
-        - /usr/bin/kops-controller
+        - /kops-controller
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config.yaml
         image: kope/kops-controller:1.19.0-alpha.2
