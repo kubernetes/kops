@@ -62,7 +62,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		Name:           "docker-ce",
-		Distros:        []distributions.Distribution{distributions.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.03.2~ce-0~ubuntu-xenial",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
@@ -74,7 +74,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		PlainBinary:    true,
-		Distros:        []distributions.Distribution{distributions.DistributionBionic},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1804},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "http://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz",
 		Hash:           "183b31b001e7480f3c691080486401aa519101a5cfe6e05ad01b9f5521c4112d",
@@ -116,7 +116,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.09.0",
 		Name:           "docker-ce",
-		Distros:        []distributions.Distribution{distributions.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.09.0~ce-0~ubuntu",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb",
@@ -127,7 +127,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distributions.Distribution{distributions.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
@@ -149,7 +149,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.03.1",
 		Name:           "docker-ce",
-		Distros:        []distributions.Distribution{distributions.DistributionBionic},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1804},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.03.1~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.03.1~ce~3-0~ubuntu_amd64.deb",
@@ -160,7 +160,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distributions.Distribution{distributions.DistributionBionic},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1804},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
@@ -236,7 +236,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distributions.Distribution{distributions.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
@@ -248,8 +248,8 @@ var dockerVersions = []packageVersion{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
 		Distros: []distributions.Distribution{
-			distributions.DistributionBionic,
-			distributions.DistributionFocal,
+			distributions.DistributionUbuntu1804,
+			distributions.DistributionUbuntu2004,
 		},
 		Architectures: []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:       "18.06.3~ce~3-0~ubuntu",

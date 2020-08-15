@@ -34,11 +34,11 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		for _, line := range strings.Split(string(lsbRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "DISTRIB_CODENAME=xenial" {
-				return DistributionXenial, nil
+				return DistributionUbuntu1604, nil
 			} else if line == "DISTRIB_CODENAME=bionic" {
-				return DistributionBionic, nil
+				return DistributionUbuntu1804, nil
 			} else if line == "DISTRIB_CODENAME=focal" {
-				return DistributionFocal, nil
+				return DistributionUbuntu2004, nil
 			}
 		}
 	} else if !os.IsNotExist(err) {
