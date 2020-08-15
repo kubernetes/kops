@@ -1,0 +1,10 @@
+NAME="Container Linux by CoreOS"
+ID=coreos
+VERSION=2247.7.0
+VERSION_ID=2247.7.0
+BUILD_ID=2019-11-19-2251
+PRETTY_NAME="Container Linux by CoreOS 2247.7.0 (Rhyolite)"
+ANSI_COLOR="38;5;75"
+HOME_URL="https://coreos.com/"
+BUG_REPORT_URL="https://issues.coreos.com"
+COREOS_BOARD="amd64-usr"
