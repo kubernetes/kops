@@ -61,10 +61,10 @@ var kopsBaseURL *url.URL
 var nodeUpAsset map[architectures.Architecture]*MirroredAsset
 
 // protokubeLocation caches the protokubeLocation url
-var protokubeLocation *url.URL
+var protokubeLocation map[architectures.Architecture]*url.URL
 
 // protokubeHash caches the hash for protokube
-var protokubeHash *hashing.Hash
+var protokubeHash map[architectures.Architecture]*hashing.Hash
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseURL() (*url.URL, error) {
@@ -122,7 +122,8 @@ func SetKopsAssetsLocations(assetsBuilder *assets.AssetBuilder) error {
 func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*MirroredAsset, error) {
 	if nodeUpAsset == nil {
 		nodeUpAsset = make(map[architectures.Architecture]*MirroredAsset)
-	} else if nodeUpAsset[arch] != nil {
+	}
+	if nodeUpAsset[arch] != nil {
 		// Avoid repeated logging
 		klog.V(8).Infof("Using cached nodeup location for %s: %v", arch, nodeUpAsset[arch].Locations)
 		return nodeUpAsset[arch], nil
@@ -168,34 +169,44 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 // ProtokubeImageSource returns the source for the docker image for protokube.
 // Either a docker name (e.g. gcr.io/protokube:1.4), or a URL (https://...) in which case we download
 // the contents of the url and docker load it
-func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashing.Hash, error) {
-	// Avoid repeated logging
-	if protokubeLocation != nil && protokubeHash != nil {
-		klog.V(8).Infof("Using cached protokube location: %q", protokubeLocation)
-		return protokubeLocation, protokubeHash, nil
+func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+	if protokubeLocation == nil {
+		protokubeLocation = make(map[architectures.Architecture]*url.URL)
 	}
-	env := os.Getenv("PROTOKUBE_IMAGE")
+	if protokubeHash == nil {
+		protokubeHash = make(map[architectures.Architecture]*hashing.Hash)
+	}
+	if nodeUpAsset[arch] != nil && protokubeHash[arch] != nil {
+		// Avoid repeated logging
+		klog.V(8).Infof("Using cached protokube location for %s: %q", arch, protokubeLocation[arch])
+		return protokubeLocation[arch], protokubeHash[arch], nil
+	}
+	// Use multi-arch env var, but fall back to well known env var
+	env := os.Getenv(fmt.Sprintf("PROTOKUBE_IMAGE_%s", strings.ToUpper(string(arch))))
+	if env == "" {
+		env = os.Getenv("PROTOKUBE_IMAGE")
+	}
 	var err error
 	if env == "" {
-		protokubeLocation, protokubeHash, err = KopsFileURL("images/protokube.tar.gz", assetsBuilder)
+		protokubeLocation[arch], protokubeHash[arch], err = KopsFileURL(fmt.Sprintf("images/protokube-%s.tar.gz", arch), assetsBuilder)
 		if err != nil {
 			return nil, nil, err
 		}
-		klog.V(8).Infof("Using default protokube location: %q", protokubeLocation)
+		klog.V(8).Infof("Using default protokube location: %q", protokubeLocation[arch])
 	} else {
 		protokubeImageSource, err := url.Parse(env)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as a url: %v", env, err)
+			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE(_%s) %q as a url: %v", strings.ToUpper(string(arch)), env, err)
 		}
 
-		protokubeLocation, protokubeHash, err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)
+		protokubeLocation[arch], protokubeHash[arch], err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)
 		if err != nil {
 			return nil, nil, err
 		}
-		klog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeLocation)
+		klog.Warningf("Using protokube location from PROTOKUBE_IMAGE(_%s) env var: %q", strings.ToUpper(string(arch)), protokubeLocation[arch])
 	}
 
-	return protokubeLocation, protokubeHash, nil
+	return protokubeLocation[arch], protokubeHash[arch], nil
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images

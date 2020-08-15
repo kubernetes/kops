@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/architectures"
 )
 
 func TestProtokubeBuilder_Docker(t *testing.T) {
@@ -43,7 +44,10 @@ func populateImage(ctx *NodeupModelContext) {
 	if ctx.NodeupConfig == nil {
 		ctx.NodeupConfig = &nodeup.Config{}
 	}
-	ctx.NodeupConfig.ProtokubeImage = &nodeup.Image{
+	if ctx.NodeupConfig.ProtokubeImage == nil {
+		ctx.NodeupConfig.ProtokubeImage = make(map[architectures.Architecture]*nodeup.Image)
+	}
+	ctx.NodeupConfig.ProtokubeImage[architectures.ArchitectureAmd64] = &nodeup.Image{
 		Name: "protokube image name",
 	}
 }
