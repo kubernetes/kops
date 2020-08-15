@@ -37,7 +37,6 @@ import (
 
 	"github.com/Masterminds/sprig"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
@@ -55,7 +54,6 @@ import (
 // TemplateFunctions provides a collection of methods used throughout the templates
 type TemplateFunctions struct {
 	model.KopsModelContext
-	tags sets.String
 }
 
 // AddTo defines the available functions we can use in our YAML models.
@@ -82,7 +80,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["contains"] = sprigTxtFuncMap["contains"]
 
 	dest["ClusterName"] = tf.ClusterName
-	dest["HasTag"] = tf.HasTag
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
 		if v != nil {
 			return *v
@@ -202,12 +199,6 @@ func (tf *TemplateFunctions) EtcdScheme() string {
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.Cluster.SharedVPC()
-}
-
-// HasTag returns true if the specified tag is set
-func (tf *TemplateFunctions) HasTag(tag string) bool {
-	_, found := tf.tags[tag]
-	return found
 }
 
 // GetInstanceGroup returns the instance group with the specified name
