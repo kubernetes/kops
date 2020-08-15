@@ -27,7 +27,6 @@ import (
 )
 
 // FindDistribution identifies the distribution on which we are running
-// We will likely remove this when everything is containerized
 func FindDistribution(rootfs string) (Distribution, error) {
 	// Ubuntu has /etc/lsb-release (and /etc/debian_version)
 	lsbRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/lsb-release"))
