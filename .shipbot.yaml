@@ -17,8 +17,10 @@ assets:
     githubName: kops-windows-amd64
   - source: windows/amd64/kops.exe.sha256
     githubName: kops-windows-amd64.sha256
-  - source: images/protokube.tar.gz
-    githubName: images-protokube.tar.gz
+  - source: images/protokube-amd64.tar.gz
+    githubName: images-protokube-amd64.tar.gz
+  - source: images/protokube-arm64.tar.gz
+    githubName: images-protokube-arm64.tar.gz
   - source: images/protokube.tar.gz.sha256
     githubName: images-protokube.tar.gz.sha256
   - source: linux/amd64/nodeup
