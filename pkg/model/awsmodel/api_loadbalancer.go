@@ -111,6 +111,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
+			listeners["8443"] = &awstasks.LoadBalancerListener{InstancePort: 443}
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -178,7 +179,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:             fi.String(b.ELBSecurityGroupName("api")),
 			Lifecycle:        b.SecurityLifecycle,
 			Description:      fi.String("Security group for api ELB"),
-			RemoveExtraRules: []string{"port=443"},
+			RemoveExtraRules: []string{"port=443", "port=8443"},
 			VPC:              b.LinkToVPC(),
 		}
 		lbSG.Tags = b.CloudTags(*lbSG.Name, false)
@@ -216,6 +217,19 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        fi.Int64(443),
 			}
 			c.AddTask(t)
+
+			if lbSpec.SSLCertificate != "" {
+				t := &awstasks.SecurityGroupRule{
+					Name:          fi.String("tcp-api-elb-" + cidr),
+					Lifecycle:     b.SecurityLifecycle,
+					CIDR:          fi.String(cidr),
+					FromPort:      fi.Int64(8443),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: lbSG,
+					ToPort:        fi.Int64(8443),
+				}
+				c.AddTask(t)
+			}
 
 			// Allow ICMP traffic required for PMTU discovery
 			c.AddTask(&awstasks.SecurityGroupRule{

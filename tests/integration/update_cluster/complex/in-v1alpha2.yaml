@@ -11,6 +11,7 @@ spec:
       - sg-exampleid3
       - sg-exampleid4
       crossZoneLoadBalancing: true
+      sslCertificate: arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678
   kubernetesApiAccess:
   - 1.1.1.0/24
   - 2001:0:8500::/40

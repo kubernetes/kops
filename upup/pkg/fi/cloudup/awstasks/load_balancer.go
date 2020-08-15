@@ -715,7 +715,13 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	}
 	terraform.SortLiterals(tf.SecurityGroups)
 
-	for loadBalancerPort, listener := range e.Listeners {
+	listenerPorts := make([]string, 0)
+	for port := range e.Listeners {
+		listenerPorts = append(listenerPorts, port)
+	}
+	sort.Strings(listenerPorts)
+	for _, loadBalancerPort := range listenerPorts {
+		listener := e.Listeners[loadBalancerPort]
 		loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
 		if err != nil {
 			return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
@@ -855,7 +861,13 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 		tf.SecurityGroups = append(tf.SecurityGroups, sg.CloudformationLink())
 	}
 
-	for loadBalancerPort, listener := range e.Listeners {
+	listenerPorts := make([]string, 0)
+	for port := range e.Listeners {
+		listenerPorts = append(listenerPorts, port)
+	}
+	sort.Strings(listenerPorts)
+	for _, loadBalancerPort := range listenerPorts {
+		listener := e.Listeners[loadBalancerPort]
 
 		tf.Listener = append(tf.Listener, &cloudformationLoadBalancerListener{
 			InstanceProtocol:     "TCP",

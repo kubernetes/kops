@@ -833,6 +833,30 @@
         "CidrIp": "2001:0:85a3::/48"
       }
     },
+    "AWSEC2SecurityGroupIngresstcpapielb111024": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbcomplexexamplecom"
+        },
+        "FromPort": 8443,
+        "ToPort": 8443,
+        "IpProtocol": "tcp",
+        "CidrIp": "1.1.1.0/24"
+      }
+    },
+    "AWSEC2SecurityGroupIngresstcpapielb20010850040": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbcomplexexamplecom"
+        },
+        "FromPort": 8443,
+        "ToPort": 8443,
+        "IpProtocol": "tcp",
+        "CidrIp": "2001:0:8500::/40"
+      }
+    },
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1134,6 +1158,12 @@
             "InstancePort": "443",
             "InstanceProtocol": "TCP",
             "LoadBalancerPort": "443",
+            "Protocol": "TCP"
+          },
+          {
+            "InstancePort": "443",
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": "8443",
             "Protocol": "TCP"
           }
         ],

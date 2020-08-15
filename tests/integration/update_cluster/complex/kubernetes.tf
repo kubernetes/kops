@@ -245,9 +245,16 @@ resource "aws_elb" "api-complex-example-com" {
   }
   idle_timeout = 300
   listener {
+    instance_port      = 443
+    instance_protocol  = "SSL"
+    lb_port            = 443
+    lb_protocol        = "SSL"
+    ssl_certificate_id = "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
+  }
+  listener {
     instance_port     = 443
     instance_protocol = "TCP"
-    lb_port           = 443
+    lb_port           = 8443
     lb_protocol       = "TCP"
   }
   name            = "api-complex-example-com-vd3t5n"
@@ -689,6 +696,24 @@ resource "aws_security_group_rule" "ssh-external-to-node-2001_0_85a3__--48" {
   protocol          = "tcp"
   security_group_id = aws_security_group.nodes-complex-example-com.id
   to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "tcp-api-elb-1-1-1-0--24" {
+  cidr_blocks       = ["1.1.1.0/24"]
+  from_port         = 8443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port           = 8443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "tcp-api-elb-2001_0_8500__--40" {
+  cidr_blocks       = ["2001:0:8500::/40"]
+  from_port         = 8443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port           = 8443
   type              = "ingress"
 }
 
