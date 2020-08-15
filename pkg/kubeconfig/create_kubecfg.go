@@ -17,18 +17,24 @@ limitations under the License.
 package kubeconfig
 
 import (
+	"crypto/x509/pkix"
 	"fmt"
 	"sort"
+	"time"
 
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin bool, user string) (*KubeconfigBuilder, error) {
+const DefaultKubecfgAdminLifetime = 18 * time.Hour
+
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin time.Duration, user string) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	master := cluster.Spec.MasterPublicName
@@ -104,30 +110,29 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		}
 	}
 
-	if admin {
-		{
-			cert, key, _, err := keyStore.FindKeypair("kubecfg")
-			if err != nil {
-				return nil, fmt.Errorf("error fetching kubecfg keypair: %v", err)
-			}
-			if cert != nil {
-				b.ClientCert, err = cert.AsBytes()
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				return nil, fmt.Errorf("cannot find kubecfg certificate")
-			}
-			if key != nil {
-				b.ClientKey, err = key.AsBytes()
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				return nil, fmt.Errorf("cannot find kubecfg key")
-			}
+	if admin != 0 {
+		req := pki.IssueCertRequest{
+			Signer: fi.CertificateIDCA,
+			Type:   "client",
+			Subject: pkix.Name{
+				CommonName:   "kubecfg",
+				Organization: []string{rbac.SystemPrivilegedGroup},
+			},
+			Validity: admin,
+		}
+		cert, privateKey, _, err := pki.IssueCert(&req, keyStore)
+		if err != nil {
+			return nil, err
 		}
 
+		b.ClientCert, err = cert.AsBytes()
+		if err != nil {
+			return nil, err
+		}
+		b.ClientKey, err = privateKey.AsBytes()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	b.Server = server
