@@ -52,15 +52,17 @@ import (
 const updateClusterTestBase = "../../tests/integration/update_cluster/"
 
 type integrationTest struct {
-	clusterName         string
-	srcDir              string
-	version             string
-	private             bool
-	zones               int
-	expectPolicies      bool
-	launchConfiguration bool
-	lifecycleOverrides  []string
-	sshKey              bool
+	clusterName    string
+	srcDir         string
+	version        string
+	private        bool
+	zones          int
+	expectPolicies bool
+	// expectServiceAccountRoles is true if we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
+	expectServiceAccountRoles bool
+	launchConfiguration       bool
+	lifecycleOverrides        []string
+	sshKey                    bool
 	// caKey is true if we should use a provided ca.crt & ca.key as our CA
 	caKey           bool
 	jsonOutput      bool
@@ -102,6 +104,12 @@ func (i *integrationTest) withCAKey() *integrationTest {
 
 func (i *integrationTest) withoutPolicies() *integrationTest {
 	i.expectPolicies = false
+	return i
+}
+
+// withServiceAccountRoles indicates we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
+func (i *integrationTest) withServiceAccountRoles() *integrationTest {
+	i.expectServiceAccountRoles = true
 	return i
 }
 
@@ -332,16 +340,16 @@ func TestLaunchConfigurationASG(t *testing.T) {
 	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchConfiguration().runTestCloudformation(t)
 }
 
-// TestJWKS runs a simple configuration, but with PublicJWKS enabled
+// TestPublicJWKS runs a simple configuration, but with UseServiceAccountIAM and PublicJWKS enabled
 func TestPublicJWKS(t *testing.T) {
-	featureflag.ParseFlags("+PublicJWKS")
+	featureflag.ParseFlags("+UseServiceAccountIAM,+PublicJWKS")
 	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-PublicJWKS")
+		featureflag.ParseFlags("-UseServiceAccountIAM,-PublicJWKS")
 	}
 	defer unsetFeatureFlags()
 
 	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
-	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().runTestTerraformAWS(t)
+	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().withServiceAccountRoles().runTestTerraformAWS(t)
 }
 
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
@@ -543,6 +551,12 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 				expectedFilenames = append(expectedFilenames, "aws_launch_template_bastion."+i.clusterName+"_user_data")
 			}
 		}
+	}
+	if i.expectServiceAccountRoles {
+		expectedFilenames = append(expectedFilenames, []string{
+			"aws_iam_role_dns-controller.kube-system.sa." + i.clusterName + "_policy",
+			"aws_iam_role_policy_dns-controller.kube-system.sa." + i.clusterName + "_policy",
+		}...)
 	}
 	i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, nil)
 }

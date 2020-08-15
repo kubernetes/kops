@@ -1,5 +1,7 @@
 locals {
   cluster_name                 = "minimal.example.com"
+  dns-controllers_role_arn     = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
+  dns-controllers_role_name    = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-minimal-example-com.id]
   masters_role_arn             = aws_iam_role.masters-minimal-example-com.arn
@@ -18,6 +20,14 @@ locals {
 
 output "cluster_name" {
   value = "minimal.example.com"
+}
+
+output "dns-controllers_role_arn" {
+  value = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
+}
+
+output "dns-controllers_role_name" {
+  value = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -200,6 +210,12 @@ resource "aws_iam_openid_connect_provider" "minimal-example-com" {
   url             = "https://api.minimal.example.com"
 }
 
+resource "aws_iam_role_policy" "dns-controller-kube-system-sa-minimal-example-com" {
+  name   = "dns-controller.kube-system.sa.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_dns-controller.kube-system.sa.minimal.example.com_policy")
+  role   = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
+}
+
 resource "aws_iam_role_policy" "masters-minimal-example-com" {
   name   = "masters.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.minimal.example.com_policy")
@@ -210,6 +226,11 @@ resource "aws_iam_role_policy" "nodes-minimal-example-com" {
   name   = "nodes.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.minimal.example.com_policy")
   role   = aws_iam_role.nodes-minimal-example-com.name
+}
+
+resource "aws_iam_role" "dns-controller-kube-system-sa-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_dns-controller.kube-system.sa.minimal.example.com_policy")
+  name               = "dns-controller.kube-system.sa.minimal.example.com"
 }
 
 resource "aws_iam_role" "masters-minimal-example-com" {

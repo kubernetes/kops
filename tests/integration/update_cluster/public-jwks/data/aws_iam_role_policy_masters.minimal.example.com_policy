@@ -136,35 +136,6 @@
       "Resource": [
         "*"
       ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "route53:ChangeResourceRecordSets",
-        "route53:ListResourceRecordSets",
-        "route53:GetHostedZone"
-      ],
-      "Resource": [
-        "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "route53:GetChange"
-      ],
-      "Resource": [
-        "arn:aws:route53:::change/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "route53:ListHostedZones"
-      ],
-      "Resource": [
-        "*"
-      ]
     }
   ]
 }
