@@ -256,14 +256,22 @@ bazel-version-ci: bazel-crossbuild-kops-ci bazel-crossbuild-nodeup bazel-kops-co
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
 	cp bazel-bin/cmd/nodeup/linux_arm64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	cp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
-	cp ${BAZELIMAGES}/protokube.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
-	cp ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz
-	cp ${BAZELIMAGES}/kops-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha256
-	cp ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck.tar.gz
-	cp ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck.tar.gz.sha256
-	cp ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz
-	cp ${BAZELIMAGES}/dns-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha256
+	cp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
+	cp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
+	cp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
+	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
+	cp ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
+	cp ${BAZELIMAGES}/dns-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
+	cp ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/dns-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz
+	cp ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz.sha256
 	cp -fr ${BAZELUPLOAD}/kops/${VERSION}/* ${BAZELDIST}/
 
 # gcs-publish-ci is the entry point for CI testing
@@ -345,11 +353,14 @@ ${NODEUP}: ${BINDATA_TARGETS}
 .PHONY: bazel-crossbuild-dns-controller
 bazel-crossbuild-dns-controller:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/...
 
 
 .PHONY: dns-controller-push
 dns-controller-push:
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image-plain
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image-amd64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:push-image-arm64
 
 # --------------------------------------------------
 # development targets
@@ -566,10 +577,12 @@ bazel-crossbuild-nodeup:
 .PHONY: bazel-crossbuild-protokube
 bazel-crossbuild-protokube:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --features=pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/...
 
 .PHONY: bazel-crossbuild-protokube-image
 bazel-crossbuild-protokube-image:
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle-amd64.tar
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar
 
 .PHONY: bazel-crossbuild-node-authorizer-image
 bazel-crossbuild-node-authorizer-image:
@@ -621,30 +634,42 @@ push-node-authorizer:
 .PHONY: bazel-protokube-export
 bazel-protokube-export:
 	mkdir -p ${BAZELIMAGES}
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle.tar.gz //protokube/cmd/protokube:image-bundle.tar.gz.sha256
-	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz ${BAZELIMAGES}/protokube.tar.gz
-	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/protokube.tar.gz.sha256
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle-amd64.tar.gz.sha256
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-amd64.tar.gz ${BAZELIMAGES}/protokube-amd64.tar.gz
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-arm64.tar.gz ${BAZELIMAGES}/protokube-arm64.tar.gz
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256
 
 .PHONY: bazel-kube-apiserver-healthcheck-export
 bazel-kube-apiserver-healthcheck-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:image-bundle.tar.gz //cmd/kube-apiserver-healthcheck:image-bundle.tar.gz.sha256
-	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz
-	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:image-bundle-amd64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-amd64.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz
+	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz
+	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256
 
 .PHONY: bazel-kops-controller-export
 bazel-kops-controller-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle.tar.gz //cmd/kops-controller:image-bundle.tar.gz.sha256
-	cp -fp bazel-bin/cmd/kops-controller/image-bundle.tar.gz ${BAZELIMAGES}/kops-controller.tar.gz
-	cp -fp bazel-bin/cmd/kops-controller/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/kops-controller.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle-amd64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/cmd/kops-controller/image-bundle-amd64.tar.gz ${BAZELIMAGES}/kops-controller-amd64.tar.gz
+	cp -fp bazel-bin/cmd/kops-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kops-controller-arm64.tar.gz
+	cp -fp bazel-bin/cmd/kops-controller/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256
+	cp -fp bazel-bin/cmd/kops-controller/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256
 
 .PHONY: bazel-dns-controller-export
 bazel-dns-controller-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle.tar.gz //dns-controller/cmd/dns-controller:image-bundle.tar.gz.sha256
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle.tar.gz ${BAZELIMAGES}/dns-controller.tar.gz
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle.tar.gz.sha256 ${BAZELIMAGES}/dns-controller.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle-amd64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz ${BAZELIMAGES}/dns-controller-amd64.tar.gz
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/dns-controller-arm64.tar.gz
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256
 
 .PHONY: bazel-version-dist
 bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-controller-export bazel-kube-apiserver-healthcheck-export bazel-dns-controller-export bazel-protokube-export
@@ -658,14 +683,22 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-con
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
 	cp bazel-bin/cmd/nodeup/linux_arm64_pure_stripped/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
-	cp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
-	cp ${BAZELIMAGES}/protokube.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
-	cp ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz
-	cp ${BAZELIMAGES}/kops-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha256
-	cp ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck.tar.gz
-	cp ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck.tar.gz.sha256
-	cp ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz
-	cp ${BAZELIMAGES}/dns-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha256
+	cp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
+	cp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
+	cp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
+	cp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
+	cp ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz
+	cp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
+	cp ${BAZELIMAGES}/dns-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
+	cp ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
+	cp ${BAZELIMAGES}/dns-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz
+	cp ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz.sha256
 	cp bazel-bin/cmd/kops/linux_amd64_pure_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/kops.sha256
 	cp bazel-bin/cmd/kops/linux_arm64_pure_stripped/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops
@@ -722,32 +755,40 @@ dev-upload-nodeup: bazel-crossbuild-nodeup
 .PHONY: dev-upload-protokube
 dev-upload-protokube: bazel-protokube-export # Upload kops to GCS
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/protokube.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz
-	cp -fp ${BAZELIMAGES}/protokube.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-kops-controller uploads kops-controller to GCS
 .PHONY: dev-upload-kops-controller
 dev-upload-kops-controller: bazel-kops-controller-export # Upload kops to GCS
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz
-	cp -fp ${BAZELIMAGES}/kops-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-dns-controller uploads dns-controller to GCS
 .PHONY: dev-upload-dns-controller
 dev-upload-dns-controller: bazel-dns-controller-export # Upload kops to GCS
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz
-	cp -fp ${BAZELIMAGES}/dns-controller.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/dns-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/dns-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload-kube-apiserver-healthcheck uploads kube-apiserver-healthcheck to GCS
 .PHONY: dev-upload-kube-apiserver-healthcheck
 dev-upload-kube-apiserver-healthcheck: bazel-kube-apiserver-healthcheck-export # Upload kops to GCS
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
-	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck.tar.gz
-	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
 # dev-upload does a faster build and uploads to GCS / S3
@@ -764,11 +805,15 @@ crds:
 
 .PHONY: kops-controller-push
 kops-controller-push:
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image-plain
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image-amd64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:push-image-arm64
 
 #------------------------------------------------------
 # kube-apiserver-healthcheck
 
 .PHONY: kube-apiserver-healthcheck-push
 kube-apiserver-healthcheck-push:
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image-plain
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image-amd64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:push-image-arm64
