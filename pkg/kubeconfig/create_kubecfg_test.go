@@ -18,11 +18,10 @@ package kubeconfig
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
-	"k8s.io/client-go/tools/clientcmd"
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -123,14 +122,13 @@ func TestBuildKubecfg(t *testing.T) {
 	}()
 
 	type args struct {
-		cluster      *kops.Cluster
-		keyStore     fakeKeyStore
-		secretStore  fi.SecretStore
-		status       fakeStatusStore
-		configAccess clientcmd.ConfigAccess
-		admin        time.Duration
-		user         string
-		internal     bool
+		cluster                     *kops.Cluster
+		secretStore                 fi.SecretStore
+		status                      fakeStatusStore
+		admin                       time.Duration
+		user                        string
+		internal                    bool
+		useKopsAuthenticationPlugin bool
 	}
 
 	publiccluster := buildMinimalCluster("testcluster", "testcluster.test.com")
@@ -138,106 +136,65 @@ func TestBuildKubecfg(t *testing.T) {
 	gossipCluster := buildMinimalCluster("testgossipcluster.k8s.local", "")
 
 	tests := []struct {
-		name    string
-		args    args
-		want    *KubeconfigBuilder
-		wantErr bool
+		name           string
+		args           args
+		want           *KubeconfigBuilder
+		wantErr        bool
+		wantClientCert bool
 	}{
 		{
-			"Test Kube Config Data For Public DNS with admin",
-			args{
-				publiccluster,
-				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-						return fakeCertificate(),
-							fakePrivateKey(),
-							true,
-							nil
-					},
-				},
-				nil,
-				fakeStatusStore{},
-				nil,
-				DefaultKubecfgAdminLifetime,
-				"",
-				false,
+			name: "Test Kube Config Data For Public DNS with admin",
+			args: args{
+				cluster: publiccluster,
+				status:  fakeStatusStore{},
+				admin:   DefaultKubecfgAdminLifetime,
+				user:    "",
 			},
-			&KubeconfigBuilder{
+			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com",
 				CACert:  []byte(certData),
 				User:    "testcluster",
 			},
-			false,
+			wantClientCert: true,
 		},
 		{
-			"Test Kube Config Data For Public DNS without admin",
-			args{
-				publiccluster,
-				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-						return fakeCertificate(),
-							fakePrivateKey(),
-							true,
-							nil
-					},
-				},
-				nil,
-				fakeStatusStore{},
-				nil,
-				0,
-				"myuser",
-				false,
+			name: "Test Kube Config Data For Public DNS without admin",
+			args: args{
+				cluster: publiccluster,
+				status:  fakeStatusStore{},
+				admin:   0,
+				user:    "myuser",
 			},
-			&KubeconfigBuilder{
+			want: &KubeconfigBuilder{
 				Context: "testcluster",
 				Server:  "https://testcluster.test.com",
 				CACert:  []byte(certData),
 				User:    "myuser",
 			},
-			false,
+			wantClientCert: false,
 		},
 		{
-			"Test Kube Config Data For Public DNS with Empty Master Name",
-			args{
-				emptyMasterPublicNameCluster,
-				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-						return fakeCertificate(),
-							fakePrivateKey(),
-							true,
-							nil
-					},
-				},
-				nil,
-				fakeStatusStore{},
-				nil,
-				0,
-				"",
-				false,
+			name: "Test Kube Config Data For Public DNS with Empty Master Name",
+			args: args{
+				cluster: emptyMasterPublicNameCluster,
+				status:  fakeStatusStore{},
+				admin:   0,
+				user:    "",
 			},
-			&KubeconfigBuilder{
+			want: &KubeconfigBuilder{
 				Context: "emptyMasterPublicNameCluster",
 				Server:  "https://api.emptyMasterPublicNameCluster",
 				CACert:  []byte(certData),
 				User:    "emptyMasterPublicNameCluster",
 			},
-			false,
+			wantClientCert: false,
 		},
 		{
-			"Test Kube Config Data For Gossip cluster",
-			args{
-				gossipCluster,
-				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-						return fakeCertificate(),
-							fakePrivateKey(),
-							true,
-							nil
-					},
-				},
-				nil,
-				fakeStatusStore{
+			name: "Test Kube Config Data For Gossip cluster",
+			args: args{
+				cluster: gossipCluster,
+				status: fakeStatusStore{
 					GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 						return []kops.ApiIngressStatus{
 							{
@@ -246,57 +203,74 @@ func TestBuildKubecfg(t *testing.T) {
 						}, nil
 					},
 				},
-				nil,
-				0,
-				"",
-				false,
 			},
-			&KubeconfigBuilder{
+			want: &KubeconfigBuilder{
 				Context: "testgossipcluster.k8s.local",
 				Server:  "https://elbHostName",
 				CACert:  []byte(certData),
 				User:    "testgossipcluster.k8s.local",
 			},
-			false,
+			wantClientCert: false,
 		},
 		{
-			"Test Kube Config Data For internal DNS name with admin",
-			args{
-				publiccluster,
-				fakeKeyStore{
-					FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
-						return fakeCertificate(),
-							fakePrivateKey(),
-							true,
-							nil
-					},
+			name: "Public DNS with kops auth plugin",
+			args: args{
+				cluster:                     publiccluster,
+				status:                      fakeStatusStore{},
+				admin:                       0,
+				useKopsAuthenticationPlugin: true,
+			},
+			want: &KubeconfigBuilder{
+				Context: "testcluster",
+				Server:  "https://testcluster.test.com",
+				CACert:  []byte(certData),
+				User:    "testcluster",
+				AuthenticationExec: []string{
+					"kops",
+					"helpers",
+					"kubectl-auth",
+					"--cluster=testcluster",
+					"--state=memfs://example-state-store",
 				},
-				nil,
-				fakeStatusStore{},
-				nil,
-				DefaultKubecfgAdminLifetime,
-				"",
-				true,
 			},
-			&KubeconfigBuilder{
-				Context:    "testcluster",
-				Server:     "https://internal.testcluster.test.com",
-				CACert:     []byte(certData),
-				ClientCert: []byte(certData),
-				ClientKey:  []byte(privatekeyData),
-				User:       "testcluster",
+			wantClientCert: false,
+		},
+		{
+			name: "Test Kube Config Data For internal DNS name with admin",
+			args: args{
+				cluster:  publiccluster,
+				status:   fakeStatusStore{},
+				admin:    DefaultKubecfgAdminLifetime,
+				internal: true,
 			},
-			false,
+			want: &KubeconfigBuilder{
+				Context: "testcluster",
+				Server:  "https://internal.testcluster.test.com",
+				CACert:  []byte(certData),
+				User:    "testcluster",
+			},
+			wantClientCert: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := BuildKubecfg(tt.args.cluster, tt.args.keyStore, tt.args.secretStore, tt.args.status, tt.args.configAccess, tt.args.admin, tt.args.user, tt.args.internal)
+			kopsStateStore := "memfs://example-state-store"
+
+			keyStore := fakeKeyStore{
+				FindKeypairFn: func(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+					return fakeCertificate(),
+						fakePrivateKey(),
+						true,
+						nil
+				},
+			}
+
+			got, err := BuildKubecfg(tt.args.cluster, keyStore, tt.args.secretStore, tt.args.status, tt.args.admin, tt.args.user, tt.args.internal, kopsStateStore, tt.args.useKopsAuthenticationPlugin)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BuildKubecfg() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.args.admin != 0 {
+			if tt.wantClientCert {
 				if got.ClientCert == nil {
 					t.Errorf("Expected ClientCert, got nil")
 				}
@@ -306,8 +280,8 @@ func TestBuildKubecfg(t *testing.T) {
 				tt.want.ClientCert = got.ClientCert
 				tt.want.ClientKey = got.ClientKey
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BuildKubecfg() = %+v, want %+v", got, tt.want)
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf("BuildKubecfg() diff (+got, -want): %s", diff)
 			}
 		})
 	}

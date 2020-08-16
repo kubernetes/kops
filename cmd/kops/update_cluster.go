@@ -313,7 +313,6 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 			keyStore,
 			secretStore,
 			&commands.CloudDiscoveryStatusStore{},
-			clientcmd.NewDefaultPathOptions(),
 			c.admin,
 			c.user,
 			c.internal,
@@ -323,7 +322,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 			return nil, err
 		}
 
-		err = conf.WriteKubecfg()
+		err = conf.WriteKubecfg(clientcmd.NewDefaultPathOptions())
 		if err != nil {
 			return nil, err
 		}
