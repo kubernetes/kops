@@ -46,6 +46,160 @@ type AutoscalingGroupModelBuilder struct {
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
+// buildInstanceTemplate returns the GCE instance template object for an InstanceGroup.
+func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(ig *kops.InstanceGroup) (*gcetasks.InstanceTemplate, error) {
+
+	volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
+	if volumeSize == 0 {
+		volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+		if err != nil {
+			return err
+		}
+	}
+	volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+	if volumeType == "" {
+		volumeType = DefaultVolumeType
+	}
+
+	namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
+	t := &gcetasks.InstanceTemplate{
+		Name:           s(name),
+		NamePrefix:     s(namePrefix),
+		Lifecycle:      b.Lifecycle,
+		Network:        b.LinkToNetwork(),
+		MachineType:    s(ig.Spec.MachineType),
+		BootDiskType:   s(volumeType),
+		BootDiskSizeGB: i64(int64(volumeSize)),
+		BootDiskImage:  s(ig.Spec.Image),
+
+		// TODO: Support preemptible nodes?
+		Preemptible: fi.Bool(false),
+
+		Scopes: []string{
+			"compute-rw",
+			"monitoring",
+			"logging-write",
+		},
+		Metadata: map[string]*fi.ResourceHolder{
+			"startup-script": startupScript,
+			//"config": resources/config.yaml $nodeset.Name
+			"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
+			nodeidentitygce.MetadataKeyInstanceGroupName: fi.WrapResource(fi.NewStringResource(ig.Name)),
+		},
+	}
+
+	storagePaths, err := iam.WriteableVFSPaths(b.Cluster, ig.Spec.Role)
+	if err != nil {
+		return err
+	}
+	if len(storagePaths) == 0 {
+		t.Scopes = append(t.Scopes, "storage-ro")
+	} else {
+		klog.Warningf("enabling storage-rw for etcd backups")
+		t.Scopes = append(t.Scopes, "storage-rw")
+	}
+
+	if len(b.SSHPublicKeys) > 0 {
+		var gFmtKeys []string
+		for _, key := range b.SSHPublicKeys {
+			gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
+		}
+
+		t.Metadata["ssh-keys"] = fi.WrapResource(fi.NewStringResource(strings.Join(gFmtKeys, "\n")))
+	}
+
+	switch ig.Spec.Role {
+	case kops.InstanceGroupRoleMaster:
+		// Grant DNS permissions
+		// TODO: migrate to IAM permissions instead of oldschool scopes?
+		t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+		t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
+
+	case kops.InstanceGroupRoleNode:
+		t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+	}
+
+	if gce.UsesIPAliases(b.Cluster) {
+		t.CanIPForward = fi.Bool(false)
+
+		t.AliasIPRanges = map[string]string{
+			b.NameForIPAliasRange("pods"): "/24",
+		}
+		t.Subnet = b.LinkToIPAliasSubnet()
+	} else {
+		t.CanIPForward = fi.Bool(true)
+	}
+
+	if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
+		klog.Infof("VMs using Service Account: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
+		// b.Cluster.Spec.GCEServiceAccount = c.GCEServiceAccount
+	} else {
+		klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
+		klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
+		b.Cluster.Spec.CloudConfig.GCEServiceAccount = "default"
+	}
+
+	klog.Infof("gsa: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
+	t.ServiceAccounts = []string{b.Cluster.Spec.CloudConfig.GCEServiceAccount}
+	//labels, err := b.CloudTagsForInstanceGroup(ig)
+	//if err != nil {
+	//	return fmt.Errorf("error building cloud tags: %v", err)
+	//}
+	//t.Labels = labels
+
+	return t, nil
+}
+
+// splitToZones allocates the instance group's count of nodes amongst the specified zones.
+func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map[string]int, error) {
+	zones, err := b.FindZonesForInstanceGroup(ig)
+	if err != nil {
+		return err
+	}
+
+	// TODO: We should expose autoscaling with MinSize & MaxSize
+
+	// TODO: Duplicated from aws - move to defaults?
+	minSize := 1
+	if ig.Spec.MinSize != nil {
+		minSize = int(fi.Int32Value(ig.Spec.MinSize))
+	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		minSize = 2
+	}
+
+	// We have to assign instances to the various zones
+	// TODO: Switch to regional managed instance group
+	// But we can't yet use RegionInstanceGroups:
+	// 1) no support in terraform
+	// 2) we can't steer to specific zones AFAICT, only to all zones in the region
+
+	targetSizes := make([]int, len(zones))
+	totalSize := 0
+	for i := range zones {
+		targetSizes[i] = minSize / len(zones)
+		totalSize += targetSizes[i]
+	}
+	i := 0
+	for {
+		if totalSize >= minSize {
+			break
+		}
+		targetSizes[i]++
+		totalSize++
+
+		i++
+		if i > len(targetSizes) {
+			i = 0
+		}
+	}
+
+	instanceCountByZone := make(map[string]int)
+	for i, zone := range zones {
+		instanceCountByZone[zone] = targetSizes[i]
+	}
+	return instanceCountByZone, nil
+}
+
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.SafeObjectName(ig.ObjectMeta.Name)
@@ -56,154 +210,19 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		// InstanceTemplate
-		var instanceTemplate *gcetasks.InstanceTemplate
-		{
-			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
-			if volumeSize == 0 {
-				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
-				if err != nil {
-					return err
-				}
-			}
-			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-			if volumeType == "" {
-				volumeType = DefaultVolumeType
-			}
-
-			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
-			t := &gcetasks.InstanceTemplate{
-				Name:           s(name),
-				NamePrefix:     s(namePrefix),
-				Lifecycle:      b.Lifecycle,
-				Network:        b.LinkToNetwork(),
-				MachineType:    s(ig.Spec.MachineType),
-				BootDiskType:   s(volumeType),
-				BootDiskSizeGB: i64(int64(volumeSize)),
-				BootDiskImage:  s(ig.Spec.Image),
-
-				// TODO: Support preemptible nodes?
-				Preemptible: fi.Bool(false),
-
-				Scopes: []string{
-					"compute-rw",
-					"monitoring",
-					"logging-write",
-				},
-				Metadata: map[string]*fi.ResourceHolder{
-					"startup-script": startupScript,
-					//"config": resources/config.yaml $nodeset.Name
-					"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
-					nodeidentitygce.MetadataKeyInstanceGroupName: fi.WrapResource(fi.NewStringResource(ig.Name)),
-				},
-			}
-
-			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, ig.Spec.Role)
-			if err != nil {
-				return err
-			}
-			if len(storagePaths) == 0 {
-				t.Scopes = append(t.Scopes, "storage-ro")
-			} else {
-				klog.Warningf("enabling storage-rw for etcd backups")
-				t.Scopes = append(t.Scopes, "storage-rw")
-			}
-
-			if len(b.SSHPublicKeys) > 0 {
-				var gFmtKeys []string
-				for _, key := range b.SSHPublicKeys {
-					gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
-				}
-
-				t.Metadata["ssh-keys"] = fi.WrapResource(fi.NewStringResource(strings.Join(gFmtKeys, "\n")))
-			}
-
-			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleMaster:
-				// Grant DNS permissions
-				// TODO: migrate to IAM permissions instead of oldschool scopes?
-				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleMaster))
-
-			case kops.InstanceGroupRoleNode:
-				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
-			}
-
-			if gce.UsesIPAliases(b.Cluster) {
-				t.CanIPForward = fi.Bool(false)
-
-				t.AliasIPRanges = map[string]string{
-					b.NameForIPAliasRange("pods"): "/24",
-				}
-				t.Subnet = b.LinkToIPAliasSubnet()
-			} else {
-				t.CanIPForward = fi.Bool(true)
-			}
-
-			if b.Cluster.Spec.CloudConfig.GCEServiceAccount != "" {
-				klog.Infof("VMs using Service Account: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
-				// b.Cluster.Spec.GCEServiceAccount = c.GCEServiceAccount
-			} else {
-				klog.Warning("VMs will be configured to use the GCE default compute Service Account! This is an anti-pattern")
-				klog.Warning("Use a pre-created Service Account with the flag: --gce-service-account=account@projectname.iam.gserviceaccount.com")
-				b.Cluster.Spec.CloudConfig.GCEServiceAccount = "default"
-			}
-
-			klog.Infof("gsa: %v", b.Cluster.Spec.CloudConfig.GCEServiceAccount)
-			t.ServiceAccounts = []string{b.Cluster.Spec.CloudConfig.GCEServiceAccount}
-			//labels, err := b.CloudTagsForInstanceGroup(ig)
-			//if err != nil {
-			//	return fmt.Errorf("error building cloud tags: %v", err)
-			//}
-			//t.Labels = labels
-
-			c.AddTask(t)
-
-			instanceTemplate = t
+		instanceTemplate, err := b.buildInstanceTemplate(c, ig)
+		if err != nil {
+			return err
 		}
+		c.AddTask(instanceTemplate)
 
 		// AutoscalingGroup
-		zones, err := b.FindZonesForInstanceGroup(ig)
+		instanceCountByZone, err := b.splitToZones(ig)
 		if err != nil {
 			return err
 		}
 
-		// TODO: Duplicated from aws - move to defaults?
-		minSize := 1
-		if ig.Spec.MinSize != nil {
-			minSize = int(fi.Int32Value(ig.Spec.MinSize))
-		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-			minSize = 2
-		}
-
-		// We have to assign instances to the various zones
-		// TODO: Switch to regional managed instance group
-		// But we can't yet use RegionInstanceGroups:
-		// 1) no support in terraform
-		// 2) we can't steer to specific zones AFAICT, only to all zones in the region
-
-		targetSizes := make([]int, len(zones))
-		totalSize := 0
-		for i := range zones {
-			targetSizes[i] = minSize / len(zones)
-			totalSize += targetSizes[i]
-		}
-		i := 0
-		for {
-			if totalSize >= minSize {
-				break
-			}
-			targetSizes[i]++
-			totalSize++
-
-			i++
-			if i > len(targetSizes) {
-				i = 0
-			}
-		}
-
-		for i, targetSize := range targetSizes {
-			zone := zones[i]
-
+		for zone, targetSize := range instanceCountByZone {
 			name := gce.NameForInstanceGroupManager(b.Cluster, ig, zone)
 
 			t := &gcetasks.InstanceGroupManager{
