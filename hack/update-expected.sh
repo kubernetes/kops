@@ -30,6 +30,7 @@ export KOPS_BASE_URL=
 export DNSCONTROLLER_IMAGE=
 export KOPSCONTROLLER_IMAGE=
 export KUBE_APISERVER_HEALTHCHECK_IMAGE=
+export KOPS_FEATURE_FLAGS=
 
 # Run the tests in "autofix mode"
 HACK_UPDATE_EXPECTED_IN_PLACE=1 go test ./... -count=1
