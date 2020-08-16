@@ -20,7 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func (m *MockAutoscaling) DescribeTags(request *autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error) {

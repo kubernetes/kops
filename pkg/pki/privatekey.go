@@ -30,7 +30,7 @@ import (
 	"os"
 	"strconv"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // DefaultPrivateKeySize is the key size to use when generating private keys

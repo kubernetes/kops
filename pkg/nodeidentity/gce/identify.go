@@ -26,7 +26,7 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	compute "google.golang.org/api/compute/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/nodeidentity"
 )
 

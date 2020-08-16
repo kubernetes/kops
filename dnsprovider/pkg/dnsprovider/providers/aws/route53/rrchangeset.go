@@ -23,7 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
@@ -139,7 +139,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 			break
 		}
 
-		if klog.V(8) {
+		if klog.V(8).Enabled() {
 			var sb bytes.Buffer
 			for _, change := range batch {
 				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.StringValue(change.Action), aws.StringValue(change.ResourceRecordSet.Type), aws.StringValue(change.ResourceRecordSet.Name)))

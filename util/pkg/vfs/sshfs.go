@@ -27,7 +27,7 @@ import (
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 type SSHPath struct {

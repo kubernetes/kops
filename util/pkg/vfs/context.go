@@ -34,7 +34,7 @@ import (
 	"google.golang.org/api/option"
 	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	vault "github.com/hashicorp/vault/api"
 )

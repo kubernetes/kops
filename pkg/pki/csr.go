@@ -24,7 +24,7 @@ import (
 	"math/big"
 	"time"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // BuildPKISerial produces a serial number for certs that is vanishingly unlikely to collide

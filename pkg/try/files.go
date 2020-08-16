@@ -19,7 +19,7 @@ package try
 import (
 	"os"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // RemoveFile will try to os.Remove the file, logging an error if it fails

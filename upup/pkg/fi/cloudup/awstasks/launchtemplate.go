@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // LaunchTemplate defines the specification for a launch template.

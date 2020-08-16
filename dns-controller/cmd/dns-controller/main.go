@@ -31,7 +31,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client metric registration
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"

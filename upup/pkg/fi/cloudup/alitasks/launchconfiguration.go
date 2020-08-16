@@ -28,7 +28,7 @@ import (
 
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ess"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"

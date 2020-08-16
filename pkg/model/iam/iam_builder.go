@@ -34,7 +34,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/model"
 
 	"k8s.io/kops/pkg/apis/kops"

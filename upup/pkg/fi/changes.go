@@ -19,7 +19,7 @@ package fi
 import (
 	"reflect"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // An important part of our state synchronization is to compare two tasks, to see what has changed
