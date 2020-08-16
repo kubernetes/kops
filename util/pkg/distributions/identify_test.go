@@ -46,7 +46,7 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "coreos",
-			err:      fmt.Errorf("distribution CoreOS is no longer supported"),
+			err:      fmt.Errorf("unsupported distro: coreos-2247.7.0"),
 			expected: "",
 		},
 		{
@@ -56,7 +56,7 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "debian8",
-			err:      fmt.Errorf("distribution Degian 8 (Jessie) is no longer supported"),
+			err:      fmt.Errorf("unsupported distro: debian-8"),
 			expected: "",
 		},
 		{
@@ -98,6 +98,11 @@ func TestFindDistribution(t *testing.T) {
 			rootfs:   "ubuntu2004",
 			err:      nil,
 			expected: DistributionUbuntu2004,
+		},
+		{
+			rootfs:   "notfound",
+			err:      fmt.Errorf("reading /etc/os-release: open tests/notfound/etc/os-release: no such file or directory"),
+			expected: "",
 		},
 	}
 
