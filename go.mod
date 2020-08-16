@@ -73,6 +73,7 @@ require (
 	github.com/go-ini/ini v1.51.0
 	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
 	github.com/gogo/protobuf v1.3.1
+	github.com/google/go-cmp v0.4.0
 	github.com/google/uuid v1.1.1
 	github.com/gophercloud/gophercloud v0.11.1-0.20200518183226-7aec46f32c19
 	github.com/gorilla/mux v1.7.3
