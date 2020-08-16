@@ -144,7 +144,6 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 			keyStore,
 			secretStore,
 			&commands.CloudDiscoveryStatusStore{},
-			buildPathOptions(options),
 			options.admin,
 			options.user,
 			options.internal,
@@ -154,7 +153,7 @@ func RunExportKubecfg(ctx context.Context, f *util.Factory, out io.Writer, optio
 			return err
 		}
 
-		if err := conf.WriteKubecfg(); err != nil {
+		if err := conf.WriteKubecfg(buildPathOptions(options)); err != nil {
 			return err
 		}
 	}
