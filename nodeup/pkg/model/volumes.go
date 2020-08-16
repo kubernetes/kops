@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/kops/upup/pkg/fi"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	utilexec "k8s.io/utils/exec"
 	"k8s.io/utils/mount"
 )

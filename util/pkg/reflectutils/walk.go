@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var SkipReflection = errors.New("skip this value")

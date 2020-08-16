@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/wellknownports"

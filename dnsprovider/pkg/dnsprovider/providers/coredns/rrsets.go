@@ -24,7 +24,7 @@ import (
 
 	etcdc "github.com/coreos/etcd/client"
 	dnsmsg "github.com/miekg/coredns/middleware/etcd/msg"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )

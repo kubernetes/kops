@@ -36,7 +36,7 @@ import (
 	"k8s.io/kops/util/pkg/proxy"
 
 	"github.com/blang/semver/v4"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // ProtokubeBuilder configures protokube

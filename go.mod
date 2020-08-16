@@ -72,7 +72,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/go-ini/ini v1.51.0
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.1
@@ -119,7 +119,7 @@ require (
 	k8s.io/gengo v0.0.0-20200710205751-c0d492a0f3ca
 	k8s.io/helm v2.9.0+incompatible
 	k8s.io/klog v1.0.0
-	k8s.io/klog/v2 v2.0.0
+	k8s.io/klog/v2 v2.3.0
 	k8s.io/kubectl v0.0.0
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89

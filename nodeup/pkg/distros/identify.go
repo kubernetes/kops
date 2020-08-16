@@ -23,7 +23,7 @@ import (
 	"path"
 	"strings"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // FindDistribution identifies the distribution on which we are running

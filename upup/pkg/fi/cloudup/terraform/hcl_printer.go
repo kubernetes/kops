@@ -23,7 +23,7 @@ import (
 
 	"github.com/hashicorp/hcl/hcl/ast"
 	hcl_printer "github.com/hashicorp/hcl/hcl/printer"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/featureflag"
 )
 

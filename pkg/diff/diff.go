@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func FormatDiff(lString, rString string) string {

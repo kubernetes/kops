@@ -23,7 +23,7 @@ import (
 	"os"
 	"syscall"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func EnsureFileOwner(destPath string, owner string, groupName string) (bool, error) {

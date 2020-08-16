@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func (m *MockELB) ConfigureHealthCheck(request *elb.ConfigureHealthCheckInput) (*elb.ConfigureHealthCheckOutput, error) {

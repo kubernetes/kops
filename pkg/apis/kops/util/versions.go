@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver/v4"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func ParseKubernetesVersion(version string) (*semver.Version, error) {

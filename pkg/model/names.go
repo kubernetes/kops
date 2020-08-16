@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // SecurityGroupName returns the security group name for the specific role

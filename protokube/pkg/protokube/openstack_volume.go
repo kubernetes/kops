@@ -27,7 +27,7 @@ import (
 
 	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipos "k8s.io/kops/protokube/pkg/gossip/openstack"

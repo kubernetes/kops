@@ -22,7 +22,7 @@ import (
 	"os"
 	"time"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	alicloud "github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"

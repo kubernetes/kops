@@ -22,7 +22,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/pagination"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )

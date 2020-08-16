@@ -22,7 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"

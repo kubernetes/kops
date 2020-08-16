@@ -24,7 +24,7 @@ import (
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	dnsproviderclouddns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
