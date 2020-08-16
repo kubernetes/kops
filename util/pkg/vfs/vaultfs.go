@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	vault "github.com/hashicorp/vault/api"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 type VaultPath struct {

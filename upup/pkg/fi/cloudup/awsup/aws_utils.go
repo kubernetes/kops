@@ -29,7 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	elbv2 "github.com/aws/aws-sdk-go/service/elbv2"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 )
 

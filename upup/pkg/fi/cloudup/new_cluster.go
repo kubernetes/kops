@@ -27,7 +27,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"

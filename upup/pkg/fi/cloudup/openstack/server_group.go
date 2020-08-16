@@ -24,7 +24,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"

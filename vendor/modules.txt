@@ -249,7 +249,7 @@ github.com/go-bindata/go-bindata/go-bindata
 # github.com/go-ini/ini v1.51.0
 ## explicit
 github.com/go-ini/ini
-# github.com/go-logr/logr v0.1.0
+# github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
 ## explicit
 github.com/go-logr/logr
 # github.com/go-openapi/jsonpointer v0.19.3
@@ -1222,7 +1222,7 @@ k8s.io/helm/pkg/strvals
 ## explicit
 k8s.io/klog
 k8s.io/klog/klogr
-# k8s.io/klog/v2 v2.0.0
+# k8s.io/klog/v2 v2.3.0
 ## explicit
 k8s.io/klog/v2
 # k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6

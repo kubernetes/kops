@@ -17,7 +17,7 @@ limitations under the License.
 package kops
 
 import (
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // StatusStore abstracts the key status functions; and lets us introduce status gradually

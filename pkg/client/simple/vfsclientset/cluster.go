@@ -29,7 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"

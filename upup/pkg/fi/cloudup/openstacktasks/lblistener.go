@@ -19,7 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	// "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	openstackutil "k8s.io/cloud-provider-openstack/pkg/util/openstack"

@@ -24,7 +24,7 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops"

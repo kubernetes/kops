@@ -29,7 +29,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // logDumper gets all the nodes from a kubernetes cluster and dumps a well-known set of logs

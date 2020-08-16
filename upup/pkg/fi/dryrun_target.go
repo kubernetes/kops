@@ -25,7 +25,7 @@ import (
 	"strings"
 	"sync"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/util/pkg/reflectutils"

@@ -27,7 +27,7 @@ import (
 
 	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"

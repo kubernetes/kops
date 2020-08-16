@@ -27,7 +27,7 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/log"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 )
