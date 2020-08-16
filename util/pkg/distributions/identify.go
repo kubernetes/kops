@@ -19,7 +19,6 @@ package distributions
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path"
 	"strings"
 
@@ -28,103 +27,60 @@ import (
 
 // FindDistribution identifies the distribution on which we are running
 func FindDistribution(rootfs string) (Distribution, error) {
-	// Ubuntu has /etc/lsb-release (and /etc/debian_version)
-	lsbRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/lsb-release"))
+	// All supported distros have an /etc/os-release file
+	osReleaseBytes, err := ioutil.ReadFile(path.Join(rootfs, "etc/os-release"))
+	osRelease := make(map[string]string)
 	if err == nil {
-		for _, line := range strings.Split(string(lsbRelease), "\n") {
+		for _, line := range strings.Split(string(osReleaseBytes), "\n") {
 			line = strings.TrimSpace(line)
-			if line == "DISTRIB_CODENAME=xenial" {
-				return DistributionUbuntu1604, nil
-			} else if line == "DISTRIB_CODENAME=bionic" {
-				return DistributionUbuntu1804, nil
-			} else if line == "DISTRIB_CODENAME=focal" {
-				return DistributionUbuntu2004, nil
+			if strings.HasPrefix(line, "ID=") {
+				osRelease["ID"] = strings.Trim(line[3:], "\"")
+			}
+			if strings.HasPrefix(line, "VERSION_ID=") {
+				osRelease["VERSION_ID"] = strings.Trim(line[11:], "\"")
 			}
 		}
-	} else if !os.IsNotExist(err) {
-		klog.Warningf("error reading /etc/lsb-release: %v", err)
+	} else {
+		return "", fmt.Errorf("reading /etc/os-release: %v", err)
 	}
 
-	// Debian has /etc/debian_version
-	debianVersionBytes, err := ioutil.ReadFile(path.Join(rootfs, "etc/debian_version"))
-	if err == nil {
-		debianVersion := strings.TrimSpace(string(debianVersionBytes))
-		if strings.HasPrefix(debianVersion, "8.") {
-			return "", fmt.Errorf("distribution Degian 8 (Jessie) is no longer supported")
-		} else if strings.HasPrefix(debianVersion, "9.") {
-			return DistributionDebian9, nil
-		} else if strings.HasPrefix(debianVersion, "10.") {
-			return DistributionDebian10, nil
-		} else {
-			return "", fmt.Errorf("unhandled debian version %q", debianVersion)
-		}
-	} else if !os.IsNotExist(err) {
-		klog.Warningf("error reading /etc/debian_version: %v", err)
+	distro := fmt.Sprintf("%s-%s", osRelease["ID"], osRelease["VERSION_ID"])
+
+	// Most distros have a fixed VERSION_ID
+	switch distro {
+	case "amzn-2":
+		return DistributionAmazonLinux2, nil
+	case "centos-7":
+		return DistributionCentos7, nil
+	case "centos-8":
+		return DistributionCentos8, nil
+	case "debian-9":
+		return DistributionDebian9, nil
+	case "debian-10":
+		return DistributionDebian10, nil
+	case "ubuntu-16.04":
+		return DistributionUbuntu1604, nil
+	case "ubuntu-18.04":
+		return DistributionUbuntu1804, nil
+	case "ubuntu-20.04":
+		return DistributionUbuntu2004, nil
 	}
 
-	// Redhat has /etc/redhat-release
-	// Centos has /etc/centos-release
-	redhatRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/redhat-release"))
-	if err == nil {
-		for _, line := range strings.Split(string(redhatRelease), "\n") {
-			line = strings.TrimSpace(line)
-			if strings.HasPrefix(line, "Red Hat Enterprise Linux Server release 7.") {
-				return DistributionRhel7, nil
-			}
-			if strings.HasPrefix(line, "CentOS Linux release 7.") {
-				return DistributionCentos7, nil
-			}
-			if strings.HasPrefix(line, "Red Hat Enterprise Linux release 8.") {
-				return DistributionRhel8, nil
-			}
-			if strings.HasPrefix(line, "CentOS Linux release 8.") {
-				return DistributionCentos8, nil
-			}
-		}
-		klog.Warningf("unhandled redhat-release info %q", string(lsbRelease))
-	} else if !os.IsNotExist(err) {
-		klog.Warningf("error reading /etc/redhat-release: %v", err)
+	// Some distros have a more verbose VERSION_ID
+	if strings.HasPrefix(distro, "cos-") {
+		return DistributionContainerOS, nil
+	}
+	if strings.HasPrefix(distro, "flatcar-") {
+		return DistributionFlatcar, nil
+	}
+	if strings.HasPrefix(distro, "rhel-7.") {
+		return DistributionRhel7, nil
+	}
+	if strings.HasPrefix(distro, "rhel-8.") {
+		return DistributionRhel8, nil
 	}
 
-	// Flatcar uses /usr/lib/os-release
-	usrLibOsRelease, err := ioutil.ReadFile(path.Join(rootfs, "usr/lib/os-release"))
-	if err == nil {
-		for _, line := range strings.Split(string(usrLibOsRelease), "\n") {
-			line = strings.TrimSpace(line)
-			if line == "ID=coreos" {
-				return "", fmt.Errorf("distribution CoreOS is no longer supported")
-			} else if line == "ID=flatcar" {
-				return DistributionFlatcar, nil
-			}
-		}
-		klog.Warningf("unhandled os-release info %q", string(usrLibOsRelease))
-	} else if !os.IsNotExist(err) {
-		klog.Warningf("error reading /usr/lib/os-release: %v", err)
-	}
-
-	// ContainerOS, Amazon Linux 2 uses /etc/os-release
-	osRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/os-release"))
-	if err == nil {
-		for _, line := range strings.Split(string(osRelease), "\n") {
-			line = strings.TrimSpace(line)
-			if line == "ID=cos" {
-				return DistributionContainerOS, nil
-			}
-			if strings.HasPrefix(line, "PRETTY_NAME=\"Amazon Linux 2") {
-				return DistributionAmazonLinux2, nil
-			}
-		}
-		klog.Warningf("unhandled /etc/os-release info %q", string(osRelease))
-	} else if !os.IsNotExist(err) {
-		klog.Warningf("error reading /etc/os-release: %v", err)
-	}
-
-	klog.Warningf("could not determine distro")
-	klog.Warningf("  /etc/lsb-release: %q", string(lsbRelease))
-	klog.Warningf("  /etc/debian_version: %q", string(debianVersionBytes))
-	klog.Warningf("  /etc/redhat-release: %q", string(redhatRelease))
-	klog.Warningf("  /usr/lib/os-release: %q", string(usrLibOsRelease))
-	klog.Warningf("  /etc/os-release: %q", string(osRelease))
-
-	return "", fmt.Errorf("cannot identify distro")
+	// Some distros are not supported
+	klog.V(2).Infof("Contents of /etc/os-release:\n%s", osReleaseBytes)
+	return "", fmt.Errorf("unsupported distro: %s", distro)
 }
