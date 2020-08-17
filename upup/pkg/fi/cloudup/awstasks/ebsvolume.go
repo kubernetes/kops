@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // +kops:fitask

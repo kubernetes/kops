@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // dockerCLI encapsulates access to docker via the CLI

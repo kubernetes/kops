@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"sort"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	slbnew "github.com/aliyun/alibaba-cloud-sdk-go/services/slb"

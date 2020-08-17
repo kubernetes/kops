@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )

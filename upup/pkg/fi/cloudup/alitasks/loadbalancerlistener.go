@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/denverdino/aliyungo/slb"
 	"k8s.io/kops/upup/pkg/fi"

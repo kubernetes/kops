@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func (m *MockELB) DescribeTags(request *elb.DescribeTagsInput) (*elb.DescribeTagsOutput, error) {

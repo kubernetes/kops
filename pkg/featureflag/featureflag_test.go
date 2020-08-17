@@ -20,7 +20,7 @@ import (
 	"os"
 	"testing"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func TestFlagToFalse(t *testing.T) {
