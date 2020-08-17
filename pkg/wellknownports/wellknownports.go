@@ -44,6 +44,9 @@ const (
 	// DNSControllerGossipMemberlist is the port where dns-controller listens for the memberlist-backed gossip
 	DNSControllerGossipMemberlist = 3993
 
+	// KopsControllerPort is the port where kops-controller listens.
+	KopsControllerPort = 3992
+
 	// 4001 is etcd main, 4002 is etcd events, 4003 is etcd cilium
 
 	// KubeAPIServerHealthCheck is the port where kube-apiserver-healthcheck listens.

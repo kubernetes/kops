@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "archive.go",
         "bindmount.go",
+        "bootstrap_client.go",
         "chattr.go",
         "createsdir.go",
         "file.go",
@@ -22,9 +23,11 @@ go_library(
     deps = [
         "//nodeup/pkg/distros:go_default_library",
         "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/nodeup:go_default_library",
         "//pkg/backoff:go_default_library",
         "//pkg/kubeconfig:go_default_library",
         "//pkg/pki:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/cloudinit:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",

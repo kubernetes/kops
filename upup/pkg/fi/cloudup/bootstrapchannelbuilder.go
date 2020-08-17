@@ -304,7 +304,7 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 	// this manifest. For clusters whom are upgrading from RBAC to Node,RBAC the clusterrolebinding
 	// will remain and have to be deleted manually once all the nodes have been upgraded.
 	enableRBACAddon := true
-	if b.Cluster.Spec.NodeAuthorization != nil {
+	if b.UseKopsControllerForNodeBootstrap() || b.Cluster.Spec.NodeAuthorization != nil {
 		enableRBACAddon = false
 	}
 	if b.Cluster.Spec.KubeAPIServer != nil {
