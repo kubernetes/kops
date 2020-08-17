@@ -29,6 +29,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -38,10 +39,11 @@ import (
 )
 
 type Server struct {
-	opt      *config.Options
-	server   *http.Server
-	verifier fi.Verifier
-	keystore pki.Keystore
+	opt       *config.Options
+	certNames sets.String
+	server    *http.Server
+	verifier  fi.Verifier
+	keystore  pki.Keystore
 }
 
 func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
@@ -54,9 +56,10 @@ func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 	}
 
 	s := &Server{
-		opt:      opt,
-		server:   server,
-		verifier: verifier,
+		opt:       opt,
+		certNames: sets.NewString(opt.Server.CertNames...),
+		server:    server,
+		verifier:  verifier,
 	}
 	r := http.NewServeMux()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
@@ -158,6 +161,9 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 		Validity:  time.Hour * time.Duration(validHours),
 	}
 
+	if !s.certNames.Has(name) {
+		return "", fmt.Errorf("key name not enabled")
+	}
 	switch name {
 	case "kubelet":
 		issueReq.Subject = pkix.Name{
