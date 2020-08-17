@@ -1219,12 +1219,11 @@ k8s.io/gengo/types
 ## explicit
 k8s.io/helm/pkg/strvals
 # k8s.io/klog v1.0.0
-## explicit
 k8s.io/klog
-k8s.io/klog/klogr
 # k8s.io/klog/v2 v2.3.0
 ## explicit
 k8s.io/klog/v2
+k8s.io/klog/v2/klogr
 # k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/util/proto
