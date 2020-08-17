@@ -43,6 +43,8 @@ type ServerOptions struct {
 	CABasePath string `json:"caBasePath"`
 	// SigningCAs is the list of active signing CAs.
 	SigningCAs []string `json:"signingCAs"`
+	// CertNames is the list of active certificate names.
+	CertNames []string `json:"certNames"`
 }
 
 type ServerProviderOptions struct {
