@@ -168,6 +168,10 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 		issueReq.Subject = pkix.Name{
 			CommonName: rbac.KubeProxy,
 		}
+	case "kube-router":
+		issueReq.Subject = pkix.Name{
+			CommonName: rbac.KubeRouter,
+		}
 	default:
 		return "", fmt.Errorf("unexpected key name")
 	}
