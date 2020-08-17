@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
 	nodeauthorizer "k8s.io/kops/pkg/model/components/node-authorizer"
-	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/util/pkg/reflectutils"
@@ -53,11 +52,6 @@ type populateClusterSpec struct {
 
 	// assetBuilder holds the AssetBuilder, used to store assets we discover / remap
 	assetBuilder *assets.AssetBuilder
-}
-
-func findModelStore() (vfs.Path, error) {
-	p := models.NewAssetPath("")
-	return p, nil
 }
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.

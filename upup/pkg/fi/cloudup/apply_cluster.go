@@ -160,11 +160,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	modelStore, err := findModelStore()
-	if err != nil {
-		return err
-	}
-
 	channel, err := ChannelForCluster(c.Cluster)
 	if err != nil {
 		klog.Warningf("%v", err)
@@ -685,7 +680,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return err
 	}
 
-	taskMap, err := l.BuildTasks(modelStore, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
+	taskMap, err := l.BuildTasks(assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}

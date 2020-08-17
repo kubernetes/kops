@@ -17,9 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"reflect"
 	"strings"
 	"text/template"
@@ -30,9 +28,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/assettasks"
-	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/util/pkg/reflectutils"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Loader struct {
@@ -47,88 +43,14 @@ type Loader struct {
 	tasks map[string]fi.Task
 }
 
-type templateResource struct {
-	key      string
-	loader   *Loader
-	template string
-	args     []string
-}
-
-var _ fi.Resource = &templateResource{}
-var _ fi.TemplateResource = &templateResource{}
-
-func (a *templateResource) Open() (io.Reader, error) {
-	var err error
-	result, err := a.loader.executeTemplate(a.key, a.template, a.args)
-	if err != nil {
-		return nil, fmt.Errorf("error executing resource template %q: %v", a.key, err)
-	}
-	reader := bytes.NewReader([]byte(result))
-	return reader, nil
-}
-
-func (a *templateResource) Curry(args []string) fi.TemplateResource {
-	curried := &templateResource{}
-	*curried = *a
-	curried.args = append(curried.args, args...)
-	return curried
-}
-
 func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
 	l.Resources = make(map[string]fi.Resource)
 	l.TemplateFunctions = make(template.FuncMap)
 }
 
-func (l *Loader) executeTemplate(key string, d string, args []string) (string, error) {
-	// TODO remove after proving it's dead code
-	klog.Fatalf("need to execute template %q", key)
-	t := template.New(key)
-
-	funcMap := make(template.FuncMap)
-	funcMap["Args"] = func() []string {
-		return args
-	}
-	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
-		return l.renderResource(resourceName, args)
-	}
-	for k, fn := range l.TemplateFunctions {
-		funcMap[k] = fn
-	}
-	t.Funcs(funcMap)
-
-	t.Option("missingkey=zero")
-
-	spec := l.Cluster.Spec
-
-	_, err := t.Parse(d)
-	if err != nil {
-		return "", fmt.Errorf("error parsing template %q: %v", key, err)
-	}
-
-	var buffer bytes.Buffer
-	err = t.ExecuteTemplate(&buffer, key, spec)
-	if err != nil {
-		return "", fmt.Errorf("error executing template %q: %v", key, err)
-	}
-
-	return buffer.String(), nil
-}
-
-func (l *Loader) BuildTasks(modelStore vfs.Path, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	// Second pass: load everything else
-	tw := &loader.TreeWalker{
-		Contexts: map[string]loader.Handler{
-			"resources": l.resourceHandler,
-		},
-	}
-
-	modelDir := modelStore.Join("cloudup")
-	err := tw.Walk(modelDir)
-	if err != nil {
-		return nil, err
-	}
-
 	for _, builder := range l.Builders {
 		context := &fi.ModelBuilderContext{
 			Tasks:              l.tasks,
@@ -148,8 +70,7 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, assetBuilder *assets.AssetBuild
 	if err := l.addAssetFileCopyTasks(assetBuilder.FileAssets, lifecycle); err != nil {
 		return nil, err
 	}
-	err = l.processDeferrals()
-	if err != nil {
+	if err := l.processDeferrals(); err != nil {
 		return nil, err
 	}
 	return l.tasks, nil
@@ -302,33 +223,6 @@ func (l *Loader) processDeferrals() error {
 	return nil
 }
 
-func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
-	contents, err := i.ReadBytes()
-	if err != nil {
-		return err
-	}
-
-	var a fi.Resource
-	key := i.RelativePath
-	if strings.HasSuffix(key, ".template") {
-		key = strings.TrimSuffix(key, ".template")
-		klog.V(2).Infof("loading (templated) resource %q", key)
-
-		a = &templateResource{
-			template: string(contents),
-			loader:   l,
-			key:      key,
-		}
-	} else {
-		klog.V(2).Infof("loading resource %q", key)
-		a = fi.NewBytesResource(contents)
-
-	}
-
-	l.Resources[key] = a
-	return nil
-}
-
 func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, args []string) error {
 	if resource == nil {
 		return nil
@@ -344,26 +238,4 @@ func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, a
 	rh.Resource = resource
 
 	return nil
-}
-
-func (l *Loader) renderResource(resourceName string, args []string) (string, error) {
-	resourceKey := strings.TrimSuffix(resourceName, ".template")
-	resourceKey = strings.TrimPrefix(resourceKey, "resources/")
-	configResource := l.Resources[resourceKey]
-	if configResource == nil {
-		return "", fmt.Errorf("cannot find resource %q", resourceName)
-	}
-
-	if tr, ok := configResource.(fi.TemplateResource); ok {
-		configResource = tr.Curry(args)
-	} else if len(args) != 0 {
-		return "", fmt.Errorf("args passed when building node config, but config was not a template %q", resourceName)
-	}
-
-	data, err := fi.ResourceAsBytes(configResource)
-	if err != nil {
-		return "", fmt.Errorf("error reading resource %q: %v", resourceName, err)
-	}
-
-	return string(data), nil
 }
