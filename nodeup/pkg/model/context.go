@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/systemd"
@@ -56,6 +57,7 @@ type NodeupModelContext struct {
 	IsMaster bool
 
 	kubernetesVersion semver.Version
+	bootstrapCerts    map[string]*nodetasks.BootstrapCert
 }
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
@@ -65,6 +67,7 @@ func (c *NodeupModelContext) Init() error {
 		return fmt.Errorf("unable to parse KubernetesVersion %q", c.Cluster.Spec.KubernetesVersion)
 	}
 	c.kubernetesVersion = *k8sVersion
+	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
 
 	if c.NodeupConfig.InstanceGroupRole == kops.InstanceGroupRoleMaster {
 		c.IsMaster = true
@@ -217,6 +220,51 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 	return kubeConfig.GetConfig()
 }
 
+// BuildBootstrapKubeconfig generates a kubeconfig with a client certificate from either kops-controller or the state store.
+func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.ModelBuilderContext) (fi.Resource, error) {
+	if c.UseKopsControllerForNodeBootstrap() {
+		b, ok := c.bootstrapCerts[name]
+		if !ok {
+			b = &nodetasks.BootstrapCert{
+				Cert: &fi.TaskDependentResource{},
+				Key:  &fi.TaskDependentResource{},
+			}
+			c.bootstrapCerts[name] = b
+		}
+
+		ca, err := c.GetCert(fi.CertificateIDCA)
+		if err != nil {
+			return nil, err
+		}
+
+		kubeConfig := &nodetasks.KubeConfig{
+			Name: name,
+			Cert: b.Cert,
+			Key:  b.Key,
+			CA:   fi.NewBytesResource(ca),
+		}
+		if c.IsMaster {
+			// @note: use https even for local connections, so we can turn off the insecure port
+			kubeConfig.ServerURL = "https://127.0.0.1"
+		} else {
+			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+		}
+
+		err = ctx.EnsureTask(kubeConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		return kubeConfig.GetConfig(), nil
+	} else {
+		config, err := c.BuildPKIKubeconfig(name)
+		if err != nil {
+			return nil, err
+		}
+		return fi.NewStringResource(config), nil
+	}
+}
+
 // BuildPKIKubeconfig generates a kubeconfig
 func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
 	ca, err := c.GetCert(fi.CertificateIDCA)
@@ -326,6 +374,11 @@ func (c *NodeupModelContext) UseEtcdTLSAuth() bool {
 	return false
 }
 
+// UseKopsControllerForNodeBootstrap checks if nodeup should use kops-controller to bootstrap.
+func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
+	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
+}
+
 // UseNodeAuthorization checks if have a node authorization policy
 func (c *NodeupModelContext) UseNodeAuthorization() bool {
 	return c.Cluster.Spec.NodeAuthorization != nil
@@ -372,20 +425,20 @@ func (c *NodeupModelContext) KubectlPath() string {
 	return kubeletCommand
 }
 
-// BuildCertificatePairTask creates the tasks to pull down the certificate and private key
-func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string) error {
+// BuildCertificatePairTask creates the tasks to create the certificate and private key files.
+func (c *NodeupModelContext) BuildCertificatePairTask(ctx *fi.ModelBuilderContext, key, path, filename string, owner *string) error {
 	certificateName := filepath.Join(path, filename+".pem")
 	keyName := filepath.Join(path, filename+"-key.pem")
 
-	if err := c.BuildCertificateTask(ctx, key, certificateName); err != nil {
+	if err := c.BuildCertificateTask(ctx, key, certificateName, owner); err != nil {
 		return err
 	}
 
-	return c.BuildPrivateKeyTask(ctx, key, keyName)
+	return c.BuildPrivateKeyTask(ctx, key, keyName, owner)
 }
 
-// BuildCertificateTask is responsible for build a certificate request task
-func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+// BuildCertificateTask builds a task to create a certificate file.
+func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
 	cert, err := c.KeyStore.FindCert(name)
 	if err != nil {
 		return err
@@ -410,13 +463,14 @@ func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, n
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
+		Owner:    owner,
 	})
 
 	return nil
 }
 
-// BuildPrivateKeyTask is responsible for build a certificate request task
-func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+// BuildPrivateKeyTask builds a task to create a private key file.
+func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, name, filename string, owner *string) error {
 	cert, err := c.KeyStore.FindPrivateKey(name)
 	if err != nil {
 		return err
@@ -441,6 +495,7 @@ func (c *NodeupModelContext) BuildPrivateKeyTask(ctx *fi.ModelBuilderContext, na
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0600"),
+		Owner:    owner,
 	})
 
 	return nil

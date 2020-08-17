@@ -35,6 +35,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
+	"k8s.io/kops/pkg/apis/kops/model"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/stringorslice"
@@ -458,7 +459,9 @@ func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]s
 		)
 
 		// @check if bootstrap tokens are enabled and if so enable access to client certificate
-		if UseBootstrapTokens(cluster) {
+		if model.UseKopsControllerForNodeBootstrap(cluster) {
+			// no additional permissions
+		} else if useBootstrapTokens(cluster) {
 			paths = append(paths, "/pki/private/node-authorizer-client/*")
 		} else {
 			paths = append(paths, "/pki/private/kubelet/*")
@@ -539,9 +542,9 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 	return bytes.NewReader([]byte(j)), nil
 }
 
-// UseBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
+// useBootstrapTokens check if we are using bootstrap tokens - @TODO, i don't like this we should probably pass in
 // the kops model into the builder rather than duplicating the code. I'll leave for another PR
-func UseBootstrapTokens(cluster *kops.Cluster) bool {
+func useBootstrapTokens(cluster *kops.Cluster) bool {
 	if cluster.Spec.KubeAPIServer == nil {
 		return false
 	}

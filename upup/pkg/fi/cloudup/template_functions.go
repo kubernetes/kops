@@ -31,12 +31,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
@@ -47,6 +49,7 @@ import (
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/env"
 )
@@ -379,6 +382,37 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		ConfigBase: cluster.Spec.ConfigBase,
 	}
 
+	if tf.UseKopsControllerForNodeBootstrap() {
+		pkiDir := "/etc/kubernetes/kops-controller/pki"
+		config.Server = &kopscontrollerconfig.ServerOptions{
+			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
+			ServerCertificatePath: path.Join(pkiDir, "kops-controller.crt"),
+			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
+			CABasePath:            pkiDir,
+			SigningCAs:            []string{fi.CertificateIDCA},
+		}
+
+		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		case kops.CloudProviderAWS:
+			nodesRoles := sets.String{}
+			for _, ig := range tf.InstanceGroups {
+				if ig.Spec.Role == kops.InstanceGroupRoleNode {
+					profile, err := tf.LinkToIAMInstanceProfile(ig)
+					if err != nil {
+						return "", fmt.Errorf("getting role for ig %s: %v", ig.Name, err)
+					}
+					nodesRoles.Insert(*profile.Name)
+				}
+			}
+			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{
+				NodesRoles: nodesRoles.List(),
+				Region:     tf.Region,
+			}
+		default:
+			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.CloudProvider)
+		}
+	}
+
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml
 	b, err := json.Marshal(config)
 	if err != nil {
@@ -397,7 +431,7 @@ func (tf *TemplateFunctions) KopsControllerArgv() ([]string, error) {
 	// Verbose, but not excessive logging
 	argv = append(argv, "--v=2")
 
-	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config.yaml")
+	argv = append(argv, "--conf=/etc/kubernetes/kops-controller/config/config.yaml")
 
 	return argv, nil
 }

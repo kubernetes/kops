@@ -1,0 +1,3 @@
+mode: "0755"
+path: /etc/kubernetes/kops-controller
+type: directory
