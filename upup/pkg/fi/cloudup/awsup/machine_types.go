@@ -22,7 +22,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 type AWSMachineTypeInfo struct {

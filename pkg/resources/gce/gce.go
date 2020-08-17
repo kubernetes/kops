@@ -24,7 +24,7 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	clouddns "google.golang.org/api/dns/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"

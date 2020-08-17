@@ -22,7 +22,7 @@ import (
 
 	"github.com/blang/semver/v4"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"

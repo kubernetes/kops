@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/protokube/pkg/protokube"
 )

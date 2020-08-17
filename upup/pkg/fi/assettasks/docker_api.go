@@ -22,7 +22,7 @@ import (
 
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // dockerAPI encapsulates access to docker via the API

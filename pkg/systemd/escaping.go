@@ -21,7 +21,7 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // EscapeCommand is used to escape a command

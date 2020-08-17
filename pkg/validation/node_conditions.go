@@ -18,7 +18,7 @@ package validation
 
 import (
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func getNodeReadyStatus(node *v1.Node) v1.ConditionStatus {

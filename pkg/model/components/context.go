@@ -31,7 +31,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 
 	"github.com/blang/semver/v4"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // OptionsContext is the context object for options builders

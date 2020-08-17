@@ -23,7 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	gceacls "k8s.io/kops/pkg/acls/gce"
 	s3acls "k8s.io/kops/pkg/acls/s3"
 	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
