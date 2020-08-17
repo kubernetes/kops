@@ -257,59 +257,47 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 
 		return kubeConfig.GetConfig(), nil
 	} else {
-		config, err := c.BuildPKIKubeconfig(name)
+		ca, err := c.GetCert(fi.CertificateIDCA)
 		if err != nil {
 			return nil, err
 		}
-		return fi.NewStringResource(config), nil
-	}
-}
 
-// BuildPKIKubeconfig generates a kubeconfig
-func (c *NodeupModelContext) BuildPKIKubeconfig(name string) (string, error) {
-	ca, err := c.GetCert(fi.CertificateIDCA)
-	if err != nil {
-		return "", err
-	}
+		cert, err := c.GetCert(name)
+		if err != nil {
+			return nil, err
+		}
 
-	cert, err := c.GetCert(name)
-	if err != nil {
-		return "", err
-	}
+		key, err := c.GetPrivateKey(name)
+		if err != nil {
+			return nil, err
+		}
 
-	key, err := c.GetPrivateKey(name)
-	if err != nil {
-		return "", err
-	}
+		kubeConfig := &nodetasks.KubeConfig{
+			Name: name,
+			Cert: fi.NewBytesResource(cert),
+			Key:  fi.NewBytesResource(key),
+			CA:   fi.NewBytesResource(ca),
+		}
+		if c.IsMaster {
+			// @note: use https even for local connections, so we can turn off the insecure port
+			// This code path is used for the kubelet cert in Kubernetes 1.18 and earlier.
+			kubeConfig.ServerURL = "https://127.0.0.1"
+		} else {
+			kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
+		}
 
-	return c.BuildKubeConfig(name, ca, cert, key)
-}
+		err = kubeConfig.Run(nil)
+		if err != nil {
+			return nil, err
+		}
 
-// BuildKubeConfig is responsible for building a kubeconfig
-func (c *NodeupModelContext) BuildKubeConfig(username string, ca, certificate, privateKey []byte) (string, error) {
-	kubeConfig := &nodetasks.KubeConfig{
-		Name: username,
-		Cert: fi.NewBytesResource(certificate),
-		Key:  fi.NewBytesResource(privateKey),
-		CA:   fi.NewBytesResource(ca),
-	}
-	if c.IsMaster {
-		// @note: use https even for local connections, so we can turn off the insecure port
-		kubeConfig.ServerURL = "https://127.0.0.1"
-	} else {
-		kubeConfig.ServerURL = "https://" + c.Cluster.Spec.MasterInternalName
-	}
+		config, err := fi.ResourceAsBytes(kubeConfig.GetConfig())
+		if err != nil {
+			return nil, err
+		}
 
-	err := kubeConfig.Run(nil)
-	if err != nil {
-		return "", err
+		return fi.NewBytesResource(config), nil
 	}
-
-	config, err := fi.ResourceAsString(kubeConfig.GetConfig())
-	if err != nil {
-		return "", err
-	}
-	return config, nil
 }
 
 // IsKubernetesGTE checks if the version is greater-than-or-equal
