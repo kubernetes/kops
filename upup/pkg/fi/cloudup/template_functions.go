@@ -383,6 +383,14 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	}
 
 	if tf.UseKopsControllerForNodeBootstrap() {
+		certNames := []string{"kubelet"}
+		if cluster.Spec.KubeProxy.Enabled == nil || *cluster.Spec.KubeProxy.Enabled {
+			certNames = append(certNames, "kube-proxy")
+		}
+		if cluster.Spec.Networking.Kuberouter != nil {
+			certNames = append(certNames, "kube-router")
+		}
+
 		pkiDir := "/etc/kubernetes/kops-controller/pki"
 		config.Server = &kopscontrollerconfig.ServerOptions{
 			Listen:                fmt.Sprintf(":%d", wellknownports.KopsControllerPort),
@@ -390,6 +398,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
 			CABasePath:            pkiDir,
 			SigningCAs:            []string{fi.CertificateIDCA},
+			CertNames:             certNames,
 		}
 
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {

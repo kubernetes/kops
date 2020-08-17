@@ -61,7 +61,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	{
+	if !b.UseKopsControllerForNodeBootstrap() {
 		t := &fitasks.Keypair{
 			Name:      fi.String("kube-proxy"),
 			Lifecycle: b.Lifecycle,
@@ -140,10 +140,10 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil {
+	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil && !b.UseKopsControllerForNodeBootstrap() {
 		t := &fitasks.Keypair{
 			Name:    fi.String("kube-router"),
-			Subject: "cn=" + "system:kube-router",
+			Subject: "cn=" + rbac.KubeRouter,
 			Type:    "client",
 			Signer:  defaultCA,
 		}
