@@ -108,10 +108,11 @@ spec:
       containers:
       - args:
         - server
-        - --cluster-id=api.minimal.example.com
+        - --config=/etc/aws-iam-authenticator/config.yaml
+        - --cluster-id=custom-cluster-ID
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
-        - --backend-mode=CRD
+        - --backend-mode=CRD,MountedFile
         image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.1-debian-stretch
         livenessProbe:
           httpGet:
@@ -128,6 +129,8 @@ spec:
             cpu: 10m
             memory: 20Mi
         volumeMounts:
+        - mountPath: /etc/aws-iam-authenticator/
+          name: config
         - mountPath: /var/aws-iam-authenticator/
           name: state
         - mountPath: /etc/kubernetes/aws-iam-authenticator/
@@ -143,6 +146,9 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       volumes:
+      - configMap:
+          name: aws-iam-authenticator
+        name: config
       - hostPath:
           path: /srv/kubernetes/aws-iam-authenticator/
         name: output
