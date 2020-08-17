@@ -8,11 +8,14 @@ go_library(
     deps = [
         "//cmd/kops-controller/controllers:go_default_library",
         "//cmd/kops-controller/pkg/config:go_default_library",
+        "//cmd/kops-controller/pkg/server:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",
         "//pkg/nodeidentity/do:go_default_library",
         "//pkg/nodeidentity/gce:go_default_library",
         "//pkg/nodeidentity/openstack:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/client-go/plugin/pkg/client/auth/gcp:go_default_library",
@@ -47,7 +50,7 @@ ARCH = [
     architecture = arch,
     base = "@distroless_base//image",
     cmd = ["/kops-controller"],
-    user = "10001",
+    user = "10011",
     files = [
         "//cmd/kops-controller",
     ],

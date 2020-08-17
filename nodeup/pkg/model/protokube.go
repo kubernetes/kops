@@ -82,12 +82,12 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		// retrieve the etcd peer certificates and private keys from the keystore
 		if !t.UseEtcdManager() && t.UseEtcdTLS() {
 			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
-				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
+				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x), nil); err != nil {
 					return err
 				}
 			}
 			for _, x := range []string{"etcd", "etcd-peer", "etcd-client"} {
-				if err := t.BuildPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
+				if err := t.BuildPrivateKeyTask(c, x, fmt.Sprintf("%s-key.pem", x), nil); err != nil {
 					return err
 				}
 			}

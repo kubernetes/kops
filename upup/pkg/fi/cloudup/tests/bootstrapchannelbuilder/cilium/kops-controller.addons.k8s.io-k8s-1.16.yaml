@@ -35,7 +35,7 @@ spec:
       - command:
         - /kops-controller
         - --v=2
-        - --conf=/etc/kubernetes/kops-controller/config.yaml
+        - --conf=/etc/kubernetes/kops-controller/config/config.yaml
         image: kope/kops-controller:1.19.0-alpha.2
         name: kops-controller
         resources:
@@ -45,8 +45,10 @@ spec:
         securityContext:
           runAsNonRoot: true
         volumeMounts:
-        - mountPath: /etc/kubernetes/kops-controller/
+        - mountPath: /etc/kubernetes/kops-controller/config/
           name: kops-controller-config
+        - mountPath: /etc/kubernetes/kops-controller/pki/
+          name: kops-controller-pki
       dnsPolicy: Default
       hostNetwork: true
       nodeSelector:
@@ -60,6 +62,10 @@ spec:
       - configMap:
           name: kops-controller
         name: kops-controller-config
+      - hostPath:
+          path: /etc/kubernetes/kops-controller/
+          type: Directory
+        name: kops-controller-pki
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1

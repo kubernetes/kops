@@ -53,7 +53,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Include the CA Key
 	// @TODO: use a per-machine key?  use KMS?
-	if err := b.BuildPrivateKeyTask(c, fi.CertificateIDCA, "ca.key"); err != nil {
+	if err := b.BuildPrivateKeyTask(c, fi.CertificateIDCA, "ca.key", nil); err != nil {
 		return err
 	}
 
