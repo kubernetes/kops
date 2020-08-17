@@ -61,7 +61,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	{
+	if !b.UseKopsControllerForNodeBootstrap() {
 		t := &fitasks.Keypair{
 			Name:      fi.String("kube-proxy"),
 			Lifecycle: b.Lifecycle,

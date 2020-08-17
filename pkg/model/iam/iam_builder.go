@@ -453,7 +453,6 @@ func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]s
 			"/config",
 			"/instancegroup/*",
 			"/pki/issued/*",
-			"/pki/private/kube-proxy/*",
 			"/pki/ssh/*",
 			"/secrets/dockerconfig",
 		)
@@ -461,10 +460,14 @@ func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]s
 		// @check if bootstrap tokens are enabled and if so enable access to client certificate
 		if model.UseKopsControllerForNodeBootstrap(cluster) {
 			// no additional permissions
-		} else if useBootstrapTokens(cluster) {
-			paths = append(paths, "/pki/private/node-authorizer-client/*")
 		} else {
-			paths = append(paths, "/pki/private/kubelet/*")
+			paths = append(paths, "/pki/private/kube-proxy/*")
+
+			if useBootstrapTokens(cluster) {
+				paths = append(paths, "/pki/private/node-authorizer-client/*")
+			} else {
+				paths = append(paths, "/pki/private/kubelet/*")
+			}
 		}
 
 		networkingSpec := cluster.Spec.Networking

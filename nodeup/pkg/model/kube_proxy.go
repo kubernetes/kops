@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
@@ -79,13 +80,21 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kube-proxy")
-		if err != nil {
-			return err
+		var kubeconfig fi.Resource
+		var err error
+
+		if b.IsMaster {
+			kubeconfig = b.BuildIssuedKubeconfig("kube-proxy", nodetasks.PKIXName{CommonName: rbac.KubeProxy}, c)
+		} else {
+			kubeconfig, err = b.BuildBootstrapKubeconfig("kube-proxy", c)
+			if err != nil {
+				return err
+			}
 		}
+
 		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-proxy/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
+			Contents: kubeconfig,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
