@@ -118,7 +118,6 @@ require (
 	k8s.io/component-base v0.18.6
 	k8s.io/gengo v0.0.0-20200710205751-c0d492a0f3ca
 	k8s.io/helm v2.9.0+incompatible
-	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.3.0
 	k8s.io/kubectl v0.0.0
 	k8s.io/legacy-cloud-providers v0.0.0

@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"runtime"
 	"sort"
+	"strings"
 
 	"github.com/go-logr/logr"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // New returns a logr.Logger which is implemented by klog.
@@ -134,8 +135,16 @@ func flatten(kvList ...interface{}) string {
 }
 
 func pretty(value interface{}) string {
-	jb, _ := json.Marshal(value)
-	return string(jb)
+	if err, ok := value.(error); ok {
+		if _, ok := value.(json.Marshaler); !ok {
+			value = err.Error()
+		}
+	}
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	encoder.Encode(value)
+	return strings.TrimSpace(string(buffer.Bytes()))
 }
 
 func (l klogger) Info(msg string, kvList ...interface{}) {
@@ -149,7 +158,7 @@ func (l klogger) Info(msg string, kvList ...interface{}) {
 }
 
 func (l klogger) Enabled() bool {
-	return bool(klog.V(klog.Level(l.level)))
+	return bool(klog.V(klog.Level(l.level)).Enabled())
 }
 
 func (l klogger) Error(err error, msg string, kvList ...interface{}) {
@@ -165,7 +174,7 @@ func (l klogger) Error(err error, msg string, kvList ...interface{}) {
 	klog.ErrorDepth(framesToCaller(), l.prefix, " ", msgStr, " ", errStr, " ", fixedStr, " ", userStr)
 }
 
-func (l klogger) V(level int) logr.InfoLogger {
+func (l klogger) V(level int) logr.Logger {
 	new := l.clone()
 	new.level = level
 	return new
@@ -190,4 +199,3 @@ func (l klogger) WithValues(kvList ...interface{}) logr.Logger {
 }
 
 var _ logr.Logger = klogger{}
-var _ logr.InfoLogger = klogger{}
