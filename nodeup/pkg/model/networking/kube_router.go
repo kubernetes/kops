@@ -18,6 +18,7 @@ package networking
 
 import (
 	"k8s.io/kops/nodeup/pkg/model"
+	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -37,14 +38,21 @@ func (b *KuberouterBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	kubeconfig, err := b.BuildPKIKubeconfig("kube-router")
-	if err != nil {
-		return err
+	var kubeconfig fi.Resource
+	var err error
+
+	if b.IsMaster {
+		kubeconfig = b.BuildIssuedKubeconfig("kube-router", nodetasks.PKIXName{CommonName: rbac.KubeRouter}, c)
+	} else {
+		kubeconfig, err = b.BuildBootstrapKubeconfig("kube-router", c)
+		if err != nil {
+			return err
+		}
 	}
 
 	c.AddTask(&nodetasks.File{
 		Path:     "/var/lib/kube-router/kubeconfig",
-		Contents: fi.NewStringResource(kubeconfig),
+		Contents: kubeconfig,
 		Type:     nodetasks.FileType_File,
 		Mode:     fi.String("0400"),
 	})

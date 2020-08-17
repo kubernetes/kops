@@ -474,7 +474,7 @@ func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]s
 
 		if networkingSpec != nil {
 			// @check if kuberoute is enabled and permit access to the private key
-			if networkingSpec.Kuberouter != nil {
+			if networkingSpec.Kuberouter != nil && !model.UseKopsControllerForNodeBootstrap(cluster) {
 				paths = append(paths, "/pki/private/kube-router/*")
 			}
 
