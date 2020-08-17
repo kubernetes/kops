@@ -17,7 +17,7 @@ limitations under the License.
 package dns
 
 import (
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip/dns/hosts"
 )
 

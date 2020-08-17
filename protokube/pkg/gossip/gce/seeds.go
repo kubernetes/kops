@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	compute "google.golang.org/api/compute/v1"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 

@@ -34,7 +34,7 @@ import (
 	"strings"
 
 	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"

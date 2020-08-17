@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/kubeconfig"
 )
 
