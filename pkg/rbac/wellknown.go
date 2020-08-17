@@ -29,6 +29,7 @@ const (
 
 	// core kubernetes process identities
 	KubeProxy             = "system:kube-proxy"
+	KubeRouter            = "system:kube-router"
 	KubeControllerManager = "system:kube-controller-manager"
 	KubeScheduler         = "system:kube-scheduler"
 )
