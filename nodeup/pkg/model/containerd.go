@@ -90,7 +90,7 @@ var containerdVersions = []packageVersion{
 		},
 	},
 
-	// 1.3.4 - Linux Generic
+	// 1.3.4 - Linux Generic AMD64
 	{
 		PackageVersion: "1.3.4",
 		PlainBinary:    true,
@@ -100,6 +100,19 @@ var containerdVersions = []packageVersion{
 		MapFiles: map[string]string{
 			"./usr/local/bin":  "/usr",
 			"./usr/local/sbin": "/usr",
+		},
+	},
+
+	// 1.4.0 - Linux Generic AMD64
+	{
+		PackageVersion: "1.4.0",
+		PlainBinary:    true,
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
+		Source:         "https://github.com/containerd/containerd/releases/download/v1.4.0/cri-containerd-cni-1.4.0-linux-amd64.tar.gz",
+		Hash:           "b379f29417efd583f77e095173d4d0bd6bb001f0081b2a63d152ee7aef653ce1",
+		MapFiles: map[string]string{
+			"usr/local/bin":  "/usr",
+			"usr/local/sbin": "/usr",
 		},
 	},
 
