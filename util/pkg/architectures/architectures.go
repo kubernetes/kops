@@ -20,13 +20,11 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-
-	"k8s.io/klog/v2"
 )
 
 type Architecture string
 
-var (
+const (
 	ArchitectureAmd64 Architecture = "amd64"
 	ArchitectureArm64 Architecture = "arm64"
 )
@@ -57,20 +55,4 @@ func GetSupported() []Architecture {
 		ArchitectureAmd64,
 		ArchitectureArm64,
 	}
-}
-
-func (a Architecture) BuildTags() []string {
-	var t []string
-
-	switch a {
-	case ArchitectureAmd64:
-		t = []string{"_amd64"}
-	case ArchitectureArm64:
-		t = []string{"_arm64"}
-	default:
-		klog.Fatalf("unknown architecture: %s", a)
-		return nil
-	}
-
-	return t
 }

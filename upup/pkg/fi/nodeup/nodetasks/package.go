@@ -26,11 +26,11 @@ import (
 	"sync"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -129,7 +129,7 @@ func (p *Package) String() string {
 }
 
 func (e *Package) Find(c *fi.Context) (*Package, error) {
-	d, err := distros.FindDistribution("/")
+	d, err := distributions.FindDistribution("/")
 	if err != nil {
 		return nil, fmt.Errorf("unknown or unsupported distro: %v", err)
 	}
@@ -273,7 +273,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 	packageManagerLock.Lock()
 	defer packageManagerLock.Unlock()
 
-	d, err := distros.FindDistribution("/")
+	d, err := distributions.FindDistribution("/")
 	if err != nil {
 		return fmt.Errorf("unknown or unsupported distro: %v", err)
 	}
@@ -327,7 +327,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
 			env = append(env, "DEBIAN_FRONTEND=noninteractive")
 		} else if d.IsRHELFamily() {
-			if d == distros.DistributionCentos8 || d == distros.DistributionRhel8 {
+			if d == distributions.DistributionCentos8 || d == distributions.DistributionRhel8 {
 				args = []string{"/usr/bin/dnf", "install", "-y", "--setopt=install_weak_deps=False"}
 			} else {
 				args = []string{"/usr/bin/yum", "install", "-y"}

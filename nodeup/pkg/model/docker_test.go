@@ -25,11 +25,11 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -250,7 +250,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 	basedir := path.Join("tests/dockerbuilder/", key)
 
 	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
-	nodeUpModelContext.Distribution = distros.DistributionXenial
+	nodeUpModelContext.Distribution = distributions.DistributionUbuntu1604
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return
