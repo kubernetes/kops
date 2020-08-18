@@ -18,10 +18,11 @@ package networking
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"golang.org/x/sys/unix"
-
 	"k8s.io/kops/nodeup/pkg/model"
+	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -38,16 +39,7 @@ func (b *CiliumBuilder) Build(c *fi.ModelBuilderContext) error {
 	networking := b.Cluster.Spec.Networking
 
 	// As long as the Cilium Etcd cluster exists, we should do this
-	ciliumEtcd := false
-
-	for _, cluster := range b.Cluster.Spec.EtcdClusters {
-		if cluster.Name == "cilium" {
-			ciliumEtcd = true
-			break
-		}
-	}
-
-	if ciliumEtcd {
+	if apiModel.UseCiliumEtcd(b.Cluster) {
 		if err := b.buildCiliumEtcdSecrets(c); err != nil {
 			return err
 		}
@@ -133,14 +125,36 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 	}
 
 	name := "etcd-client-cilium"
-	issueCert := &nodetasks.IssueCert{
-		Name:   name,
-		Signer: "etcd-clients-ca-cilium",
-		Type:   "client",
-		Subject: nodetasks.PKIXName{
-			CommonName: "cilium",
-		},
+	dir := "/etc/kubernetes/pki/cilium"
+	signer := "etcd-clients-ca-cilium"
+	if b.UseKopsControllerForNodeBootstrap() && !b.IsMaster {
+		cert, key := b.GetBootstrapCert(name)
+
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(dir, name+".crt"),
+			Contents: cert,
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.String("0644"),
+		})
+
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(dir, name+".key"),
+			Contents: key,
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.String("0400"),
+		})
+
+		return b.BuildCertificateTask(c, signer, filepath.Join(dir, "etcd-ca.crt"), nil)
+	} else {
+		issueCert := &nodetasks.IssueCert{
+			Name:   name,
+			Signer: signer,
+			Type:   "client",
+			Subject: nodetasks.PKIXName{
+				CommonName: "cilium",
+			},
+		}
+		c.AddTask(issueCert)
+		return issueCert.AddFileTasks(c, dir, name, "etcd-ca", nil)
 	}
-	c.AddTask(issueCert)
-	return issueCert.AddFileTasks(c, "/etc/kubernetes/pki/cilium", name, "etcd-ca", nil)
 }

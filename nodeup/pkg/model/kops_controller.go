@@ -19,6 +19,7 @@ package model
 import (
 	"path/filepath"
 
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -81,7 +82,11 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Owner:    s(wellknownusers.KopsControllerName),
 	})
 
-	for _, cert := range []string{fi.CertificateIDCA} {
+	caList := []string{fi.CertificateIDCA}
+	if model.UseCiliumEtcd(b.Cluster) {
+		caList = append(caList, "etcd-clients-ca-cilium")
+	}
+	for _, cert := range caList {
 		owner := wellknownusers.KopsControllerName
 		err := b.BuildCertificatePairTask(c, cert, pkiDir, cert, &owner)
 		if err != nil {
