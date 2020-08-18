@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package distros
+package distributions
 
 import (
 	"k8s.io/klog/v2"
@@ -22,12 +22,12 @@ import (
 
 type Distribution string
 
-var (
-	DistributionDebian9      Distribution = "debian9"
+const (
+	DistributionDebian9      Distribution = "stretch"
 	DistributionDebian10     Distribution = "buster"
-	DistributionXenial       Distribution = "xenial"
-	DistributionBionic       Distribution = "bionic"
-	DistributionFocal        Distribution = "focal"
+	DistributionUbuntu1604   Distribution = "xenial"
+	DistributionUbuntu1804   Distribution = "bionic"
+	DistributionUbuntu2004   Distribution = "focal"
 	DistributionAmazonLinux2 Distribution = "amazonlinux2"
 	DistributionRhel7        Distribution = "rhel7"
 	DistributionCentos7      Distribution = "centos7"
@@ -41,7 +41,7 @@ func (d Distribution) IsDebianFamily() bool {
 	switch d {
 	case DistributionDebian9, DistributionDebian10:
 		return true
-	case DistributionXenial, DistributionBionic, DistributionFocal:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return false
@@ -57,7 +57,7 @@ func (d Distribution) IsUbuntu() bool {
 	switch d {
 	case DistributionDebian9, DistributionDebian10:
 		return false
-	case DistributionXenial, DistributionBionic, DistributionFocal:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return false
@@ -73,7 +73,7 @@ func (d Distribution) IsRHELFamily() bool {
 	switch d {
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return true
-	case DistributionXenial, DistributionBionic, DistributionFocal, DistributionDebian9, DistributionDebian10:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionDebian9, DistributionDebian10:
 		return false
 	case DistributionFlatcar, DistributionContainerOS:
 		return false
@@ -85,7 +85,7 @@ func (d Distribution) IsRHELFamily() bool {
 
 func (d Distribution) IsSystemd() bool {
 	switch d {
-	case DistributionXenial, DistributionBionic, DistributionFocal, DistributionDebian9, DistributionDebian10:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionDebian9, DistributionDebian10:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return true

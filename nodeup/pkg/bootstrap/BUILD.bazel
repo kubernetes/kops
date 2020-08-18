@@ -6,11 +6,11 @@ go_library(
     importpath = "k8s.io/kops/nodeup/pkg/bootstrap",
     visibility = ["//visibility:public"],
     deps = [
-        "//nodeup/pkg/distros:go_default_library",
         "//pkg/systemd:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/local:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
+        "//util/pkg/distributions:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],

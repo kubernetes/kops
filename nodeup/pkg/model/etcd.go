@@ -17,10 +17,10 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 
 	"k8s.io/klog/v2"
 )
@@ -39,11 +39,11 @@ func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	switch b.Distribution {
-	case distros.DistributionFlatcar:
+	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; skipping etcd user installation")
 		return nil
 
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; skipping etcd user installation")
 		return nil
 	}
