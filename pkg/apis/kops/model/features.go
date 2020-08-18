@@ -24,3 +24,18 @@ import (
 func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
 	return kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS && cluster.IsKubernetesGTE("1.19")
 }
+
+// UseCiliumEtcd is true if we are using the Cilium etcd cluster.
+func UseCiliumEtcd(cluster *kops.Cluster) bool {
+	if cluster.Spec.Networking.Cilium == nil {
+		return false
+	}
+
+	for _, cluster := range cluster.Spec.EtcdClusters {
+		if cluster.Name == "cilium" {
+			return true
+		}
+	}
+
+	return false
+}

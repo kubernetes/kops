@@ -165,6 +165,11 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 		return "", fmt.Errorf("key name not enabled")
 	}
 	switch name {
+	case "etcd-client-cilium":
+		issueReq.Signer = "etcd-clients-ca-cilium"
+		issueReq.Subject = pkix.Name{
+			CommonName: "cilium",
+		}
 	case "kubelet":
 		issueReq.Subject = pkix.Name{
 			CommonName:   fmt.Sprintf("system:node:%s", id.NodeName),
