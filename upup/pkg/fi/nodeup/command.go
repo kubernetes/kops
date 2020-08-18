@@ -27,7 +27,6 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/networking"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -41,6 +40,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -157,7 +157,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error determining OS architecture: %v", err)
 	}
 
-	distribution, err := distros.FindDistribution("/")
+	distribution, err := distributions.FindDistribution("/")
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}

@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // SysctlBuilder set up our sysctls
@@ -125,7 +125,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			proxyMode = "iptables"
 		}
 
-		if proxyMode == "iptables" && (b.Distribution == distros.DistributionCentos7 || b.Distribution == distros.DistributionRhel7) {
+		if proxyMode == "iptables" && (b.Distribution == distributions.DistributionCentos7 || b.Distribution == distributions.DistributionRhel7) {
 			sysctls = append(sysctls,
 				"# Flannel settings on CentOS 7",
 				"# Issue https://github.com/coreos/flannel/issues/902",

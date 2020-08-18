@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -32,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/utils/mount"
 
@@ -47,7 +47,7 @@ type NodeupModelContext struct {
 	Assets        *fi.AssetStore
 	Cluster       *kops.Cluster
 	ConfigBase    vfs.Path
-	Distribution  distros.Distribution
+	Distribution  distributions.Distribution
 	InstanceGroup *kops.InstanceGroup
 	KeyStore      fi.CAStore
 	NodeupConfig  *nodeup.Config
@@ -81,11 +81,11 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 	paths := []string{"/etc/ssl", "/etc/pki/tls", "/etc/pki/ca-trust"}
 
 	switch c.Distribution {
-	case distros.DistributionFlatcar:
+	case distributions.DistributionFlatcar:
 		// Because /usr is read-only on Flatcar, we can't have any new directories; docker will try (and fail) to create them
 		// TODO: Just check if the directories exist?
 		paths = append(paths, "/usr/share/ca-certificates")
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		paths = append(paths, "/usr/share/ca-certificates")
 	default:
 		paths = append(paths, "/usr/share/ssl", "/usr/ssl", "/usr/lib/ssl", "/usr/local/openssl", "/var/ssl", "/etc/openssl")
@@ -149,7 +149,7 @@ func (c *NodeupModelContext) IsMounted(m mount.Interface, device, path string) (
 // PathSrvKubernetes returns the path for the kubernetes service files
 func (c *NodeupModelContext) PathSrvKubernetes() string {
 	switch c.Distribution {
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		return "/etc/srv/kubernetes"
 	default:
 		return "/srv/kubernetes"
@@ -164,7 +164,7 @@ func (c *NodeupModelContext) FileAssetsDefaultPath() string {
 // PathSrvSshproxy returns the path for the SSH proxy
 func (c *NodeupModelContext) PathSrvSshproxy() string {
 	switch c.Distribution {
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		return "/etc/srv/sshproxy"
 	default:
 		return "/srv/sshproxy"
@@ -404,10 +404,10 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 // KubectlPath returns distro based path for kubectl
 func (c *NodeupModelContext) KubectlPath() string {
 	kubeletCommand := "/usr/local/bin"
-	if c.Distribution == distros.DistributionFlatcar {
+	if c.Distribution == distributions.DistributionFlatcar {
 		kubeletCommand = "/opt/bin"
 	}
-	if c.Distribution == distros.DistributionContainerOS {
+	if c.Distribution == distributions.DistributionContainerOS {
 		kubeletCommand = "/home/kubernetes/bin"
 	}
 	return kubeletCommand

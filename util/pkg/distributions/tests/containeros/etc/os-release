@@ -1,0 +1,11 @@
+BUILD_ID=12871.1185.0
+NAME="Container-Optimized OS"
+KERNEL_COMMIT_ID=1d5bc45f886bc0308010614cdcdf658f5fb44a25
+GOOGLE_CRASH_ID=Lakitu
+VERSION_ID=81
+BUG_REPORT_URL="https://cloud.google.com/container-optimized-os/docs/resources/support-policy#contact_us"
+PRETTY_NAME="Container-Optimized OS from Google"
+VERSION=81
+GOOGLE_METRICS_PRODUCT_ID=26
+HOME_URL="https://cloud.google.com/container-optimized-os/docs"
+ID=cos

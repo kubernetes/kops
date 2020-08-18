@@ -1,0 +1,11 @@
+NAME="Flatcar Container Linux by Kinvolk"
+ID=flatcar
+ID_LIKE=coreos
+VERSION=2592.0.0
+VERSION_ID=2592.0.0
+BUILD_ID=2020-08-05-2321
+PRETTY_NAME="Flatcar Container Linux by Kinvolk 2592.0.0 (Oklo)"
+ANSI_COLOR="38;5;75"
+HOME_URL="https://flatcar-linux.org/"
+BUG_REPORT_URL="https://issues.flatcar-linux.org"
+FLATCAR_BOARD="amd64-usr"

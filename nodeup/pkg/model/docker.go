@@ -26,7 +26,6 @@ import (
 	"github.com/blang/semver/v4"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // DockerBuilder install docker (just the packages at the moment)
@@ -50,7 +50,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian9},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.03.2~ce-0~debian-stretch",
 		Source:         "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-stretch_amd64.deb",
@@ -62,7 +62,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.03.2~ce-0~ubuntu-xenial",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
@@ -74,7 +74,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		PlainBinary:    true,
-		Distros:        []distros.Distribution{distros.DistributionBionic},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1804},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Source:         "http://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz",
 		Hash:           "183b31b001e7480f3c691080486401aa519101a5cfe6e05ad01b9f5521c4112d",
@@ -85,7 +85,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.03.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
+		Distros:        []distributions.Distribution{distributions.DistributionRhel7, distributions.DistributionCentos7, distributions.DistributionAmazonLinux2},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.03.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
@@ -105,7 +105,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.09.0",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian9},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.09.0~ce-0~debian",
 		Source:         "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
@@ -116,7 +116,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.09.0",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.09.0~ce-0~ubuntu",
 		Source:         "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb",
@@ -127,7 +127,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
@@ -138,7 +138,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "17.09.0",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
+		Distros:        []distributions.Distribution{distributions.DistributionRhel7, distributions.DistributionCentos7, distributions.DistributionAmazonLinux2},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "17.09.0.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
@@ -149,7 +149,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.03.1",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionBionic},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1804},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.03.1~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.03.1~ce~3-0~ubuntu_amd64.deb",
@@ -160,7 +160,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionBionic},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1804},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/bionic/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb",
@@ -171,7 +171,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.1",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian9},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.1~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.1~ce~3-0~debian_amd64.deb",
@@ -183,7 +183,7 @@ var dockerVersions = []packageVersion{
 
 		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian9},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.2~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.2~ce~3-0~debian_amd64.deb",
@@ -194,7 +194,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.1",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
+		Distros:        []distributions.Distribution{distributions.DistributionRhel7, distributions.DistributionCentos7, distributions.DistributionAmazonLinux2},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.1.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.1.ce-3.el7.x86_64.rpm",
@@ -205,7 +205,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.09.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian9},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "5:18.09.3~3-0~debian-stretch",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.09.3~3-0~debian-stretch_amd64.deb",
@@ -223,7 +223,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.2",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7, distros.DistributionAmazonLinux2},
+		Distros:        []distributions.Distribution{distributions.DistributionRhel7, distributions.DistributionCentos7, distributions.DistributionAmazonLinux2},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.2.ce",
 		Source:         "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-18.06.2.ce-3.el7.x86_64.rpm",
@@ -236,7 +236,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionXenial},
+		Distros:        []distributions.Distribution{distributions.DistributionUbuntu1604},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~ubuntu",
 		Source:         "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb",
@@ -247,9 +247,9 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros: []distros.Distribution{
-			distros.DistributionBionic,
-			distros.DistributionFocal,
+		Distros: []distributions.Distribution{
+			distributions.DistributionUbuntu1804,
+			distributions.DistributionUbuntu2004,
 		},
 		Architectures: []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:       "18.06.3~ce~3-0~ubuntu",
@@ -261,7 +261,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian9},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
@@ -272,7 +272,7 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros:        []distros.Distribution{distros.DistributionDebian10},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian10},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "18.06.3~ce~3-0~debian",
 		Source:         "https://download.docker.com/linux/debian/dists/buster/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~debian_amd64.deb",
@@ -283,12 +283,12 @@ var dockerVersions = []packageVersion{
 	{
 		PackageVersion: "18.06.3",
 		Name:           "docker-ce",
-		Distros: []distros.Distribution{
-			distros.DistributionAmazonLinux2,
-			distros.DistributionCentos7,
-			distros.DistributionCentos8,
-			distros.DistributionRhel7,
-			distros.DistributionRhel8,
+		Distros: []distributions.Distribution{
+			distributions.DistributionAmazonLinux2,
+			distributions.DistributionCentos7,
+			distributions.DistributionCentos8,
+			distributions.DistributionRhel7,
+			distributions.DistributionRhel8,
 		},
 		Architectures: []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:       "18.06.3.ce",
@@ -381,14 +381,14 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// @check: neither flatcar nor containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
-	case distros.DistributionFlatcar:
+	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install Docker")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
 			return err
 		}
 		return nil
 
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install Docker")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
 			return err
@@ -708,7 +708,7 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	}
 
 	// ContainerOS now sets the storage flag in /etc/docker/daemon.json, and it is an error to set it twice
-	if b.Distribution == distros.DistributionContainerOS {
+	if b.Distribution == distributions.DistributionContainerOS {
 		// So that we can support older COS images though, we do check for /etc/docker/daemon.json
 		if b, err := ioutil.ReadFile("/etc/docker/daemon.json"); err != nil {
 			if os.IsNotExist(err) {

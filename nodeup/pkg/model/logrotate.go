@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 
 	"k8s.io/klog/v2"
 )
@@ -40,10 +40,10 @@ var _ fi.ModelBuilder = &LogrotateBuilder{}
 func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	switch b.Distribution {
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install logrotate")
 		return nil
-	case distros.DistributionFlatcar:
+	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install logrotate")
 	default:
 		c.AddTask(&nodetasks.Package{Name: "logrotate"})
@@ -90,7 +90,7 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 // addLogrotateService creates a logrotate systemd task to act as target for the timer, if one is needed
 func (b *LogrotateBuilder) addLogrotateService(c *fi.ModelBuilderContext) error {
 	switch b.Distribution {
-	case distros.DistributionFlatcar, distros.DistributionContainerOS:
+	case distributions.DistributionFlatcar, distributions.DistributionContainerOS:
 		// logrotate service already exists
 		return nil
 	}
@@ -121,7 +121,7 @@ func (b *LogrotateBuilder) addLogRotate(c *fi.ModelBuilderContext, name, path st
 
 	// Flatcar sets "dateext" options, and maxsize-based rotation will fail if
 	// the file has been previously rotated on the same calendar date.
-	if b.Distribution == distros.DistributionFlatcar {
+	if b.Distribution == distributions.DistributionFlatcar {
 		options.DateFormat = "-%Y%m%d-%s"
 	}
 

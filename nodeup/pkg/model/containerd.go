@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -30,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // ContainerdBuilder install containerd (just the packages at the moment)
@@ -44,7 +44,7 @@ var containerdVersions = []packageVersion{
 	{
 		PackageVersion: "1.2.4",
 		Name:           "containerd.io",
-		Distros:        []distros.Distribution{distros.DistributionDebian9},
+		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
 		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
 		Version:        "1.2.4-1",
 		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.4-1_amd64.deb",
@@ -128,14 +128,14 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// @check: neither flatcar nor containeros need provision containerd.service, just the containerd daemon options
 	switch b.Distribution {
-	case distros.DistributionFlatcar:
+	case distributions.DistributionFlatcar:
 		klog.Infof("Detected Flatcar; won't install containerd")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
 			return err
 		}
 		return nil
 
-	case distros.DistributionContainerOS:
+	case distributions.DistributionContainerOS:
 		klog.Infof("Detected ContainerOS; won't install containerd")
 		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
 			return err

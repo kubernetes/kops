@@ -40,7 +40,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:go_default_library",
-        "//nodeup/pkg/distros:go_default_library",
         "//nodeup/pkg/model/resources:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/model:go_default_library",
@@ -64,6 +63,7 @@ go_library(
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
+        "//util/pkg/distributions:go_default_library",
         "//util/pkg/exec:go_default_library",
         "//util/pkg/proxy:go_default_library",
         "//util/pkg/vfs:go_default_library",
@@ -102,7 +102,6 @@ go_test(
     data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
     deps = [
-        "//nodeup/pkg/distros:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
         "//pkg/assets:go_default_library",
@@ -115,6 +114,7 @@ go_test(
         "//upup/pkg/fi/cloudup:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
+        "//util/pkg/distributions:go_default_library",
         "//util/pkg/exec:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",

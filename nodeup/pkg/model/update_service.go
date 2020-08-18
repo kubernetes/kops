@@ -17,11 +17,11 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 
 	"k8s.io/klog/v2"
 )
@@ -39,7 +39,7 @@ var _ fi.ModelBuilder = &UpdateServiceBuilder{}
 // Build is responsible for configuring automatic updates based on the OS.
 func (b *UpdateServiceBuilder) Build(c *fi.ModelBuilderContext) error {
 
-	if b.Distribution == distros.DistributionFlatcar {
+	if b.Distribution == distributions.DistributionFlatcar {
 		b.buildFlatcarSystemdService(c)
 	} else if b.Distribution.IsDebianFamily() {
 		b.buildDebianPackage(c)
