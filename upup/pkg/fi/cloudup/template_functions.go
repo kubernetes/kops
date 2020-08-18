@@ -42,6 +42,7 @@ import (
 	"k8s.io/klog/v2"
 	kopscontrollerconfig "k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/pkg/apis/kops"
+	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -384,6 +385,11 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 
 	if tf.UseKopsControllerForNodeBootstrap() {
 		certNames := []string{"kubelet"}
+		signingCAs := []string{fi.CertificateIDCA}
+		if apiModel.UseCiliumEtcd(cluster) {
+			certNames = append(certNames, "etcd-client-cilium")
+			signingCAs = append(signingCAs, "etcd-clients-ca-cilium")
+		}
 		if cluster.Spec.KubeProxy.Enabled == nil || *cluster.Spec.KubeProxy.Enabled {
 			certNames = append(certNames, "kube-proxy")
 		}
@@ -397,7 +403,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			ServerCertificatePath: path.Join(pkiDir, "kops-controller.crt"),
 			ServerKeyPath:         path.Join(pkiDir, "kops-controller.key"),
 			CABasePath:            pkiDir,
-			SigningCAs:            []string{fi.CertificateIDCA},
+			SigningCAs:            signingCAs,
 			CertNames:             certNames,
 		}
 
