@@ -220,17 +220,23 @@ func (c *NodeupModelContext) BuildIssuedKubeconfig(name string, subject nodetask
 	return kubeConfig.GetConfig()
 }
 
+// GetBootstrapCert requests a certificate keypair from kops-controller.
+func (c *NodeupModelContext) GetBootstrapCert(name string) (cert, key fi.Resource) {
+	b, ok := c.bootstrapCerts[name]
+	if !ok {
+		b = &nodetasks.BootstrapCert{
+			Cert: &fi.TaskDependentResource{},
+			Key:  &fi.TaskDependentResource{},
+		}
+		c.bootstrapCerts[name] = b
+	}
+	return b.Cert, b.Key
+}
+
 // BuildBootstrapKubeconfig generates a kubeconfig with a client certificate from either kops-controller or the state store.
 func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.ModelBuilderContext) (fi.Resource, error) {
 	if c.UseKopsControllerForNodeBootstrap() {
-		b, ok := c.bootstrapCerts[name]
-		if !ok {
-			b = &nodetasks.BootstrapCert{
-				Cert: &fi.TaskDependentResource{},
-				Key:  &fi.TaskDependentResource{},
-			}
-			c.bootstrapCerts[name] = b
-		}
+		cert, key := c.GetBootstrapCert(name)
 
 		ca, err := c.GetCert(fi.CertificateIDCA)
 		if err != nil {
@@ -239,8 +245,8 @@ func (c *NodeupModelContext) BuildBootstrapKubeconfig(name string, ctx *fi.Model
 
 		kubeConfig := &nodetasks.KubeConfig{
 			Name: name,
-			Cert: b.Cert,
-			Key:  b.Key,
+			Cert: cert,
+			Key:  key,
 			CA:   fi.NewBytesResource(ca),
 		}
 		if c.IsMaster {

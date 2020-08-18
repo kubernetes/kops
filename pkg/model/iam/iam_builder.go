@@ -485,15 +485,7 @@ func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]s
 
 			// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
 			// As long as the Cilium Etcd cluster exists, we should do this
-			ciliumEtcd := false
-
-			for _, cluster := range cluster.Spec.EtcdClusters {
-				if cluster.Name == "cilium" {
-					ciliumEtcd = true
-					break
-				}
-			}
-			if networkingSpec.Cilium != nil && ciliumEtcd {
+			if networkingSpec.Cilium != nil && model.UseCiliumEtcd(cluster) && !model.UseKopsControllerForNodeBootstrap(cluster) {
 				paths = append(paths, "/pki/private/etcd-clients-ca-cilium/*")
 			}
 		}
