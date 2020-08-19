@@ -639,13 +639,13 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 	if b.Cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
 		versions := map[string]string{
-			"k8s-1.8":  "2.6.5-kops.1",
-			"k8s-1.12": "2.6.5-kops.1",
+			"k8s-1.9":  "2.7.0-kops.1",
+			"k8s-1.12": "2.7.0-kops.1",
 		}
 
 		{
-			location := key + "/k8s-1.8.yaml"
-			id := "k8s-1.8"
+			location := key + "/k8s-1.9.yaml"
+			id := "k8s-1.9"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),

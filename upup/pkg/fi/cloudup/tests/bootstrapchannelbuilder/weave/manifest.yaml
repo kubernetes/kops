@@ -86,19 +86,19 @@ spec:
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 1.15.0
-  - id: k8s-1.8
+  - id: k8s-1.9
     kubernetesVersion: <1.12.0
-    manifest: networking.weave/k8s-1.8.yaml
-    manifestHash: d1bc5539972f06bbad6427651900d896ecaaaf34
+    manifest: networking.weave/k8s-1.9.yaml
+    manifestHash: 2081d7cb4852b8856060b92016fee42b4a58ea99
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.6.5-kops.1
+    version: 2.7.0-kops.1
   - id: k8s-1.12
     kubernetesVersion: '>=1.12.0'
     manifest: networking.weave/k8s-1.12.yaml
-    manifestHash: 8b47cd3c6e82e5f0c8f9a13ccb34b730bb0b6da3
+    manifestHash: 3b33c6cfe20c96620178864ba26f4afae37db5fd
     name: networking.weave
     selector:
       role.kubernetes.io/networking: "1"
-    version: 2.6.5-kops.1
+    version: 2.7.0-kops.1
