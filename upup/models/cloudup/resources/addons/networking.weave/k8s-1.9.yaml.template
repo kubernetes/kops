@@ -1,3 +1,5 @@
+# Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.7.0/weave-daemonset-k8s-1.9.yaml
+
 {{- if WeaveSecret }}
 apiVersion: v1
 kind: Secret
@@ -117,7 +119,7 @@ subjects:
     name: weave-net
     namespace: kube-system
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: weave-net
@@ -127,6 +129,9 @@ metadata:
   namespace: kube-system
 spec:
   # Wait 5 seconds to let pod connect before rolling next pod
+  selector:
+    matchLabels:
+      name: weave-net
   minReadySeconds: 5
   template:
     metadata:
@@ -172,7 +177,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.5'
+          image: 'weaveworks/weave-kube:2.7.0'
           ports:
             - name: metrics
               containerPort: 6782
@@ -219,7 +224,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.6.5'
+          image: 'weaveworks/weave-npc:2.7.0'
           ports:
             - name: metrics
               containerPort: 6781
@@ -239,6 +244,7 @@ spec:
               mountPath: /run/xtables.lock
               readOnly: false
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       hostPID: true
       restartPolicy: Always
       securityContext:
