@@ -266,13 +266,15 @@ resource "aws_iam_role_policy" "nodes-complex-example-com" {
 }
 
 resource "aws_iam_role" "masters-complex-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.complex.example.com_policy")
-  name               = "masters.complex.example.com"
+  assume_role_policy   = file("${path.module}/data/aws_iam_role_masters.complex.example.com_policy")
+  name                 = "masters.complex.example.com"
+  permissions_boundary = "arn:aws:iam:00000000000:policy/boundaries"
 }
 
 resource "aws_iam_role" "nodes-complex-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.complex.example.com_policy")
-  name               = "nodes.complex.example.com"
+  assume_role_policy   = file("${path.module}/data/aws_iam_role_nodes.complex.example.com_policy")
+  name                 = "nodes.complex.example.com"
+  permissions_boundary = "arn:aws:iam:00000000000:policy/boundaries"
 }
 
 resource "aws_internet_gateway" "complex-example-com" {

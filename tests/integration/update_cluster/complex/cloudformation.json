@@ -1363,7 +1363,8 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries"
       }
     },
     "AWSIAMRolenodescomplexexamplecom": {
@@ -1381,7 +1382,8 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "PermissionsBoundary": "arn:aws:iam:00000000000:policy/boundaries"
       }
     },
     "AWSRoute53RecordSetapicomplexexamplecom": {

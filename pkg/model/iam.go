@@ -110,6 +110,11 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 				RolePolicyDocument: fi.WrapResource(rolePolicy),
 				ExportWithID:       s(strings.ToLower(string(igRole)) + "s"),
 			}
+
+			if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {
+				iamRole.PermissionsBoundary = b.Cluster.Spec.IAM.PermissionsBoundary
+			}
+
 			c.AddTask(iamRole)
 
 		}
