@@ -477,6 +477,9 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 
 // DetachInstance causes an aws instance to no longer be counted against the ASG's size limits.
 func (c *awsCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	if i.Detached {
+		return nil
+	}
 	if c.spotinst != nil {
 		return spotinst.DetachInstance(c.spotinst, i)
 	}
