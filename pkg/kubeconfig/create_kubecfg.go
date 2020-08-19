@@ -19,6 +19,7 @@ package kubeconfig
 import (
 	"crypto/x509/pkix"
 	"fmt"
+	"os/user"
 	"sort"
 	"time"
 
@@ -34,7 +35,7 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin time.Duration, user string) (*KubeconfigBuilder, error) {
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin time.Duration, configUser string) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	master := cluster.Spec.MasterPublicName
@@ -111,11 +112,19 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	}
 
 	if admin != 0 {
+		cn := "kubecfg"
+		user, err := user.Current()
+		if err != nil || user == nil {
+			klog.Infof("unable to get user: %v", err)
+		} else {
+			cn += "-" + user.Name
+		}
+
 		req := pki.IssueCertRequest{
 			Signer: fi.CertificateIDCA,
 			Type:   "client",
 			Subject: pkix.Name{
-				CommonName:   "kubecfg",
+				CommonName:   cn,
 				Organization: []string{rbac.SystemPrivilegedGroup},
 			},
 			Validity: admin,
@@ -165,10 +174,10 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		}
 	}
 
-	if user == "" {
+	if configUser == "" {
 		b.User = cluster.ObjectMeta.Name
 	} else {
-		b.User = user
+		b.User = configUser
 	}
 
 	return b, nil
