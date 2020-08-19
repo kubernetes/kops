@@ -46,7 +46,7 @@
 // upup/models/cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.16.yaml.template
 // upup/models/cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.9.yaml.template
 // upup/models/cloudup/resources/addons/networking.weave/k8s-1.12.yaml.template
-// upup/models/cloudup/resources/addons/networking.weave/k8s-1.8.yaml.template
+// upup/models/cloudup/resources/addons/networking.weave/k8s-1.9.yaml.template
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template
@@ -17130,7 +17130,9 @@ func cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s19YamlTemplate() (*
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate = []byte(`{{- if WeaveSecret }}
+var _cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate = []byte(`# Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.7.0/weave-daemonset-k8s-1.11.yaml
+
+{{- if WeaveSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -17307,7 +17309,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.5'
+          image: 'weaveworks/weave-kube:2.7.0'
           ports:
             - name: metrics
               containerPort: 6782
@@ -17354,7 +17356,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.6.5'
+          image: 'weaveworks/weave-npc:2.7.0'
           ports:
             - name: metrics
               containerPort: 6781
@@ -17430,7 +17432,9 @@ func cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplate = []byte(`{{- if WeaveSecret }}
+var _cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplate = []byte(`# Pulled and modified from: https://github.com/weaveworks/weave/releases/download/v2.7.0/weave-daemonset-k8s-1.9.yaml
+
+{{- if WeaveSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -17549,7 +17553,7 @@ subjects:
     name: weave-net
     namespace: kube-system
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: weave-net
@@ -17559,6 +17563,9 @@ metadata:
   namespace: kube-system
 spec:
   # Wait 5 seconds to let pod connect before rolling next pod
+  selector:
+    matchLabels:
+      name: weave-net
   minReadySeconds: 5
   template:
     metadata:
@@ -17604,7 +17611,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.6.5'
+          image: 'weaveworks/weave-kube:2.7.0'
           ports:
             - name: metrics
               containerPort: 6782
@@ -17651,7 +17658,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.6.5'
+          image: 'weaveworks/weave-npc:2.7.0'
           ports:
             - name: metrics
               containerPort: 6781
@@ -17671,6 +17678,7 @@ spec:
               mountPath: /run/xtables.lock
               readOnly: false
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       hostPID: true
       restartPolicy: Always
       securityContext:
@@ -17710,17 +17718,17 @@ spec:
     type: RollingUpdate
 `)
 
-func cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplateBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplate, nil
+func cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplate, nil
 }
 
-func cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplate() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplateBytes()
+func cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplateBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "cloudup/resources/addons/networking.weave/k8s-1.8.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	info := bindataFileInfo{name: "cloudup/resources/addons/networking.weave/k8s-1.9.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -20368,7 +20376,7 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.16.yaml.template":                  cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s116YamlTemplate,
 	"cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.9.yaml.template":                   cloudupResourcesAddonsNetworkingProjectcalicoOrgCanalK8s19YamlTemplate,
 	"cloudup/resources/addons/networking.weave/k8s-1.12.yaml.template":                                    cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate,
-	"cloudup/resources/addons/networking.weave/k8s-1.8.yaml.template":                                     cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplate,
+	"cloudup/resources/addons/networking.weave/k8s-1.9.yaml.template":                                     cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplate,
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s110YamlTemplate,
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template":                          cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate,
@@ -20516,7 +20524,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				}},
 				"networking.weave": {nil, map[string]*bintree{
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNetworkingWeaveK8s112YamlTemplate, map[string]*bintree{}},
-					"k8s-1.8.yaml.template":  {cloudupResourcesAddonsNetworkingWeaveK8s18YamlTemplate, map[string]*bintree{}},
+					"k8s-1.9.yaml.template":  {cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplate, map[string]*bintree{}},
 				}},
 				"node-authorizer.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.10.yaml.template": {cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s110YamlTemplate, map[string]*bintree{}},
