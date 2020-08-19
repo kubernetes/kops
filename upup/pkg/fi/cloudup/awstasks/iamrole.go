@@ -40,8 +40,9 @@ type IAMRole struct {
 	ID        *string
 	Lifecycle *fi.Lifecycle
 
-	Name               *string
-	RolePolicyDocument *fi.ResourceHolder // "inline" IAM policy
+	Name                *string
+	RolePolicyDocument  *fi.ResourceHolder // "inline" IAM policy
+	PermissionsBoundary *string
 
 	// ExportWithId will expose the name & ARN for reuse as part of a larger system.  Only supported by terraform currently.
 	ExportWithID *string
@@ -72,6 +73,9 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 	actual := &IAMRole{}
 	actual.ID = r.RoleId
 	actual.Name = r.RoleName
+	if r.PermissionsBoundary != nil {
+		actual.PermissionsBoundary = r.PermissionsBoundary.PermissionsBoundaryArn
+	}
 	if r.AssumeRolePolicyDocument != nil {
 		// The AssumeRolePolicyDocument is URI encoded (?)
 		actualPolicy := *r.AssumeRolePolicyDocument
@@ -147,6 +151,10 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 		request.AssumeRolePolicyDocument = aws.String(policy)
 		request.RoleName = e.Name
 
+		if e.PermissionsBoundary != nil {
+			request.PermissionsBoundary = e.PermissionsBoundary
+		}
+
 		response, err := t.Cloud.IAM().CreateRole(request)
 		if err != nil {
 			return fmt.Errorf("error creating IAMRole: %v", err)
@@ -183,6 +191,31 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 				return fmt.Errorf("error updating IAMRole: %v", err)
 			}
 		}
+		if changes.PermissionsBoundary != nil {
+			klog.V(2).Infof("Updating IAMRole PermissionsBoundary %q", *e.Name)
+
+			var err error
+
+			if e.PermissionsBoundary == nil {
+				request := &iam.DeleteRolePermissionsBoundaryInput{}
+				request.RoleName = e.Name
+
+				_, err = t.Cloud.IAM().DeleteRolePermissionsBoundary(request)
+				if err != nil {
+					return fmt.Errorf("error updating IAMRole: %v", err)
+				}
+			} else {
+				request := &iam.PutRolePermissionsBoundaryInput{}
+				request.RoleName = e.Name
+				request.PermissionsBoundary = e.PermissionsBoundary
+
+				_, err = t.Cloud.IAM().PutRolePermissionsBoundary(request)
+				if err != nil {
+					return fmt.Errorf("error updating IAMRole: %v", err)
+				}
+			}
+
+		}
 	}
 
 	// TODO: Should we use path as our tag?
@@ -190,8 +223,9 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 }
 
 type terraformIAMRole struct {
-	Name             *string            `json:"name" cty:"name"`
-	AssumeRolePolicy *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
+	Name                *string            `json:"name" cty:"name"`
+	AssumeRolePolicy    *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
+	PermissionsBoundary *string            `json:"permissions_boundary,omitempty" cty:"permissions_boundary"`
 }
 
 func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
@@ -203,6 +237,10 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 	tf := &terraformIAMRole{
 		Name:             e.Name,
 		AssumeRolePolicy: policy,
+	}
+
+	if e.PermissionsBoundary != nil {
+		tf.PermissionsBoundary = e.PermissionsBoundary
 	}
 
 	if fi.StringValue(e.ExportWithID) != "" {
@@ -220,6 +258,7 @@ func (e *IAMRole) TerraformLink() *terraform.Literal {
 type cloudformationIAMRole struct {
 	RoleName                 *string `json:"RoleName"`
 	AssumeRolePolicyDocument map[string]interface{}
+	PermissionsBoundary      *string `json:"PermissionsBoundary,omitempty"`
 }
 
 func (_ *IAMRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMRole) error {
@@ -237,6 +276,10 @@ func (_ *IAMRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a
 	cf := &cloudformationIAMRole{
 		RoleName:                 e.Name,
 		AssumeRolePolicyDocument: data,
+	}
+
+	if e.PermissionsBoundary != nil {
+		cf.PermissionsBoundary = e.PermissionsBoundary
 	}
 
 	return t.RenderResource("AWS::IAM::Role", *e.Name, cf)
