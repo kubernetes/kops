@@ -457,10 +457,8 @@ func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]s
 			"/secrets/dockerconfig",
 		)
 
-		// @check if bootstrap tokens are enabled and if so enable access to client certificate
-		if model.UseKopsControllerForNodeBootstrap(cluster) {
-			// no additional permissions
-		} else {
+		// Give access to keys for client certificates as needed.
+		if !model.UseKopsControllerForNodeBootstrap(cluster) {
 			paths = append(paths, "/pki/private/kube-proxy/*")
 
 			if useBootstrapTokens(cluster) {
@@ -468,25 +466,38 @@ func ReadableStatePaths(cluster *kops.Cluster, role kops.InstanceGroupRole) ([]s
 			} else {
 				paths = append(paths, "/pki/private/kubelet/*")
 			}
-		}
 
-		networkingSpec := cluster.Spec.Networking
+			networkingSpec := cluster.Spec.Networking
 
-		if networkingSpec != nil {
-			// @check if kuberoute is enabled and permit access to the private key
-			if networkingSpec.Kuberouter != nil && !model.UseKopsControllerForNodeBootstrap(cluster) {
-				paths = append(paths, "/pki/private/kube-router/*")
-			}
+			if networkingSpec != nil {
+				// @check if kuberoute is enabled and permit access to the private key
+				if networkingSpec.Kuberouter != nil {
+					paths = append(paths, "/pki/private/kube-router/*")
+				}
 
-			// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
-			if networkingSpec.Calico != nil {
-				paths = append(paths, "/pki/private/calico-client/*")
-			}
+				// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
+				if networkingSpec.Calico != nil {
+					calicoClientCert := false
+					for _, x := range cluster.Spec.EtcdClusters {
+						if x.Provider == kops.EtcdProviderTypeManager {
+							calicoClientCert = false
+							break
+						}
+						if x.EnableEtcdTLS {
+							calicoClientCert = true
+						}
+					}
 
-			// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
-			// As long as the Cilium Etcd cluster exists, we should do this
-			if networkingSpec.Cilium != nil && model.UseCiliumEtcd(cluster) && !model.UseKopsControllerForNodeBootstrap(cluster) {
-				paths = append(paths, "/pki/private/etcd-clients-ca-cilium/*")
+					if calicoClientCert {
+						paths = append(paths, "/pki/private/calico-client/*")
+					}
+				}
+
+				// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
+				// As long as the Cilium Etcd cluster exists, we should do this
+				if networkingSpec.Cilium != nil && model.UseCiliumEtcd(cluster) {
+					paths = append(paths, "/pki/private/etcd-clients-ca-cilium/*")
+				}
 			}
 		}
 	}
