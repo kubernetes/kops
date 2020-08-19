@@ -29,7 +29,8 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  iam: {}
+  iam:
+    permissionsBoundary: arn:aws:iam:00000000000:policy/boundaries
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
     auditWebhookBatchThrottleQps: 3.14
