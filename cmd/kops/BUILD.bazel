@@ -17,6 +17,7 @@ go_library(
         "create_secret_weave_encryptionconfig.go",
         "delete.go",
         "delete_cluster.go",
+        "delete_instance.go",
         "delete_instancegroup.go",
         "delete_secret.go",
         "describe.go",

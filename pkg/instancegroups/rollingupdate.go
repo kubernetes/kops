@@ -138,7 +138,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 
 				defer wg.Done()
 
-				err := c.rollingUpdateInstanceGroup(ctx, cluster, bastionGroups[k], true, c.BastionInterval)
+				err := c.rollingUpdateInstanceGroup(ctx, cluster, bastionGroups[k], c.BastionInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -163,7 +163,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		// and we don't want to roll all the masters at the same time.  See issue #284
 
 		for _, k := range sortGroups(masterGroups) {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, masterGroups[k], false, c.MasterInterval)
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, masterGroups[k], c.MasterInterval)
 
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 			if err != nil {
@@ -185,7 +185,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		}
 
 		for _, k := range sortGroups(nodeGroups) {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, nodeGroups[k], false, c.NodeInterval)
+			err := c.rollingUpdateInstanceGroup(ctx, cluster, nodeGroups[k], c.NodeInterval)
 
 			results[k] = err
 
