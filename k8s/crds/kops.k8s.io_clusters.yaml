@@ -2802,6 +2802,10 @@ spec:
                           to NOT add the default ACCEPT traffic rules to the iptables
                           FORWARD chain
                         type: boolean
+                      disableTxChecksumOffloading:
+                        description: DisableTxChecksumOffloading is deprecated as
+                          of kops 1.19 and has no effect
+                        type: boolean
                       iptablesBackend:
                         description: 'IptablesBackend controls which variant of iptables
                           binary Felix uses Default: Auto (other options: Legacy,
@@ -3228,6 +3232,10 @@ spec:
                         description: Backend is the backend overlay type we want to
                           use (vxlan or udp)
                         type: string
+                      disableTxChecksumOffloading:
+                        description: DisableTxChecksumOffloading is deprecated as
+                          of kops 1.19 and has no effect
+                        type: boolean
                       iptablesResyncSeconds:
                         description: IptablesResyncSeconds sets resync period for
                           iptables rules, in seconds
