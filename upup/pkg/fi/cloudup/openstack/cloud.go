@@ -295,8 +295,6 @@ type OpenstackCloud interface {
 
 	GetFlavor(name string) (f *flavors.Flavor, err error)
 
-	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
-
 	ListServerFloatingIPs(id string) ([]*string, error)
 
 	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)

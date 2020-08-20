@@ -162,10 +162,6 @@ func (c *MockCloud) AppendTag(resource string, id string, tag string) error {
 	return appendTag(c, resource, id, tag)
 }
 
-func (c *MockCloud) AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error) {
-	return associateFloatingIPToInstance(c, serverID, opts)
-}
-
 func (c *MockCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
 	return associateToPool(c, server, poolID, opts)
 }
