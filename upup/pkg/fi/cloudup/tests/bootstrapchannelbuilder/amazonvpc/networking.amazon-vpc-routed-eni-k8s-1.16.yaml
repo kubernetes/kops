@@ -13,12 +13,20 @@ rules:
   - ""
   resources:
   - pods
-  - nodes
   - namespaces
   verbs:
   - list
   - watch
   - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+  - get
+  - update
 - apiGroups:
   - extensions
   resources:
@@ -90,28 +98,54 @@ spec:
       - env:
         - name: CLUSTER_NAME
           value: minimal.example.com
-        - name: AWS_VPC_K8S_CNI_LOGLEVEL
-          value: DEBUG
-        - name: AWS_VPC_K8S_CNI_VETHPREFIX
-          value: eni
+        - name: ADDITIONAL_ENI_TAGS
+          value: '{}'
+        - name: AWS_VPC_CNI_NODE_PORT_SUPPORT
+          value: "true"
         - name: AWS_VPC_ENI_MTU
           value: "9001"
+        - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_EXTERNALSNAT
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_LOGLEVEL
+          value: DEBUG
+        - name: AWS_VPC_K8S_CNI_LOG_FILE
+          value: /host/var/log/aws-routed-eni/ipamd.log
+        - name: AWS_VPC_K8S_CNI_RANDOMIZESNAT
+          value: prng
+        - name: AWS_VPC_K8S_PLUGIN_LOG_FILE
+          value: /var/log/aws-routed-eni/plugin.log
+        - name: AWS_VPC_K8S_PLUGIN_LOG_LEVEL
+          value: DEBUG
+        - name: DISABLE_INTROSPECTION
+          value: "false"
+        - name: DISABLE_METRICS
+          value: "false"
+        - name: ENABLE_POD_ENI
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_VETHPREFIX
+          value: eni
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: WARM_ENI_TARGET
+          value: "1"
         - name: WARM_IP_TARGET
           value: "10"
         - name: AWS_VPC_K8S_CNI_LOGLEVEL
           value: debug
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.4
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.0
         imagePullPolicy: Always
         livenessProbe:
           exec:
             command:
             - /app/grpc-health-probe
             - -addr=:50051
-          initialDelaySeconds: 35
+          initialDelaySeconds: 60
         name: aws-node
         ports:
         - containerPort: 61678
@@ -121,24 +155,38 @@ spec:
             command:
             - /app/grpc-health-probe
             - -addr=:50051
-          initialDelaySeconds: 35
+          initialDelaySeconds: 1
         resources:
           requests:
             cpu: 10m
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
         volumeMounts:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
-        - mountPath: /host/var/log
+        - mountPath: /host/var/log/aws-routed-eni
           name: log-dir
-        - mountPath: /var/run/docker.sock
-          name: dockersock
+        - mountPath: /var/run/aws-node
+          name: run-dir
         - mountPath: /var/run/dockershim.sock
           name: dockershim
       hostNetwork: true
+      initContainers:
+      - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.0
+        imagePullPolicy: Always
+        name: aws-vpc-cni-init
+        resources: {}
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
       priorityClassName: system-node-critical
       serviceAccountName: aws-node
       tolerations:
@@ -151,14 +199,16 @@ spec:
           path: /etc/cni/net.d
         name: cni-net-dir
       - hostPath:
-          path: /var/log
-        name: log-dir
-      - hostPath:
-          path: /var/run/docker.sock
-        name: dockersock
-      - hostPath:
           path: /var/run/dockershim.sock
         name: dockershim
+      - hostPath:
+          path: /var/log/aws-routed-eni
+          type: DirectoryOrCreate
+        name: log-dir
+      - hostPath:
+          path: /var/run/aws-node
+          type: DirectoryOrCreate
+        name: run-dir
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 10%
