@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "apiserver.go",
         "cilium.go",
+        "clusterautoscaler.go",
         "containerd.go",
         "context.go",
         "defaults.go",
