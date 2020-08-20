@@ -317,8 +317,8 @@ func (c *MockCloud) GetExternalSubnet() (subnet *subnets.Subnet, err error) {
 	return getExternalSubnet(c, c.extSubnetName)
 }
 
-func (c *MockCloud) GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error) {
-	return getFloatingIP(c, id)
+func (c *MockCloud) GetL3FloatingIP(id string) (fip *l3floatingip.FloatingIP, err error) {
+	return getL3FloatingIP(c, id)
 }
 
 func (c *MockCloud) GetImage(name string) (*images.Image, error) {
