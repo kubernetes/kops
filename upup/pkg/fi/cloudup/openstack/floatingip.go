@@ -19,7 +19,6 @@ package openstack
 import (
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
@@ -35,28 +34,6 @@ func getL3FloatingIP(c OpenstackCloud, id string) (fip *l3floatingip.FloatingIP,
 		fip, err = l3floatingip.Get(c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, fmt.Errorf("GetFloatingIP: fetching floating IP (%s) failed: %v", id, err)
-		}
-		return true, nil
-	})
-	if !done {
-		if err == nil {
-			err = wait.ErrWaitTimeout
-		}
-		return fip, err
-	}
-	return fip, nil
-}
-
-func (c *openstackCloud) CreateFloatingIP(opts floatingips.CreateOpts) (fip *floatingips.FloatingIP, err error) {
-	return createFloatingIP(c, opts)
-}
-
-func createFloatingIP(c OpenstackCloud, opts floatingips.CreateOpts) (fip *floatingips.FloatingIP, err error) {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-
-		fip, err = floatingips.Create(c.ComputeClient(), opts).Extract()
-		if err != nil {
-			return false, fmt.Errorf("CreateFloatingIP: create floating IP failed: %v", err)
 		}
 		return true, nil
 	})
