@@ -170,10 +170,6 @@ func (c *MockCloud) AttachVolume(serverID string, opts volumeattach.CreateOpts) 
 	return attachVolume(c, serverID, opts)
 }
 
-func (c *MockCloud) CreateFloatingIP(opts floatingips.CreateOpts) (fip *floatingips.FloatingIP, err error) {
-	return createFloatingIP(c, opts)
-}
-
 func (c *MockCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
 	return createInstance(c, opt)
 }
