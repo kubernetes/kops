@@ -335,6 +335,31 @@ spec:
               cloudProvider:
                 description: The CloudProvider to use (aws or gce)
                 type: string
+              clusterAutoscaler:
+                description: ClusterAutoscaler defines the cluaster autoscaler configuration.
+                properties:
+                  balanceSimilarNodeGroups:
+                    description: 'BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one. Default: false'
+                    type: boolean
+                  enabled:
+                    description: 'Enabled enables the cluster autoscaler. Default: false'
+                    type: boolean
+                  expander:
+                    description: 'Expander determines the strategy for which instance group gets expanded. Supported values: least-waste, most-pods, random. Default: least-waste'
+                    type: string
+                  image:
+                    description: 'Image is the docker container used. Default: the latest supported image for the specified kubernetes version.'
+                    type: string
+                  scaleDownUtilizationThreshold:
+                    description: 'ScaleDownUtilizationThreshold determines the utilization threshold for node scale-down. Default: 0.5'
+                    type: string
+                  skipNodesWithLocalStorage:
+                    description: 'SkipNodesWithLocalStorage makes cluster autoscaler skip scale-down of nodes with local storage. Default: true'
+                    type: boolean
+                  skipNodesWithSystemPods:
+                    description: 'SkipNodesWithSystemPods makes cluster autoscaler skip scale-down of nodes with non-DaemonSet pods in the kube-system namespace. Default: true'
+                    type: boolean
+                type: object
               clusterDNSDomain:
                 description: ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
                 type: string
