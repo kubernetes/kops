@@ -44,7 +44,6 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones:go_default_library",
-        "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach:go_default_library",
@@ -81,7 +80,6 @@ go_test(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
-        "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/servers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips:go_default_library",
