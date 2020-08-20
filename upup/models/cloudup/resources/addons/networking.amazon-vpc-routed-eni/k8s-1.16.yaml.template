@@ -1,4 +1,4 @@
-# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/release-1.6.4/config/v1.6/aws-k8s-cni.yaml
+# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/release-1.7/config/v1.7/aws-k8s-cni.yaml
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -15,9 +15,12 @@ rules:
 - apiGroups: [""]
   resources:
   - pods
-  - nodes
   - namespaces
   verbs: ["list", "watch", "get"]
+- apiGroups: [""]
+  resources:
+  - nodes
+  verbs: ["list", "watch", "get", "update"]
 - apiGroups: ["extensions"]
   resources:
   - daemonsets
@@ -45,9 +48,11 @@ subjects:
   namespace: kube-system
 
 ---
-kind: DaemonSet
 apiVersion: apps/v1
+kind: DaemonSet
 metadata:
+  labels:
+    k8s-app: aws-node
   name: aws-node
   namespace: kube-system
   labels:
@@ -89,7 +94,7 @@ spec:
       tolerations:
       - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.6.4" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.0" }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 61678
@@ -98,24 +103,50 @@ spec:
         readinessProbe:
           exec:
             command: ["/app/grpc-health-probe", "-addr=:50051"]
-          initialDelaySeconds: 35
+          initialDelaySeconds: 1
         livenessProbe:
           exec:
             command: ["/app/grpc-health-probe", "-addr=:50051"]
-          initialDelaySeconds: 35
+          initialDelaySeconds: 60
         env:
         - name: CLUSTER_NAME
           value: {{ ClusterName }}
-        - name: AWS_VPC_K8S_CNI_LOGLEVEL
-          value: DEBUG
-        - name: AWS_VPC_K8S_CNI_VETHPREFIX
-          value: eni
+        - name: ADDITIONAL_ENI_TAGS
+          value: '{}'
+        - name: AWS_VPC_CNI_NODE_PORT_SUPPORT
+          value: "true"
         - name: AWS_VPC_ENI_MTU
           value: "9001"
+        - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_EXTERNALSNAT
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_LOGLEVEL
+          value: DEBUG
+        - name: AWS_VPC_K8S_CNI_LOG_FILE
+          value: /host/var/log/aws-routed-eni/ipamd.log
+        - name: AWS_VPC_K8S_CNI_RANDOMIZESNAT
+          value: prng
+        - name: AWS_VPC_K8S_PLUGIN_LOG_FILE
+          value: /var/log/aws-routed-eni/plugin.log
+        - name: AWS_VPC_K8S_PLUGIN_LOG_LEVEL
+          value: DEBUG
+        - name: DISABLE_INTROSPECTION
+          value: "false"
+        - name: DISABLE_METRICS
+          value: "false"
+        - name: ENABLE_POD_ENI
+          value: "false"
+        - name: AWS_VPC_K8S_CNI_VETHPREFIX
+          value: eni
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: WARM_ENI_TARGET
+          value: "1"
         {{- range .Networking.AmazonVPC.Env }}
         - name: {{ .Name }}
           value: "{{ .Value }}"
@@ -124,34 +155,50 @@ spec:
           requests:
             cpu: 10m
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
         volumeMounts:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
         - mountPath: /host/etc/cni/net.d
           name: cni-net-dir
-        - mountPath: /host/var/log
+        - mountPath: /host/var/log/aws-routed-eni
           name: log-dir
-        - mountPath: /var/run/docker.sock
-          name: dockersock
+        - mountPath: /var/run/aws-node
+          name: run-dir
         - mountPath: /var/run/dockershim.sock
           name: dockershim
+      initContainers:
+      - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.0
+        imagePullPolicy: Always
+        name: aws-vpc-cni-init
+        resources: {}
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /host/opt/cni/bin
+          name: cni-bin-dir
       volumes:
-      - name: cni-bin-dir
-        hostPath:
+      - hostPath:
           path: /opt/cni/bin
-      - name: cni-net-dir
-        hostPath:
+        name: cni-bin-dir
+      - hostPath:
           path: /etc/cni/net.d
-      - name: log-dir
-        hostPath:
-          path: /var/log
-      - name: dockersock
-        hostPath:
-          path: /var/run/docker.sock
-      - name: dockershim
-        hostPath:
+        name: cni-net-dir
+      - hostPath:
           path: /var/run/dockershim.sock
+        name: dockershim
+      - hostPath:
+          path: /var/log/aws-routed-eni
+          type: DirectoryOrCreate
+        name: log-dir
+      - hostPath:
+          path: /var/run/aws-node
+          type: DirectoryOrCreate
+        name: run-dir
 
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
