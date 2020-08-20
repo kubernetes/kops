@@ -25,14 +25,14 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func (c *openstackCloud) GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error) {
-	return getFloatingIP(c, id)
+func (c *openstackCloud) GetL3FloatingIP(id string) (fip *l3floatingip.FloatingIP, err error) {
+	return getL3FloatingIP(c, id)
 }
 
-func getFloatingIP(c OpenstackCloud, id string) (fip *floatingips.FloatingIP, err error) {
+func getL3FloatingIP(c OpenstackCloud, id string) (fip *l3floatingip.FloatingIP, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 
-		fip, err = floatingips.Get(c.ComputeClient(), id).Extract()
+		fip, err = l3floatingip.Get(c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, fmt.Errorf("GetFloatingIP: fetching floating IP (%s) failed: %v", id, err)
 		}

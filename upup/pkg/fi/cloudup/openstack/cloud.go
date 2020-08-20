@@ -289,7 +289,7 @@ type OpenstackCloud interface {
 
 	GetStorageAZFromCompute(azName string) (*az.AvailabilityZone, error)
 
-	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
+	GetL3FloatingIP(id string) (fip *l3floatingip.FloatingIP, err error)
 
 	GetImage(name string) (i *images.Image, err error)
 
