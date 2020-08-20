@@ -435,6 +435,21 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		image = strings.Replace(image, "-amd64", "-"+string(b.Architecture), 1)
 	}
 
+	ports := []v1.ContainerPort{
+		{
+			Name:          "https",
+			ContainerPort: b.Cluster.Spec.KubeAPIServer.SecurePort,
+			HostPort:      b.Cluster.Spec.KubeAPIServer.SecurePort,
+		},
+	}
+	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+		ports = append(ports, v1.ContainerPort{
+			Name:          "tcp",
+			ContainerPort: b.Cluster.Spec.KubeAPIServer.SecurePort,
+			HostPort:      8443,
+		})
+	}
+
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: image,
@@ -446,13 +461,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 			InitialDelaySeconds: 45,
 			TimeoutSeconds:      15,
 		},
-		Ports: []v1.ContainerPort{
-			{
-				Name:          "https",
-				ContainerPort: b.Cluster.Spec.KubeAPIServer.SecurePort,
-				HostPort:      b.Cluster.Spec.KubeAPIServer.SecurePort,
-			},
-		},
+		Ports: ports,
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
 				v1.ResourceCPU: requestCPU,

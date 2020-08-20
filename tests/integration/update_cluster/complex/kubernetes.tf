@@ -252,7 +252,7 @@ resource "aws_elb" "api-complex-example-com" {
     ssl_certificate_id = "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
   }
   listener {
-    instance_port     = 443
+    instance_port     = 8443
     instance_protocol = "TCP"
     lb_port           = 8443
     lb_protocol       = "TCP"
@@ -715,6 +715,15 @@ resource "aws_security_group_rule" "tcp-api-elb-2001_0_8500__--40" {
   security_group_id = aws_security_group.api-elb-complex-example-com.id
   to_port           = 8443
   type              = "ingress"
+}
+
+resource "aws_security_group_rule" "tcp-elb-to-master" {
+  from_port                = 8443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-complex-example-com.id
+  source_security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port                  = 8443
+  type                     = "ingress"
 }
 
 resource "aws_security_group" "api-elb-complex-example-com" {

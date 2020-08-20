@@ -857,6 +857,20 @@
         "CidrIp": "2001:0:8500::/40"
       }
     },
+    "AWSEC2SecurityGroupIngresstcpelbtomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbcomplexexamplecom"
+        },
+        "FromPort": 8443,
+        "ToPort": 8443,
+        "IpProtocol": "tcp"
+      }
+    },
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1161,7 +1175,7 @@
             "Protocol": "TCP"
           },
           {
-            "InstancePort": "443",
+            "InstancePort": "8443",
             "InstanceProtocol": "TCP",
             "LoadBalancerPort": "8443",
             "Protocol": "TCP"

@@ -199,6 +199,13 @@ func TestAwsIamAuthenticator(t *testing.T) {
 	})
 }
 
+func TestAwsACMCertificate(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/awsacm", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
+		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}
+
 func TestKubeAPIServerBuilderAMD64(t *testing.T) {
 	RunGoldenTest(t, "tests/golden/side-loading", "kube-apiserver-amd64", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
 		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}

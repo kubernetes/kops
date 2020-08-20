@@ -111,7 +111,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
-			listeners["8443"] = &awstasks.LoadBalancerListener{InstancePort: 443}
+			listeners["8443"] = &awstasks.LoadBalancerListener{InstancePort: 8443}
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -278,6 +278,17 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				SourceGroup:   lbSG,
 				ToPort:        fi.Int64(443),
 			})
+			if lbSpec.SSLCertificate != "" {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.String(fmt.Sprintf("tcp-elb-to-master%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.Int64(8443),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: masterGroup.Task,
+					SourceGroup:   lbSG,
+					ToPort:        fi.Int64(8443),
+				})
+			}
 		}
 	}
 
