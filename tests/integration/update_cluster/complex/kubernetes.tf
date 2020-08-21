@@ -281,6 +281,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
     ebs {
       delete_on_termination = true
       encrypted             = true
+      kms_key_id            = "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
       volume_size           = 64
       volume_type           = "gp2"
     }
@@ -359,6 +360,8 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     device_name = "/dev/xvdd"
     ebs {
       delete_on_termination = true
+      encrypted             = true
+      kms_key_id            = "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
       volume_size           = 20
       volume_type           = "gp2"
     }
