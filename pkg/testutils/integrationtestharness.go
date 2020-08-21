@@ -43,6 +43,7 @@ import (
 	"k8s.io/kops/cloudmock/openstack/mockblockstorage"
 	"k8s.io/kops/cloudmock/openstack/mockcompute"
 	"k8s.io/kops/cloudmock/openstack/mockdns"
+	"k8s.io/kops/cloudmock/openstack/mockimage"
 	"k8s.io/kops/cloudmock/openstack/mockloadbalancer"
 	"k8s.io/kops/cloudmock/openstack/mocknetworking"
 	"k8s.io/kops/pkg/apis/kops"
@@ -264,6 +265,8 @@ func (h *IntegrationTestHarness) SetupMockOpenstack() *openstack.MockCloud {
 
 	c.MockDNSClient = mockdns.CreateClient()
 
+	c.MockImageClient = mockimage.CreateClient()
+
 	extNetworkName := "external"
 	networkCreateOpts := networks.CreateOpts{
 		Name:         extNetworkName,
@@ -286,7 +289,7 @@ func (h *IntegrationTestHarness) SetupMockOpenstack() *openstack.MockCloud {
 	c.CreateSubnet(extSubnet)
 	c.SetExternalSubnet(fi.String(extSubnetName))
 	c.SetLBFloatingSubnet(fi.String(extSubnetName))
-	images.Create(c.MockNovaClient.ServiceClient(), images.CreateOpts{
+	images.Create(c.MockImageClient.ServiceClient(), images.CreateOpts{
 		Name:    "Ubuntu-20.04",
 		MinDisk: 12,
 	})
