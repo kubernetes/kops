@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -176,10 +178,17 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
 	if a == nil {
 		klog.V(2).Infof("Creating Instance with name: %q", fi.StringValue(e.Name))
+		cloud := t.Cloud.(openstack.OpenstackCloud)
+
+		imageName := fi.StringValue(e.Image)
+		imageRef, err := images.IDFromName(cloud.ImageClient(), imageName)
+		if err != nil {
+			return fmt.Errorf("failed to find image %v: %v", imageName, err)
+		}
 
 		opt := servers.CreateOpts{
 			Name:       fi.StringValue(e.Name),
-			ImageName:  fi.StringValue(e.Image),
+			ImageRef:   imageRef,
 			FlavorName: fi.StringValue(e.Flavor),
 			Networks: []servers.Network{
 				{

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mockcompute
+package mockimage
 
 import (
 	"encoding/json"
@@ -46,7 +46,7 @@ func (m *MockClient) mockImages() {
 		imageID := re.ReplaceAllString(r.URL.Path, "")
 		switch r.Method {
 		case http.MethodGet:
-			if imageID == "detail" {
+			if imageID == "" {
 				m.listImages(w)
 			} else {
 				m.getImage(w, imageID)
@@ -127,7 +127,6 @@ func (m *MockClient) createImage(w http.ResponseWriter, r *http.Request) {
 		MinDiskGigabytes: create.MinDisk,
 	}
 	m.images[image.ID] = image
-
 	resp := imageGetResponse{
 		Image: image,
 	}
