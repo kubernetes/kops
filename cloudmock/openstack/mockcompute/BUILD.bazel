@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "api.go",
         "flavors.go",
-        "images.go",
         "keypairs.go",
         "servergroups.go",
         "servers.go",
