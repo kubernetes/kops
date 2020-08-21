@@ -37,10 +37,13 @@ var _ fi.ModelBuilder = &NetworkBuilder{}
 func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	var assetNames []string
 
-	// @TODO need to clean up this code, it isn't the easiest to read
 	networking := b.Cluster.Spec.Networking
 	if networking == nil || networking.Classic != nil {
-	} else if networking.Kubenet != nil || networking.GCE != nil {
+		return nil
+	}
+
+	// @TODO need to clean up this code, it isn't the easiest to read
+	if networking.Kubenet != nil || networking.GCE != nil {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
 	} else if networking.External != nil {
 		// external is based on kubenet
@@ -71,7 +74,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Tx checksum offloading is buggy for NAT-ed VXLAN endpoints, leading to an invalid checksum sent and causing
 	// Flannel to stop to working as the traffic is being discarded by the receiver.
 	// https://github.com/coreos/flannel/issues/1279
-	if networking != nil && (networking.Canal != nil || (networking.Flannel != nil && networking.Flannel.Backend == "vxlan")) {
+	if (networking.Canal != nil && networking.Canal.DisableTxChecksumOffloading) || (networking.Flannel != nil && networking.Flannel.DisableTxChecksumOffloading) {
 		c.AddTask(b.buildFlannelTxChecksumOffloadDisableService())
 	}
 
