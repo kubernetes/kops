@@ -250,7 +250,8 @@
                 "VolumeType": "gp2",
                 "VolumeSize": 64,
                 "DeleteOnTermination": true,
-                "Encrypted": true
+                "Encrypted": true,
+                "KmsKeyId": "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
               }
             },
             {
@@ -387,7 +388,9 @@
               "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 20,
-                "DeleteOnTermination": true
+                "DeleteOnTermination": true,
+                "Encrypted": true,
+                "KmsKeyId": "arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab"
               }
             }
           ],
