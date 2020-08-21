@@ -234,6 +234,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 				IOPS:                x.EbsVolumeIops,
 				VolumeSize:          x.EbsVolumeSize,
 				VolumeType:          x.EbsVolumeType,
+				Encrypted:           x.EbsEncrypted,
 			},
 		})
 	}
