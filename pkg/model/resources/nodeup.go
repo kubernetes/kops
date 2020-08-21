@@ -86,16 +86,25 @@ download-or-bust() {
           echo "== Download failed with ${cmd} =="
           continue
         fi
-        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
-          echo "== Hash validation of ${url} failed. Retrying. =="
-          rm -f "${file}"
-        else
-          if [[ -n "${hash}" ]]; then
-            echo "== Downloaded ${url} (SHA1 = ${hash}) =="
+        if [[ -n "${hash}" ]]; then
+          if [[ ${url} =~ \.gz$ ]] && command -v gunzip; then
+            kops::validate-hash "${file}" "${hash}" && { echo "== Downloaded ${url} (SHA1 = ${hash}) =="; return; }
+            mv "${file}" "${file}.gz" && gunzip "${file}.gz" && kops::validate-hash "${file}" "${hash}" && { echo "== Downloaded ${url} (SHA1 = ${hash}) =="; return; }
+            echo "== Hash validation of ${url} failed. Retrying. ==" && rm -f "${file}";
+          elif [[ ${url} =~ \.bz2$ ]] && command -v bunzip2; then
+            kops::validate-hash "${file}" "${hash}" && { echo "== Downloaded ${url} (SHA1 = ${hash}) =="; return; }
+            mv "${file}" "${file}.bz2" && bunzip2 "${file}.bz2" && kops::validate-hash "${file}" "${hash}" && { echo "== Downloaded ${url} (SHA1 = ${hash}) =="; return; }
+            echo "== Hash validation of ${url} failed. Retrying. ==" && rm -f "${file}";
+          elif [[ ${url} =~ \.xz$ ]] && command -v xz; then
+            kops::validate-hash "${file}" "${hash}" && { echo "== Downloaded ${url} (SHA1 = ${hash}) =="; return; }
+            mv "${file}" "${file}.xz" && xz -d "${file}.xz" && kops::validate-hash "${file}" "${hash}" && { echo "== Downloaded ${url} (SHA1 = ${hash}) =="; return; }
+            echo "== Hash validation of ${url} failed. Retrying. ==" && rm -f "${file}";
           else
-            echo "== Downloaded ${url} =="
+            kops::validate-hash "${file}" "${hash}" && { echo "== Downloaded ${url} (SHA1 = ${hash}) =="; return; }
+            echo "== Hash validation of ${url} failed. Retrying. ==" && rm -f "${file}";
           fi
-          return
+        else
+          echo "== Downloaded ${url} =="
         fi
       done
     done
