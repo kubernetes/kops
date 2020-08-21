@@ -303,22 +303,6 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
-### bootstrap tokens
-
-Read more about this here: https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
-
-```yaml
-spec:
-  kubeAPIServer:
-    enableBootstrapTokenAuth: true
-```
-
-By enabling this feature you instructing two things;
-- master nodes will bypass the bootstrap token but they _will_ build kubeconfigs with unique usernames in the system:nodes group _(this ensure's the master nodes confirm with the node authorization mode https://kubernetes.io/docs/reference/access-authn-authz/node/)_
-- secondly the nodes will be configured to use a bootstrap token located by default at `/var/lib/kubelet/bootstrap-kubeconfig` _(though this can be override in the kubelet spec)_. The nodes will sit the until a bootstrap file is created and once available attempt to provision the node.
-
-**Note** enabling bootstrap tokens does not provision bootstrap tokens for the worker nodes. Under this configuration it is assumed a third-party process is provisioning the tokens on behalf of the worker nodes. For the full setup please read [Node Authorizer Service](node_authorization.md)
-
 ### Max Requests Inflight
 
 The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
