@@ -86,6 +86,7 @@ spec:
   - us-test-1a
   detailedInstanceMonitoring: true
   rootVolumeDeleteOnTermination: false
+  rootVolumeEncryption: true
   volumes:
   - device: /dev/xvdd
     deleteOnTermination: false
@@ -114,6 +115,7 @@ spec:
   maxSize: 1
   minSize: 1
   role: Master
+  rootVolumeEncryption: true
   subnets:
   - us-test-1a
   additionalUserData:
