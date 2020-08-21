@@ -32,6 +32,8 @@ type BlockDeviceMapping struct {
 	EbsDeleteOnTermination *bool
 	// EbsEncrypted indicates the volume should be encrypted
 	EbsEncrypted *bool
+	// EbsKmsKey is the encryption key identifier for the volume
+	EbsKmsKey *string
 	// EbsVolumeIops is provisioned iops
 	EbsVolumeIops *int64
 	// EbsVolumeSize is the size of the volume
@@ -51,6 +53,7 @@ func BlockDeviceMappingFromEC2(i *ec2.BlockDeviceMapping) (string, *BlockDeviceM
 	if i.Ebs != nil {
 		o.EbsDeleteOnTermination = i.Ebs.DeleteOnTermination
 		o.EbsEncrypted = i.Ebs.Encrypted
+		o.EbsKmsKey = i.Ebs.KmsKeyId
 		o.EbsVolumeIops = i.Ebs.Iops
 		o.EbsVolumeSize = i.Ebs.VolumeSize
 		o.EbsVolumeType = i.Ebs.VolumeType
@@ -74,6 +77,9 @@ func (i *BlockDeviceMapping) ToEC2(deviceName string) *ec2.BlockDeviceMapping {
 		}
 		if fi.StringValue(o.Ebs.VolumeType) == ec2.VolumeTypeIo1 {
 			o.Ebs.Iops = i.EbsVolumeIops
+		}
+		if fi.BoolValue(o.Ebs.Encrypted) {
+			o.Ebs.KmsKeyId = i.EbsKmsKey
 		}
 	}
 
@@ -131,26 +137,33 @@ func BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(i *ec2.LaunchTemplate
 		o.EbsDeleteOnTermination = i.Ebs.DeleteOnTermination
 		o.EbsVolumeSize = i.Ebs.VolumeSize
 		o.EbsVolumeType = i.Ebs.VolumeType
+		o.EbsVolumeIops = i.Ebs.Iops
 		o.EbsEncrypted = i.Ebs.Encrypted
+		o.EbsKmsKey = i.Ebs.KmsKeyId
 	}
 
 	return aws.StringValue(i.DeviceName), o
 }
 
-// ToLaunchTemplateBootDeviceRequest coverts in the internal block device mapping to a launcg template request
+// ToLaunchTemplateBootDeviceRequest coverts in the internal block device mapping to a launch template request
 func (i *BlockDeviceMapping) ToLaunchTemplateBootDeviceRequest(deviceName string) *ec2.LaunchTemplateBlockDeviceMappingRequest {
 	o := &ec2.LaunchTemplateBlockDeviceMappingRequest{
 		DeviceName:  aws.String(deviceName),
 		VirtualName: i.VirtualName,
 	}
-	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsVolumeIops != nil || i.EbsEncrypted != nil {
+	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil || i.EbsEncrypted != nil {
 		o.Ebs = &ec2.LaunchTemplateEbsBlockDeviceRequest{
 			DeleteOnTermination: i.EbsDeleteOnTermination,
 			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
 			VolumeType:          i.EbsVolumeType,
-			Iops:                i.EbsVolumeIops,
 		}
+	}
+	if fi.StringValue(i.EbsVolumeType) == ec2.VolumeTypeIo1 {
+		o.Ebs.Iops = i.EbsVolumeIops
+	}
+	if fi.BoolValue(i.EbsEncrypted) {
+		o.Ebs.KmsKeyId = i.EbsKmsKey
 	}
 
 	return o
