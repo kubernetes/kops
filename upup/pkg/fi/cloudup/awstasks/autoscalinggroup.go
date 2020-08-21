@@ -54,6 +54,8 @@ type AutoscalingGroup struct {
 	LaunchConfiguration *LaunchConfiguration
 	// LaunchTemplate is the launch template for the asg
 	LaunchTemplate *LaunchTemplate
+	// LoadBalancers is a list of elastic load balancer names to add to the autoscaling group
+	LoadBalancers []*LoadBalancer
 	// MaxSize is the max number of nodes in asg
 	MaxSize *int64
 	// Metrics is a collection of metrics to monitor
@@ -110,6 +112,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		Name:    g.AutoScalingGroupName,
 		MaxSize: g.MaxSize,
 		MinSize: g.MinSize,
+	}
+
+	for _, lb := range g.LoadBalancerNames {
+		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{Name: aws.String(*lb)})
 	}
 
 	if g.VPCZoneIdentifier != nil {
@@ -262,6 +268,10 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			MaxSize:              e.MaxSize,
 			Tags:                 v.AutoscalingGroupTags(),
 			VPCZoneIdentifier:    fi.String(strings.Join(e.AutoscalingGroupSubnets(), ",")),
+		}
+
+		for _, k := range e.LoadBalancers {
+			request.LoadBalancerNames = append(request.LoadBalancerNames, k.GetName())
 		}
 
 		// @check are we using a launch configuration, mixed instances policy, or launch template
@@ -444,6 +454,22 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Tags = nil
 		}
 
+		var attachLBRequest *autoscaling.AttachLoadBalancersInput
+		var detachLBRequest *autoscaling.DetachLoadBalancersInput
+		if changes.LoadBalancers != nil {
+			attachLBRequest = &autoscaling.AttachLoadBalancersInput{
+				AutoScalingGroupName: e.Name,
+				LoadBalancerNames:    e.AutoscalingLoadBalancers(),
+			}
+
+			if a != nil && len(a.LoadBalancers) > 0 {
+				detachLBRequest = &autoscaling.DetachLoadBalancersInput{AutoScalingGroupName: e.Name}
+				detachLBRequest.LoadBalancerNames = e.getLBsToDetach(a.LoadBalancers)
+			}
+
+			changes.Tags = nil
+		}
+
 		if changes.Metrics != nil || changes.Granularity != nil {
 			// TODO: Support disabling metrics?
 			if len(e.Metrics) != 0 {
@@ -513,6 +539,17 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
 			}
 		}
+
+		if detachLBRequest != nil {
+			if _, err := t.Cloud.Autoscaling().DetachLoadBalancers(detachLBRequest); err != nil {
+				return fmt.Errorf("error detatching LoadBalancers: %v", err)
+			}
+		}
+		if attachLBRequest != nil {
+			if _, err := t.Cloud.Autoscaling().AttachLoadBalancers(attachLBRequest); err != nil {
+				return fmt.Errorf("error attaching LoadBalancers: %v", err)
+			}
+		}
 	}
 
 	return nil
@@ -574,6 +611,17 @@ func (e *AutoscalingGroup) AutoscalingGroupSubnets() []string {
 	return list
 }
 
+// AutoscalingLoadBalancers returns a list of LBs attatched to the ASG
+func (e *AutoscalingGroup) AutoscalingLoadBalancers() []*string {
+	var list []*string
+
+	for _, v := range e.LoadBalancers {
+		list = append(list, v.Name)
+	}
+
+	return list
+}
+
 // processCompare returns processes that exist in a but not in b
 func processCompare(a *[]string, b *[]string) []*string {
 	notInB := []*string{}
@@ -609,6 +657,24 @@ func (e *AutoscalingGroup) getASGTagsToDelete(currentTags map[string]string) []*
 		}
 	}
 	return tagsToDelete
+}
+
+// getLBsToDetach loops through the currently set LBs and builds a list of
+// LBs to be detach from the Autoscaling Group
+func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*LoadBalancer) []*string {
+	lbsToDetach := []*string{}
+	desiredLBs := map[string]bool{}
+
+	for _, v := range e.LoadBalancers {
+		desiredLBs[*v.Name] = true
+	}
+
+	for _, v := range currentLBs {
+		if _, ok := desiredLBs[*v.Name]; !ok {
+			lbsToDetach = append(lbsToDetach, v.Name)
+		}
+	}
+	return lbsToDetach
 }
 
 type terraformASGTag struct {
@@ -678,6 +744,7 @@ type terraformAutoscalingGroup struct {
 	EnabledMetrics          []*string                                        `json:"enabled_metrics,omitempty" cty:"enabled_metrics"`
 	SuspendedProcesses      []*string                                        `json:"suspended_processes,omitempty" cty:"suspended_processes"`
 	InstanceProtection      *bool                                            `json:"protect_from_scale_in,omitempty" cty:"protect_from_scale_in"`
+	LoadBalancers           []*terraform.Literal                             `json:"load_balancers,omitempty" cty:"load_balancers"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -702,6 +769,10 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 			Value:             fi.String(v),
 			PropagateAtLaunch: fi.Bool(true),
 		})
+	}
+
+	for _, k := range e.LoadBalancers {
+		tf.LoadBalancers = append(tf.LoadBalancers, k.TerraformLink())
 	}
 
 	if e.LaunchConfiguration != nil {
@@ -929,6 +1000,10 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 			Value:             fi.String(v),
 			PropagateAtLaunch: fi.Bool(true),
 		})
+	}
+
+	for _, k := range e.LoadBalancers {
+		cf.LoadBalancerNames = append(cf.LoadBalancerNames, k.CloudformationLink())
 	}
 
 	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name), cf)
