@@ -232,6 +232,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			EBS: []*terraformLaunchTemplateBlockDeviceEBS{
 				{
 					DeleteOnTermination: fi.Bool(true),
+					Encrypted:           x.EbsEncrypted,
 					IOPS:                x.EbsVolumeIops,
 					VolumeSize:          x.EbsVolumeSize,
 					VolumeType:          x.EbsVolumeType,

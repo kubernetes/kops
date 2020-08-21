@@ -56,6 +56,8 @@ type LaunchTemplate struct {
 	RootVolumeSize *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
+	// RootVolumeEncryption enables EBS root volume encryption for an instance
+	RootVolumeEncryption *bool
 	// SSHKey is the ssh key for the instances
 	SSHKey *SSHKey
 	// SecurityGroups is a list of security group associated
@@ -112,6 +114,7 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 		EbsVolumeSize:          t.RootVolumeSize,
 		EbsVolumeType:          t.RootVolumeType,
 		EbsVolumeIops:          t.RootVolumeIops,
+		EbsEncrypted:           t.RootVolumeEncryption,
 	}
 
 	return bm, nil

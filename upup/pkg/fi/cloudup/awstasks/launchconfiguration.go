@@ -81,6 +81,8 @@ type LaunchConfiguration struct {
 	RootVolumeSize *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
+	// RootVolumeEncryption enables EBS root volume encryption for an instance
+	RootVolumeEncryption *bool
 	// SSHKey is the ssh key for the instances
 	SSHKey *SSHKey
 	// SecurityGroups is a list of security group associated
@@ -203,6 +205,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 			actual.RootVolumeSize = b.Ebs.VolumeSize
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
+			actual.RootVolumeEncryption = b.Ebs.Encrypted
 			actual.RootVolumeDeleteOnTermination = b.Ebs.DeleteOnTermination
 		} else {
 			_, d := BlockDeviceMappingFromAutoscaling(b)
@@ -406,6 +409,7 @@ func (t *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 		EbsVolumeSize:          t.RootVolumeSize,
 		EbsVolumeType:          t.RootVolumeType,
 		EbsVolumeIops:          t.RootVolumeIops,
+		EbsEncrypted:           t.RootVolumeEncryption,
 	}
 
 	return bm, nil
