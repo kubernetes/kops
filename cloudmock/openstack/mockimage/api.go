@@ -14,16 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mockcompute
+package mockimage
 
 import (
 	"net/http/httptest"
 	"sync"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 	"k8s.io/kops/cloudmock/openstack"
 )
@@ -33,11 +29,7 @@ type MockClient struct {
 	openstack.MockOpenstackServer
 	mutex sync.Mutex
 
-	serverGroups map[string]servergroups.ServerGroup
-	servers      map[string]servers.Server
-	keyPairs     map[string]keypairs.KeyPair
-	images       map[string]images.Image
-	flavors      map[string]flavors.Flavor
+	images map[string]images.Image
 }
 
 // CreateClient will create a new mock networking client
@@ -45,31 +37,21 @@ func CreateClient() *MockClient {
 	m := &MockClient{}
 	m.SetupMux()
 	m.Reset()
-	m.mockServerGroups()
-	m.mockServers()
-	m.mockKeyPairs()
-	m.mockFlavors()
+	m.mockImages()
 	m.Server = httptest.NewServer(m.Mux)
 	return m
 }
 
 // Reset will empty the state of the mock data
 func (m *MockClient) Reset() {
-	m.serverGroups = make(map[string]servergroups.ServerGroup)
-	m.servers = make(map[string]servers.Server)
-	m.keyPairs = make(map[string]keypairs.KeyPair)
 	m.images = make(map[string]images.Image)
-	m.flavors = make(map[string]flavors.Flavor)
 }
 
 // All returns a map of all resource IDs to their resources
 func (m *MockClient) All() map[string]interface{} {
 	all := make(map[string]interface{})
-	for id, sg := range m.serverGroups {
-		all[id] = sg
-	}
-	for id, kp := range m.keyPairs {
-		all[id] = kp
+	for id, i := range m.images {
+		all[id] = i
 	}
 	return all
 }

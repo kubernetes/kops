@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api.go",
+        "images.go",
+    ],
+    importpath = "k8s.io/kops/cloudmock/openstack/mockimage",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cloudmock/openstack:go_default_library",
+        "//vendor/github.com/google/uuid:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/imageservice/v2/images:go_default_library",
+    ],
+)

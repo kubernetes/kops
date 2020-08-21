@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/cloudmock/openstack/mockblockstorage"
 	"k8s.io/kops/cloudmock/openstack/mockcompute"
 	"k8s.io/kops/cloudmock/openstack/mockdns"
+	"k8s.io/kops/cloudmock/openstack/mockimage"
 	"k8s.io/kops/cloudmock/openstack/mockloadbalancer"
 	"k8s.io/kops/cloudmock/openstack/mocknetworking"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -60,7 +61,7 @@ type MockCloud struct {
 	MockNovaClient    *mockcompute.MockClient
 	MockDNSClient     *mockdns.MockClient
 	MockLBClient      *mockloadbalancer.MockClient
-	MockGlanceClient  *mockcompute.MockClient
+	MockImageClient   *mockimage.MockClient
 	region            string
 	tags              map[string]string
 	useOctavia        bool
@@ -115,9 +116,7 @@ func (c *MockCloud) DNSClient() *gophercloud.ServiceClient {
 }
 
 func (c *MockCloud) ImageClient() *gophercloud.ServiceClient {
-	// Some compute endpoints implicitly call image endpoints
-	// so it is easiest to share the same mock client
-	client := c.MockNovaClient.ServiceClient()
+	client := c.MockImageClient.ServiceClient()
 	client.UserAgent.Prepend("image")
 	return client
 }

@@ -19,6 +19,7 @@ go_library(
         "//cloudmock/openstack/mockblockstorage:go_default_library",
         "//cloudmock/openstack/mockcompute:go_default_library",
         "//cloudmock/openstack/mockdns:go_default_library",
+        "//cloudmock/openstack/mockimage:go_default_library",
         "//cloudmock/openstack/mockloadbalancer:go_default_library",
         "//cloudmock/openstack/mocknetworking:go_default_library",
         "//pkg/apis/kops:go_default_library",
