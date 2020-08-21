@@ -353,6 +353,19 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	t.InstanceProtection = ig.Spec.InstanceProtection
 
+	// When Spotinst Elastigroups are used, there is no need to create
+	// a separate task for the attachment of the load balancer since this
+	// is already done as part of the Elastigroup's creation, if needed.
+	if !featureflag.Spotinst.Enabled() {
+		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
+			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("api"))
+		}
+
+		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("bastion"))
+		}
+	}
+
 	// @step: are we using a mixed instance policy
 	if ig.Spec.MixedInstancesPolicy != nil {
 		spec := ig.Spec.MixedInstancesPolicy

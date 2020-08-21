@@ -110,22 +110,13 @@ provider "aws" {
   region = "us-test-1"
 }
 
-resource "aws_autoscaling_attachment" "bastion-privatecanal-example-com" {
-  autoscaling_group_name = aws_autoscaling_group.bastion-privatecanal-example-com.id
-  elb                    = aws_elb.bastion-privatecanal-example-com.id
-}
-
-resource "aws_autoscaling_attachment" "master-us-test-1a-masters-privatecanal-example-com" {
-  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-privatecanal-example-com.id
-  elb                    = aws_elb.api-privatecanal-example-com.id
-}
-
 resource "aws_autoscaling_group" "bastion-privatecanal-example-com" {
   enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_template {
     id      = aws_launch_template.bastion-privatecanal-example-com.id
     version = aws_launch_template.bastion-privatecanal-example-com.latest_version
   }
+  load_balancers      = [aws_elb.bastion-privatecanal-example-com.id]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
@@ -174,6 +165,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecanal-example
     id      = aws_launch_template.master-us-test-1a-masters-privatecanal-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-privatecanal-example-com.latest_version
   }
+  load_balancers      = [aws_elb.api-privatecanal-example-com.id]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
