@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -271,20 +270,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Ensure the ELB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
 		elb.ForAPIServer = true
-	}
-
-	// When Spotinst Elastigroups are used, there is no need to create
-	// a separate task for the attachment of the load balancer since this
-	// is already done as part of the Elastigroup's creation, if needed.
-	if !featureflag.Spotinst.Enabled() {
-		for _, ig := range b.MasterInstanceGroups() {
-			c.AddTask(&awstasks.LoadBalancerAttachment{
-				Name:             fi.String("api-" + ig.ObjectMeta.Name),
-				Lifecycle:        b.Lifecycle,
-				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-				LoadBalancer:     b.LinkToELB("api"),
-			})
-		}
 	}
 
 	return nil
