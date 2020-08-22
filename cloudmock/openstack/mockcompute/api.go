@@ -20,6 +20,8 @@ import (
 	"net/http/httptest"
 	"sync"
 
+	"github.com/gophercloud/gophercloud"
+
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
@@ -33,15 +35,16 @@ type MockClient struct {
 	openstack.MockOpenstackServer
 	mutex sync.Mutex
 
-	serverGroups map[string]servergroups.ServerGroup
-	servers      map[string]servers.Server
-	keyPairs     map[string]keypairs.KeyPair
-	images       map[string]images.Image
-	flavors      map[string]flavors.Flavor
+	serverGroups  map[string]servergroups.ServerGroup
+	servers       map[string]servers.Server
+	keyPairs      map[string]keypairs.KeyPair
+	images        map[string]images.Image
+	flavors       map[string]flavors.Flavor
+	networkClient *gophercloud.ServiceClient
 }
 
 // CreateClient will create a new mock networking client
-func CreateClient() *MockClient {
+func CreateClient(networkClient *gophercloud.ServiceClient) *MockClient {
 	m := &MockClient{}
 	m.SetupMux()
 	m.Reset()
@@ -50,6 +53,7 @@ func CreateClient() *MockClient {
 	m.mockKeyPairs()
 	m.mockFlavors()
 	m.Server = httptest.NewServer(m.Mux)
+	m.networkClient = networkClient
 	return m
 }
 
