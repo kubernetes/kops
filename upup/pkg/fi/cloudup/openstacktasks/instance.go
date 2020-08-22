@@ -154,14 +154,36 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	}
 
 	if len(ports) == 1 {
-
-		porttask, err := newPortTaskFromCloud(cloud, e.Lifecycle, &ports[0], nil)
+		port := ports[0]
+		porttask, err := newPortTaskFromCloud(cloud, e.Lifecycle, &port, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch port for instance %v: %v", server.ID, err)
 		}
 		actual.Port = porttask
+
 	} else if len(ports) > 1 {
-		return nil, fmt.Errorf("found more than one port for instance %v")
+		return nil, fmt.Errorf("found more than one port for instance %v", server.ID)
+	}
+
+	if e.FloatingIP != nil && e.Port != nil {
+		fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
+			PortID: fi.StringValue(e.Port.ID),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch floating ips for instance %v: %v", server.ID, err)
+		}
+
+		if len(fips) == 1 {
+			fip := fips[0]
+			fipTask := &FloatingIP{
+				ID:   fi.String(fip.ID),
+				Name: fi.String(fip.Description),
+			}
+
+			actual.FloatingIP = fipTask
+		} else if len(fips) > 1 {
+			return nil, fmt.Errorf("found more than one floating ip for instance %v", server.ID)
+		}
 	}
 
 	// Avoid flapping
@@ -174,6 +196,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	actual.UserData = e.UserData
 	actual.Region = e.Region
 	actual.SSHKey = e.SSHKey
+	actual.ServerGroup = e.ServerGroup
 
 	return actual, nil
 }
@@ -203,6 +226,9 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 		return true, nil
 	}
 	if changes.Port != nil {
+		return true, nil
+	}
+	if changes.FloatingIP != nil {
 		return true, nil
 	}
 
@@ -275,18 +301,25 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 
 		if e.FloatingIP != nil {
 			err = associateFloatingIP(t, e)
-		}
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
 		}
 
 		klog.V(2).Infof("Creating a new Openstack instance, id=%s", v.ID)
 
+		return nil
 	}
 	if changes.Port != nil {
 		ports.Update(cloud.NetworkingClient(), fi.StringValue(changes.Port.ID), ports.UpdateOpts{
 			DeviceID: e.ID,
 		})
+	}
+	if changes.FloatingIP != nil {
+		err := associateFloatingIP(t, e)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
