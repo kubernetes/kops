@@ -153,7 +153,9 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 		e.ID = actual.ID
 		return actual, nil
 	}
-	fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{})
+	fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
+		Description: fi.StringValue(e.Name),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list layer 3 floating ip's: %v", err)
 	}
