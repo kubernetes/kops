@@ -24,7 +24,6 @@ import (
 	"github.com/gophercloud/gophercloud"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
@@ -372,9 +371,6 @@ func (c *MockCloud) ListDNSZones(opt zones.ListOptsBuilder) ([]zones.Zone, error
 }
 func (c *MockCloud) ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error) {
 	return listDNSRecordsets(c, zoneID, opt)
-}
-func (c *MockCloud) ListFloatingIPs() (fips []floatingips.FloatingIP, err error) {
-	return listFloatingIPs(c)
 }
 
 func (c *MockCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.Server, error) {
