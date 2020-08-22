@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -114,8 +115,9 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if e == nil || e.Name == nil {
 		return nil, nil
 	}
-	client := c.Cloud.(openstack.OpenstackCloud).ComputeClient()
-	serverPage, err := servers.List(client, servers.ListOpts{
+	cloud := c.Cloud.(openstack.OpenstackCloud)
+	computeClient := cloud.ComputeClient()
+	serverPage, err := servers.List(computeClient, servers.ListOpts{
 		Name: fmt.Sprintf("^%s$", fi.StringValue(e.Name)),
 	}).AllPages()
 	if err != nil {
@@ -138,9 +140,40 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		Name:             fi.String(server.Name),
 		SSHKey:           fi.String(server.KeyName),
 		Lifecycle:        e.Lifecycle,
+		Metadata:         server.Metadata,
+		Role:             fi.String(server.Metadata["KopsRole"]),
 		AvailabilityZone: e.AvailabilityZone,
 	}
+
+	ports, err := cloud.ListPorts(ports.ListOpts{
+		DeviceID: server.ID,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch port for instance %v: %v", server.ID, err)
+	}
+
+	if len(ports) == 1 {
+
+		porttask, err := newPortTaskFromCloud(cloud, e.Lifecycle, &ports[0], nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch port for instance %v: %v", server.ID, err)
+		}
+		actual.Port = porttask
+	} else if len(ports) > 1 {
+		return nil, fmt.Errorf("found more than one port for instance %v")
+	}
+
+	// Avoid flapping
 	e.ID = actual.ID
+	actual.ForAPIServer = e.ForAPIServer
+
+	// Immutable fields
+	actual.Flavor = e.Flavor
+	actual.Image = e.Image
+	actual.UserData = e.UserData
+	actual.Region = e.Region
+	actual.SSHKey = e.SSHKey
 
 	return actual, nil
 }
@@ -169,14 +202,17 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 	if a == nil {
 		return true, nil
 	}
+	if changes.Port != nil {
+		return true, nil
+	}
 
 	return false, nil
 }
 
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
+	cloud := t.Cloud.(openstack.OpenstackCloud)
 	if a == nil {
 		klog.V(2).Infof("Creating Instance with name: %q", fi.StringValue(e.Name))
-		cloud := t.Cloud.(openstack.OpenstackCloud)
 
 		imageName := fi.StringValue(e.Image)
 		image, err := cloud.GetImage(imageName)
@@ -247,7 +283,11 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 		klog.V(2).Infof("Creating a new Openstack instance, id=%s", v.ID)
 
 	}
-
+	if changes.Port != nil {
+		ports.Update(cloud.NetworkingClient(), fi.StringValue(changes.Port.ID), ports.UpdateOpts{
+			DeviceID: e.ID,
+		})
+	}
 	return nil
 }
 
