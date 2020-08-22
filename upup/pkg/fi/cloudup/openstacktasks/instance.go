@@ -41,7 +41,6 @@ type Instance struct {
 	Image            *string
 	SSHKey           *string
 	ServerGroup      *ServerGroup
-	Tags             []string
 	Role             *string
 	UserData         *fi.ResourceHolder
 	Metadata         map[string]string
