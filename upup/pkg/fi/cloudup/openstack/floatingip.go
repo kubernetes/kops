@@ -68,32 +68,6 @@ func createL3FloatingIP(c OpenstackCloud, opts l3floatingip.CreateOpts) (fip *l3
 	return fip, nil
 }
 
-func (c *openstackCloud) ListFloatingIPs() (fips []floatingips.FloatingIP, err error) {
-	return listFloatingIPs(c)
-}
-
-func listFloatingIPs(c OpenstackCloud) (fips []floatingips.FloatingIP, err error) {
-
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		pages, err := floatingips.List(c.ComputeClient()).AllPages()
-		if err != nil {
-			return false, fmt.Errorf("failed to list floating ip: %v", err)
-		}
-		fips, err = floatingips.ExtractFloatingIPs(pages)
-		if err != nil {
-			return false, fmt.Errorf("failed to extract floating ip: %v", err)
-		}
-		return true, nil
-	})
-	if !done {
-		if err == nil {
-			err = wait.ErrWaitTimeout
-		}
-		return fips, err
-	}
-	return fips, nil
-}
-
 func (c *openstackCloud) ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error) {
 	return listL3FloatingIPs(c, opts)
 }

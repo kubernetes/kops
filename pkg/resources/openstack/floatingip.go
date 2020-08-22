@@ -57,20 +57,24 @@ func (os *clusterDiscoveryOS) listL3FloatingIPs(routerID string) ([]*resources.R
 
 func (os *clusterDiscoveryOS) listFloatingIPs(instanceID string) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-	floatingIPs, err := os.osCloud.ListFloatingIPs()
+	instance, err := os.osCloud.GetInstance(instanceID)
+	if err != nil {
+		return resourceTrackers, err
+	}
+	floatingIPs, err := os.osCloud.ListL3FloatingIPs(l3floatingip.ListOpts{
+		Description: "fip-" + instance.Name,
+	})
 	if err != nil {
 		return resourceTrackers, err
 	}
 	for _, floatingIP := range floatingIPs {
-		if floatingIP.InstanceID == instanceID {
-			resourceTracker := &resources.Resource{
-				Name:    floatingIP.IP,
-				ID:      floatingIP.ID,
-				Type:    typeFloatingIP,
-				Deleter: DeleteFloatingIP,
-			}
-			resourceTrackers = append(resourceTrackers, resourceTracker)
+		resourceTracker := &resources.Resource{
+			Name:    floatingIP.Description,
+			ID:      floatingIP.ID,
+			Type:    typeFloatingIP,
+			Deleter: DeleteFloatingIP,
 		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 	return resourceTrackers, nil
 }
