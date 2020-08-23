@@ -157,7 +157,7 @@ type etcdClusterSpec struct {
 	EtcdVersion string `json:"etcdVersion,omitempty"`
 }
 
-func (b *EtcdManagerBuilder) buildManifest(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
+func (b *EtcdManagerBuilder) buildManifest(etcdCluster kops.EtcdClusterSpec) (*v1.Pod, error) {
 	return b.buildPod(etcdCluster)
 }
 
@@ -199,7 +199,7 @@ spec:
 `
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
-func (b *EtcdManagerBuilder) buildPod(etcdCluster *kops.EtcdClusterSpec) (*v1.Pod, error) {
+func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod, error) {
 	var pod *v1.Pod
 	var container *v1.Container
 

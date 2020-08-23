@@ -128,10 +128,10 @@ func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 
 func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.EtcdClusters = []*kopsapi.EtcdClusterSpec{
+	c.Spec.EtcdClusters = []kopsapi.EtcdClusterSpec{
 		{
 			Name: "main",
-			Members: []*kopsapi.EtcdMemberSpec{
+			Members: []kopsapi.EtcdMemberSpec{
 				{Name: "us-mock-1a", InstanceGroup: fi.String("us-mock-1a")},
 				{Name: "us-mock-1b", InstanceGroup: fi.String("us-mock-1b")},
 			},
@@ -150,10 +150,10 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 
 func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.EtcdClusters = []*kopsapi.EtcdClusterSpec{
+	c.Spec.EtcdClusters = []kopsapi.EtcdClusterSpec{
 		{
 			Name: "main",
-			Members: []*kopsapi.EtcdMemberSpec{
+			Members: []kopsapi.EtcdMemberSpec{
 				{Name: "us-mock-1a", InstanceGroup: fi.String("us-mock-1a")},
 				{Name: "us-mock-1b", InstanceGroup: fi.String("us-mock-1b")},
 				{Name: "us-mock-1c", InstanceGroup: fi.String("us-mock-1c")},

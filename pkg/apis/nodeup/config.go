@@ -65,7 +65,7 @@ type Config struct {
 	// it would appear in sysctl.conf.
 	SysctlParameters []string `json:",omitempty"`
 	// VolumeMounts are a collection of volume mounts.
-	VolumeMounts []*kops.VolumeMountSpec `json:",omitempty"`
+	VolumeMounts []kops.VolumeMountSpec `json:",omitempty"`
 }
 
 // Image is a docker image we should pre-load

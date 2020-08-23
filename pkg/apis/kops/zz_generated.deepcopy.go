@@ -820,13 +820,9 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 	}
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
-		*out = make([]*EtcdClusterSpec, len(*in))
+		*out = make([]EtcdClusterSpec, len(*in))
 		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(EtcdClusterSpec)
-				(*in).DeepCopyInto(*out)
-			}
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.Containerd != nil {
@@ -1324,13 +1320,9 @@ func (in *EtcdClusterSpec) DeepCopyInto(out *EtcdClusterSpec) {
 	*out = *in
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
-		*out = make([]*EtcdMemberSpec, len(*in))
+		*out = make([]EtcdMemberSpec, len(*in))
 		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(EtcdMemberSpec)
-				(*in).DeepCopyInto(*out)
-			}
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.LeaderElectionTimeout != nil {
@@ -1870,24 +1862,16 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 	}
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
-		*out = make([]*VolumeSpec, len(*in))
+		*out = make([]VolumeSpec, len(*in))
 		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(VolumeSpec)
-				(*in).DeepCopyInto(*out)
-			}
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.VolumeMounts != nil {
 		in, out := &in.VolumeMounts, &out.VolumeMounts
-		*out = make([]*VolumeMountSpec, len(*in))
+		*out = make([]VolumeMountSpec, len(*in))
 		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(VolumeMountSpec)
-				(*in).DeepCopyInto(*out)
-			}
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.Subnets != nil {
@@ -3471,12 +3455,8 @@ func (in *NodeAuthorizerSpec) DeepCopyInto(out *NodeAuthorizerSpec) {
 	*out = *in
 	if in.Features != nil {
 		in, out := &in.Features, &out.Features
-		*out = new([]string)
-		if **in != nil {
-			in, out := *in, *out
-			*out = make([]string, len(*in))
-			copy(*out, *in)
-		}
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.Interval != nil {
 		in, out := &in.Interval, &out.Interval
