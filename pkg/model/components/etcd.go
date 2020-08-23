@@ -50,7 +50,8 @@ const (
 func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 	spec := o.(*kops.ClusterSpec)
 
-	for _, c := range spec.EtcdClusters {
+	for i := range spec.EtcdClusters {
+		c := &spec.EtcdClusters[i]
 		if c.Provider == "" {
 			if b.IsKubernetesGTE("1.12") {
 				c.Provider = kops.EtcdProviderTypeManager
@@ -110,11 +111,8 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 				c.EnableTLSAuth = true
 			}
 		}
-	}
 
-	// Remap the well known images
-	for _, c := range spec.EtcdClusters {
-
+		// Remap the well known images
 		// We remap the etcd manager image when we build the manifest,
 		// but we need to map the standalone images here because protokube launches them
 
