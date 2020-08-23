@@ -24,7 +24,7 @@ cd "${KOPS_ROOT}"
 
 make crds
 
-changed_files=$(git status --porcelain || true)
+changed_files=$(git status --porcelain --untracked-files=no || true)
 if [ -n "${changed_files}" ]; then
    echo "Detected that generation is needed; run 'make crds'"
    echo "changed files:"
