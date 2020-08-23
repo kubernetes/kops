@@ -144,7 +144,7 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient k
 			}
 			_ = fakeClient.Tracker().Add(node)
 		}
-		member := cloudinstances.CloudInstanceGroupMember{
+		member := cloudinstances.CloudInstance{
 			ID:                 id,
 			Node:               node,
 			CloudInstanceGroup: groups[name],
@@ -1371,7 +1371,7 @@ func TestRollingUpdateMaxSurgeAllNeedUpdateOneAlreadyDetached(t *testing.T) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 4, 4)
 	alreadyDetachedTest.detached[groups["node-1"].NeedUpdate[3].ID] = true
-	groups["node-1"].NeedUpdate[3].Detached = true
+	groups["node-1"].NeedUpdate[3].Status = cloudinstances.CloudInstanceStatusDetached
 	err := c.RollingUpdate(ctx, groups, cluster, &kopsapi.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 
@@ -1397,8 +1397,13 @@ func TestRollingUpdateMaxSurgeAllNeedUpdateMaxAlreadyDetached(t *testing.T) {
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	makeGroup(groups, c.K8sClient, cloud, "node-1", kopsapi.InstanceGroupRoleNode, 7, 7)
-	groups["node-1"].NeedUpdate[1].Detached = true
-	groups["node-1"].NeedUpdate[3].Detached = true
+	groups["node-1"].NeedUpdate[0].Status = cloudinstances.CloudInstanceStatusNeedsUpdate
+	groups["node-1"].NeedUpdate[1].Status = cloudinstances.CloudInstanceStatusDetached
+	groups["node-1"].NeedUpdate[2].Status = cloudinstances.CloudInstanceStatusNeedsUpdate
+	groups["node-1"].NeedUpdate[3].Status = cloudinstances.CloudInstanceStatusDetached
+	groups["node-1"].NeedUpdate[4].Status = cloudinstances.CloudInstanceStatusNeedsUpdate
+	groups["node-1"].NeedUpdate[5].Status = cloudinstances.CloudInstanceStatusNeedsUpdate
+	groups["node-1"].NeedUpdate[6].Status = cloudinstances.CloudInstanceStatusNeedsUpdate
 	// TODO verify those are the last two instances terminated
 
 	err := c.RollingUpdate(ctx, groups, cluster, &kopsapi.InstanceGroupList{})

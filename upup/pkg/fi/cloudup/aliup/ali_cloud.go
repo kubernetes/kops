@@ -168,10 +168,10 @@ func (c *aliCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGrou
 	return errors.New("DeleteGroup not implemented on aliCloud")
 }
 
-func (c *aliCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *aliCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	id := i.ID
 	if id == "" {
-		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
+		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
 	if err := c.EcsClient().StopInstance(id, false); err != nil {
@@ -206,7 +206,7 @@ func (c *aliCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceG
 	return nil
 }
 
-func (c *aliCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *aliCloudImplementation) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return errors.New("aliCloud cloud provider does not support surging")
 }
 
