@@ -24,6 +24,8 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/kops/upup/pkg/fi"
+
 	"github.com/google/uuid"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
@@ -38,6 +40,10 @@ type portGetResponse struct {
 
 type portCreateRequest struct {
 	Port ports.CreateOpts `json:"port"`
+}
+
+type portUpdateRequest struct {
+	Port ports.UpdateOpts `json:"port"`
 }
 
 func (m *MockClient) mockPorts() {
@@ -59,7 +65,13 @@ func (m *MockClient) mockPorts() {
 				m.getPort(w, portID)
 			}
 		case http.MethodPut:
-			m.tagPort(w, r)
+			parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+			if len(parts) == 4 && parts[2] == "tags" {
+
+				m.tagPort(w, r)
+			} else if len(parts) == 2 {
+				m.updatePort(w, r)
+			}
 		case http.MethodPost:
 			m.createPort(w, r)
 		case http.MethodDelete:
@@ -202,4 +214,33 @@ func (m *MockClient) tagPort(w http.ResponseWriter, r *http.Request) {
 	m.ports[portID] = port
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (m *MockClient) updatePort(w http.ResponseWriter, r *http.Request) {
+	var update portUpdateRequest
+	err := json.NewDecoder(r.Body).Decode(&update)
+	if err != nil {
+		panic("error decoding update port request")
+	}
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) != 2 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	portID := parts[1]
+
+	if _, ok := m.ports[portID]; !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	port := m.ports[portID]
+
+	deviceID := update.Port.DeviceID
+	if deviceID != nil {
+		port.DeviceID = fi.StringValue(deviceID)
+	}
+	m.ports[portID] = port
+
+	w.WriteHeader(http.StatusOK)
+
 }
