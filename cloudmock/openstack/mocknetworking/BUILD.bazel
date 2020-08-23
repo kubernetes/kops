@@ -16,6 +16,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cloudmock/openstack:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/google/uuid:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers:go_default_library",

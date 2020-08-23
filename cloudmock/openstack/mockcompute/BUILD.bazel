@@ -16,10 +16,12 @@ go_library(
         "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/google/uuid:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/flavors:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/servers:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/imageservice/v2/images:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/networking/v2/ports:go_default_library",
     ],
 )
