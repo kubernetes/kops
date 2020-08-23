@@ -300,7 +300,7 @@ github.com/googleapis/gax-go/v2
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
-# github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a => github.com/gophercloud/gophercloud v0.9.0
+# github.com/gophercloud/gophercloud v0.11.0 => github.com/gophercloud/gophercloud v0.11.0
 ## explicit
 github.com/gophercloud/gophercloud
 github.com/gophercloud/gophercloud/internal
@@ -314,12 +314,13 @@ github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhint
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach
 github.com/gophercloud/gophercloud/openstack/compute/v2/flavors
-github.com/gophercloud/gophercloud/openstack/compute/v2/images
 github.com/gophercloud/gophercloud/openstack/compute/v2/servers
 github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets
 github.com/gophercloud/gophercloud/openstack/dns/v2/zones
 github.com/gophercloud/gophercloud/openstack/identity/v2/tenants
 github.com/gophercloud/gophercloud/openstack/identity/v2/tokens
+github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/ec2tokens
+github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/oauth1
 github.com/gophercloud/gophercloud/openstack/identity/v3/tokens
 github.com/gophercloud/gophercloud/openstack/imageservice/v2/images
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/apiversions
@@ -1363,4 +1364,4 @@ sigs.k8s.io/yaml
 # k8s.io/cli-runtime => k8s.io/cli-runtime v0.18.6
 # k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.18.6
 # k8s.io/code-generator => k8s.io/code-generator v0.18.6
-# github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.9.0
+# github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
