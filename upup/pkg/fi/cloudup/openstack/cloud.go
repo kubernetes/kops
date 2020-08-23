@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
@@ -290,6 +292,8 @@ type OpenstackCloud interface {
 	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
 
 	GetImage(name string) (i *images.Image, err error)
+
+	GetFlavor(name string) (f *flavors.Flavor, err error)
 
 	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
 

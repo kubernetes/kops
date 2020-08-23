@@ -57,7 +57,8 @@ func ListByZone(client *gophercloud.ServiceClient, zoneID string, opts ListOptsB
 
 // Get implements the recordset Get request.
 func Get(client *gophercloud.ServiceClient, zoneID string, rrsetID string) (r GetResult) {
-	_, r.Err = client.Get(rrsetURL(client, zoneID, rrsetID), &r.Body, nil)
+	resp, err := client.Get(rrsetURL(client, zoneID, rrsetID), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -103,9 +104,10 @@ func Create(client *gophercloud.ServiceClient, zoneID string, opts CreateOptsBui
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(baseURL(client, zoneID), &b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(baseURL(client, zoneID), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{201, 202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -158,16 +160,18 @@ func Update(client *gophercloud.ServiceClient, zoneID string, rrsetID string, op
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Put(rrsetURL(client, zoneID, rrsetID), &b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Put(rrsetURL(client, zoneID, rrsetID), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete removes an existing RecordSet.
 func Delete(client *gophercloud.ServiceClient, zoneID string, rrsetID string) (r DeleteResult) {
-	_, r.Err = client.Delete(rrsetURL(client, zoneID, rrsetID), &gophercloud.RequestOpts{
+	resp, err := client.Delete(rrsetURL(client, zoneID, rrsetID), &gophercloud.RequestOpts{
 		OkCodes: []int{202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
