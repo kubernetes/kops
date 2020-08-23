@@ -233,10 +233,6 @@ func (m *MockClient) updatePort(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	if _, ok := m.ports[portID]; !ok {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
 	port := m.ports[portID]
 
 	deviceID := update.Port.DeviceID
