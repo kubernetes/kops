@@ -107,13 +107,13 @@ func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 }
 
 // DeleteInstance is not implemented yet, is func needs to delete a DO instance.
-func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	klog.V(8).Info("digitalocean cloud provider DeleteInstance not implemented yet")
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud instances at this time")
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
-func (c *Cloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *Cloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	klog.V(8).Info("digitalocean cloud provider DetachInstance not implemented yet")
 	return fmt.Errorf("digital ocean cloud provider does not support surging")
 }
@@ -407,8 +407,8 @@ func buildCloudInstanceGroup(c *Cloud, ig *kops.InstanceGroup, g DOInstanceGroup
 
 	for _, member := range g.Members {
 
-		// TODO use a hash of the godo.DropletCreateRequest fields for second and third parameters.
-		err := cg.NewCloudInstanceGroupMember(member, g.GroupType, g.GroupType, nodeMap)
+		// TODO use a hash of the godo.DropletCreateRequest fields to calculate the second parameter.
+		_, err := cg.NewCloudInstance(member, cloudinstances.CloudInstanceStatusUpToDate, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}

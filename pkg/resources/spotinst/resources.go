@@ -166,7 +166,7 @@ func DeleteInstanceGroup(cloud Cloud, group *cloudinstances.CloudInstanceGroup) 
 }
 
 // DeleteInstance removes an instance from its instance group.
-func DeleteInstance(cloud Cloud, instance *cloudinstances.CloudInstanceGroupMember) error {
+func DeleteInstance(cloud Cloud, instance *cloudinstances.CloudInstance) error {
 	klog.V(2).Infof("Detaching instance %q from instance group: %q",
 		instance.ID, instance.CloudInstanceGroup.HumanName)
 
@@ -194,7 +194,7 @@ func DeleteInstance(cloud Cloud, instance *cloudinstances.CloudInstanceGroupMemb
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
-func DetachInstance(cloud Cloud, instance *cloudinstances.CloudInstanceGroupMember) error {
+func DetachInstance(cloud Cloud, instance *cloudinstances.CloudInstance) error {
 	return fmt.Errorf("spotinst does not support surging")
 }
 
@@ -299,7 +299,7 @@ func buildCloudInstanceGroupFromInstanceGroup(cloud Cloud, ig *kops.InstanceGrou
 	}
 
 	// Register all instances as group members.
-	if err := registerCloudInstanceGroupMembers(instanceGroup, nodeMap,
+	if err := registerCloudInstances(instanceGroup, nodeMap,
 		instances, group.Name(), group.UpdatedAt()); err != nil {
 		return nil, err
 	}
@@ -332,7 +332,7 @@ func buildCloudInstanceGroupFromLaunchSpec(cloud Cloud, ig *kops.InstanceGroup, 
 	}
 
 	// Register all instances as group members.
-	if err := registerCloudInstanceGroupMembers(instanceGroup, nodeMap,
+	if err := registerCloudInstances(instanceGroup, nodeMap,
 		instances, spec.Name(), spec.UpdatedAt()); err != nil {
 		return nil, err
 	}
@@ -340,7 +340,7 @@ func buildCloudInstanceGroupFromLaunchSpec(cloud Cloud, ig *kops.InstanceGroup, 
 	return instanceGroup, nil
 }
 
-func registerCloudInstanceGroupMembers(instanceGroup *cloudinstances.CloudInstanceGroup, nodeMap map[string]*v1.Node,
+func registerCloudInstances(instanceGroup *cloudinstances.CloudInstanceGroup, nodeMap map[string]*v1.Node,
 	instances []Instance, currentInstanceGroupName string, instanceGroupUpdatedAt time.Time) error {
 
 	// The instance registration below registers all active instances with
@@ -378,8 +378,12 @@ func registerCloudInstanceGroupMembers(instanceGroup *cloudinstances.CloudInstan
 			instance.Id(), instance.CreatedAt().Format(time.RFC3339),
 			currentInstanceGroupName, instanceGroupUpdatedAt.Format(time.RFC3339))
 
-		if err := instanceGroup.NewCloudInstanceGroupMember(
-			instance.Id(), newInstanceGroupName, currentInstanceGroupName, nodeMap); err != nil {
+		status := cloudinstances.CloudInstanceStatusUpToDate
+		if newInstanceGroupName != currentInstanceGroupName {
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		}
+		if _, err := instanceGroup.NewCloudInstance(
+			instance.Id(), status, nodeMap); err != nil {
 			return fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 	}

@@ -267,12 +267,12 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	return d.UpdateSingleInstance(ctx, cloudMember, options.Surge)
 }
 
-func deleteNodeMatch(cloudMember *cloudinstances.CloudInstanceGroupMember, options *deleteInstanceOptions) bool {
+func deleteNodeMatch(cloudMember *cloudinstances.CloudInstance, options *deleteInstanceOptions) bool {
 	return cloudMember.ID == options.InstanceID ||
 		(!options.CloudOnly && cloudMember.Node != nil && cloudMember.Node.Name == options.InstanceID)
 }
 
-func findDeletionNode(groups map[string]*cloudinstances.CloudInstanceGroup, options *deleteInstanceOptions) *cloudinstances.CloudInstanceGroupMember {
+func findDeletionNode(groups map[string]*cloudinstances.CloudInstanceGroup, options *deleteInstanceOptions) *cloudinstances.CloudInstance {
 	for _, group := range groups {
 		for _, r := range group.Ready {
 			if deleteNodeMatch(r, options) {

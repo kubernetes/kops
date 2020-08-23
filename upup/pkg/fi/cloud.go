@@ -32,13 +32,13 @@ type Cloud interface {
 	FindVPCInfo(id string) (*VPCInfo, error)
 
 	// DeleteInstance deletes a cloud instance.
-	DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error
+	DeleteInstance(instance *cloudinstances.CloudInstance) error
 
 	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances.
 	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 
 	// DetachInstance causes a cloud instance to no longer be counted against the group's size limits.
-	DetachInstance(instance *cloudinstances.CloudInstanceGroupMember) error
+	DetachInstance(instance *cloudinstances.CloudInstance) error
 
 	// GetCloudGroups returns a map of cloud instances that back a kops cluster.
 	// Detached instances must be returned in the NeedUpdate slice.

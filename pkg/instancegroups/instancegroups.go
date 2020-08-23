@@ -132,7 +132,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 	if maxSurge > 0 && !c.CloudOnly {
 		for numSurge := 1; numSurge <= maxSurge; numSurge++ {
 			u := update[len(update)-numSurge]
-			if !u.Detached {
+			if u.Status != cloudinstances.CloudInstanceStatusDetached {
 				if err := c.detachInstance(u); err != nil {
 					return err
 				}
@@ -161,7 +161,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 	terminateChan := make(chan error, maxConcurrency)
 
 	for uIdx, u := range update {
-		go func(m *cloudinstances.CloudInstanceGroupMember) {
+		go func(m *cloudinstances.CloudInstance) {
 			terminateChan <- c.drainTerminateAndWait(ctx, m, sleepAfterTerminate)
 		}(u)
 		runningDrains++
@@ -233,15 +233,15 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 	return nil
 }
 
-func prioritizeUpdate(update []*cloudinstances.CloudInstanceGroupMember) []*cloudinstances.CloudInstanceGroupMember {
+func prioritizeUpdate(update []*cloudinstances.CloudInstance) []*cloudinstances.CloudInstance {
 	// The priorities are, in order:
 	//   attached before detached
 	//   TODO unhealthy before healthy
 	//   NeedUpdate before Ready (preserve original order)
-	result := make([]*cloudinstances.CloudInstanceGroupMember, 0, len(update))
-	var detached []*cloudinstances.CloudInstanceGroupMember
+	result := make([]*cloudinstances.CloudInstance, 0, len(update))
+	var detached []*cloudinstances.CloudInstance
 	for _, u := range update {
-		if u.Detached {
+		if u.Status == cloudinstances.CloudInstanceStatusDetached {
 			detached = append(detached, u)
 		} else {
 			result = append(result, u)
@@ -260,7 +260,7 @@ func waitForPendingBeforeReturningError(runningDrains int, terminateChan chan er
 	return err
 }
 
-func (c *RollingUpdateCluster) taintAllNeedUpdate(ctx context.Context, group *cloudinstances.CloudInstanceGroup, update []*cloudinstances.CloudInstanceGroupMember) error {
+func (c *RollingUpdateCluster) taintAllNeedUpdate(ctx context.Context, group *cloudinstances.CloudInstanceGroup, update []*cloudinstances.CloudInstance) error {
 	var toTaint []*corev1.Node
 	for _, u := range update {
 		if u.Node != nil && !u.Node.Spec.Unschedulable {
@@ -321,7 +321,7 @@ func (c *RollingUpdateCluster) patchTaint(ctx context.Context, node *corev1.Node
 	return err
 }
 
-func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *cloudinstances.CloudInstanceGroupMember, sleepAfterTerminate time.Duration) error {
+func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *cloudinstances.CloudInstance, sleepAfterTerminate time.Duration) error {
 	instanceID := u.ID
 
 	nodeName := ""
@@ -454,7 +454,7 @@ func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int) err
 }
 
 // detachInstance detaches a Cloud Instance
-func (c *RollingUpdateCluster) detachInstance(u *cloudinstances.CloudInstanceGroupMember) error {
+func (c *RollingUpdateCluster) detachInstance(u *cloudinstances.CloudInstance) error {
 	id := u.ID
 	nodeName := ""
 	if u.Node != nil {
@@ -477,7 +477,7 @@ func (c *RollingUpdateCluster) detachInstance(u *cloudinstances.CloudInstanceGro
 }
 
 // deleteInstance deletes an Cloud Instance.
-func (c *RollingUpdateCluster) deleteInstance(u *cloudinstances.CloudInstanceGroupMember) error {
+func (c *RollingUpdateCluster) deleteInstance(u *cloudinstances.CloudInstance) error {
 	id := u.ID
 	nodeName := ""
 	if u.Node != nil {
@@ -500,7 +500,7 @@ func (c *RollingUpdateCluster) deleteInstance(u *cloudinstances.CloudInstanceGro
 }
 
 // drainNode drains a K8s node.
-func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstanceGroupMember) error {
+func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error {
 	if c.K8sClient == nil {
 		return fmt.Errorf("K8sClient not set")
 	}
@@ -566,7 +566,7 @@ func (c *RollingUpdateCluster) deleteNode(ctx context.Context, node *corev1.Node
 }
 
 // UpdateSingeInstance performs a rolling update on a single instance
-func (c *RollingUpdateCluster) UpdateSingleInstance(ctx context.Context, cloudMember *cloudinstances.CloudInstanceGroupMember, detach bool) error {
+func (c *RollingUpdateCluster) UpdateSingleInstance(ctx context.Context, cloudMember *cloudinstances.CloudInstance, detach bool) error {
 	if detach {
 		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
 			klog.Warning("cannot detach master instances. Assuming --surge=false")

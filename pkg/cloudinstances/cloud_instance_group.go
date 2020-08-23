@@ -30,8 +30,8 @@ type CloudInstanceGroup struct {
 	// HumanName is a user-friendly name for the group
 	HumanName     string
 	InstanceGroup *kopsapi.InstanceGroup
-	Ready         []*CloudInstanceGroupMember
-	NeedUpdate    []*CloudInstanceGroupMember
+	Ready         []*CloudInstance
+	NeedUpdate    []*CloudInstance
 	MinSize       int
 	TargetSize    int
 	MaxSize       int
@@ -40,63 +40,31 @@ type CloudInstanceGroup struct {
 	Raw interface{}
 }
 
-// CloudInstanceGroupMember describes an instance in a CloudInstanceGroup group.
-type CloudInstanceGroupMember struct {
-	// ID is a unique identifier for the instance, meaningful to the cloud
-	ID string
-	// Node is the associated k8s instance, if it is known
-	Node *v1.Node
-	// CloudInstanceGroup is the managing CloudInstanceGroup
-	CloudInstanceGroup *CloudInstanceGroup
-	// Detached is whether fi.Cloud.DetachInstance has been successfully called on the instance.
-	Detached bool
-}
-
-// NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
-func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
+// NewCloudInstance creates a new CloudInstance
+func (c *CloudInstanceGroup) NewCloudInstance(instanceId string, status string, nodeMap map[string]*v1.Node) (*CloudInstance, error) {
 	if instanceId == "" {
-		return fmt.Errorf("instance id for cloud instance member cannot be empty")
+		return nil, fmt.Errorf("instance id for cloud instance member cannot be empty")
 	}
-	cm := &CloudInstanceGroupMember{
+	cm := &CloudInstance{
 		ID:                 instanceId,
 		CloudInstanceGroup: c,
 	}
-	node := nodeMap[instanceId]
-	if node != nil {
-		cm.Node = node
-	} else {
-		klog.V(8).Infof("unable to find node for instance: %s", instanceId)
-	}
 
-	if newGroupName == currentGroupName {
+	if status == CloudInstanceStatusUpToDate {
 		c.Ready = append(c.Ready, cm)
 	} else {
 		c.NeedUpdate = append(c.NeedUpdate, cm)
 	}
 
-	return nil
-}
+	cm.Status = status
 
-// NewDetachedCloudInstanceGroupMember creates a new CloudInstanceGroupMember for a detached instance
-func (c *CloudInstanceGroup) NewDetachedCloudInstanceGroupMember(instanceId string, nodeMap map[string]*v1.Node) error {
-	if instanceId == "" {
-		return fmt.Errorf("instance id for cloud instance member cannot be empty")
-	}
-	cm := &CloudInstanceGroupMember{
-		ID:                 instanceId,
-		CloudInstanceGroup: c,
-		Detached:           true,
-	}
 	node := nodeMap[instanceId]
 	if node != nil {
 		cm.Node = node
 	} else {
 		klog.V(8).Infof("unable to find node for instance: %s", instanceId)
 	}
-
-	c.NeedUpdate = append(c.NeedUpdate, cm)
-
-	return nil
+	return cm, nil
 }
 
 // Status returns a human-readable Status indicating whether an update is needed
