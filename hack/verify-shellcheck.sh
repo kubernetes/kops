@@ -22,7 +22,7 @@ set -o pipefail
 
 # required version for this script, if not installed on the host we will
 # use the official docker image instead. keep this in sync with SHELLCHECK_IMAGE
-SHELLCHECK_VERSION="0.7.0"
+SHELLCHECK_VERSION="0.7.1"
 # upstream shellcheck latest stable image as of October 23rd, 2019
 SHELLCHECK_IMAGE="koalaman/shellcheck-alpine:v0.7.0@sha256:24bbf52aae6eaa27accc9f61de32d30a1498555e6ef452966d0702ff06f38ecb"
 
