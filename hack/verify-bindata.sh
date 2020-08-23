@@ -24,7 +24,7 @@ cd "${KOPS_ROOT}"
 
 make update-bindata
 
-changes=$(git status --porcelain || true)
+changes=$(git status --porcelain --untracked-files=no || true)
 if [ -n "${changes}" ]; then
   echo "ERROR: bindata is not up to date; please run: make update-bindata"
   echo "git diff:"
