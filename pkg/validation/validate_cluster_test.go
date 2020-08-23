@@ -85,7 +85,7 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 				},
 			},
 			MinSize: 1,
-			Ready: []*cloudinstances.CloudInstanceGroupMember{
+			Ready: []*cloudinstances.CloudInstance{
 				{
 					ID: "i-00001",
 					Node: &v1.Node{
@@ -172,7 +172,7 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 		},
 		MinSize:    2,
 		TargetSize: 3,
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
+		Ready: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00001",
 				Node: &v1.Node{
@@ -185,7 +185,7 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 				},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+		NeedUpdate: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00002",
 				Node: &v1.Node{
@@ -225,7 +225,7 @@ func Test_ValidateDetachedNodesDontCount(t *testing.T) {
 		},
 		MinSize:    2,
 		TargetSize: 2,
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
+		Ready: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00001",
 				Node: &v1.Node{
@@ -238,7 +238,7 @@ func Test_ValidateDetachedNodesDontCount(t *testing.T) {
 				},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+		NeedUpdate: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00002",
 				Node: &v1.Node{
@@ -249,7 +249,7 @@ func Test_ValidateDetachedNodesDontCount(t *testing.T) {
 						},
 					},
 				},
-				Detached: true,
+				Status: cloudinstances.CloudInstanceStatusDetached,
 			},
 		},
 	}
@@ -279,7 +279,7 @@ func Test_ValidateNodeNotReady(t *testing.T) {
 		},
 		MinSize:    2,
 		TargetSize: 2,
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
+		Ready: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00001",
 				Node: &v1.Node{
@@ -292,7 +292,7 @@ func Test_ValidateNodeNotReady(t *testing.T) {
 				},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+		NeedUpdate: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00002",
 				Node: &v1.Node{
@@ -332,7 +332,7 @@ func Test_ValidateMastersNotEnough(t *testing.T) {
 		},
 		MinSize:    2,
 		TargetSize: 3,
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
+		Ready: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00001",
 				Node: &v1.Node{
@@ -345,7 +345,7 @@ func Test_ValidateMastersNotEnough(t *testing.T) {
 				},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+		NeedUpdate: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00002",
 				Node: &v1.Node{
@@ -385,7 +385,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 		},
 		MinSize:    2,
 		TargetSize: 2,
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
+		Ready: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00001",
 				Node: &v1.Node{
@@ -398,7 +398,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 				},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+		NeedUpdate: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00002",
 				Node: &v1.Node{
@@ -438,7 +438,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 		},
 		MinSize:    1,
 		TargetSize: 1,
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
+		Ready: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00001",
 				Node: &v1.Node{
@@ -459,7 +459,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
+		NeedUpdate: []*cloudinstances.CloudInstance{
 			{
 				ID: "i-00002",
 				Node: &v1.Node{
@@ -770,7 +770,7 @@ func Test_ValidateBastionNodes(t *testing.T) {
 				Name: "ig1",
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceGroupMember{
+		Ready: []*cloudinstances.CloudInstance{
 			{
 				ID:   "i-00001",
 				Node: nil,
