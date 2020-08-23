@@ -80,7 +80,8 @@ func Create(c *gophercloud.ServiceClient, opts CreateOptsBuilder) (r CreateResul
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Post(rootURL(c), b, &r.Body, nil)
+	resp, err := c.Post(rootURL(c), b, &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -137,13 +138,15 @@ func List(c *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
 
 // Get retrieves a particular l7policy based on its unique ID.
 func Get(c *gophercloud.ServiceClient, id string) (r GetResult) {
-	_, r.Err = c.Get(resourceURL(c, id), &r.Body, nil)
+	resp, err := c.Get(resourceURL(c, id), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete will permanently delete a particular l7policy based on its unique ID.
 func Delete(c *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	_, r.Err = c.Delete(resourceURL(c, id), nil)
+	resp, err := c.Delete(resourceURL(c, id), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -208,9 +211,10 @@ func Update(c *gophercloud.ServiceClient, id string, opts UpdateOptsBuilder) (r 
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Put(resourceURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := c.Put(resourceURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -254,7 +258,8 @@ func CreateRule(c *gophercloud.ServiceClient, policyID string, opts CreateRuleOp
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Post(ruleRootURL(c, policyID), b, &r.Body, nil)
+	resp, err := c.Post(ruleRootURL(c, policyID), b, &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -309,13 +314,15 @@ func ListRules(c *gophercloud.ServiceClient, policyID string, opts ListRulesOpts
 
 // GetRule retrieves a particular L7Policy Rule based on its unique ID.
 func GetRule(c *gophercloud.ServiceClient, policyID string, ruleID string) (r GetRuleResult) {
-	_, r.Err = c.Get(ruleResourceURL(c, policyID, ruleID), &r.Body, nil)
+	resp, err := c.Get(ruleResourceURL(c, policyID, ruleID), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // DeleteRule will remove a Rule from a particular L7Policy.
 func DeleteRule(c *gophercloud.ServiceClient, policyID string, ruleID string) (r DeleteRuleResult) {
-	_, r.Err = c.Delete(ruleResourceURL(c, policyID, ruleID), nil)
+	resp, err := c.Delete(ruleResourceURL(c, policyID, ruleID), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -369,8 +376,9 @@ func UpdateRule(c *gophercloud.ServiceClient, policyID string, ruleID string, op
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Put(ruleResourceURL(c, policyID, ruleID), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := c.Put(ruleResourceURL(c, policyID, ruleID), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 201, 202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

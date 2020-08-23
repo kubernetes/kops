@@ -1,4 +1,100 @@
-## 0.10.0 (Unreleased)
+## 0.12.0 (Unreleased)
+
+## 0.11.0 (May 14, 2020)
+
+UPGRADE NOTES
+
+* Object storage container and object names are now URL encoded [GH-1930](https://github.com/gophercloud/gophercloud/pull/1930)
+* All responses now have access to the returned headers. Please report any issues this has caused [GH-1942](https://github.com/gophercloud/gophercloud/pull/1942)
+* Changes have been made to the internal HTTP client to ensure response bodies are handled in a way that enables connections to be re-used more efficiently [GH-1952](https://github.com/gophercloud/gophercloud/pull/1952)
+
+IMPROVEMENTS
+
+* Added `objectstorage/v1/containers.BulkDelete` [GH-1930](https://github.com/gophercloud/gophercloud/pull/1930)
+* Added `objectstorage/v1/objects.BulkDelete` [GH-1930](https://github.com/gophercloud/gophercloud/pull/1930)
+* Object storage container and object names are now URL encoded [GH-1930](https://github.com/gophercloud/gophercloud/pull/1930)
+* All responses now have access to the returned headers [GH-1942](https://github.com/gophercloud/gophercloud/pull/1942)
+* Added `compute/v2/extensions/injectnetworkinfo.InjectNetworkInfo` [GH-1941](https://github.com/gophercloud/gophercloud/pull/1941)
+* Added `compute/v2/extensions/resetnetwork.ResetNetwork` [GH-1941](https://github.com/gophercloud/gophercloud/pull/1941)
+* Added `identity/v3/extensions/trusts.ListRoles` [GH-1939](https://github.com/gophercloud/gophercloud/pull/1939)
+* Added `identity/v3/extensions/trusts.GetRole` [GH-1939](https://github.com/gophercloud/gophercloud/pull/1939)
+* Added `identity/v3/extensions/trusts.CheckRole` [GH-1939](https://github.com/gophercloud/gophercloud/pull/1939)
+* Added `identity/v3/extensions/oauth1.Create` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.CreateConsumer` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.DeleteConsumer` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.ListConsumers` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.GetConsumer` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.UpdateConsumer` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.RequestToken` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.AuthorizeToken` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.CreateAccessToken` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.GetAccessToken` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.RevokeAccessToken` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.ListAccessTokens` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.ListAccessTokenRoles` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `identity/v3/extensions/oauth1.GetAccessTokenRole` [GH-1935](https://github.com/gophercloud/gophercloud/pull/1935)
+* Added `networking/v2/extensions/agents.Update` [GH-1954](https://github.com/gophercloud/gophercloud/pull/1954)
+* Added `networking/v2/extensions/agents.Delete` [GH-1954](https://github.com/gophercloud/gophercloud/pull/1954)
+* Added `networking/v2/extensions/agents.ScheduleDHCPNetwork` [GH-1954](https://github.com/gophercloud/gophercloud/pull/1954)
+* Added `networking/v2/extensions/agents.RemoveDHCPNetwork` [GH-1954](https://github.com/gophercloud/gophercloud/pull/1954)
+* Added `identity/v3/projects.CreateOpts.Extra` [GH-1951](https://github.com/gophercloud/gophercloud/pull/1951)
+* Added `identity/v3/projects.CreateOpts.Options` [GH-1951](https://github.com/gophercloud/gophercloud/pull/1951)
+* Added `identity/v3/projects.UpdateOpts.Extra` [GH-1951](https://github.com/gophercloud/gophercloud/pull/1951)
+* Added `identity/v3/projects.UpdateOpts.Options` [GH-1951](https://github.com/gophercloud/gophercloud/pull/1951)
+* Added `identity/v3/projects.Project.Extra` [GH-1951](https://github.com/gophercloud/gophercloud/pull/1951)
+* Added `identity/v3/projects.Options.Options` [GH-1951](https://github.com/gophercloud/gophercloud/pull/1951)
+* Added `imageservice/v2/images.Image.OpenStackImageImportMethods` [GH-1962](https://github.com/gophercloud/gophercloud/pull/1962)
+* Added `imageservice/v2/images.Image.OpenStackImageStoreIDs` [GH-1962](https://github.com/gophercloud/gophercloud/pull/1962)
+
+BUG FIXES
+
+* Changed`identity/v3/extensions/trusts.Trust.RemainingUses` from `bool` to `int` [GH-1939](https://github.com/gophercloud/gophercloud/pull/1939)
+* Changed `identity/v3/applicationcredentials.CreateOpts.ExpiresAt` from `string` to `*time.Time` [GH-1937](https://github.com/gophercloud/gophercloud/pull/1937)
+* Fixed issue with unmarshalling/decoding slices of composed structs [GH-1964](https://github.com/gophercloud/gophercloud/pull/1964)
+
+## 0.10.0 (April 12, 2020)
+
+UPGRADE NOTES
+
+* The various `IDFromName` convenience functions have been moved to https://github.com/gophercloud/utils [GH-1897](https://github.com/gophercloud/gophercloud/pull/1897)
+* `sharedfilesystems/v2/shares.GetExportLocations` was renamed to `sharedfilesystems/v2/shares.ListExportLocations` [GH-1932](https://github.com/gophercloud/gophercloud/pull/1932)
+
+IMPROVEMENTS 
+
+* Added `blockstorage/extensions/volumeactions.SetBootable` [GH-1891](https://github.com/gophercloud/gophercloud/pull/1891)
+* Added `blockstorage/extensions/backups.Export` [GH-1894](https://github.com/gophercloud/gophercloud/pull/1894)
+* Added `blockstorage/extensions/backups.Import` [GH-1894](https://github.com/gophercloud/gophercloud/pull/1894)
+* Added `placement/v1/resourceproviders.GetTraits` [GH-1899](https://github.com/gophercloud/gophercloud/pull/1899)
+* Added the ability to authenticate with Amazon EC2 Credentials [GH-1900](https://github.com/gophercloud/gophercloud/pull/1900)
+* Added ability to list Nova services by binary and host [GH-1904](https://github.com/gophercloud/gophercloud/pull/1904)
+* Added `compute/v2/extensions/services.Update` [GH-1902](https://github.com/gophercloud/gophercloud/pull/1902)
+* Added system scope to v3 authentication [GH-1908](https://github.com/gophercloud/gophercloud/pull/1908)
+* Added `identity/v3/extensions/ec2tokens.ValidateS3Token` [GH-1906](https://github.com/gophercloud/gophercloud/pull/1906)
+* Added `containerinfra/v1/clusters.Cluster.HealthStatus` [GH-1910](https://github.com/gophercloud/gophercloud/pull/1910)
+* Added `containerinfra/v1/clusters.Cluster.HealthStatusReason` [GH-1910](https://github.com/gophercloud/gophercloud/pull/1910)
+* Added `loadbalancer/v2/amphorae.Failover` [GH-1912](https://github.com/gophercloud/gophercloud/pull/1912)
+* Added `identity/v3/extensions/ec2credentials.List` [GH-1916](https://github.com/gophercloud/gophercloud/pull/1916)
+* Added `identity/v3/extensions/ec2credentials.Get` [GH-1916](https://github.com/gophercloud/gophercloud/pull/1916)
+* Added `identity/v3/extensions/ec2credentials.Create` [GH-1916](https://github.com/gophercloud/gophercloud/pull/1916)
+* Added `identity/v3/extensions/ec2credentials.Delete` [GH-1916](https://github.com/gophercloud/gophercloud/pull/1916)
+* Added `ErrUnexpectedResponseCode.ResponseHeader` [GH-1919](https://github.com/gophercloud/gophercloud/pull/1919)
+* Added support for TOTP authentication [GH-1922](https://github.com/gophercloud/gophercloud/pull/1922)
+* `sharedfilesystems/v2/shares.GetExportLocations` was renamed to `sharedfilesystems/v2/shares.ListExportLocations` [GH-1932](https://github.com/gophercloud/gophercloud/pull/1932)
+* Added `sharedfilesystems/v2/shares.GetExportLocation` [GH-1932](https://github.com/gophercloud/gophercloud/pull/1932)
+* Added `sharedfilesystems/v2/shares.Revert` [GH-1931](https://github.com/gophercloud/gophercloud/pull/1931)
+* Added `sharedfilesystems/v2/shares.ResetStatus` [GH-1931](https://github.com/gophercloud/gophercloud/pull/1931)
+* Added `sharedfilesystems/v2/shares.ForceDelete` [GH-1931](https://github.com/gophercloud/gophercloud/pull/1931)
+* Added `sharedfilesystems/v2/shares.Unmanage` [GH-1931](https://github.com/gophercloud/gophercloud/pull/1931)
+* Added `blockstorage/v3/attachments.Create` [GH-1934](https://github.com/gophercloud/gophercloud/pull/1934)
+* Added `blockstorage/v3/attachments.List` [GH-1934](https://github.com/gophercloud/gophercloud/pull/1934)
+* Added `blockstorage/v3/attachments.Get` [GH-1934](https://github.com/gophercloud/gophercloud/pull/1934)
+* Added `blockstorage/v3/attachments.Update` [GH-1934](https://github.com/gophercloud/gophercloud/pull/1934)
+* Added `blockstorage/v3/attachments.Delete` [GH-1934](https://github.com/gophercloud/gophercloud/pull/1934)
+* Added `blockstorage/v3/attachments.Complete` [GH-1934](https://github.com/gophercloud/gophercloud/pull/1934)
+
+BUG FIXES
+
+* Fixed issue with Orchestration `get_file` only being able to read JSON and YAML files [GH-1915](https://github.com/gophercloud/gophercloud/pull/1915)
 
 ## 0.9.0 (March 10, 2020)
 
