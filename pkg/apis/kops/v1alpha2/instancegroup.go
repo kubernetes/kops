@@ -106,9 +106,9 @@ type InstanceGroupSpec struct {
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
 	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
-	Volumes []*VolumeSpec `json:"volumes,omitempty"`
+	Volumes []VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts
-	VolumeMounts []*VolumeMountSpec `json:"volumeMounts,omitempty"`
+	VolumeMounts []VolumeMountSpec `json:"volumeMounts,omitempty"`
 	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
 	// Zones is the names of the Zones where machines in this instance group should be placed

@@ -231,7 +231,8 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	}
 
 	// @step: add any additional block devices to the launch configuration
-	for _, x := range ig.Spec.Volumes {
+	for i := range ig.Spec.Volumes {
+		x := &ig.Spec.Volumes[i]
 		if x.Type == "" {
 			x.Type = DefaultVolumeType
 		}

@@ -342,10 +342,10 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 			Subnets: []kops.ClusterSubnetSpec{
 				{Name: "subnet1"},
 			},
-			EtcdClusters: []*kops.EtcdClusterSpec{
+			EtcdClusters: []kops.EtcdClusterSpec{
 				{
 					Name: "main",
-					Members: []*kops.EtcdMemberSpec{
+					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "us-test-1a",
 							InstanceGroup: fi.String("master-us-test-1a"),
@@ -362,7 +362,7 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 
 type caliInput struct {
 	Calico *kops.CalicoNetworkingSpec
-	Etcd   *kops.EtcdClusterSpec
+	Etcd   kops.EtcdClusterSpec
 }
 
 func Test_Validate_Calico(t *testing.T) {
@@ -373,7 +373,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{},
-				Etcd:   &kops.EtcdClusterSpec{},
+				Etcd:   kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -381,7 +381,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					TyphaReplicas: 3,
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -389,7 +389,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					TyphaReplicas: -1,
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 			ExpectedErrors: []string{"Invalid value::calico.typhaReplicas"},
 		},
@@ -398,7 +398,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					MajorVersion: "v3",
 				},
-				Etcd: &kops.EtcdClusterSpec{
+				Etcd: kops.EtcdClusterSpec{
 					Version: "3.2.18",
 				},
 			},
@@ -408,7 +408,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					MajorVersion: "v3",
 				},
-				Etcd: &kops.EtcdClusterSpec{
+				Etcd: kops.EtcdClusterSpec{
 					Version: "2.2.18",
 				},
 			},
@@ -419,7 +419,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "first-found",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -427,7 +427,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "first-found",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -435,7 +435,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "can-reach=8.8.8.8",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -443,7 +443,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "can-reach=2001:4860:4860::8888",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -451,7 +451,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "bogus",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
@@ -460,7 +460,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "bogus",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv6AutoDetectionMethod"},
 		},
@@ -469,7 +469,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "interface=",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv6AutoDetectionMethod"},
 		},
@@ -478,7 +478,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "interface=en.*,eth0",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -486,7 +486,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "skip-interface=en.*,eth0",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
 		{
@@ -494,7 +494,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "interface=(,en1",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
@@ -503,7 +503,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "interface=foo=bar",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
@@ -512,7 +512,7 @@ func Test_Validate_Calico(t *testing.T) {
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "=en0,eth.*",
 				},
-				Etcd: &kops.EtcdClusterSpec{},
+				Etcd: kops.EtcdClusterSpec{},
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},

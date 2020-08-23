@@ -1872,10 +1872,9 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	}
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
-		*out = make([]*kops.EtcdClusterSpec, len(*in))
+		*out = make([]kops.EtcdClusterSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -2195,10 +2194,9 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	}
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
-		*out = make([]*EtcdClusterSpec, len(*in))
+		*out = make([]EtcdClusterSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -2713,10 +2711,9 @@ func autoConvert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdCluste
 	out.Provider = kops.EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
-		*out = make([]*kops.EtcdMemberSpec, len(*in))
+		*out = make([]kops.EtcdMemberSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha2_EtcdMemberSpec_To_kops_EtcdMemberSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -2762,10 +2759,9 @@ func autoConvert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdC
 	out.Provider = EtcdProviderType(in.Provider)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
-		*out = make([]*EtcdMemberSpec, len(*in))
+		*out = make([]EtcdMemberSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -3310,10 +3306,9 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.RootVolumeEncryption = in.RootVolumeEncryption
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
-		*out = make([]*kops.VolumeSpec, len(*in))
+		*out = make([]kops.VolumeSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha2_VolumeSpec_To_kops_VolumeSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -3322,10 +3317,9 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	}
 	if in.VolumeMounts != nil {
 		in, out := &in.VolumeMounts, &out.VolumeMounts
-		*out = make([]*kops.VolumeMountSpec, len(*in))
+		*out = make([]kops.VolumeMountSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha2_VolumeMountSpec_To_kops_VolumeMountSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -3450,10 +3444,9 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.RootVolumeEncryption = in.RootVolumeEncryption
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
-		*out = make([]*VolumeSpec, len(*in))
+		*out = make([]VolumeSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_VolumeSpec_To_v1alpha2_VolumeSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -3462,10 +3455,9 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	}
 	if in.VolumeMounts != nil {
 		in, out := &in.VolumeMounts, &out.VolumeMounts
-		*out = make([]*VolumeMountSpec, len(*in))
+		*out = make([]VolumeMountSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_VolumeMountSpec_To_v1alpha2_VolumeMountSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}

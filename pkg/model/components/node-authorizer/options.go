@@ -86,7 +86,7 @@ func (b *OptionsBuilder) BuildOptions(o interface{}) error {
 				case kops.CloudProviderAWS:
 					features = append(features, "verify-signature")
 				}
-				na.NodeAuthorizer.Features = &features
+				na.NodeAuthorizer.Features = features
 			}
 		}
 	}
