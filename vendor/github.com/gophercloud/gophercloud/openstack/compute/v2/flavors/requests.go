@@ -142,22 +142,25 @@ func Create(client *gophercloud.ServiceClient, opts CreateOptsBuilder) (r Create
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 201},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Get retrieves details of a single flavor. Use Extract to convert its
 // result into a Flavor.
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	_, r.Err = client.Get(getURL(client, id), &r.Body, nil)
+	resp, err := client.Get(getURL(client, id), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete deletes the specified flavor ID.
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	_, r.Err = client.Delete(deleteURL(client, id), nil)
+	resp, err := client.Delete(deleteURL(client, id), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -194,9 +197,10 @@ func AddAccess(client *gophercloud.ServiceClient, id string, opts AddAccessOptsB
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(accessActionURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(accessActionURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -224,20 +228,23 @@ func RemoveAccess(client *gophercloud.ServiceClient, id string, opts RemoveAcces
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(accessActionURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(accessActionURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // ExtraSpecs requests all the extra-specs for the given flavor ID.
 func ListExtraSpecs(client *gophercloud.ServiceClient, flavorID string) (r ListExtraSpecsResult) {
-	_, r.Err = client.Get(extraSpecsListURL(client, flavorID), &r.Body, nil)
+	resp, err := client.Get(extraSpecsListURL(client, flavorID), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 func GetExtraSpec(client *gophercloud.ServiceClient, flavorID string, key string) (r GetExtraSpecResult) {
-	_, r.Err = client.Get(extraSpecsGetURL(client, flavorID, key), &r.Body, nil)
+	resp, err := client.Get(extraSpecsGetURL(client, flavorID, key), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -264,9 +271,10 @@ func CreateExtraSpecs(client *gophercloud.ServiceClient, flavorID string, opts C
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(extraSpecsCreateURL(client, flavorID), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(extraSpecsCreateURL(client, flavorID), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -302,56 +310,19 @@ func UpdateExtraSpec(client *gophercloud.ServiceClient, flavorID string, opts Up
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Put(extraSpecUpdateURL(client, flavorID, key), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Put(extraSpecUpdateURL(client, flavorID, key), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // DeleteExtraSpec will delete the key-value pair with the given key for the given
 // flavor ID.
 func DeleteExtraSpec(client *gophercloud.ServiceClient, flavorID, key string) (r DeleteExtraSpecResult) {
-	_, r.Err = client.Delete(extraSpecDeleteURL(client, flavorID, key), &gophercloud.RequestOpts{
+	resp, err := client.Delete(extraSpecDeleteURL(client, flavorID, key), &gophercloud.RequestOpts{
 		OkCodes: []int{200},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
-}
-
-// IDFromName is a convienience function that returns a flavor's ID given its
-// name.
-func IDFromName(client *gophercloud.ServiceClient, name string) (string, error) {
-	count := 0
-	id := ""
-	allPages, err := ListDetail(client, nil).AllPages()
-	if err != nil {
-		return "", err
-	}
-
-	all, err := ExtractFlavors(allPages)
-	if err != nil {
-		return "", err
-	}
-
-	for _, f := range all {
-		if f.Name == name {
-			count++
-			id = f.ID
-		}
-	}
-
-	switch count {
-	case 0:
-		err := &gophercloud.ErrResourceNotFound{}
-		err.ResourceType = "flavor"
-		err.Name = name
-		return "", err
-	case 1:
-		return id, nil
-	default:
-		err := &gophercloud.ErrMultipleResourcesFound{}
-		err.ResourceType = "flavor"
-		err.Name = name
-		err.Count = count
-		return "", err
-	}
 }

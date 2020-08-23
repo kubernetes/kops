@@ -19,6 +19,8 @@ package openstack
 import (
 	"fmt"
 
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+
 	"github.com/gophercloud/gophercloud"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
@@ -329,6 +331,10 @@ func (c *MockCloud) GetFloatingIP(id string) (fip *floatingips.FloatingIP, err e
 
 func (c *MockCloud) GetImage(name string) (*images.Image, error) {
 	return getImage(c, name)
+}
+
+func (c *MockCloud) GetFlavor(name string) (*flavors.Flavor, error) {
+	return getFlavor(c, name)
 }
 
 func (c *MockCloud) GetInstance(id string) (*servers.Server, error) {
