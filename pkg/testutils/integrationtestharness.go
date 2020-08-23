@@ -261,7 +261,7 @@ func (h *IntegrationTestHarness) SetupMockOpenstack() *openstack.MockCloud {
 
 	c.MockLBClient = mockloadbalancer.CreateClient()
 
-	c.MockNovaClient = mockcompute.CreateClient()
+	c.MockNovaClient = mockcompute.CreateClient(c.MockNeutronClient.ServiceClient())
 
 	c.MockDNSClient = mockdns.CreateClient()
 
