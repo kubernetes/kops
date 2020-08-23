@@ -55,7 +55,8 @@ func List(client *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pa
 
 // Get returns information about a zone, given its ID.
 func Get(client *gophercloud.ServiceClient, zoneID string) (r GetResult) {
-	_, r.Err = client.Get(zoneURL(client, zoneID), &r.Body, nil)
+	resp, err := client.Get(zoneURL(client, zoneID), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -110,9 +111,10 @@ func Create(client *gophercloud.ServiceClient, opts CreateOptsBuilder) (r Create
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(baseURL(client), &b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(baseURL(client), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{201, 202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -158,17 +160,19 @@ func Update(client *gophercloud.ServiceClient, zoneID string, opts UpdateOptsBui
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Patch(zoneURL(client, zoneID), &b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Patch(zoneURL(client, zoneID), &b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete implements a zone delete request.
 func Delete(client *gophercloud.ServiceClient, zoneID string) (r DeleteResult) {
-	_, r.Err = client.Delete(zoneURL(client, zoneID), &gophercloud.RequestOpts{
+	resp, err := client.Delete(zoneURL(client, zoneID), &gophercloud.RequestOpts{
 		OkCodes:      []int{202},
 		JSONResponse: &r.Body,
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

@@ -46,7 +46,7 @@ replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.18.6
 
 replace k8s.io/code-generator => k8s.io/code-generator v0.18.6
 
-replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.9.0
+replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
 
 require (
 	cloud.google.com/go v0.38.0
@@ -76,7 +76,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.1
-	github.com/gophercloud/gophercloud v0.7.1-0.20200116011225-46fdd1830e9a
+	github.com/gophercloud/gophercloud v0.11.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl/v2 v2.3.0

@@ -67,20 +67,23 @@ func Create(client *gophercloud.ServiceClient, opts CreateOptsBuilder) (r Create
 		r.Err = err
 		return
 	}
-	_, r.Err = client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 201},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Get returns public data about a previously uploaded KeyPair.
 func Get(client *gophercloud.ServiceClient, name string) (r GetResult) {
-	_, r.Err = client.Get(getURL(client, name), &r.Body, nil)
+	resp, err := client.Get(getURL(client, name), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete requests the deletion of a previous stored KeyPair from the server.
 func Delete(client *gophercloud.ServiceClient, name string) (r DeleteResult) {
-	_, r.Err = client.Delete(deleteURL(client, name), nil)
+	resp, err := client.Delete(deleteURL(client, name), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/mitchellh/mapstructure"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -188,4 +190,30 @@ func listInstances(c OpenstackCloud, opt servers.ListOptsBuilder) ([]servers.Ser
 	} else {
 		return instances, wait.ErrWaitTimeout
 	}
+}
+
+func (c *openstackCloud) GetFlavor(name string) (*flavors.Flavor, error) {
+	return getFlavor(c, name)
+}
+
+func getFlavor(c OpenstackCloud, name string) (*flavors.Flavor, error) {
+	opts := flavors.ListOpts{}
+	pager := flavors.ListDetail(c.ComputeClient(), opts)
+	page, err := pager.AllPages()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list flavors: %v", err)
+	}
+
+	fs, err := flavors.ExtractFlavors(page)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract flavors: %v", err)
+	}
+	for _, f := range fs {
+		if f.Name == name {
+			return &f, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not find flavor with name %v", name)
+
 }
