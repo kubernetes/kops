@@ -795,7 +795,7 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 	return errs
 }
 
-func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
+func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if spec.Name == "" {
@@ -823,7 +823,7 @@ func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec, c *kops.Cluster, fieldP
 }
 
 // validateEtcdBackupStore checks that the etcd clusters backupStore path is unique.
-func validateEtcdBackupStore(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+func validateEtcdBackupStore(specs []kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	etcdBackupStore := make(map[string]bool)
 	for _, x := range specs {
@@ -837,7 +837,7 @@ func validateEtcdBackupStore(specs []*kops.EtcdClusterSpec, fieldPath *field.Pat
 }
 
 // validateEtcdTLS checks the TLS settings for etcd are valid
-func validateEtcdTLS(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+func validateEtcdTLS(specs []kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	var usingTLS int
 	for _, x := range specs {
@@ -854,7 +854,7 @@ func validateEtcdTLS(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field
 }
 
 // validateEtcdStorage is responsible for checking versions are identical.
-func validateEtcdStorage(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+func validateEtcdStorage(specs []kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	version := specs[0].Version
 	for i, x := range specs {
@@ -868,7 +868,7 @@ func validateEtcdStorage(specs []*kops.EtcdClusterSpec, fieldPath *field.Path) f
 
 // validateEtcdVersion is responsible for validating the storage version of etcd
 // @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1; could be a problem later down the line
-func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) field.ErrorList {
+func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minimalVersion *semver.Version) field.ErrorList {
 	// @check if the storage is specified that it's valid
 
 	if minimalVersion == nil {
@@ -898,7 +898,7 @@ func validateEtcdVersion(spec *kops.EtcdClusterSpec, fieldPath *field.Path, mini
 }
 
 // validateEtcdMemberSpec is responsible for validate the cluster member
-func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) field.ErrorList {
+func validateEtcdMemberSpec(spec kops.EtcdMemberSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if spec.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("name"), "etcdMember did not have name"))
@@ -911,7 +911,7 @@ func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) fi
 	return allErrs
 }
 
-func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string, fldPath *field.Path) field.ErrorList {
+func ValidateEtcdVersionForCalicoV3(e kops.EtcdClusterSpec, majorVersion string, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if e.Version == "" {
@@ -932,7 +932,7 @@ func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string
 	return allErrs
 }
 
-func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e *kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
+func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if v.TyphaReplicas < 0 {

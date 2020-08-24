@@ -138,17 +138,17 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 					}
 				}
 
-				etcdInstanceGroups := make(map[string]*kopsapi.EtcdMemberSpec)
-				etcdNames := make(map[string]*kopsapi.EtcdMemberSpec)
+				etcdInstanceGroups := make(map[string]kopsapi.EtcdMemberSpec)
+				etcdNames := make(map[string]kopsapi.EtcdMemberSpec)
 
 				for _, m := range etcd.Members {
-					if etcdNames[m.Name] != nil {
+					if _, ok := etcdNames[m.Name]; ok {
 						return fmt.Errorf("EtcdMembers found with same name %q in etcd-cluster %q", m.Name, etcd.Name)
 					}
 
 					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
-					if etcdInstanceGroups[instanceGroupName] != nil {
+					if _, ok := etcdInstanceGroups[instanceGroupName]; ok {
 						klog.Warningf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q (fault-tolerance may be reduced)", instanceGroupName, etcd.Name)
 					}
 

@@ -142,7 +142,7 @@ type ClusterSpec struct {
 	// A collection of files assets for deployed cluster wide
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
-	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
+	EtcdClusters []EtcdClusterSpec `json:"etcdClusters,omitempty"`
 	// Component configurations
 	Containerd                     *ContainerdConfig             `json:"containerd,omitempty"`
 	Docker                         *DockerConfig                 `json:"docker,omitempty"`
@@ -202,7 +202,7 @@ type NodeAuthorizerSpec struct {
 	// Authorizer is the authorizer to use
 	Authorizer string `json:"authorizer,omitempty"`
 	// Features is a series of authorizer features to enable or disable
-	Features *[]string `json:"features,omitempty"`
+	Features []string `json:"features,omitempty"`
 	// Image is the location of container
 	Image string `json:"image,omitempty"`
 	// NodeURL is the node authorization service url
@@ -439,7 +439,7 @@ type EtcdClusterSpec struct {
 	// We default to manager for kubernetes 1.11 or if the manager is configured; otherwise standalone.
 	Provider EtcdProviderType `json:"provider,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
-	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
+	Members []EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// EnableTLSAuth indicates client and peer TLS auth should be enforced

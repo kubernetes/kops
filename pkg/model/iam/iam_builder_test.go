@@ -144,9 +144,9 @@ func TestPolicyGeneration(t *testing.T) {
 						Legacy:                 x.LegacyIAM,
 						AllowContainerRegistry: x.AllowContainerRegistry,
 					},
-					EtcdClusters: []*kops.EtcdClusterSpec{
+					EtcdClusters: []kops.EtcdClusterSpec{
 						{
-							Members: []*kops.EtcdMemberSpec{
+							Members: []kops.EtcdMemberSpec{
 								{
 									KmsKeyId: aws.String("key-id-1"),
 								},
@@ -156,10 +156,10 @@ func TestPolicyGeneration(t *testing.T) {
 							},
 						},
 						{
-							Members: []*kops.EtcdMemberSpec{},
+							Members: []kops.EtcdMemberSpec{},
 						},
 						{
-							Members: []*kops.EtcdMemberSpec{
+							Members: []kops.EtcdMemberSpec{
 								{
 									KmsKeyId: aws.String("key-id-3"),
 								},

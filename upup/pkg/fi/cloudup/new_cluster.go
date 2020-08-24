@@ -961,8 +961,8 @@ func initializeOpenstackAPI(opt *NewClusterOptions, cluster *api.Cluster) {
 	}
 }
 
-func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encryptEtcdStorage bool, etcdStorageType string) *api.EtcdClusterSpec {
-	etcd := &api.EtcdClusterSpec{}
+func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encryptEtcdStorage bool, etcdStorageType string) api.EtcdClusterSpec {
+	etcd := api.EtcdClusterSpec{}
 	etcd.Name = etcdCluster
 
 	// if this is the main cluster, we use 200 millicores by default.
@@ -991,7 +991,7 @@ func createEtcdCluster(etcdCluster string, masters []*api.InstanceGroup, encrypt
 	names = trimCommonPrefix(names)
 
 	for i, ig := range masters {
-		m := &api.EtcdMemberSpec{}
+		m := api.EtcdMemberSpec{}
 		if encryptEtcdStorage {
 			m.EncryptedVolume = &encryptEtcdStorage
 		}
