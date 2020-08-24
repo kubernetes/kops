@@ -53,7 +53,7 @@ func GVKForObject(obj runtime.Object, scheme *runtime.Scheme) (schema.GroupVersi
 		return schema.GroupVersionKind{}, err
 	}
 	if isUnversioned {
-		return schema.GroupVersionKind{}, fmt.Errorf("cannot create a new informer for the unversioned type %T", obj)
+		return schema.GroupVersionKind{}, fmt.Errorf("cannot create group-version-kind for unversioned type %T", obj)
 	}
 
 	if len(gvks) < 1 {

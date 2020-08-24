@@ -96,7 +96,7 @@ func SetOwnerReference(owner, object metav1.Object, scheme *runtime.Scheme) erro
 	// Validate the owner.
 	ro, ok := owner.(runtime.Object)
 	if !ok {
-		return fmt.Errorf("%T is not a runtime.Object, cannot call SetControllerReference", owner)
+		return fmt.Errorf("%T is not a runtime.Object, cannot call SetOwnerReference", owner)
 	}
 	if err := validateOwner(owner, object); err != nil {
 		return err
@@ -237,8 +237,8 @@ func mutate(f MutateFn, key client.ObjectKey, obj runtime.Object) error {
 // MutateFn is a function which mutates the existing object into it's desired state.
 type MutateFn func() error
 
-// AddFinalizer accepts a metav1 object and adds the provided finalizer if not present.
-func AddFinalizer(o metav1.Object, finalizer string) {
+// AddFinalizer accepts an Object and adds the provided finalizer if not present.
+func AddFinalizer(o Object, finalizer string) {
 	f := o.GetFinalizers()
 	for _, e := range f {
 		if e == finalizer {
@@ -250,21 +250,24 @@ func AddFinalizer(o metav1.Object, finalizer string) {
 
 // AddFinalizerWithError tries to convert a runtime object to a metav1 object and add the provided finalizer.
 // It returns an error if the provided object cannot provide an accessor.
+//
+// Deprecated: Use AddFinalizer instead. Check is performing on compile time.
 func AddFinalizerWithError(o runtime.Object, finalizer string) error {
 	m, err := meta.Accessor(o)
 	if err != nil {
 		return err
 	}
-	AddFinalizer(m, finalizer)
+	AddFinalizer(m.(Object), finalizer)
 	return nil
 }
 
-// RemoveFinalizer accepts a metav1 object and removes the provided finalizer if present.
-func RemoveFinalizer(o metav1.Object, finalizer string) {
+// RemoveFinalizer accepts an Object and removes the provided finalizer if present.
+func RemoveFinalizer(o Object, finalizer string) {
 	f := o.GetFinalizers()
-	for i, e := range f {
-		if e == finalizer {
+	for i := 0; i < len(f); i++ {
+		if f[i] == finalizer {
 			f = append(f[:i], f[i+1:]...)
+			i--
 		}
 	}
 	o.SetFinalizers(f)
@@ -272,11 +275,31 @@ func RemoveFinalizer(o metav1.Object, finalizer string) {
 
 // RemoveFinalizerWithError tries to convert a runtime object to a metav1 object and remove the provided finalizer.
 // It returns an error if the provided object cannot provide an accessor.
+//
+// Deprecated: Use RemoveFinalizer instead. Check is performing on compile time.
 func RemoveFinalizerWithError(o runtime.Object, finalizer string) error {
 	m, err := meta.Accessor(o)
 	if err != nil {
 		return err
 	}
-	RemoveFinalizer(m, finalizer)
+	RemoveFinalizer(m.(Object), finalizer)
 	return nil
+}
+
+// ContainsFinalizer checks an Object that the provided finalizer is present.
+func ContainsFinalizer(o Object, finalizer string) bool {
+	f := o.GetFinalizers()
+	for _, e := range f {
+		if e == finalizer {
+			return true
+		}
+	}
+	return false
+}
+
+// Object allows functions to work indistinctly with any resource that
+// implements both Object interfaces.
+type Object interface {
+	metav1.Object
+	runtime.Object
 }

@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "controller.go",
         "doc.go",
+        "options.go",
         "webhook.go",
     ],
     importmap = "k8s.io/kops/vendor/sigs.k8s.io/controller-runtime/pkg/builder",

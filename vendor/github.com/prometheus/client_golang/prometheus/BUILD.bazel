@@ -33,7 +33,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/beorn7/perks/quantile:go_default_library",
+        "//vendor/github.com/cespare/xxhash/v2:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/internal:go_default_library",
         "//vendor/github.com/prometheus/client_model/go:go_default_library",
         "//vendor/github.com/prometheus/common/expfmt:go_default_library",

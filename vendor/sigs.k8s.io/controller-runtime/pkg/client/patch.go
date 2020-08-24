@@ -17,7 +17,11 @@ limitations under the License.
 package client
 
 import (
+	"fmt"
+
 	jsonpatch "github.com/evanphx/json-patch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -59,8 +63,39 @@ func ConstantPatch(patchType types.PatchType, data []byte) Patch {
 	return RawPatch(patchType, data)
 }
 
+// MergeFromWithOptimisticLock can be used if clients want to make sure a patch
+// is being applied to the latest resource version of an object.
+//
+// The behavior is similar to what an Update would do, without the need to send the
+// whole object. Usually this method is useful if you might have multiple clients
+// acting on the same object and the same API version, but with different versions of the Go structs.
+//
+// For example, an "older" copy of a Widget that has fields A and B, and a "newer" copy with A, B, and C.
+// Sending an update using the older struct definition results in C being dropped, whereas using a patch does not.
+type MergeFromWithOptimisticLock struct{}
+
+// ApplyToMergeFrom applies this configuration to the given patch options.
+func (m MergeFromWithOptimisticLock) ApplyToMergeFrom(in *MergeFromOptions) {
+	in.OptimisticLock = true
+}
+
+// MergeFromOption is some configuration that modifies options for a merge-from patch data.
+type MergeFromOption interface {
+	// ApplyToMergeFrom applies this configuration to the given patch options.
+	ApplyToMergeFrom(*MergeFromOptions)
+}
+
+// MergeFromOptions contains options to generate a merge-from patch data.
+type MergeFromOptions struct {
+	// OptimisticLock, when true, includes `metadata.resourceVersion` into the final
+	// patch data. If the `resourceVersion` field doesn't match what's stored,
+	// the operation results in a conflict and clients will need to try again.
+	OptimisticLock bool
+}
+
 type mergeFromPatch struct {
 	from runtime.Object
+	opts MergeFromOptions
 }
 
 // Type implements patch.
@@ -80,12 +115,47 @@ func (s *mergeFromPatch) Data(obj runtime.Object) ([]byte, error) {
 		return nil, err
 	}
 
-	return jsonpatch.CreateMergePatch(originalJSON, modifiedJSON)
+	data, err := jsonpatch.CreateMergePatch(originalJSON, modifiedJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.opts.OptimisticLock {
+		dataMap := map[string]interface{}{}
+		if err := json.Unmarshal(data, &dataMap); err != nil {
+			return nil, err
+		}
+		fromMeta, ok := s.from.(metav1.Object)
+		if !ok {
+			return nil, fmt.Errorf("cannot use OptimisticLock, from object %q is not a valid metav1.Object", s.from)
+		}
+		resourceVersion := fromMeta.GetResourceVersion()
+		if len(resourceVersion) == 0 {
+			return nil, fmt.Errorf("cannot use OptimisticLock, from object %q does not have any resource version we can use", s.from)
+		}
+		u := &unstructured.Unstructured{Object: dataMap}
+		u.SetResourceVersion(resourceVersion)
+		data, err = json.Marshal(u)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return data, nil
 }
 
 // MergeFrom creates a Patch that patches using the merge-patch strategy with the given object as base.
 func MergeFrom(obj runtime.Object) Patch {
-	return &mergeFromPatch{obj}
+	return &mergeFromPatch{from: obj}
+}
+
+// MergeFromWithOptions creates a Patch that patches using the merge-patch strategy with the given object as base.
+func MergeFromWithOptions(obj runtime.Object, opts ...MergeFromOption) Patch {
+	options := &MergeFromOptions{}
+	for _, opt := range opts {
+		opt.ApplyToMergeFrom(options)
+	}
+	return &mergeFromPatch{from: obj, opts: *options}
 }
 
 // mergePatch uses a raw merge strategy to patch the object.
