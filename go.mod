@@ -2,58 +2,57 @@ module k8s.io/kops
 
 go 1.14
 
-// Version kubernetes-1.18.0 => tag v0.18.6
+// Version kubernetes-1.19.0-rc.4 => tag v0.19.0-rc.4
 
-replace k8s.io/api => k8s.io/api v0.18.6
+replace k8s.io/api => k8s.io/api v0.19.0-rc.4
 
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.18.6
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.19.0-rc.4
 
-replace k8s.io/client-go => k8s.io/client-go v0.18.6
+replace k8s.io/client-go => k8s.io/client-go v0.19.0-rc.4
 
-replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.18.6
+replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.19.0-rc.4
 
-replace k8s.io/kubectl => k8s.io/kubectl v0.18.6
+replace k8s.io/kubectl => k8s.io/kubectl v0.19.0-rc.4
 
-replace k8s.io/apiserver => k8s.io/apiserver v0.18.6
+replace k8s.io/apiserver => k8s.io/apiserver v0.19.0-rc.4
 
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.6
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.0-rc.4
 
-replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.18.6
+replace k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.19.0-rc.4
 
-replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.18.6
+replace k8s.io/kube-proxy => k8s.io/kube-proxy v0.19.0-rc.4
 
-replace k8s.io/cri-api => k8s.io/cri-api v0.18.6
+replace k8s.io/cri-api => k8s.io/cri-api v0.19.0-rc.4
 
-replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.18.6
+replace k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.19.0-rc.4
 
-replace k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.18.6
+replace k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.19.0-rc.4
 
-replace k8s.io/component-base => k8s.io/component-base v0.18.6
+replace k8s.io/component-base => k8s.io/component-base v0.19.0-rc.4
 
-replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.18.6
+replace k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.19.0-rc.4
 
-replace k8s.io/metrics => k8s.io/metrics v0.18.6
+replace k8s.io/metrics => k8s.io/metrics v0.19.0-rc.4
 
-replace k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.18.6
+replace k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.19.0-rc.4
 
-replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.18.6
+replace k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.19.0-rc.4
 
-replace k8s.io/kubelet => k8s.io/kubelet v0.18.6
+replace k8s.io/kubelet => k8s.io/kubelet v0.19.0-rc.4
 
-replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.18.6
+replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.19.0-rc.4
 
-replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.18.6
+replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.19.0-rc.4
 
-replace k8s.io/code-generator => k8s.io/code-generator v0.18.6
+replace k8s.io/code-generator => k8s.io/code-generator v0.19.0-rc.4
 
 replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
 
 require (
-	cloud.google.com/go v0.38.0
+	cloud.google.com/go v0.51.0
 	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
 	github.com/Masterminds/semver v1.3.1 // indirect
 	github.com/Masterminds/sprig v2.17.1+incompatible
-	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
@@ -74,9 +73,8 @@ require (
 	github.com/go-ini/ini v1.51.0
 	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.1
-	github.com/gophercloud/gophercloud v0.11.0
+	github.com/gophercloud/gophercloud v0.11.1-0.20200518183226-7aec46f32c19
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl/v2 v2.3.0
@@ -88,9 +86,9 @@ require (
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
-	github.com/prometheus/client_golang v1.0.0
+	github.com/prometheus/client_golang v1.7.1
 	github.com/sergi/go-diff v1.0.0
-	github.com/spf13/cobra v0.0.7
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/spotinst/spotinst-sdk-go v1.58.0
@@ -99,30 +97,29 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.10.0
-	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
-	golang.org/x/mod v0.3.0 // indirect
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sys v0.0.0-20200622214017-ed371f2e16b4
 	golang.org/x/tools v0.0.0-20200626171337-aa94e735be7f
 	google.golang.org/api v0.22.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 	honnef.co/go/tools v0.0.1-2020.1.4
-	k8s.io/api v0.18.6
-	k8s.io/apimachinery v0.18.6
-	k8s.io/cli-runtime v0.18.6
-	k8s.io/client-go v0.18.6
-	k8s.io/cloud-provider-openstack v1.17.0
-	k8s.io/component-base v0.18.6
+	k8s.io/api v0.19.0-rc.4
+	k8s.io/apimachinery v0.19.0-rc.4
+	k8s.io/cli-runtime v0.19.0-rc.4
+	k8s.io/client-go v0.19.0-rc.4
+	k8s.io/cloud-provider-openstack v1.17.1-0.20200717165102-4150ca0588f1
+	k8s.io/component-base v0.19.0-rc.4
 	k8s.io/gengo v0.0.0-20200710205751-c0d492a0f3ca
 	k8s.io/helm v2.9.0+incompatible
 	k8s.io/klog/v2 v2.3.0
 	k8s.io/kubectl v0.0.0
 	k8s.io/legacy-cloud-providers v0.0.0
-	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
-	sigs.k8s.io/controller-runtime v0.5.1-0.20200326092940-754026bd8510
+	k8s.io/utils v0.0.0-20200729134348-d5654de09c73
+	sigs.k8s.io/controller-runtime v0.6.1
 	sigs.k8s.io/controller-tools v0.2.8
 	sigs.k8s.io/yaml v1.2.0
 )

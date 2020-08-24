@@ -11,6 +11,7 @@ go_library(
         "http.go",
         "labels.go",
         "metric.go",
+        "options.go",
         "opts.go",
         "processstarttime.go",
         "registry.go",
@@ -29,8 +30,9 @@ go_library(
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/prometheus/client_model/go:go_default_library",
         "//vendor/github.com/prometheus/procfs:go_default_library",
+        "//vendor/github.com/spf13/pflag:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/version:go_default_library",
         "//vendor/k8s.io/component-base/version:go_default_library",
-        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )

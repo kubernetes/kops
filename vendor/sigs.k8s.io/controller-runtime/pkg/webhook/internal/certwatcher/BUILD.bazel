@@ -7,7 +7,7 @@ go_library(
     importpath = "sigs.k8s.io/controller-runtime/pkg/webhook/internal/certwatcher",
     visibility = ["//vendor/sigs.k8s.io/controller-runtime/pkg/webhook:__subpackages__"],
     deps = [
-        "//vendor/gopkg.in/fsnotify.v1:go_default_library",
+        "//vendor/github.com/fsnotify/fsnotify:go_default_library",
         "//vendor/sigs.k8s.io/controller-runtime/pkg/internal/log:go_default_library",
     ],
 )
