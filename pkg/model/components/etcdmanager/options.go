@@ -39,7 +39,8 @@ var _ loader.OptionsBuilder = &EtcdManagerOptionsBuilder{}
 func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
-	for _, etcdCluster := range clusterSpec.EtcdClusters {
+	for i := range clusterSpec.EtcdClusters {
+		etcdCluster := &clusterSpec.EtcdClusters[i]
 		if etcdCluster.Provider != kops.EtcdProviderTypeManager {
 			continue
 		}

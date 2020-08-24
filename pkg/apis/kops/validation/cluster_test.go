@@ -26,15 +26,15 @@ import (
 
 func TestValidEtcdChanges(t *testing.T) {
 	grid := []struct {
-		OldSpec *kops.EtcdClusterSpec
-		NewSpec *kops.EtcdClusterSpec
+		OldSpec kops.EtcdClusterSpec
+		NewSpec kops.EtcdClusterSpec
 		Status  *kops.ClusterStatus
 		Details string
 	}{
 		{
-			OldSpec: &kops.EtcdClusterSpec{
+			OldSpec: kops.EtcdClusterSpec{
 				Name: "main",
-				Members: []*kops.EtcdMemberSpec{
+				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
 						InstanceGroup: fi.String("eu-central-1a"),
@@ -50,9 +50,9 @@ func TestValidEtcdChanges(t *testing.T) {
 				},
 			},
 
-			NewSpec: &kops.EtcdClusterSpec{
+			NewSpec: kops.EtcdClusterSpec{
 				Name: "main",
-				Members: []*kops.EtcdMemberSpec{
+				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
 						InstanceGroup: fi.String("eu-central-1a"),
@@ -80,9 +80,9 @@ func TestValidEtcdChanges(t *testing.T) {
 		},
 
 		{
-			OldSpec: &kops.EtcdClusterSpec{
+			OldSpec: kops.EtcdClusterSpec{
 				Name: "main",
-				Members: []*kops.EtcdMemberSpec{
+				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
 						InstanceGroup: fi.String("eu-central-1a"),
@@ -90,9 +90,9 @@ func TestValidEtcdChanges(t *testing.T) {
 				},
 			},
 
-			NewSpec: &kops.EtcdClusterSpec{
+			NewSpec: kops.EtcdClusterSpec{
 				Name: "main",
-				Members: []*kops.EtcdMemberSpec{
+				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
 						InstanceGroup: fi.String("eu-central-1a"),
@@ -120,9 +120,9 @@ func TestValidEtcdChanges(t *testing.T) {
 		},
 
 		{
-			OldSpec: &kops.EtcdClusterSpec{
+			OldSpec: kops.EtcdClusterSpec{
 				Name: "main",
-				Members: []*kops.EtcdMemberSpec{
+				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
 						InstanceGroup: fi.String("eu-central-1a"),
@@ -130,9 +130,9 @@ func TestValidEtcdChanges(t *testing.T) {
 				},
 			},
 
-			NewSpec: &kops.EtcdClusterSpec{
+			NewSpec: kops.EtcdClusterSpec{
 				Name: "main",
-				Members: []*kops.EtcdMemberSpec{
+				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
 						InstanceGroup: fi.String("eu-central-1a"),

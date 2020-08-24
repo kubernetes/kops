@@ -29,10 +29,10 @@ func TestPrecreateDNSNames(t *testing.T) {
 	cluster.ObjectMeta.Name = "cluster1.example.com"
 	cluster.Spec.MasterPublicName = "api." + cluster.ObjectMeta.Name
 	cluster.Spec.MasterInternalName = "api.internal." + cluster.ObjectMeta.Name
-	cluster.Spec.EtcdClusters = []*kops.EtcdClusterSpec{
+	cluster.Spec.EtcdClusters = []kops.EtcdClusterSpec{
 		{
 			Name: "main",
-			Members: []*kops.EtcdMemberSpec{
+			Members: []kops.EtcdMemberSpec{
 				{Name: "zone1"},
 				{Name: "zone2"},
 				{Name: "zone3"},
@@ -40,7 +40,7 @@ func TestPrecreateDNSNames(t *testing.T) {
 		},
 		{
 			Name: "events",
-			Members: []*kops.EtcdMemberSpec{
+			Members: []kops.EtcdMemberSpec{
 				{Name: "zonea"},
 				{Name: "zoneb"},
 				{Name: "zonec"},

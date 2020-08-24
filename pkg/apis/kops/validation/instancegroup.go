@@ -123,7 +123,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 }
 
 // validateVolumeSpec is responsible for checking a volume spec is ok
-func validateVolumeSpec(path *field.Path, v *kops.VolumeSpec) field.ErrorList {
+func validateVolumeSpec(path *field.Path, v kops.VolumeSpec) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if v.Device == "" {
@@ -137,7 +137,7 @@ func validateVolumeSpec(path *field.Path, v *kops.VolumeSpec) field.ErrorList {
 }
 
 // validateVolumeMountSpec is responsible for checking the volume mount is ok
-func validateVolumeMountSpec(path *field.Path, spec *kops.VolumeMountSpec) field.ErrorList {
+func validateVolumeMountSpec(path *field.Path, spec kops.VolumeMountSpec) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if spec.Device == "" {

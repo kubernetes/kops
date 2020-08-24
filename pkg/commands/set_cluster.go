@@ -116,31 +116,32 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			if err != nil {
 				return fmt.Errorf("unknown boolean value: %q", kv[1])
 			}
-			for _, c := range cluster.Spec.EtcdClusters {
-				c.EnableEtcdTLS = v
+			for i := range cluster.Spec.EtcdClusters {
+				cluster.Spec.EtcdClusters[i].EnableEtcdTLS = v
 			}
 		case "cluster.spec.etcdClusters[*].enableTLSAuth":
 			v, err := strconv.ParseBool(kv[1])
 			if err != nil {
 				return fmt.Errorf("unknown boolean value: %q", kv[1])
 			}
-			for _, c := range cluster.Spec.EtcdClusters {
-				c.EnableTLSAuth = v
+			for i := range cluster.Spec.EtcdClusters {
+				cluster.Spec.EtcdClusters[i].EnableTLSAuth = v
 			}
 		case "cluster.spec.etcdClusters[*].version":
-			for _, c := range cluster.Spec.EtcdClusters {
-				c.Version = kv[1]
+			for i := range cluster.Spec.EtcdClusters {
+				cluster.Spec.EtcdClusters[i].Version = kv[1]
 			}
 		case "cluster.spec.etcdClusters[*].provider":
 			p, err := toEtcdProviderType(kv[1])
 			if err != nil {
 				return err
 			}
-			for _, etcd := range cluster.Spec.EtcdClusters {
-				etcd.Provider = p
+			for i := range cluster.Spec.EtcdClusters {
+				cluster.Spec.EtcdClusters[i].Provider = p
 			}
 		case "cluster.spec.etcdClusters[*].manager.image":
-			for _, etcd := range cluster.Spec.EtcdClusters {
+			for i := range cluster.Spec.EtcdClusters {
+				etcd := &cluster.Spec.EtcdClusters[i]
 				if etcd.Manager == nil {
 					etcd.Manager = &api.EtcdManagerSpec{}
 				}
