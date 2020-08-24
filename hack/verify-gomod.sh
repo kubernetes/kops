@@ -24,7 +24,7 @@ cd "${KOPS_ROOT}"
 
 make gomod
 
-changes=$(git status --porcelain || true)
+changes=$(git status --porcelain go.mod go.sum vendor/ || true)
 if [ -n "${changes}" ]; then
   echo "ERROR: go modules are not up to date; please run: make gomod"
   echo "changed files:"
