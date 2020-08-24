@@ -41,10 +41,10 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 		for _, etcdCluster := range EtcdClusters {
 
-			etcd := &api.EtcdClusterSpec{}
+			etcd := api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
 			for _, subnet := range c.Spec.Subnets {
-				m := &api.EtcdMemberSpec{}
+				m := api.EtcdMemberSpec{}
 				m.Name = subnet.Zone
 				m.InstanceGroup = fi.String("master-" + subnet.Name)
 				etcd.Members = append(etcd.Members, m)

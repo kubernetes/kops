@@ -74,10 +74,10 @@ func addEtcdClusters(c *kopsapi.Cluster) {
 	etcdZones := subnetNames.List()
 
 	for _, etcdCluster := range EtcdClusters {
-		etcd := &kopsapi.EtcdClusterSpec{}
+		etcd := kopsapi.EtcdClusterSpec{}
 		etcd.Name = etcdCluster
 		for _, zone := range etcdZones {
-			m := &kopsapi.EtcdMemberSpec{}
+			m := kopsapi.EtcdMemberSpec{}
 			m.Name = zone
 			m.InstanceGroup = fi.String(zone)
 			etcd.Members = append(etcd.Members, m)

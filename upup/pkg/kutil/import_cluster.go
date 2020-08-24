@@ -357,12 +357,12 @@ func (x *ImportCluster) ImportAWSCluster(ctx context.Context) error {
 	// }
 
 	for _, etcdClusterName := range []string{"main", "events"} {
-		etcdCluster := &kops.EtcdClusterSpec{
+		etcdCluster := kops.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
 
 		for _, ig := range masterInstanceGroups {
-			member := &kops.EtcdMemberSpec{
+			member := kops.EtcdMemberSpec{
 				InstanceGroup: fi.String(ig.ObjectMeta.Name),
 			}
 

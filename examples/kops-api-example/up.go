@@ -52,11 +52,11 @@ func up(ctx context.Context) error {
 	}
 
 	for _, etcdClusterName := range cloudup.EtcdClusters {
-		etcdCluster := &api.EtcdClusterSpec{
+		etcdCluster := api.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
 		for _, masterZone := range masterZones {
-			etcdMember := &api.EtcdMemberSpec{
+			etcdMember := api.EtcdMemberSpec{
 				Name:          masterZone,
 				InstanceGroup: fi.String(masterZone),
 			}

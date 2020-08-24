@@ -169,10 +169,10 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 				{Name: "test", Zone: "eu-west-1a"},
 			},
 			NonMasqueradeCIDR: "10.100.0.0/16",
-			EtcdClusters: []*kops.EtcdClusterSpec{
+			EtcdClusters: []kops.EtcdClusterSpec{
 				{
 					Name: "main",
-					Members: []*kops.EtcdMemberSpec{
+					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "test",
 							InstanceGroup: s("ig-1"),
@@ -182,7 +182,7 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles 
 				},
 				{
 					Name: "events",
-					Members: []*kops.EtcdMemberSpec{
+					Members: []kops.EtcdMemberSpec{
 						{
 							Name:          "test",
 							InstanceGroup: s("ig-1"),

@@ -102,10 +102,10 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 		{
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					EtcdClusters: []*kops.EtcdClusterSpec{
+					EtcdClusters: []kops.EtcdClusterSpec{
 						{
 							Name: "main",
-							Members: []*kops.EtcdMemberSpec{
+							Members: []kops.EtcdMemberSpec{
 								{
 									Name:          "a",
 									InstanceGroup: fi.String("eu-central-1a"),
@@ -137,10 +137,10 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 		{
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
-					EtcdClusters: []*kops.EtcdClusterSpec{
+					EtcdClusters: []kops.EtcdClusterSpec{
 						{
 							Name: "main",
-							Members: []*kops.EtcdMemberSpec{
+							Members: []kops.EtcdMemberSpec{
 								{
 									Name:          "a",
 									InstanceGroup: fi.String("eu-central-1a"),
