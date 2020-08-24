@@ -32,9 +32,30 @@ var (
 		},
 		[]string{"webhook"},
 	)
+
+	// RequestTotal is a prometheus metric which is a counter of the total processed admission requests.
+	RequestTotal = func() *prometheus.CounterVec {
+		return prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Name: "controller_runtime_webhook_requests_total",
+				Help: "Total number of admission requests by HTTP status code.",
+			},
+			[]string{"webhook", "code"},
+		)
+	}()
+
+	// RequestInFlight is a prometheus metric which is a gauge of the in-flight admission requests.
+	RequestInFlight = func() *prometheus.GaugeVec {
+		return prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "controller_runtime_webhook_requests_in_flight",
+				Help: "Current number of admission requests being served.",
+			},
+			[]string{"webhook"},
+		)
+	}()
 )
 
 func init() {
-	metrics.Registry.MustRegister(
-		RequestLatency)
+	metrics.Registry.MustRegister(RequestLatency, RequestTotal, RequestInFlight)
 }

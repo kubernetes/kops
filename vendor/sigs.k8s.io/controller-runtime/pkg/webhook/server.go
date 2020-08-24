@@ -28,8 +28,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
-	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics"
@@ -123,13 +124,23 @@ func (s *Server) Register(path string, hook http.Handler) {
 
 // instrumentedHook adds some instrumentation on top of the given webhook.
 func instrumentedHook(path string, hookRaw http.Handler) http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		startTS := time.Now()
-		defer func() { metrics.RequestLatency.WithLabelValues(path).Observe(time.Since(startTS).Seconds()) }()
-		hookRaw.ServeHTTP(resp, req)
+	lbl := prometheus.Labels{"webhook": path}
 
-		// TODO(directxman12): add back in metric about total requests broken down by result?
-	})
+	lat := metrics.RequestLatency.MustCurryWith(lbl)
+	cnt := metrics.RequestTotal.MustCurryWith(lbl)
+	gge := metrics.RequestInFlight.With(lbl)
+
+	// Initialize the most likely HTTP status codes.
+	cnt.WithLabelValues("200")
+	cnt.WithLabelValues("500")
+
+	return promhttp.InstrumentHandlerDuration(
+		lat,
+		promhttp.InstrumentHandlerCounter(
+			cnt,
+			promhttp.InstrumentHandlerInFlight(gge, hookRaw),
+		),
+	)
 }
 
 // Start runs the server.

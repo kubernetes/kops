@@ -7,6 +7,7 @@ aliases:
   - directxman12
   - droot
   - mengqiy
+  - pwittrock
 
   # non-admin folks who have write-access and can approve any PRs in the repo
   controller-runtime-maintainers:
@@ -25,6 +26,7 @@ aliases:
   - alvaroaleman
   - alenkacz
   - vincepri
+  - alexeldeib
 
   # folks to can approve things in the directly-ported
   # testing_frameworks portions of the codebase
@@ -35,5 +37,4 @@ aliases:
 
   # folks who may have context on ancient history,
   # but are no longer directly involved
-  controller-runtime-emeritus-maintainers:
-  - pwittrock
+  # controller-runtime-emeritus-maintainers:

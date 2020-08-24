@@ -70,10 +70,10 @@ type multiNamespaceCache struct {
 var _ Cache = &multiNamespaceCache{}
 
 // Methods for multiNamespaceCache to conform to the Informers interface
-func (c *multiNamespaceCache) GetInformer(obj runtime.Object) (Informer, error) {
+func (c *multiNamespaceCache) GetInformer(ctx context.Context, obj runtime.Object) (Informer, error) {
 	informers := map[string]Informer{}
 	for ns, cache := range c.namespaceToCache {
-		informer, err := cache.GetInformer(obj)
+		informer, err := cache.GetInformer(ctx, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -82,10 +82,10 @@ func (c *multiNamespaceCache) GetInformer(obj runtime.Object) (Informer, error) 
 	return &multiNamespaceInformer{namespaceToInformer: informers}, nil
 }
 
-func (c *multiNamespaceCache) GetInformerForKind(gvk schema.GroupVersionKind) (Informer, error) {
+func (c *multiNamespaceCache) GetInformerForKind(ctx context.Context, gvk schema.GroupVersionKind) (Informer, error) {
 	informers := map[string]Informer{}
 	for ns, cache := range c.namespaceToCache {
-		informer, err := cache.GetInformerForKind(gvk)
+		informer, err := cache.GetInformerForKind(ctx, gvk)
 		if err != nil {
 			return nil, err
 		}
@@ -117,9 +117,9 @@ func (c *multiNamespaceCache) WaitForCacheSync(stop <-chan struct{}) bool {
 	return synced
 }
 
-func (c *multiNamespaceCache) IndexField(obj runtime.Object, field string, extractValue client.IndexerFunc) error {
+func (c *multiNamespaceCache) IndexField(ctx context.Context, obj runtime.Object, field string, extractValue client.IndexerFunc) error {
 	for _, cache := range c.namespaceToCache {
-		if err := cache.IndexField(obj, field, extractValue); err != nil {
+		if err := cache.IndexField(ctx, obj, field, extractValue); err != nil {
 			return err
 		}
 	}

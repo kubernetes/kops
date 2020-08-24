@@ -16,6 +16,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/clock:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
         "//vendor/k8s.io/client-go/pkg/apis/clientauthentication:go_default_library",
         "//vendor/k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1:go_default_library",
@@ -24,6 +25,6 @@ go_library(
         "//vendor/k8s.io/client-go/tools/metrics:go_default_library",
         "//vendor/k8s.io/client-go/transport:go_default_library",
         "//vendor/k8s.io/client-go/util/connrotation:go_default_library",
-        "//vendor/k8s.io/klog:go_default_library",
+        "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )
