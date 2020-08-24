@@ -14,19 +14,22 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: main
+    version: 3.2.24
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+    version: 3.2.24
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.14.0
+  kubernetesVersion: v1.18.0
   masterInternalName: api.internal.privatecalico.example.com
   masterPublicName: api.privatecalico.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    calico: {}
+    calico:
+      majorVersion: v3
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
