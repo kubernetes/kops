@@ -84,7 +84,6 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )
@@ -115,6 +114,7 @@ go_test(
         "//pkg/apis/kops/validation:go_default_library",
         "//pkg/assets:go_default_library",
         "//pkg/client/simple/vfsclientset:go_default_library",
+        "//pkg/diff:go_default_library",
         "//pkg/kopscodecs:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/templates:go_default_library",
@@ -126,6 +126,7 @@ go_test(
         "//upup/pkg/fi/fitasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
