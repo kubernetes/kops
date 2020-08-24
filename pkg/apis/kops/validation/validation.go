@@ -914,25 +914,19 @@ func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec, fieldPath *field.Path) fi
 func ValidateEtcdVersionForCalicoV3(e *kops.EtcdClusterSpec, majorVersion string, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	version := e.Version
 	if e.Version == "" {
-		version = components.DefaultEtcd2Version
-	}
-	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
-	if err != nil {
-		allErrs = append(allErrs, field.InternalError(fldPath.Child("majorVersion"), fmt.Errorf("failed to parse Etcd version to check compatibility: %s", err)))
-	}
-
-	if sem.Major != 3 {
-		if e.Version == "" {
-			allErrs = append(allErrs,
-				field.Forbidden(fldPath.Child("majorVersion"),
-					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is default(%s)",
-						e.Name, components.DefaultEtcd2Version)))
+		if majorVersion == "v3" {
+			return allErrs
 		} else {
-			allErrs = append(allErrs,
-				field.Forbidden(fldPath.Child("majorVersion"),
-					fmt.Sprintf("Unable to use v3 when ETCD version for %s cluster is %s", e.Name, e.Version)))
+			allErrs = append(allErrs, field.Required(fldPath.Child("majorVersion"), "majorVersion required when etcd version is not set explicitly"))
+		}
+	} else {
+		sem, err := semver.Parse(strings.TrimPrefix(e.Version, "v"))
+		if err != nil {
+			allErrs = append(allErrs, field.InternalError(fldPath.Child("majorVersion"), fmt.Errorf("failed to parse etcd version to check compatibility: %s", err)))
+		}
+		if majorVersion == "v3" && sem.Major != 3 {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("majorVersion"), fmt.Sprintf("unable to use v3 when etcd version for %s cluster is %s", e.Name, e.Version)))
 		}
 	}
 	return allErrs

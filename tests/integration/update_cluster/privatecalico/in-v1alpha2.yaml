@@ -21,12 +21,13 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.14.0
+  kubernetesVersion: v1.18.0
   masterInternalName: api.internal.privatecalico.example.com
   masterPublicName: api.privatecalico.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    calico: {}
+    calico:
+      majorVersion: v3
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
