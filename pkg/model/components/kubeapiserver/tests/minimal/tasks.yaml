@@ -14,7 +14,7 @@ Contents:
         - --client-key=/secrets/client.key
         command:
         - /kube-apiserver-healthcheck
-        image: kope/kube-apiserver-healthcheck:1.19.0-alpha.3
+        image: k8s.gcr.io/kops/kube-apiserver-healthcheck:1.19.0-alpha.3
         livenessProbe:
           httpGet:
             host: 127.0.0.1

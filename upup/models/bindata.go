@@ -1988,7 +1988,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.19.0-alpha.3
+        image: k8s.gcr.io/kops/dns-controller:1.19.0-alpha.3
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
@@ -2124,7 +2124,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.19.0-alpha.3
+        image: k8s.gcr.io/kops/dns-controller:1.19.0-alpha.3
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
@@ -2529,7 +2529,7 @@ spec:
       serviceAccount: kops-controller
       containers:
       - name: kops-controller
-        image: kope/kops-controller:1.19.0-alpha.3
+        image: k8s.gcr.io/kops/kops-controller:1.19.0-alpha.3
         volumeMounts:
 {{ if .UseHostCertificates }}
         - mountPath: /etc/ssl/certs
