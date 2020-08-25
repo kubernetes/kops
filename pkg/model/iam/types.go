@@ -19,6 +19,8 @@ package iam
 import (
 	"encoding/json"
 	"fmt"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // ParseStatements parses JSON into a list of Statements
@@ -28,4 +30,13 @@ func ParseStatements(policy string) ([]*Statement, error) {
 		return nil, fmt.Errorf("error parsing IAM statements: %v", err)
 	}
 	return statements, nil
+}
+
+type IAMModelContext struct {
+	Cluster *kops.Cluster
+}
+
+// ClusterName returns the cluster name
+func (b *IAMModelContext) ClusterName() string {
+	return b.Cluster.ObjectMeta.Name
 }
