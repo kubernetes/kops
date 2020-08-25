@@ -56,6 +56,18 @@ The additional permissions are:
   ]
 }
 ```
+## Permissions Boundaries
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+AWS Permissions Boundaries enable you to use a policy (managed or custom) to set the maximum permissions that roles created by Kops will be able to grant to instances they're attached to. It can be useful to prevent possible privilege escalations.
+
+To set a Permissions Boundary for Kops' roles, update your Cluster Spec with the following and then perform a cluster update:
+```yaml
+iam:
+  permissionsBoundary: aws:arn:iam:123456789000:policy:test-boundary
+```
+
+*NOTE: Currently, Kops only supports using a single Permissions Boundary for all roles it creates. In case you need to set per-role Permissions Boundaries, we recommend that you refer to this [section](#use-existing-aws-instance-profiles) below, and provide your own roles to Kops.*
 
 ## Adding External Policies
 
