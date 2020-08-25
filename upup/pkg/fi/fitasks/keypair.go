@@ -17,6 +17,7 @@ limitations under the License.
 package fitasks
 
 import (
+	"crypto/sha1"
 	"crypto/x509/pkix"
 	"fmt"
 	"sort"
@@ -44,6 +45,9 @@ type Keypair struct {
 	Type string `json:"type"`
 	// LegacyFormat is whether the keypair is stored in a legacy format.
 	LegacyFormat bool `json:"oldFormat"`
+
+	certificate                *fi.TaskDependentResource
+	certificateSHA1Fingerprint *fi.TaskDependentResource
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -97,6 +101,10 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
+
+	if err := e.setResources(cert); err != nil {
+		return nil, fmt.Errorf("error setting resources: %v", err)
+	}
 
 	return actual, nil
 }
@@ -267,4 +275,34 @@ func parsePkixName(s string) (*pkix.Name, error) {
 	}
 
 	return name, nil
+}
+
+func (e *Keypair) ensureResources() {
+	if e.certificate == nil {
+		e.certificate = &fi.TaskDependentResource{Task: e}
+	}
+	if e.certificateSHA1Fingerprint == nil {
+		e.certificateSHA1Fingerprint = &fi.TaskDependentResource{Task: e}
+	}
+}
+
+func (e *Keypair) setResources(cert *pki.Certificate) error {
+	e.ensureResources()
+
+	s, err := cert.AsString()
+	if err != nil {
+		return err
+	}
+	e.certificate.Resource = fi.NewStringResource(s)
+
+	fingerprint := sha1.Sum(cert.Certificate.Raw)
+	hex := fmt.Sprintf("%x", fingerprint)
+	e.certificateSHA1Fingerprint.Resource = fi.NewStringResource(hex)
+
+	return nil
+}
+
+func (e *Keypair) CertificateSHA1Fingerprint() fi.Resource {
+	e.ensureResources()
+	return e.certificateSHA1Fingerprint
 }

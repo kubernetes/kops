@@ -24,6 +24,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
@@ -48,6 +49,20 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	runChannelBuilderTest(t, "weave", []string{})
 	runChannelBuilderTest(t, "amazonvpc", []string{"networking.amazon-vpc-routed-eni-k8s-1.12", "networking.amazon-vpc-routed-eni-k8s-1.16"})
 	runChannelBuilderTest(t, "awsiamauthenticator", []string{"authentication.aws-k8s-1.12"})
+}
+
+func TestBootstrapChannelBuilder_PublicJWKS(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.SetupMockAWS()
+
+	featureflag.ParseFlags("+PublicJWKS")
+	unsetFeatureFlag := func() {
+		featureflag.ParseFlags("-PublicJWKS")
+	}
+	defer unsetFeatureFlag()
+	runChannelBuilderTest(t, "public-jwks", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16", "anonymous-issuer-discovery.addons.k8s.io-k8s-1.16"})
 }
 
 func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
