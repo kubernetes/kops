@@ -524,6 +524,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			l.Builders = append(l.Builders,
 				&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+				&awsmodel.OIDCProviderBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle, KeyStore: keyStore},
 			)
 		case kops.CloudProviderDO:
 			doModelContext := &domodel.DOModelContext{

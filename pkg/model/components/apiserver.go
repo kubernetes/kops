@@ -22,6 +22,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 
@@ -207,6 +208,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// We make sure to disable AnonymousAuth
 	c.AnonymousAuth = fi.Bool(false)
+
+	// For the development of JWKS functionality, re-enable anonymous auth for PublicJWKS
+	// (this likely isn't a production-suitable configuration, currently)
+	if featureflag.PublicJWKS.Enabled() {
+		c.AnonymousAuth = fi.Bool(true)
+	}
 
 	if b.IsKubernetesGTE("1.17") {
 		// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990

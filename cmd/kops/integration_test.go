@@ -61,8 +61,10 @@ type integrationTest struct {
 	launchConfiguration bool
 	lifecycleOverrides  []string
 	sshKey              bool
-	jsonOutput          bool
-	bastionUserData     bool
+	// caKey is true if we should use a provided ca.crt & ca.key as our CA
+	caKey           bool
+	jsonOutput      bool
+	bastionUserData bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
@@ -88,6 +90,13 @@ func (i *integrationTest) withZones(zones int) *integrationTest {
 
 func (i *integrationTest) withoutSSHKey() *integrationTest {
 	i.sshKey = false
+	return i
+}
+
+// withCAKey indicates that we should use a fixed ca.crt & ca.key from the source directory as our CA.
+// This is needed when the CA is exposed, for example when using AWS WebIdentity federation.
+func (i *integrationTest) withCAKey() *integrationTest {
+	i.caKey = true
 	return i
 }
 
@@ -314,13 +323,25 @@ func TestContainerdCloudformation(t *testing.T) {
 // TestLaunchConfigurationASG tests ASGs using launch configurations instead of launch templates
 func TestLaunchConfigurationASG(t *testing.T) {
 	featureflag.ParseFlags("-EnableLaunchTemplates")
-	unsetFeaureFlag := func() {
+	unsetFeatureFlags := func() {
 		featureflag.ParseFlags("+EnableLaunchTemplates")
 	}
-	defer unsetFeaureFlag()
+	defer unsetFeatureFlags()
 
 	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchConfiguration().runTestTerraformAWS(t)
 	newIntegrationTest("launchtemplates.example.com", "launch_templates").withZones(3).withLaunchConfiguration().runTestCloudformation(t)
+}
+
+// TestJWKS runs a simple configuration, but with PublicJWKS enabled
+func TestPublicJWKS(t *testing.T) {
+	featureflag.ParseFlags("+PublicJWKS")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-PublicJWKS")
+	}
+	defer unsetFeatureFlags()
+
+	// We have to use a fixed CA because the fingerprint is inserted into the AWS WebIdentity configuration.
+	newIntegrationTest("minimal.example.com", "public-jwks").withCAKey().runTestTerraformAWS(t)
 }
 
 func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
@@ -364,7 +385,19 @@ func (i *integrationTest) runTest(t *testing.T, h *testutils.IntegrationTestHarn
 
 		err := RunCreateSecretPublicKey(ctx, factory, &stdout, options)
 		if err != nil {
-			t.Fatalf("error running %q create: %v", inputYAML, err)
+			t.Fatalf("error running %q create public key: %v", inputYAML, err)
+		}
+	}
+
+	if i.caKey {
+		options := &CreateSecretCaCertOptions{}
+		options.ClusterName = i.clusterName
+		options.CaPrivateKeyPath = path.Join(i.srcDir, "ca.key")
+		options.CaCertPath = path.Join(i.srcDir, "ca.crt")
+
+		err := RunCreateSecretCaCert(ctx, factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create CA keypair: %v", inputYAML, err)
 		}
 	}
 
