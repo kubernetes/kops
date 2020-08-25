@@ -85,10 +85,9 @@ definition: |
   [Service]
   ExecStartPre=/bin/true
   ExecStartPre=-/usr/bin/ctr --namespace k8s.io container rm protokube
-  ExecStartPre=/bin/true
   ExecStart=/usr/bin/ctr --namespace k8s.io run --net-host --with-ns pid:/proc/1/ns/pid --privileged --mount type=bind,src=/,dst=/rootfs,options=rbind:rslave --env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig --mount type=bind,src=/bin,dst=/bin,options=rbind:ro:rprivate --mount type=bind,src=/lib,dst=/lib,options=rbind:ro:rprivate --mount type=bind,src=/lib64,dst=/lib64,options=rbind:ro:rprivate --mount type=bind,src=/sbin,dst=/sbin,options=rbind:ro:rprivate --mount type=bind,src=/usr/bin,dst=/usr/bin,options=rbind:ro:rprivate --mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate --mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate --mount type=bind,src=/usr/local/bin,dst=/opt/kops/bin,options=rbind:ro:rprivate --env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin docker.io/library/protokube image name protokube /protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=true --dns-internal-suffix=.internal.minimal.example.com --dns=aws-route53 --etcd-backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/main --etcd-image=k8s.gcr.io/etcd:3.4.3 --initialize-rbac=true --manage-etcd=true --master=true --node-name=master.hostname.invalid --peer-ca=/srv/kubernetes/ca.crt --peer-cert=/srv/kubernetes/etcd-peer.pem --peer-key=/srv/kubernetes/etcd-peer-key.pem --tls-auth=true --tls-ca=/srv/kubernetes/ca.crt --tls-cert=/srv/kubernetes/etcd.pem --tls-key=/srv/kubernetes/etcd-key.pem --v=4 --zone=*/Z1AFAKE1ZON3YO
   Restart=always
-  RestartSec=2s
+  RestartSec=3s
   StartLimitInterval=0
 
   [Install]
