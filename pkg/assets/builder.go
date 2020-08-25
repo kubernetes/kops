@@ -132,7 +132,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 
 	asset.DockerImage = image
 
-	if strings.HasPrefix(image, "kope/dns-controller:") {
+	if strings.HasPrefix(image, "k8s.gcr.io/kops/dns-controller:") {
 		// To use user-defined DNS Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
 		// 2. export DNSCONTROLLER_IMAGE=[your docker hub repo]
@@ -143,7 +143,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
-	if strings.HasPrefix(image, "kope/kops-controller:") {
+	if strings.HasPrefix(image, "k8s.gcr.io/kops/kops-controller:") {
 		// To use user-defined DNS Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make kops-controller-push
 		// 2. export KOPSCONTROLLER_IMAGE=[your docker hub repo]
@@ -154,7 +154,7 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
-	if strings.HasPrefix(image, "kope/kube-apiserver-healthcheck:") {
+	if strings.HasPrefix(image, "k8s.gcr.io/kops/kube-apiserver-healthcheck:") {
 		override := os.Getenv("KUBE_APISERVER_HEALTHCHECK_IMAGE")
 		if override != "" {
 			image = override
