@@ -31,6 +31,7 @@ go_test(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/model/iam:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
     ],

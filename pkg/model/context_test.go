@@ -21,6 +21,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/iam"
 )
 
 func Test_GetELBName32(t *testing.T) {
@@ -48,9 +49,11 @@ func Test_GetELBName32(t *testing.T) {
 	}
 	for _, g := range grid {
 		c := &KopsModelContext{
-			Cluster: &kops.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: g.ClusterName,
+			IAMModelContext: iam.IAMModelContext{
+				Cluster: &kops.Cluster{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: g.ClusterName,
+					},
 				},
 			},
 		}
