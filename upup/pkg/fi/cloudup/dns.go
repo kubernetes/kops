@@ -31,6 +31,7 @@ import (
 	kopsdns "k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -87,7 +88,7 @@ func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 
 func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	kopsModelContext := &model.KopsModelContext{
-		Cluster: cluster,
+		IAMModelContext: iam.IAMModelContext{Cluster: cluster},
 		// We are not initializing a lot of the fields here; revisit once UsePrivateDNS is "real"
 	}
 
