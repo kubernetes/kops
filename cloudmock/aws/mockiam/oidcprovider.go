@@ -17,6 +17,7 @@ limitations under the License.
 package mockiam
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -48,11 +49,28 @@ func (m *MockIAM) ListOpenIDConnectProvidersRequest(*iam.ListOpenIDConnectProvid
 	panic("Not implemented")
 }
 
-func (m *MockIAM) GetOpenIDConnectProviderWithContext(aws.Context, *iam.GetOpenIDConnectProviderInput, ...request.Option) (*iam.GetOpenIDConnectProviderOutput, error) {
-	panic("Not implemented")
+func (m *MockIAM) GetOpenIDConnectProviderWithContext(ctx aws.Context, request *iam.GetOpenIDConnectProviderInput, options ...request.Option) (*iam.GetOpenIDConnectProviderOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	arn := aws.StringValue(request.OpenIDConnectProviderArn)
+
+	provider := m.OIDCProviders[arn]
+	if provider == nil {
+		return nil, fmt.Errorf("OpenIDConnectProvider with arn=%q not found", arn)
+	}
+
+	response := &iam.GetOpenIDConnectProviderOutput{
+		ClientIDList:   provider.ClientIDList,
+		CreateDate:     provider.CreateDate,
+		ThumbprintList: provider.ThumbprintList,
+		Url:            provider.Url,
+	}
+	return response, nil
 }
-func (m *MockIAM) GetOpenIDConnectProvider(*iam.GetOpenIDConnectProviderInput) (*iam.GetOpenIDConnectProviderOutput, error) {
-	panic("Not implemented")
+
+func (m *MockIAM) GetOpenIDConnectProvider(request *iam.GetOpenIDConnectProviderInput) (*iam.GetOpenIDConnectProviderOutput, error) {
+	return m.GetOpenIDConnectProviderWithContext(context.Background(), request)
 }
 
 func (m *MockIAM) GetOpenIDConnectProviderRequest(*iam.GetOpenIDConnectProviderInput) (*request.Request, *iam.GetOpenIDConnectProviderOutput) {

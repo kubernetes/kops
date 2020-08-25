@@ -1,6 +1,7 @@
 // Code generated for package models by go-bindata DO NOT EDIT. (@generated)
 // sources:
 // upup/models/cloudup/resources/addons/OWNERS
+// upup/models/cloudup/resources/addons/anonymous-issuer-discovery.addons.k8s.io/k8s-1.16.yaml.template
 // upup/models/cloudup/resources/addons/authentication.aws/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml
@@ -132,6 +133,37 @@ func cloudupResourcesAddonsOwners() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "cloudup/resources/addons/OWNERS", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplate = []byte(`apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: anonymous-access.addons.k8s.io
+  name: anonymous:service-account-issuer-discovery
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:service-account-issuer-discovery
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:anonymous`)
+
+func cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplate, nil
+}
+
+func cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "cloudup/resources/addons/anonymous-issuer-discovery.addons.k8s.io/k8s-1.16.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -20361,7 +20393,8 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"cloudup/resources/addons/OWNERS":                                                                     cloudupResourcesAddonsOwners,
+	"cloudup/resources/addons/OWNERS": cloudupResourcesAddonsOwners,
+	"cloudup/resources/addons/anonymous-issuer-discovery.addons.k8s.io/k8s-1.16.yaml.template":            cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplate,
 	"cloudup/resources/addons/authentication.aws/k8s-1.10.yaml.template":                                  cloudupResourcesAddonsAuthenticationAwsK8s110YamlTemplate,
 	"cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsAuthenticationAwsK8s112YamlTemplate,
 	"cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml":                                       cloudupResourcesAddonsAuthenticationKopeIoK8s112Yaml,
@@ -20471,6 +20504,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"resources": {nil, map[string]*bintree{
 			"addons": {nil, map[string]*bintree{
 				"OWNERS": {cloudupResourcesAddonsOwners, map[string]*bintree{}},
+				"anonymous-issuer-discovery.addons.k8s.io": {nil, map[string]*bintree{
+					"k8s-1.16.yaml.template": {cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplate, map[string]*bintree{}},
+				}},
 				"authentication.aws": {nil, map[string]*bintree{
 					"k8s-1.10.yaml.template": {cloudupResourcesAddonsAuthenticationAwsK8s110YamlTemplate, map[string]*bintree{}},
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsAuthenticationAwsK8s112YamlTemplate, map[string]*bintree{}},
