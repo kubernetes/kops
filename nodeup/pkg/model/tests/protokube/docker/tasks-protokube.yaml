@@ -85,10 +85,9 @@ definition: |
   [Service]
   ExecStartPre=-/usr/bin/docker stop protokube
   ExecStartPre=-/usr/bin/docker rm protokube
-  ExecStartPre=/bin/true
   ExecStart=/usr/bin/docker run --net=host --pid=host --privileged --volume /:/rootfs --env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig --volume /bin:/bin:ro --volume /lib:/lib:ro --volume /lib64:/lib64:ro --volume /sbin:/sbin:ro --volume /usr/bin:/usr/bin:ro --volume /var/run/dbus:/var/run/dbus --volume /run/systemd:/run/systemd --volume /usr/local/bin:/opt/kops/bin:ro --env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin --name protokube protokube image name /protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=true --dns-internal-suffix=internal.minimal.k8s.local --dns=gossip --etcd-backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/main --etcd-image=k8s.gcr.io/etcd:3.4.3 --initialize-rbac=true --manage-etcd=true --master=true --node-name=master.override.invalid --peer-ca=/srv/kubernetes/ca.crt --peer-cert=/srv/kubernetes/etcd-peer.pem --peer-key=/srv/kubernetes/etcd-peer-key.pem --tls-auth=true --tls-ca=/srv/kubernetes/ca.crt --tls-cert=/srv/kubernetes/etcd.pem --tls-key=/srv/kubernetes/etcd-key.pem --v=4 --zone=*/Z1AFAKE1ZON3YO
   Restart=always
-  RestartSec=2s
+  RestartSec=3s
   StartLimitInterval=0
 
   [Install]
