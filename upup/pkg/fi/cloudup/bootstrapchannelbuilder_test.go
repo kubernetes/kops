@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
@@ -93,15 +94,15 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 
 	tf := &TemplateFunctions{
 		KopsModelContext: model.KopsModelContext{
-			Cluster: cluster,
-			Region:  "us-east-1",
+			IAMModelContext: iam.IAMModelContext{Cluster: cluster},
+			Region:          "us-east-1",
 		},
 	}
 	tf.AddTo(templates.TemplateFunctions, secretStore)
 
 	bcb := BootstrapChannelBuilder{
 		KopsModelContext: &model.KopsModelContext{
-			Cluster: cluster,
+			IAMModelContext: iam.IAMModelContext{Cluster: cluster},
 		},
 		templates:    templates,
 		assetBuilder: assets.NewAssetBuilder(cluster, ""),

@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -78,9 +79,9 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 	b := AutoscalingGroupModelBuilder{
 		AWSModelContext: &AWSModelContext{
 			KopsModelContext: &model.KopsModelContext{
-				SSHPublicKeys:  k,
-				Cluster:        cluster,
-				InstanceGroups: igs,
+				IAMModelContext: iam.IAMModelContext{Cluster: cluster},
+				SSHPublicKeys:   k,
+				InstanceGroups:  igs,
 			},
 		},
 	}

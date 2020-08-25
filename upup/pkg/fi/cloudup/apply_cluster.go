@@ -48,6 +48,7 @@ import (
 	"k8s.io/kops/pkg/model/components/kubeapiserver"
 	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -359,8 +360,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 
 	modelContext := &model.KopsModelContext{
-		Cluster:        cluster,
-		InstanceGroups: c.InstanceGroups,
+		IAMModelContext: iam.IAMModelContext{Cluster: cluster},
+		InstanceGroups:  c.InstanceGroups,
 	}
 
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
