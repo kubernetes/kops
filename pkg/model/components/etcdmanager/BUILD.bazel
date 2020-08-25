@@ -44,6 +44,7 @@ go_test(
     deps = [
         "//pkg/assets:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/model/iam:go_default_library",
         "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
     ],

@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -77,8 +78,8 @@ func LoadKopsModelContext(basedir string) (*model.KopsModelContext, error) {
 	}
 
 	kopsContext := &model.KopsModelContext{
-		Cluster:        spec.Cluster,
-		InstanceGroups: spec.InstanceGroups,
+		IAMModelContext: iam.IAMModelContext{Cluster: spec.Cluster},
+		InstanceGroups:  spec.InstanceGroups,
 	}
 
 	return kopsContext, nil
