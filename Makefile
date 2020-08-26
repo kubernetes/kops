@@ -644,8 +644,8 @@ bazel-protokube-export:
 .PHONY: bazel-kube-apiserver-healthcheck-export
 bazel-kube-apiserver-healthcheck-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:image-bundle-amd64.tar.gz.sha256
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:image-bundle-arm64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:image-bundle-amd64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:image-bundle-arm64.tar.gz.sha256
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-amd64.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256
@@ -654,8 +654,8 @@ bazel-kube-apiserver-healthcheck-export:
 .PHONY: bazel-kops-controller-export
 bazel-kops-controller-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle-amd64.tar.gz.sha256
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:image-bundle-arm64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle-amd64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:image-bundle-arm64.tar.gz.sha256
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle-amd64.tar.gz ${BAZELIMAGES}/kops-controller-amd64.tar.gz
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kops-controller-arm64.tar.gz
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256
@@ -664,8 +664,8 @@ bazel-kops-controller-export:
 .PHONY: bazel-dns-controller-export
 bazel-dns-controller-export:
 	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle-amd64.tar.gz.sha256
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="kope/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:image-bundle-arm64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle-amd64.tar.gz.sha256
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:image-bundle-arm64.tar.gz.sha256
 	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz ${BAZELIMAGES}/dns-controller-amd64.tar.gz
 	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/dns-controller-arm64.tar.gz
 	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256
