@@ -856,9 +856,10 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 				continue
 			}
 			subnet := api.ClusterSubnetSpec{
-				Name: "utility-" + s.Name,
-				Zone: s.Zone,
-				Type: api.SubnetTypeUtility,
+				Name:   "utility-" + s.Name,
+				Zone:   s.Zone,
+				Type:   api.SubnetTypeUtility,
+				Region: s.Region,
 			}
 			if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
 				subnet.ProviderID = subnetID
