@@ -6429,7 +6429,7 @@ func cloudupResourcesAddonsNetworkingKopeIoK8s16Yaml() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingKuberouterK8s112YamlTemplate = []byte(`# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.0.0/daemonset/kubeadm-kuberouter.yaml
+var _cloudupResourcesAddonsNetworkingKuberouterK8s112YamlTemplate = []byte(`# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.0.1/daemonset/kubeadm-kuberouter.yaml
 
 apiVersion: v1
 kind: ConfigMap
@@ -6452,6 +6452,13 @@ data:
              "isDefaultGateway":true,
              "ipam":{
                 "type":"host-local"
+             }
+          },
+          {
+             "type": "portmap",
+             "capabilities": {
+                "snat": true,
+                "portMappings": true
              }
           }
        ]
@@ -6480,11 +6487,12 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v1.0.0
+        image: docker.io/cloudnativelabs/kube-router:v1.0.1
         args:
         - --run-router=true
         - --run-firewall=true
         - --run-service-proxy=true
+        - --bgp-graceful-restart=true
         - --kubeconfig=/var/lib/kube-router/kubeconfig
         - --metrics-port=12013
         env:
@@ -6520,7 +6528,7 @@ spec:
           readOnly: false
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v1.0.0
+        image: docker.io/cloudnativelabs/kube-router:v1.0.1
         command:
         - /bin/sh
         - -c
