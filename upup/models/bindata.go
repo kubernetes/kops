@@ -4018,7 +4018,7 @@ spec:
       tolerations:
       - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.0" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.1" }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 61678
@@ -4094,7 +4094,7 @@ spec:
         - mountPath: /var/run/dockershim.sock
           name: dockershim
       initContainers:
-      - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.0
+      - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.1
         imagePullPolicy: Always
         name: aws-vpc-cni-init
         resources: {}
