@@ -497,8 +497,11 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 		if err != nil {
 			return err
 		}
-		if len(sgs) != 1 {
+		if len(sgs) == 0 {
 			continue
+		}
+		if len(sgs) > 1 {
+			return fmt.Errorf("Found multiple security groups with the same name: %v", sgName)
 		}
 		sg := sgs[0]
 		sgt.Name = fi.String(sg.Name)
