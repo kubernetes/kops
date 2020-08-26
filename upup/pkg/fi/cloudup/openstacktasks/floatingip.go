@@ -96,11 +96,11 @@ func (e *FloatingIP) FindIPAddress(context *fi.Context) (*string, error) {
 		return nil, fmt.Errorf("Could not find port floatingips port=%s", fi.StringValue(e.LB.PortID))
 	}
 
-	fip, err := cloud.GetFloatingIP(fi.StringValue(e.ID))
+	fip, err := cloud.GetL3FloatingIP(fi.StringValue(e.ID))
 	if err != nil {
 		return nil, err
 	}
-	return &fip.IP, nil
+	return &fip.FloatingIP, nil
 }
 
 // GetDependencies returns the dependencies of the Instance task
