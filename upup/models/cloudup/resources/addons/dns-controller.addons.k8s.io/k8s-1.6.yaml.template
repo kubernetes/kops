@@ -33,7 +33,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.19.0-alpha.3
+        image: k8s.gcr.io/kops/dns-controller:1.19.0-alpha.3
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
