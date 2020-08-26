@@ -54,6 +54,9 @@ type IssueCert struct {
 	Subject        PKIXName `json:"subject"`
 	AlternateNames []string `json:"alternateNames,omitempty"`
 
+	// IncludeRootCertificate will force the certificate data to include the full chain, not just the leaf
+	IncludeRootCertificate bool `json:"includeRootCertificate,omitempty"`
+
 	cert *fi.TaskDependentResource
 	key  *fi.TaskDependentResource
 	ca   *fi.TaskDependentResource
@@ -159,6 +162,18 @@ func (e *IssueCert) Run(c *fi.Context) error {
 	certResource.Resource = &asBytesResource{certificate}
 	keyResource.Resource = &asBytesResource{privateKey}
 	caResource.Resource = &asBytesResource{caCertificate}
+
+	if e.IncludeRootCertificate {
+		var b bytes.Buffer
+		if _, err := certificate.WriteTo(&b); err != nil {
+			return err
+		}
+		b.WriteString("\n")
+		if _, err := caCertificate.WriteTo(&b); err != nil {
+			return err
+		}
+		certResource.Resource = fi.NewBytesResource(b.Bytes())
+	}
 
 	return nil
 }
