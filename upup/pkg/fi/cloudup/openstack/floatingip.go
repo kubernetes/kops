@@ -19,20 +19,19 @@ package openstack
 import (
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
-func (c *openstackCloud) GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error) {
-	return getFloatingIP(c, id)
+func (c *openstackCloud) GetL3FloatingIP(id string) (fip *l3floatingip.FloatingIP, err error) {
+	return getL3FloatingIP(c, id)
 }
 
-func getFloatingIP(c OpenstackCloud, id string) (fip *floatingips.FloatingIP, err error) {
+func getL3FloatingIP(c OpenstackCloud, id string) (fip *l3floatingip.FloatingIP, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 
-		fip, err = floatingips.Get(c.ComputeClient(), id).Extract()
+		fip, err = l3floatingip.Get(c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, fmt.Errorf("GetFloatingIP: fetching floating IP (%s) failed: %v", id, err)
 		}
@@ -45,47 +44,6 @@ func getFloatingIP(c OpenstackCloud, id string) (fip *floatingips.FloatingIP, er
 		return fip, err
 	}
 	return fip, nil
-}
-
-func (c *openstackCloud) CreateFloatingIP(opts floatingips.CreateOpts) (fip *floatingips.FloatingIP, err error) {
-	return createFloatingIP(c, opts)
-}
-
-func createFloatingIP(c OpenstackCloud, opts floatingips.CreateOpts) (fip *floatingips.FloatingIP, err error) {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-
-		fip, err = floatingips.Create(c.ComputeClient(), opts).Extract()
-		if err != nil {
-			return false, fmt.Errorf("CreateFloatingIP: create floating IP failed: %v", err)
-		}
-		return true, nil
-	})
-	if !done {
-		if err == nil {
-			err = wait.ErrWaitTimeout
-		}
-		return fip, err
-	}
-	return fip, nil
-}
-
-func (c *openstackCloud) AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error) {
-	return associateFloatingIPToInstance(c, serverID, opts)
-}
-
-func associateFloatingIPToInstance(c OpenstackCloud, serverID string, opts floatingips.AssociateOpts) (err error) {
-	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		err = floatingips.AssociateInstance(c.ComputeClient(), serverID, opts).ExtractErr()
-		if err != nil {
-			return false, err
-		}
-		return true, nil
-	})
-
-	if !done && err == nil {
-		err = wait.ErrWaitTimeout
-	}
-	return err
 }
 
 func (c *openstackCloud) CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error) {
@@ -108,32 +66,6 @@ func createL3FloatingIP(c OpenstackCloud, opts l3floatingip.CreateOpts) (fip *l3
 		return fip, err
 	}
 	return fip, nil
-}
-
-func (c *openstackCloud) ListFloatingIPs() (fips []floatingips.FloatingIP, err error) {
-	return listFloatingIPs(c)
-}
-
-func listFloatingIPs(c OpenstackCloud) (fips []floatingips.FloatingIP, err error) {
-
-	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		pages, err := floatingips.List(c.ComputeClient()).AllPages()
-		if err != nil {
-			return false, fmt.Errorf("failed to list floating ip: %v", err)
-		}
-		fips, err = floatingips.ExtractFloatingIPs(pages)
-		if err != nil {
-			return false, fmt.Errorf("failed to extract floating ip: %v", err)
-		}
-		return true, nil
-	})
-	if !done {
-		if err == nil {
-			err = wait.ErrWaitTimeout
-		}
-		return fips, err
-	}
-	return fips, nil
 }
 
 func (c *openstackCloud) ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error) {

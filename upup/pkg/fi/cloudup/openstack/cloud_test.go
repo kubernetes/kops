@@ -26,7 +26,6 @@ import (
 	"testing"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	l3floatingips "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
@@ -39,7 +38,6 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 		desc                 string
 		cluster              *kops.Cluster
 		loadbalancers        []loadbalancers.LoadBalancer
-		floatingIPs          []floatingips.FloatingIP
 		l3FloatingIPs        []l3floatingips.FloatingIP
 		instances            serverList
 		cloudFloatingEnabled bool
@@ -321,19 +319,6 @@ func Test_OpenstackCloud_GetApiIngressStatus(t *testing.T) {
 				string(mustJSONMarshal(json.Marshal(
 					struct{ LoadBalancers []loadbalancers.LoadBalancer }{
 						LoadBalancers: testCase.loadbalancers,
-					},
-				))),
-				http.StatusOK,
-			)
-			fixture(
-				mux,
-				"/os-floating-ips",
-				http.MethodGet,
-				string(mustJSONMarshal(json.Marshal(
-					struct {
-						FloatingIPs []floatingips.FloatingIP `json:"floating_ips"`
-					}{
-						FloatingIPs: testCase.floatingIPs,
 					},
 				))),
 				http.StatusOK,

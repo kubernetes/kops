@@ -24,7 +24,6 @@ import (
 	"github.com/gophercloud/gophercloud"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
@@ -162,20 +161,12 @@ func (c *MockCloud) AppendTag(resource string, id string, tag string) error {
 	return appendTag(c, resource, id, tag)
 }
 
-func (c *MockCloud) AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error) {
-	return associateFloatingIPToInstance(c, serverID, opts)
-}
-
 func (c *MockCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
 	return associateToPool(c, server, poolID, opts)
 }
 
 func (c *MockCloud) AttachVolume(serverID string, opts volumeattach.CreateOpts) (attachment *volumeattach.VolumeAttachment, err error) {
 	return attachVolume(c, serverID, opts)
-}
-
-func (c *MockCloud) CreateFloatingIP(opts floatingips.CreateOpts) (fip *floatingips.FloatingIP, err error) {
-	return createFloatingIP(c, opts)
 }
 
 func (c *MockCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
@@ -325,8 +316,8 @@ func (c *MockCloud) GetExternalSubnet() (subnet *subnets.Subnet, err error) {
 	return getExternalSubnet(c, c.extSubnetName)
 }
 
-func (c *MockCloud) GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error) {
-	return getFloatingIP(c, id)
+func (c *MockCloud) GetL3FloatingIP(id string) (fip *l3floatingip.FloatingIP, err error) {
+	return getL3FloatingIP(c, id)
 }
 
 func (c *MockCloud) GetImage(name string) (*images.Image, error) {
@@ -380,9 +371,6 @@ func (c *MockCloud) ListDNSZones(opt zones.ListOptsBuilder) ([]zones.Zone, error
 }
 func (c *MockCloud) ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error) {
 	return listDNSRecordsets(c, zoneID, opt)
-}
-func (c *MockCloud) ListFloatingIPs() (fips []floatingips.FloatingIP, err error) {
-	return listFloatingIPs(c)
 }
 
 func (c *MockCloud) ListInstances(opt servers.ListOptsBuilder) ([]servers.Server, error) {

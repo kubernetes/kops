@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"strconv"
 
+	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -253,10 +254,12 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 
 func associateFloatingIP(t *openstack.OpenstackAPITarget, e *Instance) error {
 	cloud := t.Cloud.(openstack.OpenstackCloud)
+	client := cloud.NetworkingClient()
 
-	err := cloud.AssociateFloatingIPToInstance(fi.StringValue(e.ID), floatingips.AssociateOpts{
-		FloatingIP: fi.StringValue(e.FloatingIP.IP),
-	})
+	_, err := l3floatingip.Update(client, fi.StringValue(e.FloatingIP.ID), l3floatingip.UpdateOpts{
+		PortID: e.Port.ID,
+	}).Extract()
+
 	if err != nil {
 		return fmt.Errorf("failed to associated floating IP to instance %s: %v", *e.Name, err)
 	}
