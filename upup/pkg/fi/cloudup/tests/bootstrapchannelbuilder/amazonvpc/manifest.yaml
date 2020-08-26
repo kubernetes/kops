@@ -105,7 +105,7 @@ spec:
   - id: k8s-1.16
     kubernetesVersion: '>=1.16.0'
     manifest: networking.amazon-vpc-routed-eni/k8s-1.16.yaml
-    manifestHash: 8279e7bffce848b7cd30e87e5c7c5c64c5955e4c
+    manifestHash: 4399dbdb75f15e9484e6f1b9b7930ba0c28ea755
     name: networking.amazon-vpc-routed-eni
     selector:
       role.kubernetes.io/networking: "1"
