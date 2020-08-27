@@ -29,6 +29,7 @@ kops update cluster [flags]
       --allow-kops-downgrade          Allow an older version of kops to update the cluster than last used
       --create-kube-config            Will control automatically creating the kube config file on your local filesystem
   -h, --help                          help for cluster
+      --internal                      Use the cluster's internal DNS name. Implies --create-kube-config
       --lifecycle-overrides strings   comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges
       --out string                    Path to write any local output
       --phase string                  Subset of tasks to run: assets, cluster, network, security

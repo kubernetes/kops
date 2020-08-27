@@ -48,7 +48,9 @@ spec:
       idleTimeoutSeconds: 300
 ```
 
-You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported:
+You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported.
+
+Note that when using `sslCertificate`, client certificate authentication, such as with the credentials generated via `kops export kubecfg`, will not work through the load balancer. As of Kops 1.19, a `kubecfg` that bypasses the load balancer may be created with the `--internal` flag to `kops update cluster` or `kops export kubecfg`. Security groups may need to be opened to allow access from the clients to the master instances' port TCP/443, for example by using the `additionalSecurityGroups` field on the master instance groups.
 
 ```yaml
 spec:
