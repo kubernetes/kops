@@ -1,35 +1,35 @@
-apiVersion: kops.k8s.io/v1alpha1
+apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: private.example.com
 spec:
-  adminAccess:
-  - 0.0.0.0/0
   api:
     loadBalancer:
       type: Public
   authorization:
     rbac: {}
   channel: stable
+  cloudConfig:
+    gceServiceAccount: test-account@testproject.iam.gserviceaccount.com
   cloudLabels:
     Owner: John Doe
     dn: 'cn=John Doe: dc=example dc=com'
     foo/bar: fib+baz
-  cloudProvider: aws
+  cloudProvider: gce
   configBase: memfs://tests/private.example.com
   containerRuntime: docker
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - name: a
-      zone: us-test-1a
+    - instanceGroup: master-us-test1-a
+      name: a
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - name: a
-      zone: us-test-1a
+    - instanceGroup: master-us-test1-a
+      name: a
     memoryRequest: 100Mi
     name: events
   iam:
@@ -37,28 +37,35 @@ spec:
     legacy: false
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.15.6
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: v1.19.6
   masterPublicName: api.private.example.com
-  networkCIDR: 172.20.0.0/16
   networking:
-    kopeio: {}
+    calico:
+      majorVersion: v3
   nonMasqueradeCIDR: 100.64.0.0/10
+  project: testproject
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - name: us-test1
+    region: us-test1
+    type: Private
+  - name: utility-us-test1
+    region: us-test1
+    type: Utility
   topology:
     bastion:
-      enable: true
-      name: bastion.private.example.com
+      bastionPublicName: bastion.private.example.com
     dns:
       type: Public
     masters: private
     nodes: private
-  zones:
-  - cidr: 172.20.0.0/22
-    name: us-test-1a
-    privateCIDR: 172.20.32.0/19
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha1
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
@@ -66,58 +73,67 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: bastions
 spec:
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
-  machineType: t2.micro
+  image: cos-cloud/cos-stable-77-12371-114-0
+  machineType: f1-micro
   maxSize: 1
   minSize: 1
   nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
     kops.k8s.io/instancegroup: bastions
   role: Bastion
+  subnets:
+  - us-test1
   zones:
-  - utility-us-test-1a
+  - us-test1-a
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha1
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: private.example.com
-  name: master-us-test-1a
+  name: master-us-test1-a
 spec:
   additionalSecurityGroups:
   - sg-exampleid3
   - sg-exampleid4
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
-  machineType: m3.medium
+  image: cos-cloud/cos-stable-77-12371-114-0
+  machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: master-us-test-1a
+    cloud.google.com/metadata-proxy-ready: "true"
+    kops.k8s.io/instancegroup: master-us-test1-a
   role: Master
+  subnets:
+  - us-test1
   zones:
-  - us-test-1a
+  - us-test1-a
 
 ---
 
-apiVersion: kops.k8s.io/v1alpha1
+apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: private.example.com
-  name: nodes
+  name: nodes-us-test1-a
 spec:
   additionalSecurityGroups:
   - sg-exampleid
   - sg-exampleid2
-  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-01-17
-  machineType: t2.medium
-  maxSize: 2
-  minSize: 2
+  image: cos-cloud/cos-stable-77-12371-114-0
+  machineType: n1-standard-2
+  maxSize: 1
+  minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: nodes
+    cloud.google.com/metadata-proxy-ready: "true"
+    kops.k8s.io/instancegroup: nodes-us-test1-a
   role: Node
+  subnets:
+  - us-test1
   zones:
-  - us-test-1a
+  - us-test1-a
