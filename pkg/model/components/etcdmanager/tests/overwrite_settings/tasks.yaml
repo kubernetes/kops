@@ -84,6 +84,11 @@ Contents:
         - name: ETCD_QUOTA_BACKEND_BYTES
           value: "10737418240"
         image: kopeio/etcd-manager:3.0.20200531
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sleep 35
         name: etcd-manager
         resources:
           requests:
@@ -101,6 +106,7 @@ Contents:
       hostNetwork: true
       hostPID: true
       priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 40
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -146,6 +152,11 @@ Contents:
         - name: ETCD_QUOTA_BACKEND_BYTES
           value: "10737418240"
         image: kopeio/etcd-manager:3.0.20200531
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sleep 35
         name: etcd-manager
         resources:
           requests:
@@ -163,6 +174,7 @@ Contents:
       hostNetwork: true
       hostPID: true
       priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 40
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists

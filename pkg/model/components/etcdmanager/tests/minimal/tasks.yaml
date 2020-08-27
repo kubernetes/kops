@@ -81,6 +81,11 @@ Contents:
         - -c
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3997 --insecure=false --peer-urls=https://__name__:2381 --quarantine-client-urls=https://__name__:3995 --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
         image: kopeio/etcd-manager:3.0.20200531
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sleep 35
         name: etcd-manager
         resources:
           requests:
@@ -98,6 +103,7 @@ Contents:
       hostNetwork: true
       hostPID: true
       priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 40
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -140,6 +146,11 @@ Contents:
         - -c
         - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true --dns-suffix=.internal.minimal.example.com --etcd-insecure=true --grpc-port=3996 --insecure=false --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/master=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
         image: kopeio/etcd-manager:3.0.20200531
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sleep 35
         name: etcd-manager
         resources:
           requests:
@@ -157,6 +168,7 @@ Contents:
       hostNetwork: true
       hostPID: true
       priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 40
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists

@@ -246,6 +246,20 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		kubemanifest.MapEtcHosts(pod, container, false)
 	}
 
+	if b.IsKubernetesGTE("1.16") {
+		// This coincides with kube-apiserver's terminationGracePeriodSeconds
+		// to handle remaining requests from the cloud provider load balancer
+		// while this master instance is being marked unhealthy during termination
+		container.Lifecycle = &v1.Lifecycle{
+			PreStop: &v1.Handler{
+				Exec: &v1.ExecAction{
+					Command: []string{"sleep 35"},
+				},
+			},
+		}
+		pod.Spec.TerminationGracePeriodSeconds = fi.Int64(40)
+	}
+
 	// Remap image via AssetBuilder
 	{
 		remapped, err := b.AssetBuilder.RemapImage(container.Image)
