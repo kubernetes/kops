@@ -67,6 +67,9 @@ type LoadBalancer struct {
 
 	Tags         map[string]string
 	ForAPIServer bool
+
+	// Shared is set if this is an external LB (one we don't create or own)
+	Shared *bool
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -438,6 +441,13 @@ func (e *LoadBalancer) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+func (_ *LoadBalancer) ShouldCreate(a, e, changes *LoadBalancer) (bool, error) {
+	if fi.BoolValue(e.Shared) {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (e *LoadBalancer) Normalize() {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetsById(e.Subnets))
@@ -449,11 +459,15 @@ func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 		if fi.StringValue(e.Name) == "" {
 			return fi.RequiredField("Name")
 		}
-		if len(e.SecurityGroups) == 0 {
-			return fi.RequiredField("SecurityGroups")
-		}
-		if len(e.Subnets) == 0 {
-			return fi.RequiredField("Subnets")
+
+		shared := fi.BoolValue(e.Shared)
+		if !shared {
+			if len(e.SecurityGroups) == 0 {
+				return fi.RequiredField("SecurityGroups")
+			}
+			if len(e.Subnets) == 0 {
+				return fi.RequiredField("Subnets")
+			}
 		}
 
 		if e.AccessLog != nil {
@@ -483,6 +497,11 @@ func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 }
 
 func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		return nil
+	}
+
 	var loadBalancerName string
 	if a == nil {
 		if e.LoadBalancerName == nil {
@@ -692,6 +711,11 @@ type terraformLoadBalancerHealthCheck struct {
 }
 
 func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		return nil
+	}
+
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	if e.LoadBalancerName == nil {
@@ -782,6 +806,16 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 }
 
 func (e *LoadBalancer) TerraformLink(params ...string) *terraform.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.Name == nil {
+			klog.Fatalf("Name must be set, if LB is shared: %s", e)
+		}
+
+		klog.V(4).Infof("reusing existing LB with name %q", *e.Name)
+		return terraform.LiteralFromStringValue(*e.Name)
+	}
+
 	prop := "id"
 	if len(params) > 0 {
 		prop = params[0]
@@ -835,6 +869,11 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 	// TODO: From http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-elb.html:
 	// If this resource has a public IP address and is also in a VPC that is defined in the same template,
 	// you must use the DependsOn attribute to declare a dependency on the VPC-gateway attachment.
+
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		return nil
+	}
 
 	cloud := t.Cloud.(awsup.AWSCloud)
 
@@ -912,6 +951,16 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 }
 
 func (e *LoadBalancer) CloudformationLink() *cloudformation.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.Name == nil {
+			klog.Fatalf("Name must be set, if LB is shared: %s", e)
+		}
+
+		klog.V(4).Infof("reusing existing LB with name %q", *e.Name)
+		return cloudformation.LiteralString(*e.Name)
+	}
+
 	return cloudformation.Ref("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name)
 }
 
