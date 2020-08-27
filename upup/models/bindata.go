@@ -12233,14 +12233,6 @@ spec:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            preference:
-              matchExpressions:
-              - key: node-role.kubernetes.io/master
-                operator: Exists
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: true
@@ -16226,14 +16218,6 @@ spec:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            preference:
-              matchExpressions:
-              - key: node-role.kubernetes.io/master
-                operator: Exists
       nodeSelector:
         kubernetes.io/os: linux
       hostNetwork: true
