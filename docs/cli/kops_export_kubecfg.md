@@ -21,6 +21,9 @@ kops export kubecfg CLUSTERNAME [flags]
   
   # export using a user already existing in the kubeconfig file
   kops export kubecfg kubernetes-cluster.example.com --user my-oidc-user
+  
+  # export using the internal DNS name, bypassing the cloud load balancer
+  kops export kubecfg kubernetes-cluster.example.com --internal
 ```
 
 ### Options
@@ -29,6 +32,7 @@ kops export kubecfg CLUSTERNAME [flags]
       --admin duration[=18h0m0s]   export a cluster admin user credential with the given lifetime and add it to the cluster context
       --all                        export all clusters from the kops state store
   -h, --help                       help for kubecfg
+      --internal                   use the cluster's internal DNS name
       --kubeconfig string          the location of the kubeconfig file to create.
       --user string                add an existing user to the cluster context
 ```
