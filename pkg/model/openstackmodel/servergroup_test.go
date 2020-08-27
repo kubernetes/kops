@@ -3420,10 +3420,10 @@ func pointersAreBothNil(t *testing.T, name string, actual, expected interface{})
 		return true
 	}
 	if actual == nil && expected != nil {
-		t.Fatalf("%s differ: actual is nil, expected is not", name)
+		t.Errorf("%s differ: actual is nil, expected is not", name)
 	}
 	if actual != nil && expected == nil {
-		t.Fatalf("%s differ: expected is nil, actual is not", name)
+		t.Errorf("%s differ: expected is nil, actual is not", name)
 	}
 	return false
 }
