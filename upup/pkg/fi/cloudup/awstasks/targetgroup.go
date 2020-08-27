@@ -89,10 +89,6 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	return fmt.Errorf("non shared Target Groups is not yet supported")
 }
 
-type terraformTargetGroup struct {
-	Name *string `json:"name" cty:"name"`
-}
-
 func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
@@ -114,10 +110,6 @@ func (e *TargetGroup) TerraformLink(params ...string) *terraform.Literal {
 	}
 
 	return nil
-}
-
-type cloudformationTargetGroup struct {
-	Name *string `json:"Name,omitempty"`
 }
 
 func (_ *TargetGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *TargetGroup) error {
