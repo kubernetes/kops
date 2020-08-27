@@ -51,8 +51,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 
 	sshKeyName := strings.Replace(sshKeyNameFull, ":", "_", -1)
 
-	clusterTag := "KubernetesCluster:" + strings.Replace(b.ClusterName(), ".", "-", -1)
-
 	igMeta := make(map[string]string)
 	cloudTags, err := b.KopsModelContext.CloudTagsForInstanceGroup(ig)
 	if err != nil {
@@ -149,7 +147,6 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.ModelBuilderContext, sg *
 			Image:            fi.String(ig.Spec.Image),
 			SSHKey:           fi.String(sshKeyName),
 			ServerGroup:      sg,
-			Tags:             []string{clusterTag},
 			Role:             fi.String(string(ig.Spec.Role)),
 			Port:             portTask,
 			UserData:         startupScript,
