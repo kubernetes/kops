@@ -34,7 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
@@ -47,7 +46,6 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/k8sversion"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -995,14 +993,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	case "calico":
 		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{
 			MajorVersion: "v3",
-		}
-		// Validate to check if etcd clusters have an acceptable version
-		if errList := validation.ValidateEtcdVersionForCalicoV3(cluster.Spec.EtcdClusters[0], cluster.Spec.Networking.Calico.MajorVersion, field.NewPath("spec", "networking", "calico")); len(errList) != 0 {
-
-			// This is not a special version but simply of the 3 series
-			for _, etcd := range cluster.Spec.EtcdClusters {
-				etcd.Version = components.DefaultEtcd3Version_1_11
-			}
 		}
 	case "canal":
 		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
