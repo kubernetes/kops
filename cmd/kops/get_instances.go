@@ -27,31 +27,20 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 
-	"k8s.io/kops/upup/pkg/fi"
-
-	"k8s.io/kops/pkg/client/simple"
-
-	"k8s.io/kops/pkg/resources/openstack"
-
 	"k8s.io/klog/v2"
 
 	"k8s.io/client-go/kubernetes"
 
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/util/pkg/tables"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/resources/aws"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-
-	osCloudup "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
 func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *cobra.Command {
@@ -119,114 +108,70 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	var status map[string]string
 	nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		klog.V(2).Infof("error listing nodes: %v", err)
-	} else {
-		status, _ = getNodeStatus(ctx, cloud, clientset, cluster, nodeList.Items)
 	}
 
-	var instances []*resources.Instance
-
-	switch cloud.ProviderID() {
-	case kops.CloudProviderAWS:
-		rs, _ := aws.ListInstances(cloud, options.clusterName)
-		for _, r := range rs {
-			instances = append(instances, aws.GetInstanceFromResource(r))
-		}
-	case kops.CloudProviderOpenstack:
-		rs, _ := openstack.ListResources(cloud.(osCloudup.OpenstackCloud), options.clusterName)
-		for _, r := range rs {
-			if r.Type == "Instance" {
-				instances = append(instances, openstack.GetInstanceFromResource(r))
-			}
-		}
-	default:
-		return fmt.Errorf("cloud provider not supported")
-	}
-
-	switch options.output {
-	case OutputTable:
-		return instanceOutputTable(instances, status, out)
-	default:
-		return fmt.Errorf("Unsupported output format: %q", options.output)
-	}
-}
-
-func instanceOutputTable(instances []*resources.Instance, status map[string]string, out io.Writer) error {
-	t := &tables.Table{}
-	t.AddColumn("ID", func(i *resources.Instance) string {
-		return i.ID
-	})
-	t.AddColumn("NAME", func(i *resources.Instance) string {
-		return i.Name
-	})
-	t.AddColumn("STATUS", func(i *resources.Instance) string {
-		s := status[i.ID]
-		if s == "" {
-			return "NotJoined"
-		} else {
-			return s
-		}
-	})
-	t.AddColumn("ROLES", func(i *resources.Instance) string {
-		return strings.Join(i.Roles, ", ")
-	})
-	t.AddColumn("INTERNAL-IP", func(i *resources.Instance) string {
-		return i.PrivateAddress
-	})
-	t.AddColumn("INSTANCE-GROUP", func(i *resources.Instance) string {
-		return i.InstanceGroup
-	})
-	t.AddColumn("MACHINE-TYPE", func(i *resources.Instance) string {
-		return i.MachineType
-	})
-	return t.Render(instances, os.Stdout, "ID", "NAME", "STATUS", "ROLES", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE")
-}
-
-func getNodeStatus(ctx context.Context, cloud fi.Cloud, clientset simple.Clientset, cluster *kops.Cluster, nodes []v1.Node) (map[string]string, error) {
-	status := make(map[string]string)
 	igList, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var instanceGroups []*kops.InstanceGroup
 	for i := range igList.Items {
 		instanceGroups = append(instanceGroups, &igList.Items[i])
 	}
-	igs := cloudinstances.GetNodeMap(nodes, cluster)
 
-	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodes)
+	var cloudInstances []*cloudinstances.CloudInstance
+
+	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodeList.Items)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, cg := range cloudGroups {
-		for _, instance := range cg.Ready {
-			if instance.Detached {
-				status[instance.ID] = "Detached"
-			} else {
-				if igs[instance.ID] != nil {
-					status[instance.ID] = "Ready"
-				} else {
-					status[instance.ID] = "NotJoined"
-				}
-			}
-		}
+		cloudInstances = append(cloudInstances, cg.Ready...)
+		cloudInstances = append(cloudInstances, cg.NeedUpdate...)
 	}
 
-	for _, cg := range cloudGroups {
-		for _, node := range cg.NeedUpdate {
-			if node.Detached {
-				status[node.ID] = "Detached"
-			} else {
-				status[node.ID] = "NeedsUpdate"
-			}
-		}
+	switch options.output {
+	case OutputTable:
+		return instanceOutputTable(cloudInstances, out)
+	default:
+		return fmt.Errorf("unsupported output format: %q", options.output)
 	}
-	return status, nil
+}
+
+func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Writer) error {
+	t := &tables.Table{}
+	t.AddColumn("ID", func(i *cloudinstances.CloudInstance) string {
+		return i.ID
+	})
+	t.AddColumn("NODE-NAME", func(i *cloudinstances.CloudInstance) string {
+		node := i.Node
+		if node == nil {
+			return "NotJoined"
+		} else {
+			return node.Name
+		}
+	})
+	t.AddColumn("STATUS", func(i *cloudinstances.CloudInstance) string {
+		return i.Status
+	})
+	t.AddColumn("ROLES", func(i *cloudinstances.CloudInstance) string {
+		return strings.Join(i.Roles, ", ")
+	})
+	t.AddColumn("INTERNAL-IP", func(i *cloudinstances.CloudInstance) string {
+		return i.PrivateIP
+	})
+	t.AddColumn("INSTANCE-GROUP", func(i *cloudinstances.CloudInstance) string {
+		return i.CloudInstanceGroup.HumanName
+	})
+	t.AddColumn("MACHINE-TYPE", func(i *cloudinstances.CloudInstance) string {
+		return i.MachineType
+	})
+	return t.Render(instances, os.Stdout, "ID", "NODE-NAME", "STATUS", "ROLES", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE")
 }
 
 func createK8sClient(cluster *kops.Cluster) (*kubernetes.Clientset, error) {
