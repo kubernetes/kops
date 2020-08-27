@@ -567,6 +567,20 @@
         "IpProtocol": "-1"
       }
     },
+    "AWSEC2SecurityGroupIngresshealthcheckelbtomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbcomplexexamplecom"
+        },
+        "FromPort": 3990,
+        "ToPort": 3990,
+        "IpProtocol": "tcp"
+      }
+    },
     "AWSEC2SecurityGroupIngresshttpsapielb111024": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -1089,7 +1103,7 @@
           }
         ],
         "HealthCheck": {
-          "Target": "SSL:443",
+          "Target": "HTTP:3990/readyz",
           "HealthyThreshold": 2,
           "UnhealthyThreshold": 2,
           "Interval": 10,

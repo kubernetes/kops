@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -137,7 +138,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// Configure fast-recovery health-checks
 			HealthCheck: &awstasks.LoadBalancerHealthCheck{
-				Target:             fi.String("SSL:443"),
 				Timeout:            fi.Int64(5),
 				Interval:           fi.Int64(10),
 				HealthyThreshold:   fi.Int64(2),
@@ -149,6 +149,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			},
 
 			Tags: tags,
+		}
+
+		if b.IsKubernetesGTE("1.19") {
+			elb.HealthCheck.Target = fi.String(fmt.Sprintf("HTTP:%v/readyz", wellknownports.KubeAPIServerHealthCheck))
+		} else {
+			elb.HealthCheck.Target = fi.String("SSL:443")
 		}
 
 		if lbSpec.CrossZoneLoadBalancing == nil {
@@ -264,6 +270,17 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				SourceGroup:   lbSG,
 				ToPort:        fi.Int64(443),
 			})
+			if b.IsKubernetesGTE("1.19") {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.String(fmt.Sprintf("healthcheck-elb-to-master%s", suffix)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.Int64(wellknownports.KubeAPIServerHealthCheck),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: masterGroup.Task,
+					SourceGroup:   lbSG,
+					ToPort:        fi.Int64(wellknownports.KubeAPIServerHealthCheck),
+				})
+			}
 		}
 	}
 

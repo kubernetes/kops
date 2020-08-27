@@ -219,7 +219,7 @@ resource "aws_elb" "api-complex-example-com" {
   health_check {
     healthy_threshold   = 2
     interval            = 10
-    target              = "SSL:443"
+    target              = "HTTP:3990/readyz"
     timeout             = 5
     unhealthy_threshold = 2
   }
@@ -488,6 +488,15 @@ resource "aws_security_group_rule" "api-elb-egress" {
   security_group_id = aws_security_group.api-elb-complex-example-com.id
   to_port           = 0
   type              = "egress"
+}
+
+resource "aws_security_group_rule" "healthcheck-elb-to-master" {
+  from_port                = 3990
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-complex-example-com.id
+  source_security_group_id = aws_security_group.api-elb-complex-example-com.id
+  to_port                  = 3990
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "https-api-elb-1-1-1-0--24" {

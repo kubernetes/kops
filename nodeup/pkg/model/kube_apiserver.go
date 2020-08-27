@@ -397,11 +397,15 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 
+	if b.IsKubernetesGTE("1.16") {
+		flags = append(flags, "--shutdown-delay-duration=30s")
+		pod.Spec.TerminationGracePeriodSeconds = fi.Int64(35)
+	}
+
 	useHealthcheckProxy := b.findHealthcheckManifest() != nil
 
 	probeAction := &v1.HTTPGetAction{
 		Host: "127.0.0.1",
-		Path: "/healthz",
 		Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
 	}
 	if useHealthcheckProxy {
@@ -412,7 +416,11 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		probeAction.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
 		probeAction.Scheme = v1.URISchemeHTTPS
 	}
-
+	if b.IsKubernetesGTE("1.16") {
+		probeAction.Path = "/livez"
+	} else {
+		probeAction.Path = "/healthz"
+	}
 	requestCPU := resource.MustParse("150m")
 	if b.Cluster.Spec.KubeAPIServer.CPURequest != "" {
 		requestCPU = resource.MustParse(b.Cluster.Spec.KubeAPIServer.CPURequest)

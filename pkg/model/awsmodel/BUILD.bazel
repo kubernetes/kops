@@ -16,6 +16,7 @@ go_library(
         "//pkg/model:go_default_library",
         "//pkg/model/defaults:go_default_library",
         "//pkg/model/spotinstmodel:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",

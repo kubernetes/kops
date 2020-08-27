@@ -146,7 +146,7 @@ func (b *KubeApiserverBuilder) buildHealthcheckSidecar() (*corev1.Pod, error) {
 		}
 
 		if len(pod.Spec.Containers) != 1 {
-			return nil, fmt.Errorf("expected exactly one container in etcd-manager Pod, found %d", len(pod.Spec.Containers))
+			return nil, fmt.Errorf("expected exactly one container in kube-apiserver Pod, found %d", len(pod.Spec.Containers))
 		}
 		container = &pod.Spec.Containers[0]
 	}

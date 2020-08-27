@@ -42,6 +42,7 @@ contents: |
       - --secure-port=443
       - --service-account-key-file=/srv/kubernetes/service-account.key
       - --service-cluster-ip-range=100.64.0.0/13
+      - --shutdown-delay-duration=30s
       - --storage-backend=etcd3
       - --tls-cert-file=/srv/kubernetes/server.crt
       - --tls-private-key-file=/srv/kubernetes/server.key
@@ -55,7 +56,7 @@ contents: |
       livenessProbe:
         httpGet:
           host: 127.0.0.1
-          path: /healthz
+          path: /livez
           port: 443
           scheme: HTTPS
         initialDelaySeconds: 45
@@ -108,6 +109,7 @@ contents: |
         readOnly: true
     hostNetwork: true
     priorityClassName: system-cluster-critical
+    terminationGracePeriodSeconds: 35
     tolerations:
     - key: CriticalAddonsOnly
       operator: Exists
