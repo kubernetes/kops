@@ -35,12 +35,20 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin time.Duration, configUser string) (*KubeconfigBuilder, error) {
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore, configAccess clientcmd.ConfigAccess, admin time.Duration, configUser string, internal bool) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
-	master := cluster.Spec.MasterPublicName
-	if master == "" {
-		master = "api." + clusterName
+	var master string
+	if internal {
+		master = cluster.Spec.MasterInternalName
+		if master == "" {
+			master = "api.internal." + clusterName
+		}
+	} else {
+		master = cluster.Spec.MasterPublicName
+		if master == "" {
+			master = "api." + clusterName
+		}
 	}
 
 	server := "https://" + master
@@ -95,8 +103,8 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	b.Context = clusterName
 	b.Server = server
 
-	// add the CA Cert to the kubeconfig only if we didn't specify a SSL cert for the LB
-	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" {
+	// add the CA Cert to the kubeconfig only if we didn't specify a SSL cert for the LB or are targeting the internal DNS name
+	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || internal {
 		cert, _, _, err := keyStore.FindKeypair(fi.CertificateIDCA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)

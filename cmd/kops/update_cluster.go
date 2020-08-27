@@ -70,6 +70,7 @@ type UpdateClusterOptions struct {
 	CreateKubecfg bool
 	admin         time.Duration
 	user          string
+	internal      bool
 
 	Phase string
 
@@ -120,6 +121,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "Also export a cluster admin user credential with the specified lifetime and add it to the cluster context")
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.user, "user", options.user, "Existing user to add to the cluster context. Implies --create-kube-config")
+	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "Use the cluster's internal DNS name. Implies --create-kube-config")
 	cmd.Flags().BoolVar(&options.AllowKopsDowngrade, "allow-kops-downgrade", options.AllowKopsDowngrade, "Allow an older version of kops to update the cluster than last used")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
 	cmd.Flags().StringSliceVar(&options.LifecycleOverrides, "lifecycle-overrides", options.LifecycleOverrides, "comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges")
@@ -158,6 +160,11 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 
 	if c.user != "" && !c.CreateKubecfg {
 		klog.Info("--user implies --create-kube-config")
+		c.CreateKubecfg = true
+	}
+
+	if c.internal && !c.CreateKubecfg {
+		klog.Info("--internal implies --create-kube-config")
 		c.CreateKubecfg = true
 	}
 
@@ -299,7 +306,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		firstRun = !hasKubecfg
 
 		klog.Infof("Exporting kubecfg for cluster")
-		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions(), c.admin, c.user)
+		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions(), c.admin, c.user, c.internal)
 		if err != nil {
 			return nil, err
 		}
