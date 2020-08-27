@@ -24,28 +24,28 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// ExternalTargetGroupAttachment
+// TargetGroup
 
-var _ fi.HasLifecycle = &ExternalTargetGroupAttachment{}
+var _ fi.HasLifecycle = &TargetGroup{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *ExternalTargetGroupAttachment) GetLifecycle() *fi.Lifecycle {
+func (o *TargetGroup) GetLifecycle() *fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
-func (o *ExternalTargetGroupAttachment) SetLifecycle(lifecycle fi.Lifecycle) {
+func (o *TargetGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = &lifecycle
 }
 
-var _ fi.HasName = &ExternalTargetGroupAttachment{}
+var _ fi.HasName = &TargetGroup{}
 
 // GetName returns the Name of the object, implementing fi.HasName
-func (o *ExternalTargetGroupAttachment) GetName() *string {
+func (o *TargetGroup) GetName() *string {
 	return o.Name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
-func (o *ExternalTargetGroupAttachment) String() string {
+func (o *TargetGroup) String() string {
 	return fi.TaskAsString(o)
 }

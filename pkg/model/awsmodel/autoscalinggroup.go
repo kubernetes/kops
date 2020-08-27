@@ -366,6 +366,16 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 	}
 
+	for _, extLB := range ig.Spec.ExternalLoadBalancers {
+		if extLB.LoadBalancerName != nil {
+			t.LoadBalancers = append(t.LoadBalancers, &awstasks.LoadBalancer{Name: extLB.LoadBalancerName})
+		}
+
+		if extLB.TargetGroupARN != nil {
+			t.TargetGroupARNs = append(t.TargetGroupARNs, &awstasks.TargetGroup{Name: extLB.TargetGroupARN, ARN: extLB.TargetGroupARN})
+		}
+	}
+
 	// @step: are we using a mixed instance policy
 	if ig.Spec.MixedInstancesPolicy != nil {
 		spec := ig.Spec.MixedInstancesPolicy
@@ -386,20 +396,17 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 func (b *AutoscalingGroupModelBuilder) buildExternalLoadBalancerTasks(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) error {
 	for _, x := range ig.Spec.ExternalLoadBalancers {
 		if x.LoadBalancerName != nil {
-			c.AddTask(&awstasks.ExternalLoadBalancerAttachment{
-				Name:             fi.String("extlb-" + *x.LoadBalancerName + "-" + ig.Name),
-				Lifecycle:        b.Lifecycle,
-				LoadBalancerName: *x.LoadBalancerName,
-				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+			c.AddTask(&awstasks.LoadBalancer{
+				Name:   x.LoadBalancerName,
+				Shared: fi.Bool(true),
 			})
 		}
 
 		if x.TargetGroupARN != nil {
-			c.AddTask(&awstasks.ExternalTargetGroupAttachment{
-				Name:             fi.String("exttg-" + *x.TargetGroupARN + "-" + ig.Name),
-				Lifecycle:        b.Lifecycle,
-				TargetGroupARN:   *x.TargetGroupARN,
-				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
+			c.AddTask(&awstasks.TargetGroup{
+				Name:   x.TargetGroupARN,
+				ARN:    x.TargetGroupARN,
+				Shared: fi.Bool(true),
 			})
 		}
 	}
