@@ -879,6 +879,9 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 					BastionPublicName: "bastion." + cluster.Name,
 				}
 			}
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+				bastionGroup.Spec.Zones = allZones.List()
+			}
 		}
 
 	default:
