@@ -39,17 +39,3 @@ func IsNotFound(err error) bool {
 
 	return false
 }
-
-func IsInvalidError(err error) bool {
-	if _, ok := err.(gophercloud.ErrDefault400); ok {
-		return true
-	}
-
-	if errCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
-		if errCode.Actual == http.StatusBadRequest {
-			return true
-		}
-	}
-
-	return false
-}

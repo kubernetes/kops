@@ -29,7 +29,7 @@ import (
 	"github.com/gophercloud/gophercloud/pagination"
 	version "github.com/hashicorp/go-version"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog/v2"
+	"k8s.io/klog"
 
 	cpoerrors "k8s.io/cloud-provider-openstack/pkg/util/errors"
 )
