@@ -87,6 +87,8 @@ type AutoscalingGroup struct {
 	SuspendProcesses *[]string
 	// Tags is a collection of keypairs to apply to the node on launch
 	Tags map[string]string
+	// TargetGroupARNs is a list of ALB/NLB ARNs to add to the autoscaling group
+	TargetGroupARNs []*TargetGroup
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -116,6 +118,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	for _, lb := range g.LoadBalancerNames {
 		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{Name: aws.String(*lb)})
+	}
+
+	for _, tg := range g.TargetGroupARNs {
+		actual.TargetGroupARNs = append(actual.TargetGroupARNs, &TargetGroup{ARN: aws.String(*tg)})
 	}
 
 	if g.VPCZoneIdentifier != nil {
@@ -272,6 +278,10 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		for _, k := range e.LoadBalancers {
 			request.LoadBalancerNames = append(request.LoadBalancerNames, k.GetName())
+		}
+
+		for _, tg := range e.TargetGroupARNs {
+			request.TargetGroupARNs = append(request.TargetGroupARNs, tg.ARN)
 		}
 
 		// @check are we using a launch configuration, mixed instances policy, or launch template
@@ -745,6 +755,7 @@ type terraformAutoscalingGroup struct {
 	SuspendedProcesses      []*string                                        `json:"suspended_processes,omitempty" cty:"suspended_processes"`
 	InstanceProtection      *bool                                            `json:"protect_from_scale_in,omitempty" cty:"protect_from_scale_in"`
 	LoadBalancers           []*terraform.Literal                             `json:"load_balancers,omitempty" cty:"load_balancers"`
+	TargetGroupARNs         []*terraform.Literal                             `json:"target_group_arns,omitempty" cty:"target_group_arns"`
 }
 
 // RenderTerraform is responsible for rendering the terraform codebase
@@ -773,6 +784,10 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	for _, k := range e.LoadBalancers {
 		tf.LoadBalancers = append(tf.LoadBalancers, k.TerraformLink())
+	}
+
+	for _, tg := range e.TargetGroupARNs {
+		tf.TargetGroupARNs = append(tf.TargetGroupARNs, tg.TerraformLink())
 	}
 
 	if e.LaunchConfiguration != nil {
@@ -1004,6 +1019,10 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 
 	for _, k := range e.LoadBalancers {
 		cf.LoadBalancerNames = append(cf.LoadBalancerNames, k.CloudformationLink())
+	}
+
+	for _, tg := range e.TargetGroupARNs {
+		cf.TargetGroupARNs = append(cf.TargetGroupARNs, tg.CloudformationLink())
 	}
 
 	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", fi.StringValue(e.Name), cf)
