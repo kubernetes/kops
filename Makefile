@@ -51,13 +51,6 @@ unexport AWS_ACCESS_KEY_ID AWS_REGION AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN CN
 unexport KOPS_BASE_URL KOPS_CLUSTER_NAME KOPS_RUN_OBSOLETE_VERSION KOPS_STATE_STORE KOPS_STATE_S3_ACL KUBE_API_VERSIONS NODEUP_URL OPENSTACK_CREDENTIAL_FILE PROTOKUBE_IMAGE SKIP_PACKAGE_UPDATE
 unexport SKIP_REGION_CHECK S3_ACCESS_KEY_ID S3_ENDPOINT S3_REGION S3_SECRET_ACCESS_KEY
 
-# Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.19.0-alpha.3
-# Keep in sync with upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
-KOPS_CONTROLLER_TAG=1.19.0-alpha.3
-# Keep in sync with pkg/model/components/kubeapiserver/model.go
-KUBE_APISERVER_HEALTHCHECK_TAG=1.19.0-alpha.3
-
 
 VERSION=$(shell tools/get_version.sh | grep VERSION | awk '{print $$2}')
 
@@ -69,9 +62,17 @@ KOPS                 = ${LOCAL}/kops
 
 GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
 
-# + is valid in semver, but not in docker tags. Fixup CI versions.
-# Note that this mirrors the logic in DefaultProtokubeImageName
-PROTOKUBE_TAG := $(subst +,-,${VERSION})
+PROTOKUBE_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_PROTOKUBE_TAG | awk '{print $$2}')
+
+# We lock the versions of our controllers also
+# We need to keep in sync with:
+#   upup/models/cloudup/resources/addons/dns-controller/
+DNS_CONTROLLER_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_DNS_CONTROLLER_TAG | awk '{print $$2}')
+#   upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
+KOPS_CONTROLLER_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_CONTROLLER_TAG | awk '{print $$2}')
+#   pkg/model/components/kubeapiserver/model.go
+KUBE_APISERVER_HEALTHCHECK_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KUBE_APISERVER_HEALTHCHECK_TAG | awk '{print $$2}')
+
 
 # Go exports:
 LDFLAGS := -ldflags=all=
