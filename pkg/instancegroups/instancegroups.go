@@ -69,7 +69,8 @@ func promptInteractive(upgradedHostID, upgradedHostName string) (stopPrompting b
 }
 
 // RollingUpdate performs a rolling update on a list of instances.
-func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, cluster *api.Cluster, group *cloudinstances.CloudInstanceGroup, isBastion bool, sleepAfterTerminate time.Duration) (err error) {
+func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, cluster *api.Cluster, group *cloudinstances.CloudInstanceGroup, sleepAfterTerminate time.Duration) (err error) {
+	isBastion := group.InstanceGroup.IsBastion()
 	// Do not need a k8s client if you are doing cloudonly.
 	if c.K8sClient == nil && !c.CloudOnly {
 		return fmt.Errorf("rollingUpdate is missing a k8s client")
@@ -161,7 +162,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 
 	for uIdx, u := range update {
 		go func(m *cloudinstances.CloudInstanceGroupMember) {
-			terminateChan <- c.drainTerminateAndWait(ctx, m, isBastion, sleepAfterTerminate)
+			terminateChan <- c.drainTerminateAndWait(ctx, m, sleepAfterTerminate)
 		}(u)
 		runningDrains++
 
@@ -320,13 +321,15 @@ func (c *RollingUpdateCluster) patchTaint(ctx context.Context, node *corev1.Node
 	return err
 }
 
-func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *cloudinstances.CloudInstanceGroupMember, isBastion bool, sleepAfterTerminate time.Duration) error {
+func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *cloudinstances.CloudInstanceGroupMember, sleepAfterTerminate time.Duration) error {
 	instanceID := u.ID
 
 	nodeName := ""
 	if u.Node != nil {
 		nodeName = u.Node.Name
 	}
+
+	isBastion := u.CloudInstanceGroup.InstanceGroup.IsBastion()
 
 	if isBastion {
 		// We don't want to validate for bastions - they aren't part of the cluster
@@ -560,4 +563,23 @@ func (c *RollingUpdateCluster) deleteNode(ctx context.Context, node *corev1.Node
 	}
 
 	return nil
+}
+
+// UpdateSingeInstance performs a rolling update on a single instance
+func (c *RollingUpdateCluster) UpdateSingleInstance(ctx context.Context, cloudMember *cloudinstances.CloudInstanceGroupMember, detach bool) error {
+	if detach {
+		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
+			klog.Warning("cannot detach master instances. Assuming --surge=false")
+
+		}
+		err := c.detachInstance(cloudMember)
+		if err != nil {
+			return fmt.Errorf("failed to detach instance: %v", err)
+		}
+		if err := c.maybeValidate(" after detaching instance", c.ValidateCount); err != nil {
+			return err
+		}
+	}
+
+	return c.drainTerminateAndWait(ctx, cloudMember, 0)
 }
