@@ -7,7 +7,7 @@ load(
 
 container_image(
     name = "node-authorizer",
-    base = "@debian_hyperkube_base_amd64//image",
+    base = "@debian_base_amd64//image",
     cmd = ["/usr/bin/node-authorizer"],
     directory = "/usr/bin/",
     files = [
