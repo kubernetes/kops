@@ -275,6 +275,11 @@ func TestPrivateDns2(t *testing.T) {
 	newIntegrationTest("privatedns2.example.com", "privatedns2").withPrivate().runTestTerraformAWS(t)
 }
 
+// TestPrivateGCE runs the test on a gce configuration with private topology
+func TestPrivateGCE(t *testing.T) {
+	newIntegrationTest("private-gce.example.com", "private_gce").withPrivate().runTestTerraformGCE(t)
+}
+
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").runTestTerraformAWS(t)
