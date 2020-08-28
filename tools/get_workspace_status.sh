@@ -41,6 +41,8 @@ echo "BUILD_SCM_STATUS ${tree_status}"
 VERSION=`tools/get_version.sh | grep VERSION | awk '{print $2}'`
 echo "STABLE_KOPS_VERSION ${VERSION}"
 
+# + is valid in semver, but not in docker tags. Fixup CI versions.
+# Note that this mirrors the logic in DefaultProtokubeImageName
 PROTOKUBE_TAG=${VERSION/+/-}
 echo "STABLE_PROTOKUBE_TAG ${PROTOKUBE_TAG}"
 
