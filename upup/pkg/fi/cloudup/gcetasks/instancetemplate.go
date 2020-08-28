@@ -101,11 +101,15 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 			continue
 		}
 
-		actual := &InstanceTemplate{}
+		actual := &InstanceTemplate{
+			Tags: make([]string, 0),
+		}
 
 		p := r.Properties
 
-		actual.Tags = append(actual.Tags, p.Tags.Items...)
+		if p.Tags != nil {
+			actual.Tags = append(actual.Tags, p.Tags.Items...)
+		}
 		actual.MachineType = fi.String(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 
