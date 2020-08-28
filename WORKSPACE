@@ -74,12 +74,12 @@ load(
 )
 
 container_pull(
-    name = "debian_hyperkube_base_amd64",
+    name = "debian_base_amd64",
     # 'tag' is also supported, but digest is encouraged for reproducibility.
-    digest = "sha256:5d4ea2fb5fbe9a9a9da74f67cf2faefc881968bc39f2ac5d62d9167e575812a1",
-    registry = "k8s.gcr.io",
-    repository = "debian-hyperkube-base-amd64",
-    tag = "0.12.1",
+    digest = "sha256:dc06e242160076b72bd75135fb3dd0a9e91f386b2d812ec10cbf9e65864c755d",
+    registry = "k8s.gcr.io/build-image",
+    repository = "debian-base-amd64",
+    tag = "v2.1.3",
 )
 
 git_repository(
