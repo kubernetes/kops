@@ -10,7 +10,7 @@ steps:
   env:
   # _GIT_TAG is not a valid semver, we use CI=1 instead
   # - VERSION=$_GIT_TAG
-  - CI=1
+  - CI=$_CI
   - PULL_BASE_REF=$_PULL_BASE_REF
   - DOCKER_REGISTRY=$_DOCKER_REGISTRY
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
@@ -23,7 +23,7 @@ steps:
   env:
   # _GIT_TAG is not a valid semver, we use CI=1 instead
   # - VERSION=$_GIT_TAG
-  - CI=1
+  - CI=$_CI
   - PULL_BASE_REF=$_PULL_BASE_REF
   - DOCKER_REGISTRY=$_DOCKER_REGISTRY
   - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
@@ -34,6 +34,7 @@ steps:
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
+  _CI: '1'
   _GIT_TAG: '12345'
   _PULL_BASE_REF: 'dev'
   _DOCKER_REGISTRY: 'gcr.io'
