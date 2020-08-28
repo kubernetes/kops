@@ -267,8 +267,6 @@ resource "google_compute_instance_template" "master-us-test1-a-private-gce-examp
   }
   name_prefix = "master-us-test1-a-private-coog50-"
   network_interface {
-    access_config {
-    }
     network = google_compute_network.default.name
   }
   scheduling {
@@ -307,8 +305,6 @@ resource "google_compute_instance_template" "nodes-private-gce-example-com" {
   }
   name_prefix = "nodes-private-gce-example-com-"
   network_interface {
-    access_config {
-    }
     network = google_compute_network.default.name
   }
   scheduling {

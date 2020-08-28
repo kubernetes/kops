@@ -57,6 +57,7 @@ type InstanceTemplate struct {
 	CanIPForward  *bool
 	Subnet        *Subnet
 	AliasIPRanges map[string]string
+	PublicIP      *bool
 
 	Scopes          []string
 	ServiceAccounts []string
@@ -128,6 +129,9 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 				for _, aliasIPRange := range ni.AliasIpRanges {
 					actual.AliasIPRanges[aliasIPRange.SubnetworkRangeName] = aliasIPRange.IpCidrRange
 				}
+			}
+			if len(ni.AccessConfigs) > 0 {
+				actual.PublicIP = fi.Bool(true)
 			}
 
 			if ni.Subnetwork != "" {
@@ -250,13 +254,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 	var networkInterfaces []*compute.NetworkInterface
 	ni := &compute.NetworkInterface{
-		Kind: "compute#networkInterface",
-		AccessConfigs: []*compute.AccessConfig{{
-			Kind: "compute#accessConfig",
-			//NatIP: *e.IPAddress.Address,
-			Type:        "ONE_TO_ONE_NAT",
-			NetworkTier: "PREMIUM",
-		}},
+		Kind:    "compute#networkInterface",
 		Network: e.Network.URL(project),
 	}
 	if e.Subnet != nil {
@@ -269,6 +267,13 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 				IpCidrRange:         v,
 			})
 		}
+	}
+	if fi.BoolValue(e.PublicIP) {
+		ni.AccessConfigs = []*compute.AccessConfig{{
+			Kind:        "compute#accessConfig",
+			Type:        "ONE_TO_ONE_NAT",
+			NetworkTier: "PREMIUM",
+		}}
 	}
 	networkInterfaces = append(networkInterfaces, ni)
 
@@ -465,7 +470,7 @@ type terraformInstanceTemplateAttachedDisk struct {
 type terraformNetworkInterface struct {
 	Network      *terraform.Literal       `json:"network,omitempty" cty:"network"`
 	Subnetwork   *terraform.Literal       `json:"subnetwork,omitempty" cty:"subnetwork"`
-	AccessConfig []*terraformAccessConfig `json:"access_config" cty:"access_config"`
+	AccessConfig []*terraformAccessConfig `json:"access_config,omitempty" cty:"access_config"`
 }
 
 type terraformAccessConfig struct {
