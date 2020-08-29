@@ -10,6 +10,7 @@ go_library(
         "//pkg/apis/kops/registry:go_default_library",
         "//pkg/apis/kops/validation:go_default_library",
         "//pkg/client/clientset_generated/clientset/typed/kops/internalversion:go_default_library",
+        "//pkg/client/simple:go_default_library",
         "//pkg/client/simple/vfsclientset:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/secrets:go_default_library",

@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
@@ -45,6 +46,13 @@ type RESTClientset struct {
 func (c *RESTClientset) GetCluster(ctx context.Context, name string) (*kops.Cluster, error) {
 	namespace := restNamespaceForClusterName(name)
 	return c.KopsClient.Clusters(namespace).Get(ctx, name, metav1.GetOptions{})
+}
+
+// AddonsFor fetches the AddonsClient for the cluster
+func (c *RESTClientset) AddonsFor(cluster *kops.Cluster) simple.AddonsClient {
+	// We should manage these directly in the cluster
+	klog.Fatalf("AddonsFor not implemented for RESTClientset")
+	return nil
 }
 
 // CreateCluster implements the CreateCluster method of Clientset for a kubernetes-API state store

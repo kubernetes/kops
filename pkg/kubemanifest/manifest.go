@@ -30,14 +30,21 @@ type Object struct {
 	data map[string]interface{}
 }
 
+// ObjectList describes a list of objects, allowing us to add bulk-methods
+type ObjectList []*Object
+
 // LoadObjectsFrom parses multiple objects from a yaml file
-func LoadObjectsFrom(contents []byte) ([]*Object, error) {
+func LoadObjectsFrom(contents []byte) (ObjectList, error) {
 	var objects []*Object
 
-	// TODO: Support more separators?
 	sections := text.SplitContentToSections(contents)
 
 	for _, section := range sections {
+		// We need this so we don't error on a section that is empty / commented out
+		if !hasYAMLContent(section) {
+			continue
+		}
+
 		data := make(map[string]interface{})
 		err := yaml.Unmarshal(section, &data)
 		if err != nil {
@@ -54,11 +61,24 @@ func LoadObjectsFrom(contents []byte) ([]*Object, error) {
 	return objects, nil
 }
 
+// hasYAMLContent determines if the byte slice has any content,
+// because yaml parsing gives an error if called with no content.
+// TODO: How does apimachinery avoid this problem?
+func hasYAMLContent(yamlData []byte) bool {
+	for _, line := range bytes.Split(yamlData, []byte("\n")) {
+		l := bytes.TrimSpace(line)
+		if len(l) != 0 && !bytes.HasPrefix(l, []byte("#")) {
+			return true
+		}
+	}
+	return false
+}
+
 // ToYAML serializes a list of objects back to bytes; it is the opposite of LoadObjectsFrom
-func ToYAML(objects []*Object) ([]byte, error) {
+func (l ObjectList) ToYAML() ([]byte, error) {
 	var yamlSeparator = []byte("\n---\n\n")
 	var yamls [][]byte
-	for _, object := range objects {
+	for _, object := range l {
 		// Don't serialize empty objects - they confuse yaml parsers
 		if object.IsEmptyObject() {
 			continue
