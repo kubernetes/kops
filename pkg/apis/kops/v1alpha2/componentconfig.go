@@ -475,6 +475,9 @@ type KubeAPIServerConfig struct {
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
+
+	// CorsAllowedOrigins enables CORS for comma separated value
+	CorsAllowedOrigins string `json:"corsAllowedOrigins,omitempty" flag:"cors-allowed-origins"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller

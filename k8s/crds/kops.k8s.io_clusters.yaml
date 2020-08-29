@@ -864,6 +864,9 @@ spec:
                   cloudProvider:
                     description: CloudProvider is the name of the cloudProvider we are using, aws, gce etcd
                     type: string
+                  corsAllowedOrigins:
+                    description: CorsAllowedOrigins enables CORS for comma separated value
+                    type: string
                   cpuRequest:
                     description: CPURequest, cpu request compute resource for api server. Defaults to "150m"
                     type: string
