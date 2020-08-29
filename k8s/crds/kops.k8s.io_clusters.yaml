@@ -864,6 +864,11 @@ spec:
                   cloudProvider:
                     description: CloudProvider is the name of the cloudProvider we are using, aws, gce etcd
                     type: string
+                  corsAllowedOrigins:
+                    description: CorsAllowedOrigins is a list of origins for CORS. An allowed origin can be a regular expression to support subdomain matching. If this list is empty CORS will not be enabled.
+                    items:
+                      type: string
+                    type: array
                   cpuRequest:
                     description: CPURequest, cpu request compute resource for api server. Defaults to "150m"
                     type: string
