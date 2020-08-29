@@ -475,6 +475,10 @@ type KubeAPIServerConfig struct {
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
+
+	// CorsAllowedOrigins is a list of origins for CORS. An allowed origin can be a regular
+	// expression to support subdomain matching. If this list is empty CORS will not be enabled.
+	CorsAllowedOrigins []string `json:"corsAllowedOrigins,omitempty" flag:"cors-allowed-origins"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
