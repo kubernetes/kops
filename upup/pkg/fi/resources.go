@@ -30,6 +30,11 @@ type Resource interface {
 	Open() (io.Reader, error)
 }
 
+// HasIsReady is implemented by Resources that are derived (and thus may not be ready at comparison time)
+type HasIsReady interface {
+	IsReady() bool
+}
+
 type TemplateResource interface {
 	Resource
 	Curry(args []string) TemplateResource
@@ -264,14 +269,20 @@ type TaskDependentResource struct {
 
 var _ Resource = &TaskDependentResource{}
 var _ HasDependencies = &TaskDependentResource{}
+var _ HasIsReady = &TaskDependentResource{}
 
 func (r *TaskDependentResource) Open() (io.Reader, error) {
 	if r.Resource == nil {
-		return nil, fmt.Errorf("resource opened before it is ready")
+		return nil, fmt.Errorf("resource opened before it is ready (task=%v)", r.Task)
 	}
 	return r.Resource.Open()
 }
 
 func (r *TaskDependentResource) GetDependencies(tasks map[string]Task) []Task {
 	return []Task{r.Task}
+}
+
+// IsReady implements HasIsReady::IsReady
+func (r *TaskDependentResource) IsReady() bool {
+	return r.Resource != nil
 }
