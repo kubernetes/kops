@@ -116,6 +116,11 @@ func equalFieldValues(a, e reflect.Value) bool {
 		if ok && (e.Kind() == reflect.Ptr || e.Kind() == reflect.Interface) && !e.IsNil() {
 			eResource, ok := e.Interface().(Resource)
 			if ok {
+				if hasIsReady, ok := eResource.(HasIsReady); ok {
+					if !hasIsReady.IsReady() {
+						return false
+					}
+				}
 				same, err := ResourcesMatch(aResource, eResource)
 				if err != nil {
 					klog.Fatalf("error while comparing resources: %v", err)
