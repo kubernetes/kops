@@ -123,7 +123,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 		}
 	}
 
-	return kubemanifest.ToYAML(objects)
+	return objects.ToYAML()
 }
 
 // RemapImage normalizes a containers location if a user sets the AssetsLocation ContainerRegistry location.

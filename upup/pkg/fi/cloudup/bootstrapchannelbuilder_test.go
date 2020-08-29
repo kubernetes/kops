@@ -118,7 +118,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 
 	{
 		name := cluster.ObjectMeta.Name + "-addons-bootstrap"
-		manifestTask := context.Tasks[name]
+		manifestTask := context.Tasks["ManagedFile/"+name]
 		if manifestTask == nil {
 			t.Fatalf("manifest task not found (%q)", name)
 		}
@@ -135,7 +135,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 
 	for _, k := range addonManifests {
 		name := cluster.ObjectMeta.Name + "-addons-" + k
-		manifestTask := context.Tasks[name]
+		manifestTask := context.Tasks["ManagedFile/"+name]
 		if manifestTask == nil {
 			for k := range context.Tasks {
 				t.Logf("found task %s", k)
