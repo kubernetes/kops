@@ -76,6 +76,10 @@ func (c *VFSClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalvers
 	return newInstanceGroupVFS(c, cluster)
 }
 
+func (c *VFSClientset) AddonsFor(cluster *kops.Cluster) simple.AddonsClient {
+	return newAddonsVFS(c, cluster)
+}
+
 func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
 	if cluster.Spec.SecretStore == "" {
 		configBase, err := registry.ConfigBase(cluster)
@@ -143,6 +147,9 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 			continue
 		}
 		if strings.HasPrefix(relativePath, "addons/") {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "clusteraddons/") {
 			continue
 		}
 		if strings.HasPrefix(relativePath, "pki/") {

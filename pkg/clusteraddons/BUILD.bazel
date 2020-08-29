@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["load.go"],
+    importpath = "k8s.io/kops/pkg/clusteraddons",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/kubemanifest:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/k8s.io/klog/v2:go_default_library",
+    ],
+)
