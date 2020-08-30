@@ -146,7 +146,7 @@ func buildScheme() error {
 }
 
 func addNodeController(mgr manager.Manager, opt *config.Options) error {
-	var identifier nodeidentity.Identifier
+	var identifier nodeidentity.LegacyIdentifier
 	var err error
 	switch opt.Cloud {
 	case "aws":
@@ -183,7 +183,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 		return fmt.Errorf("must specify configBase")
 	}
 
-	nodeController, err := controllers.NewNodeReconciler(mgr, opt.ConfigBase, identifier)
+	nodeController, err := controllers.NewLegacyNodeReconciler(mgr, opt.ConfigBase, identifier)
 	if err != nil {
 		return err
 	}
