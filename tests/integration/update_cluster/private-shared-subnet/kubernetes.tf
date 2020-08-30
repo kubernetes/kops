@@ -263,11 +263,10 @@ resource "aws_elb" "api-private-shared-subnet-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-private-shared-subnet-n2f8ak"
   security_groups = [aws_security_group.api-elb-private-shared-subnet-example-com.id]
@@ -289,11 +288,10 @@ resource "aws_elb" "bastion-private-shared-subnet-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 22
-    instance_protocol  = "TCP"
-    lb_port            = 22
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 22
+    instance_protocol = "TCP"
+    lb_port           = 22
+    lb_protocol       = "TCP"
   }
   name            = "bastion-private-shared-su-5ol32q"
   security_groups = [aws_security_group.bastion-elb-private-shared-subnet-example-com.id]
