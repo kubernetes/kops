@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -40,7 +41,6 @@ import (
 )
 
 const (
-	clusterAutoscalerNodeTemplateLabel = "k8s.io/cluster-autoscaler/node-template/label/"
 	clusterAutoscalerNodeTemplateTaint = "k8s.io/cluster-autoscaler/node-template/taint/"
 )
 
@@ -192,8 +192,8 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	}
 
 	// Apply labels for cluster autoscaler node labels
-	for k, v := range ig.Spec.NodeLabels {
-		labels[clusterAutoscalerNodeTemplateLabel+k] = v
+	for k, v := range nodelabels.BuildNodeLabels(m.Cluster, ig) {
+		labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
 	}
 
 	// Apply labels for cluster autoscaler node taints

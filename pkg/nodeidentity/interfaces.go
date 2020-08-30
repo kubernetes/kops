@@ -22,6 +22,15 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+type Identifier interface {
+	IdentifyNode(ctx context.Context, node *corev1.Node) (*Info, error)
+}
+
+type Info struct {
+	InstanceID string
+	Labels     map[string]string
+}
+
 type LegacyIdentifier interface {
 	IdentifyNode(ctx context.Context, node *corev1.Node) (*LegacyInfo, error)
 }
