@@ -52,9 +52,9 @@ type fakeObjectContainers struct {
 	Int32Pointer *int32 `json:"int32Pointer"`
 	Int64Pointer *int64 `json:"int64Pointer"`
 
-	Int   *int32 `json:"int"`
-	Int32 *int32 `json:"int32"`
-	Int64 *int64 `json:"int64"`
+	Int   int32 `json:"int"`
+	Int32 int32 `json:"int32"`
+	Int64 int64 `json:"int64"`
 
 	Enum      fakeEnum   `json:"enum"`
 	EnumSlice []fakeEnum `json:"enumSlice"`
@@ -163,6 +163,21 @@ func TestSet(t *testing.T) {
 			Path:     "spec.containers[0].enumSlice",
 			Value:    "ABC,DEF",
 		},
+		{
+			Name:     "unset int pointer",
+			Input:    "{ 'spec': { 'containers': [ { 'int64Pointer': 123 } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { } ] } }",
+			Path:     "spec.containers[0].int64Pointer",
+			Value:    "",
+		},
+		{
+			Name:     "unset struct pointer",
+			Input:    "{ 'spec': { 'containers': [ { 'resources': { 'limits': { 'cpu': 1 } } } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { } ] } }",
+			Path:     "spec.containers[0].resources",
+			Value:    "",
+		},
+
 		// Not sure if we should do this...
 		// {
 		// 	Name:     "creating missing array elements",

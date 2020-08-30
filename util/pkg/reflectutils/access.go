@@ -102,6 +102,11 @@ func setPrimitive(v reflect.Value, newValue string) error {
 	}
 
 	if v.Type().Kind() == reflect.Ptr {
+		if newValue == "" {
+			val := reflect.Zero(v.Type())
+			v.Set(val)
+			return nil
+		}
 		val := reflect.New(v.Type().Elem())
 		if err := setPrimitive(val.Elem(), newValue); err != nil {
 			return err

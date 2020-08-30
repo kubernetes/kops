@@ -296,6 +296,55 @@ func TestSetClusterFields(t *testing.T) {
 				},
 			},
 		},
+		{
+			Fields: []string{
+				"spec.docker.userNamespaceRemap=",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Docker: &kops.DockerConfig{
+						UserNamespaceRemap: "testuser:testuser",
+					},
+				},
+			},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Docker: &kops.DockerConfig{},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.kubeScheduler.maxPersistentVolumes=",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubeScheduler: &kops.KubeSchedulerConfig{
+						MaxPersistentVolumes: fi.Int32(1),
+					},
+				},
+			},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubeScheduler: &kops.KubeSchedulerConfig{},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.docker=",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					Docker: &kops.DockerConfig{
+						RegistryMirrors: []string{"localhost"},
+					},
+				},
+			},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{},
+			},
+		},
 	}
 
 	for _, g := range grid {
