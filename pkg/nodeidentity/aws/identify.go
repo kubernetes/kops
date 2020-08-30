@@ -55,7 +55,7 @@ type nodeIdentifier struct {
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on AWS
-func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
+func New(CacheNodeidentityInfo bool) (nodeidentity.LegacyIdentifier, error) {
 	config := aws.NewConfig()
 	config = config.WithCredentialsChainVerboseErrors(true)
 
@@ -91,7 +91,7 @@ func stringKeyFunc(obj interface{}) (string, error) {
 }
 
 // IdentifyNode queries AWS for the node identity information
-func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.Info, error) {
+func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.LegacyInfo, error) {
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
 		return nil, fmt.Errorf("providerID was not set for node %s", node.Name)
@@ -145,7 +145,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, fmt.Errorf("%s tag not set on instance %s", CloudTagInstanceGroupName, aws.StringValue(instance.InstanceId))
 	}
 
-	info := &nodeidentity.Info{}
+	info := &nodeidentity.LegacyInfo{}
 	info.InstanceID = instanceID
 	info.InstanceGroup = igName
 	info.InstanceLifecycle = lifecycle

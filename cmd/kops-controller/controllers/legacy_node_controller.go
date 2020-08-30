@@ -40,9 +40,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// NewNodeReconciler is the constructor for a NodeReconciler
-func NewNodeReconciler(mgr manager.Manager, configPath string, identifier nodeidentity.Identifier) (*NodeReconciler, error) {
-	r := &NodeReconciler{
+// NewLegacyNodeReconciler is the constructor for a LegacyNodeReconciler
+func NewLegacyNodeReconciler(mgr manager.Manager, configPath string, identifier nodeidentity.LegacyIdentifier) (*LegacyNodeReconciler, error) {
+	r := &LegacyNodeReconciler{
 		client:     mgr.GetClient(),
 		log:        ctrl.Log.WithName("controllers").WithName("Node"),
 		identifier: identifier,
@@ -64,9 +64,9 @@ func NewNodeReconciler(mgr manager.Manager, configPath string, identifier nodeid
 	return r, nil
 }
 
-// NodeReconciler observes Node objects, and labels them with the correct labels for the instancegroup
+// LegacyNodeReconciler observes Node objects, and labels them with the correct labels for the instancegroup
 // This used to be done by the kubelet, but is moving to a central controller for greater security in 1.16
-type NodeReconciler struct {
+type LegacyNodeReconciler struct {
 	// client is the controller-runtime client
 	client client.Client
 
@@ -77,7 +77,7 @@ type NodeReconciler struct {
 	coreV1Client *corev1client.CoreV1Client
 
 	// identifier is a provider that can securely map node ProviderIDs to InstanceGroups
-	identifier nodeidentity.Identifier
+	identifier nodeidentity.LegacyIdentifier
 
 	// configBase is the parsed path to the base location of our configuration files
 	configBase vfs.Path
@@ -88,7 +88,7 @@ type NodeReconciler struct {
 
 // +kubebuilder:rbac:groups=,resources=nodes,verbs=get;list;watch;patch
 // Reconciler is the main reconciler function that observes node changes
-func (r *NodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *LegacyNodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	_ = r.log.WithValues("nodecontroller", req.NamespacedName)
 
@@ -146,7 +146,7 @@ func (r *NodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func (r *NodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *LegacyNodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.Node{}).
 		Complete(r)
@@ -161,7 +161,7 @@ type nodePatchMetadata struct {
 }
 
 // patchNodeLabels patches the node labels to set the specified labels
-func (r *NodeReconciler) patchNodeLabels(ctx context.Context, node *corev1.Node, setLabels map[string]string) error {
+func (r *LegacyNodeReconciler) patchNodeLabels(ctx context.Context, node *corev1.Node, setLabels map[string]string) error {
 	nodePatchMetadata := &nodePatchMetadata{
 		Labels: setLabels,
 	}
@@ -185,7 +185,7 @@ func (r *NodeReconciler) patchNodeLabels(ctx context.Context, node *corev1.Node,
 
 // getClusterForNode returns the kops.Cluster object for the node
 // The cluster is actually loaded when we first start
-func (r *NodeReconciler) getClusterForNode(node *corev1.Node) (*kops.Cluster, error) {
+func (r *LegacyNodeReconciler) getClusterForNode(node *corev1.Node) (*kops.Cluster, error) {
 	clusterPath := r.configBase.Join(registry.PathClusterCompleted)
 	cluster, err := r.loadCluster(clusterPath)
 	if err != nil {
@@ -195,7 +195,7 @@ func (r *NodeReconciler) getClusterForNode(node *corev1.Node) (*kops.Cluster, er
 }
 
 // getInstanceLifecycle returns InstanceLifecycle string object
-func (r *NodeReconciler) getInstanceLifecycle(ctx context.Context, node *corev1.Node) (string, error) {
+func (r *LegacyNodeReconciler) getInstanceLifecycle(ctx context.Context, node *corev1.Node) (string, error) {
 
 	identity, err := r.identifier.IdentifyNode(ctx, node)
 	if err != nil {
@@ -206,7 +206,7 @@ func (r *NodeReconciler) getInstanceLifecycle(ctx context.Context, node *corev1.
 }
 
 // getInstanceGroupForNode returns the kops.InstanceGroup object for the node
-func (r *NodeReconciler) getInstanceGroupForNode(ctx context.Context, node *corev1.Node) (*kops.InstanceGroup, error) {
+func (r *LegacyNodeReconciler) getInstanceGroupForNode(ctx context.Context, node *corev1.Node) (*kops.InstanceGroup, error) {
 	// We assume that if the instancegroup label is set, that it is correct
 	// TODO: Should we be paranoid?
 	instanceGroupName := node.Labels["kops.k8s.io/instancegroup"]
@@ -232,7 +232,7 @@ func (r *NodeReconciler) getInstanceGroupForNode(ctx context.Context, node *core
 }
 
 // loadCluster loads a kops.Cluster object from a vfs.Path
-func (r *NodeReconciler) loadCluster(p vfs.Path) (*kops.Cluster, error) {
+func (r *LegacyNodeReconciler) loadCluster(p vfs.Path) (*kops.Cluster, error) {
 	ttl := time.Hour
 
 	b, err := r.cache.Read(p, ttl)
@@ -249,7 +249,7 @@ func (r *NodeReconciler) loadCluster(p vfs.Path) (*kops.Cluster, error) {
 }
 
 // loadInstanceGroup loads a kops.InstanceGroup object from the vfs backing store
-func (r *NodeReconciler) loadNamedInstanceGroup(name string) (*kops.InstanceGroup, error) {
+func (r *LegacyNodeReconciler) loadNamedInstanceGroup(name string) (*kops.InstanceGroup, error) {
 	p := r.configBase.Join("instancegroup", name)
 
 	ttl := time.Hour

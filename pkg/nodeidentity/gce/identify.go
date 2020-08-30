@@ -43,8 +43,8 @@ type nodeIdentifier struct {
 	project string
 }
 
-// New creates and returns a nodeidentity.Identifier for Nodes running on GCE
-func New() (nodeidentity.Identifier, error) {
+// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCE
+func New() (nodeidentity.LegacyIdentifier, error) {
 	ctx := context.Background()
 
 	computeService, err := compute.NewService(ctx)
@@ -75,7 +75,7 @@ func New() (nodeidentity.Identifier, error) {
 }
 
 // IdentifyNode queries GCE for the node identity information
-func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.Info, error) {
+func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.LegacyInfo, error) {
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
 		return nil, fmt.Errorf("providerID was not set for node %s", node.Name)
@@ -143,7 +143,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
 	}
 
-	info := &nodeidentity.Info{}
+	info := &nodeidentity.LegacyInfo{}
 	info.InstanceGroup = igName
 	return info, nil
 }
