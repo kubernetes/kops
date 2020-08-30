@@ -282,11 +282,10 @@ resource "aws_elb" "api-privateweave-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-privateweave-example--l94cb4"
   security_groups = [aws_security_group.api-elb-privateweave-example-com.id]
@@ -308,11 +307,10 @@ resource "aws_elb" "bastion-privateweave-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 22
-    instance_protocol  = "TCP"
-    lb_port            = 22
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 22
+    instance_protocol = "TCP"
+    lb_port           = 22
+    lb_protocol       = "TCP"
   }
   name            = "bastion-privateweave-exam-fdb6ge"
   security_groups = [aws_security_group.bastion-elb-privateweave-example-com.id]

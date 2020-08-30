@@ -225,11 +225,10 @@ resource "aws_elb" "api-complex-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-complex-example-com-vd3t5n"
   security_groups = [aws_security_group.api-elb-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
