@@ -32,6 +32,7 @@ go_library(
         "//pkg/model/iam:go_default_library",
         "//pkg/model/resources:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",
+        "//pkg/nodelabels:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/rbac:go_default_library",
         "//pkg/tokens:go_default_library",
