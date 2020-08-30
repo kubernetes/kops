@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"k8s.io/klog/v2"
 )
@@ -95,14 +96,25 @@ func BuildTypeName(t reflect.Type) string {
 	}
 }
 
-type visitorFunc func(path string, field *reflect.StructField, v reflect.Value) error
+type visitorFunc func(path *FieldPath, field *reflect.StructField, v reflect.Value) error
 
-// ReflectRecursive calls visitor with v and every recursive sub-value, skipping subtrees if SkipReflection is returned
-func ReflectRecursive(v reflect.Value, visitor visitorFunc) error {
-	return reflectRecursive("", v, visitor)
+type ReflectOptions struct {
+	// JSONNames means the elements of the FieldPath will be the JSON field names (instead of the go field names)
+	JSONNames bool
+
+	// DeprecatedDoubleVisit activates the compatibility mode of the walker, where we end up visiting every struct field twice.
+	// Ideally we can replace these instances over time.
+	DeprecatedDoubleVisit bool
 }
 
-func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
+// ReflectRecursive calls visitor with v and every recursive sub-value, skipping subtrees if SkipReflection is returned
+func ReflectRecursive(v reflect.Value, visitor visitorFunc, options *ReflectOptions) error {
+	emptyFieldPath := FieldPath{}
+
+	return reflectRecursive(&emptyFieldPath, v, visitor, options)
+}
+
+func reflectRecursive(path *FieldPath, v reflect.Value, visitor visitorFunc, options *ReflectOptions) error {
 	vType := v.Type()
 
 	err := visitor(path, nil, v)
@@ -124,14 +136,30 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 
 			f := v.Field(i)
 
-			childPath := path + "." + structField.Name
-			// TODO: I think we are double visiting here; we should instead pass down structField into reflectRecursive
-			err := visitor(childPath, &structField, f)
-			if err != nil && err != SkipReflection {
-				return err
+			fieldName := structField.Name
+
+			if options.JSONNames {
+				jsonTag, ok := structField.Tag.Lookup("json")
+				if ok {
+					v := strings.Split(jsonTag, ",")[0]
+					if v != "" {
+						fieldName = v
+					}
+				}
 			}
+			childPath := path.Extend(FieldPathElement{Type: FieldPathElementTypeField, token: fieldName})
+
+			var err error
+			if options.DeprecatedDoubleVisit {
+				// The legacy behaviour here involves visiting fields twice; only as the StructField, once as the value itself
+				err = visitor(childPath, &structField, f)
+				if err != nil && err != SkipReflection {
+					return err
+				}
+			}
+
 			if err == nil {
-				err = reflectRecursive(childPath, f, visitor)
+				err = reflectRecursive(childPath, f, visitor, options)
 				if err != nil {
 					return err
 				}
@@ -143,13 +171,14 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 		for _, key := range keys {
 			mv := v.MapIndex(key)
 
-			childPath := path + "[" + fmt.Sprintf("%s", key.Interface()) + "]"
+			childPath := path.Extend(FieldPathElement{Type: FieldPathElementTypeMapKey, token: fmt.Sprintf("%s", key.Interface())})
+
 			err := visitor(childPath, nil, mv)
 			if err != nil && err != SkipReflection {
 				return err
 			}
 			if err == nil {
-				err = reflectRecursive(childPath, mv, visitor)
+				err = reflectRecursive(childPath, mv, visitor, options)
 				if err != nil {
 					return err
 				}
@@ -161,13 +190,13 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 		for i := 0; i < len; i++ {
 			av := v.Index(i)
 
-			childPath := path + "[" + fmt.Sprintf("%d", i) + "]"
+			childPath := path.Extend(FieldPathElement{Type: FieldPathElementTypeArrayIndex, number: i})
 			err := visitor(childPath, nil, av)
 			if err != nil && err != SkipReflection {
 				return err
 			}
 			if err == nil {
-				err = reflectRecursive(childPath, av, visitor)
+				err = reflectRecursive(childPath, av, visitor, options)
 				if err != nil {
 					return err
 				}
@@ -177,7 +206,7 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 	case reflect.Ptr, reflect.Interface:
 		if !v.IsNil() {
 			e := v.Elem()
-			err = reflectRecursive(path, e, visitor)
+			err = reflectRecursive(path, e, visitor, options)
 			if err != nil {
 				return err
 			}
