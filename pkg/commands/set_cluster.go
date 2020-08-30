@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -29,7 +28,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 type SetClusterOptions struct {
@@ -81,122 +80,12 @@ func SetClusterFields(fields []string, cluster *api.Cluster, instanceGroups []*a
 			return fmt.Errorf("unhandled field: %q", field)
 		}
 
-		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
-		switch kv[0] {
-		case "spec.kubelet.authorizationMode":
-			cluster.Spec.Kubelet.AuthorizationMode = kv[1]
-		case "spec.kubelet.authenticationTokenWebhook":
-			v, err := strconv.ParseBool(kv[1])
-			if err != nil {
-				return fmt.Errorf("unknown boolean value: %q", kv[1])
-			}
-			cluster.Spec.Kubelet.AuthenticationTokenWebhook = &v
-		case "cluster.spec.nodePortAccess":
-			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
-		case "spec.docker.selinuxEnabled":
-			v, err := strconv.ParseBool(kv[1])
-			if err != nil {
-				return fmt.Errorf("unknown boolean value: %q", kv[1])
-			}
-			if cluster.Spec.Docker == nil {
-				cluster.Spec.Docker = &api.DockerConfig{}
-			}
-			cluster.Spec.Docker.SelinuxEnabled = &v
-		case "spec.kubernetesVersion":
-			cluster.Spec.KubernetesVersion = kv[1]
-		case "spec.masterPublicName":
-			cluster.Spec.MasterPublicName = kv[1]
-		case "spec.kubeDNS.provider":
-			if cluster.Spec.KubeDNS == nil {
-				cluster.Spec.KubeDNS = &api.KubeDNSConfig{}
-			}
-			cluster.Spec.KubeDNS.Provider = kv[1]
-		case "cluster.spec.etcdClusters[*].enableEtcdTLS":
-			v, err := strconv.ParseBool(kv[1])
-			if err != nil {
-				return fmt.Errorf("unknown boolean value: %q", kv[1])
-			}
-			for i := range cluster.Spec.EtcdClusters {
-				cluster.Spec.EtcdClusters[i].EnableEtcdTLS = v
-			}
-		case "cluster.spec.etcdClusters[*].enableTLSAuth":
-			v, err := strconv.ParseBool(kv[1])
-			if err != nil {
-				return fmt.Errorf("unknown boolean value: %q", kv[1])
-			}
-			for i := range cluster.Spec.EtcdClusters {
-				cluster.Spec.EtcdClusters[i].EnableTLSAuth = v
-			}
-		case "cluster.spec.etcdClusters[*].version":
-			for i := range cluster.Spec.EtcdClusters {
-				cluster.Spec.EtcdClusters[i].Version = kv[1]
-			}
-		case "cluster.spec.etcdClusters[*].provider":
-			p, err := toEtcdProviderType(kv[1])
-			if err != nil {
-				return err
-			}
-			for i := range cluster.Spec.EtcdClusters {
-				cluster.Spec.EtcdClusters[i].Provider = p
-			}
-		case "cluster.spec.etcdClusters[*].manager.image":
-			for i := range cluster.Spec.EtcdClusters {
-				etcd := &cluster.Spec.EtcdClusters[i]
-				if etcd.Manager == nil {
-					etcd.Manager = &api.EtcdManagerSpec{}
-				}
-				etcd.Manager.Image = kv[1]
-			}
-		case "cluster.spec.networking.cilium.ipam":
-			createCiliumNetworking(cluster)
-			cluster.Spec.Networking.Cilium.Ipam = kv[1]
-		case "cluster.spec.networking.cilium.enableNodePort":
-			createCiliumNetworking(cluster)
-			v, err := strconv.ParseBool(kv[1])
-			if err != nil {
-				return fmt.Errorf("unknown boolean value: %q", kv[1])
-			}
-			cluster.Spec.Networking.Cilium.EnableNodePort = v
-		case "cluster.spec.networking.cilium.disableMasquerade":
-			createCiliumNetworking(cluster)
-			v, err := strconv.ParseBool(kv[1])
-			if err != nil {
-				return fmt.Errorf("unknown boolean value: %q", kv[1])
-			}
-			cluster.Spec.Networking.Cilium.DisableMasquerade = v
-		case "cluster.spec.kubeProxy.enabled":
-			if cluster.Spec.KubeProxy == nil {
-				cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
-			}
-			v, err := strconv.ParseBool(kv[1])
-			if err != nil {
-				return fmt.Errorf("unknown boolean value: %q", kv[1])
-			}
-			cluster.Spec.KubeProxy.Enabled = fi.Bool(v)
-		default:
-			return fmt.Errorf("unhandled field: %q", field)
+		key := kv[0]
+		key = strings.TrimPrefix(key, "cluster.")
+
+		if err := reflectutils.SetString(cluster, key, kv[1]); err != nil {
+			return fmt.Errorf("failed to set %s=%s: %v", kv[0], kv[1], err)
 		}
 	}
 	return nil
-}
-
-func createCiliumNetworking(cluster *api.Cluster) {
-	if cluster.Spec.Networking == nil {
-		cluster.Spec.Networking = &api.NetworkingSpec{}
-	}
-	if cluster.Spec.Networking.Cilium == nil {
-		cluster.Spec.Networking.Cilium = &api.CiliumNetworkingSpec{}
-	}
-}
-
-func toEtcdProviderType(in string) (api.EtcdProviderType, error) {
-	s := strings.ToLower(in)
-	switch s {
-	case "legacy":
-		return api.EtcdProviderTypeLegacy, nil
-	case "manager":
-		return api.EtcdProviderTypeManager, nil
-	default:
-		return api.EtcdProviderTypeManager, fmt.Errorf("unknown etcd provider type %q", in)
-	}
 }
