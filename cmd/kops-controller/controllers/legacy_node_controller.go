@@ -18,15 +18,12 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -87,7 +84,7 @@ type LegacyNodeReconciler struct {
 }
 
 // +kubebuilder:rbac:groups=,resources=nodes,verbs=get;list;watch;patch
-// Reconciler is the main reconciler function that observes node changes
+// Reconcile is the main reconciler function that observes node changes.
 func (r *LegacyNodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	_ = r.log.WithValues("nodecontroller", req.NamespacedName)
@@ -138,7 +135,7 @@ func (r *LegacyNodeReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		return ctrl.Result{}, nil
 	}
 
-	if err := r.patchNodeLabels(ctx, node, updateLabels); err != nil {
+	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels); err != nil {
 		klog.Warningf("failed to patch node labels on %s: %v", node.Name, err)
 		return ctrl.Result{}, err
 	}
@@ -150,37 +147,6 @@ func (r *LegacyNodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.Node{}).
 		Complete(r)
-}
-
-type nodePatch struct {
-	Metadata *nodePatchMetadata `json:"metadata,omitempty"`
-}
-
-type nodePatchMetadata struct {
-	Labels map[string]string `json:"labels,omitempty"`
-}
-
-// patchNodeLabels patches the node labels to set the specified labels
-func (r *LegacyNodeReconciler) patchNodeLabels(ctx context.Context, node *corev1.Node, setLabels map[string]string) error {
-	nodePatchMetadata := &nodePatchMetadata{
-		Labels: setLabels,
-	}
-	nodePatch := &nodePatch{
-		Metadata: nodePatchMetadata,
-	}
-	nodePatchJson, err := json.Marshal(nodePatch)
-	if err != nil {
-		return fmt.Errorf("error building node patch: %v", err)
-	}
-
-	klog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
-
-	_, err = r.coreV1Client.Nodes().Patch(ctx, node.Name, types.StrategicMergePatchType, nodePatchJson, metav1.PatchOptions{})
-	if err != nil {
-		return fmt.Errorf("error applying patch to node: %v", err)
-	}
-
-	return nil
 }
 
 // getClusterForNode returns the kops.Cluster object for the node
