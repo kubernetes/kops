@@ -204,8 +204,7 @@ func (r *VFSResource) Open() (io.Reader, error) {
 	return b, err
 }
 
-// ResourceHolder is used in JSON/YAML models; it holds a resource but renders to/from a string
-// After unmarshaling, the resource should be found by Name, and set on Resource
+// ResourceHolder is machinery leftover from when there were YAML models.
 type ResourceHolder struct {
 	Name     string
 	Resource Resource
@@ -229,30 +228,14 @@ func (r *ResourceHolder) GetDependencies(tasks map[string]Task) []Task {
 	return nil
 }
 
-// UnmarshalJSON implements the special JSON marshaling for the resource, rendering the name
-func (o *ResourceHolder) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	err := json.Unmarshal(data, &jsonName)
-	if err != nil {
-		return err
-	}
-	o.Name = jsonName
-	return nil
-}
-
-// Unwrap returns the underlying resource
-func (o *ResourceHolder) Unwrap() Resource {
-	return o.Resource
-}
-
 // AsString returns the value of the resource as a string
 func (o *ResourceHolder) AsString() (string, error) {
-	return ResourceAsString(o.Unwrap())
+	return ResourceAsString(o.Resource)
 }
 
 // AsString returns the value of the resource as a byte-slice
 func (o *ResourceHolder) AsBytes() ([]byte, error) {
-	return ResourceAsBytes(o.Unwrap())
+	return ResourceAsBytes(o.Resource)
 }
 
 // WrapResource creates a ResourceHolder for the specified resource
