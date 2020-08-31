@@ -225,11 +225,10 @@ resource "aws_elb" "api-externalpolicies-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-externalpolicies-exam-5cse45"
   security_groups = [aws_security_group.api-elb-externalpolicies-example-com.id, "sg-exampleid3", "sg-exampleid4"]

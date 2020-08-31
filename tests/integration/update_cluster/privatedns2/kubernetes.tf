@@ -277,11 +277,10 @@ resource "aws_elb" "api-privatedns2-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-privatedns2-example-c-6jft30"
   security_groups = [aws_security_group.api-elb-privatedns2-example-com.id]
@@ -303,11 +302,10 @@ resource "aws_elb" "bastion-privatedns2-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 22
-    instance_protocol  = "TCP"
-    lb_port            = 22
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 22
+    instance_protocol = "TCP"
+    lb_port           = 22
+    lb_protocol       = "TCP"
   }
   name            = "bastion-privatedns2-examp-e704o2"
   security_groups = [aws_security_group.bastion-elb-privatedns2-example-com.id]
