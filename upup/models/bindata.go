@@ -20075,7 +20075,7 @@ spec:
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
-          image: quay.io/k8scsi/csi-attacher:v2.1.1
+          image: quay.io/k8scsi/csi-attacher:v2.2.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -20087,7 +20087,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: quay.io/k8scsi/csi-provisioner:v1.4.0
+          image: quay.io/k8scsi/csi-provisioner:v1.6.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -20307,7 +20307,7 @@ spec:
             type: ""
           name: cloudconfig
 ---
-apiVersion: storage.k8s.io/v1beta1
+apiVersion: storage.k8s.io/v1
 kind: CSIDriver
 metadata:
   labels:
