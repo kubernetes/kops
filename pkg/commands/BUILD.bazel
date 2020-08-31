@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "helpers.go",
         "helpers_readwrite.go",
         "set_cluster.go",
         "status_discovery.go",
@@ -17,6 +18,7 @@ go_library(
         "//pkg/apis/kops/validation:go_default_library",
         "//pkg/assets:go_default_library",
         "//pkg/client/simple:go_default_library",
+        "//pkg/commands/helpers:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/resources/digitalocean:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
@@ -30,6 +32,8 @@ go_library(
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
+        "//vendor/k8s.io/kubectl/pkg/util/i18n:go_default_library",
+        "//vendor/k8s.io/kubectl/pkg/util/templates:go_default_library",
     ],
 )
 

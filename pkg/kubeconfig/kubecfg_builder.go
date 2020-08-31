@@ -42,18 +42,16 @@ type KubeconfigBuilder struct {
 	ClientCert []byte
 	ClientKey  []byte
 
-	configAccess clientcmd.ConfigAccess
+	AuthenticationExec []string
 }
 
 // Create new KubeconfigBuilder
-func NewKubeconfigBuilder(configAccess clientcmd.ConfigAccess) *KubeconfigBuilder {
-	c := &KubeconfigBuilder{}
-	c.configAccess = configAccess
-	return c
+func NewKubeconfigBuilder() *KubeconfigBuilder {
+	return &KubeconfigBuilder{}
 }
 
-func (b *KubeconfigBuilder) DeleteKubeConfig() error {
-	config, err := b.configAccess.GetStartingConfig()
+func (b *KubeconfigBuilder) DeleteKubeConfig(configAccess clientcmd.ConfigAccess) error {
+	config, err := configAccess.GetStartingConfig()
 	if err != nil {
 		return fmt.Errorf("error loading kubeconfig: %v", err)
 	}
@@ -72,7 +70,7 @@ func (b *KubeconfigBuilder) DeleteKubeConfig() error {
 		config.CurrentContext = ""
 	}
 
-	if err := clientcmd.ModifyConfig(b.configAccess, *config, false); err != nil {
+	if err := clientcmd.ModifyConfig(configAccess, *config, false); err != nil {
 		return fmt.Errorf("error writing kubeconfig: %v", err)
 	}
 
@@ -101,8 +99,8 @@ func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
 }
 
 // Write out a new kubeconfig
-func (b *KubeconfigBuilder) WriteKubecfg() error {
-	config, err := b.configAccess.GetStartingConfig()
+func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) error {
+	config, err := configAccess.GetStartingConfig()
 	if err != nil {
 		return fmt.Errorf("error reading kubeconfig: %v", err)
 	}
@@ -144,6 +142,14 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 			authInfo.ClientCertificateData = b.ClientCert
 			authInfo.ClientKey = ""
 			authInfo.ClientKeyData = b.ClientKey
+		}
+
+		if len(b.AuthenticationExec) != 0 {
+			authInfo.Exec = &clientcmdapi.ExecConfig{
+				APIVersion: "client.authentication.k8s.io/v1beta1",
+				Command:    b.AuthenticationExec[0],
+				Args:       b.AuthenticationExec[1:],
+			}
 		}
 
 		if config.AuthInfos == nil {
@@ -198,7 +204,7 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 
 	config.CurrentContext = b.Context
 
-	if err := clientcmd.ModifyConfig(b.configAccess, *config, true); err != nil {
+	if err := clientcmd.ModifyConfig(configAccess, *config, true); err != nil {
 		return err
 	}
 

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main // import "k8s.io/kops/cmd/kops"
+package commandutils
 
 import (
-	"k8s.io/kops/pkg/commands/commandutils"
+	"fmt"
+	"os"
 )
 
-func main() {
-	Execute()
-}
-
-// exitWithError will terminate execution with an error result
+// ExitWithError will terminate execution with an error result
 // It prints the error to stderr and exits with a non-zero exit code
-func exitWithError(err error) {
-	commandutils.ExitWithError(err)
+func ExitWithError(err error) {
+	fmt.Fprintf(os.Stderr, "\n%v\n", err)
+	os.Exit(1)
 }

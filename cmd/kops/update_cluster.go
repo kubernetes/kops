@@ -306,12 +306,23 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		firstRun = !hasKubecfg
 
 		klog.Infof("Exporting kubecfg for cluster")
-		conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &commands.CloudDiscoveryStatusStore{}, clientcmd.NewDefaultPathOptions(), c.admin, c.user, c.internal)
+		// TODO: Another flag?
+		useKopsAuthenticationPlugin := false
+		conf, err := kubeconfig.BuildKubecfg(
+			cluster,
+			keyStore,
+			secretStore,
+			&commands.CloudDiscoveryStatusStore{},
+			c.admin,
+			c.user,
+			c.internal,
+			f.KopsStateStore(),
+			useKopsAuthenticationPlugin)
 		if err != nil {
 			return nil, err
 		}
 
-		err = conf.WriteKubecfg()
+		err = conf.WriteKubecfg(clientcmd.NewDefaultPathOptions())
 		if err != nil {
 			return nil, err
 		}

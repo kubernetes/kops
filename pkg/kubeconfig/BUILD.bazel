@@ -32,6 +32,6 @@ go_test(
         "//pkg/pki:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//util/pkg/vfs:go_default_library",
-        "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
+        "//vendor/github.com/google/go-cmp/cmp:go_default_library",
     ],
 )
