@@ -287,8 +287,18 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
+
 	// TODO pass the public key instead. We would first need to segregate the secrets better.
 	kubeAPIServer.ServiceAccountKeyFile = append(kubeAPIServer.ServiceAccountKeyFile, filepath.Join(b.PathSrvKubernetes(), "service-account.key"))
+
+	// Set the signing key if we're using Service Account Token VolumeProjection
+	if kubeAPIServer.ServiceAccountSigningKeyFile == nil {
+		if fi.StringValue(kubeAPIServer.ServiceAccountIssuer) != "" {
+			s := filepath.Join(b.PathSrvKubernetes(), "service-account.key")
+			kubeAPIServer.ServiceAccountSigningKeyFile = &s
+		}
+	}
+
 	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.crt")
 	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
