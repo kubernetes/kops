@@ -282,11 +282,10 @@ resource "aws_elb" "api-bastionuserdata-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-bastionuserdata-examp-qbgom9"
   security_groups = [aws_security_group.api-elb-bastionuserdata-example-com.id]
@@ -308,11 +307,10 @@ resource "aws_elb" "bastion-bastionuserdata-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 22
-    instance_protocol  = "TCP"
-    lb_port            = 22
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 22
+    instance_protocol = "TCP"
+    lb_port           = 22
+    lb_protocol       = "TCP"
   }
   name            = "bastion-bastionuserdata-e-4grhsv"
   security_groups = [aws_security_group.bastion-elb-bastionuserdata-example-com.id, "sg-exampleid"]

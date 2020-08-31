@@ -282,11 +282,10 @@ resource "aws_elb" "api-privatecalico-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-privatecalico-example-0uch4k"
   security_groups = [aws_security_group.api-elb-privatecalico-example-com.id]
@@ -308,11 +307,10 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 22
-    instance_protocol  = "TCP"
-    lb_port            = 22
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 22
+    instance_protocol = "TCP"
+    lb_port           = 22
+    lb_protocol       = "TCP"
   }
   name            = "bastion-privatecalico-exa-hocohm"
   security_groups = [aws_security_group.bastion-elb-privatecalico-example-com.id]

@@ -282,11 +282,10 @@ resource "aws_elb" "api-privateflannel-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-privateflannel-exampl-hsu11v"
   security_groups = [aws_security_group.api-elb-privateflannel-example-com.id]
@@ -308,11 +307,10 @@ resource "aws_elb" "bastion-privateflannel-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 22
-    instance_protocol  = "TCP"
-    lb_port            = 22
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 22
+    instance_protocol = "TCP"
+    lb_port           = 22
+    lb_protocol       = "TCP"
   }
   name            = "bastion-privateflannel-ex-753531"
   security_groups = [aws_security_group.bastion-elb-privateflannel-example-com.id]

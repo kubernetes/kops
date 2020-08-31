@@ -268,11 +268,10 @@ resource "aws_elb" "api-unmanaged-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 443
-    instance_protocol  = "TCP"
-    lb_port            = 443
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 443
+    instance_protocol = "TCP"
+    lb_port           = 443
+    lb_protocol       = "TCP"
   }
   name            = "api-unmanaged-example-com-t82m6f"
   security_groups = [aws_security_group.api-elb-unmanaged-example-com.id]
@@ -294,11 +293,10 @@ resource "aws_elb" "bastion-unmanaged-example-com" {
   }
   idle_timeout = 300
   listener {
-    instance_port      = 22
-    instance_protocol  = "TCP"
-    lb_port            = 22
-    lb_protocol        = "TCP"
-    ssl_certificate_id = ""
+    instance_port     = 22
+    instance_protocol = "TCP"
+    lb_port           = 22
+    lb_protocol       = "TCP"
   }
   name            = "bastion-unmanaged-example-d7bn3d"
   security_groups = [aws_security_group.bastion-elb-unmanaged-example-com.id]
