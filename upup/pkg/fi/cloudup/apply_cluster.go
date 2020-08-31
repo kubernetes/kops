@@ -161,11 +161,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	modelStore, err := findModelStore()
-	if err != nil {
-		return err
-	}
-
 	channel, err := ChannelForCluster(c.Cluster)
 	if err != nil {
 		klog.Warningf("%v", err)
@@ -282,7 +277,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	l := &Loader{}
 	l.Init()
-	l.Cluster = c.Cluster
 
 	keyStore, err := c.Clientset.KeyStore(cluster)
 	if err != nil {
@@ -591,13 +585,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	l.TemplateFunctions["CA"] = func() fi.CAStore {
-		return keyStore
-	}
-	l.TemplateFunctions["Secrets"] = func() fi.SecretStore {
-		return secretStore
-	}
-
 	configBuilder, err := c.newNodeUpConfigBuilder(assetBuilder)
 	if err != nil {
 		return err
@@ -687,14 +674,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	l.TemplateFunctions["Masters"] = tf.MasterInstanceGroups
-
-	err = tf.AddTo(l.TemplateFunctions, secretStore)
-	if err != nil {
-		return err
-	}
-
-	taskMap, err := l.BuildTasks(modelStore, assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
+	taskMap, err := l.BuildTasks(assetBuilder, &stageAssetsLifecycle, c.LifecycleOverrides)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
