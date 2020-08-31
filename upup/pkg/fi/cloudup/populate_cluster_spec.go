@@ -283,6 +283,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 			codeModels = append(codeModels, &components.KubeProxyOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.CiliumOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.OpenStackOptionsBulder{Context: optionsContext})
+			codeModels = append(codeModels, &components.DiscoveryOptionsBuilder{OptionsContext: optionsContext})
 		}
 	}
 

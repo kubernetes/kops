@@ -19,6 +19,7 @@ package awstasks
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -33,12 +34,13 @@ import (
 type IAMOIDCProvider struct {
 	Lifecycle *fi.Lifecycle
 
-	ARN         *string
 	ClientIDs   []*string
-	Thumbprints []*string
+	Thumbprints []fi.Resource
 	URL         *string
 
 	Name *string
+
+	arn *string
 }
 
 var _ fi.CompareWithID = &IAMOIDCProvider{}
@@ -64,13 +66,29 @@ func (e *IAMOIDCProvider) Find(c *fi.Context) (*IAMOIDCProvider, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error describing oidc provider: %v", err)
 		}
-		if fi.StringValue(descResp.Url) == fi.StringValue(e.URL) {
+		// AWS does not return the https:// in the url
+		actualURL := aws.StringValue(descResp.Url)
+		if !strings.Contains(actualURL, "://") {
+			actualURL = "https://" + actualURL
+		}
+
+		if actualURL == fi.StringValue(e.URL) {
+			var actualThumbprints []fi.Resource
+			for _, thumbprint := range descResp.ThumbprintList {
+				s := aws.StringValue(thumbprint)
+				actualThumbprints = append(actualThumbprints, fi.NewStringResource(s))
+			}
+
 			actual := &IAMOIDCProvider{
 				ClientIDs:   descResp.ClientIDList,
-				Thumbprints: descResp.ThumbprintList,
-				URL:         descResp.Url,
-				ARN:         arn,
+				Thumbprints: actualThumbprints,
+				URL:         &actualURL,
+				arn:         arn,
 			}
+
+			actual.Lifecycle = e.Lifecycle
+			actual.Name = e.Name
+
 			klog.V(2).Infof("found matching IAMOIDCProvider %q", aws.StringValue(arn))
 			return actual, nil
 		}
@@ -83,17 +101,17 @@ func (e *IAMOIDCProvider) Run(c *fi.Context) error {
 }
 
 func (s *IAMOIDCProvider) CheckChanges(a, e, changes *IAMOIDCProvider) error {
+	if e.URL == nil {
+		return fi.RequiredField("URL")
+	}
+	if e.ClientIDs == nil {
+		return fi.RequiredField("ClientIDs")
+	}
+	if len(e.Thumbprints) == 0 {
+		return fi.RequiredField("Thumbprints")
+	}
+
 	if a != nil {
-		if e.URL == nil {
-			return fi.RequiredField("URL")
-		}
-		if e.ClientIDs == nil {
-			return fi.RequiredField("ClientIDs")
-		}
-		if len(e.Thumbprints) == 0 {
-			return fi.RequiredField("Thumbprints")
-		}
-	} else {
 		if changes.ClientIDs != nil {
 			return fi.CannotChangeField("ClientIDs")
 		}
@@ -105,13 +123,17 @@ func (s *IAMOIDCProvider) CheckChanges(a, e, changes *IAMOIDCProvider) error {
 }
 
 func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOIDCProvider) error {
-	if a == nil {
+	thumbprints, err := p.thumbprintsAsStrings()
+	if err != nil {
+		return err
+	}
 
+	if a == nil {
 		klog.V(2).Infof("Creating IAMOIDCProvider with Name:%q", *e.Name)
 
 		request := &iam.CreateOpenIDConnectProviderInput{
 			ClientIDList:   e.ClientIDs,
-			ThumbprintList: e.Thumbprints,
+			ThumbprintList: aws.StringSlice(thumbprints),
 			Url:            e.URL,
 		}
 
@@ -120,14 +142,14 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 			return fmt.Errorf("error creating IAMOIDCProvider: %v", err)
 		}
 
-		e.ARN = response.OpenIDConnectProviderArn
+		e.arn = response.OpenIDConnectProviderArn
 	} else {
 		if changes.Thumbprints != nil {
-			klog.V(2).Infof("Updating IAMOIDCProvider Thumbprints %q", *e.ARN)
+			klog.V(2).Infof("Updating IAMOIDCProvider Thumbprints %q", fi.StringValue(e.arn))
 
 			request := &iam.UpdateOpenIDConnectProviderThumbprintInput{}
-			request.OpenIDConnectProviderArn = e.ARN
-			request.ThumbprintList = e.Thumbprints
+			request.OpenIDConnectProviderArn = a.arn
+			request.ThumbprintList = aws.StringSlice(thumbprints)
 
 			_, err := t.Cloud.IAM().UpdateOpenIDConnectProviderThumbprint(request)
 			if err != nil {
@@ -138,22 +160,37 @@ func (p *IAMOIDCProvider) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMOID
 	return nil
 }
 
+func (p *IAMOIDCProvider) thumbprintsAsStrings() ([]string, error) {
+	var list []string
+	for _, thumbprint := range p.Thumbprints {
+		s, err := fi.ResourceAsString(thumbprint)
+		if err != nil {
+			return nil, fmt.Errorf("error getting resource as string: %v", err)
+		}
+
+		list = append(list, s)
+	}
+	return list, nil
+}
+
 type terraformIAMOIDCProvider struct {
 	URL            *string   `json:"url" cty:"url"`
 	ClientIDList   []*string `json:"client_id_list" cty:"client_id_list"`
 	ThumbprintList []*string `json:"thumbprint_list" cty:"thumbprint_list"`
 
-	Name             *string            `json:"name" cty:"name"`
 	AssumeRolePolicy *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
 }
 
 func (p *IAMOIDCProvider) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMOIDCProvider) error {
+	thumbprints, err := p.thumbprintsAsStrings()
+	if err != nil {
+		return err
+	}
 
 	tf := &terraformIAMOIDCProvider{
-		Name:           e.Name,
 		URL:            e.URL,
 		ClientIDList:   e.ClientIDs,
-		ThumbprintList: e.Thumbprints,
+		ThumbprintList: aws.StringSlice(thumbprints),
 	}
 
 	return t.RenderResource("aws_iam_openid_connect_provider", *e.Name, tf)
