@@ -17,7 +17,6 @@ limitations under the License.
 package cloudup
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"reflect"
@@ -58,13 +57,9 @@ var _ fi.Resource = &templateResource{}
 var _ fi.TemplateResource = &templateResource{}
 
 func (a *templateResource) Open() (io.Reader, error) {
-	var err error
-	result, err := a.loader.executeTemplate(a.key, a.template, a.args)
-	if err != nil {
-		return nil, fmt.Errorf("error executing resource template %q: %v", a.key, err)
-	}
-	reader := bytes.NewReader([]byte(result))
-	return reader, nil
+	// TODO remove after proving it's dead code
+	klog.Fatalf("known to be dead code %q", a.key)
+	return nil, nil
 }
 
 func (a *templateResource) Curry(args []string) fi.TemplateResource {
@@ -78,41 +73,6 @@ func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
 	l.Resources = make(map[string]fi.Resource)
 	l.TemplateFunctions = make(template.FuncMap)
-}
-
-func (l *Loader) executeTemplate(key string, d string, args []string) (string, error) {
-	// TODO remove after proving it's dead code
-	klog.Fatalf("need to execute template %q", key)
-	t := template.New(key)
-
-	funcMap := make(template.FuncMap)
-	funcMap["Args"] = func() []string {
-		return args
-	}
-	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
-		return l.renderResource(resourceName, args)
-	}
-	for k, fn := range l.TemplateFunctions {
-		funcMap[k] = fn
-	}
-	t.Funcs(funcMap)
-
-	t.Option("missingkey=zero")
-
-	spec := l.Cluster.Spec
-
-	_, err := t.Parse(d)
-	if err != nil {
-		return "", fmt.Errorf("error parsing template %q: %v", key, err)
-	}
-
-	var buffer bytes.Buffer
-	err = t.ExecuteTemplate(&buffer, key, spec)
-	if err != nil {
-		return "", fmt.Errorf("error executing template %q: %v", key, err)
-	}
-
-	return buffer.String(), nil
 }
 
 func (l *Loader) BuildTasks(modelStore vfs.Path, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
@@ -216,7 +176,6 @@ func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi
 }
 
 func (l *Loader) processDeferrals() error {
-	// TODO remove after proving it's not used
 	for taskKey, task := range l.tasks {
 		taskValue := reflect.ValueOf(task)
 
@@ -241,10 +200,6 @@ func (l *Loader) processDeferrals() error {
 							typeNameForTask := fi.TypeNameForTask(intf)
 							primary := l.tasks[typeNameForTask+"/"+*name]
 							if primary == nil {
-								klog.Fatalf("task %q needed deferral resolution", typeNameForTask+"/"+*name)
-								primary = l.tasks[*name]
-							}
-							if primary == nil {
 								keys := sets.NewString()
 								for k := range l.tasks {
 									keys.Insert(k)
@@ -261,31 +216,7 @@ func (l *Loader) processDeferrals() error {
 							v.Set(reflect.ValueOf(primary))
 						}
 						return reflectutils.SkipReflection
-					} else if rh, ok := intf.(*fi.ResourceHolder); ok {
-						if rh.Resource == nil {
-							klog.Fatalf("resource %s needed deferral resolution", rh.Name)
-							//Resources can contain template 'arguments', separated by spaces
-							// <resourcename> <arg1> <arg2>
-							tokens := strings.Split(rh.Name, " ")
-							match := tokens[0]
-							args := tokens[1:]
-
-							match = strings.TrimPrefix(match, "resources/")
-							resource := l.Resources[match]
-
-							if resource == nil {
-								klog.Infof("Known resources:")
-								for k := range l.Resources {
-									klog.Infof("  %s", k)
-								}
-								return fmt.Errorf("unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
-							}
-
-							err := l.populateResource(rh, resource, args)
-							if err != nil {
-								return fmt.Errorf("error setting resource value: %v", err)
-							}
-						}
+					} else if _, ok := intf.(*fi.ResourceHolder); ok {
 						return reflectutils.SkipReflection
 					}
 				}
@@ -328,43 +259,4 @@ func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
 
 	l.Resources[key] = a
 	return nil
-}
-
-func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, args []string) error {
-	if resource == nil {
-		return nil
-	}
-
-	if len(args) != 0 {
-		templateResource, ok := resource.(fi.TemplateResource)
-		if !ok {
-			return fmt.Errorf("cannot have arguments with resources of type %T", resource)
-		}
-		resource = templateResource.Curry(args)
-	}
-	rh.Resource = resource
-
-	return nil
-}
-
-func (l *Loader) renderResource(resourceName string, args []string) (string, error) {
-	resourceKey := strings.TrimSuffix(resourceName, ".template")
-	resourceKey = strings.TrimPrefix(resourceKey, "resources/")
-	configResource := l.Resources[resourceKey]
-	if configResource == nil {
-		return "", fmt.Errorf("cannot find resource %q", resourceName)
-	}
-
-	if tr, ok := configResource.(fi.TemplateResource); ok {
-		configResource = tr.Curry(args)
-	} else if len(args) != 0 {
-		return "", fmt.Errorf("args passed when building node config, but config was not a template %q", resourceName)
-	}
-
-	data, err := fi.ResourceAsBytes(configResource)
-	if err != nil {
-		return "", fmt.Errorf("error reading resource %q: %v", resourceName, err)
-	}
-
-	return string(data), nil
 }
