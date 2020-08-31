@@ -18,77 +18,27 @@ package cloudup
 
 import (
 	"fmt"
-	"io"
 	"reflect"
-	"strings"
-	"text/template"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/assettasks"
-	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/util/pkg/reflectutils"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Loader struct {
-	Cluster *kopsapi.Cluster
-
-	TemplateFunctions template.FuncMap
-
-	Resources map[string]fi.Resource
-
 	Builders []fi.ModelBuilder
 
 	tasks map[string]fi.Task
 }
 
-type templateResource struct {
-	key      string
-	loader   *Loader
-	template string
-	args     []string
-}
-
-var _ fi.Resource = &templateResource{}
-var _ fi.TemplateResource = &templateResource{}
-
-func (a *templateResource) Open() (io.Reader, error) {
-	// TODO remove after proving it's dead code
-	klog.Fatalf("known to be dead code %q", a.key)
-	return nil, nil
-}
-
-func (a *templateResource) Curry(args []string) fi.TemplateResource {
-	curried := &templateResource{}
-	*curried = *a
-	curried.args = append(curried.args, args...)
-	return curried
-}
-
 func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
-	l.Resources = make(map[string]fi.Resource)
-	l.TemplateFunctions = make(template.FuncMap)
 }
 
-func (l *Loader) BuildTasks(modelStore vfs.Path, assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
-	// Second pass: load everything else
-	tw := &loader.TreeWalker{
-		Contexts: map[string]loader.Handler{
-			"resources": l.resourceHandler,
-		},
-	}
-
-	modelDir := modelStore.Join("cloudup")
-	err := tw.Walk(modelDir)
-	if err != nil {
-		return nil, err
-	}
-
+func (l *Loader) BuildTasks(assetBuilder *assets.AssetBuilder, lifecycle *fi.Lifecycle, lifecycleOverrides map[string]fi.Lifecycle) (map[string]fi.Task, error) {
 	for _, builder := range l.Builders {
 		context := &fi.ModelBuilderContext{
 			Tasks:              l.tasks,
@@ -108,7 +58,7 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, assetBuilder *assets.AssetBuild
 	if err := l.addAssetFileCopyTasks(assetBuilder.FileAssets, lifecycle); err != nil {
 		return nil, err
 	}
-	err = l.processDeferrals()
+	err := l.processDeferrals()
 	if err != nil {
 		return nil, err
 	}
@@ -231,32 +181,5 @@ func (l *Loader) processDeferrals() error {
 		}
 	}
 
-	return nil
-}
-
-func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
-	contents, err := i.ReadBytes()
-	if err != nil {
-		return err
-	}
-
-	var a fi.Resource
-	key := i.RelativePath
-	if strings.HasSuffix(key, ".template") {
-		key = strings.TrimSuffix(key, ".template")
-		klog.V(2).Infof("loading (templated) resource %q", key)
-
-		a = &templateResource{
-			template: string(contents),
-			loader:   l,
-			key:      key,
-		}
-	} else {
-		klog.V(2).Infof("loading resource %q", key)
-		a = fi.NewBytesResource(contents)
-
-	}
-
-	l.Resources[key] = a
 	return nil
 }
