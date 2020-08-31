@@ -19377,12 +19377,21 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.63
+        image: spotinst/kubernetes-cluster-controller:1.0.64
         livenessProbe:
           httpGet:
             path: /healthcheck
             port: 4401
           initialDelaySeconds: 300
+          periodSeconds: 20
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 4401
+          initialDelaySeconds: 20
           periodSeconds: 20
           timeoutSeconds: 2
           successThreshold: 1
