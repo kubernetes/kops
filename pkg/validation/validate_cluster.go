@@ -291,14 +291,14 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 	groupsSeen := map[string]bool{}
 
 	for _, cloudGroup := range cloudGroups {
-		var allMembers []*cloudinstances.CloudInstanceGroupMember
+		var allMembers []*cloudinstances.CloudInstance
 		allMembers = append(allMembers, cloudGroup.Ready...)
 		allMembers = append(allMembers, cloudGroup.NeedUpdate...)
 
 		groupsSeen[cloudGroup.InstanceGroup.Name] = true
 		numNodes := 0
 		for _, m := range allMembers {
-			if !m.Detached {
+			if m.Status != cloudinstances.CloudInstanceStatusDetached {
 				numNodes++
 			}
 		}

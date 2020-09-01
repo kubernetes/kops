@@ -126,11 +126,11 @@ func (c *MockCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	return deleteGroup(c, g)
 }
 
-func (c *MockCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *MockCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return deleteInstance(c, i)
 }
 
-func (c *MockCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *MockCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return detachInstance(c, i)
 }
 
