@@ -275,7 +275,11 @@ func buildCloudInstanceGroup(c ALICloud, ig *kops.InstanceGroup, g ess.ScalingGr
 			klog.Warningf("ignoring instance with no instance id: %s", i)
 			continue
 		}
-		err := cg.NewCloudInstanceGroupMember(instanceId, newLaunchConfigName, i.ScalingConfigurationId, nodeMap)
+		status := cloudinstances.CloudInstanceStatusUpToDate
+		if newLaunchConfigName != i.ScalingConfigurationId {
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		}
+		_, err := cg.NewCloudInstance(instanceId, status, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}

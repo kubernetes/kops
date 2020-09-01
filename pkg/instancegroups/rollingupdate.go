@@ -78,7 +78,7 @@ type RollingUpdateCluster struct {
 func (c *RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
 	for _, group := range groups {
 		if group.Ready != nil {
-			var newReady []*cloudinstances.CloudInstanceGroupMember
+			var newReady []*cloudinstances.CloudInstance
 			for _, member := range group.Ready {
 				makeNotReady := false
 				if member.Node != nil && member.Node.Annotations != nil {
@@ -89,6 +89,7 @@ func (c *RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstance
 
 				if makeNotReady {
 					group.NeedUpdate = append(group.NeedUpdate, member)
+					member.Status = cloudinstances.CloudInstanceStatusNeedsUpdate
 				} else {
 					newReady = append(newReady, member)
 				}

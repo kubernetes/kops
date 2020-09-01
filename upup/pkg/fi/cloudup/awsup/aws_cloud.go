@@ -50,6 +50,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/featureflag"
+	identity_aws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/upup/pkg/fi"
 	k8s_aws "k8s.io/legacy-cloud-providers/aws"
@@ -442,7 +443,7 @@ func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
 }
 
 // DeleteInstance deletes an aws instance
-func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	if c.spotinst != nil {
 		if featureflag.SpotinstHybrid.Enabled() {
 			if _, ok := i.CloudInstanceGroup.Raw.(*autoscaling.Group); ok {
@@ -456,10 +457,10 @@ func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceG
 	return deleteInstance(c, i)
 }
 
-func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 	id := i.ID
 	if id == "" {
-		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
+		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
 	request := &ec2.TerminateInstancesInput{
@@ -476,8 +477,8 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) erro
 }
 
 // DetachInstance causes an aws instance to no longer be counted against the ASG's size limits.
-func (c *awsCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
-	if i.Detached {
+func (c *awsCloudImplementation) DetachInstance(i *cloudinstances.CloudInstance) error {
+	if i.Status == cloudinstances.CloudInstanceStatusDetached {
 		return nil
 	}
 	if c.spotinst != nil {
@@ -487,10 +488,10 @@ func (c *awsCloudImplementation) DetachInstance(i *cloudinstances.CloudInstanceG
 	return detachInstance(c, i)
 }
 
-func detachInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+func detachInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 	id := i.ID
 	if id == "" {
-		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
+		return fmt.Errorf("id was not set on CloudInstance: %v", i)
 	}
 
 	asg := i.CloudInstanceGroup.Raw.(*autoscaling.Group)
@@ -751,6 +752,10 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 	}
 
 	instanceSeen := map[string]bool{}
+	instances, err := findInstances(c, ig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch instances: %v", err)
+	}
 
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
@@ -774,19 +779,44 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 			continue
 		}
 		currentConfigName := findInstanceLaunchConfiguration(i)
-
-		if err := cg.NewCloudInstanceGroupMember(id, newConfigName, currentConfigName, nodeMap); err != nil {
+		status := cloudinstances.CloudInstanceStatusUpToDate
+		if newConfigName != currentConfigName {
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		}
+		cm, err := cg.NewCloudInstance(id, status, nodeMap)
+		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
+
+		cm.MachineType = aws.StringValue(i.InstanceType)
+		instance := instances[id]
+		for _, tag := range instance.Tags {
+			key := aws.StringValue(tag.Key)
+			if !strings.HasPrefix(key, TagNameRolePrefix) {
+				continue
+			}
+			role := strings.TrimPrefix(key, TagNameRolePrefix)
+			cm.Roles = append(cm.Roles, role)
+			cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
+		}
+
 	}
 
-	detached, err := findDetachedInstances(c, g)
+	var detached []*string
+	for id, instance := range instances {
+		for _, tag := range instance.Tags {
+			if aws.StringValue(tag.Key) == tagNameDetachedInstance {
+				detached = append(detached, aws.String(id))
+			}
+		}
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error searching for detached instances: %v", err)
 	}
 	for _, id := range detached {
 		if id != nil && *id != "" && !instanceSeen[*id] {
-			if err := cg.NewDetachedCloudInstanceGroupMember(*id, nodeMap); err != nil {
+			_, err := cg.NewCloudInstance(*id, cloudinstances.CloudInstanceStatusDetached, nodeMap)
+			if err != nil {
 				return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 			}
 			instanceSeen[*id] = true
@@ -796,10 +826,10 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 	return cg, nil
 }
 
-func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) {
+func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance, error) {
 	req := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
-			NewEC2Filter("tag:"+tagNameDetachedInstance, aws.StringValue(g.AutoScalingGroupName)),
+			NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
 			NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
 		},
 	}
@@ -809,6 +839,28 @@ func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) 
 		return nil, err
 	}
 
+	instances := make(map[string]*ec2.Instance)
+	for _, r := range result.Reservations {
+		for _, i := range r.Instances {
+			id := aws.StringValue(i.InstanceId)
+			instances[id] = i
+		}
+	}
+	return instances, nil
+
+}
+
+func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) {
+	req := &ec2.DescribeInstancesInput{
+		Filters: []*ec2.Filter{
+			NewEC2Filter("tag:"+tagNameDetachedInstance, aws.StringValue(g.AutoScalingGroupName)),
+			NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
+		},
+	}
+	result, err := c.EC2().DescribeInstances(req)
+	if err != nil {
+		return nil, err
+	}
 	var detached []*string
 	for _, r := range result.Reservations {
 		for _, i := range r.Instances {
