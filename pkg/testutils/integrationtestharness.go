@@ -201,6 +201,14 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		Architecture:   aws.String("x86_64"),
 	})
 
+	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+		CreationDate:   aws.String("2020-08-27T00:19:55.000Z"),
+		ImageId:        aws.String("ami-010968555174f9163"),
+		Name:           aws.String("bottlerocket-aws-k8s-1.17-x86_64-v0.5.0-e0ddf1b"),
+		OwnerId:        aws.String("092701018921"),
+		RootDeviceName: aws.String("/dev/xvda"),
+	})
+
 	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{
 		CidrBlock: aws.String("172.20.0.0/16"),
 		TagSpecifications: []*ec2.TagSpecification{

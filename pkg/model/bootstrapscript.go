@@ -28,6 +28,7 @@ import (
 	"strings"
 	"text/template"
 
+	toml "github.com/pelletier/go-toml"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -41,6 +42,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/mirrors"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 type NodeUpConfigBuilder interface {
@@ -75,6 +77,46 @@ type BootstrapScript struct {
 var _ fi.Task = &BootstrapScript{}
 var _ fi.HasName = &BootstrapScript{}
 var _ fi.HasDependencies = &BootstrapScript{}
+
+// This template is a TOML file defined here:
+// https://github.com/bottlerocket-os/bottlerocket#kubernetes-settings
+
+type bottleRocketUserdataSettingsHostContainersAdmin struct {
+	Enabled bool `toml:"enabled"`
+}
+
+type bottleRocketUserdataSettingsHostContainers struct {
+	Admin bottleRocketUserdataSettingsHostContainersAdmin `toml:"admin"`
+}
+
+type bottleRocketUserdataSettingsKubernetes struct {
+	APIServer          string `toml:"api-server"`
+	ClusterCertificate string `toml:"cluster-certificate"`
+	ClusterName        string `toml:"cluster-name"`
+
+	NodeTaints            map[string]string `toml:"node-taints,omitempty"`
+	AllowedUnsafeSysctls  []string          `toml:"allowed-unsafe-sysctls,omitempty"`
+	SystemReserved        map[string]string `toml:"system-reserved,omitempty"`
+	RegistryQPS           *int32            `toml:"registry-qps"`
+	RegistryBurst         *int32            `toml:"registry-burst"`
+	EventQPS              *int32            `toml:"event-qps"`
+	EventBurst            *int32            `toml:"event-burst"`
+	ContainerLogMaxSize   *string           `toml:"container-log-max-size"`
+	ContainerLogMaxFiles  *int32            `toml:"container-log-max-files"`
+	CPUManagerPolicy      *string           `toml:"cpu-manager-policy"`
+	TopologyManagerPolicy *string           `toml:"topology-manager-policy"`
+
+	PodInfraContainerImage *string           `toml:"pod-infra-container-image"`
+	KubeReserved           map[string]string `toml:"kube-reserved,omitempty"`
+}
+
+type bottleRocketUserdataSettings struct {
+	HostContainers bottleRocketUserdataSettingsHostContainers `toml:"host-containers"`
+	Kubernetes     bottleRocketUserdataSettingsKubernetes     `toml:"kubernetes"`
+}
+type bottleRocketUserdata struct {
+	Settings bottleRocketUserdataSettings `toml:"settings"`
+}
 
 // kubeEnv returns the boot config for the instance group
 func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context) (string, error) {
@@ -250,6 +292,10 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		}
 	}
 
+	if ig.Spec.ImageFamily != nil && ig.Spec.ImageFamily.Bottlerocket != nil {
+		keypairs = []string{"kubernetes-ca"}
+	}
+
 	caTasks := map[string]*fitasks.Keypair{}
 	for _, keypair := range keypairs {
 		caTaskObject, found := c.Tasks["Keypair/"+keypair]
@@ -267,15 +313,17 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 		caTasks:   caTasks,
 	}
 	task.resource.Task = task
-	task.nodeupConfig.Task = task
-	c.AddTask(task)
+	if ig.Spec.ImageFamily == nil || ig.Spec.ImageFamily.Bottlerocket == nil {
+		task.nodeupConfig.Task = task
 
-	c.AddTask(&fitasks.ManagedFile{
-		Name:      fi.String("nodeupconfig-" + ig.Name),
-		Lifecycle: b.Lifecycle,
-		Location:  fi.String("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/nodeupconfig.yaml"),
-		Contents:  &task.nodeupConfig,
-	})
+		c.AddTask(&fitasks.ManagedFile{
+			Name:      fi.String("nodeupconfig-" + ig.Name),
+			Lifecycle: b.Lifecycle,
+			Location:  fi.String("igconfig/" + strings.ToLower(string(ig.Spec.Role)) + "/" + ig.Name + "/nodeupconfig.yaml"),
+			Contents:  &task.nodeupConfig,
+		})
+	}
+	c.AddTask(task)
 	return &task.resource, nil
 }
 
@@ -291,6 +339,11 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			deps = append(deps, task)
 			b.alternateNameTasks = append(b.alternateNameTasks, hasAddress)
 		}
+		if b.ig.Spec.ImageFamily != nil && b.ig.Spec.ImageFamily.Bottlerocket != nil {
+			if t, ok := task.(*fitasks.Keypair); ok && fi.StringValue(t.Name) == fi.CertificateIDCA {
+				deps = append(deps, task)
+			}
+		}
 	}
 
 	for _, task := range b.caTasks {
@@ -304,7 +357,9 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 	if b.Lifecycle == fi.LifecycleIgnore {
 		return nil
 	}
-
+	if b.ig.Spec.ImageFamily != nil && b.ig.Spec.ImageFamily.Bottlerocket != nil {
+		return b.runBottleRocket(c)
+	}
 	config, err := b.kubeEnv(b.ig, c)
 	if err != nil {
 		return err
@@ -442,6 +497,89 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 	}
 
 	b.resource.Resource = templateResource
+	return nil
+}
+
+func (b *BootstrapScript) runBottleRocket(c *fi.Context) error {
+	var caTask *fitasks.Keypair
+	for _, task := range c.AllTasks() {
+		if t, ok := task.(*fitasks.Keypair); ok && fi.StringValue(t.Name) == fi.CertificateIDCA {
+			caTask = task.(*fitasks.Keypair)
+		}
+	}
+	if caTask == nil {
+		return fmt.Errorf("CA task not found")
+	}
+	caResource := caTask.Certificates()
+	ca, err := fi.ResourceAsBytes(caResource)
+	if err != nil {
+		return err
+	}
+
+	// Kubelet's --register-with-taints just takes a list of strings
+	// but bottlerocket's TOML requires they be in map form
+	nodeTaints := make(map[string]string)
+	for _, t := range b.ig.Spec.Taints {
+		taint := strings.Split(t, "=")
+		if len(taint) != 2 {
+			return fmt.Errorf("unrecognized node taint format %v", t)
+		}
+		nodeTaints[taint[0]] = taint[1]
+	}
+
+	kubelet := &kops.KubeletConfigSpec{}
+	if b.ig.Spec.Role == kops.InstanceGroupRoleMaster {
+		reflectutils.JSONMergeStruct(kubelet, c.Cluster.Spec.MasterKubelet)
+	} else {
+		reflectutils.JSONMergeStruct(kubelet, c.Cluster.Spec.Kubelet)
+	}
+
+	if b.ig.Spec.Kubelet != nil {
+		reflectutils.JSONMergeStruct(kubelet, b.ig.Spec.Kubelet)
+	}
+
+	userdata := bottleRocketUserdata{
+		Settings: bottleRocketUserdataSettings{
+			HostContainers: bottleRocketUserdataSettingsHostContainers{
+				Admin: bottleRocketUserdataSettingsHostContainersAdmin{
+					Enabled: true,
+				},
+			},
+			Kubernetes: bottleRocketUserdataSettingsKubernetes{
+				APIServer:          fmt.Sprintf("https://%v", c.Cluster.Spec.MasterInternalName),
+				ClusterName:        c.Cluster.Name,
+				ClusterCertificate: base64.StdEncoding.EncodeToString(ca),
+				NodeTaints:         nodeTaints,
+
+				AllowedUnsafeSysctls: kubelet.AllowedUnsafeSysctls,
+				SystemReserved:       kubelet.SystemReserved,
+				RegistryQPS:          kubelet.RegistryPullQPS,
+				RegistryBurst:        kubelet.RegistryBurst,
+				EventQPS:             kubelet.EventQPS,
+				EventBurst:           kubelet.EventBurst,
+				ContainerLogMaxFiles: kubelet.ContainerLogMaxFiles,
+				KubeReserved:         kubelet.KubeReserved,
+			},
+		},
+	}
+	if kubelet.CpuManagerPolicy != "" {
+		userdata.Settings.Kubernetes.CPUManagerPolicy = &kubelet.CpuManagerPolicy
+	}
+	if kubelet.TopologyManagerPolicy != "" {
+		userdata.Settings.Kubernetes.TopologyManagerPolicy = &kubelet.TopologyManagerPolicy
+	}
+	if kubelet.ContainerLogMaxSize != "" {
+		userdata.Settings.Kubernetes.ContainerLogMaxSize = &kubelet.ContainerLogMaxSize
+	}
+	if kubelet.PodInfraContainerImage != "" {
+		userdata.Settings.Kubernetes.PodInfraContainerImage = &kubelet.PodInfraContainerImage
+	}
+	var userdataBytes bytes.Buffer
+	err = toml.NewEncoder(&userdataBytes).QuoteMapKeys(true).Encode(&userdata)
+	if err != nil {
+		return err
+	}
+	b.resource.Resource = fi.NewBytesResource(userdataBytes.Bytes())
 	return nil
 }
 

@@ -260,6 +260,9 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		if err != nil {
 			return err
 		}
+		if err := e.setResources(keyset); err != nil {
+			return fmt.Errorf("error setting resources: %v", err)
+		}
 
 		klog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
 	}
