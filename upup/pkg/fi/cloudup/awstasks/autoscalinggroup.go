@@ -86,7 +86,7 @@ type AutoscalingGroup struct {
 	SuspendProcesses *[]string
 	// Tags is a collection of keypairs to apply to the node on launch
 	Tags map[string]string
-	// TargetGroupARNs is a list of ALB/NLB ARNs to add to the autoscaling group
+	// TargetGroupARNs is a list of ALB/NLB target group ARNs to add to the autoscaling group
 	TargetGroupARNs []*TargetGroup
 }
 
@@ -778,10 +778,12 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	for _, k := range e.LoadBalancers {
 		tf.LoadBalancers = append(tf.LoadBalancers, k.TerraformLink())
 	}
+	terraform.SortLiterals(tf.LoadBalancers)
 
 	for _, tg := range e.TargetGroupARNs {
 		tf.TargetGroupARNs = append(tf.TargetGroupARNs, tg.TerraformLink())
 	}
+	terraform.SortLiterals(tf.TargetGroupARNs)
 
 	if e.LaunchConfiguration != nil {
 		tf.LaunchConfigurationName = e.LaunchConfiguration.TerraformLink()
