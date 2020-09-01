@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/nodeidentity/aws"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -242,6 +244,10 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		}
 	}
 
+	if g.Spec.ImageFamily != nil && g.Spec.ImageFamily.Bottlerocket != nil {
+		allErrs = append(allErrs, validateBottlerocket(g, cluster)...)
+	}
+
 	return allErrs
 }
 
@@ -382,6 +388,40 @@ func validateExternalLoadBalancer(lb *kops.LoadBalancer, fldPath *field.Path) fi
 				"Target Group ARN resource name must have at most 32 characters"))
 		}
 	}
+	return allErrs
+}
 
+func validateBottlerocket(g *kops.InstanceGroup, cluster *kops.Cluster) (allErrs field.ErrorList) {
+	igSpecPath := field.NewPath("spec")
+	if !featureflag.Bottlerocket.Enabled() {
+		allErrs = append(allErrs, field.Forbidden(igSpecPath.Child("imageFamily", "bottlerocket"), "Bottlerocket feature flag must be enabled, set `export KOPS_FEATURE_FLAGS=Bottlerocket`"))
+	}
+	if cluster.Spec.Authentication == nil || cluster.Spec.Authentication.Aws == nil {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec", "authentication", "aws"), "Bottlerocket requires AWS authentication"))
+	}
+	if dns.IsGossipHostname(cluster.Name) {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("objectMeta", "name"), "Bottlerocket may not be used with gossip clusters"))
+	}
+	if g.Spec.Role != kops.InstanceGroupRoleNode {
+		allErrs = append(allErrs, field.Forbidden(igSpecPath.Child("role"), "Bottle rocket is only supported on node instance groups"))
+	}
+	if len(g.Spec.FileAssets) > 0 {
+		allErrs = append(allErrs, field.Forbidden(igSpecPath.Child("fileAssets"), "Bottlerocket does not support fileAssets"))
+	}
+	if len(g.Spec.AdditionalUserData) > 0 {
+		allErrs = append(allErrs, field.Forbidden(igSpecPath.Child("additionalUserData"), "Bottlerocket does not support additionalUserData"))
+	}
+	if len(g.Spec.SysctlParameters) > 0 {
+		allErrs = append(allErrs, field.Forbidden(igSpecPath.Child("sysctlParameters"), "Bottlerocket does not support sysctlParameters"))
+	}
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Kubenet != nil {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "networking", "kubenet"), "Bottlerocket does not support Kubenet"))
+	}
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Kuberouter != nil {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "networking", "kuberouter"), "Bottlerocket does not support Kuberouter"))
+	}
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Cilium != nil && cluster.Spec.Networking.Cilium.EtcdManaged {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "networking", "cilium", "etcdManaged"), "Bottlerocket does not support Cilium in etcdManaged mode"))
+	}
 	return allErrs
 }

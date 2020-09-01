@@ -94,6 +94,8 @@ var (
 	AlphaAllowGCE = new("AlphaAllowGCE", Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha.
 	AlphaAllowALI = new("AlphaAllowALI", Bool(false))
+	// Bottlerocket enables support for AWS Bottlerocket OS
+	Bottlerocket = new("Bottlerocket", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
