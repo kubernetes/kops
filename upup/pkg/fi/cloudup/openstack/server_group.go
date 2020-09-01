@@ -137,10 +137,24 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 		if generationName != observedName {
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
 		}
-		_, err = cg.NewCloudInstance(instanceId, status, nodeMap)
+		cm, err := cg.NewCloudInstance(instanceId, status, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
+
+		if server.Flavor["original_name"] != nil {
+			cm.MachineType = server.Flavor["original_name"].(string)
+		}
+
+		ip, err := GetServerFixedIP(server, server.Metadata[TagKopsNetwork])
+		if err != nil {
+			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+		}
+
+		cm.PrivateIP = ip
+
+		cm.Roles = []string{server.Metadata["KopsRole"]}
+
 	}
 	return cg, nil
 }
