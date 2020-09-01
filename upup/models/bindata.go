@@ -12477,7 +12477,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.16.0
+          image: calico/cni:v3.16.0-2-gf6793aa
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
           - configMapRef:
@@ -12504,7 +12504,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.16.0
+          image: calico/cni:v3.16.0-2-gf6793aa
           command: ["/opt/cni/bin/install"]
           envFrom:
           - configMapRef:
