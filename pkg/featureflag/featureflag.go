@@ -101,6 +101,8 @@ var (
 	KopsControllerStateStore = New("KopsControllerStateStore", Bool(false))
 	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver
 	APIServerNodes = New("APIServerNodes", Bool(false))
+	// Bottlerocket enables support for AWS Bottlerocket OS
+	Bottlerocket = New("Bottlerocket", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
