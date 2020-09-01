@@ -538,6 +538,9 @@ func guessSSHUser(image *ec2.Image) string {
 		// We could check the marketplace id, but this is just a guess anyway...
 		return "centos"
 	}
+	if strings.HasPrefix(name, "bottlerocket") {
+		return "ec2-user"
+	}
 
 	return ""
 }

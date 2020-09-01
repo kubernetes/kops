@@ -28,7 +28,9 @@ import (
 	"strings"
 	"text/template"
 
+	toml "github.com/pelletier/go-toml"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 
@@ -70,6 +72,16 @@ type BootstrapScript struct {
 var _ fi.Task = &BootstrapScript{}
 var _ fi.HasName = &BootstrapScript{}
 var _ fi.HasDependencies = &BootstrapScript{}
+
+// This template is a TOML file defined here:
+// https://github.com/bottlerocket-os/bottlerocket#kubernetes-settings
+type bottleRocketUserdata struct {
+	APIServer          string            `toml:"settings.kubernetes.api-server"`
+	ClusterCertificate string            `toml:"settings.kubernetes.cluster-certificate"`
+	ClusterName        string            `toml:"settings.kubernetes.cluster-name"`
+	NodeTaints         map[string]string `toml:"settings.kubernetes.node-taints"`
+	AdminEnabled       bool              `toml:"settings.host-containers.admin.enabled"`
+}
 
 // kubeEnv returns the nodeup config for the instance group
 func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.Context, ca fi.Resource) (string, error) {
@@ -238,6 +250,11 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			deps = append(deps, task)
 			b.alternateNameTasks = append(b.alternateNameTasks, hasAddress)
 		}
+		if b.ig.Spec.ImageFamily != nil && b.ig.Spec.ImageFamily.Bottlerocket != nil {
+			if t, ok := task.(*fitasks.Keypair); ok && fi.StringValue(t.Name) == fi.CertificateIDCA {
+				deps = append(deps, task)
+			}
+		}
 	}
 
 	deps = append(deps, b.caTask)
@@ -246,6 +263,10 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 }
 
 func (b *BootstrapScript) Run(c *fi.Context) error {
+	if b.ig.Spec.ImageFamily != nil && b.ig.Spec.ImageFamily.Bottlerocket != nil {
+		return b.runBottleRocket(c)
+	}
+
 	functions := template.FuncMap{
 		"NodeUpSourceAmd64": func() string {
 			if b.builder.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
@@ -420,6 +441,49 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 	}
 
 	b.resource.Resource = templateResource
+	return nil
+}
+
+func (b *BootstrapScript) runBottleRocket(c *fi.Context) error {
+	var caTask *fitasks.Keypair
+	for _, task := range c.AllTasks() {
+		if t, ok := task.(*fitasks.Keypair); ok && fi.StringValue(t.Name) == fi.CertificateIDCA {
+			caTask = task.(*fitasks.Keypair)
+		}
+	}
+	if caTask == nil {
+		return fmt.Errorf("CA task not found")
+	}
+	caResource := caTask.Certificate()
+	ca, err := fi.ResourceAsBytes(caResource)
+	if err != nil {
+		return err
+	}
+
+	// Kubelet's --register-with-taints just takes a list of strings
+	// but bottlerocket's TOML requires they be in map form
+	nodeTaints := make(map[string]string)
+	for _, t := range b.ig.Spec.Taints {
+		taint := strings.Split(t, "=")
+		if len(taint) != 2 {
+			return fmt.Errorf("unrecognized node taint format %v", t)
+		}
+		nodeTaints[taint[0]] = taint[1]
+	}
+
+	userdata := bottleRocketUserdata{
+		APIServer:          fmt.Sprintf("https://%v", c.Cluster.Spec.MasterInternalName),
+		ClusterName:        c.Cluster.Name,
+		ClusterCertificate: base64.StdEncoding.EncodeToString(ca),
+		NodeTaints:         nodeTaints,
+		AdminEnabled:       true,
+	}
+	var userdataBytes bytes.Buffer
+	err = toml.NewEncoder(&userdataBytes).QuoteMapKeys(true).Encode(&userdata)
+	if err != nil {
+		return err
+	}
+	b.resource.Resource = fi.NewBytesResource(userdataBytes.Bytes())
 	return nil
 }
 
