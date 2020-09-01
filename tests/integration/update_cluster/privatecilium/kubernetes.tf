@@ -113,7 +113,7 @@ provider "aws" {
 resource "aws_autoscaling_group" "bastion-privatecilium-example-com" {
   enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_configuration = aws_launch_configuration.bastion-privatecilium-example-com.id
-  load_balancers      = [aws_elb.bastion-privatecilium-example-com.id]
+  load_balancers       = [aws_elb.bastion-privatecilium-example-com.id]
   max_size             = 1
   metrics_granularity  = "1Minute"
   min_size             = 1
@@ -149,7 +149,7 @@ resource "aws_autoscaling_group" "bastion-privatecilium-example-com" {
 resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecilium-example-com" {
   enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_configuration = aws_launch_configuration.master-us-test-1a-masters-privatecilium-example-com.id
-  load_balancers      = [aws_elb.api-privatecilium-example-com.id]
+  load_balancers       = [aws_elb.api-privatecilium-example-com.id]
   max_size             = 1
   metrics_granularity  = "1Minute"
   min_size             = 1

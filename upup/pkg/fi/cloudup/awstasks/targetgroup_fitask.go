@@ -19,8 +19,6 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -46,7 +44,7 @@ func (o *TargetGroup) GetName() *string {
 }
 
 // SetName sets the Name of the object, implementing fi.SetName
-func (o *ExternalTargetGroupAttachment) SetName(name string) {
+func (o *TargetGroup) SetName(name string) {
 	o.Name = &name
 }
 

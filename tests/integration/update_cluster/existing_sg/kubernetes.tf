@@ -129,7 +129,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existingsg-example-c
 resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-com" {
   enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_configuration = aws_launch_configuration.master-us-test-1b-masters-existingsg-example-com.id
-  load_balancers      = [aws_elb.api-existingsg-example-com.id]
+  load_balancers       = [aws_elb.api-existingsg-example-com.id]
   max_size             = 1
   metrics_granularity  = "1Minute"
   min_size             = 1
@@ -165,7 +165,7 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-c
 resource "aws_autoscaling_group" "master-us-test-1c-masters-existingsg-example-com" {
   enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_configuration = aws_launch_configuration.master-us-test-1c-masters-existingsg-example-com.id
-  load_balancers      = [aws_elb.api-existingsg-example-com.id]
+  load_balancers       = [aws_elb.api-existingsg-example-com.id]
   max_size             = 1
   metrics_granularity  = "1Minute"
   min_size             = 1

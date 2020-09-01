@@ -433,7 +433,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 				// ELB
 				"loadBalancer":           &awstasks.LoadBalancer{},
-				"loadBalancerAttachment": &awstasks.LoadBalancerAttachment{},
 
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
