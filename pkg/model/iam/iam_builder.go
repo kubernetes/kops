@@ -169,13 +169,7 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
 	}
 
-	if b.HostedZoneID != "" {
-		b.addRoute53Permissions(p, b.HostedZoneID)
-	}
-
-	if b.Cluster.Spec.IAM.Legacy {
-		addRoute53ListHostedZonesPermission(p)
-	}
+	b.addRoute53Permissions(p)
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -211,12 +205,7 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	if b.Cluster.Spec.IAM.Legacy {
-		if b.HostedZoneID != "" {
-			b.addRoute53Permissions(p, b.HostedZoneID)
-		}
-		addRoute53ListHostedZonesPermission(p)
-	}
+	b.addRoute53Permissions(p)
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -581,11 +570,30 @@ func addECRPermissions(p *Policy) {
 	})
 }
 
-func (b *PolicyBuilder) addRoute53Permissions(p *Policy, hostedZoneID string) {
+func (b *PolicyBuilder) addRoute53Permissions(p *Policy) {
+	// Only the master (unless in legacy mode)
+	if b.Role != kops.InstanceGroupRoleMaster && !b.Cluster.Spec.IAM.Legacy {
+		return
+	}
+
+	// Legacy IAM permissions for node roles
+	if b.Cluster.Spec.IAM.Legacy {
+		wildcard := stringorslice.Slice([]string{"*"})
+		p.Statement = append(p.Statement, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
+			Resource: wildcard,
+		})
+	}
+
+	// Permissions to mutate the specific zone
+	if b.HostedZoneID == "" {
+		return
+	}
 
 	// TODO: Route53 currently not supported in China, need to check and fail/return
 	// Remove /hostedzone/ prefix (if present)
-	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/")
+	hostedZoneID := strings.TrimPrefix(b.HostedZoneID, "/")
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "hostedzone/")
 
 	p.Statement = append(p.Statement, &Statement{
@@ -832,15 +840,6 @@ func addCertIAMPolicies(p *Policy, resource stringorslice.StringOrSlice) {
 			"iam:GetServerCertificate",
 		),
 		Resource: resource,
-	})
-}
-
-func addRoute53ListHostedZonesPermission(p *Policy) {
-	wildcard := stringorslice.Slice([]string{"*"})
-	p.Statement = append(p.Statement, &Statement{
-		Effect:   StatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
-		Resource: wildcard,
 	})
 }
 
