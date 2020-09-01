@@ -386,6 +386,8 @@ func NewOpenstackCloud(tags map[string]string, spec *kops.ClusterSpec) (Openstac
 	if err != nil {
 		return nil, fmt.Errorf("error building nova client: %v", err)
 	}
+	// 2.47 is the minimum version where the compute API /server/details returns flavor names
+	novaClient.Microversion = "2.47"
 
 	glanceClient, err := os.NewImageServiceV2(provider, gophercloud.EndpointOpts{
 		Type:   "image",
