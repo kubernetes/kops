@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
-var NodeUpTemplate = `#!/bin/bash
+var nodeUpTemplate = `#!/bin/bash
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -165,11 +165,11 @@ download-release
 echo "== nodeup node config done =="
 `
 
-// AWSNodeUpTemplate returns a MIME Multi Part Archive containing the nodeup (bootstrap) script
+// NodeUpTemplate returns a MIME Multi Part Archive containing the nodeup (bootstrap) script
 // and any additional User Data passed to using AdditionalUserData in the IG Spec
-func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
+func NodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 
-	userDataTemplate := NodeUpTemplate
+	userDataTemplate := nodeUpTemplate
 
 	if len(ig.Spec.AdditionalUserData) > 0 {
 		/* Create a buffer to hold the user-data*/

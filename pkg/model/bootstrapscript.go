@@ -431,12 +431,12 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 		},
 	}
 
-	awsNodeUpTemplate, err := resources.AWSNodeUpTemplate(b.ig)
+	nodeUpTemplate, err := resources.NodeUpTemplate(b.ig)
 	if err != nil {
 		return err
 	}
 
-	templateResource, err := NewTemplateResource("nodeup", awsNodeUpTemplate, functions, nil)
+	templateResource, err := NewTemplateResource("nodeup", nodeUpTemplate, functions, nil)
 	if err != nil {
 		return err
 	}
