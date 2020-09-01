@@ -112,11 +112,11 @@ func listServerFloatingIPs(c OpenstackCloud, instanceID string, floatingEnabled 
 	return result, nil
 }
 
-func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 	return deleteInstance(c, i)
 }
 
-func deleteInstance(c OpenstackCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+func deleteInstance(c OpenstackCloud, i *cloudinstances.CloudInstance) error {
 	klog.Warning("This does not work without running kops update cluster --yes in another terminal")
 	return deleteInstanceWithID(c, i.ID)
 }
@@ -130,11 +130,11 @@ func deleteInstanceWithID(c OpenstackCloud, instanceID string) error {
 }
 
 // DetachInstance is not implemented yet. It needs to cause a cloud instance to no longer be counted against the group's size limits.
-func (c *openstackCloud) DetachInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *openstackCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return detachInstance(c, i)
 }
 
-func detachInstance(c OpenstackCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+func detachInstance(c OpenstackCloud, i *cloudinstances.CloudInstance) error {
 	klog.V(8).Info("openstack cloud provider DetachInstance not implemented yet")
 	return fmt.Errorf("openstack cloud provider does not support surging")
 }

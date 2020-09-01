@@ -133,7 +133,11 @@ func osBuildCloudInstanceGroup(c OpenstackCloud, cluster *kops.Cluster, ig *kops
 		observedName := fmt.Sprintf("%s-%s", clusterObservedGeneration, igObservedGeneration)
 		generationName := fmt.Sprintf("%d-%d", cluster.GetGeneration(), ig.Generation)
 
-		err = cg.NewCloudInstanceGroupMember(instanceId, generationName, observedName, nodeMap)
+		status := cloudinstances.CloudInstanceStatusUpToDate
+		if generationName != observedName {
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		}
+		_, err = cg.NewCloudInstance(instanceId, status, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}

@@ -24,6 +24,7 @@ go_library(
         "//pkg/apis/kops/model:go_default_library",
         "//pkg/cloudinstances:go_default_library",
         "//pkg/featureflag:go_default_library",
+        "//pkg/nodeidentity/aws:go_default_library",
         "//pkg/resources/spotinst:go_default_library",
         "//protokube/pkg/etcd:go_default_library",
         "//upup/pkg/fi:go_default_library",
