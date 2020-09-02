@@ -788,17 +788,7 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 
-		cm.MachineType = aws.StringValue(i.InstanceType)
-		instance := instances[id]
-		for _, tag := range instance.Tags {
-			key := aws.StringValue(tag.Key)
-			if !strings.HasPrefix(key, TagNameRolePrefix) {
-				continue
-			}
-			role := strings.TrimPrefix(key, TagNameRolePrefix)
-			cm.Roles = append(cm.Roles, role)
-			cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
-		}
+		addCloudInstanceData(cm, instances[id])
 
 	}
 
@@ -815,15 +805,29 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 	}
 	for _, id := range detached {
 		if id != nil && *id != "" && !instanceSeen[*id] {
-			_, err := cg.NewCloudInstance(*id, cloudinstances.CloudInstanceStatusDetached, nodeMap)
+			cm, err := cg.NewCloudInstance(*id, cloudinstances.CloudInstanceStatusDetached, nodeMap)
 			if err != nil {
 				return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 			}
 			instanceSeen[*id] = true
+			addCloudInstanceData(cm, instances[aws.StringValue(id)])
 		}
 	}
 
 	return cg, nil
+}
+
+func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2.Instance) {
+	cm.MachineType = aws.StringValue(instance.InstanceType)
+	for _, tag := range instance.Tags {
+		key := aws.StringValue(tag.Key)
+		if !strings.HasPrefix(key, TagNameRolePrefix) {
+			continue
+		}
+		role := strings.TrimPrefix(key, TagNameRolePrefix)
+		cm.Roles = append(cm.Roles, role)
+		cm.PrivateIP = aws.StringValue(instance.PrivateIpAddress)
+	}
 }
 
 func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance, error) {
