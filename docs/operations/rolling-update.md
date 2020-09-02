@@ -113,7 +113,9 @@ update. Instead of first draining and terminating an instance and then creating 
 it effectively first creates a new instance and then drains and terminates the old one.
 
 Surging is implemented by "detaching" instances, making them not count toward the desired
-number of instances in the instance group. The detached instances are updated last;
+number of instances in the instance group. This causes the cloud provider to create new
+instances in order to satisfy the group's desired number.
+The detached instances are drained and terminated last;
 when they are terminated the cloud provider does not replace them.
 
 The `maxSurge` is the maximum number of extra instances that can be created during the update.
