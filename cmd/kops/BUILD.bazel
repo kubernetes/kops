@@ -32,6 +32,7 @@ go_library(
         "get.go",
         "get_cluster.go",
         "get_instancegroups.go",
+        "get_instances.go",
         "get_secrets.go",
         "import.go",
         "import_cluster.go",
