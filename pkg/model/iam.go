@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/util/stringorslice"
@@ -151,13 +150,9 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.NodeOrServiceAccountRole, 
 
 	// This is slightly tricky; we need to know the hosted zone id,
 	// but we might be creating the hosted zone dynamically.
-
-	// TODO: I don't love this technique for finding the task by name & modifying it
-	dnsZoneTask, found := c.Tasks["DNSZone/"+b.NameForDNSZone()]
-	if found {
-		iamPolicy.DNSZone = dnsZoneTask.(*awstasks.DNSZone)
-	} else {
-		klog.V(2).Infof("Task %q not found; won't set route53 permissions in IAM", "DNSZone/"+b.NameForDNSZone())
+	// We create a stub-reference which will be combined by the execution engine.
+	iamPolicy.DNSZone = &awstasks.DNSZone{
+		Name: fi.String(b.NameForDNSZone()),
 	}
 
 	t := &awstasks.IAMRolePolicy{
