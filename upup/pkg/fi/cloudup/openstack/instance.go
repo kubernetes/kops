@@ -135,6 +135,7 @@ func (c *openstackCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 }
 
 func detachInstance(c OpenstackCloud, i *cloudinstances.CloudInstance) error {
+	// TODO: tag port and instance with detach tag
 	klog.V(8).Info("openstack cloud provider DetachInstance not implemented yet")
 	return fmt.Errorf("openstack cloud provider does not support surging")
 }

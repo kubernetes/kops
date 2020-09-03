@@ -19,6 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
@@ -36,6 +37,7 @@ import (
 type Instance struct {
 	ID               *string
 	Name             *string
+	NamePrefix       *string
 	Port             *Port
 	Region           *string
 	Flavor           *string
@@ -118,31 +120,55 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	cloud := c.Cloud.(openstack.OpenstackCloud)
 	computeClient := cloud.ComputeClient()
 	serverPage, err := servers.List(computeClient, servers.ListOpts{
-		Name: fmt.Sprintf("^%s$", fi.StringValue(e.Name)),
+		Name: fmt.Sprintf("^%s", fi.StringValue(e.NamePrefix)),
 	}).AllPages()
 	if err != nil {
-		return nil, fmt.Errorf("error finding server with name %s: %v", fi.StringValue(e.Name), err)
+		return nil, fmt.Errorf("error listing servers: %v", err)
 	}
 	serverList, err := servers.ExtractServers(serverPage)
 	if err != nil {
 		return nil, fmt.Errorf("error extracting server page: %v", err)
 	}
-	if len(serverList) == 0 {
+
+	var filteredList []servers.Server
+	for _, server := range serverList {
+		val, ok := server.Metadata["k8s"]
+		if !ok || val != fi.StringValue(e.ServerGroup.ClusterName) {
+			continue
+		}
+		metadataName := ""
+		val, ok = server.Metadata[openstack.TagKopsName]
+		if ok {
+			metadataName = val
+		}
+		_, detachTag := server.Metadata[openstack.TagNameDetach]
+		// name or metadata tag should match to instance name
+		// this is needed for backwards compatibility
+		if server.Name == fi.StringValue(e.Name) || metadataName == fi.StringValue(e.Name) {
+			if !detachTag {
+				filteredList = append(filteredList, server)
+			}
+		}
+	}
+
+	serverList = nil
+	if filteredList == nil {
 		return nil, nil
 	}
-	if len(serverList) > 1 {
+	if len(filteredList) > 1 {
 		return nil, fmt.Errorf("Multiple servers found with name %s", fi.StringValue(e.Name))
 	}
 
-	server := serverList[0]
+	server := filteredList[0]
 	actual := &Instance{
 		ID:               fi.String(server.ID),
-		Name:             fi.String(server.Name),
+		Name:             e.Name,
 		SSHKey:           fi.String(server.KeyName),
 		Lifecycle:        e.Lifecycle,
 		Metadata:         server.Metadata,
 		Role:             fi.String(server.Metadata["KopsRole"]),
 		AvailabilityZone: e.AvailabilityZone,
+		NamePrefix:       e.NamePrefix,
 	}
 
 	ports, err := cloud.ListPorts(ports.ListOpts{
@@ -235,10 +261,31 @@ func (_ *Instance) ShouldCreate(a, e, changes *Instance) (bool, error) {
 	return false, nil
 }
 
+// makeServerName generates name for the instance
+// the instance format is [namePrefix]-[6 character hash]
+func makeServerName(e *Instance) (string, error) {
+	secret, err := fi.CreateSecret()
+	if err != nil {
+		return "", err
+	}
+
+	hash, err := secret.AsString()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ToLower(fmt.Sprintf("%s-%s", fi.StringValue(e.NamePrefix), hash[0:6])), nil
+}
+
 func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Instance) error {
 	cloud := t.Cloud.(openstack.OpenstackCloud)
 	if a == nil {
-		klog.V(2).Infof("Creating Instance with name: %q", fi.StringValue(e.Name))
+		e.Metadata[openstack.TagKopsName] = fi.StringValue(e.Name)
+		serverName, err := makeServerName(e)
+		if err != nil {
+			return err
+		}
+		klog.V(2).Infof("Creating Instance with name: %q", serverName)
 
 		imageName := fi.StringValue(e.Image)
 		image, err := cloud.GetImage(imageName)
