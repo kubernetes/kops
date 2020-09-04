@@ -65,7 +65,7 @@ spec:
     recommendedVersion: 1.17.11
     requiredVersion: 1.17.0
   - range: ">=1.16.0"
-    recommendedVersion: 1.16.14
+    recommendedVersion: 1.16.15
     requiredVersion: 1.16.0
   - range: ">=1.15.0"
     recommendedVersion: 1.15.12
@@ -101,7 +101,7 @@ spec:
   - range: ">=1.16.0-alpha.1"
     recommendedVersion: "1.16.4"
     #requiredVersion: 1.16.0
-    kubernetesVersion: 1.16.14
+    kubernetesVersion: 1.16.15
   - range: ">=1.15.0-alpha.1"
     recommendedVersion: "1.15.3"
     #requiredVersion: 1.15.0
