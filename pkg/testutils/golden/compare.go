@@ -33,6 +33,13 @@ import (
 func AssertMatchesFile(t *testing.T, actual string, p string) {
 	actual = strings.TrimSpace(actual)
 
+	abs, err := filepath.Abs(p)
+	if err != nil {
+		t.Errorf("unable to get absolute path for %q: %v", p, err)
+	} else {
+		p = abs
+	}
+
 	expectedBytes, err := ioutil.ReadFile(p)
 	if err != nil {
 		if !os.IsNotExist(err) || os.Getenv("HACK_UPDATE_EXPECTED_IN_PLACE") == "" {
@@ -68,13 +75,6 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 
 	diffString := diff.FormatDiff(expected, actual)
 	t.Logf("diff:\n%s\n", diffString)
-
-	abs, err := filepath.Abs(p)
-	if err != nil {
-		t.Errorf("unable to get absolute path for %q: %v", p, err)
-	} else {
-		p = abs
-	}
 
 	t.Logf("to update golden output automatically, run hack/update-expected.sh")
 
