@@ -150,6 +150,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateNodeAuthorization(spec.NodeAuthorization, c, fieldPath.Child("nodeAuthorization"))...)
 	}
 
+	if spec.ClusterAutoscaler != nil {
+		allErrs = append(allErrs, validateClusterAutoscaler(c, spec.ClusterAutoscaler, fieldPath.Child("clusterAutoscaler"))...)
+	}
+
 	// IAM additionalPolicies
 	if spec.AdditionalPolicies != nil {
 		for k, v := range *spec.AdditionalPolicies {
@@ -1109,6 +1113,20 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 		if spec.MasterKubelet != nil && spec.MasterKubelet.ClusterDNS != "" && spec.MasterKubelet.ClusterDNS != spec.KubeDNS.NodeLocalDNS.LocalIP {
 			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "MasterKubelet ClusterDNS must be set to the default IP address for LocalIP"))
 		}
+	}
+
+	return allErrs
+}
+
+func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscalerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if !cluster.IsKubernetesGTE("1.12") {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Cluster autoscaler requires kubernetesVersion 1.12 or higher"))
+	}
+
+	allErrs = append(allErrs, IsValidValue(fldPath.Child("expander"), spec.Expander, []string{"least-waste", "random", "most-pods"})...)
+
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Cluster autoscaler is not supported on OpenStack"))
 	}
 
 	return allErrs

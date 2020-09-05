@@ -760,6 +760,32 @@ type CloudConfiguration struct {
 	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 }
 
+// ClusterAutoscalerConfig determines the cluster autoscaler configuration.
+type ClusterAutoscalerConfig struct {
+	// Enabled enables the cluster autoscaler.
+	// Default: false
+	Enabled *bool `json:"enabled,omitempty"`
+	// Expander determines the strategy for which instance group gets expanded.
+	// Supported values: least-waste, most-pods, random.
+	// Default: least-waste
+	Expander *string `json:"expander,omitempty"`
+	// BalanceSimilarNodeGroups makes cluster autoscaler treat similar node groups as one.
+	// Default: false
+	BalanceSimilarNodeGroups *bool `json:"balanceSimilarNodeGroups,omitempty"`
+	// ScaleDownUtilizationThreshold determines the utilization threshold for node scale-down.
+	// Default: 0.5
+	ScaleDownUtilizationThreshold *string `json:"scaleDownUtilizationThreshold,omitempty"`
+	// SkipNodesWithSystemPods makes cluster autoscaler skip scale-down of nodes with non-DaemonSet pods in the kube-system namespace.
+	// Default: true
+	SkipNodesWithSystemPods *bool `json:"skipNodesWithSystemPods,omitempty"`
+	// SkipNodesWithLocalStorage makes cluster autoscaler skip scale-down of nodes with local storage.
+	// Default: true
+	SkipNodesWithLocalStorage *bool `json:"skipNodesWithLocalStorage,omitempty"`
+	// Image is the docker container used.
+	// Default: the latest supported image for the specified kubernetes version.
+	Image *string `json:"image,omitempty"`
+}
+
 // HasAdmissionController checks if a specific admission controller is enabled
 func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
 	for _, x := range c.AdmissionControl {
