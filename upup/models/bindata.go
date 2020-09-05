@@ -6,6 +6,7 @@
 // upup/models/cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml
 // upup/models/cloudup/resources/addons/authentication.kope.io/k8s-1.8.yaml
+// upup/models/cloudup/resources/addons/cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml.template
 // upup/models/cloudup/resources/addons/core.addons.k8s.io/addon.yaml
 // upup/models/cloudup/resources/addons/core.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/core.addons.k8s.io/k8s-1.7.yaml.template
@@ -851,6 +852,196 @@ func cloudupResourcesAddonsAuthenticationKopeIoK8s18Yaml() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "cloudup/resources/addons/authentication.kope.io/k8s-1.8.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate = []byte(`# Sourced from https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws/examples
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-autoscaler
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+rules:
+  - apiGroups: [""]
+    resources: ["events", "endpoints"]
+    verbs: ["create", "patch"]
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    resourceNames: ["cluster-autoscaler"]
+    verbs: ["get", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["watch", "list", "get", "update"]
+  - apiGroups: [""]
+    resources:
+      - "pods"
+      - "services"
+      - "replicationcontrollers"
+      - "persistentvolumeclaims"
+      - "persistentvolumes"
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["extensions"]
+    resources: ["replicasets", "daemonsets"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["watch", "list"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "replicasets", "daemonsets"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "csinodes"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: ["batch", "extensions"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create"]
+  - apiGroups: ["coordination.k8s.io"]
+    resourceNames: ["cluster-autoscaler"]
+    resources: ["leases"]
+    verbs: ["get", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create","list","watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["cluster-autoscaler-status", "cluster-autoscaler-priority-expander"]
+    verbs: ["delete", "get", "update", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-autoscaler
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-autoscaler
+subjects:
+  - kind: ServiceAccount
+    name: cluster-autoscaler
+    namespace: kube-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cluster-autoscaler
+subjects:
+  - kind: ServiceAccount
+    name: cluster-autoscaler
+    namespace: kube-system
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  labels:
+    app: cluster-autoscaler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaler
+    spec:
+      serviceAccountName: cluster-autoscaler
+      tolerations:
+      - operator: "Exists"
+        key: node-role.kubernetes.io/master
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+        - image: {{ .ClusterAutoscaler.Image }}
+          name: cluster-autoscaler
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - ./cluster-autoscaler
+            - --v=2
+            - --stderrthreshold=info
+            - --cloud-provider={{ .CloudProvider }}
+            - --skip-nodes-with-local-storage={{ .ClusterAutoscaler.SkipNodesWithLocalStorage }}
+            - --expander={{ .ClusterAutoscaler.Expander }}
+            {{ range $name, $spec := GetNodeInstanceGroups }}
+            - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}
+            {{ end }}
+          ports:
+          - containerPort: 8085
+            protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health-check
+              port: 8085
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1`)
+
+func cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate, nil
+}
+
+func cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "cloudup/resources/addons/cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -20517,6 +20708,7 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsAuthenticationAwsK8s112YamlTemplate,
 	"cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml":                                       cloudupResourcesAddonsAuthenticationKopeIoK8s112Yaml,
 	"cloudup/resources/addons/authentication.kope.io/k8s-1.8.yaml":                                        cloudupResourcesAddonsAuthenticationKopeIoK8s18Yaml,
+	"cloudup/resources/addons/cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml.template":                    cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate,
 	"cloudup/resources/addons/core.addons.k8s.io/addon.yaml":                                              cloudupResourcesAddonsCoreAddonsK8sIoAddonYaml,
 	"cloudup/resources/addons/core.addons.k8s.io/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsCoreAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/core.addons.k8s.io/k8s-1.7.yaml.template":                                   cloudupResourcesAddonsCoreAddonsK8sIoK8s17YamlTemplate,
@@ -20632,6 +20824,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				"authentication.kope.io": {nil, map[string]*bintree{
 					"k8s-1.12.yaml": {cloudupResourcesAddonsAuthenticationKopeIoK8s112Yaml, map[string]*bintree{}},
 					"k8s-1.8.yaml":  {cloudupResourcesAddonsAuthenticationKopeIoK8s18Yaml, map[string]*bintree{}},
+				}},
+				"cluster-autoscaler.addons.k8s.io": {nil, map[string]*bintree{
+					"k8s-1.15.yaml.template": {cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate, map[string]*bintree{}},
 				}},
 				"core.addons.k8s.io": {nil, map[string]*bintree{
 					"addon.yaml":             {cloudupResourcesAddonsCoreAddonsK8sIoAddonYaml, map[string]*bintree{}},
