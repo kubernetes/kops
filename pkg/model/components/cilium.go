@@ -42,7 +42,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		if b.Context.IsKubernetesLT("1.12.0") {
 			c.Version = "v1.6.11"
 		} else {
-			c.Version = "v1.8.2"
+			c.Version = "v1.8.3"
 		}
 	}
 
