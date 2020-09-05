@@ -490,6 +490,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 					VolumeType:          bdm.EbsVolumeType,
 					VolumeSize:          bdm.EbsVolumeSize,
 					Iops:                bdm.EbsVolumeIops,
+					Encrypted:           bdm.EbsEncrypted,
 					DeleteOnTermination: bdm.EbsDeleteOnTermination,
 				}
 			}
@@ -650,6 +651,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 						VolumeType:          bdm.EbsVolumeType,
 						VolumeSize:          bdm.EbsVolumeSize,
 						Iops:                bdm.EbsVolumeIops,
+						Encrypted:           bdm.EbsEncrypted,
 						DeleteOnTermination: bdm.EbsDeleteOnTermination,
 					},
 				}
