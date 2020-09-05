@@ -1,0 +1,316 @@
+Name: bastion
+---
+Name: master
+---
+Name: node
+---
+AvailabilityZone: zone-1
+Flavor: blc.1-2
+FloatingIP: null
+ForAPIServer: false
+ID: null
+Image: image
+Lifecycle: null
+Metadata:
+  KopsInstanceGroup: bastion
+  KopsNetwork: cluster
+  KopsRole: Bastion
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_role_bastion: "1"
+  kops.k8s.io_instancegroup: bastion
+Name: bastion-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  ID: null
+  Lifecycle: Sync
+  Name: port-bastion-1-cluster
+  Network:
+    ID: null
+    Lifecycle: null
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: null
+    Name: bastion.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: null
+    Name: utility-subnet.cluster
+    Network: null
+    Tag: null
+  Tag: cluster
+Region: region
+Role: Bastion
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGName: bastion
+  Lifecycle: Sync
+  MaxSize: 1
+  Members: null
+  Name: cluster-bastion
+  Policies:
+  - anti-affinity
+UserData:
+  Name: ""
+  Resource:
+    task:
+      Name: bastion
+---
+AvailabilityZone: zone-1
+Flavor: blc.1-2
+FloatingIP: null
+ForAPIServer: false
+ID: null
+Image: image
+Lifecycle: null
+Metadata:
+  KopsInstanceGroup: master
+  KopsNetwork: cluster
+  KopsRole: Master
+  KubernetesCluster: cluster
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_role_master: "1"
+  kops.k8s.io_instancegroup: master
+Name: master-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  ID: null
+  Lifecycle: Sync
+  Name: port-master-1-cluster
+  Network:
+    ID: null
+    Lifecycle: null
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: null
+    Name: masters.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  - Description: null
+    ID: null
+    Lifecycle: null
+    Name: master-public-name
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: null
+    Name: subnet.cluster
+    Network: null
+    Tag: null
+  Tag: cluster
+Region: region
+Role: Master
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGName: master
+  Lifecycle: Sync
+  MaxSize: 1
+  Members: null
+  Name: cluster-master
+  Policies:
+  - anti-affinity
+UserData:
+  Name: ""
+  Resource:
+    task:
+      Name: master
+---
+AvailabilityZone: zone-1
+Flavor: blc.1-2
+FloatingIP: null
+ForAPIServer: false
+ID: null
+Image: image
+Lifecycle: null
+Metadata:
+  KopsInstanceGroup: node
+  KopsNetwork: cluster
+  KopsRole: Node
+  KubernetesCluster: cluster
+  cluster_generation: "0"
+  ig_generation: "0"
+  k8s: cluster
+  k8s.io_role_node: "1"
+  kops.k8s.io_instancegroup: node
+Name: node-1-cluster
+Port:
+  AdditionalSecurityGroups: null
+  ID: null
+  Lifecycle: Sync
+  Name: port-node-1-cluster
+  Network:
+    ID: null
+    Lifecycle: null
+    Name: cluster
+    Tag: null
+  SecurityGroups:
+  - Description: null
+    ID: null
+    Lifecycle: null
+    Name: nodes.cluster
+    RemoveExtraRules: null
+    RemoveGroup: false
+  Subnets:
+  - CIDR: null
+    DNSServers: null
+    ID: null
+    Lifecycle: null
+    Name: subnet.cluster
+    Network: null
+    Tag: null
+  Tag: cluster
+Region: region
+Role: Node
+SSHKey: kubernetes.cluster-ba_d8_85_a0_5b_50_b0_01_e0_b2_b0_ae_5d_f6_7a_d1
+SecurityGroups: null
+ServerGroup:
+  ClusterName: cluster
+  ID: null
+  IGName: node
+  Lifecycle: Sync
+  MaxSize: 1
+  Members: null
+  Name: cluster-node
+  Policies:
+  - anti-affinity
+UserData:
+  Name: ""
+  Resource:
+    task:
+      Name: node
+---
+AdditionalSecurityGroups: null
+ID: null
+Lifecycle: Sync
+Name: port-bastion-1-cluster
+Network:
+  ID: null
+  Lifecycle: null
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: null
+  Name: bastion.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: null
+  Name: utility-subnet.cluster
+  Network: null
+  Tag: null
+Tag: cluster
+---
+AdditionalSecurityGroups: null
+ID: null
+Lifecycle: Sync
+Name: port-master-1-cluster
+Network:
+  ID: null
+  Lifecycle: null
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: null
+  Name: masters.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+- Description: null
+  ID: null
+  Lifecycle: null
+  Name: master-public-name
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: null
+  Name: subnet.cluster
+  Network: null
+  Tag: null
+Tag: cluster
+---
+AdditionalSecurityGroups: null
+ID: null
+Lifecycle: Sync
+Name: port-node-1-cluster
+Network:
+  ID: null
+  Lifecycle: null
+  Name: cluster
+  Tag: null
+SecurityGroups:
+- Description: null
+  ID: null
+  Lifecycle: null
+  Name: nodes.cluster
+  RemoveExtraRules: null
+  RemoveGroup: false
+Subnets:
+- CIDR: null
+  DNSServers: null
+  ID: null
+  Lifecycle: null
+  Name: subnet.cluster
+  Network: null
+  Tag: null
+Tag: cluster
+---
+ClusterName: cluster
+ID: null
+IGName: bastion
+Lifecycle: Sync
+MaxSize: 1
+Members: null
+Name: cluster-bastion
+Policies:
+- anti-affinity
+---
+ClusterName: cluster
+ID: null
+IGName: master
+Lifecycle: Sync
+MaxSize: 1
+Members: null
+Name: cluster-master
+Policies:
+- anti-affinity
+---
+ClusterName: cluster
+ID: null
+IGName: node
+Lifecycle: Sync
+MaxSize: 1
+Members: null
+Name: cluster-node
+Policies:
+- anti-affinity
