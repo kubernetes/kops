@@ -30,12 +30,14 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["servergroup_test.go"],
+    data = glob(["tests/**"]),  #keep
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/model/iam:go_default_library",
+        "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/openstacktasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
