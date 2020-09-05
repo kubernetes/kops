@@ -18,6 +18,7 @@ package openstackmodel
 
 import (
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -28,20 +29,22 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
-func Test_ServerGroupModelBuilder(t *testing.T) {
-	tests := []struct {
-		desc                 string
-		cluster              *kops.Cluster
-		instanceGroups       []*kops.InstanceGroup
-		clusterLifecycle     *fi.Lifecycle
-		expectedTasksBuilder func(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) map[string]fi.Task
-		expectedError        error
-	}{
+type serverGroupModelBuilderTestInput struct {
+	desc                 string
+	cluster              *kops.Cluster
+	instanceGroups       []*kops.InstanceGroup
+	expectedTasksBuilder func(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) map[string]fi.Task
+	expectedError        error
+}
+
+func getServerGroupModelBuilderTestInput() []serverGroupModelBuilderTestInput {
+	return []serverGroupModelBuilderTestInput{
 		{
 			desc: "one master one node",
 			cluster: &kops.Cluster{
@@ -2224,7 +2227,7 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 			},
 		},
 		{
-			desc: "one master one node one bastion",
+			desc: "one master one node one bastion 2",
 			cluster: &kops.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "cluster",
@@ -2913,6 +2916,10 @@ func Test_ServerGroupModelBuilder(t *testing.T) {
 			},
 		},
 	}
+}
+
+func Test_ServerGroupModelBuilder(t *testing.T) {
+	tests := getServerGroupModelBuilderTestInput()
 
 	for _, testCase := range tests {
 		t.Run(testCase.desc, func(t *testing.T) {
@@ -3436,4 +3443,45 @@ func mustUserdataForClusterInstance(cluster *kops.Cluster, ig *kops.InstanceGrou
 		panic(fmt.Errorf("error converting userdata to string: %v", err))
 	}
 	return fi.WrapResource(fi.NewStringResource(userdata))
+}
+
+func TestServerGroupBuilder(t *testing.T) {
+	tests := getServerGroupModelBuilderTestInput()
+	for _, testCase := range tests {
+		RunGoldenTest(t, "tests/servergroup", testCase)
+	}
+}
+
+func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilderTestInput) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.MockKopsVersion("1.18.0")
+	h.SetupMockOpenstack()
+
+	clusterLifecycle := fi.LifecycleSync
+	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
+		NodeUpConfigBuilder: &nodeupConfigBuilder{},
+		NodeUpSource: map[architectures.Architecture]string{
+			architectures.ArchitectureAmd64: "source-amd64",
+			architectures.ArchitectureArm64: "source-arm64",
+		},
+		NodeUpSourceHash: map[architectures.Architecture]string{
+			architectures.ArchitectureAmd64: "source-hash-amd64",
+			architectures.ArchitectureArm64: "source-hash-arm64",
+		},
+	}
+
+	builder := createBuilderForCluster(testCase.cluster, testCase.instanceGroups, clusterLifecycle, bootstrapScriptBuilder)
+
+	context := &fi.ModelBuilderContext{
+		Tasks:              make(map[string]fi.Task),
+		LifecycleOverrides: map[string]fi.Lifecycle{},
+	}
+
+	builder.Build(context)
+
+	file := filepath.Join(basedir, strings.ReplaceAll(testCase.desc, " ", "-")+".yaml")
+
+	testutils.ValidateTasks(t, file, context)
 }
