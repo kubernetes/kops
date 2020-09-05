@@ -189,6 +189,9 @@ type ClusterSpec struct {
 	SysctlParameters []string `json:"sysctlParameters,omitempty"`
 	// RollingUpdate defines the default rolling-update settings for instance groups
 	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty"`
+
+	// ClusterAutoscaler defines the cluaster autoscaler configuration.
+	ClusterAutoscaler *ClusterAutoscalerConfig `json:"clusterAutoscaler,omitempty"`
 }
 
 // NodeAuthorizationSpec is used to node authorization

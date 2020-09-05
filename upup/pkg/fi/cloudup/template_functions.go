@@ -92,6 +92,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
+	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups
 	dest["CloudTags"] = tf.CloudTagsForInstanceGroup
 	dest["KubeDNS"] = func() *kops.KubeDNSConfig {
 		return cluster.Spec.KubeDNS
@@ -525,4 +526,15 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 		}
 	}
 	return tag
+}
+
+// GetNodeInstanceGroups returns a map containing the defined instance groups of role "Node".
+func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGroupSpec {
+	nodegroups := make(map[string]kops.InstanceGroupSpec)
+	for _, ig := range tf.KopsModelContext.InstanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+			nodegroups[ig.ObjectMeta.Name] = ig.Spec
+		}
+	}
+	return nodegroups
 }
