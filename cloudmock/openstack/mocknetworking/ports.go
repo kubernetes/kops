@@ -172,13 +172,16 @@ func (m *MockClient) createPort(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 
 	p := ports.Port{
-		ID:             uuid.New().String(),
-		Name:           create.Port.Name,
-		NetworkID:      create.Port.NetworkID,
-		SecurityGroups: *create.Port.SecurityGroups,
-		DeviceID:       create.Port.DeviceID,
-		FixedIPs:       fixedIPs,
+		ID:        uuid.New().String(),
+		Name:      create.Port.Name,
+		NetworkID: create.Port.NetworkID,
+		DeviceID:  create.Port.DeviceID,
+		FixedIPs:  fixedIPs,
 	}
+	if create.Port.SecurityGroups != nil {
+		p.SecurityGroups = *create.Port.SecurityGroups
+	}
+
 	m.ports[p.ID] = p
 
 	resp := portGetResponse{
