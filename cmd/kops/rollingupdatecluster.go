@@ -328,6 +328,8 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	}
 
 	d := &instancegroups.RollingUpdateCluster{
+		Ctx:               ctx,
+		Cluster:           cluster,
 		MasterInterval:    options.MasterInterval,
 		NodeInterval:      options.NodeInterval,
 		BastionInterval:   options.BastionInterval,
@@ -347,7 +349,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		ValidateSuccessDuration: 10 * time.Second,
 	}
 
-	err = d.AdjustNeedUpdate(groups, cluster, list)
+	err = d.AdjustNeedUpdate(groups, list)
 	if err != nil {
 		return err
 	}
@@ -430,5 +432,5 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	}
 	d.ClusterValidator = clusterValidator
 
-	return d.RollingUpdate(ctx, groups, cluster, list)
+	return d.RollingUpdate(groups, list)
 }
