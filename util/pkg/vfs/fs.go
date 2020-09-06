@@ -23,6 +23,7 @@ import (
 	"os"
 	"path"
 	"sync"
+	"syscall"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/try"
@@ -112,7 +113,11 @@ func (p *FSPath) CreateFile(data io.ReadSeeker, acl ACL) error {
 
 // ReadFile implements Path::ReadFile
 func (p *FSPath) ReadFile() ([]byte, error) {
-	return ioutil.ReadFile(p.location)
+	file, err := ioutil.ReadFile(p.location)
+	if err == syscall.ENOENT {
+		err = os.ErrNotExist
+	}
+	return file, err
 }
 
 // WriteTo implements io.WriterTo
