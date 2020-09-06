@@ -33,7 +33,9 @@ import (
 
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
 type RollingUpdateCluster struct {
-	Cloud fi.Cloud
+	Ctx     context.Context
+	Cluster *api.Cluster
+	Cloud   fi.Cloud
 
 	// MasterInterval is the amount of time to wait after stopping a master instance
 	MasterInterval time.Duration
@@ -75,7 +77,7 @@ type RollingUpdateCluster struct {
 }
 
 // AdjustNeedUpdate adjusts the set of instances that need updating, using factors outside those known by the cloud implementation
-func (c *RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	for _, group := range groups {
 		if group.Ready != nil {
 			var newReady []*cloudinstances.CloudInstance
@@ -101,7 +103,7 @@ func (c *RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstance
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[string]*cloudinstances.CloudInstanceGroup, cluster *api.Cluster, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		klog.Info("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -139,7 +141,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 
 				defer wg.Done()
 
-				err := c.rollingUpdateInstanceGroup(ctx, cluster, bastionGroups[k], c.BastionInterval)
+				err := c.rollingUpdateInstanceGroup(bastionGroups[k], c.BastionInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -164,7 +166,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		// and we don't want to roll all the masters at the same time.  See issue #284
 
 		for _, k := range sortGroups(masterGroups) {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, masterGroups[k], c.MasterInterval)
+			err := c.rollingUpdateInstanceGroup(masterGroups[k], c.MasterInterval)
 
 			// Do not continue update if master(s) failed, cluster is potentially in an unhealthy state
 			if err != nil {
@@ -186,7 +188,7 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		}
 
 		for _, k := range sortGroups(nodeGroups) {
-			err := c.rollingUpdateInstanceGroup(ctx, cluster, nodeGroups[k], c.NodeInterval)
+			err := c.rollingUpdateInstanceGroup(nodeGroups[k], c.NodeInterval)
 
 			results[k] = err
 
