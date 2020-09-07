@@ -4281,6 +4281,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.TopologyManagerPolicy = in.TopologyManagerPolicy
 	out.RotateCertificates = in.RotateCertificates
 	out.ProtectKernelDefaults = in.ProtectKernelDefaults
+	out.CgroupDriver = in.CgroupDriver
 	return nil
 }
 
@@ -4368,6 +4369,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.TopologyManagerPolicy = in.TopologyManagerPolicy
 	out.RotateCertificates = in.RotateCertificates
 	out.ProtectKernelDefaults = in.ProtectKernelDefaults
+	out.CgroupDriver = in.CgroupDriver
 	return nil
 }
 

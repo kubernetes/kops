@@ -198,13 +198,13 @@ type KubeletConfigSpec struct {
 	RegistryBurst *int32 `json:"registryBurst,omitempty" flag:"registry-burst"`
 	//TopologyManagerPolicy determines the allocation policy for the topology manager.
 	TopologyManagerPolicy string `json:"topologyManagerPolicy,omitempty" flag:"topology-manager-policy"`
-
 	// rotateCertificates enables client certificate rotation.
 	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
-
 	// Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
 	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
 	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
+	// CgroupDriver allows the explicit setting of the kubelet cgroup driver. If omitted, defaults to cgroupfs.
+	CgroupDriver string `json:"cgroupDriver,omitempty" flag:"cgroup-driver"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy

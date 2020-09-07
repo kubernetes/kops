@@ -1904,6 +1904,9 @@ spec:
                     description: BootstrapKubeconfig is the path to a kubeconfig file
                       that will be used to get client certificate for kubelet
                     type: string
+                  cgroupDriver:
+                    description: CgroupDriver allows the explicit setting of the kubelet cgroup driver. If omitted, defaults to cgroupfs.
+                    type: string
                   cgroupRoot:
                     description: cgroupRoot is the root cgroup to use for pods. This
                       is handled by the container runtime on a best effort basis.
@@ -2276,6 +2279,9 @@ spec:
                   bootstrapKubeconfig:
                     description: BootstrapKubeconfig is the path to a kubeconfig file
                       that will be used to get client certificate for kubelet
+                    type: string
+                  cgroupDriver:
+                    description: CgroupDriver allows the explicit setting of the kubelet cgroup driver. If omitted, defaults to cgroupfs.
                     type: string
                   cgroupRoot:
                     description: cgroupRoot is the root cgroup to use for pods. This
