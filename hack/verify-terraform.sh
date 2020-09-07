@@ -39,7 +39,7 @@ while IFS= read -r -d '' -u 3 test_dir; do
   kube::util::array_contains "${cluster}" "${CLUSTERS_0_11[@]}" && tag=$TAG_0_11 || tag=$TAG_0_13
 
   docker run --rm -e "TF_PLUGIN_CACHE_DIR=${PROVIDER_CACHE}" -v "${PROVIDER_CACHE}:${PROVIDER_CACHE}" -v "${test_dir}":"${test_dir}" -w "${test_dir}" --entrypoint=sh hashicorp/terraform:$tag -c '/bin/terraform init >/dev/null && /bin/terraform validate' || RC=$?
-done 3< <(find "${KOPS_ROOT}/tests/integration/update_cluster" -type d -maxdepth 1 -print0)
+done 3< <(find "${KOPS_ROOT}/tests/integration/update_cluster" -maxdepth 1 -type d -print0)
 
 if [ $RC != 0 ]; then
   echo -e "\nTerraform validation failed\n"
