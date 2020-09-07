@@ -29,8 +29,8 @@ go_rules_dependencies()
 go_download_sdk(
     name = "go_sdk",
     sdks = {
-        "darwin_amd64": ("go1.15.darwin-amd64.tar.gz", "8a5fb9c8587854a84957a79b9616070b63d8842d4001c3c7d86f261cd7b5ffb6"),
-        "linux_amd64": ("go1.15.linux-amd64.tar.gz", "2d75848ac606061efe52a8068d0e647b35ce487a15bb52272c427df485193602"),
+        "darwin_amd64": ("go1.15.1.darwin-amd64.tar.gz", "b33341df847b4a48da40d957437c87642d221dde28c6f810b1ce26b74be2f661"),
+        "linux_amd64": ("go1.15.1.linux-amd64.tar.gz", "70ac0dbf60a8ee9236f337ed0daa7a4c3b98f6186d4497826f68e97c0c0413f6"),
     },
 )
 
