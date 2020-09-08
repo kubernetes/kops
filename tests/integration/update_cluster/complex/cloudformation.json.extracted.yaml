@@ -27,9 +27,9 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
+  NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
   NODEUP_HASH_AMD64=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
-  NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/linux-arm64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
+  NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
   NODEUP_HASH_ARM64=dcc7f9f3c180ee76a511627e46da0ac69cdcb518cdf3be348e5ed046d491eb87
 
   export AWS_REGION=us-test-1
@@ -389,9 +389,9 @@ Resources.AWSEC2LaunchTemplatenodescomplexexamplecom.Properties.LaunchTemplateDa
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
+  NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
   NODEUP_HASH_AMD64=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
-  NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/linux-arm64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
+  NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
   NODEUP_HASH_ARM64=dcc7f9f3c180ee76a511627e46da0ac69cdcb518cdf3be348e5ed046d491eb87
 
   export AWS_REGION=us-test-1
