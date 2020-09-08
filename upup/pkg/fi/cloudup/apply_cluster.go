@@ -331,6 +331,19 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
+	if fi.BoolValue(c.Cluster.Spec.EncryptionConfig) {
+		secret, err := secretStore.FindSecret("encryptionconfig")
+		if err != nil {
+			return fmt.Errorf("could not load encryptionconfig secret: %v", err)
+		}
+		if secret == nil {
+			fmt.Println("")
+			fmt.Println("You have encryptionConfig enabled, but no encryptionconfig secret has been set.")
+			fmt.Println("See `kops create secret encryptionconfig -h` and https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/")
+			return fmt.Errorf("could not find encryptionconfig secret")
+		}
+	}
+
 	if err := c.addFileAssets(assetBuilder); err != nil {
 		return err
 	}
