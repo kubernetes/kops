@@ -112,15 +112,12 @@ type PolicyBuilder struct {
 	KMSKeys      []string
 	Region       string
 	ResourceARN  *string
-	Role         NodeOrServiceAccountRole
+	Role         Subject
 }
 
 // BuildAWSPolicy builds a set of IAM policy statements based on the
 // instance group type and IAM Legacy flag within the Cluster Spec
 func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
-	var p *Policy
-	var err error
-
 	// Retrieve all the KMS Keys in use
 	for _, e := range b.Cluster.Spec.EtcdClusters {
 		for _, m := range e.Members {
@@ -130,58 +127,16 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 		}
 	}
 
-	switch b.Role.NodeRole {
-	case kops.InstanceGroupRoleBastion:
-		p, err = b.BuildAWSPolicyBastion()
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate AWS IAM Policy for Bastion Instance Group: %v", err)
-		}
-	case kops.InstanceGroupRoleNode:
-		p, err = b.BuildAWSPolicyNode()
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate AWS IAM Policy for Node Instance Group: %v", err)
-		}
-	case kops.InstanceGroupRoleMaster:
-		p, err = b.BuildAWSPolicyMaster()
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate AWS IAM Policy for Master Instance Group: %v", err)
-		}
-
-	default:
-		if b.Role.ServiceAccountRole == "" {
-			return nil, fmt.Errorf("unrecognised instance group type: %s", b.Role)
-		}
-	}
-
-	if b.Role.ServiceAccountRole != ServiceAccountRoleEmpty {
-		p, err = b.BuildAWSPolicyServiceAccountRole()
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate AWS IAM Policy for Master Instance Group: %v", err)
-		}
-
+	p, err := b.Role.BuildAWSPolicy(b)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate AWS IAM Policy: %v", err)
 	}
 
 	return p, nil
 }
 
-// BuildAWSPolicyServiceAccountRole generates a custom policy for a ServiceAccount IAM role.
-func (b *PolicyBuilder) BuildAWSPolicyServiceAccountRole() (*Policy, error) {
-	p := &Policy{
-		Version: PolicyDefaultVersion,
-	}
-
-	var err error
-	if p, err = b.AddS3Permissions(p); err != nil {
-		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
-	}
-
-	b.addDNSControllerPermissions(p)
-
-	return p, nil
-}
-
-// BuildAWSPolicyMaster generates a custom policy for a Kubernetes master.
-func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
+// BuildAWSPolicy generates a custom policy for a Kubernetes master.
+func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
 
 	p := &Policy{
@@ -202,7 +157,12 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
 	}
 
-	b.addDNSControllerPermissions(p)
+	if !b.UseServiceAccountIAM() {
+		if b.Cluster.Spec.IAM.Legacy {
+			addLegacyDNSControllerPermissions(b, p)
+		}
+		AddDNSControllerPermissions(b, p)
+	}
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -223,8 +183,8 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 	return p, nil
 }
 
-// BuildAWSPolicyNode generates a custom policy for a Kubernetes node.
-func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
+// BuildAWSPolicy generates a custom policy for a Kubernetes node.
+func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
 
 	p := &Policy{
@@ -238,7 +198,10 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	b.addDNSControllerPermissions(p)
+	if !b.UseServiceAccountIAM() && b.Cluster.Spec.IAM.Legacy {
+		addLegacyDNSControllerPermissions(b, p)
+		AddDNSControllerPermissions(b, p)
+	}
 
 	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -255,8 +218,8 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 	return p, nil
 }
 
-// BuildAWSPolicyBastion generates a custom policy for a bastion host.
-func (b *PolicyBuilder) BuildAWSPolicyBastion() (*Policy, error) {
+// BuildAWSPolicy generates a custom policy for a bastion host.
+func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	resource := createResource(b)
 
 	p := &Policy{
@@ -439,11 +402,12 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 	return p, nil
 }
 
-func WriteableVFSPaths(cluster *kops.Cluster, role NodeOrServiceAccountRole) ([]vfs.Path, error) {
+func WriteableVFSPaths(cluster *kops.Cluster, role Subject) ([]vfs.Path, error) {
 	var paths []vfs.Path
 
 	// etcd-manager needs write permissions to the backup store
-	if role.NodeRole == kops.InstanceGroupRoleMaster {
+	switch role.(type) {
+	case *NodeRoleMaster:
 		backupStores := sets.NewString()
 		for _, c := range cluster.Spec.EtcdClusters {
 			if c.Backups == nil || c.Backups.BackupStore == "" || backupStores.Has(c.Backups.BackupStore) {
@@ -466,12 +430,14 @@ func WriteableVFSPaths(cluster *kops.Cluster, role NodeOrServiceAccountRole) ([]
 }
 
 // ReadableStatePaths returns the file paths that should be readable in the cluster's state store "directory"
-func ReadableStatePaths(cluster *kops.Cluster, role NodeOrServiceAccountRole) ([]string, error) {
+func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 	var paths []string
 
-	if role.NodeRole == kops.InstanceGroupRoleMaster {
+	switch role.(type) {
+	case *NodeRoleMaster:
 		paths = append(paths, "/*")
-	} else if role.NodeRole == kops.InstanceGroupRoleNode {
+
+	case *NodeRoleNode:
 		paths = append(paths,
 			"/addons/*",
 			"/cluster.spec",
@@ -611,32 +577,20 @@ func (b *PolicyBuilder) UseServiceAccountIAM() bool {
 	return featureflag.UseServiceAccountIAM.Enabled()
 }
 
-// addDNSControllerPermissions adds IAM permissions used by the dns-controller.
-func (b *PolicyBuilder) addDNSControllerPermissions(p *Policy) {
-	if b.Role.IsNodeRole() {
-		if b.UseServiceAccountIAM() {
-			return
-		}
-
-		// Only the master (unless in legacy mode)
-		if b.Role.NodeRole != kops.InstanceGroupRoleMaster && !b.Cluster.Spec.IAM.Legacy {
-			return
-		}
-	} else if b.Role.ServiceAccountRole != ServiceAccountRoleDNSController {
-		// Only the dns-controller gets route53 permissions
-		return
-	}
-
+// addLegacyDNSControllerPermissions adds legacy IAM permissions used by the node roles.
+func addLegacyDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 	// Legacy IAM permissions for node roles
-	if b.Cluster.Spec.IAM.Legacy && b.Role.IsNodeRole() {
-		wildcard := stringorslice.Slice([]string{"*"})
-		p.Statement = append(p.Statement, &Statement{
-			Effect:   StatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
-			Resource: wildcard,
-		})
-	}
+	wildcard := stringorslice.Slice([]string{"*"})
+	p.Statement = append(p.Statement, &Statement{
+		Effect:   StatementEffectAllow,
+		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
+		Resource: wildcard,
+	})
+}
 
+// AddDNSControllerPermissions adds IAM permissions used by the dns-controller.
+// TODO: Move this to dnscontroller, but it requires moving a lot of code around.
+func AddDNSControllerPermissions(b *PolicyBuilder, p *Policy) {
 	// Permissions to mutate the specific zone
 	if b.HostedZoneID == "" {
 		return

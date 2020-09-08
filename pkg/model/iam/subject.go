@@ -26,41 +26,59 @@ import (
 	"k8s.io/kops/pkg/wellknownusers"
 )
 
-// ServiceAccountRole holds a pod-specific IAM policy
-type ServiceAccountRole string
+// Subject represents an IAM identity, to which permissions are granted.
+// It is implemented by NodeRole objects and per-ServiceAccount objects.
+type Subject interface {
+	// BuildAWSPolicy builds the AWS permissions for the given subject.
+	BuildAWSPolicy(*PolicyBuilder) (*Policy, error)
 
-const (
-	// ServiceAccountRoleEmpty indicates we are not using a ServiceAccountRole
-	ServiceAccountRoleEmpty ServiceAccountRole = ""
-	// ServiceAccountRoleDNSController is the role used by the dns-controller pods
-	ServiceAccountRoleDNSController ServiceAccountRole = "dns-controller"
-)
-
-// NodeOrServiceAccountRole is a union of our IAM subjects.
-type NodeOrServiceAccountRole struct {
-	// NodeRole is non-empty if we are generating permissions for a node.
-	NodeRole kops.InstanceGroupRole
-	// ServiceAccountRole is non-empty if we are generating permissions for a pod.
-	ServiceAccountRole ServiceAccountRole
+	// ServiceAccount returns the kubernetes service account used by pods with this specified role.
+	// For node roles, it returns an empty NamespacedName and false.
+	ServiceAccount() (types.NamespacedName, bool)
 }
 
-// IsServiceAccountRole is true if this is a service-account-scoped role
-func (r *NodeOrServiceAccountRole) IsServiceAccountRole() bool {
-	return r.ServiceAccountRole != ServiceAccountRoleEmpty
+// NodeRoleMaster represents the role of control-plane nodes, and implements Subject.
+type NodeRoleMaster struct {
 }
 
-// IsNodeRole is true if this is a node-scoped role
-func (r *NodeOrServiceAccountRole) IsNodeRole() bool {
-	return r.NodeRole != ""
+// ServiceAccount implements Subject.
+func (_ *NodeRoleMaster) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
 }
 
-// ServiceAccountForServiceAccountRole returns the kubernetes service account used by pods with the specified role
-func ServiceAccountForServiceAccountRole(serviceAccountRole ServiceAccountRole) types.NamespacedName {
-	// We assume (for now) that the namespace is kube-system and the service account name matches the service-account role
-	namespace := "kube-system"
-	name := string(serviceAccountRole)
+// NodeRoleNode represents the role of normal ("worker") nodes, and implements Subject.
+type NodeRoleNode struct {
+}
 
-	return types.NamespacedName{Namespace: namespace, Name: name}
+// ServiceAccount implements Subject.
+func (_ *NodeRoleNode) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
+// NodeRoleNode represents the role of bastion nodes, and implements Subject.
+type NodeRoleBastion struct {
+}
+
+// ServiceAccount implements Subject.
+func (_ *NodeRoleBastion) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
+// BuildNodeRoleSubject returns a Subject implementation for the specified InstanceGroupRole.
+func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
+	switch igRole {
+	case kops.InstanceGroupRoleMaster:
+		return &NodeRoleMaster{}, nil
+
+	case kops.InstanceGroupRoleNode:
+		return &NodeRoleNode{}, nil
+
+	case kops.InstanceGroupRoleBastion:
+		return &NodeRoleBastion{}, nil
+
+	default:
+		return nil, fmt.Errorf("unknown instancegroup role %q", igRole)
+	}
 }
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
@@ -73,7 +91,7 @@ func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) (st
 }
 
 // AddServiceAccountRole adds the appropriate mounts / env vars to enable a pod to use a service-account role
-func AddServiceAccountRole(context *IAMModelContext, podSpec *corev1.PodSpec, container *corev1.Container, serviceAccountRole ServiceAccountRole) error {
+func AddServiceAccountRole(context *IAMModelContext, podSpec *corev1.PodSpec, container *corev1.Container, serviceAccountRole Subject) error {
 	cloudProvider := kops.CloudProviderID(context.Cluster.Spec.CloudProvider)
 
 	switch cloudProvider {
@@ -84,8 +102,11 @@ func AddServiceAccountRole(context *IAMModelContext, podSpec *corev1.PodSpec, co
 	}
 }
 
-func addServiceAccountRoleForAWS(context *IAMModelContext, podSpec *corev1.PodSpec, container *corev1.Container, serviceAccountRole ServiceAccountRole) error {
-	roleName := context.IAMNameForServiceAccountRole(serviceAccountRole)
+func addServiceAccountRoleForAWS(context *IAMModelContext, podSpec *corev1.PodSpec, container *corev1.Container, serviceAccountRole Subject) error {
+	roleName, err := context.IAMNameForServiceAccountRole(serviceAccountRole)
+	if err != nil {
+		return err
+	}
 
 	awsRoleARN := "arn:aws:iam::" + context.AWSAccountID + ":role/" + roleName
 	tokenDir := "/var/run/secrets/amazonaws.com/"
