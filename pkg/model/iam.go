@@ -338,7 +338,7 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 			Statement: []*iam.Statement{
 				{
 					Effect: "Allow",
-					Principal: &iam.Principal{
+					Principal: iam.Principal{
 						Federated: "arn:aws:iam::" + b.AWSAccountID + ":oidc-provider/" + oidcProvider,
 					},
 					Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),

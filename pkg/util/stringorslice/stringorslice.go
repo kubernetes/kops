@@ -27,6 +27,10 @@ type StringOrSlice struct {
 	forceEncodeAsArray bool
 }
 
+func (s *StringOrSlice) IsEmpty() bool {
+	return len(s.values) == 0
+}
+
 // Slice will build a value that marshals to a JSON array
 func Slice(v []string) StringOrSlice {
 	return StringOrSlice{values: v, forceEncodeAsArray: true}
