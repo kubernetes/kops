@@ -37,7 +37,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -107,12 +106,13 @@ func (l *Statement) Equal(r *Statement) bool {
 // PolicyBuilder struct defines all valid fields to be used when building the
 // AWS IAM policy document for a given instance group role.
 type PolicyBuilder struct {
-	Cluster      *kops.Cluster
-	HostedZoneID string
-	KMSKeys      []string
-	Region       string
-	ResourceARN  *string
-	Role         Subject
+	Cluster              *kops.Cluster
+	HostedZoneID         string
+	KMSKeys              []string
+	Region               string
+	ResourceARN          *string
+	Role                 Subject
+	UseServiceAccountIAM bool
 }
 
 // BuildAWSPolicy builds a set of IAM policy statements based on the
@@ -157,7 +157,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
 	}
 
-	if !b.UseServiceAccountIAM() {
+	if !b.UseServiceAccountIAM {
 		if b.Cluster.Spec.IAM.Legacy {
 			addLegacyDNSControllerPermissions(b, p)
 		}
@@ -198,7 +198,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	if !b.UseServiceAccountIAM() && b.Cluster.Spec.IAM.Legacy {
+	if !b.UseServiceAccountIAM && b.Cluster.Spec.IAM.Legacy {
 		addLegacyDNSControllerPermissions(b, p)
 		AddDNSControllerPermissions(b, p)
 	}
@@ -570,11 +570,6 @@ func addECRPermissions(p *Policy) {
 		),
 		Resource: stringorslice.Slice([]string{"*"}),
 	})
-}
-
-// UseServiceAccountIAM returns true if we are using service-account bound IAM roles.
-func (b *PolicyBuilder) UseServiceAccountIAM() bool {
-	return featureflag.UseServiceAccountIAM.Enabled()
 }
 
 // addLegacyDNSControllerPermissions adds legacy IAM permissions used by the node roles.
