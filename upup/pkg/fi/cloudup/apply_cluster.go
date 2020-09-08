@@ -1084,16 +1084,12 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		c.NodeUpSource[arch] = strings.Join(asset.Locations, ",")
 		c.NodeUpHash[arch] = asset.Hash.Hex()
 
-		// TODO: Update Kops version in integration tests to 1.19.0 after it is released
-		// Integration tests fake the Kops version to 1.19.0-alpha.1 and will not be able to find Protokube
-		if kopsbase.Version != "1.19.0-alpha.1" {
-			// Explicitly add the protokube image,
-			// otherwise when the Target is DryRun this asset is not added
-			// Is there a better way to call this?
-			_, _, err = ProtokubeImageSource(assetBuilder, arch)
-			if err != nil {
-				return err
-			}
+		// Explicitly add the protokube image,
+		// otherwise when the Target is DryRun this asset is not added
+		// Is there a better way to call this?
+		_, _, err = ProtokubeImageSource(assetBuilder, arch)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -1223,23 +1219,19 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 		}
 
 		if isMaster || useGossip {
-			// TODO: Update Kops version in integration tests to 1.19.0 after it is released
-			// Integration tests fake the Kops version to 1.19.0-alpha.1 and will not be able to find Protokube
-			if kopsbase.Version != "1.19.0-alpha.1" {
-				protokubeImage[role] = make(map[architectures.Architecture]*nodeup.Image)
-				for _, arch := range architectures.GetSupported() {
-					u, hash, err := ProtokubeImageSource(assetBuilder, arch)
-					if err != nil {
-						return nil, err
-					}
+			protokubeImage[role] = make(map[architectures.Architecture]*nodeup.Image)
+			for _, arch := range architectures.GetSupported() {
+				u, hash, err := ProtokubeImageSource(assetBuilder, arch)
+				if err != nil {
+					return nil, err
+				}
 
-					asset := BuildMirroredAsset(u, hash)
+				asset := BuildMirroredAsset(u, hash)
 
-					protokubeImage[role][arch] = &nodeup.Image{
-						Name:    kopsbase.DefaultProtokubeImageName(),
-						Sources: asset.Locations,
-						Hash:    asset.Hash.Hex(),
-					}
+				protokubeImage[role][arch] = &nodeup.Image{
+					Name:    kopsbase.DefaultProtokubeImageName(),
+					Sources: asset.Locations,
+					Hash:    asset.Hash.Hex(),
 				}
 			}
 		}

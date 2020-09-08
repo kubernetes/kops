@@ -504,7 +504,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		tfFileName = "kubernetes.tf.json"
 	}
 
-	h.MockKopsVersion("1.19.0-alpha.1")
+	h.MockKopsVersion("1.19.0-alpha.3")
 	h.SetupMockAWS()
 
 	expectedFilenames := []string{}
@@ -551,7 +551,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.19.0-alpha.1")
+	h.MockKopsVersion("1.19.0-alpha.3")
 	h.SetupMockAWS()
 	phaseName := string(phase)
 	if phaseName == "" {
@@ -597,7 +597,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.19.0-alpha.1")
+	h.MockKopsVersion("1.19.0-alpha.3")
 	h.SetupMockGCE()
 
 	expectedFilenames := []string{
@@ -631,7 +631,7 @@ func (i *integrationTest) runTestCloudformation(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.19.0-alpha.1")
+	h.MockKopsVersion("1.19.0-alpha.3")
 	h.SetupMockAWS()
 
 	factory := util.NewFactory(factoryOptions)
