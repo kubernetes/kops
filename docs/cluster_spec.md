@@ -603,7 +603,6 @@ spec:
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
 
 ## Cluster autoscaler
-
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.15') }}
 
 Cluster autoscaler can be enabled to automatically adjust the size of the kubernetes cluster.
