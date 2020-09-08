@@ -128,6 +128,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 		RootVolumeSize:         lc.RootVolumeSize,
 		RootVolumeIops:         lc.RootVolumeIops,
 		RootVolumeType:         lc.RootVolumeType,
+		RootVolumeEncryption:   lc.RootVolumeEncryption,
 		SSHKey:                 lc.SSHKey,
 		SecurityGroups:         lc.SecurityGroups,
 		Tags:                   tags,
@@ -199,6 +200,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		RootVolumeOptimization:        ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:                fi.Int64(int64(volumeSize)),
 		RootVolumeType:                fi.String(volumeType),
+		RootVolumeEncryption:          ig.Spec.RootVolumeEncryption,
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
 	}
 

@@ -302,6 +302,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-c
   name_prefix = "master-us-test-1a.masters.complex.example.com-"
   root_block_device {
     delete_on_termination = true
+    encrypted             = true
     volume_size           = 64
     volume_type           = "gp2"
   }
@@ -328,6 +329,7 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
   name_prefix = "nodes.complex.example.com-"
   root_block_device {
     delete_on_termination = false
+    encrypted             = true
     volume_size           = 128
     volume_type           = "gp2"
   }

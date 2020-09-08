@@ -251,6 +251,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			actual.RootVolumeSize = b.Ebs.VolumeSize
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
+			actual.RootVolumeEncryption = b.Ebs.Encrypted
 		} else {
 			_, d := BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(b)
 			actual.BlockDeviceMappings = append(actual.BlockDeviceMappings, d)

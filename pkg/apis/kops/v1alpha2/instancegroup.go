@@ -103,6 +103,8 @@ type InstanceGroupSpec struct {
 	// The root volume is deleted by default. Cluster deletion does not remove retained root volumes.
 	// NOTE: This setting applies only to the Launch Configuration and does not affect Launch Templates.
 	RootVolumeDeleteOnTermination *bool `json:"rootVolumeDeleteOnTermination,omitempty"`
+	// RootVolumeEncryption enables EBS root volume encryption for an instance
+	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
 	Volumes []*VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts

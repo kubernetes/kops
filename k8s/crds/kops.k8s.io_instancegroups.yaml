@@ -699,6 +699,10 @@ spec:
                   NOTE: This setting applies only to the Launch Configuration and
                   does not affect Launch Templates.'
                 type: boolean
+              rootVolumeEncryption:
+                description: RootVolumeEncryption enables EBS root volume encryption
+                  for an instance
+                type: boolean
               rootVolumeIops:
                 description: If volume type is io1, then we need to specify the number
                   of Iops.
