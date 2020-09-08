@@ -17,10 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.1/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.1/linux/amd64/nodeup
-NODEUP_HASH_AMD64=deff1179f80bd65232af30c252a2b5f390b160bbfe9990637c0ec88d76cdd647
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.1/linux-arm64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.1/linux/arm64/nodeup
-NODEUP_HASH_ARM64=300bfade024ede4fe8996c9ee6393e97463bea4eaffd0876310710dcdebbf8d3
+NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/linux-amd64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
+NODEUP_HASH_AMD64=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
+NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/linux-arm64-nodeup,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
+NODEUP_HASH_ARM64=dcc7f9f3c180ee76a511627e46da0ac69cdcb518cdf3be348e5ed046d491eb87
 
 export AWS_REGION=us-test-1
 
@@ -320,6 +320,21 @@ channels:
 etcdManifests:
 - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/main.yaml
 - memfs://clusters.example.com/mixedinstances.example.com/manifests/etcd/events.yaml
+protokubeImage:
+  amd64:
+    hash: 7b3c7f6adbda11b1ec740bd6b969c84f249b7eee818af95f2d321963088245a8
+    name: protokube:1.19.0-alpha.3
+    sources:
+    - https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/images/protokube-amd64.tar.gz
+    - https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/images-protokube-amd64.tar.gz
+    - https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/images/protokube-amd64.tar.gz
+  arm64:
+    hash: 69270ca9c1c950be65af40337adfccec0a728930fa3224bb0d2e88f181f39ead
+    name: protokube:1.19.0-alpha.3
+    sources:
+    - https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/images/protokube-arm64.tar.gz
+    - https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/images-protokube-arm64.tar.gz
+    - https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/images/protokube-arm64.tar.gz
 
 __EOF_KUBE_ENV
 
