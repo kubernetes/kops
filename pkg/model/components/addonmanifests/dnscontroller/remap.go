@@ -71,7 +71,7 @@ func Remap(context *model.KopsModelContext, addon *addonsapi.AddonSpec, objects 
 	}
 	container := &containers[0]
 
-	if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, container, iam.ServiceAccountRoleDNSController); err != nil {
+	if err := iam.AddServiceAccountRole(&context.IAMModelContext, podSpec, container, &ServiceAccount{}); err != nil {
 		return err
 	}
 

@@ -40,10 +40,13 @@ type IAMModelContext struct {
 }
 
 // IAMNameForServiceAccountRole determines the name of the IAM Role and Instance Profile to use for the service-account role
-func (b *IAMModelContext) IAMNameForServiceAccountRole(role ServiceAccountRole) string {
-	serviceAccount := ServiceAccountForServiceAccountRole(role)
+func (b *IAMModelContext) IAMNameForServiceAccountRole(role Subject) (string, error) {
+	serviceAccount, ok := role.ServiceAccount()
+	if !ok {
+		return "", fmt.Errorf("role %v does not have ServiceAccount", role)
+	}
 
-	return serviceAccount.Name + "." + serviceAccount.Namespace + ".sa." + b.ClusterName()
+	return serviceAccount.Name + "." + serviceAccount.Namespace + ".sa." + b.ClusterName(), nil
 }
 
 // ClusterName returns the cluster name

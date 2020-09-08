@@ -97,7 +97,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				},
 			}
 
-			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, iam.NodeOrServiceAccountRole{NodeRole: ig.Spec.Role})
+			nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role)
+			if err != nil {
+				return err
+			}
+
+			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
 			if err != nil {
 				return err
 			}
