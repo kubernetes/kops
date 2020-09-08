@@ -7,7 +7,6 @@
         "Federated": "arn:aws:iam::123456789012:oidc-provider/api.minimal.example.com"
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
-      "Resource": [],
       "Condition": {
         "StringEquals": {
           "api.minimal.example.com:sub": "system:serviceaccount:kube-system:dns-controller"

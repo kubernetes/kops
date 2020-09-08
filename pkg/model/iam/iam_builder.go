@@ -77,15 +77,110 @@ type Condition map[string]interface{}
 // http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Statement
 type Statement struct {
 	Effect    StatementEffect
-	Principal *Principal                  `json:",omitempty"`
-	Action    stringorslice.StringOrSlice `json:",omitempty"`
-	Resource  stringorslice.StringOrSlice `json:",omitempty"`
-	Condition Condition                   `json:",omitempty"`
+	Principal Principal
+	Action    stringorslice.StringOrSlice
+	Resource  stringorslice.StringOrSlice
+	Condition Condition
+}
+
+type jsonWriter struct {
+	w   io.Writer
+	err error
+}
+
+func (j *jsonWriter) Error() error {
+	return j.err
+}
+
+func (j *jsonWriter) WriteLiteral(b []byte) {
+	if j.err != nil {
+		return
+	}
+	_, err := j.w.Write(b)
+	if err != nil {
+		j.err = err
+	}
+}
+
+func (j *jsonWriter) StartObject() {
+	j.WriteLiteral([]byte("{"))
+}
+
+func (j *jsonWriter) EndObject() {
+	j.WriteLiteral([]byte("}"))
+}
+
+func (j *jsonWriter) Comma() {
+	j.WriteLiteral([]byte(","))
+}
+
+func (j *jsonWriter) Field(s string) {
+	if j.err != nil {
+		return
+	}
+	b, err := json.Marshal(s)
+	if err != nil {
+		j.err = err
+		return
+	}
+	j.WriteLiteral(b)
+	j.WriteLiteral([]byte(": "))
+}
+
+func (j *jsonWriter) Marshal(v interface{}) {
+	if j.err != nil {
+		return
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		j.err = err
+		return
+	}
+	j.WriteLiteral(b)
+}
+
+// MarshalJSON formats the IAM statement for the AWS IAM restrictions.
+// For example, `Resource: []` is not allowed, but golang would force us to use pointers.
+func (s *Statement) MarshalJSON() ([]byte, error) {
+	var b bytes.Buffer
+
+	jw := &jsonWriter{w: &b}
+	jw.StartObject()
+	jw.Field("Effect")
+	jw.Marshal(s.Effect)
+
+	if !s.Principal.IsEmpty() {
+		jw.Comma()
+		jw.Field("Principal")
+		jw.Marshal(s.Principal)
+	}
+	if !s.Action.IsEmpty() {
+		jw.Comma()
+		jw.Field("Action")
+		jw.Marshal(s.Action)
+	}
+	if !s.Resource.IsEmpty() {
+		jw.Comma()
+		jw.Field("Resource")
+		jw.Marshal(s.Resource)
+	}
+	if len(s.Condition) != 0 {
+		jw.Comma()
+		jw.Field("Condition")
+		jw.Marshal(s.Condition)
+	}
+	jw.EndObject()
+
+	return b.Bytes(), jw.Error()
 }
 
 type Principal struct {
 	Federated string `json:",omitempty"`
 	Service   string `json:",omitempty"`
+}
+
+func (p *Principal) IsEmpty() bool {
+	return *p == Principal{}
 }
 
 // Equal compares two IAM Statements and returns a bool
