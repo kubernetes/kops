@@ -104,6 +104,7 @@ go_test(
         "populateinstancegroup_test.go",
         "subnets_test.go",
         "template_functions_test.go",
+        "urls_test.go",
         "validation_test.go",
     ],
     data = [
@@ -112,6 +113,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/validation:go_default_library",
         "//pkg/assets:go_default_library",
@@ -129,6 +131,7 @@ go_test(
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
+        "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

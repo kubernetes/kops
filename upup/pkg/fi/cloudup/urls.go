@@ -21,6 +21,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -46,11 +47,19 @@ type mirror struct {
 	Replace map[string]string
 }
 
+// GitHub releases have special artifact names because full paths cannot be used
+// and artifact names must remain easy to read for humans.
+var gitHubReplace = map[string]string{
+	"/":                  "-",
+	"linux-amd64-nodeup": "nodeup-linux-amd64",
+	"linux-arm64-nodeup": "nodeup-linux-arm64",
+}
+
 // defaultKopsMirrors is a list of our well-known mirrors
 // Note that we download in order
 var defaultKopsMirrors = []mirror{
 	{URL: "https://artifacts.k8s.io/binaries/kops/%s/"},
-	{URL: "https://github.com/kubernetes/kops/releases/download/v%s/", Replace: map[string]string{"/": "-"}},
+	{URL: "https://github.com/kubernetes/kops/releases/download/v%s/", Replace: gitHubReplace},
 	// We do need to include defaultKopsMirrorBase - the list replaces the base url
 	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},
 }
@@ -254,9 +263,14 @@ func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
 			// This is under our base url - add our well-known mirrors
 			a.Locations = []string{}
 			for _, m := range defaultKopsMirrors {
+				keys := make([]string, len(m.Replace))
+				for k := range m.Replace {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
 				filename := suffix
-				for k, v := range m.Replace {
-					filename = strings.Replace(filename, k, v, -1)
+				for _, k := range keys {
+					filename = strings.Replace(filename, k, m.Replace[k], -1)
 				}
 				base := fmt.Sprintf(m.URL, kops.Version)
 				a.Locations = append(a.Locations, base+filename)
