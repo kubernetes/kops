@@ -157,9 +157,10 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, iamRole *awstasks.IAMRole, c *fi.ModelBuilderContext) error {
 	iamPolicy := &iam.PolicyResource{
 		Builder: &iam.PolicyBuilder{
-			Cluster: b.Cluster,
-			Role:    role,
-			Region:  b.Region,
+			Cluster:              b.Cluster,
+			Role:                 role,
+			Region:               b.Region,
+			UseServiceAccountIAM: b.UseServiceAccountIAM(),
 		},
 	}
 
