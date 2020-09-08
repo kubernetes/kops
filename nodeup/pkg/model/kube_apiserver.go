@@ -71,8 +71,8 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			key := "encryptionconfig"
-			encryptioncfg, _ := b.SecretStore.Secret(key)
-			if encryptioncfg != nil {
+			encryptioncfg, err := b.SecretStore.Secret(key)
+			if err == nil {
 				contents := string(encryptioncfg.Data)
 				t := &nodetasks.File{
 					Path:     *encryptionConfigPath,
@@ -81,6 +81,8 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Type:     nodetasks.FileType_File,
 				}
 				c.AddTask(t)
+			} else {
+				return fmt.Errorf("encryptionConfig enabled, but could not load encryptionconfig secret: %v", err)
 			}
 		}
 	}
