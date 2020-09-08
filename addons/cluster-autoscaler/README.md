@@ -1,5 +1,7 @@
 # Cluster Autoscaler Addon
 
+**This addon is deprecated. See https://kops.sigs.k8s.io/cluster_spec/#cluster-autoscaler**
+
 We strongly recommend using Cluster Autoscaler with the kubernetes version for which it was meant. Refer to the [Cluster Autoscaler documentation compatibility matrix]( https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/README.md#releases)
 
 Note that you likely want to change `AWS_REGION` and `GROUP_NAME`, and probably `MIN_NODES` and `MAX_NODES`. Here is an example of how you may wish to do so:
