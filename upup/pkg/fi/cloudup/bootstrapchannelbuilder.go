@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
+	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/pkg/fi"
@@ -471,7 +472,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 		// Generate dns-controller ServiceAccount IAM permissions
 		if b.UseServiceAccountIAM() {
-			serviceAccountRoles := []iam.ServiceAccountRole{iam.ServiceAccountRoleDNSController}
+			serviceAccountRoles := []iam.Subject{&dnscontroller.ServiceAccount{}}
 			for _, serviceAccountRole := range serviceAccountRoles {
 				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
 

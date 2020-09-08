@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/util/stringorslice"
@@ -71,7 +72,10 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each shared role
 	for profileARN, igRole := range sharedProfileARNsToIGRole {
-		role := iam.NodeOrServiceAccountRole{NodeRole: igRole}
+		role, err := iam.BuildNodeRoleSubject(igRole)
+		if err != nil {
+			return err
+		}
 
 		iamName, err := findCustomAuthNameFromArn(profileARN)
 		if err != nil {
@@ -85,10 +89,13 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each managed role
 	for igRole := range managedRoles {
-		role := iam.NodeOrServiceAccountRole{NodeRole: igRole}
-		iamName := b.IAMName(igRole)
-		err := b.buildIAMTasks(role, iamName, c, false)
+		role, err := iam.BuildNodeRoleSubject(igRole)
 		if err != nil {
+			return err
+		}
+
+		iamName := b.IAMName(igRole)
+		if err := b.buildIAMTasks(role, iamName, c, false); err != nil {
 			return err
 		}
 	}
@@ -97,10 +104,11 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 // BuildServiceAccountRoleTasks build tasks specifically for the ServiceAccount role.
-func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(serviceAccountRole iam.ServiceAccountRole, c *fi.ModelBuilderContext) error {
-	role := iam.NodeOrServiceAccountRole{ServiceAccountRole: serviceAccountRole}
-
-	iamName := b.IAMNameForServiceAccountRole(serviceAccountRole)
+func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.ModelBuilderContext) error {
+	iamName, err := b.IAMNameForServiceAccountRole(role)
+	if err != nil {
+		return err
+	}
 
 	iamRole, err := b.buildIAMRole(role, iamName, c)
 	if err != nil {
@@ -114,8 +122,8 @@ func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(serviceAccountRole iam.Se
 	return nil
 }
 
-func (b *IAMModelBuilder) buildIAMRole(role iam.NodeOrServiceAccountRole, iamName string, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
-	roleKey := b.roleKey(role)
+func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
+	roleKey, isServiceAccount := b.roleKey(role)
 
 	rolePolicy, err := b.buildAWSIAMRolePolicy(role)
 	if err != nil {
@@ -127,7 +135,14 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.NodeOrServiceAccountRole, iamNam
 		Lifecycle: b.Lifecycle,
 
 		RolePolicyDocument: fi.WrapResource(rolePolicy),
-		ExportWithID:       s(roleKey + "s"),
+	}
+
+	if isServiceAccount {
+		// e.g. kube-system-dns-controller
+		iamRole.ExportWithID = s(roleKey)
+	} else {
+		// e.g. nodes
+		iamRole.ExportWithID = s(roleKey + "s")
 	}
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {
@@ -139,7 +154,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.NodeOrServiceAccountRole, iamNam
 	return iamRole, nil
 }
 
-func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.NodeOrServiceAccountRole, iamName string, iamRole *awstasks.IAMRole, c *fi.ModelBuilderContext) error {
+func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, iamRole *awstasks.IAMRole, c *fi.ModelBuilderContext) error {
 	iamPolicy := &iam.PolicyResource{
 		Builder: &iam.PolicyBuilder{
 			Cluster: b.Cluster,
@@ -167,18 +182,30 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.NodeOrServiceAccountRole, 
 	return nil
 }
 
-func (b *IAMModelBuilder) roleKey(role iam.NodeOrServiceAccountRole) string {
-	var roleKey string
-	if role.IsServiceAccountRole() {
-		roleKey = strings.ToLower(string(role.ServiceAccountRole))
-	} else {
-		roleKey = strings.ToLower(string(role.NodeRole))
+// roleKey builds a string to represent the role uniquely.  It returns true if this is a service account role.
+func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
+	serviceAccount, ok := role.ServiceAccount()
+	if ok {
+		return strings.ToLower(serviceAccount.Namespace + "-" + serviceAccount.Name), true
 	}
-	return roleKey
+
+	// This isn't great, but we have to be backwards compatible with the old names.
+	switch role.(type) {
+	case *iam.NodeRoleMaster:
+		return strings.ToLower(string(kops.InstanceGroupRoleMaster)), false
+	case *iam.NodeRoleNode:
+		return strings.ToLower(string(kops.InstanceGroupRoleNode)), false
+	case *iam.NodeRoleBastion:
+		return strings.ToLower(string(kops.InstanceGroupRoleBastion)), false
+
+	default:
+		klog.Fatalf("unknown node role type: %T", role)
+		return "", false
+	}
 }
 
-func (b *IAMModelBuilder) buildIAMTasks(role iam.NodeOrServiceAccountRole, iamName string, c *fi.ModelBuilderContext, shared bool) error {
-	roleKey := b.roleKey(role)
+func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.ModelBuilderContext, shared bool) error {
+	roleKey, _ := b.roleKey(role)
 
 	iamRole, err := b.buildIAMRole(role, iamName, c)
 	if err != nil {
@@ -295,11 +322,10 @@ func IAMServiceEC2(region string) string {
 }
 
 // buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role.
-func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.NodeOrServiceAccountRole) (fi.Resource, error) {
+func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, error) {
 	var policy string
-	if role.IsServiceAccountRole() {
-		serviceAccount := iam.ServiceAccountForServiceAccountRole(role.ServiceAccountRole)
-
+	serviceAccount, ok := role.ServiceAccount()
+	if ok {
 		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
 		if err != nil {
 			return nil, err
