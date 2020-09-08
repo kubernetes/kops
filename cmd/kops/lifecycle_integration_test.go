@@ -299,7 +299,7 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.19.0-alpha.1")
+	h.MockKopsVersion("1.19.0-alpha.3")
 	cloud := h.SetupMockAWS()
 
 	var beforeIds []string
@@ -335,7 +335,7 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 		os.Setenv("OS_REGION_NAME", origRegion)
 	}()
 
-	h.MockKopsVersion("1.19.0-alpha.1")
+	h.MockKopsVersion("1.19.0-alpha.3")
 	cloud := h.SetupMockOpenstack()
 
 	var beforeIds []string
