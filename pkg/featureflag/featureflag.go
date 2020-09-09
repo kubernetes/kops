@@ -47,6 +47,9 @@ var (
 )
 
 var (
+	// CacheNodeidentityInfo enables NodeidentityInfo caching
+	// in order to reduce the number of EC2 DescribeInstance calls.
+	CacheNodeidentityInfo = New("CacheNodeidentityInfo", Bool(false))
 	// DNSPreCreate controls whether we pre-create DNS records.
 	DNSPreCreate = New("DNSPreCreate", Bool(true))
 	// EnableLaunchTemplates indicates we wish to switch to using launch templates rather than launchconfigurations
