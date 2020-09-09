@@ -247,9 +247,6 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 
 func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.StringValue(m.VolumeType)
-	if volumeType == "" {
-		return fmt.Errorf("must set ETCDMemberSpec.VolumeType on Openstack platform")
-	}
 
 	// The tags are how protokube knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
