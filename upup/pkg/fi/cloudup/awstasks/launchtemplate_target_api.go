@@ -86,7 +86,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 	for _, sg := range t.SecurityGroups {
 		lc.NetworkInterfaces[0].Groups = append(lc.NetworkInterfaces[0].Groups, sg.ID)
 	}
-	// @step: add any tenacy details
+	// @step: add any tenancy details
 	if t.Tenancy != nil {
 		lc.Placement = &ec2.LaunchTemplatePlacementRequest{Tenancy: t.Tenancy}
 	}
@@ -131,12 +131,15 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 		}
 		lc.UserData = aws.String(base64.StdEncoding.EncodeToString(d))
 	}
-	// @step: add instanceInterruptionBehavior
-	if t.InstanceInterruptionBehavior != nil {
+	// @step: add market options
+	if t.SpotPrice != "" {
 		s := &ec2.LaunchTemplateSpotMarketOptionsRequest{
+			BlockDurationMinutes:         t.SpotDurationInMinutes,
 			InstanceInterruptionBehavior: t.InstanceInterruptionBehavior,
+			MaxPrice:                     fi.String(t.SpotPrice),
 		}
 		lc.InstanceMarketOptions = &ec2.LaunchTemplateInstanceMarketOptionsRequest{
+			MarketType:  fi.String("spot"),
 			SpotOptions: s,
 		}
 	}
