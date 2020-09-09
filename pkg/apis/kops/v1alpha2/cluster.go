@@ -406,6 +406,10 @@ type NodeLocalDNSConfig struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.
 	LocalIP string `json:"localIP,omitempty"`
+	// MemoryRequest specifies the memory requests of each node-local-dns container in the daemonset. Default 5Mi.
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// CPURequest specifies the cpu requests of each node-local-dns container in the daemonset. Default 25m.
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller

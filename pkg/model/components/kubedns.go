@@ -75,12 +75,26 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeDNS.MemoryLimit = &defaultMemoryLimit
 	}
 
-	NodeLocalDNS := clusterSpec.KubeDNS.NodeLocalDNS
-	if NodeLocalDNS == nil {
-		NodeLocalDNS = &kops.NodeLocalDNSConfig{}
-		NodeLocalDNS.Enabled = fi.Bool(false)
-	} else if fi.BoolValue(NodeLocalDNS.Enabled) && NodeLocalDNS.LocalIP == "" {
-		NodeLocalDNS.LocalIP = "169.254.20.10"
+	nodeLocalDNS := clusterSpec.KubeDNS.NodeLocalDNS
+	if nodeLocalDNS == nil {
+		nodeLocalDNS = &kops.NodeLocalDNSConfig{}
+		clusterSpec.KubeDNS.NodeLocalDNS = nodeLocalDNS
+	}
+	if nodeLocalDNS.Enabled == nil {
+		nodeLocalDNS.Enabled = fi.Bool(false)
+	}
+	if fi.BoolValue(nodeLocalDNS.Enabled) && nodeLocalDNS.LocalIP == "" {
+		nodeLocalDNS.LocalIP = "169.254.20.10"
+	}
+
+	if nodeLocalDNS.MemoryRequest == nil || nodeLocalDNS.MemoryRequest.IsZero() {
+		defaultMemoryRequest := resource.MustParse("5Mi")
+		nodeLocalDNS.MemoryRequest = &defaultMemoryRequest
+	}
+
+	if nodeLocalDNS.CPURequest == nil || nodeLocalDNS.CPURequest.IsZero() {
+		defaultCPURequest := resource.MustParse("25m")
+		nodeLocalDNS.CPURequest = &defaultCPURequest
 	}
 
 	return nil
