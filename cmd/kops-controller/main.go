@@ -150,7 +150,7 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 	var err error
 	switch opt.Cloud {
 	case "aws":
-		identifier, err = nodeidentityaws.New()
+		identifier, err = nodeidentityaws.New(opt.CacheNodeidentityInfo)
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
