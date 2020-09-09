@@ -383,6 +383,10 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		ConfigBase: cluster.Spec.ConfigBase,
 	}
 
+	if featureflag.CacheNodeidentityInfo.Enabled() {
+		config.CacheNodeidentityInfo = true
+	}
+
 	if tf.UseKopsControllerForNodeBootstrap() {
 		certNames := []string{"kubelet"}
 		signingCAs := []string{fi.CertificateIDCA}
