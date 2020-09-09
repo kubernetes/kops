@@ -1650,7 +1650,8 @@ spec:
                         anyOf:
                         - type: integer
                         - type: string
-                        description: CPURequest specifies the cpu requests of each node-local-dns container in the daemonset. Default 25m.
+                        description: CPURequest specifies the cpu requests of each
+                          node-local-dns container in the daemonset. Default 25m.
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
                       enabled:
@@ -1665,7 +1666,9 @@ spec:
                         anyOf:
                         - type: integer
                         - type: string
-                        description: MemoryRequest specifies the memory requests of each node-local-dns container in the daemonset. Default 5Mi.
+                        description: MemoryRequest specifies the memory requests of
+                          each node-local-dns container in the daemonset. Default
+                          5Mi.
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
                     type: object
