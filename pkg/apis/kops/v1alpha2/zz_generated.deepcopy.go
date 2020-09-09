@@ -3357,6 +3357,16 @@ func (in *NodeLocalDNSConfig) DeepCopyInto(out *NodeLocalDNSConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.MemoryRequest != nil {
+		in, out := &in.MemoryRequest, &out.MemoryRequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.CPURequest != nil {
+		in, out := &in.CPURequest, &out.CPURequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	return
 }
 
