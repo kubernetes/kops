@@ -131,8 +131,8 @@ spec:
         image: k8s.gcr.io/k8s-dns-node-cache:1.15.10
         resources:
           requests:
-            cpu: 25m
-            memory: 5Mi
+            cpu: {{ KubeDNS.NodeLocalDNS.CPURequest }}
+            memory: {{ KubeDNS.NodeLocalDNS.MemoryRequest }}
         {{ if NodeLocalDNSServerIP }}
         args: [ "-localip", "{{ .KubeDNS.NodeLocalDNS.LocalIP }},{{ NodeLocalDNSServerIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
         {{ else }}

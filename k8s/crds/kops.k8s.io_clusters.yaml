@@ -1646,6 +1646,13 @@ spec:
                     description: NodeLocalDNS specifies the configuration for the
                       node-local-dns addon
                     properties:
+                      cpuRequest:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: CPURequest specifies the cpu requests of each node-local-dns container in the daemonset. Default 25m.
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       enabled:
                         description: Enabled activates the node-local-dns addon
                         type: boolean
@@ -1654,6 +1661,13 @@ spec:
                           the 169.254.20.0/16 space or any other IP address that can
                           be guaranteed to not collide with any existing IP.
                         type: string
+                      memoryRequest:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: MemoryRequest specifies the memory requests of each node-local-dns container in the daemonset. Default 5Mi.
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                     type: object
                   provider:
                     description: Provider indicates whether CoreDNS or kube-dns will

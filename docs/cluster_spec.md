@@ -585,12 +585,16 @@ spec:
 
 If you are using CoreDNS, you can enable NodeLocal DNSCache. It is used to improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
 
+`memoryRequest` and `cpuRequest` for the `node-local-dns` pods can also be configured. If not set, they will be configured by default to `5Mi` and `25m` respectively.
+
 ```yaml
 spec:
   kubeDNS:
     provider: CoreDNS
     nodeLocalDNS:
       enabled: true
+      memoryRequest: 5Mi
+      cpuRequest: 25m
 ```
 
 ## kubeControllerManager
