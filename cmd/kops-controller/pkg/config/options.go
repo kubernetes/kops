@@ -19,9 +19,10 @@ package config
 import "k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 type Options struct {
-	Cloud      string         `json:"cloud,omitempty"`
-	ConfigBase string         `json:"configBase,omitempty"`
-	Server     *ServerOptions `json:"server,omitempty"`
+	Cloud                 string         `json:"cloud,omitempty"`
+	ConfigBase            string         `json:"configBase,omitempty"`
+	Server                *ServerOptions `json:"server,omitempty"`
+	CacheNodeidentityInfo bool           `json:"cacheNodeidentityInfo,omitempty"`
 }
 
 func (o *Options) PopulateDefaults() {
