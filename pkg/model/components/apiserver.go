@@ -162,7 +162,6 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.SecurePort = 443
 
 	c.BindAddress = "0.0.0.0"
-	c.InsecureBindAddress = "127.0.0.1"
 
 	c.AllowPrivileged = fi.Bool(true)
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
@@ -217,9 +216,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if b.IsKubernetesGTE("1.17") {
 		// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990
+		c.InsecureBindAddress = ""
 		c.InsecurePort = 0
 	} else {
 		// Older versions of kubernetes continue to rely on the insecure port: kubernetes issue #43784
+		c.InsecureBindAddress = "127.0.0.1"
 		c.InsecurePort = 8080
 	}
 

@@ -195,7 +195,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     etcdServersOverrides:
     - /events#http://127.0.0.1:4002
     image: k8s.gcr.io/kube-apiserver:v1.18.0
-    insecureBindAddress: 127.0.0.1
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
