@@ -19,7 +19,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.17.1
+    version: v1.17.2
 spec:
   selector:
     matchLabels:
@@ -33,7 +33,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.17.1
+        version: v1.17.2
     spec:
       priorityClassName: system-node-critical
       tolerations:
