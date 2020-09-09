@@ -27,7 +27,6 @@ contents: |
       - --etcd-keyfile=/etc/kubernetes/pki/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://127.0.0.1:4002
       - --etcd-servers=https://127.0.0.1:4001
-      - --insecure-bind-address=127.0.0.1
       - --insecure-port=0
       - --kubelet-client-certificate=/srv/kubernetes/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kubelet-api.key
