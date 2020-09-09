@@ -778,6 +778,9 @@ func awsBuildCloudInstanceGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.Inst
 			klog.Warningf("ignoring instance as it is terminating: %s in autoscaling group: %s", id, cg.HumanName)
 			continue
 		}
+		if instances[id] == nil {
+			continue
+		}
 		currentConfigName := findInstanceLaunchConfiguration(i)
 		status := cloudinstances.CloudInstanceStatusUpToDate
 		if newConfigName != currentConfigName {
