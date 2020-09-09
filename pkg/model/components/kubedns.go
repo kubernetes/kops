@@ -87,5 +87,15 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 		nodeLocalDNS.LocalIP = "169.254.20.10"
 	}
 
+	if nodeLocalDNS.MemoryRequest == nil || nodeLocalDNS.MemoryRequest.IsZero() {
+		defaultMemoryRequest := resource.MustParse("5Mi")
+		nodeLocalDNS.MemoryRequest = &defaultMemoryRequest
+	}
+
+	if nodeLocalDNS.CPURequest == nil || nodeLocalDNS.CPURequest.IsZero() {
+		defaultCPURequest := resource.MustParse("25m")
+		nodeLocalDNS.CPURequest = &defaultCPURequest
+	}
+
 	return nil
 }
