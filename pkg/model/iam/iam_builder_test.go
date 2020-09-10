@@ -48,11 +48,31 @@ func TestRoundTrip(t *testing.T) {
 			},
 			JSON: "{\"Effect\":\"Deny\",\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Resource\":[\"a\",\"b\"]}",
 		},
+		{
+			IAM: &Statement{
+				Effect:    StatementEffectDeny,
+				Principal: Principal{Federated: "federated"},
+				Condition: map[string]interface{}{
+					"foo": 1,
+				},
+			},
+			JSON: "{\"Effect\":\"Deny\",\"Principal\":{\"Federated\":\"federated\"},\"Condition\":{\"foo\":1}}",
+		},
+		{
+			IAM: &Statement{
+				Effect:    StatementEffectDeny,
+				Principal: Principal{Service: "service"},
+				Condition: map[string]interface{}{
+					"bar": "baz",
+				},
+			},
+			JSON: "{\"Effect\":\"Deny\",\"Principal\":{\"Service\":\"service\"},\"Condition\":{\"bar\":\"baz\"}}",
+		},
 	}
 	for _, g := range grid {
 		actualJSON, err := json.Marshal(g.IAM)
 		if err != nil {
-			t.Errorf("error encoding IAM %s to json: %v", g.IAM, err)
+			t.Errorf("error encoding IAM %v to json: %v", g.IAM, err)
 		}
 
 		if g.JSON != string(actualJSON) {
@@ -74,61 +94,61 @@ func TestRoundTrip(t *testing.T) {
 
 func TestPolicyGeneration(t *testing.T) {
 	grid := []struct {
-		Role                   kops.InstanceGroupRole
+		Role                   Subject
 		LegacyIAM              bool
 		AllowContainerRegistry bool
 		Policy                 string
 	}{
 		{
-			Role:                   "Master",
+			Role:                   &NodeRoleMaster{},
 			LegacyIAM:              true,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_master_legacy.json",
 		},
 		{
-			Role:                   "Master",
+			Role:                   &NodeRoleMaster{},
 			LegacyIAM:              false,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_master_strict.json",
 		},
 		{
-			Role:                   "Master",
+			Role:                   &NodeRoleMaster{},
 			LegacyIAM:              false,
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_master_strict_ecr.json",
 		},
 		{
-			Role:                   "Node",
+			Role:                   &NodeRoleNode{},
 			LegacyIAM:              true,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_node_legacy.json",
 		},
 		{
-			Role:                   "Node",
+			Role:                   &NodeRoleNode{},
 			LegacyIAM:              false,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_node_strict.json",
 		},
 		{
-			Role:                   "Node",
+			Role:                   &NodeRoleNode{},
 			LegacyIAM:              false,
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_node_strict_ecr.json",
 		},
 		{
-			Role:                   "Bastion",
+			Role:                   &NodeRoleBastion{},
 			LegacyIAM:              true,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_bastion.json",
 		},
 		{
-			Role:                   "Bastion",
+			Role:                   &NodeRoleBastion{},
 			LegacyIAM:              false,
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_bastion.json",
 		},
 		{
-			Role:                   "Bastion",
+			Role:                   &NodeRoleBastion{},
 			LegacyIAM:              false,
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_bastion.json",

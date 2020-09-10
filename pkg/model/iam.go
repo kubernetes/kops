@@ -19,11 +19,11 @@ package model
 import (
 	"fmt"
 	"strings"
-	"text/template"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -37,7 +37,7 @@ type IAMModelBuilder struct {
 
 var _ fi.ModelBuilder = &IAMModelBuilder{}
 
-const RolePolicyTemplate = `{
+const NodeRolePolicyTemplate = `{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -72,11 +72,16 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each shared role
 	for profileARN, igRole := range sharedProfileARNsToIGRole {
+		role, err := iam.BuildNodeRoleSubject(igRole)
+		if err != nil {
+			return err
+		}
+
 		iamName, err := findCustomAuthNameFromArn(profileARN)
 		if err != nil {
 			return fmt.Errorf("unable to parse instance profile name from arn %q: %v", profileARN, err)
 		}
-		err = b.buildIAMTasks(igRole, iamName, c, true)
+		err = b.buildIAMTasks(role, iamName, c, true)
 		if err != nil {
 			return err
 		}
@@ -84,9 +89,13 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Generate IAM tasks for each managed role
 	for igRole := range managedRoles {
-		iamName := b.IAMName(igRole)
-		err := b.buildIAMTasks(igRole, iamName, c, false)
+		role, err := iam.BuildNodeRoleSubject(igRole)
 		if err != nil {
+			return err
+		}
+
+		iamName := b.IAMName(igRole)
+		if err := b.buildIAMTasks(role, iamName, c, false); err != nil {
 			return err
 		}
 	}
@@ -94,60 +103,122 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName string, c *fi.ModelBuilderContext, shared bool) error {
-	{ // To minimize diff for easier code review
-		var iamRole *awstasks.IAMRole
-		{
-			rolePolicy, err := b.buildAWSIAMRolePolicy()
-			if err != nil {
-				return err
-			}
+// BuildServiceAccountRoleTasks build tasks specifically for the ServiceAccount role.
+func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.ModelBuilderContext) error {
+	iamName, err := b.IAMNameForServiceAccountRole(role)
+	if err != nil {
+		return err
+	}
 
-			iamRole = &awstasks.IAMRole{
-				Name:      s(iamName),
-				Lifecycle: b.Lifecycle,
+	iamRole, err := b.buildIAMRole(role, iamName, c)
+	if err != nil {
+		return err
+	}
 
-				RolePolicyDocument: fi.WrapResource(rolePolicy),
-				ExportWithID:       s(strings.ToLower(string(igRole)) + "s"),
-			}
+	if err := b.buildIAMRolePolicy(role, iamName, iamRole, c); err != nil {
+		return err
+	}
 
-			if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {
-				iamRole.PermissionsBoundary = b.Cluster.Spec.IAM.PermissionsBoundary
-			}
+	return nil
+}
 
-			c.AddTask(iamRole)
+func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
+	roleKey, isServiceAccount := b.roleKey(role)
 
-		}
+	rolePolicy, err := b.buildAWSIAMRolePolicy(role)
+	if err != nil {
+		return nil, err
+	}
 
-		{
-			iamPolicy := &iam.PolicyResource{
-				Builder: &iam.PolicyBuilder{
-					Cluster: b.Cluster,
-					Role:    igRole,
-					Region:  b.Region,
-				},
-			}
+	iamRole := &awstasks.IAMRole{
+		Name:      s(iamName),
+		Lifecycle: b.Lifecycle,
 
-			// This is slightly tricky; we need to know the hosted zone id,
-			// but we might be creating the hosted zone dynamically.
+		RolePolicyDocument: fi.WrapResource(rolePolicy),
+	}
 
-			// TODO: I don't love this technique for finding the task by name & modifying it
-			dnsZoneTask, found := c.Tasks["DNSZone/"+b.NameForDNSZone()]
-			if found {
-				iamPolicy.DNSZone = dnsZoneTask.(*awstasks.DNSZone)
-			} else {
-				klog.V(2).Infof("Task %q not found; won't set route53 permissions in IAM", "DNSZone/"+b.NameForDNSZone())
-			}
+	if isServiceAccount {
+		// e.g. kube-system-dns-controller
+		iamRole.ExportWithID = s(roleKey)
+	} else {
+		// e.g. nodes
+		iamRole.ExportWithID = s(roleKey + "s")
+	}
 
-			t := &awstasks.IAMRolePolicy{
-				Name:      s(iamName),
-				Lifecycle: b.Lifecycle,
+	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {
+		iamRole.PermissionsBoundary = b.Cluster.Spec.IAM.PermissionsBoundary
+	}
 
-				Role:           iamRole,
-				PolicyDocument: iamPolicy,
-			}
-			c.AddTask(t)
-		}
+	c.AddTask(iamRole)
+
+	return iamRole, nil
+}
+
+func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, iamRole *awstasks.IAMRole, c *fi.ModelBuilderContext) error {
+	iamPolicy := &iam.PolicyResource{
+		Builder: &iam.PolicyBuilder{
+			Cluster:              b.Cluster,
+			Role:                 role,
+			Region:               b.Region,
+			UseServiceAccountIAM: b.UseServiceAccountIAM(),
+		},
+	}
+
+	// This is slightly tricky; we need to know the hosted zone id,
+	// but we might be creating the hosted zone dynamically.
+	// We create a stub-reference which will be combined by the execution engine.
+	iamPolicy.DNSZone = &awstasks.DNSZone{
+		Name: fi.String(b.NameForDNSZone()),
+	}
+
+	t := &awstasks.IAMRolePolicy{
+		Name:      s(iamName),
+		Lifecycle: b.Lifecycle,
+
+		Role:           iamRole,
+		PolicyDocument: iamPolicy,
+	}
+	c.AddTask(t)
+
+	return nil
+}
+
+// roleKey builds a string to represent the role uniquely.  It returns true if this is a service account role.
+func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
+	serviceAccount, ok := role.ServiceAccount()
+	if ok {
+		return strings.ToLower(serviceAccount.Namespace + "-" + serviceAccount.Name), true
+	}
+
+	// This isn't great, but we have to be backwards compatible with the old names.
+	switch role.(type) {
+	case *iam.NodeRoleMaster:
+		return strings.ToLower(string(kops.InstanceGroupRoleMaster)), false
+	case *iam.NodeRoleNode:
+		return strings.ToLower(string(kops.InstanceGroupRoleNode)), false
+	case *iam.NodeRoleBastion:
+		return strings.ToLower(string(kops.InstanceGroupRoleBastion)), false
+
+	default:
+		klog.Fatalf("unknown node role type: %T", role)
+		return "", false
+	}
+}
+
+func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.ModelBuilderContext, shared bool) error {
+	roleKey, _ := b.roleKey(role)
+
+	iamRole, err := b.buildIAMRole(role, iamName, c)
+	if err != nil {
+		return err
+	}
+
+	if err := b.buildIAMRolePolicy(role, iamName, iamRole, c); err != nil {
+		return err
+	}
+
+	{
+		// To minimize diff for easier code review
 
 		var iamInstanceProfile *awstasks.IAMInstanceProfile
 		{
@@ -176,10 +247,10 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 
 			if b.Cluster.Spec.ExternalPolicies != nil {
 				p := *(b.Cluster.Spec.ExternalPolicies)
-				externalPolicies = append(externalPolicies, p[strings.ToLower(string(igRole))]...)
+				externalPolicies = append(externalPolicies, p[roleKey]...)
 			}
 
-			name := fmt.Sprintf("%s-policyoverride", strings.ToLower(string(igRole)))
+			name := fmt.Sprintf("%s-policyoverride", roleKey)
 			t := &awstasks.IAMRolePolicy{
 				Name:             s(name),
 				Lifecycle:        b.Lifecycle,
@@ -197,7 +268,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 			if b.Cluster.Spec.AdditionalPolicies != nil {
 				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
 
-				additionalPolicy = additionalPolicies[strings.ToLower(string(igRole))]
+				additionalPolicy = additionalPolicies[roleKey]
 			}
 
 			additionalPolicyName := "additional." + iamName
@@ -216,7 +287,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 
 				statements, err := iam.ParseStatements(additionalPolicy)
 				if err != nil {
-					return fmt.Errorf("additionalPolicy %q is invalid: %v", strings.ToLower(string(igRole)), err)
+					return fmt.Errorf("additionalPolicy %q is invalid: %v", roleKey, err)
 				}
 
 				p.Statement = append(p.Statement, statements...)
@@ -234,29 +305,61 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 			c.AddTask(t)
 		}
 	}
+
 	return nil
 }
 
-// buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role
-func (b *IAMModelBuilder) buildAWSIAMRolePolicy() (fi.Resource, error) {
-	functions := template.FuncMap{
-		"IAMServiceEC2": func() string {
-			// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
-			// it is ec2.amazonaws.com everywhere but in cn-north, where it is ec2.amazonaws.com.cn
-			switch b.Region {
-			case "cn-north-1":
-				return "ec2.amazonaws.com.cn"
-			case "cn-northwest-1":
-				return "ec2.amazonaws.com.cn"
-			default:
-				return "ec2.amazonaws.com"
-			}
-		},
+// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region.
+// It is ec2.amazonaws.com everywhere but in cn-north / cn-northwest, where it is ec2.amazonaws.com.cn
+func IAMServiceEC2(region string) string {
+	switch region {
+	case "cn-north-1":
+		return "ec2.amazonaws.com.cn"
+	case "cn-northwest-1":
+		return "ec2.amazonaws.com.cn"
+	default:
+		return "ec2.amazonaws.com"
+	}
+}
+
+// buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role.
+func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, error) {
+	var policy string
+	serviceAccount, ok := role.ServiceAccount()
+	if ok {
+		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
+		if err != nil {
+			return nil, err
+		}
+		oidcProvider := strings.TrimPrefix(serviceAccountIssuer, "https://")
+
+		iamPolicy := &iam.Policy{
+			Version: iam.PolicyDefaultVersion,
+			Statement: []*iam.Statement{
+				{
+					Effect: "Allow",
+					Principal: iam.Principal{
+						Federated: "arn:aws:iam::" + b.AWSAccountID + ":oidc-provider/" + oidcProvider,
+					},
+					Action: stringorslice.String("sts:AssumeRoleWithWebIdentity"),
+					Condition: map[string]interface{}{
+						"StringEquals": map[string]interface{}{
+							oidcProvider + ":sub": "system:serviceaccount:" + serviceAccount.Namespace + ":" + serviceAccount.Name,
+						},
+					},
+				},
+			},
+		}
+		s, err := iamPolicy.AsJSON()
+		if err != nil {
+			return nil, err
+		}
+		policy = s
+	} else {
+		// We don't generate using json.Marshal here, it would create whitespace changes in the policy for existing clusters.
+
+		policy = strings.ReplaceAll(NodeRolePolicyTemplate, "{{ IAMServiceEC2 }}", IAMServiceEC2(b.Region))
 	}
 
-	templateResource, err := NewTemplateResource("AWSIAMRolePolicy", RolePolicyTemplate, functions, nil)
-	if err != nil {
-		return nil, err
-	}
-	return templateResource, nil
+	return fi.NewStringResource(policy), nil
 }

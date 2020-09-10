@@ -408,3 +408,8 @@ func (m *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
 
 	return defaultServiceNodePortRange, nil
 }
+
+// UseServiceAccountIAM returns true if we are using service-account bound IAM roles.
+func (m *KopsModelContext) UseServiceAccountIAM() bool {
+	return featureflag.UseServiceAccountIAM.Enabled() && m.IsKubernetesGTE("1.12")
+}
