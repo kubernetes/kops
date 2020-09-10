@@ -242,7 +242,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 		}
 
 		// Create External Policy tasks
-		{
+		if !shared {
 			var externalPolicies []string
 
 			if b.Cluster.Spec.ExternalPolicies != nil {
