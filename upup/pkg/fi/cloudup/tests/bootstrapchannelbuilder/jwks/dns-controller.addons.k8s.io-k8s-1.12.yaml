@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.19.0-alpha.3
+    version: v1.19.0-alpha.2
   name: dns-controller
   namespace: kube-system
 spec:
@@ -21,7 +21,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.19.0-alpha.3
+        version: v1.19.0-alpha.2
     spec:
       containers:
       - command:
@@ -38,7 +38,7 @@ spec:
           value: arn:aws:iam:::role/dns-controller.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: k8s.gcr.io/kops/dns-controller:1.19.0-alpha.3
+        image: kope/dns-controller:1.19.0-alpha.2
         name: dns-controller
         resources:
           requests:

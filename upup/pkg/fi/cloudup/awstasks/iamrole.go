@@ -157,6 +157,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 
 		response, err := t.Cloud.IAM().CreateRole(request)
 		if err != nil {
+			klog.V(2).Infof("IAMRole policy: %s", policy)
 			return fmt.Errorf("error creating IAMRole: %v", err)
 		}
 
