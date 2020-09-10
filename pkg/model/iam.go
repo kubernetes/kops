@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
@@ -164,11 +165,13 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 		},
 	}
 
-	// This is slightly tricky; we need to know the hosted zone id,
-	// but we might be creating the hosted zone dynamically.
-	// We create a stub-reference which will be combined by the execution engine.
-	iamPolicy.DNSZone = &awstasks.DNSZone{
-		Name: fi.String(b.NameForDNSZone()),
+	if !dns.IsGossipHostname(b.Cluster.ObjectMeta.Name) {
+		// This is slightly tricky; we need to know the hosted zone id,
+		// but we might be creating the hosted zone dynamically.
+		// We create a stub-reference which will be combined by the execution engine.
+		iamPolicy.DNSZone = &awstasks.DNSZone{
+			Name: fi.String(b.NameForDNSZone()),
+		}
 	}
 
 	t := &awstasks.IAMRolePolicy{
