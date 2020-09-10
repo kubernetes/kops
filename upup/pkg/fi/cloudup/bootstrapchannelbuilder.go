@@ -29,6 +29,9 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components/addonmanifests"
+	"k8s.io/kops/pkg/model/components/addonmanifests/dnscontroller"
+	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -48,7 +51,11 @@ var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
 // Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
-	addons := b.buildAddons()
+	addons, err := b.buildAddons(c)
+	if err != nil {
+		return err
+	}
+
 	if err := addons.Verify(); err != nil {
 		return err
 	}
@@ -71,7 +78,8 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error reading manifest %s: %v", manifestPath, err)
 		}
 
-		remapped, err := b.assetBuilder.RemapManifest(manifestBytes)
+		// Go through any transforms that are best expressed as code
+		remapped, err := addonmanifests.RemapAddonManifest(a, b.KopsModelContext, b.assetBuilder, manifestBytes)
 		if err != nil {
 			klog.Infof("invalid manifest: %s", string(manifestBytes))
 			return fmt.Errorf("error remapping manifest %s: %v", manifestPath, err)
@@ -157,7 +165,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
+func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*channelsapi.Addons, error) {
 	addons := &channelsapi.Addons{}
 	addons.Kind = "Addons"
 	addons.ObjectMeta.Name = "bootstrap"
@@ -459,6 +467,19 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 					KubernetesVersion: ">=1.12.0",
 					Id:                id,
 				})
+			}
+		}
+
+		// Generate dns-controller ServiceAccount IAM permissions
+		if b.UseServiceAccountIAM() {
+			serviceAccountRoles := []iam.Subject{&dnscontroller.ServiceAccount{}}
+			for _, serviceAccountRole := range serviceAccountRoles {
+				iamModelBuilder := &model.IAMModelBuilder{KopsModelContext: b.KopsModelContext, Lifecycle: b.Lifecycle}
+
+				err := iamModelBuilder.BuildServiceAccountRoleTasks(serviceAccountRole, c)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
@@ -1235,5 +1256,5 @@ func (b *BootstrapChannelBuilder) buildAddons() *channelsapi.Addons {
 		})
 	}
 
-	return addons
+	return addons, nil
 }

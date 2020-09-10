@@ -97,6 +97,8 @@ var (
 	LegacyIAM = New("LegacyIAM", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
 	ClusterAddons = New("ClusterAddons", Bool(false))
+	// UseServiceAccountIAM controls whether we use pod-level IAM permissions for our system pods.
+	UseServiceAccountIAM = New("UseServiceAccountIAM", Bool(false))
 	// PublicJWKS enables public jwks access.  This is generally not as secure as republishing.
 	PublicJWKS = New("PublicJWKS", Bool(false))
 )

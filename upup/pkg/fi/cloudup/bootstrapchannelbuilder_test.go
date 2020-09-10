@@ -57,9 +57,9 @@ func TestBootstrapChannelBuilder_PublicJWKS(t *testing.T) {
 
 	h.SetupMockAWS()
 
-	featureflag.ParseFlags("+PublicJWKS")
+	featureflag.ParseFlags("+PublicJWKS,+UseServiceAccountIAM")
 	unsetFeatureFlag := func() {
-		featureflag.ParseFlags("-PublicJWKS")
+		featureflag.ParseFlags("-PublicJWKS,-UseServiceAccountIAM")
 	}
 	defer unsetFeatureFlag()
 	runChannelBuilderTest(t, "public-jwks", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16", "anonymous-issuer-discovery.addons.k8s.io-k8s-1.16"})
