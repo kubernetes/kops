@@ -20,6 +20,7 @@ go_library(
         "//pkg/featureflag:go_default_library",
         "//pkg/model/components:go_default_library",
         "//pkg/model/iam:go_default_library",
+        "//pkg/nodeidentity/aws:go_default_library",
         "//pkg/util/subnet:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
@@ -48,6 +49,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//pkg/nodeidentity/aws:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
