@@ -2657,6 +2657,22 @@ spec:
                 items:
                   type: string
                 type: array
+              nodeTerminationHandler:
+                description: NodeTerminationHandlerConfig determines the cluster autoscaler configuration.
+                properties:
+                  enableScheduledEventDraining:
+                    description: 'EnableScheduledEventDraining makes node termination handler drain nodes before the maintenance window starts for an EC2 instance scheduled event. Default: false'
+                    type: boolean
+                  enableSpotInterruptionDraining:
+                    description: 'EnableSpotInterruptionDraining makes node termination handler drain nodes when spot interruption termination notice is received. Default: true'
+                    type: boolean
+                  enabled:
+                    description: 'Enabled enables the node termination handler. Default: true'
+                    type: boolean
+                  prometheusEnable:
+                    description: EnablePrometheusMetrics enables the "/metrics" endpoint.
+                    type: boolean
+                type: object
               nonMasqueradeCIDR:
                 description: MasterIPRange                 string `json:",omitempty"` NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live) It cannot overlap ServiceClusterIPRange
                 type: string

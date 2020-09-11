@@ -563,6 +563,28 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
+	nth := b.Cluster.Spec.NodeTerminationHandler
+
+	if nth != nil && fi.BoolValue(nth.Enabled) {
+
+		key := "node-termination-handler.aws"
+		version := "1.7.0"
+
+		{
+			location := key + "/k8s-1.11.yaml"
+			id := "k8s-1.11"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.11.0",
+				Id:                id,
+			})
+		}
+	}
+
 	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 		key := "storage-aws.addons.k8s.io"
 		version := "1.15.0"
