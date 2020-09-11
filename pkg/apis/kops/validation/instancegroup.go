@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/kops/pkg/nodeidentity/aws"
+
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -113,6 +115,14 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 
 	if g.Spec.RollingUpdate != nil {
 		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleMaster)...)
+	}
+
+	if g.Spec.NodeLabels != nil {
+		allErrs = append(allErrs, validateNodeLabels(g.Spec.NodeLabels, field.NewPath("spec", "nodeLabels"))...)
+	}
+
+	if g.Spec.CloudLabels != nil {
+		allErrs = append(allErrs, validateCloudLabels(g, field.NewPath("spec", "cloudLabels"))...)
 	}
 
 	if cloud != nil && cloud.ProviderID() == kops.CloudProviderAWS {
@@ -240,6 +250,29 @@ func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) field.
 		if err != nil || !strings.HasPrefix(parsedARN.Resource, "instance-profile") {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("profile"), instanceProfileARN,
 				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole"))
+		}
+	}
+	return allErrs
+}
+
+func validateNodeLabels(labels map[string]string, fldPath *field.Path) (allErrs field.ErrorList) {
+	for key := range labels {
+		if strings.Count(key, "/") > 1 {
+			allErrs = append(allErrs, field.Invalid(fldPath, key, "Node label may only contain a single slash"))
+		}
+	}
+	return allErrs
+}
+
+func validateCloudLabels(ig *kops.InstanceGroup, fldPath *field.Path) (allErrs field.ErrorList) {
+	labels := ig.Spec.CloudLabels
+	if labels == nil {
+		return allErrs
+	}
+
+	for key, value := range labels {
+		if key == aws.CloudTagInstanceGroupName && value != ig.ObjectMeta.Name {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child(aws.CloudTagInstanceGroupName), key, "Node label may only contain a single slash"))
 		}
 	}
 	return allErrs
