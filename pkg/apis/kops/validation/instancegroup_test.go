@@ -19,6 +19,8 @@ package validation
 import (
 	"testing"
 
+	"k8s.io/kops/pkg/nodeidentity/aws"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -219,5 +221,73 @@ func TestValidBootDevice(t *testing.T) {
 		}
 		errs := CrossValidateInstanceGroup(ig, cluster, nil)
 		testErrors(t, g.volumeType, errs, g.expected)
+	}
+}
+
+func TestValidNodeLabels(t *testing.T) {
+
+	grid := []struct {
+		label    string
+		expected []string
+	}{
+		{
+			label: "foo",
+		},
+		{
+			label: "subdomain.domain.tld",
+		},
+		{
+			label: "subdomain.domain.tld/foo",
+		},
+		{
+			label:    "subdomain.domain.tld/foo/bar",
+			expected: []string{"Invalid value::spec.nodeLabels"},
+		},
+	}
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "some-ig",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role:       "Node",
+				NodeLabels: make(map[string]string),
+			},
+		}
+		ig.Spec.NodeLabels[g.label] = "placeholder"
+		errs := ValidateInstanceGroup(ig, nil)
+		testErrors(t, g.label, errs, g.expected)
+	}
+}
+
+func TestIGCloudLabelIsIGName(t *testing.T) {
+
+	grid := []struct {
+		label    string
+		expected []string
+	}{
+		{
+			label: "some-ig",
+		},
+		{
+			label:    "not-some-ig",
+			expected: []string{"Invalid value::spec.cloudLabels.kops.k8s.io/instancegroup"},
+		},
+	}
+
+	for _, g := range grid {
+		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "some-ig",
+			},
+			Spec: kops.InstanceGroupSpec{
+				Role:        "Node",
+				CloudLabels: make(map[string]string),
+			},
+		}
+		ig.Spec.CloudLabels[aws.CloudTagInstanceGroupName] = g.label
+		errs := ValidateInstanceGroup(ig, nil)
+		testErrors(t, g.label, errs, g.expected)
 	}
 }
