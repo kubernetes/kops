@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func (t *TerraformTarget) finish012(taskMap map[string]fi.Task) error {
+func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	resourcesByType := make(map[string]map[string]interface{})
 
 	f := hclwrite.NewEmptyFile()
@@ -42,9 +42,6 @@ func (t *TerraformTarget) finish012(taskMap map[string]fi.Task) error {
 	providerBlock := rootBody.AppendNewBlock("provider", []string{providerName})
 	providerBody := providerBlock.Body()
 	providerBody.SetAttributeValue("region", cty.StringVal(t.Region))
-	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
-		providerBody.SetAttributeValue("version", cty.StringVal(">= 3.0.0"))
-	}
 	for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
 		providerBody.SetAttributeValue(k, cty.StringVal(v))
 	}
@@ -87,7 +84,22 @@ func (t *TerraformTarget) finish012(taskMap map[string]fi.Task) error {
 
 	terraformBlock := rootBody.AppendNewBlock("terraform", []string{})
 	terraformBody := terraformBlock.Body()
-	terraformBody.SetAttributeValue("required_version", cty.StringVal(">= 0.12.0"))
+	terraformBody.SetAttributeValue("required_version", cty.StringVal(">= 0.12.26"))
+
+	requiredProvidersBlock := terraformBody.AppendNewBlock("required_providers", []string{})
+	requiredProvidersBody := requiredProvidersBlock.Body()
+
+	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
+		writeMap(requiredProvidersBody, "google", map[string]cty.Value{
+			"source":  cty.StringVal("hashicorp/google"),
+			"version": cty.StringVal(">= 3.44.0"),
+		})
+	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
+		writeMap(requiredProvidersBody, "aws", map[string]cty.Value{
+			"source":  cty.StringVal("hashicorp/aws"),
+			"version": cty.StringVal(">= 3.12.0"),
+		})
+	}
 
 	bytes := hclwrite.Format(f.Bytes())
 	t.files["kubernetes.tf"] = bytes

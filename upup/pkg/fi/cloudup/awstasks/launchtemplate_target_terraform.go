@@ -216,14 +216,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			return err
 		}
 		if d != nil {
-			if featureflag.Terraform012.Enabled() {
-				userDataResource := fi.WrapResource(fi.NewBytesResource(d))
-
-				tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", userDataResource, true)
-				if err != nil {
-					return err
-				}
-			} else {
+			if featureflag.TerraformJSON.Enabled() {
 				b64d := base64.StdEncoding.EncodeToString(d)
 				if b64d != "" {
 					b64UserDataResource := fi.WrapResource(fi.NewStringResource(b64d))
@@ -231,6 +224,13 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 					if err != nil {
 						return err
 					}
+				}
+			} else {
+				userDataResource := fi.WrapResource(fi.NewBytesResource(d))
+
+				tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", userDataResource, true)
+				if err != nil {
+					return err
 				}
 			}
 		}

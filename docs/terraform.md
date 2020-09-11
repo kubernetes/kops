@@ -10,11 +10,12 @@ Note that if you modify the Terraform files that kops spits out, it will overrid
 
 ### Terraform Version Compatibility
 | Kops Version | Terraform Version | Feature Flag Notes |
-|--------------|-------------------|-------|
-| >= 1.18      | >= 0.12           | HCL2 supported by default |
-| >= 1.18      | < 0.12            | `KOPS_FEATURE_FLAGS=-Terraform-0.12` |
-| >= 1.17      | >= 0.12           | `KOPS_FEATURE_FLAGS=TerraformJSON` outputs JSON |
-| <= 1.17      | < 0.12            | Supported by default |
+|--------------|-------------------|--------------------|
+| >= 1.19      | >= 0.12.26, >= 0.13 | HCL2 supported by default <br>`KOPS_FEATURE_FLAGS=Terraform-0.12` is now deprecated |
+| >= 1.18      | >= 0.12             | HCL2 supported by default |
+| >= 1.18      | < 0.12              | `KOPS_FEATURE_FLAGS=-Terraform-0.12` |
+| >= 1.17      | >= 0.12             | `KOPS_FEATURE_FLAGS=TerraformJSON` outputs JSON |
+| <= 1.17      | < 0.12              | Supported by default |
 
 ### Using Terraform
 
@@ -32,13 +33,7 @@ terraform {
 }
 ```
 
-Then run:
-
-```
-$ terraform init
-```
-to set up s3 backend.
-Learn more [about Terraform state here](https://www.terraform.io/docs/state/remote.html).
+Learn more about [Terraform state](https://www.terraform.io/docs/state/remote.html).
 
 #### Initialize/create a cluster
 
@@ -54,7 +49,32 @@ $ kops create cluster \
   --target=terraform
 ```
 
-The above command will create kops state on S3 (defined in `--state`) and output a representation of your configuration into Terraform files. Thereafter you can preview your changes and then apply as shown below:
+The above command will create kops state on S3 (defined in `--state`) and output a representation of your configuration into Terraform files. Thereafter you can preview your changes in `kubernetes.tf` and then use Terraform to create all the resources as shown below:
+
+Additional Terraform `.tf` files could be added at this stage to custom your deployment, but remember the kops state should continue to remain the ultimate source of truth for the Kubernetes cluster.
+
+Initialize Terraform to set-up the S3 backend and provider plugins.
+
+```
+$ terraform init
+```
+
+If you're using Terraform v0.12.26+, the following warning will be displayed and can be safely ignored. It will not be displayed if you're using Terraform v0.13.0+.
+
+```
+Warning: Provider source not supported in Terraform v0.12
+
+  on kubernetes.tf line 665, in terraform:
+ 665:     aws = {
+ 666:       "source"  = "hashicorp/aws"
+ 667:       "version" = ">= 3.12.0"
+ 668:     }
+
+A source was declared for provider aws. Terraform v0.12 does not support the   
+provider source attribute. It will be ignored.
+```
+
+Use Terraform to review and create the cloud infrastructure and Kubernetes cluster.
 
 ```
 $ terraform plan
@@ -110,7 +130,6 @@ $ kops delete cluster --yes \
 
 Ps: You don't have to `kops delete cluster` if you just want to recreate from scratch. Deleting kops cluster state means that you've have to `kops create` again.
 
-
 ### Caveats
 
 #### `kops rolling-update` might be needed after editing the cluster
@@ -121,13 +140,11 @@ To see your changes applied to the cluster you'll also need to run `kops rolling
 
 #### Terraform JSON output
 
-With terraform 0.12 JSON is now officially supported as configuration language. To enable JSON output instead of HCLv1 output you need to enable it through a feature flag.
+With terraform 0.12 JSON is now officially supported as configuration language. To enable JSON output instead of HCLv2 output you need to enable it through a feature flag.
+
 ```
 export KOPS_FEATURE_FLAGS=TerraformJSON
 kops update cluster .....
 ```
 
 This is an alternative to of using terraforms own configuration syntax HCL. Be sure to delete the existing kubernetes.tf file. Terraform will otherwise use both and then complain. 
-
-Kops will require terraform 0.12 for JSON configuration. Inofficially (partially) it was also supported with terraform 0.11, so you can try and remove the `required_version` in `kubernetes.tf.json`. 
-

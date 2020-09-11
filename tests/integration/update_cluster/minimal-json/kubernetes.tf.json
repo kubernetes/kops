@@ -641,6 +641,12 @@
     }
   },
   "terraform": {
-    "required_version": "\u003e= 0.12.0"
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "\u003e= 3.12.0"
+      }
+    },
+    "required_version": "\u003e= 0.12.26"
   }
 }

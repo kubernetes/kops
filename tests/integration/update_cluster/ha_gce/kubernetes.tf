@@ -17,8 +17,7 @@ output "region" {
 }
 
 provider "google" {
-  region  = "us-test1"
-  version = ">= 3.0.0"
+  region = "us-test1"
 }
 
 resource "google_compute_disk" "d1-etcd-events-ha-gce-example-com" {
@@ -497,5 +496,11 @@ resource "google_compute_network" "default" {
 }
 
 terraform {
-  required_version = ">= 0.12.0"
+  required_version = ">= 0.12.26"
+  required_providers {
+    google = {
+      "source"  = "hashicorp/google"
+      "version" = ">= 3.44.0"
+    }
+  }
 }

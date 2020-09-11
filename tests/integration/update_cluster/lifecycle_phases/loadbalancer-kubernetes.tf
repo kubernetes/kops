@@ -1,29 +1,29 @@
 locals = {
-  bastion_security_group_ids = ["${aws_security_group.bastion-lifecyclephases-example-com.id}"]
-  bastions_role_arn          = "${aws_iam_role.bastions-lifecyclephases-example-com.arn}"
-  bastions_role_name         = "${aws_iam_role.bastions-lifecyclephases-example-com.name}"
+  bastion_security_group_ids = [aws_security_group.bastion-lifecyclephases-example-com.id]
+  bastions_role_arn          = aws_iam_role.bastions-lifecyclephases-example-com.arn
+  bastions_role_name         = aws_iam_role.bastions-lifecyclephases-example-com.name
   cluster_name               = "lifecyclephases.example.com"
-  master_security_group_ids  = ["${aws_security_group.masters-lifecyclephases-example-com.id}"]
-  masters_role_arn           = "${aws_iam_role.masters-lifecyclephases-example-com.arn}"
-  masters_role_name          = "${aws_iam_role.masters-lifecyclephases-example-com.name}"
-  node_security_group_ids    = ["${aws_security_group.nodes-lifecyclephases-example-com.id}"]
-  node_subnet_ids            = ["${aws_subnet.us-test-1a-lifecyclephases-example-com.id}"]
-  nodes_role_arn             = "${aws_iam_role.nodes-lifecyclephases-example-com.arn}"
-  nodes_role_name            = "${aws_iam_role.nodes-lifecyclephases-example-com.name}"
+  master_security_group_ids  = [aws_security_group.masters-lifecyclephases-example-com.id]
+  masters_role_arn           = aws_iam_role.masters-lifecyclephases-example-com.arn
+  masters_role_name          = aws_iam_role.masters-lifecyclephases-example-com.name
+  node_security_group_ids    = [aws_security_group.nodes-lifecyclephases-example-com.id]
+  node_subnet_ids            = [aws_subnet.us-test-1a-lifecyclephases-example-com.id]
+  nodes_role_arn             = aws_iam_role.nodes-lifecyclephases-example-com.arn
+  nodes_role_name            = aws_iam_role.nodes-lifecyclephases-example-com.name
   region                     = "us-test-1"
-  vpc_id                     = "${aws_vpc.lifecyclephases-example-com.id}"
+  vpc_id                     = aws_vpc.lifecyclephases-example-com.id
 }
 
 output "bastion_security_group_ids" {
-  value = ["${aws_security_group.bastion-lifecyclephases-example-com.id}"]
+  value = [aws_security_group.bastion-lifecyclephases-example-com.id]
 }
 
 output "bastions_role_arn" {
-  value = "${aws_iam_role.bastions-lifecyclephases-example-com.arn}"
+  value = aws_iam_role.bastions-lifecyclephases-example-com.arn
 }
 
 output "bastions_role_name" {
-  value = "${aws_iam_role.bastions-lifecyclephases-example-com.name}"
+  value = aws_iam_role.bastions-lifecyclephases-example-com.name
 }
 
 output "cluster_name" {
@@ -31,31 +31,31 @@ output "cluster_name" {
 }
 
 output "master_security_group_ids" {
-  value = ["${aws_security_group.masters-lifecyclephases-example-com.id}"]
+  value = [aws_security_group.masters-lifecyclephases-example-com.id]
 }
 
 output "masters_role_arn" {
-  value = "${aws_iam_role.masters-lifecyclephases-example-com.arn}"
+  value = aws_iam_role.masters-lifecyclephases-example-com.arn
 }
 
 output "masters_role_name" {
-  value = "${aws_iam_role.masters-lifecyclephases-example-com.name}"
+  value = aws_iam_role.masters-lifecyclephases-example-com.name
 }
 
 output "node_security_group_ids" {
-  value = ["${aws_security_group.nodes-lifecyclephases-example-com.id}"]
+  value = [aws_security_group.nodes-lifecyclephases-example-com.id]
 }
 
 output "node_subnet_ids" {
-  value = ["${aws_subnet.us-test-1a-lifecyclephases-example-com.id}"]
+  value = [aws_subnet.us-test-1a-lifecyclephases-example-com.id]
 }
 
 output "nodes_role_arn" {
-  value = "${aws_iam_role.nodes-lifecyclephases-example-com.arn}"
+  value = aws_iam_role.nodes-lifecyclephases-example-com.arn
 }
 
 output "nodes_role_name" {
-  value = "${aws_iam_role.nodes-lifecyclephases-example-com.name}"
+  value = aws_iam_role.nodes-lifecyclephases-example-com.name
 }
 
 output "region" {
@@ -63,7 +63,7 @@ output "region" {
 }
 
 output "vpc_id" {
-  value = "${aws_vpc.lifecyclephases-example-com.id}"
+  value = aws_vpc.lifecyclephases-example-com.id
 }
 
 provider "aws" {
@@ -71,13 +71,13 @@ provider "aws" {
 }
 
 resource "aws_autoscaling_attachment" "bastion-lifecyclephases-example-com" {
-  elb                    = "${aws_elb.bastion-lifecyclephases-example-com.id}"
-  autoscaling_group_name = "${aws_autoscaling_group.bastion-lifecyclephases-example-com.id}"
+  elb                    = aws_elb.bastion-lifecyclephases-example-com.id
+  autoscaling_group_name = aws_autoscaling_group.bastion-lifecyclephases-example-com.id
 }
 
 resource "aws_autoscaling_attachment" "master-us-test-1a-masters-lifecyclephases-example-com" {
-  elb                    = "${aws_elb.api-lifecyclephases-example-com.id}"
-  autoscaling_group_name = "${aws_autoscaling_group.master-us-test-1a-masters-lifecyclephases-example-com.id}"
+  elb                    = aws_elb.api-lifecyclephases-example-com.id
+  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-lifecyclephases-example-com.id
 }
 
 resource "aws_elb" "api-lifecyclephases-example-com" {
@@ -90,8 +90,8 @@ resource "aws_elb" "api-lifecyclephases-example-com" {
     lb_protocol       = "TCP"
   }
 
-  security_groups = ["${aws_security_group.api-elb-lifecyclephases-example-com.id}"]
-  subnets         = ["${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"]
+  security_groups = [aws_security_group.api-elb-lifecyclephases-example-com.id]
+  subnets         = [aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id]
 
   health_check = {
     target              = "SSL:443"
@@ -119,8 +119,8 @@ resource "aws_elb" "bastion-lifecyclephases-example-com" {
     lb_protocol       = "TCP"
   }
 
-  security_groups = ["${aws_security_group.bastion-elb-lifecyclephases-example-com.id}"]
-  subnets         = ["${aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id}"]
+  security_groups = [aws_security_group.bastion-elb-lifecyclephases-example-com.id]
+  subnets         = [aws_subnet.utility-us-test-1a-lifecyclephases-example-com.id]
 
   health_check = {
     target              = "TCP:22"
@@ -144,14 +144,20 @@ resource "aws_route53_record" "api-lifecyclephases-example-com" {
   type = "A"
 
   alias = {
-    name                   = "${aws_elb.api-lifecyclephases-example-com.dns_name}"
-    zone_id                = "${aws_elb.api-lifecyclephases-example-com.zone_id}"
+    name                   = aws_elb.api-lifecyclephases-example-com.dns_name
+    zone_id                = aws_elb.api-lifecyclephases-example-com.zone_id
     evaluate_target_health = false
   }
 
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
-terraform = {
-  required_version = ">= 0.9.3"
+terraform {
+  required_version = ">= 0.12.26"
+  required_providers {
+    aws = {
+      "source"  = "hashicorp/aws"
+      "version" = ">= 3.12.0"
+    }
+  }
 }

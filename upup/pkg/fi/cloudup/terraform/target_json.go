@@ -19,16 +19,12 @@ package terraform
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path"
 
-	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func (t *TerraformTarget) finish011(taskMap map[string]fi.Task) error {
+func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 	resourcesByType := make(map[string]map[string]interface{})
 
 	for _, res := range t.resources {
@@ -56,7 +52,6 @@ func (t *TerraformTarget) finish011(taskMap map[string]fi.Task) error {
 			providerGoogle[k] = v
 		}
 		providersByName["google"] = providerGoogle
-		providerGoogle["version"] = ">= 3.0.0"
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		providerAWS := make(map[string]interface{})
 		providerAWS["region"] = t.Region
@@ -108,16 +103,7 @@ func (t *TerraformTarget) finish011(taskMap map[string]fi.Task) error {
 		}
 	}
 
-	// See https://github.com/kubernetes/kops/pull/2424 for why we require 0.9.3
-	terraformConfiguration := make(map[string]interface{})
-	if featureflag.TerraformJSON.Enabled() {
-		terraformConfiguration["required_version"] = ">= 0.12.0"
-	} else {
-		terraformConfiguration["required_version"] = ">= 0.9.3"
-	}
-
 	data := make(map[string]interface{})
-	data["terraform"] = terraformConfiguration
 	data["resource"] = resourcesByType
 	if len(providersByName) != 0 {
 		data["provider"] = providersByName
@@ -129,29 +115,39 @@ func (t *TerraformTarget) finish011(taskMap map[string]fi.Task) error {
 		data["locals"] = localVariables
 	}
 
+	terraformConfiguration := make(map[string]interface{})
+	terraformConfiguration["required_version"] = ">= 0.12.26"
+
+	requiredProvidersByName := make(map[string]interface{})
+	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
+		requiredProviderGoogle := make(map[string]interface{})
+		requiredProviderGoogle["source"] = "hashicorp/google"
+		requiredProviderGoogle["version"] = ">= 3.44.0"
+		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
+			requiredProviderGoogle[k] = v
+		}
+		requiredProvidersByName["google"] = requiredProviderGoogle
+	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
+		requiredProviderAWS := make(map[string]interface{})
+		requiredProviderAWS["source"] = "hashicorp/aws"
+		requiredProviderAWS["version"] = ">= 3.12.0"
+		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
+			requiredProviderAWS[k] = v
+		}
+		requiredProvidersByName["aws"] = requiredProviderAWS
+	}
+
+	if len(requiredProvidersByName) != 0 {
+		terraformConfiguration["required_providers"] = requiredProvidersByName
+	}
+
+	data["terraform"] = terraformConfiguration
+
 	jsonBytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshaling terraform data to json: %v", err)
 	}
 
-	if featureflag.TerraformJSON.Enabled() {
-		t.files["kubernetes.tf.json"] = jsonBytes
-		p := path.Join(t.outDir, "kubernetes.tf")
-		if _, err := os.Stat(p); err == nil {
-			return fmt.Errorf("Error generating kubernetes.tf.json: If you are upgrading from terraform 0.11 or earlier please read the release notes. Also, the kubernetes.tf file is already present. Please move the file away since it will be replaced by the kubernetes.tf.json file. ")
-		}
-	} else {
-		f, err := hcl_parser.Parse(jsonBytes)
-		if err != nil {
-			return fmt.Errorf("error parsing terraform json: %v", err)
-		}
-
-		b, err := hclPrint(f)
-		if err != nil {
-			return fmt.Errorf("error writing terraform data to output: %v", err)
-		}
-
-		t.files["kubernetes.tf"] = b
-	}
+	t.files["kubernetes.tf.json"] = jsonBytes
 	return nil
 }
