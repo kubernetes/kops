@@ -222,6 +222,10 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			return err
 		}
 
+		if err := e.setResources(cert); err != nil {
+			return fmt.Errorf("error setting resources: %v", err)
+		}
+
 		// Make double-sure it round-trips
 		_, _, _, err = c.Keystore.FindKeypair(name)
 		if err != nil {
