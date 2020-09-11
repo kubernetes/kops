@@ -18594,9 +18594,7 @@ data:
         reload
         loop
         bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
-        forward . __PILLAR__UPSTREAM__SERVERS__ {
-          force_tcp
-        }
+        forward . __PILLAR__UPSTREAM__SERVERS__
         prometheus :9253
     }
 ---
