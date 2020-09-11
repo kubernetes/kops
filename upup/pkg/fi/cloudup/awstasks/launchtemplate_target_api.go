@@ -301,68 +301,53 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTem
 	}
 }
 
-// findAllLaunchTemplateVersions returns all the launch templates versions for us
-func (t *LaunchTemplate) findAllLaunchTemplatesVersions(c *fi.Context) ([]*ec2.LaunchTemplateVersion, error) {
-	var list []*ec2.LaunchTemplateVersion
-
+// findLaunchTemplates returns a list of launch templates
+func (t *LaunchTemplate) findLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTemplateVersion, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
 		return []*ec2.LaunchTemplateVersion{}, fmt.Errorf("invalid cloud provider: %v, expected: awsup.AWSCloud", c.Cloud)
 	}
 
+	// @step: get a list of the launch templates
 	templates, err := t.findAllLaunchTemplates(c)
 	if err != nil {
 		return nil, err
 	}
 
-	var next *string
-	for _, x := range templates {
-		err := func() error {
-			for {
-				resp, err := cloud.EC2().DescribeLaunchTemplateVersions(&ec2.DescribeLaunchTemplateVersionsInput{
-					LaunchTemplateName: x.LaunchTemplateName,
-					NextToken:          next,
-				})
-				if err != nil {
-					return err
-				}
-				list = append(list, resp.LaunchTemplateVersions...)
-				if resp.NextToken == nil {
-					return nil
-				}
-
-				next = resp.NextToken
-			}
-		}()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return list, nil
-}
-
-// findLaunchTemplates returns a list of launch templates
-func (t *LaunchTemplate) findLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTemplateVersion, error) {
-	// @step: get a list of the launch templates
-	list, err := t.findAllLaunchTemplatesVersions(c)
-	if err != nil {
-		return nil, err
-	}
 	prefix := fmt.Sprintf("%s-", fi.StringValue(t.Name))
 
-	// @step: filter out the templates we are interested in
-	var filtered []*ec2.LaunchTemplateVersion
-	for _, x := range list {
+	// @step: get the launch template versions for the templates we are interested in
+	var list []*ec2.LaunchTemplateVersion
+	var next *string
+	for _, x := range templates {
 		if strings.HasPrefix(aws.StringValue(x.LaunchTemplateName), prefix) {
-			filtered = append(filtered, x)
+			err := func() error {
+				for {
+					resp, err := cloud.EC2().DescribeLaunchTemplateVersions(&ec2.DescribeLaunchTemplateVersionsInput{
+						LaunchTemplateName: x.LaunchTemplateName,
+						NextToken:          next,
+					})
+					if err != nil {
+						return err
+					}
+					list = append(list, resp.LaunchTemplateVersions...)
+					if resp.NextToken == nil {
+						return nil
+					}
+
+					next = resp.NextToken
+				}
+			}()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	// @step: we can sort the configurations in chronological order
-	sort.Slice(filtered, func(i, j int) bool {
-		ti := filtered[i].CreateTime
-		tj := filtered[j].CreateTime
+	// @step: sort the configurations in chronological order
+	sort.Slice(list, func(i, j int) bool {
+		ti := list[i].CreateTime
+		tj := list[j].CreateTime
 		if tj == nil {
 			return true
 		}
@@ -372,7 +357,7 @@ func (t *LaunchTemplate) findLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTempla
 		return ti.UnixNano() < tj.UnixNano()
 	})
 
-	return filtered, nil
+	return list, nil
 }
 
 // findLatestLaunchTemplate returns the latest template
