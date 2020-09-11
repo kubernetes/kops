@@ -154,6 +154,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateClusterAutoscaler(c, spec.ClusterAutoscaler, fieldPath.Child("clusterAutoscaler"))...)
 	}
 
+	if spec.NodeTerminationHandler != nil {
+		allErrs = append(allErrs, validateNodeTerminationHandler(c, spec.NodeTerminationHandler, fieldPath.Child("nodeTerminationHandler"))...)
+	}
+
 	// IAM additionalPolicies
 	if spec.AdditionalPolicies != nil {
 		for k, v := range *spec.AdditionalPolicies {
@@ -1138,5 +1142,12 @@ func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscal
 		allErrs = append(allErrs, field.Forbidden(fldPath, "Cluster autoscaler is not supported on OpenStack"))
 	}
 
+	return allErrs
+}
+
+func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTerminationHandlerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if kops.CloudProviderID(cluster.Spec.CloudProvider) != kops.CloudProviderAWS {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "Node Termination Handler supports only AWS"))
+	}
 	return allErrs
 }
