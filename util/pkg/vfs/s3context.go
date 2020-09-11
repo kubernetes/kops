@@ -155,13 +155,16 @@ func (s *S3Context) getDetailsForBucket(bucket string) (*S3BucketDetails, error)
 	}
 
 	awsRegion := os.Getenv("AWS_REGION")
-	if awsRegion == "" && isRunningOnEC2() {
-		region, err := getRegionFromMetadata()
-		if err != nil {
-			klog.V(2).Infof("unable to get region from metadata:%v", err)
-		} else {
-			awsRegion = region
-			klog.V(2).Infof("got region from metadata: %q", awsRegion)
+	if awsRegion == "" {
+		isEC2, err := isRunningOnEC2()
+		if isEC2 || err != nil {
+			region, err := getRegionFromMetadata()
+			if err != nil {
+				klog.V(2).Infof("unable to get region from metadata:%v", err)
+			} else {
+				awsRegion = region
+				klog.V(2).Infof("got region from metadata: %q", awsRegion)
+			}
 		}
 	}
 
@@ -317,25 +320,25 @@ func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput
 // isRunningOnEC2 determines if we could be running on EC2.
 // It is used to avoid a call to the metadata service to get the current region,
 // because that call is slow if not running on EC2
-func isRunningOnEC2() bool {
+func isRunningOnEC2() (bool, error) {
 	if runtime.GOOS == "linux" {
 		// Approach based on https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/identify_ec2_instances.html
 		productUUID, err := ioutil.ReadFile("/sys/devices/virtual/dmi/id/product_uuid")
 		if err != nil {
 			klog.V(2).Infof("unable to read /sys/devices/virtual/dmi/id/product_uuid, assuming not running on EC2: %v", err)
-			return false
+			return false, err
 		}
 
 		s := strings.ToLower(strings.TrimSpace(string(productUUID)))
 		if strings.HasPrefix(s, "ec2") {
 			klog.V(2).Infof("product_uuid is %q, assuming running on EC2", s)
-			return true
+			return true, nil
 		}
 		klog.V(2).Infof("product_uuid is %q, assuming not running on EC2", s)
-		return false
+		return false, nil
 	}
 	klog.V(2).Infof("GOOS=%q, assuming not running on EC2", runtime.GOOS)
-	return false
+	return false, nil
 }
 
 // getRegionFromMetadata queries the metadata service for the current region, if running in EC2
