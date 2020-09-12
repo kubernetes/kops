@@ -86,6 +86,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "cloudconfig_test.go",
         "containerd_test.go",
         "docker_test.go",
         "fakes_test.go",
@@ -112,6 +113,7 @@ go_test(
         "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup:go_default_library",
+        "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/distributions:go_default_library",
         "//util/pkg/exec:go_default_library",

@@ -169,6 +169,15 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.HostnameOverride = "@alicloud"
 	}
 
+	if cloudProvider == kops.CloudProviderAzure {
+		clusterSpec.Kubelet.CloudProvider = "azure"
+		// We don't set hostname override in Azure since Azure hostnames are
+		// not always valid characters that can be used for pod names.
+		// More specifically, VMs created from VM Scale Sets contain '_' in their
+		// names, which is not a valid character in pod names. K8s API server will fail
+		// to start as its pod name contains a hostname as suffix (kube-apiserver-<hostname>).
+	}
+
 	if clusterSpec.ExternalCloudControllerManager != nil {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}

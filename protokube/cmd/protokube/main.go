@@ -206,6 +206,21 @@ func run() error {
 		if internalIP == nil {
 			internalIP = aliVolumes.InternalIP()
 		}
+	} else if cloud == "azure" {
+		klog.Info("Initializing Azure volumes")
+		azureVolumes, err := protokube.NewAzureVolumes()
+		if err != nil {
+			klog.Errorf("Error initializing Azure: %q", err)
+			os.Exit(1)
+		}
+		volumes = azureVolumes
+
+		if clusterID == "" {
+			clusterID = azureVolumes.ClusterID()
+		}
+		if internalIP == nil {
+			internalIP = azureVolumes.InternalIP()
+		}
 	} else {
 		klog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
@@ -280,6 +295,12 @@ func run() error {
 				return err
 			}
 			gossipName = volumes.(*protokube.DOVolumes).InstanceName()
+		} else if cloud == "azure" {
+			gossipSeeds, err = volumes.(*protokube.AzureVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.AzureVolumes).InstanceID()
 		} else {
 			klog.Fatalf("seed provider for %q not yet implemented", cloud)
 		}

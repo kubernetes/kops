@@ -755,6 +755,26 @@ type OpenstackConfiguration struct {
 	InsecureSkipVerify *bool                        `json:"insecureSkipVerify,omitempty"`
 }
 
+// AzureConfiguration defines Azure specific cluster configuration.
+type AzureConfiguration struct {
+	// SubscriptionID specifies the subscription used for the cluster installation.
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	// TenantID is the ID of the tenant that the cluster is deployed in.
+	TenantID string `json:"tenantId"`
+	// ResourceGroupName specifies the name of the resource group
+	// where the cluster is built.
+	// If this is empty, kops will create a new resource group
+	// whose name is same as the cluster name. If this is not
+	// empty, kops will not create a new resource group, and
+	// it will just reuse the existing resource group of the name.
+	// This follows the model that kops takes for AWS VPC.
+	ResourceGroupName string `json:"resourceGroupName,omitempty"`
+	// RouteTableName is the name of the route table attached to the subnet that the cluster is deployed in.
+	RouteTableName string `json:"routeTableName,omitempty"`
+	// AdminUser specifies the admin user of VMs.
+	AdminUser string `json:"adminUser,omitempty"`
+}
+
 // CloudConfiguration defines the cloud provider configuration
 type CloudConfiguration struct {
 	// GCE cloud-config options
@@ -785,6 +805,8 @@ type CloudConfiguration struct {
 	SpotinstOrientation *string `json:"spotinstOrientation,omitempty"`
 	// Openstack cloud-config options
 	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
+	// Azure cloud-config options
+	Azure *AzureConfiguration `json:"azure,omitempty"`
 }
 
 // NodeTerminationHandlerConfig determines the node termination handler configuration.

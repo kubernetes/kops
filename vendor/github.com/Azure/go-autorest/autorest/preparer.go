@@ -230,7 +230,7 @@ func AsPost() PrepareDecorator { return WithMethod("POST") }
 func AsPut() PrepareDecorator { return WithMethod("PUT") }
 
 // WithBaseURL returns a PrepareDecorator that populates the http.Request with a url.URL constructed
-// from the supplied baseUrl.
+// from the supplied baseUrl.  Query parameters will be encoded as required.
 func WithBaseURL(baseURL string) PrepareDecorator {
 	return func(p Preparer) Preparer {
 		return PreparerFunc(func(r *http.Request) (*http.Request, error) {
@@ -241,11 +241,16 @@ func WithBaseURL(baseURL string) PrepareDecorator {
 					return r, err
 				}
 				if u.Scheme == "" {
-					err = fmt.Errorf("autorest: No scheme detected in URL %s", baseURL)
+					return r, fmt.Errorf("autorest: No scheme detected in URL %s", baseURL)
 				}
-				if err == nil {
-					r.URL = u
+				if u.RawQuery != "" {
+					q, err := url.ParseQuery(u.RawQuery)
+					if err != nil {
+						return r, err
+					}
+					u.RawQuery = q.Encode()
 				}
+				r.URL = u
 			}
 			return r, err
 		})

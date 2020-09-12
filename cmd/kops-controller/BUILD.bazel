@@ -11,6 +11,7 @@ go_library(
         "//cmd/kops-controller/pkg/server:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",
+        "//pkg/nodeidentity/azure:go_default_library",
         "//pkg/nodeidentity/do:go_default_library",
         "//pkg/nodeidentity/gce:go_default_library",
         "//pkg/nodeidentity/openstack:go_default_library",
