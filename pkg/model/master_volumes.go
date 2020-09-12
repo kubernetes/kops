@@ -28,6 +28,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azuretasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -107,6 +109,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			case kops.CloudProviderALI:
 				b.addALIVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+			case kops.CloudProviderAzure:
+				b.addAzureVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}
@@ -311,5 +315,45 @@ func (b *MasterVolumeBuilder) addALIVolume(c *fi.ModelBuilderContext, name strin
 		Tags:         tags,
 	}
 
+	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addAzureVolume(
+	c *fi.ModelBuilderContext,
+	name string,
+	volumeSize int32,
+	zone string,
+	etcd kops.EtcdClusterSpec,
+	m kops.EtcdMemberSpec,
+	allMembers []string,
+) {
+	// The tags are use by Protokube to mount the volume and use it for etcd.
+	tags := map[string]*string{
+		// This is the configuration of the etcd cluster.
+		azure.TagNameEtcdClusterPrefix + etcd.Name: fi.String(m.Name + "/" + strings.Join(allMembers, ",")),
+		// This says "only mount on a master".
+		azure.TagNameRolePrefix + azure.TagRoleMaster: fi.String("1"),
+		// We always add an owned tags (these can't be shared).
+		// Use dash (_) as a splitter. Other CSPs use slash (/), but slash is not
+		// allowed as a tag key in Azure.
+		"kubernetes.io_cluster_" + b.Cluster.ObjectMeta.Name: fi.String("owned"),
+	}
+
+	// Apply all user defined labels on the volumes.
+	for k, v := range b.Cluster.Spec.CloudLabels {
+		tags[k] = fi.String(v)
+	}
+
+	// TODO(kenji): Respect zone and m.EncryptedVolume.
+	t := &azuretasks.Disk{
+		Name:      fi.String(name),
+		Lifecycle: b.Lifecycle,
+		// We cannot use AzureModelContext.LinkToResourceGroup() here because of cyclic dependency.
+		ResourceGroup: &azuretasks.ResourceGroup{
+			Name: fi.String(b.Cluster.AzureResourceGroupName()),
+		},
+		SizeGB: fi.Int32(volumeSize),
+		Tags:   tags,
+	}
 	c.AddTask(t)
 }

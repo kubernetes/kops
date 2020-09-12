@@ -101,6 +101,20 @@ func (group *CloudInstanceGroup) AdjustNeedUpdate() {
 // GetNodeMap returns a list of nodes keyed by their external id
 func GetNodeMap(nodes []v1.Node, cluster *kopsapi.Cluster) map[string]*v1.Node {
 	nodeMap := make(map[string]*v1.Node)
+
+	if kopsapi.CloudProviderID(cluster.Spec.CloudProvider) == kopsapi.CloudProviderAzure {
+		for i := range nodes {
+			node := &nodes[i]
+			vmName, err := toAzureVMName(node.Spec.ProviderID)
+			if err != nil {
+				klog.Errorf("ignoring node %q with malformed provider ID: %s", node.Name, err)
+				continue
+			}
+			nodeMap[vmName] = node
+		}
+		return nodeMap
+	}
+
 	delimiter := "/"
 	// Alicloud CCM uses the "{region}.{instance-id}" of a instance as ProviderID.
 	// We need to set delimiter to "." for Alicloud.
@@ -116,4 +130,15 @@ func GetNodeMap(nodes []v1.Node, cluster *kopsapi.Cluster) map[string]*v1.Node {
 	}
 
 	return nodeMap
+}
+
+// toAzureVMName returns a VM name from the resource path stored in the provider ID.
+func toAzureVMName(providerID string) (string, error) {
+	l := strings.Split(providerID, "/")
+	if len(l) != 13 {
+		return "", fmt.Errorf("unexpected form of resource path: %q", providerID)
+	}
+	vmssName := l[10]
+	idx := l[12]
+	return fmt.Sprintf("%s_%s", vmssName, idx), nil
 }

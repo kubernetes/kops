@@ -92,6 +92,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	case kops.CloudProviderALI:
 		kcm.CloudProvider = "alicloud"
 
+	case kops.CloudProviderAzure:
+		kcm.CloudProvider = "azure"
+
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}

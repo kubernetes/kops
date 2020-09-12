@@ -94,5 +94,11 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if cloudProvider == kops.CloudProviderAzure {
+		if config.HostnameOverride == "" {
+			config.HostnameOverride = "@azure"
+		}
+	}
+
 	return nil
 }

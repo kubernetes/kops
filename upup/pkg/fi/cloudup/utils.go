@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -139,6 +140,27 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloud = aliCloud
+		}
+
+	case kops.CloudProviderAzure:
+		{
+			for _, subnet := range cluster.Spec.Subnets {
+				if subnet.Region != "" {
+					region = subnet.Region
+				}
+			}
+			if region == "" {
+				return nil, fmt.Errorf("on Azure, subnets must include Regions")
+			}
+
+			cloudTags := map[string]string{azure.TagClusterName: cluster.ObjectMeta.Name}
+
+			azureCloud, err := azure.NewAzureCloud(cluster.Spec.CloudConfig.Azure.SubscriptionID, region, cloudTags)
+			if err != nil {
+				return nil, err
+			}
+
+			cloud = azureCloud
 		}
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
