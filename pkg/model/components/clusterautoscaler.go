@@ -77,6 +77,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.SkipNodesWithSystemPods == nil {
 		cas.SkipNodesWithSystemPods = fi.Bool(true)
 	}
+	if cas.BalanceSimilarNodeGroups == nil {
+		cas.BalanceSimilarNodeGroups = fi.Bool(false)
+	}
 
 	return nil
 }
