@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -32,6 +33,36 @@ const (
 	// VM UUID is set by cloud-init
 	VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
 )
+
+// azureCloudConfig is the configuration passed to Cloud Provider Azure.
+// The specification is described in https://kubernetes-sigs.github.io/cloud-provider-azure/install/configs/.
+type azureCloudConfig struct {
+	// SubscriptionID is the ID of the Azure Subscription that the cluster is deployed in.
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	// TenantID is the ID of the tenant that the cluster is deployed in.
+	TenantID string `json:"tenantId"`
+	// CloudConfigType is the cloud configure type for Azure cloud provider. Supported values are file, secret and merge.
+	CloudConfigType string `json:"cloudConfigType,omitempty"`
+	// VMType is the type of azure nodes.
+	VMType string `json:"vmType,omitempty" yaml:"vmType,omitempty"`
+	// ResourceGroup is the name of the resource group that the cluster is deployed in.
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+	// Location is the location of the resource group that the cluster is deployed in.
+	Location string `json:"location,omitempty"`
+	// RouteTableName is the name of the route table attached to the subnet that the cluster is deployed in.
+	RouteTableName string `json:"routeTableName,omitempty"`
+	// VnetName is the name of the virtual network that the cluster is deployed in.
+	VnetName string `json:"vnetName"`
+
+	// UseInstanceMetadata specifies where instance metadata service is used where possible.
+	UseInstanceMetadata bool `json:"useInstanceMetadata,omitempty"`
+	// UseManagedIdentityExtension specifies where managed service
+	// identity is used for the virtual machine to access Azure
+	// ARM APIs.
+	UseManagedIdentityExtension bool `json:"useManagedIdentityExtension,omitempty"`
+	// DisableAvailabilitySetNodes disables VMAS nodes support.
+	DisableAvailabilitySetNodes bool `json:"disableAvailabilitySetNodes,omitempty"`
+}
 
 // CloudConfigBuilder creates the cloud configuration file
 type CloudConfigBuilder struct {
@@ -51,6 +82,8 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		cloudConfig = &kops.CloudConfiguration{}
 	}
 
+	var config string
+	requireGlobal := true
 	switch cloudProvider {
 	case "gce":
 		if cloudConfig.NodeTags != nil {
@@ -135,9 +168,50 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 				fmt.Sprintf("ignore-volume-az=%t", fi.BoolValue(bs.IgnoreAZ)),
 				"")
 		}
+	case "azure":
+		requireGlobal = false
+
+		var region string
+		for _, subnet := range b.Cluster.Spec.Subnets {
+			if subnet.Region != "" {
+				region = subnet.Region
+				break
+			}
+		}
+		if region == "" {
+			return fmt.Errorf("on Azure, subnets must include Regions")
+		}
+
+		vnetName := b.Cluster.Spec.NetworkID
+		if vnetName == "" {
+			vnetName = b.Cluster.Name
+		}
+
+		az := b.Cluster.Spec.CloudConfig.Azure
+		c := &azureCloudConfig{
+			CloudConfigType:             "file",
+			SubscriptionID:              az.SubscriptionID,
+			TenantID:                    az.TenantID,
+			Location:                    region,
+			VMType:                      "vmss",
+			ResourceGroup:               b.Cluster.AzureResourceGroupName(),
+			RouteTableName:              az.RouteTableName,
+			VnetName:                    vnetName,
+			UseInstanceMetadata:         true,
+			UseManagedIdentityExtension: true,
+			// Disable availability set nodes as we currently use VMSS.
+			DisableAvailabilitySetNodes: true,
+		}
+		data, err := json.Marshal(c)
+		if err != nil {
+			return fmt.Errorf("error marshalling azure config: %s", err)
+		}
+		config = string(data)
 	}
 
-	config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+	if requireGlobal {
+		config = "[global]\n" + strings.Join(lines, "\n") + "\n"
+	}
 
 	t := &nodetasks.File{
 		Path:     CloudConfigFilePath,
