@@ -1,3 +1,4 @@
+{{ with .ClusterAutoscaler }}
 # Sourced from https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws/examples
 ---
 apiVersion: v1
@@ -141,7 +142,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       containers:
-        - image: {{ .ClusterAutoscaler.Image }}
+        - image: {{ .Image }}
           name: cluster-autoscaler
           resources:
             limits:
@@ -152,14 +153,17 @@ spec:
               memory: 300Mi
           command:
             - ./cluster-autoscaler
-            - --v=2
-            - --stderrthreshold=info
-            - --cloud-provider={{ .CloudProvider }}
-            - --skip-nodes-with-local-storage={{ .ClusterAutoscaler.SkipNodesWithLocalStorage }}
-            - --expander={{ .ClusterAutoscaler.Expander }}
+            - --balance-similar-node-groups={{ .BalanceSimilarNodeGroups }}
+            - --cloud-provider={{ $.CloudProvider }}
+            - --expander={{ .Expander }}
             {{ range $name, $spec := GetNodeInstanceGroups }}
             - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}
             {{ end }}
+            - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
+            - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}
+            - --skip-nodes-with-system-pods={{ .SkipNodesWithSystemPods }}
+            - --stderrthreshold=info
+            - --v=2
           ports:
           - containerPort: 8085
             protocol: TCP
@@ -172,3 +176,4 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
+{{ end }}
