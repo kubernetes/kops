@@ -77,7 +77,7 @@ func (b *NodeAuthorizationBuilder) Build(c *fi.ModelBuilderContext) error {
 		man := &systemd.Manifest{}
 		man.Set("Unit", "Description", "Node Authorization Client")
 		man.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
-		man.Set("Unit", "Before", "kubelet.service")
+		man.Set("Unit", "Before", kubeletService)
 		switch b.Cluster.Spec.ContainerRuntime {
 		case "docker":
 			man.Set("Unit", "After", "docker.service")

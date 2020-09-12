@@ -33,11 +33,6 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-const (
-	containerdService = "containerd.service"
-	dockerService     = "docker.service"
-)
-
 // LoadImageTask is responsible for downloading a docker image
 type LoadImageTask struct {
 	Name    string
