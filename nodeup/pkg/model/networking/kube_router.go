@@ -51,10 +51,11 @@ func (b *KuberouterBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/var/lib/kube-router/kubeconfig",
-		Contents: kubeconfig,
-		Type:     nodetasks.FileType_File,
-		Mode:     fi.String("0400"),
+		Path:           "/var/lib/kube-router/kubeconfig",
+		Contents:       kubeconfig,
+		Type:           nodetasks.FileType_File,
+		Mode:           fi.String("0400"),
+		BeforeServices: []string{"kubelet.service"},
 	})
 
 	return nil
