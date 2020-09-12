@@ -206,7 +206,7 @@ resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
 
 resource "aws_iam_openid_connect_provider" "minimal-example-com" {
   client_id_list  = ["amazonaws.com"]
-  thumbprint_list = ["d89b37ccc0b574f3e40051ea08a7b60a9db11924"]
+  thumbprint_list = ["a8de31f85544b9e73aeb26ded19330e0e996fb79"]
   url             = "https://api.minimal.example.com"
 }
 
