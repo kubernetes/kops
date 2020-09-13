@@ -21,7 +21,8 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/testutils"
+
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
@@ -33,59 +34,10 @@ import (
 func buildMinimalCluster() *kopsapi.Cluster {
 	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
 
-	c := &kopsapi.Cluster{}
-	c.ObjectMeta.Name = "testcluster.test.com"
-	c.Spec.KubernetesVersion = "1.14.6"
-	c.Spec.Subnets = []kopsapi.ClusterSubnetSpec{
-		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
-		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24"},
-	}
-
-	c.Spec.IAM = &kopsapi.IAMSpec{}
-	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
-	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
-
-	// Default to public topology
-	c.Spec.Topology = &kopsapi.TopologySpec{
-		Masters: kopsapi.TopologyPublic,
-		Nodes:   kopsapi.TopologyPublic,
-	}
-	c.Spec.NetworkCIDR = "172.20.0.0/16"
-	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
-	c.Spec.CloudProvider = "aws"
-
-	c.Spec.ConfigBase = "s3://unittest-bucket/"
-
-	// Required to stop a call to cloud provider
-	// TODO: Mock cloudprovider
-	c.Spec.DNSZone = "test.com"
-
-	c.Spec.Networking = &kopsapi.NetworkingSpec{}
+	c := testutils.BuildMinimalCluster("testcluster.test.com")
 
 	return c
 }
-
-func addEtcdClusters(c *kopsapi.Cluster) {
-	subnetNames := sets.NewString()
-	for _, z := range c.Spec.Subnets {
-		subnetNames.Insert(z.Name)
-	}
-	etcdZones := subnetNames.List()
-
-	for _, etcdCluster := range EtcdClusters {
-		etcd := kopsapi.EtcdClusterSpec{}
-		etcd.Name = etcdCluster
-		for _, zone := range etcdZones {
-			m := kopsapi.EtcdMemberSpec{}
-			m.Name = zone
-			m.InstanceGroup = fi.String(zone)
-			etcd.Members = append(etcd.Members, m)
-		}
-		c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
-	}
-}
-
 func TestPopulateCluster_Default_NoError(t *testing.T) {
 	c := buildMinimalCluster()
 
@@ -93,8 +45,6 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
-
-	addEtcdClusters(c)
 
 	_, err = mockedPopulateClusterSpec(c)
 	if err != nil {
@@ -129,8 +79,6 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	addEtcdClusters(c)
-
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
@@ -164,8 +112,6 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	addEtcdClusters(c)
-
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
@@ -181,8 +127,6 @@ func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
-
-	addEtcdClusters(c)
 
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {
@@ -250,8 +194,6 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	addEtcdClusters(c)
-
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
@@ -269,8 +211,6 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
-
-	addEtcdClusters(c)
 
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {
@@ -292,8 +232,6 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
-
-	addEtcdClusters(c)
 
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {
@@ -364,7 +302,6 @@ func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	// We can't have a bastion with public masters / nodes
 	c := buildMinimalCluster()
-	addEtcdClusters(c)
 	c.Spec.Topology.Masters = kopsapi.TopologyPublic
 	c.Spec.Topology.Nodes = kopsapi.TopologyPublic
 	c.Spec.Topology.Bastion = &kopsapi.BastionSpec{}
@@ -373,7 +310,6 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 
 func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T) {
 	c := buildMinimalCluster()
-	addEtcdClusters(c)
 
 	c.Spec.Topology.Masters = kopsapi.TopologyPrivate
 	c.Spec.Topology.Nodes = kopsapi.TopologyPrivate
@@ -414,8 +350,6 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
-
-	addEtcdClusters(c)
 
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {
@@ -481,8 +415,6 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
-
-	addEtcdClusters(c)
 
 	full, err := mockedPopulateClusterSpec(c)
 	if err != nil {

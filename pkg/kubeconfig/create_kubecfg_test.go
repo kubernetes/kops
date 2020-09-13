@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/kops/pkg/testutils"
+
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
@@ -68,38 +70,12 @@ func (f fakeKeyStore) MirrorTo(basedir vfs.Path) error {
 	return f.MirrorToFn(basedir)
 }
 
-// build a dummy minimal cluster
+// build a generic minimal cluster
 func buildMinimalCluster(clusterName string, masterPublicName string) *kops.Cluster {
-	c := &kops.Cluster{}
-	c.ObjectMeta.Name = clusterName
-	c.Spec.KubernetesVersion = "1.14.6"
-	c.Spec.Subnets = []kops.ClusterSubnetSpec{
-		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePrivate},
-	}
-
-	c.Spec.MasterPublicName = masterPublicName
-	c.Spec.MasterInternalName = fmt.Sprintf("internal.%v", masterPublicName)
-	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
-	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
-
-	// Default to public topology
-	c.Spec.Topology = &kops.TopologySpec{
-		Masters: kops.TopologyPublic,
-		Nodes:   kops.TopologyPublic,
-		DNS: &kops.DNSSpec{
-			Type: kops.DNSTypePublic,
-		},
-	}
-
-	c.Spec.NetworkCIDR = "172.20.0.0/16"
-	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
-	c.Spec.CloudProvider = "aws"
-
-	c.Spec.ConfigBase = "s3://unittest-bucket/"
-
-	c.Spec.DNSZone = "test.com"
-
-	return c
+	cluster := testutils.BuildMinimalCluster(clusterName)
+	cluster.Spec.MasterPublicName = masterPublicName
+	cluster.Spec.MasterInternalName = fmt.Sprintf("internal.%v", masterPublicName)
+	return cluster
 }
 
 // create a fake certificate
