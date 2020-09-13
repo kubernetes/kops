@@ -97,7 +97,7 @@ func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 		}
 	}
 
-	err = cloudup.PerformAssignments(cluster)
+	err = cloudup.PerformAssignments(cluster, awsCloud)
 	if err != nil {
 		return fmt.Errorf("error populating cluster defaults: %v", err)
 	}

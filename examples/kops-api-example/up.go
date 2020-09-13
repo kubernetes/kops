@@ -65,11 +65,16 @@ func up(ctx context.Context) error {
 		cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcdCluster)
 	}
 
-	if err := cloudup.PerformAssignments(cluster); err != nil {
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
 		return err
 	}
 
-	_, err := clientset.CreateCluster(ctx, cluster)
+	if err := cloudup.PerformAssignments(cluster, cloud); err != nil {
+		return err
+	}
+
+	_, err = clientset.CreateCluster(ctx, cluster)
 	if err != nil {
 		return err
 	}

@@ -32,7 +32,12 @@ const MockAWSRegion = "us-mock-1"
 func buildDefaultCluster(t *testing.T) *api.Cluster {
 	c := buildMinimalCluster()
 
-	err := PerformAssignments(c)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
