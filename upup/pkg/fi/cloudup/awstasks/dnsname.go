@@ -39,7 +39,16 @@ type DNSName struct {
 	Zone         *DNSZone
 	ResourceType *string
 
-	TargetLoadBalancer *LoadBalancer
+	TargetLoadBalancer DNSTarget
+}
+
+type DNSTarget interface {
+	fi.Task
+	getDNSName() *string
+	getHostedZoneId() *string
+	CloudformationAttrDNSName() *cloudformation.Literal
+	CloudformationAttrCanonicalHostedZoneNameID() *cloudformation.Literal
+	TerraformLink(...string) *terraform.Literal
 }
 
 func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
@@ -157,9 +166,9 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 
 	if e.TargetLoadBalancer != nil {
 		rrs.AliasTarget = &route53.AliasTarget{
-			DNSName:              e.TargetLoadBalancer.DNSName,
+			DNSName:              e.TargetLoadBalancer.getDNSName(),
 			EvaluateTargetHealth: aws.Bool(false),
-			HostedZoneId:         e.TargetLoadBalancer.HostedZoneId,
+			HostedZoneId:         e.TargetLoadBalancer.getHostedZoneId(),
 		}
 	}
 
