@@ -164,7 +164,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			klog.V(8).Infof("creating certificate new Subject")
 		} else if changes.Type != "" {
 			createCertificate = true
-			klog.V(8).Infof("creating certificate new Type")
+			klog.Infof("creating certificate %q as Type has changed (actual=%v, expected=%v)", name, a.Type, e.Type)
 		} else if changes.LegacyFormat {
 			changeStoredFormat = true
 		} else {
@@ -220,6 +220,10 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		err = c.Keystore.StoreKeypair(name, cert, privateKey)
 		if err != nil {
 			return err
+		}
+
+		if err := e.setResources(cert); err != nil {
+			return fmt.Errorf("error setting resources: %v", err)
 		}
 
 		// Make double-sure it round-trips
