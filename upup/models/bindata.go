@@ -856,7 +856,8 @@ func cloudupResourcesAddonsAuthenticationKopeIoK8s18Yaml() (*asset, error) {
 	return a, nil
 }
 
-var _cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate = []byte(`# Sourced from https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws/examples
+var _cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate = []byte(`{{ with .ClusterAutoscaler }}
+# Sourced from https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws/examples
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -999,7 +1000,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
       containers:
-        - image: {{ .ClusterAutoscaler.Image }}
+        - image: {{ .Image }}
           name: cluster-autoscaler
           resources:
             limits:
@@ -1010,14 +1011,17 @@ spec:
               memory: 300Mi
           command:
             - ./cluster-autoscaler
-            - --v=2
-            - --stderrthreshold=info
-            - --cloud-provider={{ .CloudProvider }}
-            - --skip-nodes-with-local-storage={{ .ClusterAutoscaler.SkipNodesWithLocalStorage }}
-            - --expander={{ .ClusterAutoscaler.Expander }}
+            - --balance-similar-node-groups={{ .BalanceSimilarNodeGroups }}
+            - --cloud-provider={{ $.CloudProvider }}
+            - --expander={{ .Expander }}
             {{ range $name, $spec := GetNodeInstanceGroups }}
             - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}
             {{ end }}
+            - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
+            - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}
+            - --skip-nodes-with-system-pods={{ .SkipNodesWithSystemPods }}
+            - --stderrthreshold=info
+            - --v=2
           ports:
           - containerPort: 8085
             protocol: TCP
@@ -1029,7 +1033,8 @@ spec:
               scheme: HTTP
             periodSeconds: 10
             successThreshold: 1
-            timeoutSeconds: 1`)
+            timeoutSeconds: 1
+{{ end }}`)
 
 func cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplateBytes() ([]byte, error) {
 	return _cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate, nil
