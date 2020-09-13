@@ -296,8 +296,13 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 	nodeupModelContext.KeyStore = keystore
 
 	// Populate the cluster
+	cloud, err := cloudup.BuildCloud(nodeupModelContext.Cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
 	{
-		err := cloudup.PerformAssignments(nodeupModelContext.Cluster)
+		err := cloudup.PerformAssignments(nodeupModelContext.Cluster, cloud)
 		if err != nil {
 			t.Fatalf("error from PerformAssignments: %v", err)
 		}

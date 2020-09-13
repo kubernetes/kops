@@ -88,8 +88,12 @@ func addEtcdClusters(c *kopsapi.Cluster) {
 
 func TestPopulateCluster_Default_NoError(t *testing.T) {
 	c := buildMinimalCluster()
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
 
-	err := PerformAssignments(c)
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -123,8 +127,12 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		RegistryMirrors:    []string{"https://registry.example.com"},
 		LogOpt:             []string{"env=FOO"},
 	}
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
 
-	err := PerformAssignments(c)
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -159,7 +167,12 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 
 func TestPopulateCluster_StorageDefault(t *testing.T) {
 	c := buildMinimalCluster()
-	err := PerformAssignments(c)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -177,7 +190,12 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 }
 
 func build(c *kopsapi.Cluster) (*kopsapi.Cluster, error) {
-	err := PerformAssignments(c)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		return nil, fmt.Errorf("error from BuildCloud: %v", err)
+	}
+
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
@@ -245,7 +263,12 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27"},
 	}
 
-	err := PerformAssignments(c)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -264,8 +287,12 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.IsolateMasters = fi.Bool(true)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
 
-	err := PerformAssignments(c)
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -288,7 +315,12 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	c := buildMinimalCluster()
 	// default: c.Spec.IsolateMasters = fi.Bool(false)
 
-	err := PerformAssignments(c)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -410,7 +442,12 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "1.15.0"
 
-	err := PerformAssignments(c)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -477,7 +514,12 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "v1.9.0"
 
-	err := PerformAssignments(c)
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	err = PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
