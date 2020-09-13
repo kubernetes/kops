@@ -73,6 +73,10 @@ spec:
                         items:
                           type: string
                         type: array
+                      class:
+                        description: 'Class determines the type of API Loadbalancer.
+                          Valid values:   ''network'' use aws nlb or ''classic'' use aws elb (default)'
+                        type: string
                       crossZoneLoadBalancing:
                         description: CrossZoneLoadBalancing allows you to enable the cross zone load balancing
                         type: boolean
