@@ -70,6 +70,10 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 
 	}
 
+	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Class == "" {
+		obj.API.LoadBalancer.Class = LoadBalancerClassClassic
+	}
+
 	if obj.Authorization == nil {
 		obj.Authorization = &AuthorizationSpec{}
 	}
