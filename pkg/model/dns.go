@@ -105,7 +105,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
 				ResourceType:       s("A"),
-				TargetLoadBalancer: b.LinkToELB("api"),
+				TargetLoadBalancer: awstasks.DNSTarget(b.LinkToELB("api")),
 			}
 			c.AddTask(apiDnsName)
 		}
