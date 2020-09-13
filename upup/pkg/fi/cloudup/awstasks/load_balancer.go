@@ -36,6 +36,8 @@ import (
 
 // LoadBalancer manages an ELB.  We find the existing ELB using the Name tag.
 
+var _ DNSTarget = &LoadBalancer{}
+
 // +kops:fitask
 type LoadBalancer struct {
 	// We use the Name tag to find the existing ELB, because we are (more or less) unrestricted when
@@ -280,6 +282,14 @@ func describeLoadBalancerTags(cloud awsup.AWSCloud, loadBalancerNames []string) 
 		tagMap[aws.StringValue(tagset.LoadBalancerName)] = tagset.Tags
 	}
 	return tagMap, nil
+}
+
+func (e *LoadBalancer) getDNSName() *string {
+	return e.DNSName
+}
+
+func (e *LoadBalancer) getHostedZoneId() *string {
+	return e.HostedZoneId
 }
 
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
