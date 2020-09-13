@@ -160,20 +160,20 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 		return err
 	}
 
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
 	// We need the full cluster spec to perform deep validation
 	// Note that we don't write it back though
-	err = cloudup.PerformAssignments(cluster)
+	err = cloudup.PerformAssignments(cluster, cloud)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
 	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
-	if err != nil {
-		return err
-	}
-
-	cloud, err := cloudup.BuildCloud(fullCluster)
 	if err != nil {
 		return err
 	}
