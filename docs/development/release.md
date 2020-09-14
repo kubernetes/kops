@@ -126,6 +126,53 @@ Use [shipbot](https://github.com/kopeio/shipbot) to upload the release:
 make release-github
 ```
 
+
+## Upload to new k8s artifacts locations (k8s.gcr.io / artifacts.k8s.io)
+
+Assuming that you have `https://github.com/kubernetes/k8s.io` checked out at ~/k8s/src/k8s.io/k8s.io
+
+Make sure `VERSION` is set to the current version:
+```
+VERSION=$(tools/get_workspace_status.sh | grep KOPS_VERSION | awk '{print $2}')
+echo ${VERSION}
+```
+
+```
+gsutil rsync -r s3://kubeupv2/kops/${VERSION}/ gs://k8s-staging-kops/kops/releases/${VERSION}/
+
+cd ~/k8s/src/k8s.io/k8s.io
+
+mkdir -p ./k8s-staging-kops/kops/releases/${VERSION}/
+
+gsutil rsync -r gs://k8s-staging-kops/kops/releases/${VERSION}/ ./k8s-staging-kops/kops/releases/${VERSION}/
+
+promobot-generate-manifest --src ~/k8s/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/ --prefix ${VERSION}  > ~/k8s/src/k8s.io/k8s.io/artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
+```
+
+```
+crane cp kope/kube-apiserver-healthcheck:${VERSION} gcr.io/k8s-staging-kops/kube-apiserver-healthcheck:${VERSION}
+crane cp kope/dns-controller:${VERSION} gcr.io/k8s-staging-kops/dns-controller:${VERSION}
+crane cp kope/kops-controller:${VERSION} gcr.io/k8s-staging-kops/kops-controller:${VERSION}
+
+cd ~/k8s/src/k8s.io/k8s.io/k8s.gcr.io/images/k8s-staging-kops
+echo "" >> images.yaml
+echo "# ${VERSION}" >> images.yaml
+k8s-container-image-promoter --snapshot gcr.io/k8s-staging-kops --snapshot-tag ${VERSION} >> images.yaml
+```
+
+```
+# Send PR
+cd ~/k8s/src/k8s.io/k8s.io
+git add k8s.gcr.io/images/k8s-staging-kops/images.yaml
+git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
+git commit -m "Promote artifacts for kops ${VERSION}"
+git push ${USER}
+hub pull-request
+```
+
+You will need to follow the manual binary promoter process from [the new release process](../release-process.md) until that step is automated.
+
+
 ## Compile release notes
 
 e.g.
