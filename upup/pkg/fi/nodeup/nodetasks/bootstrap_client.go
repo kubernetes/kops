@@ -59,7 +59,14 @@ var _ fi.HasName = &BootstrapClient{}
 var _ fi.HasDependencies = &BootstrapClient{}
 
 func (b *BootstrapClient) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return nil
+	// BootstrapClient depends on the protokube service to ensure gossip DNS
+	var deps []fi.Task
+	for _, v := range tasks {
+		if svc, ok := v.(*Service); ok && svc.Name == protokubeService {
+			deps = append(deps, v)
+		}
+	}
+	return deps
 }
 
 func (b *BootstrapClient) GetName() *string {
