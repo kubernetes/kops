@@ -41,7 +41,8 @@ const (
 )
 
 type File struct {
-	AfterFiles      []string    `json:"afterfiles,omitempty"`
+	AfterFiles      []string    `json:"afterFiles,omitempty"`
+	BeforeServices  []string    `json:"beforeServices,omitempty"`
 	Contents        fi.Resource `json:"contents,omitempty"`
 	Group           *string     `json:"group,omitempty"`
 	IfNotExists     bool        `json:"ifNotExists,omitempty"`
@@ -60,6 +61,7 @@ var _ fi.HasName = &File{}
 // GetDependencies implements HasDependencies::GetDependencies
 func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
+
 	if e.Owner != nil {
 		ownerTask := tasks["UserTask/"+*e.Owner]
 		if ownerTask == nil {

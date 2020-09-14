@@ -43,6 +43,11 @@ const (
 	flatcarSystemdSystemPath = "/etc/systemd/system"
 
 	containerosSystemdSystemPath = "/etc/systemd/system"
+
+	containerdService = "containerd.service"
+	dockerService     = "docker.service"
+	kubeletService    = "kubelet.service"
+	protokubeService  = "protokube.service"
 )
 
 type Service struct {
@@ -67,11 +72,21 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		// LoadImageTask or IssueCert. If there are any LoadImageTasks (e.g. we're
 		// launching a custom Kubernetes build), they all depend on
 		// the "docker.service" Service task.
-		switch v.(type) {
-		case *File, *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive:
+		switch v := v.(type) {
+		case *Package, *UpdatePackages, *UserTask, *GroupTask, *Chattr, *BindMount, *Archive:
 			deps = append(deps, v)
-		case *Service, *LoadImageTask, *IssueCert:
+		case *Service, *LoadImageTask, *IssueCert, *BootstrapClient, *KubeConfig:
 			// ignore
+		case *File:
+			if len(v.BeforeServices) > 0 {
+				for _, s := range v.BeforeServices {
+					if p.Name == s {
+						deps = append(deps, v)
+					}
+				}
+			} else {
+				deps = append(deps, v)
+			}
 		default:
 			klog.Warningf("Unhandled type %T in Service::GetDependencies: %v", v, v)
 			deps = append(deps, v)
