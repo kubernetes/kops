@@ -42,6 +42,9 @@ import (
 const (
 	// containerizedMounterHome is the path where we install the containerized mounter (on ContainerOS)
 	containerizedMounterHome = "/home/kubernetes/containerized_mounter"
+
+	// kubeletService is the name of the kubelet service
+	kubeletService = "kubelet.service"
 )
 
 // KubeletBuilder installs kubelet
@@ -118,10 +121,11 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			c.AddTask(&nodetasks.File{
-				Path:     b.KubeletKubeConfig(),
-				Contents: kubeconfig,
-				Type:     nodetasks.FileType_File,
-				Mode:     s("0400"),
+				Path:           b.KubeletKubeConfig(),
+				Contents:       kubeconfig,
+				Type:           nodetasks.FileType_File,
+				Mode:           s("0400"),
+				BeforeServices: []string{kubeletService},
 			})
 		}
 	}
@@ -272,7 +276,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	klog.V(8).Infof("Built service manifest %q\n%s", "kubelet", manifestString)
 
 	service := &nodetasks.Service{
-		Name:       "kubelet.service",
+		Name:       kubeletService,
 		Definition: s(manifestString),
 	}
 

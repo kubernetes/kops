@@ -72,6 +72,8 @@ contents: |
 path: /etc/kubernetes/manifests/kube-proxy.manifest
 type: file
 ---
+beforeServices:
+- kubelet.service
 contents:
   task:
     CA:

@@ -93,10 +93,11 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kube-proxy/kubeconfig",
-			Contents: kubeconfig,
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0400"),
+			Path:           "/var/lib/kube-proxy/kubeconfig",
+			Contents:       kubeconfig,
+			Type:           nodetasks.FileType_File,
+			Mode:           s("0400"),
+			BeforeServices: []string{kubeletService},
 		})
 	}
 
