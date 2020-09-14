@@ -276,7 +276,7 @@ wget https://artifacts.k8s.io/binaries/kops/${VERSION}/linux/amd64/kops
 mv kops ko
 chmod +x ko
 
-ko version
+./ko version
 ```
 
 Also run through a kops create cluster flow, ideally verifying that
