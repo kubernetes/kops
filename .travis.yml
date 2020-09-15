@@ -4,7 +4,7 @@ arch:
   - arm64
 os: linux
 dist: focal
-go: 1.15.1
+go: 1.15.2
 
 go_import_path: k8s.io/kops
 
