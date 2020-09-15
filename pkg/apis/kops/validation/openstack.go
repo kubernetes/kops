@@ -34,5 +34,8 @@ func openstackValidateCluster(c *kops.Cluster) (errList field.ErrorList) {
 			errList = append(errList, field.Forbidden(field.NewPath("spec", "topology", "masters"), "Public topology requires an external network"))
 		}
 	}
+	if c.Spec.ExternalCloudControllerManager != nil && !c.IsKubernetesGTE("1.13") {
+		errList = append(errList, field.Forbidden(field.NewPath("spec", "cloudControllerManager"), "External cloud controller manager for OpenStack is only supported as of kubernetes 1.13"))
+	}
 	return errList
 }
