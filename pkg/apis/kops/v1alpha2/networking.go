@@ -100,6 +100,10 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
+	// ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or
+	// appends to the bottom. Leaving the default option is safest to prevent accidentally
+	// breaking connectivity. Default: 'insert' (other options: 'append')
+	ChainInsertMode string `json:"chainInsertMode,omitempty"`
 	// CPURequest CPU request of Calico container. Default: 100m
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// CrossSubnet enables Calico's cross-subnet mode when set to true
