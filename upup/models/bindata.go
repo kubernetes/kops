@@ -52,7 +52,6 @@
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template
-// upup/models/cloudup/resources/addons/openstack.addons.k8s.io/BUILD.bazel
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template
 // upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.12.yaml.template
@@ -18707,28 +18706,6 @@ func cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate() (*asset, 
 	return a, nil
 }
 
-var _cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel = []byte(`filegroup(
-    name = "exported_testdata",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)
-`)
-
-func cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazelBytes() ([]byte, error) {
-	return _cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel, nil
-}
-
-func cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel() (*asset, error) {
-	bytes, err := cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazelBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "cloudup/resources/addons/openstack.addons.k8s.io/BUILD.bazel", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
 var _cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate = []byte(`---
 apiVersion: v1
 kind: ServiceAccount
@@ -20507,7 +20484,6 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s110YamlTemplate,
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template":                          cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate,
-	"cloudup/resources/addons/openstack.addons.k8s.io/BUILD.bazel":                                        cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel,
 	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate,
 	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template":                     cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s110YamlTemplate,
 	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.12.yaml.template":                     cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s112YamlTemplate,
@@ -20666,7 +20642,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate, map[string]*bintree{}},
 				}},
 				"openstack.addons.k8s.io": {nil, map[string]*bintree{
-					"BUILD.bazel":            {cloudupResourcesAddonsOpenstackAddonsK8sIoBuildBazel, map[string]*bintree{}},
 					"k8s-1.13.yaml.template": {cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate, map[string]*bintree{}},
 				}},
 				"podsecuritypolicy.addons.k8s.io": {nil, map[string]*bintree{
