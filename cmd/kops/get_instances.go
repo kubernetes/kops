@@ -110,7 +110,7 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 
 	nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		klog.V(2).Infof("error listing nodes: %v", err)
+		klog.Warningf("cannot list node names. Kubernetes API unavailable: %v", err)
 	}
 
 	igList, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
@@ -144,6 +144,7 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 }
 
 func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Writer) error {
+	fmt.Println("")
 	t := &tables.Table{}
 	t.AddColumn("ID", func(i *cloudinstances.CloudInstance) string {
 		return i.ID
@@ -151,7 +152,7 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 	t.AddColumn("NODE-NAME", func(i *cloudinstances.CloudInstance) string {
 		node := i.Node
 		if node == nil {
-			return "NotJoined"
+			return ""
 		} else {
 			return node.Name
 		}
@@ -171,7 +172,8 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 	t.AddColumn("MACHINE-TYPE", func(i *cloudinstances.CloudInstance) string {
 		return i.MachineType
 	})
-	return t.Render(instances, os.Stdout, "ID", "NODE-NAME", "STATUS", "ROLES", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE")
+	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "INTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
+	return t.Render(instances, os.Stdout, columns...)
 }
 
 func createK8sClient(cluster *kops.Cluster) (*kubernetes.Clientset, error) {
