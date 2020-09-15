@@ -17,14 +17,9 @@ limitations under the License.
 package cloudup
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
-	"text/template"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -208,67 +203,6 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			}
 			if !reflect.DeepEqual(actual, testCase.expectedArgv) {
 				t.Errorf("Argv differs: %+v instead of %+v", actual, testCase.expectedArgv)
-			}
-		})
-	}
-}
-
-func Test_executeTemplate(t *testing.T) {
-	tests := []struct {
-		desc                 string
-		cluster              *kops.Cluster
-		templateFilename     string
-		expectedManifestPath string
-	}{
-		{
-			desc: "test cloud controller template",
-			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
-				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					ClusterName: "k8s",
-					Image:       "docker.io/k8scloudprovider/openstack-cloud-controller-manager:1.13",
-				},
-			},
-			},
-			templateFilename:     "../../../models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template",
-			expectedManifestPath: "./tests/manifests/k8s-1.13.yaml",
-		},
-	}
-
-	for _, testCase := range tests {
-		t.Run(testCase.desc, func(t *testing.T) {
-			templateFileAbsolutePath, filePathError := filepath.Abs(testCase.templateFilename)
-			if filePathError != nil {
-				t.Fatalf("error getting path to template: %v", filePathError)
-			}
-
-			tpl := template.New(filepath.Base(templateFileAbsolutePath))
-
-			funcMap := make(template.FuncMap)
-			templateFunctions := TemplateFunctions{}
-			templateFunctions.Cluster = testCase.cluster
-			templateFunctions.AddTo(funcMap, nil)
-
-			tpl.Funcs(funcMap)
-
-			tpl.Option("missingkey=zero")
-			_, err := tpl.ParseFiles(templateFileAbsolutePath)
-			if err != nil {
-				t.Fatalf("error parsing template %q: %v", "template", err)
-			}
-			var buffer bytes.Buffer
-			err = tpl.Execute(&buffer, testCase.cluster.Spec)
-			if err != nil {
-				t.Fatalf("error executing template %q: %v", "template", err)
-			}
-			actualManifest := buffer.Bytes()
-			expectedFileAbsolutePath, _ := filepath.Abs(testCase.expectedManifestPath)
-			expectedManifest, _ := ioutil.ReadFile(expectedFileAbsolutePath)
-
-			actualString := strings.TrimSpace(string(actualManifest))
-			expectedString := strings.TrimSpace(string(expectedManifest))
-			if !reflect.DeepEqual(actualString, expectedString) {
-				t.Fatalf("Manifests differs: %+v instead of %+v", actualString, expectedString)
 			}
 		})
 	}
