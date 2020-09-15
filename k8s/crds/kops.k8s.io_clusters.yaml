@@ -2116,6 +2116,9 @@ spec:
                   calico:
                     description: CalicoNetworkingSpec declares that we want Calico networking
                     properties:
+                      chainInsertMode:
+                        description: 'ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom. Leaving the default option is safest to prevent accidentally breaking connectivity. Default: ''insert'' (other options: ''append'')'
+                        type: string
                       cpuRequest:
                         anyOf:
                         - type: integer
