@@ -219,7 +219,7 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			opts.Description = fi.StringValue(e.Name)
 		}
 
-		// instance floatingips are also coming from same subnet than kubernetes API floatingip
+		// instance floatingips comes from the same subnet as the kubernetes API floatingip
 		lbSubnet, err := cloud.GetLBFloatingSubnet()
 		if err != nil {
 			return fmt.Errorf("Failed to find floatingip subnet: %v", err)
