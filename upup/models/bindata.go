@@ -19376,11 +19376,9 @@ subjects:
 - kind: User
   name: kubelet
   apiGroup: rbac.authorization.k8s.io
-{{- if UseBootstrapTokens }}
 - kind: Group
   name: system:nodes
   apiGroup: rbac.authorization.k8s.io
-{{- end }}
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
