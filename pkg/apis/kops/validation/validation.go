@@ -957,6 +957,11 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 		}
 	}
 
+	if v.ChainInsertMode != "" {
+		valid := []string{"insert", "append"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("chainInsertMode"), &v.ChainInsertMode, valid)...)
+	}
+
 	if v.IptablesBackend != "" {
 		valid := []string{"Auto", "Legacy", "NFT"}
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
