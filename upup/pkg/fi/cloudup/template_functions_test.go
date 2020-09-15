@@ -233,19 +233,6 @@ func Test_executeTemplate(t *testing.T) {
 			templateFilename:     "../../../models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template",
 			expectedManifestPath: "./tests/manifests/k8s-1.13.yaml",
 		},
-		{
-			desc: "test cloud controller template",
-			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: string(kops.CloudProviderOpenstack),
-				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					ClusterName: "k8s",
-					Image:       "docker.io/k8scloudprovider/openstack-cloud-controller-manager:1.13",
-				},
-			},
-			},
-			templateFilename:     "../../../models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.11.yaml.template",
-			expectedManifestPath: "./tests/manifests/k8s-1.11.yaml",
-		},
 	}
 
 	for _, testCase := range tests {
