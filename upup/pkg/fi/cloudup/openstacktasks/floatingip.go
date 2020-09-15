@@ -209,40 +209,32 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			return fmt.Errorf("Failed to find external network: %v", err)
 		}
 
-		if e.LB != nil {
-			//Layer 3
-
-			opts := l3floatingip.CreateOpts{
-				FloatingNetworkID: external.ID,
-				PortID:            fi.StringValue(e.LB.PortID),
-			}
-			lbSubnet, err := cloud.GetLBFloatingSubnet()
-			if err != nil {
-				return fmt.Errorf("Failed to find floatingip subnet: %v", err)
-			}
-			if lbSubnet != nil {
-				opts.SubnetID = lbSubnet.ID
-			}
-			fip, err := cloud.CreateL3FloatingIP(opts)
-			if err != nil {
-				return fmt.Errorf("Failed to create floating IP: %v", err)
-			}
-
-			e.ID = fi.String(fip.ID)
-
-		} else {
-
-			fip, err := cloud.CreateL3FloatingIP(l3floatingip.CreateOpts{
-				FloatingNetworkID: external.ID,
-				Description:       fi.StringValue(e.Name),
-			})
-			if err != nil {
-				return fmt.Errorf("failed to create floating IP: %v", err)
-			}
-			e.ID = fi.String(fip.ID)
-			e.IP = fi.String(fip.FloatingIP)
-
+		opts := l3floatingip.CreateOpts{
+			FloatingNetworkID: external.ID,
 		}
+
+		if e.LB != nil {
+			opts.PortID = fi.StringValue(e.LB.PortID)
+		} else {
+			opts.Description = fi.StringValue(e.Name)
+		}
+
+		// instance floatingips comes from the same subnet as the kubernetes API floatingip
+		lbSubnet, err := cloud.GetLBFloatingSubnet()
+		if err != nil {
+			return fmt.Errorf("Failed to find floatingip subnet: %v", err)
+		}
+		if lbSubnet != nil {
+			opts.SubnetID = lbSubnet.ID
+		}
+		fip, err := cloud.CreateL3FloatingIP(opts)
+		if err != nil {
+			return fmt.Errorf("Failed to create floating IP: %v", err)
+		}
+
+		e.ID = fi.String(fip.ID)
+		e.IP = fi.String(fip.FloatingIP)
+
 		return nil
 	}
 
