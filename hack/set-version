@@ -51,6 +51,7 @@ sed -i -e "s@DNS_CONTROLLER_TAG=${KOPS_RELEASE_VERSION}@DNS_CONTROLLER_TAG=${NEW
 sed -i -e "s@KOPS_CONTROLLER_TAG=${KOPS_RELEASE_VERSION}@KOPS_CONTROLLER_TAG=${NEW_RELEASE_VERSION}@g" Makefile
 sed -i -e "s@KUBE_APISERVER_HEALTHCHECK_TAG=${KOPS_RELEASE_VERSION}@KUBE_APISERVER_HEALTHCHECK_TAG=${NEW_RELEASE_VERSION}@g" Makefile
 sed -i -e "s@\"${KOPS_RELEASE_VERSION}\"@\"${NEW_RELEASE_VERSION}\"@g" upup/pkg/fi/cloudup/bootstrapchannelbuilder.go
+sed -i -e "s@${KOPS_RELEASE_VERSION}@${NEW_RELEASE_VERSION}@g" upup/pkg/fi/cloudup/urls_test.go
 
 git grep -l k8s.gcr.io/kops/dns-controller | xargs -I {} sed -i -e "s@dns-controller:${KOPS_RELEASE_VERSION}@dns-controller:${NEW_RELEASE_VERSION}@g" {}
 git grep -l "version..v${KOPS_RELEASE_VERSION}" upup/models/cloudup/resources/addons/dns-controller.addons.k8s.io/ | xargs -I {} sed -i -e "s@version: v${KOPS_RELEASE_VERSION}@version: v${NEW_RELEASE_VERSION}@g" {}
