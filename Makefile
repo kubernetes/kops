@@ -67,11 +67,14 @@ PROTOKUBE_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_PROTOKUBE_TAG 
 # We lock the versions of our controllers also
 # We need to keep in sync with:
 #   upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_DNS_CONTROLLER_TAG | awk '{print $$2}')
+DNS_CONTROLLER_TAG=1.19.0-alpha.4
+DNS_CONTROLLER_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_DNS_CONTROLLER_TAG | awk '{print $$2}')
 #   upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
-KOPS_CONTROLLER_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_CONTROLLER_TAG | awk '{print $$2}')
+KOPS_CONTROLLER_TAG=1.19.0-alpha.4
+KOPS_CONTROLLER_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_CONTROLLER_TAG | awk '{print $$2}')
 #   pkg/model/components/kubeapiserver/model.go
-KUBE_APISERVER_HEALTHCHECK_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KUBE_APISERVER_HEALTHCHECK_TAG | awk '{print $$2}')
+KUBE_APISERVER_HEALTHCHECK_TAG=1.19.0-alpha.4
+KUBE_APISERVER_HEALTHCHECK_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KUBE_APISERVER_HEALTHCHECK_TAG | awk '{print $$2}')
 
 
 # Go exports:
@@ -359,9 +362,9 @@ bazel-crossbuild-dns-controller:
 
 .PHONY: dns-controller-push
 dns-controller-push:
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image-plain
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image-amd64
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:push-image-arm64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image-plain
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:push-image-amd64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} DNS_CONTROLLER_TAG=${DNS_CONTROLLER_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:push-image-arm64
 
 # --------------------------------------------------
 # development targets
@@ -806,15 +809,15 @@ crds:
 
 .PHONY: kops-controller-push
 kops-controller-push:
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image-plain
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image-amd64
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:push-image-arm64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image-plain
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:push-image-amd64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:push-image-arm64
 
 #------------------------------------------------------
 # kube-apiserver-healthcheck
 
 .PHONY: kube-apiserver-healthcheck-push
 kube-apiserver-healthcheck-push:
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image-plain
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image-amd64
-	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:push-image-arm64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image-plain
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:push-image-amd64
+	DOCKER_REGISTRY=${DOCKER_REGISTRY} DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:push-image-arm64
