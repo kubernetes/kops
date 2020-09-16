@@ -29,8 +29,8 @@ go_rules_dependencies()
 go_download_sdk(
     name = "go_sdk",
     sdks = {
-        "darwin_amd64": ("go1.15.1.darwin-amd64.tar.gz", "b33341df847b4a48da40d957437c87642d221dde28c6f810b1ce26b74be2f661"),
-        "linux_amd64": ("go1.15.1.linux-amd64.tar.gz", "70ac0dbf60a8ee9236f337ed0daa7a4c3b98f6186d4497826f68e97c0c0413f6"),
+        "darwin_amd64": ("go1.15.2.darwin-amd64.tar.gz", "9bd39600d9fa1fa4a5ccce8761d249f7421cffe671376f791293c4138f3d7c62"),
+        "linux_amd64": ("go1.15.2.linux-amd64.tar.gz", "b49fda1ca29a1946d6bb2a5a6982cf07ccd2aba849289508ee0f9918f6bb4552"),
     },
 )
 
@@ -147,7 +147,7 @@ http_archive(
     sha256 = "1342f84d4324987f63307eb6a5aac2dff6d27967860a129f5cd40f8f9b6fd7dd",
     strip_prefix = "bazel-toolchains-2.2.0",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/2.2.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/releases/download/2.2.0/bazel-toolchains-2.2.0.tar.gz",
         "https://github.com/bazelbuild/bazel-toolchains/archive/2.2.0.tar.gz",
     ],
 )
