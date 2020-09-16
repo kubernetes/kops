@@ -166,7 +166,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 		}
 
 		// Create External Policy tasks
-		{
+		if !shared {
 			var externalPolicies []string
 
 			if b.Cluster.Spec.ExternalPolicies != nil {
@@ -187,7 +187,7 @@ func (b *IAMModelBuilder) buildIAMTasks(igRole kops.InstanceGroupRole, iamName s
 		}
 
 		// Generate additional policies if needed, and attach to existing role
-		{
+		if !shared {
 			additionalPolicy := ""
 			if b.Cluster.Spec.AdditionalPolicies != nil {
 				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
