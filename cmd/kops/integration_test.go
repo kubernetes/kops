@@ -71,18 +71,20 @@ type integrationTest struct {
 	sshKey                           bool
 	bastionUserData                  bool
 	ciliumEtcd                       bool
+	nodeupConfigNodes                bool
 	// nth is true if we should check for files created by nth queue processor add on
 	nth bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 	return &integrationTest{
-		clusterName:    clusterName,
-		srcDir:         srcDir,
-		version:        "v1alpha2",
-		zones:          1,
-		expectPolicies: true,
-		sshKey:         true,
+		clusterName:       clusterName,
+		srcDir:            srcDir,
+		version:           "v1alpha2",
+		zones:             1,
+		expectPolicies:    true,
+		sshKey:            true,
+		nodeupConfigNodes: true,
 	}
 }
 
@@ -103,6 +105,11 @@ func (i *integrationTest) withoutSSHKey() *integrationTest {
 
 func (i *integrationTest) withoutPolicies() *integrationTest {
 	i.expectPolicies = false
+	return i
+}
+
+func (i *integrationTest) withoutNodeupConfigNodes() *integrationTest {
+	i.nodeupConfigNodes = false
 	return i
 }
 
@@ -251,6 +258,18 @@ func TestCompress(t *testing.T) {
 	newIntegrationTest("compress.example.com", "compress").withoutSSHKey().
 		withAddons(dnsControllerAddon).
 		runTestTerraformAWS(t)
+}
+
+// TestBottlerocket runs the test with nodes using a bottlerocket OS
+func TestBottlerocket(t *testing.T) {
+	featureflag.ParseFlags("+Bottlerocket")
+	unsetFeaureFlag := func() {
+		featureflag.ParseFlags("-Bottlerocket")
+	}
+	defer unsetFeaureFlag()
+	newIntegrationTest("bottlerocket.example.com", "bottlerocket").
+		withoutNodeupConfigNodes().
+		withAddons("authentication.aws-k8s-1.12", "csr-approver.addons.k8s.io-k8s-1.23", awsEBSCSIAddon, dnsControllerAddon, ciliumAddon).runTestTerraformAWS(t)
 }
 
 // TestExternalPolicies tests external policies output
@@ -1022,7 +1041,6 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		"aws_s3_bucket_object_manifests-etcdmanager-events_content",
 		"aws_s3_bucket_object_manifests-etcdmanager-main_content",
 		"aws_s3_bucket_object_manifests-static-kube-apiserver-healthcheck_content",
-		"aws_s3_bucket_object_nodeupconfig-nodes_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-bootstrap_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-core.addons.k8s.io_content",
 		"aws_s3_bucket_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
@@ -1034,6 +1052,10 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		expectedFilenames = append(expectedFilenames, "aws_s3_bucket_object_"+i.clusterName+"-addons-kube-dns.addons.k8s.io-k8s-1.12_content")
 	} else {
 		expectedFilenames = append(expectedFilenames, "aws_s3_bucket_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content")
+	}
+
+	if i.nodeupConfigNodes {
+		expectedFilenames = append(expectedFilenames, "aws_s3_bucket_object_nodeupconfig-nodes_content")
 	}
 
 	if i.discovery {

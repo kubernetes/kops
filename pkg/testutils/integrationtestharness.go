@@ -207,6 +207,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 		Name:           aws.String("bottlerocket-aws-k8s-1.17-x86_64-v0.5.0-e0ddf1b"),
 		OwnerId:        aws.String("092701018921"),
 		RootDeviceName: aws.String("/dev/xvda"),
+		Architecture:   aws.String("x86_64"),
 	})
 
 	mockEC2.CreateVpcWithId(&ec2.CreateVpcInput{

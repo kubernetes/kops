@@ -1,0 +1,32 @@
+[settings]
+
+  [settings.host-containers]
+
+    [settings.host-containers.admin]
+      enabled = true
+
+  [settings.kubernetes]
+    allowed-unsafe-sysctls = ["kernel.msg*", "net.core.somaxconn"]
+    api-server = "https://api.internal.bottlerocket.example.com"
+    cluster-certificate = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJiakNDQVJpZ0F3SUJBZ0lNRnBBTnFCRDhOU0Q4MkFVU01BMEdDU3FHU0liM0RRRUJDd1VBTUJneEZqQVUKQmdOVkJBTVREV3QxWW1WeWJtVjBaWE10WTJFd0hoY05NakV3TnpBM01EY3dPREF3V2hjTk16RXdOekEzTURjdwpPREF3V2pBWU1SWXdGQVlEVlFRREV3MXJkV0psY201bGRHVnpMV05oTUZ3d0RRWUpLb1pJaHZjTkFRRUJCUUFEClN3QXdTQUpCQU5GSTN6cjBUazhrcnNXOHZ3amZNcHpKT2xXUTg2MTZ2RzNZUGEycUFnSTdWNG9Ld2ZWMHlJZzEKanQrSDZmNFAvd2tQQVBUUFRmUnA5SXk4b0hFRUZ3MENBd0VBQWFOQ01FQXdEZ1lEVlIwUEFRSC9CQVFEQWdFRwpNQThHQTFVZEV3RUIvd1FGTUFNQkFmOHdIUVlEVlIwT0JCWUVGTkczelZqVGNMbEp3RHNKNC9LOURWN0tvaFVBCk1BMEdDU3FHU0liM0RRRUJDd1VBQTBFQUI4ZDAzZlkydzdXS3BmTzI5cUkyOTVwdTJDNGNhOUFpVkdPcGdTYzgKdG1Rc3E2cmN4dDNUK3JiNTg5UFZ0ejBtdy9jS1R4T2s2Z0gyQ0NDK3lIZnkydz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJiakNDQVJpZ0F3SUJBZ0lNRnBBTnZtU2EwT0FsWW1YS01BMEdDU3FHU0liM0RRRUJDd1VBTUJneEZqQVUKQmdOVkJBTVREV3QxWW1WeWJtVjBaWE10WTJFd0hoY05NakV3TnpBM01EY3dPVE0yV2hjTk16RXdOekEzTURjdwpPVE0yV2pBWU1SWXdGQVlEVlFRREV3MXJkV0psY201bGRHVnpMV05oTUZ3d0RRWUpLb1pJaHZjTkFRRUJCUUFEClN3QXdTQUpCQU1GNkY0YVpkcGUwUlVweXlrYUJwV3daQ253YmZmaFlHT3crZnM2UmRMdVVxN1FDTm1KbS9FcTcKV1dPemlNWURpSTlTYmNscEQrNlFpSjBOM0VxcHBWVUNBd0VBQWFOQ01FQXdEZ1lEVlIwUEFRSC9CQVFEQWdFRwpNQThHQTFVZEV3RUIvd1FGTUFNQkFmOHdIUVlEVlIwT0JCWUVGTEltcDZBUmpQREFINm5oSStzY1dWdDNROWJuCk1BMEdDU3FHU0liM0RRRUJDd1VBQTBFQVZRVng1TVV0dUFJZWVQdVA5bzUxeHRwVDJTNkZ2Zmk4SjRJQ3hubEEKOUI3VUQydXNoY1ZGUHRhZW9MOUdmdThhWTRLSkJlcXFnNW9qbDRxbVJuVGhqdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+    cluster-name = "bottlerocket.example.com"
+    container-log-max-files = 3
+    container-log-max-size = "10Mi"
+    cpu-manager-policy = "static"
+    event-burst = 10
+    event-qps = 5
+    pod-infra-container-image = "k8s.gcr.io/pause:3.5"
+    registry-burst = 10
+    registry-qps = 5
+    topology-manager-policy = "best-effort"
+
+    [settings.kubernetes.kube-reserved]
+      "cpu" = "100m"
+      "memory" = "100Mi"
+
+    [settings.kubernetes.node-taints]
+      "dedicated" = "gpu:NoSchedule"
+
+    [settings.kubernetes.system-reserved]
+      "cpu" = "100m"
+      "memory" = "100Mi"
