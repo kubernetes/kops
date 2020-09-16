@@ -266,7 +266,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 		}
 
 		// Generate additional policies if needed, and attach to existing role
-		{
+		if !shared {
 			additionalPolicy := ""
 			if b.Cluster.Spec.AdditionalPolicies != nil {
 				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
