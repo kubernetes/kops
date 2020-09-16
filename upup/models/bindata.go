@@ -4550,7 +4550,9 @@ data:
   blacklist-conflicting-routes: "false"
   {{ end }}
   {{ end }}
-
+  {{ if ne .Ipam "eni" }}
+  enable-endpoint-routes: "{{- if .EnableEndpointRoutes -}}true{{- else -}}false{{- end -}}"
+  {{ end }}
   {{ if .Hubble.Enabled }}
   # Enable Hubble gRPC service.
   enable-hubble: "true"
@@ -5477,6 +5479,9 @@ data:
   k8s-require-ipv4-pod-cidr: "true"
   {{ end }}
   {{ end }}
+  {{ if ne .Ipam "eni" }}
+  enable-endpoint-routes: "{{- if .EnableEndpointRoutes -}}true{{- else -}}false{{- end -}}"
+  {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1
@@ -6273,6 +6278,9 @@ data:
   auto-create-cilium-node-resource: "true"
   blacklist-conflicting-routes: "false"
   {{ end }}
+  {{ end }}
+  {{ if ne .Ipam "eni" }}
+  enable-endpoint-routes: "{{- if .EnableEndpointRoutes -}}true{{- else -}}false{{- end -}}"
   {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---

@@ -427,6 +427,9 @@ type CiliumNetworkingSpec struct {
 	// AutoDirectNodeRoutes adds automatic L2 routing between nodes.
 	// Default: false
 	AutoDirectNodeRoutes bool `json:"autoDirectNodeRoutes,omitempty"`
+	// EnableEndpointRoutes use per endpoint routes instead of routing via cilium_host
+	// Default false
+	EnableEndpointRoutes bool `json:"enableEndpointRoutes,omitempty"`
 	// EnableNodePort replaces kube-proxy with Cilium's BPF implementation.
 	// Requires spec.kubeProxy.enabled be set to false.
 	// Default: false

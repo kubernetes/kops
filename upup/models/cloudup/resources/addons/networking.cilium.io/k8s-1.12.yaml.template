@@ -165,6 +165,9 @@ data:
   k8s-require-ipv4-pod-cidr: "true"
   {{ end }}
   {{ end }}
+  {{ if ne .Ipam "eni" }}
+  enable-endpoint-routes: "{{- if .EnableEndpointRoutes -}}true{{- else -}}false{{- end -}}"
+  {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1

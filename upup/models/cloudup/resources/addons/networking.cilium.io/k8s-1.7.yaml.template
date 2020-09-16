@@ -129,6 +129,9 @@ data:
   blacklist-conflicting-routes: "false"
   {{ end }}
   {{ end }}
+  {{ if ne .Ipam "eni" }}
+  enable-endpoint-routes: "{{- if .EnableEndpointRoutes -}}true{{- else -}}false{{- end -}}"
+  {{ end }}
 {{ end }} # With .Networking.Cilium end
 ---
 apiVersion: v1
