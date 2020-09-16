@@ -36,6 +36,7 @@ The following table provides the support status for various distros with regards
 | Distro | Experimental | Stable | Deprecated | Removed | 
 | ------------ | -----------: | -----: | ---------: | ------: |
 | [Amazon Linux 2](#amazon-linux-2) | 1.10 | 1.18 | - | - |
+| [Bottlerocket](#bottlerocket) | 1.20 | - | - | - |
 | [CentOS 7](#centos-7) | - | 1.5 | - | - |
 | [CentOS 8](#centos-8) | 1.15 | - | - | - |
 | [CoreOS](#coreos) | 1.6 | 1.9 | 1.17 | 1.18 |
@@ -65,6 +66,37 @@ aws ec2 describe-images --region us-east-1 --output table \
   --owners 137112412989 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
   --filters "Name=name,Values=amzn2-ami-hvm-2*-x86_64-gp2"
+```
+
+### Bottlerocket
+
+[Bottlerocket](https://github.com/bottlerocket-os/bottlerocket) is a container-native linux distribution created by AWS.
+
+Support for Bottlerocket is still experimental and requires a featureflag: `export KOPS_FEATURE_FLAGS=Bottlerocket`.
+
+Be aware of the following limitations:
+* Only AWS is supported
+* Only certain regions have Bottlerocket AMIs (see the containers-roadmap issue [here](https://github.com/aws/containers-roadmap/issues/827#issuecomment-675176968))
+* Bottlerocket AMIs are specific to K8s versions and may not have versions that Kops otherwise supports
+* Only nodes are supported, masters and bastions are not
+* Many node customizations are not supported such as `additionalUserdata` and will fail API validation
+* Gossip clusters are not supported
+* Certain networking configurations are not supported such as Kubenet, Kuberouter, and Cilium in EtcdManaged mode  
+* Clusters must have the [AWS IAM Authenticator](../authentication.md#aws-iam-authenticator) enabled with version >= 0.5.1 and the CRD Backend mode enabled
+
+To use Bottlerocket, find the available image (note that the Owner IDs vary per region)
+```bash
+aws ec2 describe-images --output table \
+  --owners amazon \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,OwnerId,Name,ImageId]" \
+  --filters Name=name,Values="bottlerocket-aws-k8s*"
+```
+
+Then use the AMI ID in the image field and add the following block to the InstanceGroupSpec:
+```yaml
+spec:
+  imageFamily:
+    bottlerocket: {}
 ```
 
 ### CentOS 7
