@@ -2734,9 +2734,7 @@ spec:
     matchLabels:
       k8s-app: kops-controller
   updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
+    type: OnDelete
   template:
     metadata:
       labels:
