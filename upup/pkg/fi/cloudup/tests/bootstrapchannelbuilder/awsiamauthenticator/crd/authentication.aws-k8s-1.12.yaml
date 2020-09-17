@@ -219,3 +219,21 @@ spec:
         name: state
   updateStrategy:
     type: RollingUpdate
+
+---
+
+apiVersion: iamauthenticator.k8s.aws/v1alpha1
+kind: IAMIdentityMapping
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: authentication.aws
+    app.kubernetes.io/managed-by: kops
+    k8s-app: aws-iam-authenticator
+    role.kubernetes.io/authentication: "1"
+  name: bottlerocket-nodes.minimal.example.com
+spec:
+  arn: arn:aws-test:iam::123456789012:role/nodes.minimal.example.com
+  groups:
+  - system:nodes
+  username: system:node:{{EC2PrivateDNSName}}

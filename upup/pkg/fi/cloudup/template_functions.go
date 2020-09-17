@@ -120,6 +120,33 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return fmt.Sprintf("%d", wellknownports.NodeLocalDNSHealthCheck)
 	}
 
+	dest["IAMIdentityMappings"] = func() map[string]kops.AwsAuthenticationIdentityMappingSpec {
+		mappings := make(map[string]kops.AwsAuthenticationIdentityMappingSpec)
+		for _, ig := range tf.InstanceGroups {
+			if ig.Spec.Role != kops.InstanceGroupRoleNode || ig.Spec.ImageFamily == nil || ig.Spec.ImageFamily.Bottlerocket == nil {
+				continue
+			}
+			profile, err := tf.LinkToIAMInstanceProfile(ig)
+			if err != nil {
+				klog.Warningf("unhandled IAM role on instance group %v\n", ig.Name)
+				continue
+			}
+			identityMapping := kops.AwsAuthenticationIdentityMappingSpec{
+				ARN:      fmt.Sprintf("arn:%v:iam::%v:role/%v", tf.AWSPartition, tf.AWSAccountID, *profile.Name),
+				Username: "system:node:{{EC2PrivateDNSName}}",
+				Groups:   []string{"system:nodes"},
+			}
+			name := fmt.Sprintf("bottlerocket-%v", *profile.Name)
+			mappings[name] = identityMapping
+		}
+		if cluster.Spec.Authentication != nil && cluster.Spec.Authentication.Aws != nil {
+			for i, mapping := range cluster.Spec.Authentication.Aws.IdentityMappings {
+				name := fmt.Sprintf("iam-identity-mapping-%v", i)
+				mappings[name] = mapping
+			}
+		}
+		return mappings
+	}
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv
