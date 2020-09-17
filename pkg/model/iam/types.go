@@ -35,6 +35,8 @@ func ParseStatements(policy string) ([]*Statement, error) {
 type IAMModelContext struct {
 	// AWSAccountID holds the 12 digit AWS account ID, when running on AWS
 	AWSAccountID string
+	// AWSPartition defines the partition of the AWS account, typically "aws", "aws-cn", or "aws-us-gov"
+	AWSPartition string
 
 	Cluster *kops.Cluster
 }

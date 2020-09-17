@@ -301,7 +301,7 @@ func (c *MockAWSCloud) DescribeInstanceType(instanceType string) (*ec2.InstanceT
 	return info, nil
 }
 
-// AccountID returns the AWS account ID (typically a 12 digit number) we are deploying into
-func (c *MockAWSCloud) AccountID() (string, error) {
-	return "123456789012", nil
+// AccountInfo returns the AWS account ID and AWS partition that we are deploying into
+func (c *MockAWSCloud) AccountInfo() (string, string, error) {
+	return "123456789012", "aws-test", nil
 }
