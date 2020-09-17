@@ -106,21 +106,39 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	if err != nil {
 		t.Error(err)
 	}
+	role := "arn:aws:iam::1234567890108:instance-profile/kops-custom-node-role"
+	kopsModel := model.KopsModelContext{
+		IAMModelContext: iam.IAMModelContext{
+			Cluster:      cluster,
+			AWSAccountID: "123456789012",
+		},
+		Region: "us-east-1",
+		InstanceGroups: []*kopsapi.InstanceGroup{
+			{
+				Spec: kopsapi.InstanceGroupSpec{
+					IAM: &kopsapi.IAMProfileSpec{
+						Profile: &role,
+					},
+					Role: kopsapi.InstanceGroupRoleNode,
+				},
+			},
+			{
+				Spec: kopsapi.InstanceGroupSpec{
+					Role: kopsapi.InstanceGroupRoleNode,
+				},
+			},
+		},
+	}
 
 	tf := &TemplateFunctions{
-		KopsModelContext: model.KopsModelContext{
-			IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-			Region:          "us-east-1",
-		},
+		KopsModelContext: kopsModel,
 	}
 	tf.AddTo(templates.TemplateFunctions, secretStore)
 
 	bcb := BootstrapChannelBuilder{
-		KopsModelContext: &model.KopsModelContext{
-			IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-		},
-		templates:    templates,
-		assetBuilder: assets.NewAssetBuilder(cluster, ""),
+		KopsModelContext: &kopsModel,
+		templates:        templates,
+		assetBuilder:     assets.NewAssetBuilder(cluster, ""),
 	}
 
 	context := &fi.ModelBuilderContext{

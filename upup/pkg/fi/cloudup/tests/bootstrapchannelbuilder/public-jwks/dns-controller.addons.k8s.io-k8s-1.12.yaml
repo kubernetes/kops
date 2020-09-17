@@ -35,7 +35,7 @@ spec:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
         - name: AWS_ROLE_ARN
-          value: arn:aws:iam:::role/dns-controller.kube-system.sa.minimal.example.com
+          value: arn:aws:iam::123456789012:role/dns-controller.kube-system.sa.minimal.example.com
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
         image: k8s.gcr.io/kops/dns-controller:1.19.0-alpha.4
