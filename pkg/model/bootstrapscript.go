@@ -30,7 +30,6 @@ import (
 
 	toml "github.com/pelletier/go-toml"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sigs.k8s.io/yaml"
 

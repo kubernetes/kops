@@ -111,6 +111,22 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return fmt.Sprintf("%d", wellknownports.NodeLocalDNSHealthCheck)
 	}
 
+	// AWS Bottlerocket
+	dest["BottlerocketNodeIAMRoles"] = func() []string {
+		nodesRoleARNs := sets.String{}
+		for _, ig := range tf.InstanceGroups {
+			if ig.Spec.Role != kops.InstanceGroupRoleNode || ig.Spec.ImageFamily == nil || ig.Spec.ImageFamily.Bottlerocket == nil {
+				continue
+			}
+			profile, err := tf.LinkToIAMInstanceProfile(ig)
+			if err != nil {
+				klog.Warningf("unhandled IAM role on instance group %v\n", ig.Name)
+				continue
+			}
+			nodesRoleARNs.Insert(fmt.Sprintf("arn:%v:iam::%v:role/%v", tf.AWSPartition, tf.AWSAccountID, *profile.Name))
+		}
+		return nodesRoleARNs.List()
+	}
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv

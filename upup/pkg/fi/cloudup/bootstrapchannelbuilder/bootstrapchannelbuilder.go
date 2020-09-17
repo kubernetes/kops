@@ -950,7 +950,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		if b.Cluster.Spec.Authentication.Aws != nil {
 			key := "authentication.aws"
 			versions := map[string]string{
-				"k8s-1.12": "0.5.1-kops.1",
+				"k8s-1.12": "0.5.1-kops.2",
 			}
 
 			{

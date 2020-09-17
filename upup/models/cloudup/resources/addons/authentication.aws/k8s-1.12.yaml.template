@@ -31,7 +31,18 @@ spec:
               type: array
               items:
                 type: string
-
+{{ range $role := BottlerocketNodeIAMRoles }}
+---
+apiVersion: iamauthenticator.k8s.aws/v1alpha1
+kind: IAMIdentityMapping
+metadata:
+  name: bottlerocket-nodes
+spec:
+  arn: {{ $role }}
+  username: system:node:{{`{{EC2PrivateDNSName}}`}}
+  groups:
+  - system:nodes
+{{- end }}
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
