@@ -202,6 +202,7 @@ k8s.io/kops/util/pkg/env
 k8s.io/kops/util/pkg/exec
 k8s.io/kops/util/pkg/hashing
 k8s.io/kops/util/pkg/maps
+k8s.io/kops/util/pkg/mirrors
 k8s.io/kops/util/pkg/proxy
 k8s.io/kops/util/pkg/reflectutils
 k8s.io/kops/util/pkg/slice

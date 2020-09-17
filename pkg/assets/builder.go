@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
+	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -311,27 +312,30 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		}
 
 		for _, ext := range []string{".sha256", ".sha1"} {
-			hashURL := u.String() + ext
-			b, err := vfs.Context.ReadFile(hashURL, vfs.WithBackoff(backoff))
-			if err != nil {
-				// Try to log without being too alarming - issue #7550
-				if ext == ".sha256" {
-					klog.V(2).Infof("unable to read new sha256 hash file (is this an older/unsupported kubernetes release?) %q: %v", hashURL, err)
-				} else {
-					klog.V(2).Infof("unable to read hash file %q: %v", hashURL, err)
+			for _, mirror := range mirrors.FindUrlMirrors(u.String()) {
+				hashURL := mirror + ext
+				klog.V(3).Infof("Trying to read hash fie: %q", hashURL)
+				b, err := vfs.Context.ReadFile(hashURL, vfs.WithBackoff(backoff))
+				if err != nil {
+					// Try to log without being too alarming - issue #7550
+					if ext == ".sha256" {
+						klog.V(2).Infof("Unable to read new sha256 hash file (is this an older/unsupported kubernetes release?) %q: %v", hashURL, err)
+					} else {
+						klog.V(2).Infof("Unable to read hash file %q: %v", hashURL, err)
+					}
+					continue
 				}
-				continue
-			}
-			hashString := strings.TrimSpace(string(b))
-			klog.V(2).Infof("Found hash %q for %q", hashString, u)
+				hashString := strings.TrimSpace(string(b))
+				klog.V(2).Infof("Found hash %q for %q", hashString, u)
 
-			// Accept a hash string that is `<hash> <filename>`
-			fields := strings.Fields(hashString)
-			if len(fields) == 0 {
-				klog.Infof("hash file was empty %q", hashURL)
-				continue
+				// Accept a hash string that is `<hash> <filename>`
+				fields := strings.Fields(hashString)
+				if len(fields) == 0 {
+					klog.Infof("Hash file was empty %q", hashURL)
+					continue
+				}
+				return hashing.FromString(fields[0])
 			}
-			return hashing.FromString(fields[0])
 		}
 	}
 
