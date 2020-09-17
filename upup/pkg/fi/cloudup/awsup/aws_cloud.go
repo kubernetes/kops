@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -163,8 +164,8 @@ type AWSCloud interface {
 	// FindClusterStatus gets the status of the cluster as it exists in AWS, inferred from volumes
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 
-	// AccountID returns the AWS account ID (typically a 12 digit number) we are deploying into
-	AccountID() (string, error)
+	// AccountInfo returns the AWS account ID and AWS partition that we are deploying into
+	AccountInfo() (string, string, error)
 }
 
 type awsCloudImplementation struct {
@@ -1656,19 +1657,25 @@ func describeInstanceType(c AWSCloud, instanceType string) (*ec2.InstanceTypeInf
 	return resp.InstanceTypes[0], nil
 }
 
-// AccountID returns the AWS account ID (typically a 12 digit number) we are deploying into
-func (c *awsCloudImplementation) AccountID() (string, error) {
+// AccountInfo returns the AWS account ID and AWS partition that we are deploying into
+func (c *awsCloudImplementation) AccountInfo() (string, string, error) {
 	request := &sts.GetCallerIdentityInput{}
 
 	response, err := c.sts.GetCallerIdentity(request)
 	if err != nil {
-		return "", fmt.Errorf("error geting AWS account ID: %v", err)
+		return "", "", fmt.Errorf("error geting AWS account ID: %v", err)
 	}
 
-	account := aws.StringValue(response.Account)
-	if account == "" {
-		return "", fmt.Errorf("AWS account id was empty")
+	arn, err := arn.Parse(aws.StringValue(response.Arn))
+	if err != nil {
+		return "", "", fmt.Errorf("Failed to parse GetCallerIdentity ARN")
 	}
 
-	return account, nil
+	if arn.AccountID == "" {
+		return "", "", fmt.Errorf("AWS account id was empty")
+	}
+	if arn.Partition == "" {
+		return "", "", fmt.Errorf("AWS partition was empty")
+	}
+	return arn.AccountID, arn.Partition, nil
 }
