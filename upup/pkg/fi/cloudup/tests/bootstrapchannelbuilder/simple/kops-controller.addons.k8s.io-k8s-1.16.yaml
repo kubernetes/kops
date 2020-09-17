@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"cloud":"aws","configBase":"memfs://clusters.example.com/minimal.example.com"}
+    {"cloud":"aws","configBase":"memfs://clusters.example.com/minimal.example.com","server":{"Listen":":3992","provider":{"aws":{"nodesRoles":["kops-custom-node-role","nodes.minimal.example.com"],"Region":"us-east-1"}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["ca"],"certNames":["kubelet","kube-proxy"]}}
 kind: ConfigMap
 metadata:
   labels:
