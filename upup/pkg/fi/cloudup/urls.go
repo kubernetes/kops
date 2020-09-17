@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"sort"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -29,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
+	"k8s.io/kops/util/pkg/mirrors"
 )
 
 const (
@@ -37,32 +37,6 @@ const (
 	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
 	defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
 )
-
-// mirror holds the configuration for a mirror
-type mirror struct {
-	// URL is the base url
-	URL string
-
-	// Replace is a set of string replacements, so that we can follow the mirror's naming rules
-	Replace map[string]string
-}
-
-// GitHub releases have special artifact names because full paths cannot be used
-// and artifact names must remain easy to read for humans.
-var gitHubReplace = map[string]string{
-	"/":                  "-",
-	"linux-amd64-nodeup": "nodeup-linux-amd64",
-	"linux-arm64-nodeup": "nodeup-linux-arm64",
-}
-
-// defaultKopsMirrors is a list of our well-known mirrors
-// Note that we download in order
-var defaultKopsMirrors = []mirror{
-	{URL: "https://artifacts.k8s.io/binaries/kops/%s/"},
-	{URL: "https://github.com/kubernetes/kops/releases/download/v%s/", Replace: gitHubReplace},
-	// We do need to include defaultKopsMirrorBase - the list replaces the base url
-	{URL: "https://kubeupv2.s3.amazonaws.com/kops/%s/"},
-}
 
 var kopsBaseURL *url.URL
 
@@ -251,30 +225,12 @@ func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
 		Hash: hash,
 	}
 
-	urlString := u.String()
-	a.Locations = []string{urlString}
-
-	// Look at mirrors
-	if strings.HasPrefix(urlString, baseURLString) {
+	a.Locations = []string{u.String()}
+	if strings.HasPrefix(u.String(), baseURLString) {
 		if hash == nil {
 			klog.Warningf("not using mirrors for asset %s as it does not have a known hash", u.String())
 		} else {
-			suffix := strings.TrimPrefix(urlString, baseURLString)
-			// This is under our base url - add our well-known mirrors
-			a.Locations = []string{}
-			for _, m := range defaultKopsMirrors {
-				keys := make([]string, len(m.Replace))
-				for k := range m.Replace {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
-				filename := suffix
-				for _, k := range keys {
-					filename = strings.Replace(filename, k, m.Replace[k], -1)
-				}
-				base := fmt.Sprintf(m.URL, kops.Version)
-				a.Locations = append(a.Locations, base+filename)
-			}
+			a.Locations = mirrors.FindUrlMirrors(u.String())
 		}
 	}
 
