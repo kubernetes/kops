@@ -108,7 +108,7 @@ func addServiceAccountRoleForAWS(context *IAMModelContext, podSpec *corev1.PodSp
 		return err
 	}
 
-	awsRoleARN := "arn:aws:iam::" + context.AWSAccountID + ":role/" + roleName
+	awsRoleARN := "arn:" + context.AWSPartition + ":iam::" + context.AWSAccountID + ":role/" + roleName
 	tokenDir := "/var/run/secrets/amazonaws.com/"
 	tokenName := "token"
 
