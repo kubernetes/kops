@@ -158,6 +158,9 @@ type ClusterSpec struct {
 	CloudConfig                    *CloudConfiguration           `json:"cloudConfig,omitempty"`
 	ExternalDNS                    *ExternalDNSConfig            `json:"externalDns,omitempty"`
 
+	// NodeTerminationHandlerConfig determines the cluster autoscaler configuration.
+	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
+
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
 	// API field controls how the API is exposed outside the cluster
