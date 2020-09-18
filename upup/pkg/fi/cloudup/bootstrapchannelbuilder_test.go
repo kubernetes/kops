@@ -111,6 +111,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		IAMModelContext: iam.IAMModelContext{
 			Cluster:      cluster,
 			AWSAccountID: "123456789012",
+			AWSPartition: "aws-test",
 		},
 		Region: "us-east-1",
 		InstanceGroups: []*kopsapi.InstanceGroup{
