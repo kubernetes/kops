@@ -705,7 +705,7 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.8 requires kubernetesVersion 1.12 or newer"))
 		}
 
-		if fi.BoolValue(v.Hubble.Enabled) {
+		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
 			if version.Minor < 8 {
 				allErrs = append(allErrs, field.Forbidden(fldPath.Root().Child("hubble", "enabled"), "Hubble requires Cilium 1.8 or newer"))
 			}

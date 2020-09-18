@@ -630,7 +630,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		{
 			Cilium: kops.CiliumNetworkingSpec{
 				Version: "v1.7.0",
-				Hubble: kops.HubbleSpec{
+				Hubble: &kops.HubbleSpec{
 					Enabled: fi.Bool(true),
 				},
 			},
@@ -639,7 +639,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		{
 			Cilium: kops.CiliumNetworkingSpec{
 				Version: "v1.8.0",
-				Hubble: kops.HubbleSpec{
+				Hubble: &kops.HubbleSpec{
 					Enabled: fi.Bool(true),
 				},
 			},
