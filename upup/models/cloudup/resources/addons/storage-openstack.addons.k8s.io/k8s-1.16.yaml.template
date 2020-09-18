@@ -517,7 +517,7 @@ spec:
   - Persistent
   - Ephemeral
 
-{{ if .CloudConfig.Openstack.BlockStorage.CreateStorageClass }}
+{{ if WithDefaultBool .CloudConfig.Openstack.BlockStorage.CreateStorageClass true }}
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
