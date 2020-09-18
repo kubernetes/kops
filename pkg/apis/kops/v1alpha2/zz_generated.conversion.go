@@ -1474,8 +1474,14 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.EnableNodePort = in.EnableNodePort
 	out.EtcdManaged = in.EtcdManaged
 	out.EnableRemoteNodeIdentity = in.EnableRemoteNodeIdentity
-	if err := Convert_v1alpha2_HubbleSpec_To_kops_HubbleSpec(&in.Hubble, &out.Hubble, s); err != nil {
-		return err
+	if in.Hubble != nil {
+		in, out := &in.Hubble, &out.Hubble
+		*out = new(kops.HubbleSpec)
+		if err := Convert_v1alpha2_HubbleSpec_To_kops_HubbleSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Hubble = nil
 	}
 	out.RemoveCbrBridge = in.RemoveCbrBridge
 	out.RestartPods = in.RestartPods
@@ -1560,8 +1566,14 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.EnableNodePort = in.EnableNodePort
 	out.EtcdManaged = in.EtcdManaged
 	out.EnableRemoteNodeIdentity = in.EnableRemoteNodeIdentity
-	if err := Convert_kops_HubbleSpec_To_v1alpha2_HubbleSpec(&in.Hubble, &out.Hubble, s); err != nil {
-		return err
+	if in.Hubble != nil {
+		in, out := &in.Hubble, &out.Hubble
+		*out = new(HubbleSpec)
+		if err := Convert_kops_HubbleSpec_To_v1alpha2_HubbleSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Hubble = nil
 	}
 	out.RemoveCbrBridge = in.RemoveCbrBridge
 	out.RestartPods = in.RestartPods

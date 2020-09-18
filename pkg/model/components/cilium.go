@@ -96,6 +96,17 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.EnableRemoteNodeIdentity = fi.Bool(true)
 	}
 
+	hubble := c.Hubble
+	if hubble != nil {
+		if hubble.Enabled == nil {
+			hubble.Enabled = fi.Bool(true)
+		}
+	} else {
+		c.Hubble = &kops.HubbleSpec{
+			Enabled: fi.Bool(false),
+		}
+	}
+
 	return nil
 
 }
