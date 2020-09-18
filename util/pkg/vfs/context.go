@@ -280,7 +280,7 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 		}
 
 		if noMoreRetries {
-			klog.Infof("hit maximum retries %d with error %v", i, err)
+			klog.V(2).Infof("hit maximum retries %d with error %v", i, err)
 			return done, err
 		}
 	}
