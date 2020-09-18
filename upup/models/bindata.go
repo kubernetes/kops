@@ -51,6 +51,7 @@
 // upup/models/cloudup/resources/addons/networking.weave/k8s-1.9.yaml.template
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template
 // upup/models/cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template
+// upup/models/cloudup/resources/addons/node-termination-handler.aws/k8s-1.11.yaml.template
 // upup/models/cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template
 // upup/models/cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template
@@ -18513,6 +18514,198 @@ func cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate() (*asset
 	return a, nil
 }
 
+var _cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate = []byte(`{{ with .Components.NodeTerminationHandler }}
+# Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.7.0/all-resources.yaml
+---
+# Source: aws-node-termination-handler/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-node-termination-handler
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    k8s-app: aws-node-termination-handler
+    app.kubernetes.io/version: "1.7.0"
+---
+# Source: aws-node-termination-handler/templates/clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aws-node-termination-handler
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - nodes
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - ""
+  resources:
+    - pods
+  verbs:
+    - list
+- apiGroups:
+    - ""
+  resources:
+    - pods/eviction
+  verbs:
+    - create
+- apiGroups:
+    - extensions
+  resources:
+    - daemonsets
+  verbs:
+    - get
+- apiGroups:
+    - apps
+  resources:
+    - daemonsets
+  verbs:
+    - get
+---
+# Source: aws-node-termination-handler/templates/clusterrolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aws-node-termination-handler
+subjects:
+- kind: ServiceAccount
+  name: aws-node-termination-handler
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: aws-node-termination-handler
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: aws-node-termination-handler/templates/daemonset.linux.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-node-termination-handler
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-node-termination-handler
+    app.kubernetes.io/instance: aws-node-termination-handler
+    k8s-app: aws-node-termination-handler
+    app.kubernetes.io/version: "1.7.0"
+spec:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aws-node-termination-handler
+      app.kubernetes.io/instance: aws-node-termination-handler
+      kubernetes.io/os: linux
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aws-node-termination-handler
+        app.kubernetes.io/instance: aws-node-termination-handler
+        k8s-app: aws-node-termination-handler
+        kubernetes.io/os: linux
+    spec:
+      volumes:
+        - name: "uptime"
+          hostPath:
+            path: "/proc/uptime"
+      priorityClassName: "system-node-critical"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: "kubernetes.io/os"
+                  operator: In
+                  values:
+                    - linux
+                - key: "kubernetes.io/arch"
+                  operator: In
+                  values:
+                    - amd64
+                    - arm64
+                    - arm
+      serviceAccountName: aws-node-termination-handler
+      hostNetwork: true
+      dnsPolicy: "ClusterFirstWithHostNet"
+      containers:
+        - name: aws-node-termination-handler
+          image: amazon/aws-node-termination-handler:v1.7.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: "uptime"
+              mountPath: "/proc/uptime"
+              readOnly: true
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: SPOT_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: DELETE_LOCAL_DATA
+            value: "true"
+          - name: IGNORE_DAEMON_SETS
+            value: "true"
+          - name: POD_TERMINATION_GRACE_PERIOD
+            value: "-1"
+          - name: ENABLE_SPOT_INTERRUPTION_DRAINING
+            value: "{{ .EnableSpotInterruptionDraining }}"
+          - name: ENABLE_SCHEDULED_EVENT_DRAINING
+            value: "{{ .EnableScheduledEventDraining }}"
+          - name: JSON_LOGGING
+            value: "true"
+          - name: ENABLE_PROMETHEUS_SERVER
+            value: "{{ .EnablePrometheusMetrics }}"
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - operator: Exists
+{{ end }}`)
+
+func cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate, nil
+}
+
+func cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "cloudup/resources/addons/node-termination-handler.aws/k8s-1.11.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 var _cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate = []byte(`# Vendored from https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/dns/nodelocaldns/nodelocaldns.yaml
 
 ---
@@ -20486,6 +20679,7 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/networking.weave/k8s-1.9.yaml.template":                                     cloudupResourcesAddonsNetworkingWeaveK8s19YamlTemplate,
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.10.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s110YamlTemplate,
 	"cloudup/resources/addons/node-authorizer.addons.k8s.io/k8s-1.12.yaml.template":                       cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate,
+	"cloudup/resources/addons/node-termination-handler.aws/k8s-1.11.yaml.template":                        cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate,
 	"cloudup/resources/addons/nodelocaldns.addons.k8s.io/k8s-1.12.yaml.template":                          cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate,
 	"cloudup/resources/addons/openstack.addons.k8s.io/k8s-1.13.yaml.template":                             cloudupResourcesAddonsOpenstackAddonsK8sIoK8s113YamlTemplate,
 	"cloudup/resources/addons/podsecuritypolicy.addons.k8s.io/k8s-1.10.yaml.template":                     cloudupResourcesAddonsPodsecuritypolicyAddonsK8sIoK8s110YamlTemplate,
@@ -20640,6 +20834,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				"node-authorizer.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.10.yaml.template": {cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s110YamlTemplate, map[string]*bintree{}},
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate, map[string]*bintree{}},
+				}},
+				"node-termination-handler.aws": {nil, map[string]*bintree{
+					"k8s-1.11.yaml.template": {cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate, map[string]*bintree{}},
 				}},
 				"nodelocaldns.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.12.yaml.template": {cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate, map[string]*bintree{}},
