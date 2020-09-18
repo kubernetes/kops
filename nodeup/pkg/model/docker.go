@@ -356,6 +356,30 @@ var dockerVersions = []packageVersion{
 		},
 	},
 
+	// 19.03.13 - Linux Generic AMD64 - Kubernetes 1.19+
+	{
+		PackageVersion: "19.03.13",
+		PlainBinary:    true,
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
+		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.13.tgz",
+		Hash:           "ddb13aff1fcdcceb710bf71a210169b9c1abfd7420eeaf42cf7975f8fae2fcc8",
+		MapFiles: map[string]string{
+			"docker/docker*": "/usr/bin",
+		},
+	},
+
+	// 19.03.13 - Linux Generic ARM64 - Kubernetes 1.19+
+	{
+		PackageVersion: "19.03.13",
+		PlainBinary:    true,
+		Architectures:  []architectures.Architecture{architectures.ArchitectureArm64},
+		Source:         "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.13.tgz",
+		Hash:           "bdf080af7d6f383ad80e415e9c1952a63c7038c149dc673b7598bfca4d3311ec",
+		MapFiles: map[string]string{
+			"docker/docker*": "/usr/bin",
+		},
+	},
+
 	// TIP: When adding the next version, copy the previous version, string replace the version and run:
 	//   VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run TestDockerPackageHashes
 	// (you might want to temporarily comment out older versions on a slower connection and then validate)
