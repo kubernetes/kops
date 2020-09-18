@@ -439,7 +439,7 @@ type CiliumNetworkingSpec struct {
 	// Default: false
 	EnableRemoteNodeIdentity *bool `json:"enableRemoteNodeIdentity,omitempty"`
 	// Hubble configures the Hubble service on the Cilium agent.
-	Hubble HubbleSpec `json:"hubble,omitempty"`
+	Hubble *HubbleSpec `json:"hubble,omitempty"`
 
 	// RemoveCbrBridge is not implemented and may be removed in the future.
 	// Setting this has no effect.
