@@ -847,9 +847,11 @@ func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2.Instan
 }
 
 func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance, error) {
+	clusterName := c.Tags()[TagClusterName]
 	req := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
+			NewEC2Filter("tag:"+TagClusterName, clusterName),
 			NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
 		},
 	}
@@ -871,9 +873,11 @@ func findInstances(c AWSCloud, ig *kops.InstanceGroup) (map[string]*ec2.Instance
 }
 
 func findDetachedInstances(c AWSCloud, g *autoscaling.Group) ([]*string, error) {
+	clusterName := c.Tags()[TagClusterName]
 	req := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			NewEC2Filter("tag:"+tagNameDetachedInstance, aws.StringValue(g.AutoScalingGroupName)),
+			NewEC2Filter("tag:"+TagClusterName, clusterName),
 			NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
 		},
 	}
