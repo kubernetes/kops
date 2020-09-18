@@ -103,6 +103,32 @@ var containerdVersions = []packageVersion{
 		},
 	},
 
+	// 1.3.7 - Linux Generic AMD64
+	{
+		PackageVersion: "1.3.7",
+		PlainBinary:    true,
+		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
+		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.13.tgz",
+		Hash:           "ddb13aff1fcdcceb710bf71a210169b9c1abfd7420eeaf42cf7975f8fae2fcc8",
+		MapFiles: map[string]string{
+			"docker/c*":   "/usr/bin",
+			"docker/runc": "/usr/bin",
+		},
+	},
+
+	// 1.3.7 - Linux Generic ARM64
+	{
+		PackageVersion: "1.3.7",
+		PlainBinary:    true,
+		Architectures:  []architectures.Architecture{architectures.ArchitectureArm64},
+		Source:         "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.13.tgz",
+		Hash:           "bdf080af7d6f383ad80e415e9c1952a63c7038c149dc673b7598bfca4d3311ec",
+		MapFiles: map[string]string{
+			"docker/c*":   "/usr/bin",
+			"docker/runc": "/usr/bin",
+		},
+	},
+
 	// 1.4.1 - Linux Generic AMD64
 	{
 		PackageVersion: "1.4.1",
