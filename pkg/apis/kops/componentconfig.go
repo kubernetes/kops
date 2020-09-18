@@ -759,6 +759,22 @@ type CloudConfiguration struct {
 	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 }
 
+// NodeTerminationHandlerConfig determines the node termination handler configuration.
+type NodeTerminationHandlerConfig struct {
+	// Enabled enables the node termination handler.
+	// Default: true
+	Enabled *bool `json:"enabled,omitempty"`
+	// EnableSpotInterruptionDraining makes node termination handler drain nodes when spot interruption termination notice is received.
+	// Default: true
+	EnableSpotInterruptionDraining *bool `json:"enableSpotInterruptionDraining,omitempty"`
+	// EnableScheduledEventDraining makes node termination handler drain nodes before the maintenance window starts for an EC2 instance scheduled event.
+	// Default: false
+	EnableScheduledEventDraining *bool `json:"enableScheduledEventDraining,omitempty"`
+
+	// EnablePrometheusMetrics enables the "/metrics" endpoint.
+	EnablePrometheusMetrics *bool `json:"prometheusEnable,omitempty"`
+}
+
 // ClusterAutoscalerConfig determines the cluster autoscaler configuration.
 type ClusterAutoscalerConfig struct {
 	// Enabled enables the cluster autoscaler.
