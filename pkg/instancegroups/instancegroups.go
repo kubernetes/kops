@@ -24,6 +24,9 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
+
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -371,11 +374,39 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 		return err
 	}
 
+	if err := c.reconcileInstanceGroup(); err != nil {
+		klog.Errorf("error reconciling instance group %q: %v", u.CloudInstanceGroup.HumanName, err)
+		return err
+	}
+
 	// Wait for the minimum interval
 	klog.Infof("waiting for %v after terminating instance", sleepAfterTerminate)
 	time.Sleep(sleepAfterTerminate)
 
 	return nil
+}
+
+func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
+	if api.CloudProviderID(c.Cluster.Spec.CloudProvider) != api.CloudProviderOpenstack {
+		return nil
+	}
+	rto := fi.RunTasksOptions{}
+	rto.InitDefaults()
+	applyCmd := &cloudup.ApplyClusterCmd{
+		Cloud:              c.Cloud,
+		Clientset:          c.Clientset,
+		Cluster:            c.Cluster,
+		DryRun:             false,
+		AllowKopsDowngrade: true,
+		RunTasksOptions:    &rto,
+		OutDir:             "",
+		Phase:              "",
+		TargetName:         "direct",
+		LifecycleOverrides: map[string]fi.Lifecycle{},
+	}
+
+	return applyCmd.Run(c.Ctx)
+
 }
 
 func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int) error {
