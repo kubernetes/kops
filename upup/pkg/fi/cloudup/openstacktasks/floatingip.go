@@ -18,7 +18,10 @@ package openstacktasks
 
 import (
 	"fmt"
+	"strings"
 	"time"
+
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 
 	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -131,34 +134,29 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 	}
 	cloud := c.Cloud.(openstack.OpenstackCloud)
 	if e.LB != nil && e.LB.PortID != nil {
-		// Layer 3
-		fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
-			PortID: fi.StringValue(e.LB.PortID),
-		})
+		fip, err := findFipByPortID(cloud, fi.StringValue(e.LB.PortID))
+
 		if err != nil {
-			return nil, fmt.Errorf("Failed to list layer 3 floating ip's for port ID %s: %v", fi.StringValue(e.LB.PortID), err)
+			return nil, fmt.Errorf("failed to find floating ip: %v", err)
 		}
-		if len(fips) == 0 {
-			return nil, nil
-		}
-		if len(fips) > 1 {
-			return nil, fmt.Errorf("Multiple floating ip's associated to port: %s", fi.StringValue(e.LB.PortID))
-		}
+
 		actual := &FloatingIP{
-			Name:      e.Name,
-			ID:        fi.String(fips[0].ID),
+			Name:      fi.String(fip.Description),
+			ID:        fi.String(fip.ID),
 			LB:        e.LB,
 			Lifecycle: e.Lifecycle,
 		}
 		e.ID = actual.ID
 		return actual, nil
 	}
+	fipname := fi.StringValue(e.Name)
 	fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
-		Description: fi.StringValue(e.Name),
+		Description: fipname,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to list layer 3 floating ip's: %v", err)
+		return nil, fmt.Errorf("failed to list layer 3 floating ips: %v", err)
 	}
+
 	for _, fip := range fips {
 		if fip.Description == fi.StringValue(e.Name) {
 			actual := &FloatingIP{
@@ -171,9 +169,57 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 			e.IP = actual.IP
 			return actual, nil
 		}
+
 	}
 
+	if len(fips) == 0 {
+		//If we fail to find an IP address we need to look for IP addresses attached to a port with similar name
+		//TODO: remove this in kops 1.21 where we can expect that the description field has been added
+		portname := "port-" + strings.TrimPrefix(fipname, "fip-")
+
+		ports, err := cloud.ListPorts(ports.ListOpts{
+			Name: portname,
+		})
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to list ports: %v", err)
+		}
+
+		if len(ports) == 1 {
+
+			fip, err := findFipByPortID(cloud, ports[0].ID)
+
+			if err != nil {
+				return nil, fmt.Errorf("failed to find floating ip: %v", err)
+			}
+
+			actual := &FloatingIP{
+				Name:      fi.String(fip.Description),
+				ID:        fi.String(fip.ID),
+				Lifecycle: e.Lifecycle,
+			}
+			e.ID = actual.ID
+			return actual, nil
+		}
+
+	}
 	return nil, nil
+}
+
+func findFipByPortID(cloud openstack.OpenstackCloud, id string) (fip l3floatingip.FloatingIP, err error) {
+	fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
+		PortID: id,
+	})
+	if err != nil {
+		return fip, fmt.Errorf("failed to list layer 3 floating ips for port ID %s: %v", id, err)
+	}
+	if len(fips) == 0 {
+		return fip, nil
+	}
+	if len(fips) > 1 {
+		return fip, fmt.Errorf("multiple floating ips associated to port: %s", id)
+	}
+	return fips[0], nil
 }
 
 func (e *FloatingIP) Run(c *fi.Context) error {
@@ -189,21 +235,30 @@ func (_ *FloatingIP) CheckChanges(a, e, changes *FloatingIP) error {
 		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
 		}
-		if changes.Name != nil {
-			return fi.CannotChangeField("Name")
-		}
+		//TODO: add back into kops 1.21
+		/*
+			if changes.Name != nil && fi.StringValue(a.Name) != "" {
+				return fi.CannotChangeField("Name")
+			}
+		*/
 	}
 	return nil
 }
 
 func (_ *FloatingIP) ShouldCreate(a, e, changes *FloatingIP) (bool, error) {
-	return a == nil, nil
+	if a == nil {
+		return true, nil
+	}
+	if changes.Name != nil {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *FloatingIP) error {
+	cloud := t.Cloud.(openstack.OpenstackCloud)
 
 	if a == nil {
-		cloud := t.Cloud.(openstack.OpenstackCloud)
 		external, err := cloud.GetExternalNetwork()
 		if err != nil {
 			return fmt.Errorf("Failed to find external network: %v", err)
@@ -236,6 +291,15 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		e.IP = fi.String(fip.FloatingIP)
 
 		return nil
+	}
+	if changes.Name != nil {
+		_, err := l3floatingip.Update(cloud.NetworkingClient(), fi.StringValue(a.ID), l3floatingip.UpdateOpts{
+			Description: e.Name,
+		}).Extract()
+		if err != nil {
+			return fmt.Errorf("failed to update floating ip %v: %v", fi.StringValue(e.Name), err)
+		}
+
 	}
 
 	klog.V(2).Infof("Openstack task Instance::RenderOpenstack did nothing")
