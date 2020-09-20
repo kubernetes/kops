@@ -26,6 +26,5 @@ For more information on how to enable addon during cluster creation refer [Kops 
 After cluster creation, you can deploy [Citrix Ingress Controller](https://github.com/citrix/citrix-k8s-ingress-controller) using the below command
 
 ```
-kubectl create secret generic nslogin --from-literal=username='nsroot' --from-literal=password=<password>
 kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/ingress-citrix/v1.1.1.yaml
 ```
