@@ -986,7 +986,7 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 	defer h.Close()
 
 	h.MockKopsVersion("1.18.0")
-	h.SetupMockOpenstack()
+	testutils.SetupMockOpenstack()
 
 	clusterLifecycle := fi.LifecycleSync
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{

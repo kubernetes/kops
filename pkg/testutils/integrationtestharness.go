@@ -253,7 +253,7 @@ func (h *IntegrationTestHarness) SetupMockGCE() {
 	gce.InstallMockGCECloud("us-test1", "testproject")
 }
 
-func (h *IntegrationTestHarness) SetupMockOpenstack() *openstack.MockCloud {
+func SetupMockOpenstack() *openstack.MockCloud {
 	c := openstack.InstallMockOpenstackCloud("us-test1")
 	c.MockCinderClient = mockblockstorage.CreateClient()
 
