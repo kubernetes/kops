@@ -65,6 +65,18 @@ metadata:
 
 ---
 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nslogin
+  namespace: default
+type: Opaque
+data:
+  password: bnNyb290
+  username: bnNyb290
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
