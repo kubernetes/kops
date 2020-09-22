@@ -65,6 +65,18 @@ metadata:
 
 ---
 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nslogin
+  namespace: default
+type: Opaque
+data:
+  password: bnNyb290
+  username: bnNyb290
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -84,7 +96,7 @@ spec:
       serviceAccountName: cpx-ingress-k8s-role
       containers:
         - name: cpx-ingress
-          image: "quay.io/citrix/citrix-k8s-cpx-ingress:13.0-52.24"
+          image: "quay.io/citrix/citrix-k8s-cpx-ingress:13.0-58.30"
           securityContext:
              privileged: true
           env:
@@ -117,7 +129,7 @@ spec:
               name: cpx-volume2
         # Add cic as a sidecar
         - name: cic
-          image: "quay.io/citrix/citrix-k8s-ingress-controller:1.8.19"
+          image: "quay.io/citrix/citrix-k8s-ingress-controller:1.9.9"
           env:
           - name: "EULA"
             value: "yes"
