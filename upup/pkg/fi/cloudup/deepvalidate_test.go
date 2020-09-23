@@ -29,8 +29,10 @@ import (
 func TestDeepValidate_OK(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
+	for _, subnet := range c.Spec.Subnets {
+		groups = append(groups, buildMinimalMasterInstanceGroup(subnet.Name))
+		groups = append(groups, buildMinimalNodeInstanceGroup(subnet.Name))
+	}
 	err := validation.DeepValidate(c, groups, true, nil)
 	if err != nil {
 		t.Fatalf("Expected no error from DeepValidate, got %v", err)
