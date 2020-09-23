@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 
@@ -38,12 +39,7 @@ import (
 // any time Run() is called in apply_cluster.go we will reach this function.
 // Please do all after-market logic here.
 //
-func PerformAssignments(c *kops.Cluster) error {
-	cloud, err := BuildCloud(c)
-	if err != nil {
-		return err
-	}
-
+func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	// Topology support
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
 	if c.Spec.Topology == nil {
@@ -103,16 +99,17 @@ func PerformAssignments(c *kops.Cluster) error {
 	pd := cloud.ProviderID()
 	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderALI {
 		// TODO: Use vpcInfo
-		err = assignCIDRsToSubnets(c)
+		err := assignCIDRsToSubnets(c)
 		if err != nil {
 			return err
 		}
 	}
 
-	c.Spec.EgressProxy, err = assignProxy(c)
+	proxy, err := assignProxy(c)
 	if err != nil {
 		return err
 	}
+	c.Spec.EgressProxy = proxy
 
 	return ensureKubernetesVersion(c)
 }

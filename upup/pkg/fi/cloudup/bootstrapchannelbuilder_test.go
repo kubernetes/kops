@@ -79,7 +79,12 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	}
 	cluster := obj.(*kopsapi.Cluster)
 
-	if err := PerformAssignments(cluster); err != nil {
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	if err := PerformAssignments(cluster, cloud); err != nil {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 

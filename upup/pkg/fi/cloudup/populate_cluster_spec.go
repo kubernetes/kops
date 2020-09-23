@@ -98,7 +98,12 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		return err
 	}
 
-	err = PerformAssignments(cluster)
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	err = PerformAssignments(cluster, cloud)
 	if err != nil {
 		return err
 	}
@@ -219,11 +224,6 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		klog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-	cloud, err := BuildCloud(cluster)
-	if err != nil {
-		return err
-	}
-
 	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		dns, err := cloud.DNS()
 		if err != nil {
