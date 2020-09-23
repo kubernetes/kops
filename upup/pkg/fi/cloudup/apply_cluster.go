@@ -838,14 +838,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
-	fullCluster, err := PopulateClusterSpec(c.Clientset, c.Cluster, assetBuilder)
+	fullCluster, err := PopulateClusterSpec(c.Clientset, c.Cluster, c.Cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
 	c.Cluster = fullCluster
 
 	for i, g := range c.InstanceGroups {
-		fullGroup, err := PopulateInstanceGroupSpec(fullCluster, g, c.channel)
+		fullGroup, err := PopulateInstanceGroupSpec(fullCluster, g, c.Cloud, c.channel)
 		if err != nil {
 			return err
 		}

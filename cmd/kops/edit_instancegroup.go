@@ -155,12 +155,11 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}
 
-	fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup, channel)
+	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
 		return err
 	}
-
-	cloud, err := cloudup.BuildCloud(cluster)
+	fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup, cloud, channel)
 	if err != nil {
 		return err
 	}
@@ -173,7 +172,7 @@ func RunEditInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Comma
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
