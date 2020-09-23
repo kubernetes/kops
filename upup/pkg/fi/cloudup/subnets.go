@@ -41,7 +41,7 @@ func (a ByZone) Less(i, j int) bool {
 	return a[i].Zone < a[j].Zone
 }
 
-func assignCIDRsToSubnets(c *kops.Cluster) error {
+func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 	// TODO: We probably could query for the existing subnets & allocate appropriately
 	// for now we'll require users to set CIDRs themselves
 
@@ -51,10 +51,6 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 	}
 
 	if c.Spec.NetworkID != "" {
-		cloud, err := BuildCloud(c)
-		if err != nil {
-			return err
-		}
 
 		vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
 		if err != nil {
