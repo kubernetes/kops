@@ -481,7 +481,7 @@ func (x *ImportCluster) ImportAWSCluster(ctx context.Context) error {
 
 	var fullInstanceGroups []*kops.InstanceGroup
 	for _, ig := range instanceGroups {
-		full, err := cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
+		full, err := cloudup.PopulateInstanceGroupSpec(cluster, ig, awsCloud, channel)
 		if err != nil {
 			return err
 		}

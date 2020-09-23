@@ -510,14 +510,14 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
-	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
 
 	var fullInstanceGroups []*api.InstanceGroup
 	for _, group := range instanceGroups {
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, clusterResult.Channel)
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, cloud, clusterResult.Channel)
 		if err != nil {
 			return err
 		}

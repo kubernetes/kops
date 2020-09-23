@@ -278,7 +278,7 @@ func RunToolboxInstanceSelector(ctx context.Context, f *util.Factory, args []str
 		if instanceSelectorOpts.ClusterAutoscaler {
 			ig = decorateWithClusterAutoscalerLabels(ig, clusterName)
 		}
-		ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
+		ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, cloud, channel)
 		if err != nil {
 			return err
 		}

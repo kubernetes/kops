@@ -226,7 +226,7 @@ func BuildNodeupModelContext(basedir string) (*NodeupModelContext, error) {
 	return nodeUpModelContext, nil
 }
 
-func mockedPopulateClusterSpec(c *kops.Cluster) (*kops.Cluster, error) {
+func mockedPopulateClusterSpec(c *kops.Cluster, cloud fi.Cloud) (*kops.Cluster, error) {
 	vfs.Context.ResetMemfsContext(true)
 
 	assetBuilder := assets.NewAssetBuilder(c, "")
@@ -235,7 +235,7 @@ func mockedPopulateClusterSpec(c *kops.Cluster) (*kops.Cluster, error) {
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
 	clientset := vfsclientset.NewVFSClientset(basePath)
-	return cloudup.PopulateClusterSpec(clientset, c, assetBuilder)
+	return cloudup.PopulateClusterSpec(clientset, c, cloud, assetBuilder)
 }
 
 // Fixed cert and key, borrowed from the create_kubecfg_test.go test
@@ -307,7 +307,7 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 			t.Fatalf("error from PerformAssignments: %v", err)
 		}
 
-		full, err := mockedPopulateClusterSpec(nodeupModelContext.Cluster)
+		full, err := mockedPopulateClusterSpec(nodeupModelContext.Cluster, cloud)
 		if err != nil {
 			t.Fatalf("unexpected error from mockedPopulateClusterSpec: %v", err)
 		}
