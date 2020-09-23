@@ -84,6 +84,7 @@ var (
 )
 
 type ApplyClusterCmd struct {
+	Cloud   fi.Cloud
 	Cluster *kops.Cluster
 
 	InstanceGroups []*kops.InstanceGroup
@@ -258,10 +259,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	cloud, err := BuildCloud(cluster)
-	if err != nil {
-		return err
-	}
+	cloud := c.Cloud
 
 	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true, cloud)
 	if err != nil {
