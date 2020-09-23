@@ -206,7 +206,12 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 			continue
 		}
 
-		err = cloudup.PerformAssignments(newCluster)
+		cloud, err := cloudup.BuildCloud(newCluster)
+		if err != nil {
+			return err
+		}
+
+		err = cloudup.PerformAssignments(newCluster, cloud)
 		if err != nil {
 			return preservedFile(fmt.Errorf("error populating configuration: %v", err), file, out)
 		}
@@ -220,11 +225,6 @@ func RunEditCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command, ar
 			results.header.addError(fmt.Sprintf("error populating cluster spec: %s", err))
 			containsError = true
 			continue
-		}
-
-		cloud, err := cloudup.BuildCloud(fullCluster)
-		if err != nil {
-			return err
 		}
 
 		err = validation.DeepValidate(fullCluster, instanceGroups, true, cloud)

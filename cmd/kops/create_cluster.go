@@ -493,7 +493,12 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		return err
 	}
 
-	err = cloudup.PerformAssignments(cluster)
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	err = cloudup.PerformAssignments(cluster, cloud)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}

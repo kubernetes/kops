@@ -30,7 +30,12 @@ import (
 
 // UpdateCluster writes the updated cluster to the state store, after performing validation
 func UpdateCluster(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup) error {
-	err := cloudup.PerformAssignments(cluster)
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	err = cloudup.PerformAssignments(cluster, cloud)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
