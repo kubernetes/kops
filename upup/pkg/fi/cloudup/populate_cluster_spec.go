@@ -43,6 +43,8 @@ import (
 var EtcdClusters = []string{"main", "events"}
 
 type populateClusterSpec struct {
+	cloud fi.Cloud
+
 	// InputCluster is the api object representing the whole cluster, as input by the user
 	// We build it up into a complete config, but we write the values as input
 	InputCluster *kopsapi.Cluster
@@ -56,8 +58,9 @@ type populateClusterSpec struct {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
+func PopulateClusterSpec(clientset simple.Clientset, cluster *kopsapi.Cluster, cloud fi.Cloud, assetBuilder *assets.AssetBuilder) (*kopsapi.Cluster, error) {
 	c := &populateClusterSpec{
+		cloud:        cloud,
 		InputCluster: cluster,
 		assetBuilder: assetBuilder,
 	}
@@ -83,6 +86,8 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		return errs.ToAggregate()
 	}
 
+	cloud := c.cloud
+
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &kopsapi.Cluster{}
 
@@ -94,11 +99,6 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	}
 
 	err = cluster.FillDefaults()
-	if err != nil {
-		return err
-	}
-
-	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
 	}

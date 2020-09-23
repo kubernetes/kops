@@ -59,7 +59,7 @@ var awsDedicatedInstanceExceptions = map[string]bool{
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
-func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, channel *kops.Channel) (*kops.InstanceGroup, error) {
+func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, cloud fi.Cloud, channel *kops.Channel) (*kops.InstanceGroup, error) {
 	var err error
 	err = validation.ValidateInstanceGroup(input, nil).ToAggregate()
 	if err != nil {
@@ -72,7 +72,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	// TODO: Clean up
 	if ig.IsMaster() {
 		if ig.Spec.MachineType == "" {
-			ig.Spec.MachineType, err = defaultMachineType(cluster, ig)
+			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {
 				return nil, fmt.Errorf("error assigning default machine type for masters: %v", err)
 			}
@@ -86,7 +86,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	} else if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		if ig.Spec.MachineType == "" {
-			ig.Spec.MachineType, err = defaultMachineType(cluster, ig)
+			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {
 				return nil, fmt.Errorf("error assigning default machine type for bastions: %v", err)
 			}
@@ -99,7 +99,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	} else {
 		if ig.Spec.MachineType == "" {
-			ig.Spec.MachineType, err = defaultMachineType(cluster, ig)
+			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {
 				return nil, fmt.Errorf("error assigning default machine type for nodes: %v", err)
 			}
@@ -123,7 +123,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 		case kops.CloudProviderAWS:
 			if _, ok := awsDedicatedInstanceExceptions[ig.Spec.MachineType]; ok {
-				return nil, fmt.Errorf("Invalid dedicated instance type: %s", ig.Spec.MachineType)
+				return nil, fmt.Errorf("invalid dedicated instance type: %s", ig.Spec.MachineType)
 			}
 		default:
 			klog.Warning("Trying to set tenancy on non-AWS environment")
@@ -132,7 +132,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	if ig.IsMaster() {
 		if len(ig.Spec.Subnets) == 0 {
-			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
+			return nil, fmt.Errorf("master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
 		}
 	} else {
 		if len(ig.Spec.Subnets) == 0 {
@@ -152,13 +152,9 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 }
 
 // defaultMachineType returns the default MachineType for the instance group, based on the cloudprovider
-func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
+func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		cloud, err := BuildCloud(cluster)
-		if err != nil {
-			return "", fmt.Errorf("error building cloud for AWS cluster: %v", err)
-		}
 
 		instanceType, err := cloud.(awsup.AWSCloud).DefaultInstanceType(cluster, ig)
 		if err != nil {
@@ -189,11 +185,6 @@ func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, 
 		}
 
 	case kops.CloudProviderOpenstack:
-		cloud, err := BuildCloud(cluster)
-		if err != nil {
-			return "", fmt.Errorf("error building cloud for Openstack cluster: %v", err)
-		}
-
 		instanceType, err := cloud.(openstack.OpenstackCloud).DefaultInstanceType(cluster, ig)
 		if err != nil {
 			return "", fmt.Errorf("error finding default machine type: %v", err)
