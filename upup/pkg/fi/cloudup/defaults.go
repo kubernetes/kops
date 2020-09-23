@@ -103,7 +103,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	pd := cloud.ProviderID()
 	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderALI {
 		// TODO: Use vpcInfo
-		err := assignCIDRsToSubnets(c)
+		err := assignCIDRsToSubnets(c, cloud)
 		if err != nil {
 			return err
 		}
