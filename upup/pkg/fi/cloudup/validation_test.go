@@ -37,23 +37,6 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	if len(c.Spec.EtcdClusters) == 0 {
-
-		for _, etcdCluster := range EtcdClusters {
-
-			etcd := api.EtcdClusterSpec{}
-			etcd.Name = etcdCluster
-			for _, subnet := range c.Spec.Subnets {
-				m := api.EtcdMemberSpec{}
-				m.Name = subnet.Zone
-				m.InstanceGroup = fi.String("master-" + subnet.Name)
-				etcd.Members = append(etcd.Members, m)
-			}
-			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
-		}
-
-	}
-
 	fullSpec, err := mockedPopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
