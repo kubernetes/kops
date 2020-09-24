@@ -227,7 +227,13 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	if options.CloudOnly {
 		fmt.Fprintf(out, "Instance %v found for deletion\n", cloudMember.ID)
 	} else {
-		fmt.Fprintf(out, "Instance %v (%v) found for deletion\n", cloudMember.ID, cloudMember.Node.Name)
+		if cloudMember.Node != nil {
+			fmt.Fprintf(out, "Instance %v (%v) found for deletion\n", cloudMember.ID, cloudMember.Node.Name)
+		} else {
+			fmt.Fprintf(os.Stderr, "Instance is not a member of the cluster\n")
+			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a deletion without confirming progress with the k8s API\n\n")
+			return fmt.Errorf("error finding node name for instance: %v", cloudMember.ID)
+		}
 	}
 
 	if !options.Yes {
