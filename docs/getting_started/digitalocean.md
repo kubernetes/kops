@@ -68,3 +68,7 @@ kops delete cluster dev5.k8s.local --yes
 kops for DigitalOcean currently does not support these features:
 
 * rolling update for instance groups
+
+# Next steps
+
+Now that you have a working _kops_ cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure _kops_ for production workloads.
