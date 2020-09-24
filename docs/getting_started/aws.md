@@ -403,17 +403,10 @@ delete your cluster and everything contained within it!
 kops delete cluster --name ${NAME} --yes
 ```
 
-# What's next?
 
-We've barely scratched the surface of the capabilities of `kops` in this guide,
-and we recommend researching [other interesting
-modes](commands.md#other-interesting-modes) to learn more about generating
-Terraform configurations, or running your cluster in an HA (Highly Available)
-mode.
+## Next steps
 
-The [cluster spec docs](../cluster_spec.md) can help to configure these "other
-interesting modes". Also be sure to check out how to run a [private network
-topology](../topology.md) in AWS.
+Now that you have a working _kops_ cluster, read through the [recommendations for production setups guide](production.md)
 
 ## Feedback
 
