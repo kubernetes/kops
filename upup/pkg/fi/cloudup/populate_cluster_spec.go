@@ -301,7 +301,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	fullCluster.Spec = *completed
 
 	if errs := validation.ValidateCluster(fullCluster, true); len(errs) != 0 {
-		return fmt.Errorf("Completed cluster failed validation: %v", errs.ToAggregate())
+		return fmt.Errorf("completed cluster failed validation: %v", errs.ToAggregate())
 	}
 
 	c.fullCluster = fullCluster
