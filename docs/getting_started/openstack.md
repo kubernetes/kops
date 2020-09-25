@@ -216,3 +216,7 @@ spec:
     openstack:
       insecureSkipVerify: true
 ```
+
+# Next steps
+
+Now that you have a working _kops_ cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure _kops_ for production workloads.
