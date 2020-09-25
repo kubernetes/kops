@@ -46,6 +46,7 @@ nav:
     - kops Commands: "getting_started/commands.md"
     - kops Arguments: "getting_started/arguments.md"
     - kubectl usage: "getting_started/kubectl.md"
+    - Production setup: "getting_started/production.md"
   - CLI:
     - kops: "cli/kops.md"
     - kops completion: "cli/kops_completion.md"
