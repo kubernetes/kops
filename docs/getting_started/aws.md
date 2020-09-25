@@ -263,7 +263,7 @@ If your S3 bucket has a default encryption set up, kops will use it:
 aws s3api put-bucket-encryption --bucket prefix-example-com-state-store --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 ```
 
-If the default encryption is not set or it cannot be checked, kops will resort to using client side AES256 encryption.
+If the default encryption is not set or it cannot be checked, kops will resort to using server-side AES256 bucket encryption with [Amazon S3-Managed Encryption Keys (SSE-S3)](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingServerSideEncryption.html).
 
 ### Sharing an S3 bucket across multiple accounts
 
