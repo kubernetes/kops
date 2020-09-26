@@ -1014,7 +1014,7 @@ spec:
             - --cloud-provider={{ $.CloudProvider }}
             - --expander={{ .Expander }}
             {{ range $name, $spec := GetNodeInstanceGroups }}
-            - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}
+            - --nodes={{ $spec.MinSize }}:{{ $spec.MaxSize }}:{{ $name }}.{{ ClusterName }}
             {{ end }}
             - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
             - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}
