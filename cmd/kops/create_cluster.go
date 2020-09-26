@@ -148,7 +148,7 @@ var (
 		--yes
 
 	# Generate a cluster spec to apply later.
-	# Run the following, then: kops create -f filename.yamlh
+	# Run the following, then: kops create -f filename.yaml
 	kops create cluster --name=kubernetes-cluster.example.com \
 		--state=s3://kops-state-1234 \
 		--zones=eu-west-1a \
