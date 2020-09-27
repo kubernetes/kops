@@ -242,6 +242,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 
 	d := &instancegroups.RollingUpdateCluster{
+		Ctx:               ctx,
 		MasterInterval:    0,
 		NodeInterval:      0,
 		BastionInterval:   0,
@@ -270,7 +271,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 	d.ClusterValidator = clusterValidator
 
-	return d.UpdateSingleInstance(ctx, cloudMember, options.Surge)
+	return d.UpdateSingleInstance(cloudMember, options.Surge)
 }
 
 func deleteNodeMatch(cloudMember *cloudinstances.CloudInstance, options *deleteInstanceOptions) bool {
