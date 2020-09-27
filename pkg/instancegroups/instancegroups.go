@@ -69,7 +69,7 @@ func promptInteractive(upgradedHostID, upgradedHostName string) (stopPrompting b
 }
 
 // RollingUpdate performs a rolling update on a list of instances.
-func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, cluster *api.Cluster, group *cloudinstances.CloudInstanceGroup, sleepAfterTerminate time.Duration) (err error) {
+func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.CloudInstanceGroup, sleepAfterTerminate time.Duration) (err error) {
 	isBastion := group.InstanceGroup.IsBastion()
 	// Do not need a k8s client if you are doing cloudonly.
 	if c.K8sClient == nil && !c.CloudOnly {
@@ -94,13 +94,13 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 	}
 
 	if !c.CloudOnly {
-		err = c.taintAllNeedUpdate(ctx, group, update)
+		err = c.taintAllNeedUpdate(group, update)
 		if err != nil {
 			return err
 		}
 	}
 
-	settings := resolveSettings(cluster, group.InstanceGroup, numInstances)
+	settings := resolveSettings(c.Cluster, group.InstanceGroup, numInstances)
 
 	runningDrains := 0
 	maxSurge := settings.MaxSurge.IntValue()
@@ -162,7 +162,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, c
 
 	for uIdx, u := range update {
 		go func(m *cloudinstances.CloudInstance) {
-			terminateChan <- c.drainTerminateAndWait(ctx, m, sleepAfterTerminate)
+			terminateChan <- c.drainTerminateAndWait(m, sleepAfterTerminate)
 		}(u)
 		runningDrains++
 
@@ -260,7 +260,7 @@ func waitForPendingBeforeReturningError(runningDrains int, terminateChan chan er
 	return err
 }
 
-func (c *RollingUpdateCluster) taintAllNeedUpdate(ctx context.Context, group *cloudinstances.CloudInstanceGroup, update []*cloudinstances.CloudInstance) error {
+func (c *RollingUpdateCluster) taintAllNeedUpdate(group *cloudinstances.CloudInstanceGroup, update []*cloudinstances.CloudInstance) error {
 	var toTaint []*corev1.Node
 	for _, u := range update {
 		if u.Node != nil && !u.Node.Spec.Unschedulable {
@@ -282,7 +282,7 @@ func (c *RollingUpdateCluster) taintAllNeedUpdate(ctx context.Context, group *cl
 		}
 		klog.Infof("Tainting %d %s in %q instancegroup.", len(toTaint), noun, group.InstanceGroup.Name)
 		for _, n := range toTaint {
-			if err := c.patchTaint(ctx, n); err != nil {
+			if err := c.patchTaint(n); err != nil {
 				if c.FailOnDrainError {
 					return fmt.Errorf("failed to taint node %q: %v", n, err)
 				}
@@ -293,7 +293,7 @@ func (c *RollingUpdateCluster) taintAllNeedUpdate(ctx context.Context, group *cl
 	return nil
 }
 
-func (c *RollingUpdateCluster) patchTaint(ctx context.Context, node *corev1.Node) error {
+func (c *RollingUpdateCluster) patchTaint(node *corev1.Node) error {
 	oldData, err := json.Marshal(node)
 	if err != nil {
 		return err
@@ -314,14 +314,14 @@ func (c *RollingUpdateCluster) patchTaint(ctx context.Context, node *corev1.Node
 		return err
 	}
 
-	_, err = c.K8sClient.CoreV1().Nodes().Patch(ctx, node.Name, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{})
+	_, err = c.K8sClient.CoreV1().Nodes().Patch(c.Ctx, node.Name, types.StrategicMergePatchType, patchBytes, metav1.PatchOptions{})
 	if apierrors.IsNotFound(err) {
 		return nil
 	}
 	return err
 }
 
-func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *cloudinstances.CloudInstance, sleepAfterTerminate time.Duration) error {
+func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInstance, sleepAfterTerminate time.Duration) error {
 	instanceID := u.ID
 
 	nodeName := ""
@@ -360,7 +360,7 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(ctx context.Context, u *clo
 			klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceID)
 		} else {
 			klog.Infof("deleting node %q from kubernetes", nodeName)
-			if err := c.deleteNode(ctx, u.Node); err != nil {
+			if err := c.deleteNode(u.Node); err != nil {
 				return fmt.Errorf("error deleting node %q: %v", nodeName, err)
 			}
 		}
@@ -551,9 +551,9 @@ func (c *RollingUpdateCluster) drainNode(u *cloudinstances.CloudInstance) error 
 }
 
 // deleteNode deletes a node from the k8s API.  It does not delete the underlying instance.
-func (c *RollingUpdateCluster) deleteNode(ctx context.Context, node *corev1.Node) error {
+func (c *RollingUpdateCluster) deleteNode(node *corev1.Node) error {
 	var options metav1.DeleteOptions
-	err := c.K8sClient.CoreV1().Nodes().Delete(ctx, node.Name, options)
+	err := c.K8sClient.CoreV1().Nodes().Delete(c.Ctx, node.Name, options)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil
@@ -566,7 +566,7 @@ func (c *RollingUpdateCluster) deleteNode(ctx context.Context, node *corev1.Node
 }
 
 // UpdateSingeInstance performs a rolling update on a single instance
-func (c *RollingUpdateCluster) UpdateSingleInstance(ctx context.Context, cloudMember *cloudinstances.CloudInstance, detach bool) error {
+func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.CloudInstance, detach bool) error {
 	if detach {
 		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
 			klog.Warning("cannot detach master instances. Assuming --surge=false")
@@ -581,5 +581,5 @@ func (c *RollingUpdateCluster) UpdateSingleInstance(ctx context.Context, cloudMe
 		}
 	}
 
-	return c.drainTerminateAndWait(ctx, cloudMember, 0)
+	return c.drainTerminateAndWait(cloudMember, 0)
 }
