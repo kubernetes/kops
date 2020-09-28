@@ -42,6 +42,7 @@ spec:
   networkCIDR: 172.20.0.0/16
   additionalNetworkCIDRs:
   - 10.1.0.0/16
+  - 10.2.0.0/16
   networking:
     kubenet: {}
   nodePortAccess:
