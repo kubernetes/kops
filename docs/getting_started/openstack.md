@@ -5,7 +5,7 @@ OpenStack support on kops is currently **beta**, which means that OpenStack supp
 
 ## OpenStack requirements
 
-In order to deploy a kops-managed clustr on OpenStack, you need the following OpenStack servces:
+In order to deploy a kops-managed cluster on OpenStack, you need the following OpenStack services:
 
 * Nova (compute)
 * Neutron (networking)
