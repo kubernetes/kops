@@ -931,7 +931,7 @@
         "VpcId": {
           "Ref": "AWSEC2VPCcomplexexamplecom"
         },
-        "CidrBlock": "10.2.0.0/16"
+        "CidrBlock": "10.1.0.0/16"
       }
     },
     "AWSEC2VPCCidrBlock1020016": {

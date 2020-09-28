@@ -48,10 +48,21 @@ func (e *VPCCIDRBlock) Find(c *fi.Context) (*VPCCIDRBlock, error) {
 		return nil, err
 	}
 
+	found := false
+	for _, cba := range vpc.CidrBlockAssociationSet {
+		if fi.StringValue(cba.CidrBlock) == fi.StringValue(e.CIDRBlock) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return nil, nil
+	}
+
 	actual := &VPCCIDRBlock{
 		CIDRBlock: e.CIDRBlock,
+		VPC:       &VPC{ID: vpc.VpcId},
 	}
-	actual.VPC = &VPC{ID: vpc.VpcId}
 
 	// Prevent spurious changes
 	actual.Shared = e.Shared
