@@ -93,7 +93,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle: b.Lifecycle,
 				VPC:       b.LinkToVPC(),
 				Shared:    fi.Bool(sharedVPC),
-				CIDRBlock: &cidr,
+				CIDRBlock: s(cidr),
 			})
 		}
 	}
