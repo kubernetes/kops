@@ -732,7 +732,12 @@ resource "aws_vpc_dhcp_options" "complex-example-com" {
 }
 
 resource "aws_vpc_ipv4_cidr_block_association" "cidr-10-1-0-0--16" {
-  cidr_block = "10.1.0.0/16"
+  cidr_block = "10.2.0.0/16"
+  vpc_id     = aws_vpc.complex-example-com.id
+}
+
+resource "aws_vpc_ipv4_cidr_block_association" "cidr-10-2-0-0--16" {
+  cidr_block = "10.2.0.0/16"
   vpc_id     = aws_vpc.complex-example-com.id
 }
 
