@@ -52,6 +52,7 @@ spec:
       dnsPolicy: Default
       hostNetwork: true
       nodeSelector:
+        kops.k8s.io/kops-controller-pki: ""
         node-role.kubernetes.io/master: ""
       priorityClassName: system-node-critical
       serviceAccount: kops-controller
