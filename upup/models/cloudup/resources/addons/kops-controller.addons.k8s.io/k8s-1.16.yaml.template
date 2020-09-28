@@ -41,6 +41,7 @@ spec:
         operator: Exists
       nodeSelector:
         node-role.kubernetes.io/master: ""
+        kops.k8s.io/kops-controller-pki: ""
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       serviceAccount: kops-controller

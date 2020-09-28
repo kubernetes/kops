@@ -40,7 +40,8 @@ func bootstrapMasterNodeLabels(ctx context.Context, kubeContext *KubernetesConte
 	}
 
 	labels := map[string]string{
-		"node-role.kubernetes.io/master": "",
+		"node-role.kubernetes.io/master":  "",
+		"kops.k8s.io/kops-controller-pki": "",
 	}
 
 	shouldPatch := false
