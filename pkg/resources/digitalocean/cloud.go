@@ -96,7 +96,6 @@ func NewCloud(region string) (*Cloud, error) {
 	}, nil
 }
 
-// GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
@@ -107,9 +106,8 @@ func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time")
 }
 
-// DeleteInstance is not implemented yet, is func needs to delete a DO instance.
 func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
-
+	klog.Warning("This does not work without running kops update cluster --yes in another terminal")
 	dropletID, err := strconv.Atoi(i.ID)
 	if err != nil {
 		return fmt.Errorf("failed to convert droplet ID to int: %s", err)
