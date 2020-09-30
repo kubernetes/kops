@@ -386,7 +386,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(bool)
 		**out = **in
 	}
-	in.Hubble.DeepCopyInto(&out.Hubble)
+	if in.Hubble != nil {
+		in, out := &in.Hubble, &out.Hubble
+		*out = new(HubbleSpec)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 
