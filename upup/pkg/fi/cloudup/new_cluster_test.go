@@ -276,7 +276,6 @@ func TestSetupNetworking(t *testing.T) {
 					Networking: &api.NetworkingSpec{
 						Cilium: &api.CiliumNetworkingSpec{
 							EnableNodePort: true,
-							Hubble:         api.HubbleSpec{},
 						},
 					},
 				},
@@ -295,7 +294,6 @@ func TestSetupNetworking(t *testing.T) {
 						Cilium: &api.CiliumNetworkingSpec{
 							EnableNodePort: true,
 							EtcdManaged:    true,
-							Hubble:         api.HubbleSpec{},
 						},
 					},
 				},

@@ -166,7 +166,7 @@ data:
   {{ end }}
   {{ end }}
 
-  {{ if .Hubble.Enabled }}
+  {{ if WithDefaultBool .Hubble.Enabled false }}
   # Enable Hubble gRPC service.
   enable-hubble: "true"
   # UNIX domain socket for Hubble server to listen to.
@@ -835,7 +835,7 @@ spec:
       {{ end }}
 {{ end }}
 
-{{ if .Networking.Cilium.Hubble.Enabled }}
+{{ if WithDefaultBool .Networking.Cilium.Hubble.Enabled false }}
 ---
 # Source: cilium/charts/hubble-relay/templates/service.yaml
 kind: Service
