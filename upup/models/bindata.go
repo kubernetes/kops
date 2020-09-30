@@ -18530,7 +18530,7 @@ func cloudupResourcesAddonsNodeAuthorizerAddonsK8sIoK8s112YamlTemplate() (*asset
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate = []byte(`{{ with .Components.NodeTerminationHandler }}
+var _cloudupResourcesAddonsNodeTerminationHandlerAwsK8s111YamlTemplate = []byte(`{{ with .NodeTerminationHandler }}
 # Sourced from https://github.com/aws/aws-node-termination-handler/releases/download/v1.7.0/all-resources.yaml
 ---
 # Source: aws-node-termination-handler/templates/serviceaccount.yaml
@@ -18543,7 +18543,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.7.0"
+    app.kubernetes.io/version: "1.8.0"
 ---
 # Source: aws-node-termination-handler/templates/clusterrole.yaml
 kind: ClusterRole
@@ -18608,7 +18608,7 @@ metadata:
     app.kubernetes.io/name: aws-node-termination-handler
     app.kubernetes.io/instance: aws-node-termination-handler
     k8s-app: aws-node-termination-handler
-    app.kubernetes.io/version: "1.7.0"
+    app.kubernetes.io/version: "1.8.0"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -18652,7 +18652,7 @@ spec:
       dnsPolicy: "ClusterFirstWithHostNet"
       containers:
         - name: aws-node-termination-handler
-          image: amazon/aws-node-termination-handler:v1.7.0
+          image: amazon/aws-node-termination-handler:v1.8.0
           imagePullPolicy: IfNotPresent
           securityContext:
             readOnlyRootFilesystem: true
