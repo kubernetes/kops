@@ -1470,7 +1470,7 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 			klog.Warningf("Zone %q has message: %q", zone, aws.StringValue(message.Message))
 		}
 
-		if aws.StringValue(z.State) != "available" {
+		if aws.StringValue(z.State) != ec2.AvailabilityZoneStateAvailable {
 			klog.Warningf("Zone %q has state %q", zone, aws.StringValue(z.State))
 		}
 	}
@@ -1608,9 +1608,9 @@ func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (set
 	request := &ec2.DescribeReservedInstancesOfferingsInput{}
 	request.InstanceTenancy = aws.String("default")
 	request.IncludeMarketplace = aws.Bool(false)
-	request.OfferingClass = aws.String("standard")
-	request.OfferingType = aws.String("No Upfront")
-	request.ProductDescription = aws.String("Linux/UNIX (Amazon VPC)")
+	request.OfferingClass = aws.String(ec2.OfferingClassTypeStandard)
+	request.OfferingType = aws.String(ec2.OfferingTypeValuesNoUpfront)
+	request.ProductDescription = aws.String(ec2.RIProductDescriptionLinuxUnixamazonVpc)
 	request.InstanceType = aws.String(instanceType)
 
 	zones := sets.NewString()

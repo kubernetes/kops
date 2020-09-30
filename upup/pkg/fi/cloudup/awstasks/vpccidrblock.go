@@ -50,7 +50,8 @@ func (e *VPCCIDRBlock) Find(c *fi.Context) (*VPCCIDRBlock, error) {
 
 	found := false
 	for _, cba := range vpc.CidrBlockAssociationSet {
-		if fi.StringValue(cba.CidrBlock) == fi.StringValue(e.CIDRBlock) {
+		if fi.StringValue(cba.CidrBlock) == fi.StringValue(e.CIDRBlock) &&
+			cba.CidrBlockState != nil && fi.StringValue(cba.CidrBlockState.State) == ec2.VpcCidrBlockStateCodeAssociated {
 			found = true
 			break
 		}
