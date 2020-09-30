@@ -44,9 +44,15 @@ type VPC struct {
 	Shared *bool
 
 	Tags map[string]string
+
+	// AssociateExtraCIDRBlocks contains a list of cidr blocks that should be
+	// associated with the VPC; any other CIDR blocks should be disassociated.
+	// The associations themselves are created through the VPCCIDRBlock awstask.
+	AssociateExtraCIDRBlocks []string
 }
 
 var _ fi.CompareWithID = &VPC{}
+var _ fi.ProducesDeletions = &VPC{}
 
 func (e *VPC) CompareWithID() *string {
 	return e.ID
@@ -109,6 +115,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 	actual.Lifecycle = e.Lifecycle
 	actual.Name = e.Name // Name is part of Tags
+	actual.AssociateExtraCIDRBlocks = e.AssociateExtraCIDRBlocks
 
 	return actual, nil
 }
@@ -192,6 +199,53 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 	}
 
 	return t.AddAWSTags(*e.ID, e.Tags)
+}
+
+func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+	if fi.StringValue(e.ID) == "" {
+		return nil, nil
+	}
+
+	var removals []fi.Deletion
+	request := &ec2.DescribeVpcsInput{
+		VpcIds: []*string{e.ID},
+	}
+	cloud := c.Cloud.(awsup.AWSCloud)
+	response, err := cloud.EC2().DescribeVpcs(request)
+	if err != nil {
+		return nil, err
+	}
+	if response == nil || len(response.Vpcs) == 0 {
+		return nil, nil
+	}
+
+	if len(response.Vpcs) != 1 {
+		return nil, fmt.Errorf("found multiple VPCs matching tags")
+	}
+	vpc := response.Vpcs[0]
+	for _, association := range vpc.CidrBlockAssociationSet {
+		// We'll only delete CIDR associations that are not the primary association
+		// and that have a state of "associated"
+		if fi.StringValue(association.CidrBlock) == fi.StringValue(vpc.CidrBlock) ||
+			association.CidrBlockState != nil && fi.StringValue(association.CidrBlockState.State) != ec2.VpcCidrBlockStateCodeAssociated {
+			continue
+		}
+		match := false
+		for _, cidr := range e.AssociateExtraCIDRBlocks {
+			if fi.StringValue(association.CidrBlock) == cidr {
+				match = true
+				break
+			}
+		}
+		if !match {
+			removals = append(removals, &deleteVPCCIDRBlock{
+				vpcID:         vpc.VpcId,
+				cidrBlock:     association.CidrBlock,
+				associationID: association.AssociationId,
+			})
+		}
+	}
+	return removals, nil
 }
 
 type terraformVPC struct {
@@ -279,4 +333,33 @@ func (e *VPC) CloudformationLink() *cloudformation.Literal {
 	}
 
 	return cloudformation.Ref("AWS::EC2::VPC", *e.Name)
+}
+
+type deleteVPCCIDRBlock struct {
+	vpcID         *string
+	cidrBlock     *string
+	associationID *string
+}
+
+var _ fi.Deletion = &deleteVPCCIDRBlock{}
+
+func (d *deleteVPCCIDRBlock) Delete(t fi.Target) error {
+
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+	request := &ec2.DisassociateVpcCidrBlockInput{
+		AssociationId: d.associationID,
+	}
+	_, err := awsTarget.Cloud.EC2().DisassociateVpcCidrBlock(request)
+	return err
+}
+
+func (d *deleteVPCCIDRBlock) TaskName() string {
+	return "VPCCIDRBlock"
+}
+
+func (d *deleteVPCCIDRBlock) Item() string {
+	return fmt.Sprintf("%v: cidr=%v", *d.vpcID, *d.cidrBlock)
 }
