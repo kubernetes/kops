@@ -12,16 +12,6 @@ data:
   spotinst.cluster-identifier: {{ ClusterName }}
 ---
 # ------------------------------------------
-# Secret
-# ------------------------------------------
-apiVersion: v1
-kind: Secret
-metadata:
-  name: spotinst-kubernetes-cluster-controller-certs
-  namespace: kube-system
-type: Opaque
----
-# ------------------------------------------
 # Service Account
 # ------------------------------------------
 apiVersion: v1
@@ -102,9 +92,6 @@ spec:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
         image: spotinst/kubernetes-cluster-controller:1.0.39
-        volumeMounts:
-        - name: spotinst-kubernetes-cluster-controller-certs
-          mountPath: /certs
         livenessProbe:
           httpGet:
             path: /healthcheck
@@ -127,10 +114,6 @@ spec:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: spotinst.cluster-identifier
-      volumes:
-      - name: spotinst-kubernetes-cluster-controller-certs
-        secret:
-          secretName: spotinst-kubernetes-cluster-controller-certs
       serviceAccountName: spotinst-kubernetes-cluster-controller
       tolerations:
       - key: node-role.kubernetes.io/master
