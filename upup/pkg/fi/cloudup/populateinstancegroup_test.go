@@ -43,7 +43,7 @@ func buildMinimalMasterInstanceGroup(subnet string) *kopsapi.InstanceGroup {
 }
 
 func TestPopulateInstanceGroup_Name_Required(t *testing.T) {
-	cluster := buildMinimalCluster()
+	_, cluster := buildMinimalCluster()
 	g := buildMinimalNodeInstanceGroup()
 	g.ObjectMeta.Name = ""
 
@@ -53,7 +53,7 @@ func TestPopulateInstanceGroup_Name_Required(t *testing.T) {
 }
 
 func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
-	cluster := buildMinimalCluster()
+	_, cluster := buildMinimalCluster()
 	g := buildMinimalNodeInstanceGroup()
 	g.Spec.Role = ""
 
@@ -63,7 +63,12 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 }
 
 func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *kopsapi.Cluster, g *kopsapi.InstanceGroup, channel *kopsapi.Channel, message string) {
-	_, err := PopulateInstanceGroupSpec(cluster, g, channel)
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	_, err = PopulateInstanceGroupSpec(cluster, g, cloud, channel)
 	if err == nil {
 		t.Fatalf("Expected error from PopulateInstanceGroup")
 	}

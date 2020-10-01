@@ -23,7 +23,7 @@ import (
 )
 
 func TestPopulateClusterSpec_Proxy(t *testing.T) {
-	c := buildMinimalCluster()
+	_, c := buildMinimalCluster()
 
 	c.Spec.EgressProxy = &kops.EgressProxySpec{
 		ProxyExcludes: "google.com",

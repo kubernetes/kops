@@ -88,7 +88,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		t.Fatalf("error from PerformAssignments for %q: %v", key, err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(cluster)
+	fullSpec, err := mockedPopulateClusterSpec(cluster, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec for %q: %v", key, err)
 	}

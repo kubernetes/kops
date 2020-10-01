@@ -108,7 +108,7 @@ func (x *ConvertKubeupCluster) Upgrade(ctx context.Context) error {
 	}
 
 	assetBuilder := assets.NewAssetBuilder(cluster, "")
-	fullCluster, err := cloudup.PopulateClusterSpec(x.Clientset, cluster, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(x.Clientset, cluster, x.Cloud, assetBuilder)
 	if err != nil {
 		return err
 	}
