@@ -139,7 +139,9 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to find floating ip: %v", err)
 		}
-
+		if fip == nil {
+			return nil, nil
+		}
 		actual := &FloatingIP{
 			Name:      fi.String(fip.Description),
 			ID:        fi.String(fip.ID),
@@ -192,7 +194,9 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to find floating ip: %v", err)
 			}
-
+			if fip == nil {
+				return nil, nil
+			}
 			actual := &FloatingIP{
 				Name:      fi.String(fip.Description),
 				ID:        fi.String(fip.ID),
@@ -206,20 +210,20 @@ func (e *FloatingIP) Find(c *fi.Context) (*FloatingIP, error) {
 	return nil, nil
 }
 
-func findFipByPortID(cloud openstack.OpenstackCloud, id string) (fip l3floatingip.FloatingIP, err error) {
+func findFipByPortID(cloud openstack.OpenstackCloud, id string) (fip *l3floatingip.FloatingIP, err error) {
 	fips, err := cloud.ListL3FloatingIPs(l3floatingip.ListOpts{
 		PortID: id,
 	})
 	if err != nil {
-		return fip, fmt.Errorf("failed to list layer 3 floating ips for port ID %s: %v", id, err)
+		return nil, fmt.Errorf("failed to list layer 3 floating ips for port ID %s: %v", id, err)
 	}
 	if len(fips) == 0 {
-		return fip, nil
+		return nil, nil
 	}
 	if len(fips) > 1 {
-		return fip, fmt.Errorf("multiple floating ips associated to port: %s", id)
+		return nil, fmt.Errorf("multiple floating ips associated to port: %s", id)
 	}
-	return fips[0], nil
+	return &fips[0], nil
 }
 
 func (e *FloatingIP) Run(c *fi.Context) error {
@@ -266,12 +270,11 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 
 		opts := l3floatingip.CreateOpts{
 			FloatingNetworkID: external.ID,
+			Description:       fi.StringValue(e.Name),
 		}
 
 		if e.LB != nil {
 			opts.PortID = fi.StringValue(e.LB.PortID)
-		} else {
-			opts.Description = fi.StringValue(e.Name)
 		}
 
 		// instance floatingips comes from the same subnet as the kubernetes API floatingip
