@@ -46,6 +46,10 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		c.Spec.Topology = &kops.TopologySpec{Masters: kops.TopologyPublic, Nodes: kops.TopologyPublic}
 	}
 
+	if cloud == nil {
+		return fmt.Errorf("cloud cannot be nil")
+	}
+
 	if cloud.ProviderID() == kops.CloudProviderGCE {
 		if err := gce.PerformNetworkAssignments(c, cloud); err != nil {
 			return err
@@ -99,7 +103,7 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 	pd := cloud.ProviderID()
 	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderALI {
 		// TODO: Use vpcInfo
-		err := assignCIDRsToSubnets(c)
+		err := assignCIDRsToSubnets(c, cloud)
 		if err != nil {
 			return err
 		}

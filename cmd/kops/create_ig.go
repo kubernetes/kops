@@ -160,7 +160,12 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Com
 
 	ig.Spec.Subnets = options.Subnets
 
-	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, cloud, channel)
 	if err != nil {
 		return err
 	}
@@ -226,11 +231,6 @@ func RunCreateInstanceGroup(ctx context.Context, f *util.Factory, cmd *cobra.Com
 		group, ok := obj.(*kopsapi.InstanceGroup)
 		if !ok {
 			return fmt.Errorf("unexpected object type: %T", obj)
-		}
-
-		cloud, err := cloudup.BuildCloud(cluster)
-		if err != nil {
-			return err
 		}
 
 		err = validation.CrossValidateInstanceGroup(group, cluster, cloud).ToAggregate()

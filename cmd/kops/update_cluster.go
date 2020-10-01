@@ -266,7 +266,13 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		lifecycleOverrideMap[taskName] = lifecycleOverride
 	}
 
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return nil, err
+	}
+
 	applyCmd := &cloudup.ApplyClusterCmd{
+		Cloud:              cloud,
 		Clientset:          clientset,
 		Cluster:            cluster,
 		DryRun:             isDryrun,

@@ -99,7 +99,7 @@ func Test_AssignSubnets(t *testing.T) {
 		c.Spec.NetworkCIDR = "10.0.0.0/8"
 		c.Spec.Subnets = test.subnets
 
-		err := assignCIDRsToSubnets(c)
+		err := assignCIDRsToSubnets(c, nil)
 		if err != nil {
 			t.Fatalf("unexpected error on test %d: %v", i+1, err)
 		}
