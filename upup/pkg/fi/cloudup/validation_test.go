@@ -30,19 +30,14 @@ import (
 const MockAWSRegion = "us-mock-1"
 
 func buildDefaultCluster(t *testing.T) *api.Cluster {
-	c := buildMinimalCluster()
+	cloud, c := buildMinimalCluster()
 
-	cloud, err := BuildCloud(c)
-	if err != nil {
-		t.Fatalf("error from BuildCloud: %v", err)
-	}
-
-	err = PerformAssignments(c, cloud)
+	err := PerformAssignments(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	fullSpec, err := mockedPopulateClusterSpec(c)
+	fullSpec, err := mockedPopulateClusterSpec(c, cloud)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
 	}
