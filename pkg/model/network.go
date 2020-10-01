@@ -73,6 +73,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// but seems safer to stick with existing behaviour
 
 			t.EnableDNSHostnames = fi.Bool(true)
+			t.AssociateExtraCIDRBlocks = b.Cluster.Spec.AdditionalNetworkCIDRs
 		}
 
 		if b.Cluster.Spec.NetworkID != "" {
@@ -93,7 +94,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle: b.Lifecycle,
 				VPC:       b.LinkToVPC(),
 				Shared:    fi.Bool(sharedVPC),
-				CIDRBlock: &cidr,
+				CIDRBlock: s(cidr),
 			})
 		}
 	}
