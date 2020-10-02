@@ -23,6 +23,8 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/kops/pkg/client/simple"
+
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -33,9 +35,10 @@ import (
 
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
 type RollingUpdateCluster struct {
-	Ctx     context.Context
-	Cluster *api.Cluster
-	Cloud   fi.Cloud
+	Clientset simple.Clientset
+	Ctx       context.Context
+	Cluster   *api.Cluster
+	Cloud     fi.Cloud
 
 	// MasterInterval is the amount of time to wait after stopping a master instance
 	MasterInterval time.Duration
