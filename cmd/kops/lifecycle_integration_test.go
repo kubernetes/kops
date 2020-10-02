@@ -336,7 +336,7 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 	}()
 
 	h.MockKopsVersion("1.19.0-alpha.3")
-	cloud := h.SetupMockOpenstack()
+	cloud := testutils.SetupMockOpenstack()
 
 	var beforeIds []string
 	for id := range AllOpenstackResources(cloud) {

@@ -117,7 +117,6 @@ func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
 }
 
 func deleteInstance(c OpenstackCloud, i *cloudinstances.CloudInstance) error {
-	klog.Warning("This does not work without running kops update cluster --yes in another terminal")
 	return deleteInstanceWithID(c, i.ID)
 }
 

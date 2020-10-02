@@ -328,6 +328,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	}
 
 	d := &instancegroups.RollingUpdateCluster{
+		Clientset:         clientset,
 		Ctx:               ctx,
 		Cluster:           cluster,
 		MasterInterval:    options.MasterInterval,
