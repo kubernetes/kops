@@ -173,7 +173,7 @@ func (m *MockClient) listServers(w http.ResponseWriter, vals url.Values) {
 func (m *MockClient) deleteServer(w http.ResponseWriter, serverID string) {
 	if _, ok := m.servers[serverID]; ok {
 		delete(m.servers, serverID)
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -184,6 +184,11 @@ func (m *MockClient) createServer(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&create)
 	if err != nil {
 		panic("error decoding create server request")
+	}
+
+	if len(create.Server.Networks) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
