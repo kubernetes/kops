@@ -19456,9 +19456,20 @@ metadata:
   name: spotinst-kubernetes-cluster-controller-config
   namespace: kube-system
 data:
-  spotinst.token: {{ SpotinstToken }}
-  spotinst.account: {{ SpotinstAccount }}
   spotinst.cluster-identifier: {{ ClusterName }}
+---
+# ------------------------------------------------------------------------------
+# Secret
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spotinst-kubernetes-cluster-controller
+  namespace: kube-system
+type: Opaque
+data:
+  token: {{ SpotinstTokenBase64 }}
+  account: {{ SpotinstAccountBase64 }}
 ---
 # ------------------------------------------------------------------------------
 # Service Account
@@ -19536,6 +19547,10 @@ rules:
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests/approval"]
   verbs: ["patch", "update"]
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["signers"]
+  resourceNames: ["kubernetes.io/kubelet-serving", "kubernetes.io/kube-apiserver-client-kubelet"]
+  verbs: ["approve"]
   # ----------------------------------------------------------------------------
   # Required by the Spotinst Auto Update feature.
   # ----------------------------------------------------------------------------
@@ -19620,7 +19635,7 @@ spec:
       containers:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
-        image: spotinst/kubernetes-cluster-controller:1.0.64
+        image: spotinst/kubernetes-cluster-controller:1.0.67
         livenessProbe:
           httpGet:
             path: /healthcheck
@@ -19642,14 +19657,28 @@ spec:
         env:
         - name: SPOTINST_TOKEN
           valueFrom:
+            secretKeyRef:
+              name: spotinst-kubernetes-cluster-controller
+              key: token
+              optional: true
+        - name: SPOTINST_ACCOUNT
+          valueFrom:
+            secretKeyRef:
+              name: spotinst-kubernetes-cluster-controller
+              key: account
+              optional: true
+        - name: SPOTINST_TOKEN_LEGACY
+          valueFrom:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: spotinst.token
-        - name: SPOTINST_ACCOUNT
+              optional: true
+        - name: SPOTINST_ACCOUNT_LEGACY
           valueFrom:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: spotinst.account
+              optional: true
         - name: CLUSTER_IDENTIFIER
           valueFrom:
             configMapKeyRef:
@@ -19734,16 +19763,6 @@ data:
   spotinst.cluster-identifier: {{ ClusterName }}
 ---
 # ------------------------------------------
-# Secret
-# ------------------------------------------
-apiVersion: v1
-kind: Secret
-metadata:
-  name: spotinst-kubernetes-cluster-controller-certs
-  namespace: kube-system
-type: Opaque
----
-# ------------------------------------------
 # Service Account
 # ------------------------------------------
 apiVersion: v1
@@ -19824,9 +19843,6 @@ spec:
       - name: spotinst-kubernetes-cluster-controller
         imagePullPolicy: Always
         image: spotinst/kubernetes-cluster-controller:1.0.39
-        volumeMounts:
-        - name: spotinst-kubernetes-cluster-controller-certs
-          mountPath: /certs
         livenessProbe:
           httpGet:
             path: /healthcheck
@@ -19849,10 +19865,6 @@ spec:
             configMapKeyRef:
               name: spotinst-kubernetes-cluster-controller-config
               key: spotinst.cluster-identifier
-      volumes:
-      - name: spotinst-kubernetes-cluster-controller-certs
-        secret:
-          secretName: spotinst-kubernetes-cluster-controller-certs
       serviceAccountName: spotinst-kubernetes-cluster-controller
       tolerations:
       - key: node-role.kubernetes.io/master
