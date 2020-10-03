@@ -202,7 +202,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 }
 
 func (e *VPC) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
-	if fi.StringValue(e.ID) == "" {
+	if fi.IsNilOrEmpty(e.ID) || fi.BoolValue(e.Shared) {
 		return nil, nil
 	}
 
