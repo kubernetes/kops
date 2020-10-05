@@ -2983,6 +2983,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.HousekeepingInterval != nil {
+		in, out := &in.HousekeepingInterval, &out.HousekeepingInterval
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	return
 }
 

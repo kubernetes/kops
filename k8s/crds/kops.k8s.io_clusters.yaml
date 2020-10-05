@@ -1646,6 +1646,9 @@ spec:
                   hostnameOverride:
                     description: HostnameOverride is the hostname used to identify the kubelet instead of the actual hostname.
                     type: string
+                  housekeepingInterval:
+                    description: HousekeepingInterval allows to specify interval between container housekeepings.
+                    type: string
                   imageGCHighThresholdPercent:
                     description: ImageGCHighThresholdPercent is the percent of disk usage after which image garbage collection is always run.
                     format: int32
@@ -1923,6 +1926,9 @@ spec:
                     type: string
                   hostnameOverride:
                     description: HostnameOverride is the hostname used to identify the kubelet instead of the actual hostname.
+                    type: string
+                  housekeepingInterval:
+                    description: HousekeepingInterval allows to specify interval between container housekeepings.
                     type: string
                   imageGCHighThresholdPercent:
                     description: ImageGCHighThresholdPercent is the percent of disk usage after which image garbage collection is always run.
