@@ -205,6 +205,8 @@ type KubeletConfigSpec struct {
 	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
 	// CgroupDriver allows the explicit setting of the kubelet cgroup driver. If omitted, defaults to cgroupfs.
 	CgroupDriver string `json:"cgroupDriver,omitempty" flag:"cgroup-driver"`
+	// HousekeepingInterval allows to specify interval between container housekeepings.
+	HousekeepingInterval *metav1.Duration `json:"housekeepingInterval,omitempty" flag:"housekeeping-interval"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
