@@ -387,7 +387,7 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 }
 
 func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
-	if api.CloudProviderID(c.Cluster.Spec.CloudProvider) != api.CloudProviderOpenstack ||
+	if api.CloudProviderID(c.Cluster.Spec.CloudProvider) != api.CloudProviderOpenstack &&
 		api.CloudProviderID(c.Cluster.Spec.CloudProvider) != api.CloudProviderDO {
 		return nil
 	}
