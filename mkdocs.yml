@@ -92,6 +92,7 @@ nav:
       - etcd backup, restore and encryption: "operations/etcd_backup_restore_encryption.md"
       - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
       - etcd3 Migration: "etcd3-migration.md"
+    - Troubleshooting: "troubleshoot.md"
 
   - Networking:
     - Networking Overview: "networking.md"
