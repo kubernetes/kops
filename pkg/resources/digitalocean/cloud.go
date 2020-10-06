@@ -107,7 +107,6 @@ func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 }
 
 func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstance) error {
-	klog.Warning("This does not work without running kops update cluster --yes in another terminal")
 	dropletID, err := strconv.Atoi(i.ID)
 	if err != nil {
 		return fmt.Errorf("failed to convert droplet ID to int: %s", err)
