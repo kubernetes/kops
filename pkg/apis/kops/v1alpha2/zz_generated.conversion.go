@@ -1318,6 +1318,7 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.CrossSubnet = in.CrossSubnet
+	out.AwsSrcDstCheck = in.AwsSrcDstCheck
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
@@ -1344,6 +1345,7 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.CrossSubnet = in.CrossSubnet
+	out.AwsSrcDstCheck = in.AwsSrcDstCheck
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled

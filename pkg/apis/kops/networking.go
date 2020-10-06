@@ -108,6 +108,9 @@ type CalicoNetworkingSpec struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// CrossSubnet enables Calico's cross-subnet mode when set to true
 	CrossSubnet bool `json:"crossSubnet,omitempty"`
+	// AwsSrcDstCheck enables/disables source/destination checks (AWS only)
+	// Options: "DoNothing" (default) , "Enable" or "Disable"
+	AwsSrcDstCheck string `json:"awsSrcDstCheck,omitempty"`
 	// LogSeverityScreen lets us set the desired log level. (Default: info)
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// MTU to be set in the cni-network-config for calico.

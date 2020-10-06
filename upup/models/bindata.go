@@ -12873,6 +12873,9 @@ spec:
             # Enable Prometheus process metrics collection
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
               value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
+            # Enable / Disable source/destination checks in AWS
+            - name: FELIX_AWSSRCDSTCHECK
+              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}Disable{{- else -}} {{- or .Networking.Calico.AwsSrcDstCheck "DoNothing" -}} {{- end -}}"
           securityContext:
             privileged: true
           resources:
@@ -13042,6 +13045,7 @@ metadata:
 # pod) may not match the receiving machine's address.
 #
 # This only applies for AWS environments.
+# This is a deprecated setting, use awsSrcDstCheck instead
 ---
 
 kind: ClusterRole
@@ -13099,7 +13103,7 @@ metadata:
     k8s-app: k8s-ec2-srcdst
     role.kubernetes.io/networking: "1"
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       k8s-app: k8s-ec2-srcdst
