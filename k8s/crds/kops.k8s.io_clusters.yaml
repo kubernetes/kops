@@ -2122,6 +2122,9 @@ spec:
                   calico:
                     description: CalicoNetworkingSpec declares that we want Calico networking
                     properties:
+                      awsSrcDstCheck:
+                        description: 'AwsSrcDstCheck enables/disables source/destination checks (AWS only) Options: "DoNothing" (default) , "Enable" or "Disable"'
+                        type: string
                       chainInsertMode:
                         description: 'ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom. Leaving the default option is safest to prevent accidentally breaking connectivity. Default: ''insert'' (other options: ''append'')'
                         type: string
