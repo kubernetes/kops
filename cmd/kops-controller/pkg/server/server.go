@@ -175,6 +175,11 @@ func (s *Server) issueCert(name string, pubKey string, id *fi.VerifyResult, vali
 			CommonName:   fmt.Sprintf("system:node:%s", id.NodeName),
 			Organization: []string{rbac.NodesGroup},
 		}
+	case "kubelet-server":
+		issueReq.Subject = pkix.Name{
+			CommonName: id.NodeName,
+		}
+		issueReq.Type = "server"
 	case "kube-proxy":
 		issueReq.Subject = pkix.Name{
 			CommonName: rbac.KubeProxy,
