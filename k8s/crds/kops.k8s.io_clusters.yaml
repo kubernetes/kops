@@ -2088,6 +2088,16 @@ spec:
               masterPublicName:
                 description: MasterPublicName is the external DNS name for the master nodes
                 type: string
+              metricsServer:
+                description: MetricsServerConfig determines the metrics server configuration.
+                properties:
+                  enabled:
+                    description: 'Enabled enables the metrics server. Default: false'
+                    type: boolean
+                  image:
+                    description: 'Image is the docker container used. Default: the latest supported image for the specified kubernetes version.'
+                    type: string
+                type: object
               networkCIDR:
                 description: NetworkCIDR is the CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s This is a real CIDR, not the internal k8s network On AWS, it maps to the VPC CIDR.  It is not required on GCE.
                 type: string
