@@ -563,6 +563,40 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
+	if b.Cluster.Spec.MetricsServer != nil && fi.BoolValue(b.Cluster.Spec.MetricsServer.Enabled) {
+		{
+			key := "metrics-server.addons.k8s.io"
+			version := "0.3.7"
+
+			{
+				location := key + "/k8s-1.11.yaml"
+				id := "k8s-1.11"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-app": "metrics-server"},
+					Manifest:          fi.String(location),
+					KubernetesVersion: "<1.19.0",
+					Id:                id,
+				})
+			}
+			{
+				location := key + "/k8s-1.19.yaml"
+				id := "k8s-1.19"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-app": "metrics-server"},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.19.0",
+					Id:                id,
+				})
+			}
+		}
+	}
+
 	nth := b.Cluster.Spec.NodeTerminationHandler
 
 	if nth != nil && fi.BoolValue(nth.Enabled) {
