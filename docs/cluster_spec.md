@@ -499,6 +499,17 @@ spec:
     protectKernelDefaults: true
 ```
 
+### Housekeeping Interval
+{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.2') }}
+
+The interval between container housekeepings defaults to `10s`. This can be too small or too high for some use cases and can be modified with the following addition to the kubelet spec.
+
+```yaml
+spec:
+  kubelet:
+    housekeepingInterval: 30s
+```
+
 ## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/

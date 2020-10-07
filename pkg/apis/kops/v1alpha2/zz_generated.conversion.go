@@ -4444,6 +4444,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.RotateCertificates = in.RotateCertificates
 	out.ProtectKernelDefaults = in.ProtectKernelDefaults
 	out.CgroupDriver = in.CgroupDriver
+	out.HousekeepingInterval = in.HousekeepingInterval
 	return nil
 }
 
@@ -4532,6 +4533,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.RotateCertificates = in.RotateCertificates
 	out.ProtectKernelDefaults = in.ProtectKernelDefaults
 	out.CgroupDriver = in.CgroupDriver
+	out.HousekeepingInterval = in.HousekeepingInterval
 	return nil
 }
 
