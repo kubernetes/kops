@@ -803,6 +803,16 @@ type ClusterAutoscalerConfig struct {
 	Image *string `json:"image,omitempty"`
 }
 
+// MetricsServerConfig determines the metrics server configuration.
+type MetricsServerConfig struct {
+	// Enabled enables the metrics server.
+	// Default: false
+	Enabled *bool `json:"enabled,omitempty"`
+	// Image is the docker container used.
+	// Default: the latest supported image for the specified kubernetes version.
+	Image *string `json:"image,omitempty"`
+}
+
 // HasAdmissionController checks if a specific admission controller is enabled
 func (c *KubeAPIServerConfig) HasAdmissionController(name string) bool {
 	for _, x := range c.AdmissionControl {
