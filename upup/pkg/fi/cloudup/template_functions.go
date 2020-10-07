@@ -392,7 +392,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	}
 
 	if tf.UseKopsControllerForNodeBootstrap() {
-		certNames := []string{"kubelet"}
+		certNames := []string{"kubelet", "kubelet-server"}
 		signingCAs := []string{fi.CertificateIDCA}
 		if apiModel.UseCiliumEtcd(cluster) {
 			certNames = append(certNames, "etcd-client-cilium")
