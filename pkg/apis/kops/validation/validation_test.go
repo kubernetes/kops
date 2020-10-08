@@ -516,6 +516,39 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					AwsSrcDstCheck: "off",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Unsupported value::calico.awsSrcDstCheck"},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					AwsSrcDstCheck: "Enable",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					AwsSrcDstCheck: "Disable",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					AwsSrcDstCheck: "DoNothing",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
 	}
 	for _, g := range grid {
 		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("calico"))
