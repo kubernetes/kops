@@ -17,6 +17,21 @@ limitations under the License.
 package wellknownports
 
 const (
+	// KopsControllerPort is the port where kops-controller listens.
+	KopsControllerPort = 3988
+
+	// NodeLocalDNSHealthCheck is the port where the node-local-dns health check listens.
+	NodeLocalDNSHealthCheck = 3989
+
+	// KubeAPIServerHealthCheck is the port where kube-apiserver-healthcheck listens.
+	KubeAPIServerHealthCheck = 3990
+
+	EtcdCiliumGRPC                  = 3991
+	EtcdCiliumQuarantinedClientPort = 3992
+
+	// DNSControllerGossipMemberlist is the port where dns-controller listens for the memberlist-backed gossip
+	DNSControllerGossipMemberlist = 3993
+
 	// EtcdMainQuarantinedClientPort is the port used by etcd when quarantined, for the main etcd
 	EtcdMainQuarantinedClientPort = 3994
 
@@ -29,9 +44,6 @@ const (
 	// EtcdEventsGRPC is the GRPC port used by etcd-manager, for the events etcd
 	EtcdEventsGRPC = 3997
 
-	EtcdCiliumQuarantinedClientPort = 3992
-	EtcdCiliumGRPC                  = 3991
-
 	// DNSControllerGossipWeaveMesh is the port where dns-controller listens for the weave-mesh backend gossip
 	DNSControllerGossipWeaveMesh = 3998
 
@@ -41,28 +53,16 @@ const (
 	// ProtokubeGossipMemberlist is the port where protokube listens for the memberlist-backed gossip
 	ProtokubeGossipMemberlist = 4000
 
-	// DNSControllerGossipMemberlist is the port where dns-controller listens for the memberlist-backed gossip
-	DNSControllerGossipMemberlist = 3993
-
-	// KopsControllerPort is the port where kops-controller listens.
-	KopsControllerPort = 3988
+	// CiliumOperatorPrometheusPort is the port the Cilium Operator exposes metrics
+	CiliumPrometheusOperatorPort = 6942
 
 	// 4001 is etcd main, 4002 is etcd events, 4003 is etcd cilium
-
-	// KubeAPIServerHealthCheck is the port where kube-apiserver-healthcheck listens.
-	KubeAPIServerHealthCheck = 3990
-
-	// NodeLocalDNSHealthCheck is the port where the node-local-dns health check listens.
-	NodeLocalDNSHealthCheck = 3989
 
 	// CiliumPrometheusPort is the default port where Cilium exposes metrics
 	CiliumPrometheusPort = 9090
 
 	// CiliumHubblePrometheusPort is the default port where Hubble exposes metrics
 	CiliumHubblePrometheusPort = 9091
-
-	// CiliumOperatorPrometheusPort is the port the Cilium Operator exposes metrics
-	CiliumPrometheusOperatorPort = 6942
 )
 
 type PortRange struct {
