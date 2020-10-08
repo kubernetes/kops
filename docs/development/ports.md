@@ -13,7 +13,7 @@ See also pkg/wellknownports/wellknownports.go
 | 179  | Calico                                   |
 | 2380 | etcd main peering                        |
 | 2381 | etcd events peering                      |
-| 3992 | dns gossip - protokube - memberlist      |
+| 3988 | dns gossip - protokube - memberlist      |
 | 3993 | dns gossip - dns-controller - memberlist |
 | 3994 | etcd-manager - main - quarantined        |
 | 3995 | etcd-manager - events - quarantined      |
