@@ -79,7 +79,7 @@ while IFS='' read -r line; do
   all_packages+=("./$line")
 done < <( find -H . -type f -name \*.go | sed 's|/[^/]*$||' | sed 's|^./||' | LC_ALL=C sort -u |
             grep "^${FOCUS:-.}" |
-            grep -vE "(third_party|generated|clientset_generated|vendor|/_)" |
+            grep -vE "(third_party|generated|clientset_generated|vendor|/_|tests/e2e)" | # Temporarily ignoring tests/e2e because it is a separate go module
             grep -vE "$ignore_pattern" )
 
 failing_packages=()
