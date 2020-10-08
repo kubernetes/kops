@@ -24,6 +24,7 @@ GOBIN="${TMP_OUT}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/g
 
 gazelle_diff=$("${TMP_OUT}/gazelle" fix \
   -external=vendored \
+  -exclude=tests/e2e \
   -mode=diff \
   -proto=disable \
   -repo_root="${KOPS_ROOT}")
