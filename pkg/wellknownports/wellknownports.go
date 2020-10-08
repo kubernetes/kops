@@ -45,7 +45,7 @@ const (
 	DNSControllerGossipMemberlist = 3993
 
 	// KopsControllerPort is the port where kops-controller listens.
-	KopsControllerPort = 3992
+	KopsControllerPort = 3988
 
 	// 4001 is etcd main, 4002 is etcd events, 4003 is etcd cilium
 
