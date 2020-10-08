@@ -55,11 +55,18 @@ To enable this mode in a cluster, add the following to the cluster spec:
     calico:
       crossSubnet: true
 ```
-
 In the case of AWS, EC2 instances have source/destination checks enabled by default.
-When you enable cross-subnet mode in kops, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
+When you enable cross-subnet mode in kops 1.19+, it is equivalent to: 
+```yaml
+  networking:
+    calico:
+      awsSrcDstCheck: Disable
+      IPIPMode: CrossSubnet
+```
+An IAM policy will be added to all nodes to allow Calico to execute `ec2:DescribeInstances` and `ec2:ModifyNetworkInterfaceAttribute`, as required when [awsSrcDstCheck](https://docs.projectcalico.org/reference/resources/felixconfig#spec) is set.
+For older versions of kops, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
 will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
-Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
+Only the control plane nodes have an IAM policy to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
 
 ### Configuring Calico MTU
 

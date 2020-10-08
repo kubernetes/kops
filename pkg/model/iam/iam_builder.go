@@ -275,6 +275,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCiliumEniPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
 	}
 
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AwsSrcDstCheck != "" {
+		addCalicoSrcDstCheckPermissions(p)
+	}
+
 	return p, nil
 }
 
@@ -308,6 +312,10 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.LyftVPC != nil {
 		addLyftVPCPermissions(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
+	}
+
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.AwsSrcDstCheck != "" {
+		addCalicoSrcDstCheckPermissions(p)
 	}
 
 	return p, nil
@@ -662,6 +670,17 @@ func addECRPermissions(p *Policy) {
 			"ecr:DescribeRepositories",
 			"ecr:ListImages",
 			"ecr:BatchGetImage",
+		),
+		Resource: stringorslice.Slice([]string{"*"}),
+	})
+}
+
+func addCalicoSrcDstCheckPermissions(p *Policy) {
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"ec2:DescribeInstances",
+			"ec2:ModifyNetworkInterfaceAttribute",
 		),
 		Resource: stringorslice.Slice([]string{"*"}),
 	})
