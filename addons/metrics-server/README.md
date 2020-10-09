@@ -1,5 +1,7 @@
 # Kubernetes Metrics Server
 
+**This addon is deprecated. Set `spec.metricsServer.enabled: true` instead**
+
 ## User guide
 
 You can find the user guide in

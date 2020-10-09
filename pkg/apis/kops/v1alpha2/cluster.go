@@ -159,6 +159,8 @@ type ClusterSpec struct {
 
 	// NodeTerminationHandlerConfig determines the cluster autoscaler configuration.
 	NodeTerminationHandler *NodeTerminationHandlerConfig `json:"nodeTerminationHandler,omitempty"`
+	// MetricsServerConfig determines the metrics server configuration.
+	MetricsServer *MetricsServerConfig `json:"metricsServer,omitempty"`
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`

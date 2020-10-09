@@ -56,6 +56,12 @@ var _ fi.ModelBuilder = &KubeletBuilder{}
 
 // Build is responsible for building the kubelet configuration
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	err := b.buildKubeletServingCertificate(c)
+	if err != nil {
+		return fmt.Errorf("error building kubelet server cert: %v", err)
+	}
+
 	kubeletConfig, err := b.buildKubeletConfig()
 	if err != nil {
 		return fmt.Errorf("error building kubelet config: %v", err)
@@ -224,6 +230,11 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		} else {
 			flags += " --container-runtime-endpoint=unix://" + fi.StringValue(b.Cluster.Spec.Containerd.Address)
 		}
+	}
+
+	if b.UseKopsControllerForNodeBootstrap() {
+		flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
+		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
@@ -537,4 +548,51 @@ func (b *KubeletBuilder) buildMasterKubeletKubeconfig(c *fi.ModelBuilderContext)
 	}
 
 	return b.BuildIssuedKubeconfig("kubelet", certName, c), nil
+}
+
+func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContext) error {
+
+	if b.UseKopsControllerForNodeBootstrap() {
+		name := "kubelet-server"
+		dir := b.PathSrvKubernetes()
+		signer := fi.CertificateIDCA
+
+		nodeName, err := b.NodeName()
+		if err != nil {
+			return err
+		}
+
+		if !b.IsMaster {
+			cert, key := b.GetBootstrapCert(name)
+
+			c.AddTask(&nodetasks.File{
+				Path:     filepath.Join(dir, name+".crt"),
+				Contents: cert,
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("0644"),
+			})
+
+			c.AddTask(&nodetasks.File{
+				Path:     filepath.Join(dir, name+".key"),
+				Contents: key,
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("0400"),
+			})
+
+		} else {
+			issueCert := &nodetasks.IssueCert{
+				Name:   name,
+				Signer: signer,
+				Type:   "server",
+				Subject: nodetasks.PKIXName{
+					CommonName: nodeName,
+				},
+				AlternateNames: []string{nodeName},
+			}
+			c.AddTask(issueCert)
+			return issueCert.AddFileTasks(c, dir, name, "", nil)
+		}
+	}
+	return nil
+
 }
