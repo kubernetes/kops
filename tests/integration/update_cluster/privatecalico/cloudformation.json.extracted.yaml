@@ -155,7 +155,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     configOverride: |
       disabled_plugins = ["cri"]
     logLevel: info
-    version: 1.2.13
+    version: 1.3.7
   docker:
     ipMasq: false
     ipTables: false
@@ -165,7 +165,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersprivatecalicoexamplecom.Prope
     - max-size=10m
     - max-file=5
     storage: overlay2,overlay,aufs
-    version: 19.03.11
+    version: 19.03.13
   encryptionConfig: null
   etcdClusters:
     events:
@@ -490,7 +490,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
     configOverride: |
       disabled_plugins = ["cri"]
     logLevel: info
-    version: 1.2.13
+    version: 1.3.7
   docker:
     ipMasq: false
     ipTables: false
@@ -500,7 +500,7 @@ Resources.AWSEC2LaunchTemplatenodesprivatecalicoexamplecom.Properties.LaunchTemp
     - max-size=10m
     - max-file=5
     storage: overlay2,overlay,aufs
-    version: 19.03.11
+    version: 19.03.13
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
