@@ -35,6 +35,7 @@ func TestSetClusterFields(t *testing.T) {
 				"spec.kubernetesVersion=1.8.2",
 				"spec.kubelet.authorizationMode=Webhook",
 				"spec.kubelet.authenticationTokenWebhook=true",
+				"spec.sshAccess=1.2.3.4/5,9.9.9.9/9",
 			},
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
@@ -48,6 +49,7 @@ func TestSetClusterFields(t *testing.T) {
 						AuthorizationMode:          "Webhook",
 						AuthenticationTokenWebhook: fi.Bool(true),
 					},
+					SSHAccess: []string{"1.2.3.4/5", "9.9.9.9/9"},
 				},
 			},
 		},
