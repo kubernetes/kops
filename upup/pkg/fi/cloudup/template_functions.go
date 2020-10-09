@@ -131,6 +131,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
+	dest["UseKopsControllerForNodeBootstrap"] = func() bool {
+		return tf.UseKopsControllerForNodeBootstrap()
+	}
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
@@ -392,7 +395,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 	}
 
 	if tf.UseKopsControllerForNodeBootstrap() {
-		certNames := []string{"kubelet"}
+		certNames := []string{"kubelet", "kubelet-server"}
 		signingCAs := []string{fi.CertificateIDCA}
 		if apiModel.UseCiliumEtcd(cluster) {
 			certNames = append(certNames, "etcd-client-cilium")
