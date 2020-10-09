@@ -233,8 +233,8 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	}
 
 	if b.UseKopsControllerForNodeBootstrap() {
-		flags += " --tls-cert-file " + b.PathSrvKubernetes() + "/kubelet-server.crt"
-		flags += " --tls-private-key-file " + b.PathSrvKubernetes() + "/kubelet-server.key"
+		flags += " --tls-cert-file=" + b.PathSrvKubernetes() + "/kubelet-server.crt"
+		flags += " --tls-private-key-file=" + b.PathSrvKubernetes() + "/kubelet-server.key"
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
@@ -587,6 +587,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.ModelBuilderContex
 				Subject: nodetasks.PKIXName{
 					CommonName: nodeName,
 				},
+				AlternateNames: []string{nodeName},
 			}
 			c.AddTask(issueCert)
 			return issueCert.AddFileTasks(c, dir, name, "", nil)
