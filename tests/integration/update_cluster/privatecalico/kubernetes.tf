@@ -752,12 +752,12 @@ resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2382-4001" {
+resource "aws_security_group_rule" "node-to-master-tcp-2382-4000" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-privatecalico-example-com.id
   source_security_group_id = aws_security_group.nodes-privatecalico-example-com.id
-  to_port                  = 4001
+  to_port                  = 4000
   type                     = "ingress"
 }
 
