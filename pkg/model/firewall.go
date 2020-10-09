@@ -250,10 +250,12 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	}
 
 	if b.Cluster.Spec.Networking.Calico != nil {
-		// Calico needs to access etcd
-		// TODO: Remove, replace with etcd in calico manifest
-		klog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
-		tcpBlocked[4001] = false
+		if b.IsKubernetesLT("1.12") {
+			// Calico needs to access etcd
+			// TODO: Remove, replace with etcd in calico manifest
+			klog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
+			tcpBlocked[4001] = false
+		}
 		protocols = append(protocols, ProtocolIPIP)
 	}
 

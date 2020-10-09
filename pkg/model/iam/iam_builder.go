@@ -570,7 +570,7 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 				}
 
 				// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
-				if networkingSpec.Calico != nil {
+				if cluster.IsKubernetesLT("1.12") && networkingSpec.Calico != nil {
 					calicoClientCert := false
 					for _, x := range cluster.Spec.EtcdClusters {
 						if x.Provider == kops.EtcdProviderTypeManager {
