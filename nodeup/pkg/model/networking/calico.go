@@ -39,7 +39,7 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// @check if tls is enabled and if so, we need to download the client certificates
-	if !b.UseEtcdManager() && b.UseEtcdTLS() {
+	if b.IsKubernetesLT("1.12") && !b.UseEtcdManager() && b.UseEtcdTLS() {
 		name := "calico-client"
 		dirname := "calico"
 		ca := filepath.Join(dirname, "ca.pem")
