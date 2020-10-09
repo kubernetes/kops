@@ -90,7 +90,9 @@ spec:
         args:
           - --cert-dir=/tmp
           - --secure-port=4443
+        {{ if not UseKopsControllerForNodeBootstrap }}
           - --kubelet-insecure-tls
+        {{ end }}
         ports:
         - name: main-port
           containerPort: 4443

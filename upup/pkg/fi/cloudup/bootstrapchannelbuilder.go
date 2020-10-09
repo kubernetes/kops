@@ -577,20 +577,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 					Version:           fi.String(version),
 					Selector:          map[string]string{"k8s-app": "metrics-server"},
 					Manifest:          fi.String(location),
-					KubernetesVersion: "<1.19.0",
-					Id:                id,
-				})
-			}
-			{
-				location := key + "/k8s-1.19.yaml"
-				id := "k8s-1.19"
-
-				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-					Name:              fi.String(key),
-					Version:           fi.String(version),
-					Selector:          map[string]string{"k8s-app": "metrics-server"},
-					Manifest:          fi.String(location),
-					KubernetesVersion: ">=1.19.0",
+					KubernetesVersion: ">=1.11.0",
 					Id:                id,
 				})
 			}

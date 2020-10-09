@@ -131,6 +131,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
+	dest["UseKopsControllerForNodeBootstrap"] = func() bool {
+		return tf.UseKopsControllerForNodeBootstrap()
+	}
 
 	dest["DO_TOKEN"] = func() string {
 		return os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
