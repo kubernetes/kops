@@ -91,6 +91,18 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	var targetLoadBalancer awstasks.DNSTarget
+
+	if b.UseLoadBalancerForAPI() || b.UseLoadBalancerForInternalAPI() {
+		lbSpec := b.Cluster.Spec.API.LoadBalancer
+		switch lbSpec.Class {
+		case kops.LoadBalancerClassClassic, "":
+			targetLoadBalancer = awstasks.DNSTarget(b.LinkToELB("api"))
+		case kops.LoadBalancerClassNetwork:
+			targetLoadBalancer = awstasks.DNSTarget(b.LinkToNLB("api"))
+		}
+	}
+
 	if b.UseLoadBalancerForAPI() {
 		// This will point our external DNS record to the load balancer, and put the
 		// pieces together for kubectl to work
@@ -105,7 +117,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
 				ResourceType:       s("A"),
-				TargetLoadBalancer: awstasks.DNSTarget(b.LinkToELB("api")),
+				TargetLoadBalancer: targetLoadBalancer,
 			}
 			c.AddTask(apiDnsName)
 		}
@@ -125,7 +137,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
 				ResourceType:       s("A"),
-				TargetLoadBalancer: b.LinkToELB("api"),
+				TargetLoadBalancer: targetLoadBalancer,
 			}
 			// Using EnsureTask as MasterInternalName and MasterPublicName could be the same
 			c.EnsureTask(internalApiDnsName)

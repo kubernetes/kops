@@ -26,6 +26,7 @@ import (
 // DefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
 func DefaultDeltaRunMethod(e Task, c *Context) error {
+
 	var a Task
 	var err error
 

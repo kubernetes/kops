@@ -82,7 +82,7 @@ spec:
 
 *AWS only*
 You can choose to have a Network Load Balancer instead of a Classsic Load Balancer.  The `class`
-field should be either `Network` or `Classic` (default). Note: Note: changing the class of load balancer in an existing
+field should be either `Network` or `Classic` (default). Note: changing the class of load balancer in an existing
 cluster is a disruptive operation. Until the masters have gone through a rolling update, new connections to the apiserver will fail due to the old master's TLS certificates containing the old load balancer's IP address.
 ```yaml
 spec:
