@@ -2238,6 +2238,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.RequestTimeout != nil {
+		in, out := &in.RequestTimeout, &out.RequestTimeout
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.MinRequestTimeout != nil {
 		in, out := &in.MinRequestTimeout, &out.MinRequestTimeout
 		*out = new(int32)
