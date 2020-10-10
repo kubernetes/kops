@@ -80,14 +80,19 @@ func (b *KopsModelContext) LinkToELBSecurityGroup(prefix string) *awstasks.Secur
 	return &awstasks.SecurityGroup{Name: &name}
 }
 
-// ELBName returns ELB name plus cluster name
-func (b *KopsModelContext) ELBName(prefix string) string {
+// LBName returns LB name plus cluster name
+func (b *KopsModelContext) LBName(prefix string) string {
 	return prefix + "." + b.ClusterName()
 }
 
 func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.LoadBalancer {
-	name := b.ELBName(prefix)
+	name := b.LBName(prefix)
 	return &awstasks.LoadBalancer{Name: &name}
+}
+
+func (b *KopsModelContext) LinkToNLB(prefix string) *awstasks.NetworkLoadBalancer {
+	name := b.LBName(prefix) //TODO: does this need to change?
+	return &awstasks.NetworkLoadBalancer{Name: &name}
 }
 
 func (b *KopsModelContext) LinkToVPC() *awstasks.VPC {

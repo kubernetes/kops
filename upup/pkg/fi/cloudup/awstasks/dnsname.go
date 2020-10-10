@@ -119,30 +119,77 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 		dnsName := aws.StringValue(found.AliasTarget.DNSName)
 		klog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
 		if dnsName != "" {
-			// TODO: check "looks like" an ELB?
-			lb, err := findLoadBalancerByAlias(cloud, found.AliasTarget)
-			if err != nil {
-				return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
-			}
-			if lb == nil {
-				klog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
-			} else {
-				loadBalancerName := aws.StringValue(lb.LoadBalancerName)
-				tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
-				if err != nil {
-					return nil, err
-				}
-				tags := tagMap[loadBalancerName]
-				nameTag, _ := awsup.FindELBTag(tags, "Name")
-				if nameTag == "" {
-					return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(e.Name))
-				}
-				actual.TargetLoadBalancer = &LoadBalancer{Name: fi.String(nameTag)}
+			if actual.TargetLoadBalancer, err = findDNSTarget(cloud, found.AliasTarget, dnsName, e.Name); err != nil {
+				return nil, err
 			}
 		}
 	}
 
 	return actual, nil
+}
+
+func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+	//TODO: I would like to search dnsName for presence of ".elb" or ".nlb" to simply searching, however both nlb and elb have .elb. in the name at present
+	if ELB, err := findDNSTargetELB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
+		return nil, err
+	} else if ELB != nil {
+		return ELB, nil
+	}
+
+	if NLB, err := findDNSTargetNLB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
+		return nil, err
+	} else if NLB != nil {
+		return NLB, nil
+	}
+
+	return nil, nil
+}
+
+func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+	lb, err := findNetworkLoadBalancerByAlias(cloud, aliasTarget)
+	if err != nil {
+		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
+	}
+	if lb == nil {
+		klog.Warningf("Unable to find network load balancer with DNS name: %q", dnsName)
+	} else {
+		loadBalancerName := aws.StringValue(lb.LoadBalancerName) //TOOD: can we keep these on object
+		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   //TODO: can we keep these on object
+		tagMap, err := describeNetworkLoadBalancerTags(cloud, []string{loadBalancerArn})
+		if err != nil {
+			return nil, err
+		}
+		tags := tagMap[loadBalancerArn]
+		nameTag, _ := awsup.FindELBV2Tag(tags, "Name")
+		if nameTag == "" {
+			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(targetDNSName))
+		}
+		return &NetworkLoadBalancer{Name: fi.String(nameTag)}, nil
+	}
+	return nil, nil
+}
+
+func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+	lb, err := findLoadBalancerByAlias(cloud, aliasTarget)
+	if err != nil {
+		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
+	}
+	if lb == nil {
+		klog.Warningf("Unable to find classic load balancer with DNS name: %q", dnsName)
+	} else {
+		loadBalancerName := aws.StringValue(lb.LoadBalancerName)
+		tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
+		if err != nil {
+			return nil, err
+		}
+		tags := tagMap[loadBalancerName]
+		nameTag, _ := awsup.FindELBTag(tags, "Name")
+		if nameTag == "" {
+			return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(targetDNSName))
+		}
+		return &LoadBalancer{Name: fi.String(nameTag)}, nil
+	}
+	return nil, nil
 }
 
 func (e *DNSName) Run(c *fi.Context) error {

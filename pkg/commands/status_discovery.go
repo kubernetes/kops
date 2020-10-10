@@ -18,6 +18,10 @@ package commands
 
 import (
 	"fmt"
+	"reflect"
+
+	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
@@ -37,6 +41,10 @@ type CloudDiscoveryStatusStore struct {
 
 var _ kops.StatusStore = &CloudDiscoveryStatusStore{}
 
+func isNil(v interface{}) bool {
+	return v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil())
+}
+
 func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
@@ -53,23 +61,34 @@ func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 
 	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
 		name := "api." + cluster.Name
-		lb, err := awstasks.FindLoadBalancerByNameTag(awsCloud, name)
-		if lb == nil {
-			return nil, nil
-		}
+
+		var lbDnsName string
+		var lb interface{}
+
+		lb, err = awstasks.FindLoadBalancerByNameTag(awsCloud, name)
 		if err != nil {
 			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
 		}
+		if !isNil(lb) {
+			lbDnsName = aws.StringValue(lb.(*elb.LoadBalancerDescription).DNSName)
+		} else {
+			lb, err = awstasks.FindNetworkLoadBalancerByNameTag(awsCloud, name)
+			if err != nil {
+				return nil, fmt.Errorf("error looking for AWS NLB: %v", err)
+			}
+			if isNil(lb) {
+				return nil, nil
+			}
+			lbDnsName = aws.StringValue(lb.(*elbv2.LoadBalancer).DNSName)
+		}
+
 		var ingresses []kops.ApiIngressStatus
 
-		if lb != nil {
-			lbDnsName := aws.StringValue(lb.DNSName)
-			if lbDnsName == "" {
-				return nil, fmt.Errorf("found ELB %q, but it did not have a DNSName", name)
-			}
-
-			ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
+		if lbDnsName == "" {
+			return nil, fmt.Errorf("found api LB %q, but it did not have a DNSName", name)
 		}
+
+		ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
 
 		return ingresses, nil
 	}
