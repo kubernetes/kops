@@ -21,8 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/elbv2"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -36,29 +35,12 @@ type NetworkLoadBalancerAttachment struct {
 
 	// LoadBalancerAttachments now support ASGs or direct instances
 	AutoscalingGroup *AutoscalingGroup
-	Subnet           *Subnet
-
-	// Here be dragons..
-	// This will *NOT* unmarshal.. for some reason this pointer is initiated as nil
-	// instead of a pointer to Instance with nil members..
-	Instance *Instance
 }
 
 func (e *NetworkLoadBalancerAttachment) Find(c *fi.Context) (*NetworkLoadBalancerAttachment, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	// Instance only
-	if e.Instance != nil && e.AutoscalingGroup == nil {
-		i, err := e.Instance.Find(c)
-		if err != nil {
-			return nil, fmt.Errorf("unable to find instance: %v", err)
-		}
-		actual := &NetworkLoadBalancerAttachment{}
-		actual.LoadBalancer = e.LoadBalancer
-		actual.Instance = i
-		return actual, nil
-		// ASG only
-	} else if e.AutoscalingGroup != nil && e.Instance == nil {
+	if e.AutoscalingGroup != nil {
 		if aws.StringValue(e.LoadBalancer.LoadBalancerName) == "" {
 			return nil, fmt.Errorf("LoadBalancer did not have LoadBalancerName set")
 		}
@@ -96,7 +78,7 @@ func (e *NetworkLoadBalancerAttachment) Find(c *fi.Context) (*NetworkLoadBalance
 		}
 	} else {
 		// Invalid request
-		return nil, fmt.Errorf("Must specify either an instance or an ASG")
+		return nil, fmt.Errorf("Must specify an ASG")
 	}
 
 	return nil, nil
@@ -122,6 +104,10 @@ func (_ *NetworkLoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, c
 	if e.LoadBalancer == nil {
 		return fi.RequiredField("LoadBalancer")
 	}
+	if e.AutoscalingGroup != nil {
+		return nil
+	}
+
 	loadBalancerName := fi.StringValue(e.LoadBalancer.LoadBalancerName)
 	if loadBalancerName == "" {
 		return fi.RequiredField("LoadBalancer.LoadBalancerName")
@@ -131,30 +117,18 @@ func (_ *NetworkLoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, c
 	if err != nil {
 		return err
 	}
-	if tg == nil { //should this return e.AutoscalingGroup w/ e.LoadBalancer?
+	if tg == nil {
 		return nil
 	}
 
-	if e.AutoscalingGroup != nil && e.Instance == nil {
-		request := &autoscaling.AttachLoadBalancerTargetGroupsInput{}
-		request.TargetGroupARNs = []*string{tg.TargetGroupArn}
-		request.AutoScalingGroupName = e.AutoscalingGroup.Name
+	request := &autoscaling.AttachLoadBalancerTargetGroupsInput{}
+	request.TargetGroupARNs = []*string{tg.TargetGroupArn}
+	request.AutoScalingGroupName = e.AutoscalingGroup.Name
 
-		klog.V(2).Infof("Attaching autoscaling group %q to NLB %q's target group", fi.StringValue(e.AutoscalingGroup.Name), loadBalancerName)
-		_, err = t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(request)
-		if err != nil {
-			return fmt.Errorf("error attaching autoscaling group to NLB's target group: %v", err)
-		}
-	} else if e.AutoscalingGroup == nil && e.Instance != nil {
-		request := &elbv2.RegisterTargetsInput{}
-		request.TargetGroupArn = tg.TargetGroupArn
-		request.Targets = []*elbv2.TargetDescription{{Id: e.Instance.ID}}
-
-		klog.V(2).Infof("Attaching instance %q to NLB %q", fi.StringValue(e.Instance.ID), loadBalancerName)
-		_, err := t.Cloud.ELBV2().RegisterTargets(request)
-		if err != nil {
-			return fmt.Errorf("error attaching instance to NLB: %v", err)
-		}
+	klog.V(2).Infof("Attaching autoscaling group %q to NLB %q's target group", fi.StringValue(e.AutoscalingGroup.Name), loadBalancerName)
+	if _, err = t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(request); err != nil {
+		return fmt.Errorf("error attaching autoscaling group to NLB's target group: %v", err)
 	}
+
 	return nil
 }

@@ -6,6 +6,7 @@ metadata:
 spec:
   api:
     loadBalancer:
+      class: Classic
       type: Public
   authorization:
     rbac: {}

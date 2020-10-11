@@ -321,8 +321,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	//TODO: Add precreated additional security groups to the Master nodes in case of NLB
-
 	// Allow HTTPS to the master instances from the ELB
 	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
 		for _, masterGroup := range masterGroups {

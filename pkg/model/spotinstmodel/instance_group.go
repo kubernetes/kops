@@ -253,10 +253,6 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 		return fmt.Errorf("error building ssh key: %v", err)
 	}
 
-	if true {
-		panic("this code is not ready for NLB")
-	}
-
 	// Load balancer.
 	var lb *awstasks.LoadBalancer
 	switch ig.Spec.Role {
