@@ -435,6 +435,9 @@ type KubeAPIServerConfig struct {
 	// EtcdQuorumRead configures the etcd-quorum-read flag, which forces consistent reads from etcd
 	EtcdQuorumRead *bool `json:"etcdQuorumRead,omitempty" flag:"etcd-quorum-read"`
 
+	// RequestTimeout configures the duration a handler must keep a request open before timing it out. (default 1m0s)
+	RequestTimeout *metav1.Duration `json:"requestTimeout,omitempty" flag:"request-timeout"`
+
 	// MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out.
 	// Currently only honored by the watch request handler
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
