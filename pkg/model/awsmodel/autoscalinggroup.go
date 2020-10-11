@@ -200,6 +200,21 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
 	}
 
+	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
+			sgTask := &awstasks.SecurityGroup{
+				ID:        fi.String("nlb-" + id),
+				Lifecycle: b.SecurityLifecycle,
+				Name:      fi.String("nlb-" + id),
+				Shared:    fi.Bool(true),
+			}
+			if err := c.EnsureTask(sgTask); err != nil {
+				return nil, err
+			}
+			t.SecurityGroups = append(t.SecurityGroups, sgTask)
+		}
+	}
+
 	if volumeType == ec2.VolumeTypeIo1 {
 		if fi.Int32Value(ig.Spec.RootVolumeIops) <= 0 {
 			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIops))
