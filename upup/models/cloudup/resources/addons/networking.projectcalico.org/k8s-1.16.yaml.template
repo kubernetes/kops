@@ -3796,6 +3796,9 @@ spec:
             # Enable Prometheus process metrics collection
             - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
               value: "{{- or .Networking.Calico.PrometheusProcessMetricsEnabled "true" }}"
+            # Enable WireGuard encryption for all on-the-wire pod-to-pod traffic
+            - name: FELIX_WIREGUARDENABLED
+              value: "{{ .Networking.Calico.WireguardEnabled }}"
           securityContext:
             privileged: true
           resources:
