@@ -13100,6 +13100,9 @@ spec:
             # Enable / Disable source/destination checks in AWS
             - name: FELIX_AWSSRCDSTCHECK
               value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}Disable{{- else -}} {{- or .Networking.Calico.AwsSrcDstCheck "DoNothing" -}} {{- end -}}"
+            # Enable WireGuard encryption for all on-the-wire pod-to-pod traffic
+            - name: FELIX_WIREGUARDENABLED
+              value: "{{ .Networking.Calico.WireguardEnabled }}"
           securityContext:
             privileged: true
           resources:
