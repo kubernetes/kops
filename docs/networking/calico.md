@@ -56,7 +56,7 @@ To enable this mode in a cluster, add the following to the cluster spec:
       crossSubnet: true
 ```
 In the case of AWS, EC2 instances have source/destination checks enabled by default.
-When you enable cross-subnet mode in kops 1.19+, it is equivalent to: 
+When you enable cross-subnet mode in kops 1.19+, it is equivalent to:
 ```yaml
   networking:
     calico:
@@ -91,6 +91,19 @@ It is possible to configure Calico to use Typha by editing a cluster and adding 
   networking:
     calico:
       typhaReplicas: 3
+```
+
+### Configuring WireGuard
+{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
+
+Calico supports WireGuard to encrypt pod-to-pod traffic. If you enable this options, WireGuard encryption is automatically enabled for all nodes. At the moment, kops installs WireGuard automatically only when the host OS is *Ubuntu*. For other OSes, WireGuard has to be part of the base image or installed via a hook.
+
+For more details of Calico WireGuard please refer the [Calico Docs](https://docs.projectcalico.org/security/encrypt-cluster-pod-traffic).
+
+```yaml
+  networking:
+    calico:
+      wireguardEnabled: true
 ```
 
 ## Getting help
