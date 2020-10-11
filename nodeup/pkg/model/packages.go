@@ -51,6 +51,9 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "pigz"})
 		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
+		if b.Distribution.IsUbuntu() && b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Calico != nil {
+			c.AddTask(&nodetasks.Package{Name: "wireguard"})
+		}
 	} else if b.Distribution.IsRHELFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_centos.yaml
 		c.AddTask(&nodetasks.Package{Name: "conntrack-tools"})
