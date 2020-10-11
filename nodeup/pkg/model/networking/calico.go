@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // CalicoBuilder configures the etcd TLS support for Calico
@@ -36,6 +37,10 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if networking.Calico == nil {
 		return nil
+	}
+
+	if b.Distribution.IsUbuntu() {
+		c.AddTask(&nodetasks.Package{Name: "wireguard"})
 	}
 
 	// @check if tls is enabled and if so, we need to download the client certificates
