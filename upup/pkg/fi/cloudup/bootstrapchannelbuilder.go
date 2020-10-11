@@ -858,7 +858,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			"k8s-1.7":    "2.6.12-kops.1",
 			"k8s-1.7-v3": "3.8.0-kops.2",
 			"k8s-1.12":   "3.9.6-kops.1",
-			"k8s-1.16":   "3.16.3-kops.1",
+			"k8s-1.16":   "3.16.3-kops.2",
 		}
 
 		{
