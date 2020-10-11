@@ -152,6 +152,9 @@ type CalicoNetworkingSpec struct {
 	TyphaPrometheusMetricsPort int32 `json:"typhaPrometheusMetricsPort,omitempty"`
 	// TyphaReplicas is the number of replicas of Typha to deploy
 	TyphaReplicas int32 `json:"typhaReplicas,omitempty"`
+	// WireguardEnabled enables WireGuard encryption for all on-the-wire pod-to-pod traffic
+	// (default: false)
+	WireguardEnabled bool `json:"wireguardEnabled,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking
