@@ -20,9 +20,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/aws/aws-sdk-go/service/elb"
-	"github.com/aws/aws-sdk-go/service/elbv2"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -63,23 +60,18 @@ func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 		name := "api." + cluster.Name
 
 		var lbDnsName string
-		var lb interface{}
-
-		lb, err = awstasks.FindLoadBalancerByNameTag(awsCloud, name)
-		if err != nil {
-			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
-		}
-		if !isNil(lb) {
-			lbDnsName = aws.StringValue(lb.(*elb.LoadBalancerDescription).DNSName)
-		} else {
-			lb, err = awstasks.FindNetworkLoadBalancerByNameTag(awsCloud, name)
+		if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+			lb, err := awstasks.FindLoadBalancerByNameTag(awsCloud, name)
+			if err != nil {
+				return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
+			}
+			lbDnsName = aws.StringValue(lb.DNSName)
+		} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+			lb, err := awstasks.FindNetworkLoadBalancerByNameTag(awsCloud, name)
 			if err != nil {
 				return nil, fmt.Errorf("error looking for AWS NLB: %v", err)
 			}
-			if isNil(lb) {
-				return nil, nil
-			}
-			lbDnsName = aws.StringValue(lb.(*elbv2.LoadBalancer).DNSName)
+			lbDnsName = aws.StringValue(lb.DNSName)
 		}
 
 		var ingresses []kops.ApiIngressStatus
