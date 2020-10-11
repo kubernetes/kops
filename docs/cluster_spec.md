@@ -2,7 +2,7 @@
 
 The `Cluster` resource contains the specification of the cluster itself.
 
-The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec) reference page. 
+The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec) reference page.
 
 On this page, we will expand on the more important configuration keys.
 
@@ -322,6 +322,19 @@ spec:
   kubeAPIServer:
     maxMutatingRequestsInflight: 450
 ```
+
+### Request Timeout
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+The duration a handler must keep a request open before timing it out and can be overridden by other flags for specific types of requests.
+Note that you must fill empty units of time with zeros. (default 1m0s)
+
+```yaml
+spec:
+  kubeAPIServer:
+    requestTimeout: 3m0s
+```
+
 ### Profiling
 {{ kops_feature_table(kops_added_default='1.18') }}
 
@@ -915,7 +928,7 @@ docker:
   ipMasq: true
   ipTables: true
 ```
- 
+
 ## sshKeyName
 
 In some cases, it may be desirable to use an existing AWS SSH key instead of allowing kops to create a new one.

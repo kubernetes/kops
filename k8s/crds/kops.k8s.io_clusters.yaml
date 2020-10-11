@@ -1031,6 +1031,9 @@ spec:
                   proxyClientKeyFile:
                     description: The apiserver's client key used for outbound requests.
                     type: string
+                  requestTimeout:
+                    description: RequestTimeout configures the duration a handler must keep a request open before timing it out. (default 1m0s)
+                    type: string
                   requestheaderAllowedNames:
                     description: List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
                     items:
