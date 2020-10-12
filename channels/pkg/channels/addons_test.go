@@ -17,7 +17,9 @@ limitations under the License.
 package channels
 
 import (
+	"fmt"
 	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/blang/semver/v4"
@@ -197,6 +199,68 @@ func Test_UnparseableVersion(t *testing.T) {
 	assert.EqualError(t, err, "addon \"testaddon\" has unparseable version \"1.0-kops\": Short version cannot contain PreRelease/Build meta data", "detected invalid version")
 }
 
+func Test_MergeAddons(t *testing.T) {
+	merges := []struct {
+		LeftSide           *AddonMenu
+		RightSide          *AddonMenu
+		ExpectedAfterMerge *AddonMenu
+	}{
+		{
+			LeftSide:           addonMenu(addon(t, "a", "1.0.0", ">=1.18.0", "k8s-1.18")),
+			RightSide:          addonMenu(addon(t, "a", "1.0.1", ">=1.18.0", "k8s-1.18")),
+			ExpectedAfterMerge: addonMenu(addon(t, "a", "1.0.1", ">=1.18.0", "k8s-1.18")),
+		},
+		{
+			LeftSide:           addonMenu(addon(t, "a", "1.0.1", ">=1.18.0", "k8s-1.18")),
+			RightSide:          addonMenu(addon(t, "a", "1.0.0", ">=1.18.0", "k8s-1.18")),
+			ExpectedAfterMerge: addonMenu(addon(t, "a", "1.0.1", ">=1.18.0", "k8s-1.18")),
+		},
+	}
+
+	for _, m := range merges {
+		m.LeftSide.MergeAddons(m.RightSide)
+		if !reflect.DeepEqual(m.LeftSide, m.ExpectedAfterMerge) {
+			t.Errorf("Unexpected AddonMenu merge result,\nMerged:\n%s\nExpected:\n%s\n", addonMenuString(m.LeftSide), addonMenuString(m.ExpectedAfterMerge))
+		}
+	}
+}
+
 func s(v string) *string {
 	return &v
+}
+
+func addon(t *testing.T, name, version, kubernetesVersion, Id string) *Addon {
+	location, err := url.Parse("file://x/y/z")
+	require.NoError(t, err, "parsing file url")
+	return &Addon{
+		Name:            name,
+		ChannelName:     "test",
+		ChannelLocation: *location,
+		Spec: &api.AddonSpec{
+			Name:              &name,
+			Version:           &version,
+			KubernetesVersion: kubernetesVersion,
+			Id:                Id,
+		},
+	}
+}
+
+func addonMenu(addons ...*Addon) *AddonMenu {
+	addonMenu := NewAddonMenu()
+	for _, addon := range addons {
+		addonMenu.Addons[addon.Name] = addon
+	}
+	return addonMenu
+}
+
+func addonString(addon *Addon) string {
+	return fmt.Sprintf("  Addon{Name: %s, Version: %s, KubernetesVersion: %s, Id: %s},\n", *addon.Spec.Name, *addon.Spec.Version, addon.Spec.KubernetesVersion, addon.Spec.Id)
+}
+
+func addonMenuString(addonMenu *AddonMenu) string {
+	addonMenuString := fmt.Sprintf("AddonMenu{\n")
+	for _, addon := range addonMenu.Addons {
+		addonMenuString += addonString(addon)
+	}
+	return addonMenuString + fmt.Sprintf("}\n")
 }
