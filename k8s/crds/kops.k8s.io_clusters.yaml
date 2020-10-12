@@ -2741,6 +2741,10 @@ spec:
                           to deploy
                         format: int32
                         type: integer
+                      wireguardEnabled:
+                        description: 'WireguardEnabled enables WireGuard encryption
+                          for all on-the-wire pod-to-pod traffic (default: false)'
+                        type: boolean
                     type: object
                   canal:
                     description: CanalNetworkingSpec declares that we want Canal networking
