@@ -7,7 +7,3 @@
 .hidden {
 	display: none;
 }
-
-.kops_feature_table .md-typeset__table table{
-	max-width: fit-content;
-}

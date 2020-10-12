@@ -37,7 +37,7 @@ def define_env(env):
         }
 
         # Create the initial strings to which we'll concatenate the relevant columns
-        title = '** FEATURE STATE **\n\n|'
+        title = '|'
         separators = '|'
         values = '|'
 
@@ -51,9 +51,9 @@ def define_env(env):
                 title += f' {header} |'
             separators += ' :-: |'
             if arg == 'k8s_min':
-                values += f' K8s {kwargs[arg]}  |'
+                values += f' K8s {kwargs[arg]} |'
             else:
-                values += f' Kops {kwargs[arg]}  |'
+                values += f' Kops {kwargs[arg]} |'
 
         # Create a list object containing all the table rows,
         # Then return a string object which contains every list item in a new line.
@@ -62,9 +62,7 @@ def define_env(env):
             separators,
             values
         ]
-        table = '\n'.join(table)
-        table = f'<div class="kops_feature_table">{table}</div>'
-        return table
+        return '\n'.join(table)
 
 
 def main():
