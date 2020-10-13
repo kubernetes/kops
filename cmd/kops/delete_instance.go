@@ -242,6 +242,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 
 	d := &instancegroups.RollingUpdateCluster{
+		Cluster:           cluster,
 		Ctx:               ctx,
 		MasterInterval:    0,
 		NodeInterval:      0,
