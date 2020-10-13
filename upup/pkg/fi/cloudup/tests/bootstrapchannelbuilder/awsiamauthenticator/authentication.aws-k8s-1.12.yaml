@@ -61,6 +61,21 @@ rules:
   - create
   - update
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resourceNames:
+  - aws-auth
+  resources:
+  - configmaps
+  verbs:
+  - get
 
 ---
 
@@ -90,6 +105,8 @@ subjects:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
   labels:
     k8s-app: aws-iam-authenticator
   name: aws-iam-authenticator
@@ -113,7 +130,7 @@ spec:
         - --state-dir=/var/aws-iam-authenticator
         - --kubeconfig-pregenerated=true
         - --backend-mode=CRD,MountedFile
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.1-debian-stretch
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.2-debian-stretch
         livenessProbe:
           httpGet:
             host: 127.0.0.1
@@ -128,6 +145,11 @@ spec:
           requests:
             cpu: 10m
             memory: 20Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         volumeMounts:
         - mountPath: /etc/aws-iam-authenticator/
           name: config
