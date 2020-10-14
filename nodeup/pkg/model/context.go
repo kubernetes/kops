@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -598,29 +599,31 @@ func (c *NodeupModelContext) GetPrivateKey(name string) ([]byte, error) {
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
 	for _, assetName := range assetNames {
-		if err := b.addCNIBinAsset(c, assetName); err != nil {
+		re, err := regexp.Compile(fmt.Sprintf("^%s$", assetName))
+		if err != nil {
+			return err
+		}
+		if err := b.addCNIBinAsset(c, re); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (b *NodeupModelContext) addCNIBinAsset(c *fi.ModelBuilderContext, assetName string) error {
-	assetPath := ""
-	asset, err := b.Assets.Find(assetName, assetPath)
-	if err != nil {
-		return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
-	}
-	if asset == nil {
-		return fmt.Errorf("unable to locate asset %q", assetName)
+func (b *NodeupModelContext) addCNIBinAsset(c *fi.ModelBuilderContext, assetPath *regexp.Regexp) error {
+	a := b.Assets.FindMatches(assetPath)
+	if len(a) != 1 {
+		return fmt.Errorf("unable to locate asset %q", assetPath.String())
 	}
 
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(b.CNIBinDir(), assetName),
-		Contents: asset,
-		Type:     nodetasks.FileType_File,
-		Mode:     fi.String("0755"),
-	})
+	for k, v := range a {
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(b.CNIBinDir(), k),
+			Contents: v,
+			Type:     nodetasks.FileType_File,
+			Mode:     fi.String("0755"),
+		})
+	}
 
 	return nil
 }
