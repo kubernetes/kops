@@ -1,14 +1,71 @@
-Name: docker-ce
-hash: 0f4336378f61ed73ed55a356ac19e46699a995f2aff34323ba5874d131548b9e
-mapFiles:
-  docker/docker*: /usr/bin
-source: https://download.docker.com/linux/static/stable/x86_64/docker-19.03.11.tgz
-target: /
----
 contents: |-
   DOCKER_OPTS=
   DOCKER_NOFILE=1000000
 path: /etc/sysconfig/docker
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/containerd
+    Key: containerd
+mode: "0755"
+path: /usr/bin/containerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/containerd-shim
+    Key: containerd-shim
+mode: "0755"
+path: /usr/bin/containerd-shim
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/ctr
+    Key: ctr
+mode: "0755"
+path: /usr/bin/ctr
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker
+    Key: docker
+mode: "0755"
+path: /usr/bin/docker
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-init
+    Key: docker-init
+mode: "0755"
+path: /usr/bin/docker-init
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-proxy
+    Key: docker-proxy
+mode: "0755"
+path: /usr/bin/docker-proxy
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/dockerd
+    Key: dockerd
+mode: "0755"
+path: /usr/bin/dockerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/runc
+    Key: runc
+mode: "0755"
+path: /usr/bin/runc
 type: file
 ---
 contents: |2

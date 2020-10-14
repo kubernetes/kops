@@ -72,6 +72,70 @@ mode: "0755"
 path: /opt/kops/bin/docker-healthcheck
 type: file
 ---
+contents:
+  Asset:
+    AssetPath: docker/containerd
+    Key: containerd
+mode: "0755"
+path: /usr/bin/containerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/containerd-shim
+    Key: containerd-shim
+mode: "0755"
+path: /usr/bin/containerd-shim
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/ctr
+    Key: ctr
+mode: "0755"
+path: /usr/bin/ctr
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker
+    Key: docker
+mode: "0755"
+path: /usr/bin/docker
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-init
+    Key: docker-init
+mode: "0755"
+path: /usr/bin/docker-init
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-proxy
+    Key: docker-proxy
+mode: "0755"
+path: /usr/bin/docker-proxy
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/dockerd
+    Key: dockerd
+mode: "0755"
+path: /usr/bin/dockerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/runc
+    Key: runc
+mode: "0755"
+path: /usr/bin/runc
+type: file
+---
 contents: |2
 
 
@@ -268,11 +332,9 @@ contents: |2
 path: /usr/share/doc/docker/apache.txt
 type: file
 ---
-Name: docker-ce
-hash: 6e9da7303cfa7ef7d4d8035bdc205229dd84e572f29957a9fb36e1351fe88a24
-preventStart: true
-source: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.06.3~ce~3-0~ubuntu_amd64.deb
-version: 18.06.3~ce~3-0~ubuntu
+GID: null
+Name: docker
+System: true
 ---
 Name: docker-healthcheck.service
 definition: |
@@ -337,6 +399,25 @@ definition: |
 
   [Install]
   WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
+---
+Name: docker.socket
+definition: |
+  [Unit]
+  Description=Docker Socket for the API
+  PartOf=docker.service
+
+  [Socket]
+  ListenStream=/var/run/docker.sock
+  SocketMode=0660
+  SocketUser=root
+  SocketGroup=docker
+
+  [Install]
+  WantedBy=sockets.target
 enabled: true
 manageState: true
 running: true
