@@ -225,6 +225,12 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		return client.CoreV1().Pods(metav1.NamespaceAll).List(ctx, opts)
 	})).EachListItem(context.TODO(), metav1.ListOptions{}, func(obj runtime.Object) error {
 		pod := obj.(*v1.Pod)
+
+		app := pod.GetLabels()["k8s-app"]
+		if pod.Namespace == "kube-system" && masterWithoutPod[nodeByAddress[pod.Status.HostIP]][app] {
+			delete(masterWithoutPod[nodeByAddress[pod.Status.HostIP]], app)
+		}
+
 		priority := pod.Spec.PriorityClassName
 		if priority != "system-cluster-critical" && priority != "system-node-critical" {
 			return nil
@@ -261,11 +267,6 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 				Message: fmt.Sprintf("%s pod %q is not ready (%s)", priority, pod.Name, strings.Join(notready, ",")),
 			})
 
-		}
-
-		app := pod.GetLabels()["k8s-app"]
-		if pod.Namespace == "kube-system" && masterWithoutPod[nodeByAddress[pod.Status.HostIP]][app] {
-			delete(masterWithoutPod[nodeByAddress[pod.Status.HostIP]], app)
 		}
 		return nil
 	})
