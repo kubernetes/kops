@@ -391,3 +391,43 @@ func semverString(sv *semver.Version) string {
 	}
 	return sv.String()
 }
+
+// All Image in stable hannel should have a specified upstream image prefix
+func TestStableChannel(t *testing.T) {
+	sourcePath := "../../../channels/stable"
+	sourceBytes, err := ioutil.ReadFile(sourcePath)
+	if err != nil {
+		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
+	}
+
+	channel, err := kops.ParseChannel(sourceBytes)
+	if err != nil {
+		t.Fatalf("failed to parse channel: %v", err)
+	}
+
+	for _, image := range channel.Spec.Images {
+		if !channel.HasUpstreamImagePrefix(image.Name) {
+			t.Errorf("Stable image '%s' has not a recognized prefix. Add the correct prefix to HasUpstreamImagePrefix function", image.Name)
+		}
+	}
+}
+
+// All Image in stable hannel should have a specified upstream image prefix
+func TestAlphaChannel(t *testing.T) {
+	sourcePath := "../../../channels/alpha"
+	sourceBytes, err := ioutil.ReadFile(sourcePath)
+	if err != nil {
+		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
+	}
+
+	channel, err := kops.ParseChannel(sourceBytes)
+	if err != nil {
+		t.Fatalf("failed to parse channel: %v", err)
+	}
+
+	for _, image := range channel.Spec.Images {
+		if !channel.HasUpstreamImagePrefix(image.Name) {
+			t.Errorf("Alpha image channel '%s' has not a recognized prefix. Add the correct prefix to HasUpstreamImagePrefix function", image.Name)
+		}
+	}
+}
