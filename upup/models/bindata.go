@@ -318,6 +318,21 @@ rules:
   - create
   - update
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  resourceNames:
+  - aws-auth
+  verbs:
+  - get
 
 ---
 apiVersion: v1
@@ -348,6 +363,8 @@ metadata:
   name: aws-iam-authenticator
   labels:
     k8s-app: aws-iam-authenticator
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
 spec:
   updateStrategy:
     type: RollingUpdate
@@ -361,6 +378,7 @@ spec:
       labels:
         k8s-app: aws-iam-authenticator
     spec:
+      # use service account with access to
       serviceAccountName: aws-iam-authenticator
 
       # run on the host network (don't depend on CNI)
@@ -382,7 +400,7 @@ spec:
       # - output (output kubeconfig to plug into your apiserver configuration, mounted from the host)
       containers:
       - name: aws-iam-authenticator
-        image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.1-debian-stretch" }}
+        image: {{ or .Authentication.Aws.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-iam-authenticator:v0.5.2-debian-stretch" }}
         args:
         - server
         {{- if or (not .Authentication.Aws.BackendMode) (contains "MountedFile" .Authentication.Aws.BackendMode) }}
@@ -396,6 +414,11 @@ spec:
         {{- if .Authentication.Aws.BackendMode }}
         - --backend-mode={{ .Authentication.Aws.BackendMode }}
         {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
 
         resources:
           requests:
