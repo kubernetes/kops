@@ -19,6 +19,7 @@ package kops
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -320,4 +321,11 @@ func RecommendedKubernetesVersion(c *Channel, kopsVersionString string) *semver.
 	}
 
 	return nil
+}
+
+// Returns true if the given image name has the stable or alpha channel images prefix. Otherwise false.
+func (c *Channel) HasUpstreamImagePrefix(image string) bool {
+	return strings.HasPrefix(image, "kope.io/k8s-") ||
+		strings.HasPrefix(image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-") ||
+		strings.HasPrefix(image, "cos-cloud/cos-stable-")
 }
