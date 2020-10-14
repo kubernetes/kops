@@ -181,7 +181,7 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 			klog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
 		} else {
 			for _, ig := range instanceGroups {
-				if strings.Contains(ig.Spec.Image, "kope.io") {
+				if strings.Contains(ig.Spec.Image, "kope.io") || strings.Contains(ig.Spec.Image, "099720109477/ubuntu") {
 					if ig.Spec.Image != image.Name {
 						target := ig
 						actions = append(actions, &upgradeAction{
