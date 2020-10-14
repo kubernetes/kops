@@ -391,3 +391,27 @@ func semverString(sv *semver.Version) string {
 	}
 	return sv.String()
 }
+
+// All Images in channel should have a specified upstream image prefix
+func TestChannelImages(t *testing.T) {
+	for _, channel := range []string{"stable", "alpha"} {
+		t.Run(channel+"-channel", func(t *testing.T) {
+			sourcePath := "../../../channels/" + channel
+			sourceBytes, err := ioutil.ReadFile(sourcePath)
+			if err != nil {
+				t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
+			}
+
+			channel, err := kops.ParseChannel(sourceBytes)
+			if err != nil {
+				t.Fatalf("failed to parse channel: %v", err)
+			}
+
+			for _, image := range channel.Spec.Images {
+				if !channel.HasUpstreamImagePrefix(image.Name) {
+					t.Errorf("unknown image prefix: %q", image.Name)
+				}
+			}
+		})
+	}
+}
