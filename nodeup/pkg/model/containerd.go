@@ -18,6 +18,8 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
+	"regexp"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -28,7 +30,6 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/distributions"
 )
 
@@ -38,125 +39,6 @@ type ContainerdBuilder struct {
 }
 
 var _ fi.ModelBuilder = &ContainerdBuilder{}
-
-var containerdVersions = []packageVersion{
-	// 1.2.4 - Debian Stretch
-	{
-		PackageVersion: "1.2.4",
-		Name:           "containerd.io",
-		Distros:        []distributions.Distribution{distributions.DistributionDebian9},
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Version:        "1.2.4-1",
-		Source:         "https://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/containerd.io_1.2.4-1_amd64.deb",
-		Hash:           "5d4eeec093bc6f0b35921b88c3939b480acc619c790f4eab001a66efb957e6c1",
-	},
-
-	// 1.2.10 - Linux Generic
-	{
-		PackageVersion: "1.2.10",
-		PlainBinary:    true,
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.2.10.linux-amd64.tar.gz",
-		Hash:           "9125a6ae5a89dfe9403fea7d03a8d8ba9fa97b6863ee8698c4e6c258fb14f1fd",
-		MapFiles: map[string]string{
-			"./usr/local/bin":  "/usr",
-			"./usr/local/sbin": "/usr",
-		},
-	},
-
-	// 1.2.13 - Linux Generic AMD64
-	{
-		PackageVersion: "1.2.13",
-		PlainBinary:    true,
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.11.tgz",
-		Hash:           "0f4336378f61ed73ed55a356ac19e46699a995f2aff34323ba5874d131548b9e",
-		MapFiles: map[string]string{
-			"docker/c*":   "/usr/bin",
-			"docker/runc": "/usr/bin",
-		},
-	},
-
-	// 1.2.13 - Linux Generic ARM64
-	{
-		PackageVersion: "1.2.13",
-		PlainBinary:    true,
-		Architectures:  []architectures.Architecture{architectures.ArchitectureArm64},
-		Source:         "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.11.tgz",
-		Hash:           "9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145",
-		MapFiles: map[string]string{
-			"docker/c*":   "/usr/bin",
-			"docker/runc": "/usr/bin",
-		},
-	},
-
-	// 1.3.4 - Linux Generic AMD64
-	{
-		PackageVersion: "1.3.4",
-		PlainBinary:    true,
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Source:         "https://storage.googleapis.com/cri-containerd-release/cri-containerd-1.3.4.linux-amd64.tar.gz",
-		Hash:           "4616971c3ad21c24f2f2320fa1c085577a91032a068dd56a41c7c4b71a458087",
-		MapFiles: map[string]string{
-			"./usr/local/bin":  "/usr",
-			"./usr/local/sbin": "/usr",
-		},
-	},
-
-	// 1.3.7 - Linux Generic AMD64
-	{
-		PackageVersion: "1.3.7",
-		PlainBinary:    true,
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Source:         "https://download.docker.com/linux/static/stable/x86_64/docker-19.03.13.tgz",
-		Hash:           "ddb13aff1fcdcceb710bf71a210169b9c1abfd7420eeaf42cf7975f8fae2fcc8",
-		MapFiles: map[string]string{
-			"docker/c*":   "/usr/bin",
-			"docker/runc": "/usr/bin",
-		},
-	},
-
-	// 1.3.7 - Linux Generic ARM64
-	{
-		PackageVersion: "1.3.7",
-		PlainBinary:    true,
-		Architectures:  []architectures.Architecture{architectures.ArchitectureArm64},
-		Source:         "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.13.tgz",
-		Hash:           "bdf080af7d6f383ad80e415e9c1952a63c7038c149dc673b7598bfca4d3311ec",
-		MapFiles: map[string]string{
-			"docker/c*":   "/usr/bin",
-			"docker/runc": "/usr/bin",
-		},
-	},
-
-	// 1.4.1 - Linux Generic AMD64
-	{
-		PackageVersion: "1.4.1",
-		PlainBinary:    true,
-		Architectures:  []architectures.Architecture{architectures.ArchitectureAmd64},
-		Source:         "https://github.com/containerd/containerd/releases/download/v1.4.1/cri-containerd-cni-1.4.1-linux-amd64.tar.gz",
-		Hash:           "757efb93a4f3161efc447a943317503d8a7ded5cb4cc0cba3f3318d7ce1542ed",
-		MapFiles: map[string]string{
-			"usr/local/bin":  "/usr",
-			"usr/local/sbin": "/usr",
-		},
-	},
-
-	// TIP: When adding the next version, copy the previous version, string replace the version and run:
-	//   VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run TestContainerdPackageHashes
-	// (you might want to temporarily comment out older versions on a slower connection and then validate)
-}
-
-func (b *ContainerdBuilder) containerdVersion() (string, error) {
-	containerdVersion := ""
-	if b.Cluster.Spec.Containerd != nil {
-		containerdVersion = fi.StringValue(b.Cluster.Spec.Containerd.Version)
-	}
-	if containerdVersion == "" {
-		return "", fmt.Errorf("error finding containerd version")
-	}
-	return containerdVersion, nil
-}
 
 // Build is responsible for configuring the containerd daemon
 func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
@@ -207,75 +89,22 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	containerdVersion, err := b.containerdVersion()
-	if err != nil {
-		return err
-	}
-
-	// Add packages
-	{
-		count := 0
-		for i := range containerdVersions {
-			dv := &containerdVersions[i]
-			if !dv.matches(b.Architecture, containerdVersion, b.Distribution) {
-				continue
-			}
-
-			count++
-
-			var packageTask fi.Task
-			if dv.PlainBinary {
-				packageTask = &nodetasks.Archive{
-					Name:      "containerd.io",
-					Source:    dv.Source,
-					Hash:      dv.Hash,
-					MapFiles:  dv.MapFiles,
-					TargetDir: "/",
-				}
-				c.AddTask(packageTask)
-			} else {
-				var extraPkgs []*nodetasks.Package
-				for name, pkg := range dv.ExtraPackages {
-					dep := &nodetasks.Package{
-						Name:         name,
-						Version:      s(pkg.Version),
-						Source:       s(pkg.Source),
-						Hash:         s(pkg.Hash),
-						PreventStart: fi.Bool(true),
-					}
-					extraPkgs = append(extraPkgs, dep)
-				}
-				packageTask = &nodetasks.Package{
-					Name:    dv.Name,
-					Version: s(dv.Version),
-					Source:  s(dv.Source),
-					Hash:    s(dv.Hash),
-					Deps:    extraPkgs,
-
-					// TODO: PreventStart is now unused?
-					PreventStart: fi.Bool(true),
-				}
-				c.AddTask(packageTask)
-			}
-
-			// As a mitigation for CVE-2019-5736 (possibly a fix, definitely defense-in-depth) we chattr docker-runc to be immutable
-			for _, f := range dv.MarkImmutable {
-				c.AddTask(&nodetasks.Chattr{
-					File: f,
-					Mode: "+i",
-					Deps: []fi.Task{packageTask},
-				})
-			}
-
-			for _, dep := range dv.Dependencies {
-				c.AddTask(&nodetasks.Package{Name: dep})
-			}
-
-			// Note we do _not_ stop looping... centos/rhel comprises multiple packages
+	// Add binaries from assets
+	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+		f := b.Assets.FindMatches(regexp.MustCompile(`^(\./)?usr/local/(bin/containerd|bin/crictl|bin/ctr|sbin/runc)`))
+		if len(f) == 0 {
+			f = b.Assets.FindMatches(regexp.MustCompile(`^docker/(containerd|ctr|runc)`))
 		}
-
-		if count == 0 {
-			klog.Warningf("Did not find containerd package for %s %s %s", b.Distribution, b.Architecture, containerdVersion)
+		if len(f) == 0 {
+			return fmt.Errorf("unable to find any containerd binaries in assets")
+		}
+		for k, v := range f {
+			c.AddTask(&nodetasks.File{
+				Path:     filepath.Join("/usr/bin", k),
+				Contents: v,
+				Type:     nodetasks.FileType_File,
+				Mode:     fi.String("0755"),
+			})
 		}
 	}
 
