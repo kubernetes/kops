@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
@@ -181,7 +180,7 @@ func (c *UpgradeClusterCmd) Run(ctx context.Context, args []string) error {
 			klog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
 		} else {
 			for _, ig := range instanceGroups {
-				if strings.Contains(ig.Spec.Image, "kope.io") {
+				if channel.HasUpstreamImagePrefix(ig.Spec.Image) {
 					if ig.Spec.Image != image.Name {
 						target := ig
 						actions = append(actions, &upgradeAction{
