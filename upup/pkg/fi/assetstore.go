@@ -24,6 +24,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -98,6 +99,21 @@ func NewAssetStore(cacheDir string) *AssetStore {
 	}
 	return a
 }
+
+func (a *AssetStore) FindMatches(expr *regexp.Regexp) map[string]Resource {
+	matches := make(map[string]Resource)
+
+	klog.Infof("Matching assets:")
+	for _, a := range a.assets {
+		if expr.MatchString(a.AssetPath) {
+			klog.Infof("    %s", a.AssetPath)
+			matches[a.Key] = &assetResource{Asset: a}
+		}
+	}
+
+	return matches
+}
+
 func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
 	var matches []*asset
 	for _, asset := range a.assets {
@@ -130,10 +146,10 @@ func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
 }
 
 // Add an asset into the store, in one of the recognized formats (see Assets in types package)
-func (a *AssetStore) AddForTest(id string, content string) {
+func (a *AssetStore) AddForTest(id string, path string, content string) {
 	a.assets = append(a.assets, &asset{
 		Key:       id,
-		AssetPath: "/path/to/" + id + "/asset",
+		AssetPath: path,
 		resource:  NewStringResource(content),
 	})
 }
