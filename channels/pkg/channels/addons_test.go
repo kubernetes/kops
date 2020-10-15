@@ -258,9 +258,9 @@ func addonString(addon *Addon) string {
 }
 
 func addonMenuString(addonMenu *AddonMenu) string {
-	addonMenuString := fmt.Sprintf("AddonMenu{\n")
+	addonMenuString := "AddonMenu{\n"
 	for _, addon := range addonMenu.Addons {
 		addonMenuString += addonString(addon)
 	}
-	return addonMenuString + fmt.Sprintf("}\n")
+	return addonMenuString + "}\n"
 }
