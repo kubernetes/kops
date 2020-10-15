@@ -148,7 +148,7 @@ kind: InstanceGroup
 metadata:
   name: bastions
 spec:
-  image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -222,7 +222,7 @@ bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 For this LAB, the "ELB" FQDN is "bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com" We can "ssh" to it:
 
 ```bash
-ssh -i ~/.ssh/id_rsa admin@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
+ssh -i ~/.ssh/id_rsa ubuntu@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 
 The programs included with the Debian GNU/Linux system are free software;
 the exact distribution terms for each program are described in the
@@ -250,19 +250,20 @@ Identity added: /home/kops/.ssh/id_rsa (/home/kops/.ssh/id_rsa)
 Then, ssh to your bastion ELB FQDN
 
 ```bash
-ssh -A admin@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
+ssh -A ubuntu@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 ```
 
 Or if you want to automate it:
 
 ```bash
-ssh -A admin@`aws elb --output=table describe-load-balancers|grep DNSName.\*bastion|awk '{print $4}'`
+ssh -A ubuntu@`aws elb --output=table describe-load-balancers|grep DNSName.\*bastion|awk '{print $4}'`
 ```
+
 
 And from the bastion, you can ssh to your masters or workers:
 
 ```bash
-admin@ip-172-20-2-64:~$ ssh admin@ip-172-20-53-10.ec2.internal
+ubuntu@ip-172-20-2-64:~$ ssh ubuntu@ip-172-20-53-10.ec2.internal
 
 The authenticity of host 'ip-172-20-53-10.ec2.internal (172.20.53.10)' can't be established.
 ECDSA key fingerprint is d1:30:c6:5e:77:ff:cd:d2:7d:1f:f9:12:e3:b0:28:e4.
@@ -276,7 +277,7 @@ individual files in /usr/share/doc/*/copyright.
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
 permitted by applicable law.
 
-admin@ip-172-20-53-10:~$
+ubuntu@ip-172-20-53-10:~$
 ```
 
 **NOTE:** Remember that you can obtain the local DNS names from your "kops validate cluster" command, or, with the "kubectl get nodes" command. We recommend the first (kops validate cluster) because it will tell you who are the masters and who the worker nodes:
@@ -327,7 +328,7 @@ metadata:
     kops.k8s.io/cluster: privatekopscluster.k8s.local
   name: bastions
 spec:
-  image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
   machineType: t2.micro
   maxSize: 3
   minSize: 3
