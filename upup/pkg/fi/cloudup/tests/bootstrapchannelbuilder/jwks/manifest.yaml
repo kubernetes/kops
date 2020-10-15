@@ -19,7 +19,7 @@ spec:
     name: anonymous-access.addons.k8s.io
     selector:
       k8s-addon: anonymous-access.addons.k8s.io
-    version: 1.19.0-alpha.4
+    version: 1.19.0-alpha.5
   - manifest: core.addons.k8s.io/v1.4.0.yaml
     manifestHash: 3ffe9ac576f9eec72e2bdfbd2ea17d56d9b17b90
     name: core.addons.k8s.io
