@@ -63,8 +63,8 @@ kops create cluster \
 --node-count=2 \
 --topology private \
 --networking kopeio-vxlan \
---node-size=t2.micro \
---master-size=t2.micro \
+--node-size=t3.micro \
+--master-size=t3.micro \
 ${NAME}
 ```
 
@@ -76,7 +76,7 @@ A few things to note here:
 - The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters). Again, real "HA" on Kubernetes control plane requires 3 masters.
 - The "--topology private" argument will ensure that all our instances will have private IP's and no public IP's from amazon.
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
-- Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DON'T USE t2.micro on real production systems. Start with "t2.medium" as a minimum realistic/workable machine type.
+- Because we are just doing a simple LAB, we are using "t3.micro" machines. Please DON'T USE t3.micro on real production systems. Start with "t3.medium" as a minimum realistic/workable machine type.
 - And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kops which networking subsystem to use. More information about kops supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
 
 **NOTE**: You can add the "--bastion" argument here if you are not using "gossip dns" and create the bastion from start, but if you are using "gossip-dns" this will make this cluster to fail (this is a bug we are correcting now). For the moment don't use "--bastion" when using gossip DNS. We'll show you how to get around this by first creating the private cluster, then creation the bastion instance group once the cluster is running.
@@ -98,10 +98,10 @@ Validating cluster privatekopscluster.k8s.local
 
 INSTANCE GROUPS
 NAME                    ROLE    MACHINETYPE     MIN     MAX     SUBNETS
-master-us-east-1a       Master  t2.micro        1       1       us-east-1a
-master-us-east-1b       Master  t2.micro        1       1       us-east-1b
-master-us-east-1c       Master  t2.micro        1       1       us-east-1c
-nodes                   Node    t2.micro        2       2       us-east-1a,us-east-1b,us-east-1c
+master-us-east-1a       Master  t3.micro        1       1       us-east-1a
+master-us-east-1b       Master  t3.micro        1       1       us-east-1b
+master-us-east-1c       Master  t3.micro        1       1       us-east-1c
+nodes                   Node    t3.micro        2       2       us-east-1a,us-east-1b,us-east-1c
 
 NODE STATUS
 NAME                            ROLE    READY
@@ -148,8 +148,8 @@ kind: InstanceGroup
 metadata:
   name: bastions
 spec:
-  image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
-  machineType: t2.micro
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+  machineType: t3.micro
   maxSize: 1
   minSize: 1
   role: Bastion
@@ -195,11 +195,11 @@ Validating cluster privatekopscluster.k8s.local
 
 INSTANCE GROUPS
 NAME                    ROLE    MACHINETYPE     MIN     MAX     SUBNETS
-bastions                Bastion t2.micro        1       1       utility-us-east-1a
-master-us-east-1a       Master  t2.micro        1       1       us-east-1a
-master-us-east-1b       Master  t2.micro        1       1       us-east-1b
-master-us-east-1c       Master  t2.micro        1       1       us-east-1c
-nodes                   Node    t2.micro        2       2       us-east-1a,us-east-1b,us-east-1c
+bastions                Bastion t3.micro        1       1       utility-us-east-1a
+master-us-east-1a       Master  t3.micro        1       1       us-east-1a
+master-us-east-1b       Master  t3.micro        1       1       us-east-1b
+master-us-east-1c       Master  t3.micro        1       1       us-east-1c
+nodes                   Node    t3.micro        2       2       us-east-1a,us-east-1b,us-east-1c
 
 NODE STATUS
 NAME                            ROLE    READY
@@ -222,7 +222,7 @@ bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 For this LAB, the "ELB" FQDN is "bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com" We can "ssh" to it:
 
 ```bash
-ssh -i ~/.ssh/id_rsa admin@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
+ssh -i ~/.ssh/id_rsa ubuntu@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 
 The programs included with the Debian GNU/Linux system are free software;
 the exact distribution terms for each program are described in the
@@ -250,19 +250,20 @@ Identity added: /home/kops/.ssh/id_rsa (/home/kops/.ssh/id_rsa)
 Then, ssh to your bastion ELB FQDN
 
 ```bash
-ssh -A admin@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
+ssh -A ubuntu@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 ```
 
 Or if you want to automate it:
 
 ```bash
-ssh -A admin@`aws elb --output=table describe-load-balancers|grep DNSName.\*bastion|awk '{print $4}'`
+ssh -A ubuntu@`aws elb --output=table describe-load-balancers|grep DNSName.\*bastion|awk '{print $4}'`
 ```
+
 
 And from the bastion, you can ssh to your masters or workers:
 
 ```bash
-admin@ip-172-20-2-64:~$ ssh admin@ip-172-20-53-10.ec2.internal
+ubuntu@ip-172-20-2-64:~$ ssh ubuntu@ip-172-20-53-10.ec2.internal
 
 The authenticity of host 'ip-172-20-53-10.ec2.internal (172.20.53.10)' can't be established.
 ECDSA key fingerprint is d1:30:c6:5e:77:ff:cd:d2:7d:1f:f9:12:e3:b0:28:e4.
@@ -276,7 +277,7 @@ individual files in /usr/share/doc/*/copyright.
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
 permitted by applicable law.
 
-admin@ip-172-20-53-10:~$
+ubuntu@ip-172-20-53-10:~$
 ```
 
 **NOTE:** Remember that you can obtain the local DNS names from your "kops validate cluster" command, or, with the "kubectl get nodes" command. We recommend the first (kops validate cluster) because it will tell you who are the masters and who the worker nodes:
@@ -290,11 +291,11 @@ Validating cluster privatekopscluster.k8s.local
 
 INSTANCE GROUPS
 NAME                    ROLE    MACHINETYPE     MIN     MAX     SUBNETS
-bastions                Bastion t2.micro        1       1       utility-us-east-1a
-master-us-east-1a       Master  t2.micro        1       1       us-east-1a
-master-us-east-1b       Master  t2.micro        1       1       us-east-1b
-master-us-east-1c       Master  t2.micro        1       1       us-east-1c
-nodes                   Node    t2.micro        2       2       us-east-1a,us-east-1b,us-east-1c
+bastions                Bastion t3.micro        1       1       utility-us-east-1a
+master-us-east-1a       Master  t3.micro        1       1       us-east-1a
+master-us-east-1b       Master  t3.micro        1       1       us-east-1b
+master-us-east-1c       Master  t3.micro        1       1       us-east-1c
+nodes                   Node    t3.micro        2       2       us-east-1a,us-east-1b,us-east-1c
 
 NODE STATUS
 NAME                            ROLE    READY
@@ -327,8 +328,8 @@ metadata:
     kops.k8s.io/cluster: privatekopscluster.k8s.local
   name: bastions
 spec:
-  image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
-  machineType: t2.micro
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+  machineType: t3.micro
   maxSize: 3
   minSize: 3
   role: Bastion
