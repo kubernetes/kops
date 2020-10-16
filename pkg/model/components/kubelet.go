@@ -82,8 +82,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.Kubelet.ClusterDNS == "" {
-		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.BoolValue(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) &&
-			((clusterSpec.KubeProxy != nil && clusterSpec.KubeProxy.ProxyMode == "ipvs") || (clusterSpec.Networking != nil && clusterSpec.Networking.Cilium != nil)) {
+		if clusterSpec.KubeDNS != nil && clusterSpec.KubeDNS.NodeLocalDNS != nil && fi.BoolValue(clusterSpec.KubeDNS.NodeLocalDNS.Enabled) {
 			clusterSpec.Kubelet.ClusterDNS = clusterSpec.KubeDNS.NodeLocalDNS.LocalIP
 		} else {
 			ip, err := WellKnownServiceIP(clusterSpec, 10)
