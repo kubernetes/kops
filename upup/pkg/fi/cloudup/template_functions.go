@@ -105,12 +105,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 		return "__PILLAR__CLUSTER__DNS__"
 	}
-	dest["NodeLocalDNSServerIP"] = func() string {
-		if cluster.Spec.KubeProxy.ProxyMode == "ipvs" {
-			return ""
-		}
-		return cluster.Spec.KubeDNS.ServerIP
-	}
 	dest["NodeLocalDNSHealthCheck"] = func() string {
 		return fmt.Sprintf("%d", wellknownports.NodeLocalDNSHealthCheck)
 	}
