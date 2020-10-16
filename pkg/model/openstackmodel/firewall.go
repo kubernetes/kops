@@ -539,8 +539,11 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 
 }
 
-func (b *FirewallModelBuilder) addDefaultEgress(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) {
-	for _, sg := range sgMap {
+func (b *FirewallModelBuilder) addDefaultEgress(c *fi.ModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup, useVIPACL bool) {
+	for name, sg := range sgMap {
+		if useVIPACL && name == b.Cluster.Spec.MasterPublicName {
+			continue
+		}
 		t := &openstacktasks.SecurityGroupRule{
 			Lifecycle:    b.Lifecycle,
 			Direction:    s(string(rules.DirEgress)),
@@ -612,7 +615,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		klog.Warningf("Failed to list existing security groups: %v", err)
 	}
 
-	b.addDefaultEgress(c, sgMap)
+	b.addDefaultEgress(c, sgMap, useVIPACL)
 
 	//Add API Server Rules
 	b.addHTTPSRules(c, sgMap, useVIPACL)
