@@ -59,7 +59,7 @@ func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 		if existing == nil {
 			m.Addons[k] = v
 		} else {
-			if existing.ChannelVersion().replaces(v.ChannelVersion()) {
+			if v.ChannelVersion().replaces(existing.ChannelVersion()) {
 				m.Addons[k] = v
 			}
 		}
