@@ -19029,7 +19029,7 @@ data:
         }
         reload
         loop
-        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
         forward . {{ NodeLocalDNSClusterIP }} {
           force_tcp
         }
@@ -19041,7 +19041,7 @@ data:
         cache 30
         reload
         loop
-        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
         forward . {{ NodeLocalDNSClusterIP }} {
           force_tcp
         }
@@ -19052,7 +19052,7 @@ data:
         cache 30
         reload
         loop
-        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
         forward . {{ NodeLocalDNSClusterIP }} {
           force_tcp
         }
@@ -19063,7 +19063,7 @@ data:
         cache 30
         reload
         loop
-        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}{{ if NodeLocalDNSServerIP }} {{ NodeLocalDNSServerIP }}{{ end }}
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
         forward . __PILLAR__UPSTREAM__SERVERS__
         prometheus :9253
     }
@@ -19105,16 +19105,16 @@ spec:
         operator: "Exists"
       containers:
       - name: node-cache
-        image: k8s.gcr.io/k8s-dns-node-cache:1.15.10
+        image: k8s.gcr.io/dns/k8s-dns-node-cache:1.15.14
         resources:
           requests:
             cpu: {{ KubeDNS.NodeLocalDNS.CPURequest }}
             memory: {{ KubeDNS.NodeLocalDNS.MemoryRequest }}
-        {{ if NodeLocalDNSServerIP }}
-        args: [ "-localip", "{{ .KubeDNS.NodeLocalDNS.LocalIP }},{{ NodeLocalDNSServerIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
-        {{ else }}
-        args: [ "-localip", "{{ .KubeDNS.NodeLocalDNS.LocalIP }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
-        {{ end }}
+        args:
+          - -localip={{ .KubeDNS.NodeLocalDNS.LocalIP }}
+          - -conf=/etc/Corefile
+          - -upstreamsvc=kube-dns-upstream
+          - -setupiptables=false
         securityContext:
           privileged: true
         ports:
