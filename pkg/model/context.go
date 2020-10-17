@@ -331,6 +331,16 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 	return false
 }
 
+// UseClassicLoadBalancer checks if we are using Classic LoadBalancer
+func (m *KopsModelContext) UseClassicLoadBalancer() bool {
+	return m.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic
+}
+
+// UseNetworkLoadBalancer checks if we are using Network LoadBalancer
+func (m *KopsModelContext) UseNetworkLoadBalancer() bool {
+	return m.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork
+}
+
 // UseEtcdManager checks to see if etcd manager is enabled
 func (c *KopsModelContext) UseEtcdManager() bool {
 	for _, x := range c.Cluster.Spec.EtcdClusters {
