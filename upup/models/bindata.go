@@ -7075,32 +7075,86 @@ func cloudupResourcesAddonsNetworkingCiliumIoK8s17YamlTemplate() (*asset, error)
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingFlannelK8s112YamlTemplate = []byte(`kind: ClusterRole
+var _cloudupResourcesAddonsNetworkingFlannelK8s112YamlTemplate = []byte(`# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.13.0/Documentation/kube-flannel.yml
+
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: psp.flannel.unprivileged
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+spec:
+  privileged: false
+  volumes:
+  - configMap
+  - secret
+  - emptyDir
+  - hostPath
+  allowedHostPaths:
+  - pathPrefix: "/etc/cni/net.d"
+  - pathPrefix: "/etc/kube-flannel"
+  - pathPrefix: "/run/flannel"
+  readOnlyRootFilesystem: false
+  # Users and groups
+  runAsUser:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  # Privilege Escalation
+  allowPrivilegeEscalation: false
+  defaultAllowPrivilegeEscalation: false
+  # Capabilities
+  allowedCapabilities: ['NET_ADMIN', 'NET_RAW']
+  defaultAddCapabilities: []
+  requiredDropCapabilities: []
+  # Host namespaces
+  hostPID: false
+  hostIPC: false
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  # SELinux
+  seLinux:
+    # SELinux is unused in CaaSP
+    rule: 'RunAsAny'
+---
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
   labels:
     role.kubernetes.io/networking: "1"
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - get
-  - apiGroups:
-      - ""
-    resources:
-      - nodes
-    verbs:
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - nodes/status
-    verbs:
-      - patch
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames: ['psp.flannel.unprivileged']
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -7117,8 +7171,8 @@ subjects:
   name: flannel
   namespace: kube-system
 ---
-kind: ServiceAccount
 apiVersion: v1
+kind: ServiceAccount
 metadata:
   name: flannel
   namespace: kube-system
@@ -7132,19 +7186,20 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: flannel
+    tier: node
+    app: flannel
     role.kubernetes.io/networking: "1"
 data:
   cni-conf.json: |
     {
-      "cniVersion": "0.2.0",
       "name": "cbr0",
+      "cniVersion": "0.3.1",
       "plugins": [
         {
           "type": "flannel",
           "delegate": {
-            "forceAddress": true,
-            "isDefaultGateway": true,
-            "hairpinMode": true
+            "hairpinMode": true,
+            "isDefaultGateway": true
           }
         },
         {
@@ -7163,13 +7218,15 @@ data:
       }
     }
 ---
-kind: DaemonSet
 apiVersion: apps/v1
+kind: DaemonSet
 metadata:
   name: kube-flannel-ds
   namespace: kube-system
   labels:
     k8s-app: flannel
+    tier: node
+    app: flannel
     role.kubernetes.io/networking: "1"
 spec:
   selector:
@@ -7184,16 +7241,23 @@ spec:
         app: flannel
         role.kubernetes.io/networking: "1"
     spec:
-      priorityClassName: system-node-critical
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
       hostNetwork: true
-      nodeSelector:
-        beta.kubernetes.io/arch: amd64
-      serviceAccountName: flannel
+      priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
+      serviceAccountName: flannel
       initContainers:
       - name: install-cni
-        image: quay.io/coreos/flannel:v0.11.0-amd64
+        image: quay.io/coreos/flannel:v0.13.0
         command:
         - cp
         args:
@@ -7207,14 +7271,23 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: quay.io/coreos/flannel:v0.11.0-amd64
+        image: quay.io/coreos/flannel:v0.13.0
         command:
-        - "/opt/bin/flanneld"
-        - "--ip-masq"
-        - "--kube-subnet-mgr"
-        - "--iptables-resync={{- or .Networking.Flannel.IptablesResyncSeconds "5" }}"
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        - --iptables-resync={{- or .Networking.Flannel.IptablesResyncSeconds "5" }}
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
         securityContext:
-          privileged: true
+          privileged: false
+          capabilities:
+            add: ["NET_ADMIN", "NET_RAW"]
         env:
         - name: POD_NAME
           valueFrom:
@@ -7224,27 +7297,21 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        resources:
-          limits:
-            memory: 100Mi
-          requests:
-            cpu: 100m
-            memory: 100Mi
         volumeMounts:
         - name: run
-          mountPath: /run
+          mountPath: /run/flannel
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
       volumes:
-        - name: run
-          hostPath:
-            path: /run
-        - name: cni
-          hostPath:
-            path: /etc/cni/net.d
-        - name: flannel-cfg
-          configMap:
-            name: kube-flannel-cfg
+      - name: run
+        hostPath:
+          path: /run/flannel
+      - name: cni
+        hostPath:
+          path: /etc/cni/net.d
+      - name: flannel-cfg
+        configMap:
+          name: kube-flannel-cfg
 `)
 
 func cloudupResourcesAddonsNetworkingFlannelK8s112YamlTemplateBytes() ([]byte, error) {
