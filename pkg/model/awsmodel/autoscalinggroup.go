@@ -314,21 +314,21 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		},
 	}
 
-	minSize := int32(1)
-	maxSize := int32(1)
+	minSize := fi.Int64(1)
+	maxSize := fi.Int64(1)
 	if ig.Spec.MinSize != nil {
-		minSize = fi.Int32Value(ig.Spec.MinSize)
+		minSize = fi.Int64(int64(*ig.Spec.MinSize))
 	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-		minSize = 2
+		minSize = fi.Int64(2)
 	}
 	if ig.Spec.MaxSize != nil {
-		maxSize = *ig.Spec.MaxSize
+		maxSize = fi.Int64(int64(*ig.Spec.MaxSize))
 	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-		maxSize = 2
+		maxSize = fi.Int64(2)
 	}
 
-	t.MinSize = fi.Int64(int64(minSize))
-	t.MaxSize = fi.Int64(int64(maxSize))
+	t.MinSize = minSize
+	t.MaxSize = maxSize
 
 	subnets, err := b.GatherSubnets(ig)
 	if err != nil {

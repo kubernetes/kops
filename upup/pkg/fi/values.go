@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 )
 
 func StringValue(s *string) string {
@@ -201,4 +202,23 @@ func DebugAsJsonStringIndent(v interface{}) string {
 		return fmt.Sprintf("error marshaling: %v", err)
 	}
 	return string(data)
+}
+
+func ToInt64(s *string) *int64 {
+	if s == nil {
+		return nil
+	}
+	v, err := strconv.ParseInt(*s, 10, 64)
+	if err != nil {
+		return nil
+	}
+	return &v
+}
+
+func ToString(v *int64) *string {
+	if v == nil {
+		return nil
+	}
+	s := strconv.FormatInt(*v, 10)
+	return &s
 }
