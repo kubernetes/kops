@@ -7095,6 +7095,7 @@ spec:
   - emptyDir
   - hostPath
   allowedHostPaths:
+  - pathPrefix: "/dev/net"
   - pathPrefix: "/etc/cni/net.d"
   - pathPrefix: "/etc/kube-flannel"
   - pathPrefix: "/run/flannel"
@@ -7300,12 +7301,17 @@ spec:
         volumeMounts:
         - name: run
           mountPath: /run/flannel
+        - name: dev-net
+          mountPath: /dev/net
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
       volumes:
       - name: run
         hostPath:
           path: /run/flannel
+      - name: dev-net
+        hostPath:
+          path: /dev/net
       - name: cni
         hostPath:
           path: /etc/cni/net.d
