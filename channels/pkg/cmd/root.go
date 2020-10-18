@@ -44,8 +44,10 @@ func NewCmdRoot(f Factory, out io.Writer) *cobra.Command {
 	options := &CmdRootOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "channels",
-		Short: "channels applies software from a channel",
+		Use:           "channels",
+		Short:         "channels applies software from a channel",
+		SilenceErrors: true,
+		SilenceUsage:  true,
 	}
 
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
