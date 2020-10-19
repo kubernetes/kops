@@ -17154,6 +17154,15 @@ const (
 	AccountGateStatusSkipped = "SKIPPED"
 )
 
+// AccountGateStatus_Values returns all elements of the AccountGateStatus enum
+func AccountGateStatus_Values() []string {
+	return []string{
+		AccountGateStatusSucceeded,
+		AccountGateStatusFailed,
+		AccountGateStatusSkipped,
+	}
+}
+
 const (
 	// CapabilityCapabilityIam is a Capability enum value
 	CapabilityCapabilityIam = "CAPABILITY_IAM"
@@ -17164,6 +17173,15 @@ const (
 	// CapabilityCapabilityAutoExpand is a Capability enum value
 	CapabilityCapabilityAutoExpand = "CAPABILITY_AUTO_EXPAND"
 )
+
+// Capability_Values returns all elements of the Capability enum
+func Capability_Values() []string {
+	return []string{
+		CapabilityCapabilityIam,
+		CapabilityCapabilityNamedIam,
+		CapabilityCapabilityAutoExpand,
+	}
+}
 
 const (
 	// ChangeActionAdd is a ChangeAction enum value
@@ -17178,6 +17196,16 @@ const (
 	// ChangeActionImport is a ChangeAction enum value
 	ChangeActionImport = "Import"
 )
+
+// ChangeAction_Values returns all elements of the ChangeAction enum
+func ChangeAction_Values() []string {
+	return []string{
+		ChangeActionAdd,
+		ChangeActionModify,
+		ChangeActionRemove,
+		ChangeActionImport,
+	}
+}
 
 const (
 	// ChangeSetStatusCreatePending is a ChangeSetStatus enum value
@@ -17196,6 +17224,17 @@ const (
 	ChangeSetStatusFailed = "FAILED"
 )
 
+// ChangeSetStatus_Values returns all elements of the ChangeSetStatus enum
+func ChangeSetStatus_Values() []string {
+	return []string{
+		ChangeSetStatusCreatePending,
+		ChangeSetStatusCreateInProgress,
+		ChangeSetStatusCreateComplete,
+		ChangeSetStatusDeleteComplete,
+		ChangeSetStatusFailed,
+	}
+}
+
 const (
 	// ChangeSetTypeCreate is a ChangeSetType enum value
 	ChangeSetTypeCreate = "CREATE"
@@ -17206,6 +17245,15 @@ const (
 	// ChangeSetTypeImport is a ChangeSetType enum value
 	ChangeSetTypeImport = "IMPORT"
 )
+
+// ChangeSetType_Values returns all elements of the ChangeSetType enum
+func ChangeSetType_Values() []string {
+	return []string{
+		ChangeSetTypeCreate,
+		ChangeSetTypeUpdate,
+		ChangeSetTypeImport,
+	}
+}
 
 const (
 	// ChangeSourceResourceReference is a ChangeSource enum value
@@ -17224,10 +17272,28 @@ const (
 	ChangeSourceAutomatic = "Automatic"
 )
 
+// ChangeSource_Values returns all elements of the ChangeSource enum
+func ChangeSource_Values() []string {
+	return []string{
+		ChangeSourceResourceReference,
+		ChangeSourceParameterReference,
+		ChangeSourceResourceAttribute,
+		ChangeSourceDirectModification,
+		ChangeSourceAutomatic,
+	}
+}
+
 const (
 	// ChangeTypeResource is a ChangeType enum value
 	ChangeTypeResource = "Resource"
 )
+
+// ChangeType_Values returns all elements of the ChangeType enum
+func ChangeType_Values() []string {
+	return []string{
+		ChangeTypeResource,
+	}
+}
 
 const (
 	// DeprecatedStatusLive is a DeprecatedStatus enum value
@@ -17236,6 +17302,14 @@ const (
 	// DeprecatedStatusDeprecated is a DeprecatedStatus enum value
 	DeprecatedStatusDeprecated = "DEPRECATED"
 )
+
+// DeprecatedStatus_Values returns all elements of the DeprecatedStatus enum
+func DeprecatedStatus_Values() []string {
+	return []string{
+		DeprecatedStatusLive,
+		DeprecatedStatusDeprecated,
+	}
+}
 
 const (
 	// DifferenceTypeAdd is a DifferenceType enum value
@@ -17248,6 +17322,15 @@ const (
 	DifferenceTypeNotEqual = "NOT_EQUAL"
 )
 
+// DifferenceType_Values returns all elements of the DifferenceType enum
+func DifferenceType_Values() []string {
+	return []string{
+		DifferenceTypeAdd,
+		DifferenceTypeRemove,
+		DifferenceTypeNotEqual,
+	}
+}
+
 const (
 	// EvaluationTypeStatic is a EvaluationType enum value
 	EvaluationTypeStatic = "Static"
@@ -17255,6 +17338,14 @@ const (
 	// EvaluationTypeDynamic is a EvaluationType enum value
 	EvaluationTypeDynamic = "Dynamic"
 )
+
+// EvaluationType_Values returns all elements of the EvaluationType enum
+func EvaluationType_Values() []string {
+	return []string{
+		EvaluationTypeStatic,
+		EvaluationTypeDynamic,
+	}
+}
 
 const (
 	// ExecutionStatusUnavailable is a ExecutionStatus enum value
@@ -17275,6 +17366,18 @@ const (
 	// ExecutionStatusObsolete is a ExecutionStatus enum value
 	ExecutionStatusObsolete = "OBSOLETE"
 )
+
+// ExecutionStatus_Values returns all elements of the ExecutionStatus enum
+func ExecutionStatus_Values() []string {
+	return []string{
+		ExecutionStatusUnavailable,
+		ExecutionStatusAvailable,
+		ExecutionStatusExecuteInProgress,
+		ExecutionStatusExecuteComplete,
+		ExecutionStatusExecuteFailed,
+		ExecutionStatusObsolete,
+	}
+}
 
 const (
 	// HandlerErrorCodeNotUpdatable is a HandlerErrorCode enum value
@@ -17320,6 +17423,26 @@ const (
 	HandlerErrorCodeInternalFailure = "InternalFailure"
 )
 
+// HandlerErrorCode_Values returns all elements of the HandlerErrorCode enum
+func HandlerErrorCode_Values() []string {
+	return []string{
+		HandlerErrorCodeNotUpdatable,
+		HandlerErrorCodeInvalidRequest,
+		HandlerErrorCodeAccessDenied,
+		HandlerErrorCodeInvalidCredentials,
+		HandlerErrorCodeAlreadyExists,
+		HandlerErrorCodeNotFound,
+		HandlerErrorCodeResourceConflict,
+		HandlerErrorCodeThrottling,
+		HandlerErrorCodeServiceLimitExceeded,
+		HandlerErrorCodeNotStabilized,
+		HandlerErrorCodeGeneralServiceException,
+		HandlerErrorCodeServiceInternalError,
+		HandlerErrorCodeNetworkFailure,
+		HandlerErrorCodeInternalFailure,
+	}
+}
+
 const (
 	// OnFailureDoNothing is a OnFailure enum value
 	OnFailureDoNothing = "DO_NOTHING"
@@ -17330,6 +17453,15 @@ const (
 	// OnFailureDelete is a OnFailure enum value
 	OnFailureDelete = "DELETE"
 )
+
+// OnFailure_Values returns all elements of the OnFailure enum
+func OnFailure_Values() []string {
+	return []string{
+		OnFailureDoNothing,
+		OnFailureRollback,
+		OnFailureDelete,
+	}
+}
 
 const (
 	// OperationStatusPending is a OperationStatus enum value
@@ -17345,6 +17477,16 @@ const (
 	OperationStatusFailed = "FAILED"
 )
 
+// OperationStatus_Values returns all elements of the OperationStatus enum
+func OperationStatus_Values() []string {
+	return []string{
+		OperationStatusPending,
+		OperationStatusInProgress,
+		OperationStatusSuccess,
+		OperationStatusFailed,
+	}
+}
+
 const (
 	// PermissionModelsServiceManaged is a PermissionModels enum value
 	PermissionModelsServiceManaged = "SERVICE_MANAGED"
@@ -17352,6 +17494,14 @@ const (
 	// PermissionModelsSelfManaged is a PermissionModels enum value
 	PermissionModelsSelfManaged = "SELF_MANAGED"
 )
+
+// PermissionModels_Values returns all elements of the PermissionModels enum
+func PermissionModels_Values() []string {
+	return []string{
+		PermissionModelsServiceManaged,
+		PermissionModelsSelfManaged,
+	}
+}
 
 const (
 	// ProvisioningTypeNonProvisionable is a ProvisioningType enum value
@@ -17364,6 +17514,15 @@ const (
 	ProvisioningTypeFullyMutable = "FULLY_MUTABLE"
 )
 
+// ProvisioningType_Values returns all elements of the ProvisioningType enum
+func ProvisioningType_Values() []string {
+	return []string{
+		ProvisioningTypeNonProvisionable,
+		ProvisioningTypeImmutable,
+		ProvisioningTypeFullyMutable,
+	}
+}
+
 const (
 	// RegistrationStatusComplete is a RegistrationStatus enum value
 	RegistrationStatusComplete = "COMPLETE"
@@ -17375,10 +17534,26 @@ const (
 	RegistrationStatusFailed = "FAILED"
 )
 
+// RegistrationStatus_Values returns all elements of the RegistrationStatus enum
+func RegistrationStatus_Values() []string {
+	return []string{
+		RegistrationStatusComplete,
+		RegistrationStatusInProgress,
+		RegistrationStatusFailed,
+	}
+}
+
 const (
 	// RegistryTypeResource is a RegistryType enum value
 	RegistryTypeResource = "RESOURCE"
 )
+
+// RegistryType_Values returns all elements of the RegistryType enum
+func RegistryType_Values() []string {
+	return []string{
+		RegistryTypeResource,
+	}
+}
 
 const (
 	// ReplacementTrue is a Replacement enum value
@@ -17391,6 +17566,15 @@ const (
 	ReplacementConditional = "Conditional"
 )
 
+// Replacement_Values returns all elements of the Replacement enum
+func Replacement_Values() []string {
+	return []string{
+		ReplacementTrue,
+		ReplacementFalse,
+		ReplacementConditional,
+	}
+}
+
 const (
 	// RequiresRecreationNever is a RequiresRecreation enum value
 	RequiresRecreationNever = "Never"
@@ -17401,6 +17585,15 @@ const (
 	// RequiresRecreationAlways is a RequiresRecreation enum value
 	RequiresRecreationAlways = "Always"
 )
+
+// RequiresRecreation_Values returns all elements of the RequiresRecreation enum
+func RequiresRecreation_Values() []string {
+	return []string{
+		RequiresRecreationNever,
+		RequiresRecreationConditionally,
+		RequiresRecreationAlways,
+	}
+}
 
 const (
 	// ResourceAttributeProperties is a ResourceAttribute enum value
@@ -17422,6 +17615,18 @@ const (
 	ResourceAttributeTags = "Tags"
 )
 
+// ResourceAttribute_Values returns all elements of the ResourceAttribute enum
+func ResourceAttribute_Values() []string {
+	return []string{
+		ResourceAttributeProperties,
+		ResourceAttributeMetadata,
+		ResourceAttributeCreationPolicy,
+		ResourceAttributeUpdatePolicy,
+		ResourceAttributeDeletionPolicy,
+		ResourceAttributeTags,
+	}
+}
+
 const (
 	// ResourceSignalStatusSuccess is a ResourceSignalStatus enum value
 	ResourceSignalStatusSuccess = "SUCCESS"
@@ -17429,6 +17634,14 @@ const (
 	// ResourceSignalStatusFailure is a ResourceSignalStatus enum value
 	ResourceSignalStatusFailure = "FAILURE"
 )
+
+// ResourceSignalStatus_Values returns all elements of the ResourceSignalStatus enum
+func ResourceSignalStatus_Values() []string {
+	return []string{
+		ResourceSignalStatusSuccess,
+		ResourceSignalStatusFailure,
+	}
+}
 
 const (
 	// ResourceStatusCreateInProgress is a ResourceStatus enum value
@@ -17480,6 +17693,28 @@ const (
 	ResourceStatusImportRollbackComplete = "IMPORT_ROLLBACK_COMPLETE"
 )
 
+// ResourceStatus_Values returns all elements of the ResourceStatus enum
+func ResourceStatus_Values() []string {
+	return []string{
+		ResourceStatusCreateInProgress,
+		ResourceStatusCreateFailed,
+		ResourceStatusCreateComplete,
+		ResourceStatusDeleteInProgress,
+		ResourceStatusDeleteFailed,
+		ResourceStatusDeleteComplete,
+		ResourceStatusDeleteSkipped,
+		ResourceStatusUpdateInProgress,
+		ResourceStatusUpdateFailed,
+		ResourceStatusUpdateComplete,
+		ResourceStatusImportFailed,
+		ResourceStatusImportComplete,
+		ResourceStatusImportInProgress,
+		ResourceStatusImportRollbackInProgress,
+		ResourceStatusImportRollbackFailed,
+		ResourceStatusImportRollbackComplete,
+	}
+}
+
 const (
 	// StackDriftDetectionStatusDetectionInProgress is a StackDriftDetectionStatus enum value
 	StackDriftDetectionStatusDetectionInProgress = "DETECTION_IN_PROGRESS"
@@ -17490,6 +17725,15 @@ const (
 	// StackDriftDetectionStatusDetectionComplete is a StackDriftDetectionStatus enum value
 	StackDriftDetectionStatusDetectionComplete = "DETECTION_COMPLETE"
 )
+
+// StackDriftDetectionStatus_Values returns all elements of the StackDriftDetectionStatus enum
+func StackDriftDetectionStatus_Values() []string {
+	return []string{
+		StackDriftDetectionStatusDetectionInProgress,
+		StackDriftDetectionStatusDetectionFailed,
+		StackDriftDetectionStatusDetectionComplete,
+	}
+}
 
 const (
 	// StackDriftStatusDrifted is a StackDriftStatus enum value
@@ -17504,6 +17748,16 @@ const (
 	// StackDriftStatusNotChecked is a StackDriftStatus enum value
 	StackDriftStatusNotChecked = "NOT_CHECKED"
 )
+
+// StackDriftStatus_Values returns all elements of the StackDriftStatus enum
+func StackDriftStatus_Values() []string {
+	return []string{
+		StackDriftStatusDrifted,
+		StackDriftStatusInSync,
+		StackDriftStatusUnknown,
+		StackDriftStatusNotChecked,
+	}
+}
 
 const (
 	// StackInstanceDetailedStatusPending is a StackInstanceDetailedStatus enum value
@@ -17525,10 +17779,29 @@ const (
 	StackInstanceDetailedStatusInoperable = "INOPERABLE"
 )
 
+// StackInstanceDetailedStatus_Values returns all elements of the StackInstanceDetailedStatus enum
+func StackInstanceDetailedStatus_Values() []string {
+	return []string{
+		StackInstanceDetailedStatusPending,
+		StackInstanceDetailedStatusRunning,
+		StackInstanceDetailedStatusSucceeded,
+		StackInstanceDetailedStatusFailed,
+		StackInstanceDetailedStatusCancelled,
+		StackInstanceDetailedStatusInoperable,
+	}
+}
+
 const (
 	// StackInstanceFilterNameDetailedStatus is a StackInstanceFilterName enum value
 	StackInstanceFilterNameDetailedStatus = "DETAILED_STATUS"
 )
+
+// StackInstanceFilterName_Values returns all elements of the StackInstanceFilterName enum
+func StackInstanceFilterName_Values() []string {
+	return []string{
+		StackInstanceFilterNameDetailedStatus,
+	}
+}
 
 const (
 	// StackInstanceStatusCurrent is a StackInstanceStatus enum value
@@ -17540,6 +17813,15 @@ const (
 	// StackInstanceStatusInoperable is a StackInstanceStatus enum value
 	StackInstanceStatusInoperable = "INOPERABLE"
 )
+
+// StackInstanceStatus_Values returns all elements of the StackInstanceStatus enum
+func StackInstanceStatus_Values() []string {
+	return []string{
+		StackInstanceStatusCurrent,
+		StackInstanceStatusOutdated,
+		StackInstanceStatusInoperable,
+	}
+}
 
 const (
 	// StackResourceDriftStatusInSync is a StackResourceDriftStatus enum value
@@ -17554,6 +17836,16 @@ const (
 	// StackResourceDriftStatusNotChecked is a StackResourceDriftStatus enum value
 	StackResourceDriftStatusNotChecked = "NOT_CHECKED"
 )
+
+// StackResourceDriftStatus_Values returns all elements of the StackResourceDriftStatus enum
+func StackResourceDriftStatus_Values() []string {
+	return []string{
+		StackResourceDriftStatusInSync,
+		StackResourceDriftStatusModified,
+		StackResourceDriftStatusDeleted,
+		StackResourceDriftStatusNotChecked,
+	}
+}
 
 const (
 	// StackSetDriftDetectionStatusCompleted is a StackSetDriftDetectionStatus enum value
@@ -17572,6 +17864,17 @@ const (
 	StackSetDriftDetectionStatusStopped = "STOPPED"
 )
 
+// StackSetDriftDetectionStatus_Values returns all elements of the StackSetDriftDetectionStatus enum
+func StackSetDriftDetectionStatus_Values() []string {
+	return []string{
+		StackSetDriftDetectionStatusCompleted,
+		StackSetDriftDetectionStatusFailed,
+		StackSetDriftDetectionStatusPartialSuccess,
+		StackSetDriftDetectionStatusInProgress,
+		StackSetDriftDetectionStatusStopped,
+	}
+}
+
 const (
 	// StackSetDriftStatusDrifted is a StackSetDriftStatus enum value
 	StackSetDriftStatusDrifted = "DRIFTED"
@@ -17582,6 +17885,15 @@ const (
 	// StackSetDriftStatusNotChecked is a StackSetDriftStatus enum value
 	StackSetDriftStatusNotChecked = "NOT_CHECKED"
 )
+
+// StackSetDriftStatus_Values returns all elements of the StackSetDriftStatus enum
+func StackSetDriftStatus_Values() []string {
+	return []string{
+		StackSetDriftStatusDrifted,
+		StackSetDriftStatusInSync,
+		StackSetDriftStatusNotChecked,
+	}
+}
 
 const (
 	// StackSetOperationActionCreate is a StackSetOperationAction enum value
@@ -17596,6 +17908,16 @@ const (
 	// StackSetOperationActionDetectDrift is a StackSetOperationAction enum value
 	StackSetOperationActionDetectDrift = "DETECT_DRIFT"
 )
+
+// StackSetOperationAction_Values returns all elements of the StackSetOperationAction enum
+func StackSetOperationAction_Values() []string {
+	return []string{
+		StackSetOperationActionCreate,
+		StackSetOperationActionUpdate,
+		StackSetOperationActionDelete,
+		StackSetOperationActionDetectDrift,
+	}
+}
 
 const (
 	// StackSetOperationResultStatusPending is a StackSetOperationResultStatus enum value
@@ -17613,6 +17935,17 @@ const (
 	// StackSetOperationResultStatusCancelled is a StackSetOperationResultStatus enum value
 	StackSetOperationResultStatusCancelled = "CANCELLED"
 )
+
+// StackSetOperationResultStatus_Values returns all elements of the StackSetOperationResultStatus enum
+func StackSetOperationResultStatus_Values() []string {
+	return []string{
+		StackSetOperationResultStatusPending,
+		StackSetOperationResultStatusRunning,
+		StackSetOperationResultStatusSucceeded,
+		StackSetOperationResultStatusFailed,
+		StackSetOperationResultStatusCancelled,
+	}
+}
 
 const (
 	// StackSetOperationStatusRunning is a StackSetOperationStatus enum value
@@ -17634,6 +17967,18 @@ const (
 	StackSetOperationStatusQueued = "QUEUED"
 )
 
+// StackSetOperationStatus_Values returns all elements of the StackSetOperationStatus enum
+func StackSetOperationStatus_Values() []string {
+	return []string{
+		StackSetOperationStatusRunning,
+		StackSetOperationStatusSucceeded,
+		StackSetOperationStatusFailed,
+		StackSetOperationStatusStopping,
+		StackSetOperationStatusStopped,
+		StackSetOperationStatusQueued,
+	}
+}
+
 const (
 	// StackSetStatusActive is a StackSetStatus enum value
 	StackSetStatusActive = "ACTIVE"
@@ -17641,6 +17986,14 @@ const (
 	// StackSetStatusDeleted is a StackSetStatus enum value
 	StackSetStatusDeleted = "DELETED"
 )
+
+// StackSetStatus_Values returns all elements of the StackSetStatus enum
+func StackSetStatus_Values() []string {
+	return []string{
+		StackSetStatusActive,
+		StackSetStatusDeleted,
+	}
+}
 
 const (
 	// StackStatusCreateInProgress is a StackStatus enum value
@@ -17710,6 +18063,34 @@ const (
 	StackStatusImportRollbackComplete = "IMPORT_ROLLBACK_COMPLETE"
 )
 
+// StackStatus_Values returns all elements of the StackStatus enum
+func StackStatus_Values() []string {
+	return []string{
+		StackStatusCreateInProgress,
+		StackStatusCreateFailed,
+		StackStatusCreateComplete,
+		StackStatusRollbackInProgress,
+		StackStatusRollbackFailed,
+		StackStatusRollbackComplete,
+		StackStatusDeleteInProgress,
+		StackStatusDeleteFailed,
+		StackStatusDeleteComplete,
+		StackStatusUpdateInProgress,
+		StackStatusUpdateCompleteCleanupInProgress,
+		StackStatusUpdateComplete,
+		StackStatusUpdateRollbackInProgress,
+		StackStatusUpdateRollbackFailed,
+		StackStatusUpdateRollbackCompleteCleanupInProgress,
+		StackStatusUpdateRollbackComplete,
+		StackStatusReviewInProgress,
+		StackStatusImportInProgress,
+		StackStatusImportComplete,
+		StackStatusImportRollbackInProgress,
+		StackStatusImportRollbackFailed,
+		StackStatusImportRollbackComplete,
+	}
+}
+
 const (
 	// TemplateStageOriginal is a TemplateStage enum value
 	TemplateStageOriginal = "Original"
@@ -17718,6 +18099,14 @@ const (
 	TemplateStageProcessed = "Processed"
 )
 
+// TemplateStage_Values returns all elements of the TemplateStage enum
+func TemplateStage_Values() []string {
+	return []string{
+		TemplateStageOriginal,
+		TemplateStageProcessed,
+	}
+}
+
 const (
 	// VisibilityPublic is a Visibility enum value
 	VisibilityPublic = "PUBLIC"
@@ -17725,3 +18114,11 @@ const (
 	// VisibilityPrivate is a Visibility enum value
 	VisibilityPrivate = "PRIVATE"
 )
+
+// Visibility_Values returns all elements of the Visibility enum
+func Visibility_Values() []string {
+	return []string{
+		VisibilityPublic,
+		VisibilityPrivate,
+	}
+}
