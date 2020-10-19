@@ -14540,6 +14540,15 @@ const (
 	AlgorithmSpecRsaesOaepSha256 = "RSAES_OAEP_SHA_256"
 )
 
+// AlgorithmSpec_Values returns all elements of the AlgorithmSpec enum
+func AlgorithmSpec_Values() []string {
+	return []string{
+		AlgorithmSpecRsaesPkcs1V15,
+		AlgorithmSpecRsaesOaepSha1,
+		AlgorithmSpecRsaesOaepSha256,
+	}
+}
+
 const (
 	// ConnectionErrorCodeTypeInvalidCredentials is a ConnectionErrorCodeType enum value
 	ConnectionErrorCodeTypeInvalidCredentials = "INVALID_CREDENTIALS"
@@ -14569,6 +14578,21 @@ const (
 	ConnectionErrorCodeTypeSubnetNotFound = "SUBNET_NOT_FOUND"
 )
 
+// ConnectionErrorCodeType_Values returns all elements of the ConnectionErrorCodeType enum
+func ConnectionErrorCodeType_Values() []string {
+	return []string{
+		ConnectionErrorCodeTypeInvalidCredentials,
+		ConnectionErrorCodeTypeClusterNotFound,
+		ConnectionErrorCodeTypeNetworkErrors,
+		ConnectionErrorCodeTypeInternalError,
+		ConnectionErrorCodeTypeInsufficientCloudhsmHsms,
+		ConnectionErrorCodeTypeUserLockedOut,
+		ConnectionErrorCodeTypeUserNotFound,
+		ConnectionErrorCodeTypeUserLoggedIn,
+		ConnectionErrorCodeTypeSubnetNotFound,
+	}
+}
+
 const (
 	// ConnectionStateTypeConnected is a ConnectionStateType enum value
 	ConnectionStateTypeConnected = "CONNECTED"
@@ -14585,6 +14609,17 @@ const (
 	// ConnectionStateTypeDisconnecting is a ConnectionStateType enum value
 	ConnectionStateTypeDisconnecting = "DISCONNECTING"
 )
+
+// ConnectionStateType_Values returns all elements of the ConnectionStateType enum
+func ConnectionStateType_Values() []string {
+	return []string{
+		ConnectionStateTypeConnected,
+		ConnectionStateTypeConnecting,
+		ConnectionStateTypeFailed,
+		ConnectionStateTypeDisconnected,
+		ConnectionStateTypeDisconnecting,
+	}
+}
 
 const (
 	// CustomerMasterKeySpecRsa2048 is a CustomerMasterKeySpec enum value
@@ -14612,6 +14647,20 @@ const (
 	CustomerMasterKeySpecSymmetricDefault = "SYMMETRIC_DEFAULT"
 )
 
+// CustomerMasterKeySpec_Values returns all elements of the CustomerMasterKeySpec enum
+func CustomerMasterKeySpec_Values() []string {
+	return []string{
+		CustomerMasterKeySpecRsa2048,
+		CustomerMasterKeySpecRsa3072,
+		CustomerMasterKeySpecRsa4096,
+		CustomerMasterKeySpecEccNistP256,
+		CustomerMasterKeySpecEccNistP384,
+		CustomerMasterKeySpecEccNistP521,
+		CustomerMasterKeySpecEccSecgP256k1,
+		CustomerMasterKeySpecSymmetricDefault,
+	}
+}
+
 const (
 	// DataKeyPairSpecRsa2048 is a DataKeyPairSpec enum value
 	DataKeyPairSpecRsa2048 = "RSA_2048"
@@ -14635,6 +14684,19 @@ const (
 	DataKeyPairSpecEccSecgP256k1 = "ECC_SECG_P256K1"
 )
 
+// DataKeyPairSpec_Values returns all elements of the DataKeyPairSpec enum
+func DataKeyPairSpec_Values() []string {
+	return []string{
+		DataKeyPairSpecRsa2048,
+		DataKeyPairSpecRsa3072,
+		DataKeyPairSpecRsa4096,
+		DataKeyPairSpecEccNistP256,
+		DataKeyPairSpecEccNistP384,
+		DataKeyPairSpecEccNistP521,
+		DataKeyPairSpecEccSecgP256k1,
+	}
+}
+
 const (
 	// DataKeySpecAes256 is a DataKeySpec enum value
 	DataKeySpecAes256 = "AES_256"
@@ -14642,6 +14704,14 @@ const (
 	// DataKeySpecAes128 is a DataKeySpec enum value
 	DataKeySpecAes128 = "AES_128"
 )
+
+// DataKeySpec_Values returns all elements of the DataKeySpec enum
+func DataKeySpec_Values() []string {
+	return []string{
+		DataKeySpecAes256,
+		DataKeySpecAes128,
+	}
+}
 
 const (
 	// EncryptionAlgorithmSpecSymmetricDefault is a EncryptionAlgorithmSpec enum value
@@ -14654,6 +14724,15 @@ const (
 	EncryptionAlgorithmSpecRsaesOaepSha256 = "RSAES_OAEP_SHA_256"
 )
 
+// EncryptionAlgorithmSpec_Values returns all elements of the EncryptionAlgorithmSpec enum
+func EncryptionAlgorithmSpec_Values() []string {
+	return []string{
+		EncryptionAlgorithmSpecSymmetricDefault,
+		EncryptionAlgorithmSpecRsaesOaepSha1,
+		EncryptionAlgorithmSpecRsaesOaepSha256,
+	}
+}
+
 const (
 	// ExpirationModelTypeKeyMaterialExpires is a ExpirationModelType enum value
 	ExpirationModelTypeKeyMaterialExpires = "KEY_MATERIAL_EXPIRES"
@@ -14661,6 +14740,14 @@ const (
 	// ExpirationModelTypeKeyMaterialDoesNotExpire is a ExpirationModelType enum value
 	ExpirationModelTypeKeyMaterialDoesNotExpire = "KEY_MATERIAL_DOES_NOT_EXPIRE"
 )
+
+// ExpirationModelType_Values returns all elements of the ExpirationModelType enum
+func ExpirationModelType_Values() []string {
+	return []string{
+		ExpirationModelTypeKeyMaterialExpires,
+		ExpirationModelTypeKeyMaterialDoesNotExpire,
+	}
+}
 
 const (
 	// GrantOperationDecrypt is a GrantOperation enum value
@@ -14706,6 +14793,26 @@ const (
 	GrantOperationGenerateDataKeyPairWithoutPlaintext = "GenerateDataKeyPairWithoutPlaintext"
 )
 
+// GrantOperation_Values returns all elements of the GrantOperation enum
+func GrantOperation_Values() []string {
+	return []string{
+		GrantOperationDecrypt,
+		GrantOperationEncrypt,
+		GrantOperationGenerateDataKey,
+		GrantOperationGenerateDataKeyWithoutPlaintext,
+		GrantOperationReEncryptFrom,
+		GrantOperationReEncryptTo,
+		GrantOperationSign,
+		GrantOperationVerify,
+		GrantOperationGetPublicKey,
+		GrantOperationCreateGrant,
+		GrantOperationRetireGrant,
+		GrantOperationDescribeKey,
+		GrantOperationGenerateDataKeyPair,
+		GrantOperationGenerateDataKeyPairWithoutPlaintext,
+	}
+}
+
 const (
 	// KeyManagerTypeAws is a KeyManagerType enum value
 	KeyManagerTypeAws = "AWS"
@@ -14713,6 +14820,14 @@ const (
 	// KeyManagerTypeCustomer is a KeyManagerType enum value
 	KeyManagerTypeCustomer = "CUSTOMER"
 )
+
+// KeyManagerType_Values returns all elements of the KeyManagerType enum
+func KeyManagerType_Values() []string {
+	return []string{
+		KeyManagerTypeAws,
+		KeyManagerTypeCustomer,
+	}
+}
 
 const (
 	// KeyStateEnabled is a KeyState enum value
@@ -14731,6 +14846,17 @@ const (
 	KeyStateUnavailable = "Unavailable"
 )
 
+// KeyState_Values returns all elements of the KeyState enum
+func KeyState_Values() []string {
+	return []string{
+		KeyStateEnabled,
+		KeyStateDisabled,
+		KeyStatePendingDeletion,
+		KeyStatePendingImport,
+		KeyStateUnavailable,
+	}
+}
+
 const (
 	// KeyUsageTypeSignVerify is a KeyUsageType enum value
 	KeyUsageTypeSignVerify = "SIGN_VERIFY"
@@ -14739,6 +14865,14 @@ const (
 	KeyUsageTypeEncryptDecrypt = "ENCRYPT_DECRYPT"
 )
 
+// KeyUsageType_Values returns all elements of the KeyUsageType enum
+func KeyUsageType_Values() []string {
+	return []string{
+		KeyUsageTypeSignVerify,
+		KeyUsageTypeEncryptDecrypt,
+	}
+}
+
 const (
 	// MessageTypeRaw is a MessageType enum value
 	MessageTypeRaw = "RAW"
@@ -14746,6 +14880,14 @@ const (
 	// MessageTypeDigest is a MessageType enum value
 	MessageTypeDigest = "DIGEST"
 )
+
+// MessageType_Values returns all elements of the MessageType enum
+func MessageType_Values() []string {
+	return []string{
+		MessageTypeRaw,
+		MessageTypeDigest,
+	}
+}
 
 const (
 	// OriginTypeAwsKms is a OriginType enum value
@@ -14757,6 +14899,15 @@ const (
 	// OriginTypeAwsCloudhsm is a OriginType enum value
 	OriginTypeAwsCloudhsm = "AWS_CLOUDHSM"
 )
+
+// OriginType_Values returns all elements of the OriginType enum
+func OriginType_Values() []string {
+	return []string{
+		OriginTypeAwsKms,
+		OriginTypeExternal,
+		OriginTypeAwsCloudhsm,
+	}
+}
 
 const (
 	// SigningAlgorithmSpecRsassaPssSha256 is a SigningAlgorithmSpec enum value
@@ -14787,7 +14938,29 @@ const (
 	SigningAlgorithmSpecEcdsaSha512 = "ECDSA_SHA_512"
 )
 
+// SigningAlgorithmSpec_Values returns all elements of the SigningAlgorithmSpec enum
+func SigningAlgorithmSpec_Values() []string {
+	return []string{
+		SigningAlgorithmSpecRsassaPssSha256,
+		SigningAlgorithmSpecRsassaPssSha384,
+		SigningAlgorithmSpecRsassaPssSha512,
+		SigningAlgorithmSpecRsassaPkcs1V15Sha256,
+		SigningAlgorithmSpecRsassaPkcs1V15Sha384,
+		SigningAlgorithmSpecRsassaPkcs1V15Sha512,
+		SigningAlgorithmSpecEcdsaSha256,
+		SigningAlgorithmSpecEcdsaSha384,
+		SigningAlgorithmSpecEcdsaSha512,
+	}
+}
+
 const (
 	// WrappingKeySpecRsa2048 is a WrappingKeySpec enum value
 	WrappingKeySpecRsa2048 = "RSA_2048"
 )
+
+// WrappingKeySpec_Values returns all elements of the WrappingKeySpec enum
+func WrappingKeySpec_Values() []string {
+	return []string{
+		WrappingKeySpecRsa2048,
+	}
+}
