@@ -33274,6 +33274,14 @@ const (
 	AccessAdvisorUsageGranularityTypeActionLevel = "ACTION_LEVEL"
 )
 
+// AccessAdvisorUsageGranularityType_Values returns all elements of the AccessAdvisorUsageGranularityType enum
+func AccessAdvisorUsageGranularityType_Values() []string {
+	return []string{
+		AccessAdvisorUsageGranularityTypeServiceLevel,
+		AccessAdvisorUsageGranularityTypeActionLevel,
+	}
+}
+
 const (
 	// AssignmentStatusTypeAssigned is a AssignmentStatusType enum value
 	AssignmentStatusTypeAssigned = "Assigned"
@@ -33284,6 +33292,15 @@ const (
 	// AssignmentStatusTypeAny is a AssignmentStatusType enum value
 	AssignmentStatusTypeAny = "Any"
 )
+
+// AssignmentStatusType_Values returns all elements of the AssignmentStatusType enum
+func AssignmentStatusType_Values() []string {
+	return []string{
+		AssignmentStatusTypeAssigned,
+		AssignmentStatusTypeUnassigned,
+		AssignmentStatusTypeAny,
+	}
+}
 
 const (
 	// ContextKeyTypeEnumString is a ContextKeyTypeEnum enum value
@@ -33323,6 +33340,24 @@ const (
 	ContextKeyTypeEnumDateList = "dateList"
 )
 
+// ContextKeyTypeEnum_Values returns all elements of the ContextKeyTypeEnum enum
+func ContextKeyTypeEnum_Values() []string {
+	return []string{
+		ContextKeyTypeEnumString,
+		ContextKeyTypeEnumStringList,
+		ContextKeyTypeEnumNumeric,
+		ContextKeyTypeEnumNumericList,
+		ContextKeyTypeEnumBoolean,
+		ContextKeyTypeEnumBooleanList,
+		ContextKeyTypeEnumIp,
+		ContextKeyTypeEnumIpList,
+		ContextKeyTypeEnumBinary,
+		ContextKeyTypeEnumBinaryList,
+		ContextKeyTypeEnumDate,
+		ContextKeyTypeEnumDateList,
+	}
+}
+
 const (
 	// DeletionTaskStatusTypeSucceeded is a DeletionTaskStatusType enum value
 	DeletionTaskStatusTypeSucceeded = "SUCCEEDED"
@@ -33337,6 +33372,16 @@ const (
 	DeletionTaskStatusTypeNotStarted = "NOT_STARTED"
 )
 
+// DeletionTaskStatusType_Values returns all elements of the DeletionTaskStatusType enum
+func DeletionTaskStatusType_Values() []string {
+	return []string{
+		DeletionTaskStatusTypeSucceeded,
+		DeletionTaskStatusTypeInProgress,
+		DeletionTaskStatusTypeFailed,
+		DeletionTaskStatusTypeNotStarted,
+	}
+}
+
 const (
 	// EncodingTypeSsh is a EncodingType enum value
 	EncodingTypeSsh = "SSH"
@@ -33344,6 +33389,14 @@ const (
 	// EncodingTypePem is a EncodingType enum value
 	EncodingTypePem = "PEM"
 )
+
+// EncodingType_Values returns all elements of the EncodingType enum
+func EncodingType_Values() []string {
+	return []string{
+		EncodingTypeSsh,
+		EncodingTypePem,
+	}
+}
 
 const (
 	// EntityTypeUser is a EntityType enum value
@@ -33362,6 +33415,17 @@ const (
 	EntityTypeAwsmanagedPolicy = "AWSManagedPolicy"
 )
 
+// EntityType_Values returns all elements of the EntityType enum
+func EntityType_Values() []string {
+	return []string{
+		EntityTypeUser,
+		EntityTypeRole,
+		EntityTypeGroup,
+		EntityTypeLocalManagedPolicy,
+		EntityTypeAwsmanagedPolicy,
+	}
+}
+
 const (
 	// GlobalEndpointTokenVersionV1token is a GlobalEndpointTokenVersion enum value
 	GlobalEndpointTokenVersionV1token = "v1Token"
@@ -33369,6 +33433,14 @@ const (
 	// GlobalEndpointTokenVersionV2token is a GlobalEndpointTokenVersion enum value
 	GlobalEndpointTokenVersionV2token = "v2Token"
 )
+
+// GlobalEndpointTokenVersion_Values returns all elements of the GlobalEndpointTokenVersion enum
+func GlobalEndpointTokenVersion_Values() []string {
+	return []string{
+		GlobalEndpointTokenVersionV1token,
+		GlobalEndpointTokenVersionV2token,
+	}
+}
 
 const (
 	// JobStatusTypeInProgress is a JobStatusType enum value
@@ -33381,10 +33453,26 @@ const (
 	JobStatusTypeFailed = "FAILED"
 )
 
+// JobStatusType_Values returns all elements of the JobStatusType enum
+func JobStatusType_Values() []string {
+	return []string{
+		JobStatusTypeInProgress,
+		JobStatusTypeCompleted,
+		JobStatusTypeFailed,
+	}
+}
+
 const (
 	// PermissionsBoundaryAttachmentTypePermissionsBoundaryPolicy is a PermissionsBoundaryAttachmentType enum value
 	PermissionsBoundaryAttachmentTypePermissionsBoundaryPolicy = "PermissionsBoundaryPolicy"
 )
+
+// PermissionsBoundaryAttachmentType_Values returns all elements of the PermissionsBoundaryAttachmentType enum
+func PermissionsBoundaryAttachmentType_Values() []string {
+	return []string{
+		PermissionsBoundaryAttachmentTypePermissionsBoundaryPolicy,
+	}
+}
 
 const (
 	// PolicyEvaluationDecisionTypeAllowed is a PolicyEvaluationDecisionType enum value
@@ -33397,6 +33485,15 @@ const (
 	PolicyEvaluationDecisionTypeImplicitDeny = "implicitDeny"
 )
 
+// PolicyEvaluationDecisionType_Values returns all elements of the PolicyEvaluationDecisionType enum
+func PolicyEvaluationDecisionType_Values() []string {
+	return []string{
+		PolicyEvaluationDecisionTypeAllowed,
+		PolicyEvaluationDecisionTypeExplicitDeny,
+		PolicyEvaluationDecisionTypeImplicitDeny,
+	}
+}
+
 const (
 	// PolicyOwnerEntityTypeUser is a PolicyOwnerEntityType enum value
 	PolicyOwnerEntityTypeUser = "USER"
@@ -33408,6 +33505,15 @@ const (
 	PolicyOwnerEntityTypeGroup = "GROUP"
 )
 
+// PolicyOwnerEntityType_Values returns all elements of the PolicyOwnerEntityType enum
+func PolicyOwnerEntityType_Values() []string {
+	return []string{
+		PolicyOwnerEntityTypeUser,
+		PolicyOwnerEntityTypeRole,
+		PolicyOwnerEntityTypeGroup,
+	}
+}
+
 const (
 	// PolicyScopeTypeAll is a PolicyScopeType enum value
 	PolicyScopeTypeAll = "All"
@@ -33418,6 +33524,15 @@ const (
 	// PolicyScopeTypeLocal is a PolicyScopeType enum value
 	PolicyScopeTypeLocal = "Local"
 )
+
+// PolicyScopeType_Values returns all elements of the PolicyScopeType enum
+func PolicyScopeType_Values() []string {
+	return []string{
+		PolicyScopeTypeAll,
+		PolicyScopeTypeAws,
+		PolicyScopeTypeLocal,
+	}
+}
 
 const (
 	// PolicySourceTypeUser is a PolicySourceType enum value
@@ -33442,6 +33557,19 @@ const (
 	PolicySourceTypeNone = "none"
 )
 
+// PolicySourceType_Values returns all elements of the PolicySourceType enum
+func PolicySourceType_Values() []string {
+	return []string{
+		PolicySourceTypeUser,
+		PolicySourceTypeGroup,
+		PolicySourceTypeRole,
+		PolicySourceTypeAwsManaged,
+		PolicySourceTypeUserManaged,
+		PolicySourceTypeResource,
+		PolicySourceTypeNone,
+	}
+}
+
 const (
 	// PolicyTypeInline is a PolicyType enum value
 	PolicyTypeInline = "INLINE"
@@ -33449,6 +33577,14 @@ const (
 	// PolicyTypeManaged is a PolicyType enum value
 	PolicyTypeManaged = "MANAGED"
 )
+
+// PolicyType_Values returns all elements of the PolicyType enum
+func PolicyType_Values() []string {
+	return []string{
+		PolicyTypeInline,
+		PolicyTypeManaged,
+	}
+}
 
 // The policy usage type that indicates whether the policy is used as a permissions
 // policy or as the permissions boundary for an entity.
@@ -33464,10 +33600,25 @@ const (
 	PolicyUsageTypePermissionsBoundary = "PermissionsBoundary"
 )
 
+// PolicyUsageType_Values returns all elements of the PolicyUsageType enum
+func PolicyUsageType_Values() []string {
+	return []string{
+		PolicyUsageTypePermissionsPolicy,
+		PolicyUsageTypePermissionsBoundary,
+	}
+}
+
 const (
 	// ReportFormatTypeTextCsv is a ReportFormatType enum value
 	ReportFormatTypeTextCsv = "text/csv"
 )
+
+// ReportFormatType_Values returns all elements of the ReportFormatType enum
+func ReportFormatType_Values() []string {
+	return []string{
+		ReportFormatTypeTextCsv,
+	}
+}
 
 const (
 	// ReportStateTypeStarted is a ReportStateType enum value
@@ -33479,6 +33630,15 @@ const (
 	// ReportStateTypeComplete is a ReportStateType enum value
 	ReportStateTypeComplete = "COMPLETE"
 )
+
+// ReportStateType_Values returns all elements of the ReportStateType enum
+func ReportStateType_Values() []string {
+	return []string{
+		ReportStateTypeStarted,
+		ReportStateTypeInprogress,
+		ReportStateTypeComplete,
+	}
+}
 
 const (
 	// SortKeyTypeServiceNamespaceAscending is a SortKeyType enum value
@@ -33494,6 +33654,16 @@ const (
 	SortKeyTypeLastAuthenticatedTimeDescending = "LAST_AUTHENTICATED_TIME_DESCENDING"
 )
 
+// SortKeyType_Values returns all elements of the SortKeyType enum
+func SortKeyType_Values() []string {
+	return []string{
+		SortKeyTypeServiceNamespaceAscending,
+		SortKeyTypeServiceNamespaceDescending,
+		SortKeyTypeLastAuthenticatedTimeAscending,
+		SortKeyTypeLastAuthenticatedTimeDescending,
+	}
+}
+
 const (
 	// StatusTypeActive is a StatusType enum value
 	StatusTypeActive = "Active"
@@ -33501,6 +33671,14 @@ const (
 	// StatusTypeInactive is a StatusType enum value
 	StatusTypeInactive = "Inactive"
 )
+
+// StatusType_Values returns all elements of the StatusType enum
+func StatusType_Values() []string {
+	return []string{
+		StatusTypeActive,
+		StatusTypeInactive,
+	}
+}
 
 const (
 	// SummaryKeyTypeUsers is a SummaryKeyType enum value
@@ -33581,3 +33759,35 @@ const (
 	// SummaryKeyTypeGlobalEndpointTokenVersion is a SummaryKeyType enum value
 	SummaryKeyTypeGlobalEndpointTokenVersion = "GlobalEndpointTokenVersion"
 )
+
+// SummaryKeyType_Values returns all elements of the SummaryKeyType enum
+func SummaryKeyType_Values() []string {
+	return []string{
+		SummaryKeyTypeUsers,
+		SummaryKeyTypeUsersQuota,
+		SummaryKeyTypeGroups,
+		SummaryKeyTypeGroupsQuota,
+		SummaryKeyTypeServerCertificates,
+		SummaryKeyTypeServerCertificatesQuota,
+		SummaryKeyTypeUserPolicySizeQuota,
+		SummaryKeyTypeGroupPolicySizeQuota,
+		SummaryKeyTypeGroupsPerUserQuota,
+		SummaryKeyTypeSigningCertificatesPerUserQuota,
+		SummaryKeyTypeAccessKeysPerUserQuota,
+		SummaryKeyTypeMfadevices,
+		SummaryKeyTypeMfadevicesInUse,
+		SummaryKeyTypeAccountMfaenabled,
+		SummaryKeyTypeAccountAccessKeysPresent,
+		SummaryKeyTypeAccountSigningCertificatesPresent,
+		SummaryKeyTypeAttachedPoliciesPerGroupQuota,
+		SummaryKeyTypeAttachedPoliciesPerRoleQuota,
+		SummaryKeyTypeAttachedPoliciesPerUserQuota,
+		SummaryKeyTypePolicies,
+		SummaryKeyTypePoliciesQuota,
+		SummaryKeyTypePolicySizeQuota,
+		SummaryKeyTypePolicyVersionsInUse,
+		SummaryKeyTypePolicyVersionsInUseQuota,
+		SummaryKeyTypeVersionsPerPolicyQuota,
+		SummaryKeyTypeGlobalEndpointTokenVersion,
+	}
+}
