@@ -60,22 +60,13 @@ func (c *Route53) AssociateVPCWithHostedZoneRequest(input *AssociateVPCWithHoste
 // Associates an Amazon VPC with a private hosted zone.
 //
 // To perform the association, the VPC and the private hosted zone must already
-// exist. Also, you can't convert a public hosted zone into a private hosted
-// zone.
+// exist. You can't convert a public hosted zone into a private hosted zone.
 //
-// If you want to associate a VPC that was created by one AWS account with a
-// private hosted zone that was created by a different account, do one of the
-// following:
-//
-//    * Use the AWS account that created the private hosted zone to submit a
-//    CreateVPCAssociationAuthorization (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateVPCAssociationAuthorization.html)
-//    request. Then use the account that created the VPC to submit an AssociateVPCWithHostedZone
-//    request.
-//
-//    * If a subnet in the VPC was shared with another account, you can use
-//    the account that the subnet was shared with to submit an AssociateVPCWithHostedZone
-//    request. For more information about sharing subnets, see Working with
-//    Shared VPCs (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html).
+// If you want to associate a VPC that was created by using one AWS account
+// with a private hosted zone that was created by using a different account,
+// the AWS account that created the private hosted zone must first submit a
+// CreateVPCAssociationAuthorization request. Then the account that created
+// the VPC must submit an AssociateVPCWithHostedZone request.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2012,6 +2003,19 @@ func (c *Route53) DeleteTrafficPolicyRequest(input *DeleteTrafficPolicyInput) (r
 //
 // Deletes a traffic policy.
 //
+// When you delete a traffic policy, Route 53 sets a flag on the policy to indicate
+// that it has been deleted. However, Route 53 never fully deletes the traffic
+// policy. Note the following:
+//
+//    * Deleted traffic policies aren't listed if you run ListTrafficPolicies
+//    (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListTrafficPolicies.html).
+//
+//    * There's no way to get a list of deleted policies.
+//
+//    * If you retain the ID of the policy, you can get information about the
+//    policy, including the traffic policy document, by running GetTrafficPolicy
+//    (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetTrafficPolicy.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -3605,6 +3609,9 @@ func (c *Route53) GetTrafficPolicyRequest(input *GetTrafficPolicyInput) (req *re
 //
 // Gets information about a specific traffic policy version.
 //
+// For information about how of deleting a traffic policy affects the response
+// from GetTrafficPolicy, see DeleteTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeleteTrafficPolicy.html).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -5086,6 +5093,9 @@ func (c *Route53) ListTrafficPoliciesRequest(input *ListTrafficPoliciesInput) (r
 // Gets information about the latest version for every traffic policy that is
 // associated with the current AWS account. Policies are listed in the order
 // that they were created in.
+//
+// For information about how of deleting a traffic policy affects the response
+// from ListTrafficPolicies, see DeleteTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_DeleteTrafficPolicy.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11492,8 +11502,8 @@ type ListHostedZonesByVPCInput struct {
 	// (Optional) The maximum number of hosted zones that you want Amazon Route
 	// 53 to return. If the specified VPC is associated with more than MaxItems
 	// hosted zones, the response includes a NextToken element. NextToken contains
-	// the hosted zone ID of the first hosted zone that Route 53 will return if
-	// you submit another request.
+	// an encrypted token that identifies the first hosted zone that Route 53 will
+	// return if you submit another request.
 	MaxItems *string `location:"querystring" locationName:"maxitems" type:"string"`
 
 	// If the previous response included a NextToken element, the specified VPC
@@ -15452,6 +15462,17 @@ const (
 	AccountLimitTypeMaxTrafficPoliciesByOwner = "MAX_TRAFFIC_POLICIES_BY_OWNER"
 )
 
+// AccountLimitType_Values returns all elements of the AccountLimitType enum
+func AccountLimitType_Values() []string {
+	return []string{
+		AccountLimitTypeMaxHealthChecksByOwner,
+		AccountLimitTypeMaxHostedZonesByOwner,
+		AccountLimitTypeMaxTrafficPolicyInstancesByOwner,
+		AccountLimitTypeMaxReusableDelegationSetsByOwner,
+		AccountLimitTypeMaxTrafficPoliciesByOwner,
+	}
+}
+
 const (
 	// ChangeActionCreate is a ChangeAction enum value
 	ChangeActionCreate = "CREATE"
@@ -15463,6 +15484,15 @@ const (
 	ChangeActionUpsert = "UPSERT"
 )
 
+// ChangeAction_Values returns all elements of the ChangeAction enum
+func ChangeAction_Values() []string {
+	return []string{
+		ChangeActionCreate,
+		ChangeActionDelete,
+		ChangeActionUpsert,
+	}
+}
+
 const (
 	// ChangeStatusPending is a ChangeStatus enum value
 	ChangeStatusPending = "PENDING"
@@ -15470,6 +15500,14 @@ const (
 	// ChangeStatusInsync is a ChangeStatus enum value
 	ChangeStatusInsync = "INSYNC"
 )
+
+// ChangeStatus_Values returns all elements of the ChangeStatus enum
+func ChangeStatus_Values() []string {
+	return []string{
+		ChangeStatusPending,
+		ChangeStatusInsync,
+	}
+}
 
 const (
 	// CloudWatchRegionUsEast1 is a CloudWatchRegion enum value
@@ -15554,6 +15592,39 @@ const (
 	CloudWatchRegionUsIsobEast1 = "us-isob-east-1"
 )
 
+// CloudWatchRegion_Values returns all elements of the CloudWatchRegion enum
+func CloudWatchRegion_Values() []string {
+	return []string{
+		CloudWatchRegionUsEast1,
+		CloudWatchRegionUsEast2,
+		CloudWatchRegionUsWest1,
+		CloudWatchRegionUsWest2,
+		CloudWatchRegionCaCentral1,
+		CloudWatchRegionEuCentral1,
+		CloudWatchRegionEuWest1,
+		CloudWatchRegionEuWest2,
+		CloudWatchRegionEuWest3,
+		CloudWatchRegionApEast1,
+		CloudWatchRegionMeSouth1,
+		CloudWatchRegionApSouth1,
+		CloudWatchRegionApSoutheast1,
+		CloudWatchRegionApSoutheast2,
+		CloudWatchRegionApNortheast1,
+		CloudWatchRegionApNortheast2,
+		CloudWatchRegionApNortheast3,
+		CloudWatchRegionEuNorth1,
+		CloudWatchRegionSaEast1,
+		CloudWatchRegionCnNorthwest1,
+		CloudWatchRegionCnNorth1,
+		CloudWatchRegionAfSouth1,
+		CloudWatchRegionEuSouth1,
+		CloudWatchRegionUsGovWest1,
+		CloudWatchRegionUsGovEast1,
+		CloudWatchRegionUsIsoEast1,
+		CloudWatchRegionUsIsobEast1,
+	}
+}
+
 const (
 	// ComparisonOperatorGreaterThanOrEqualToThreshold is a ComparisonOperator enum value
 	ComparisonOperatorGreaterThanOrEqualToThreshold = "GreaterThanOrEqualToThreshold"
@@ -15567,6 +15638,16 @@ const (
 	// ComparisonOperatorLessThanOrEqualToThreshold is a ComparisonOperator enum value
 	ComparisonOperatorLessThanOrEqualToThreshold = "LessThanOrEqualToThreshold"
 )
+
+// ComparisonOperator_Values returns all elements of the ComparisonOperator enum
+func ComparisonOperator_Values() []string {
+	return []string{
+		ComparisonOperatorGreaterThanOrEqualToThreshold,
+		ComparisonOperatorGreaterThanThreshold,
+		ComparisonOperatorLessThanThreshold,
+		ComparisonOperatorLessThanOrEqualToThreshold,
+	}
+}
 
 const (
 	// HealthCheckRegionUsEast1 is a HealthCheckRegion enum value
@@ -15594,6 +15675,20 @@ const (
 	HealthCheckRegionSaEast1 = "sa-east-1"
 )
 
+// HealthCheckRegion_Values returns all elements of the HealthCheckRegion enum
+func HealthCheckRegion_Values() []string {
+	return []string{
+		HealthCheckRegionUsEast1,
+		HealthCheckRegionUsWest1,
+		HealthCheckRegionUsWest2,
+		HealthCheckRegionEuWest1,
+		HealthCheckRegionApSoutheast1,
+		HealthCheckRegionApSoutheast2,
+		HealthCheckRegionApNortheast1,
+		HealthCheckRegionSaEast1,
+	}
+}
+
 const (
 	// HealthCheckTypeHttp is a HealthCheckType enum value
 	HealthCheckTypeHttp = "HTTP"
@@ -15617,6 +15712,19 @@ const (
 	HealthCheckTypeCloudwatchMetric = "CLOUDWATCH_METRIC"
 )
 
+// HealthCheckType_Values returns all elements of the HealthCheckType enum
+func HealthCheckType_Values() []string {
+	return []string{
+		HealthCheckTypeHttp,
+		HealthCheckTypeHttps,
+		HealthCheckTypeHttpStrMatch,
+		HealthCheckTypeHttpsStrMatch,
+		HealthCheckTypeTcp,
+		HealthCheckTypeCalculated,
+		HealthCheckTypeCloudwatchMetric,
+	}
+}
+
 const (
 	// HostedZoneLimitTypeMaxRrsetsByZone is a HostedZoneLimitType enum value
 	HostedZoneLimitTypeMaxRrsetsByZone = "MAX_RRSETS_BY_ZONE"
@@ -15624,6 +15732,14 @@ const (
 	// HostedZoneLimitTypeMaxVpcsAssociatedByZone is a HostedZoneLimitType enum value
 	HostedZoneLimitTypeMaxVpcsAssociatedByZone = "MAX_VPCS_ASSOCIATED_BY_ZONE"
 )
+
+// HostedZoneLimitType_Values returns all elements of the HostedZoneLimitType enum
+func HostedZoneLimitType_Values() []string {
+	return []string{
+		HostedZoneLimitTypeMaxRrsetsByZone,
+		HostedZoneLimitTypeMaxVpcsAssociatedByZone,
+	}
+}
 
 const (
 	// InsufficientDataHealthStatusHealthy is a InsufficientDataHealthStatus enum value
@@ -15635,6 +15751,15 @@ const (
 	// InsufficientDataHealthStatusLastKnownStatus is a InsufficientDataHealthStatus enum value
 	InsufficientDataHealthStatusLastKnownStatus = "LastKnownStatus"
 )
+
+// InsufficientDataHealthStatus_Values returns all elements of the InsufficientDataHealthStatus enum
+func InsufficientDataHealthStatus_Values() []string {
+	return []string{
+		InsufficientDataHealthStatusHealthy,
+		InsufficientDataHealthStatusUnhealthy,
+		InsufficientDataHealthStatusLastKnownStatus,
+	}
+}
 
 const (
 	// RRTypeSoa is a RRType enum value
@@ -15674,6 +15799,24 @@ const (
 	RRTypeCaa = "CAA"
 )
 
+// RRType_Values returns all elements of the RRType enum
+func RRType_Values() []string {
+	return []string{
+		RRTypeSoa,
+		RRTypeA,
+		RRTypeTxt,
+		RRTypeNs,
+		RRTypeCname,
+		RRTypeMx,
+		RRTypeNaptr,
+		RRTypePtr,
+		RRTypeSrv,
+		RRTypeSpf,
+		RRTypeAaaa,
+		RRTypeCaa,
+	}
+}
+
 const (
 	// ResettableElementNameFullyQualifiedDomainName is a ResettableElementName enum value
 	ResettableElementNameFullyQualifiedDomainName = "FullyQualifiedDomainName"
@@ -15688,6 +15831,16 @@ const (
 	ResettableElementNameChildHealthChecks = "ChildHealthChecks"
 )
 
+// ResettableElementName_Values returns all elements of the ResettableElementName enum
+func ResettableElementName_Values() []string {
+	return []string{
+		ResettableElementNameFullyQualifiedDomainName,
+		ResettableElementNameRegions,
+		ResettableElementNameResourcePath,
+		ResettableElementNameChildHealthChecks,
+	}
+}
+
 const (
 	// ResourceRecordSetFailoverPrimary is a ResourceRecordSetFailover enum value
 	ResourceRecordSetFailoverPrimary = "PRIMARY"
@@ -15695,6 +15848,14 @@ const (
 	// ResourceRecordSetFailoverSecondary is a ResourceRecordSetFailover enum value
 	ResourceRecordSetFailoverSecondary = "SECONDARY"
 )
+
+// ResourceRecordSetFailover_Values returns all elements of the ResourceRecordSetFailover enum
+func ResourceRecordSetFailover_Values() []string {
+	return []string{
+		ResourceRecordSetFailoverPrimary,
+		ResourceRecordSetFailoverSecondary,
+	}
+}
 
 const (
 	// ResourceRecordSetRegionUsEast1 is a ResourceRecordSetRegion enum value
@@ -15767,10 +15928,46 @@ const (
 	ResourceRecordSetRegionEuSouth1 = "eu-south-1"
 )
 
+// ResourceRecordSetRegion_Values returns all elements of the ResourceRecordSetRegion enum
+func ResourceRecordSetRegion_Values() []string {
+	return []string{
+		ResourceRecordSetRegionUsEast1,
+		ResourceRecordSetRegionUsEast2,
+		ResourceRecordSetRegionUsWest1,
+		ResourceRecordSetRegionUsWest2,
+		ResourceRecordSetRegionCaCentral1,
+		ResourceRecordSetRegionEuWest1,
+		ResourceRecordSetRegionEuWest2,
+		ResourceRecordSetRegionEuWest3,
+		ResourceRecordSetRegionEuCentral1,
+		ResourceRecordSetRegionApSoutheast1,
+		ResourceRecordSetRegionApSoutheast2,
+		ResourceRecordSetRegionApNortheast1,
+		ResourceRecordSetRegionApNortheast2,
+		ResourceRecordSetRegionApNortheast3,
+		ResourceRecordSetRegionEuNorth1,
+		ResourceRecordSetRegionSaEast1,
+		ResourceRecordSetRegionCnNorth1,
+		ResourceRecordSetRegionCnNorthwest1,
+		ResourceRecordSetRegionApEast1,
+		ResourceRecordSetRegionMeSouth1,
+		ResourceRecordSetRegionApSouth1,
+		ResourceRecordSetRegionAfSouth1,
+		ResourceRecordSetRegionEuSouth1,
+	}
+}
+
 const (
 	// ReusableDelegationSetLimitTypeMaxZonesByReusableDelegationSet is a ReusableDelegationSetLimitType enum value
 	ReusableDelegationSetLimitTypeMaxZonesByReusableDelegationSet = "MAX_ZONES_BY_REUSABLE_DELEGATION_SET"
 )
+
+// ReusableDelegationSetLimitType_Values returns all elements of the ReusableDelegationSetLimitType enum
+func ReusableDelegationSetLimitType_Values() []string {
+	return []string{
+		ReusableDelegationSetLimitTypeMaxZonesByReusableDelegationSet,
+	}
+}
 
 const (
 	// StatisticAverage is a Statistic enum value
@@ -15789,6 +15986,17 @@ const (
 	StatisticMinimum = "Minimum"
 )
 
+// Statistic_Values returns all elements of the Statistic enum
+func Statistic_Values() []string {
+	return []string{
+		StatisticAverage,
+		StatisticSum,
+		StatisticSampleCount,
+		StatisticMaximum,
+		StatisticMinimum,
+	}
+}
+
 const (
 	// TagResourceTypeHealthcheck is a TagResourceType enum value
 	TagResourceTypeHealthcheck = "healthcheck"
@@ -15796,6 +16004,14 @@ const (
 	// TagResourceTypeHostedzone is a TagResourceType enum value
 	TagResourceTypeHostedzone = "hostedzone"
 )
+
+// TagResourceType_Values returns all elements of the TagResourceType enum
+func TagResourceType_Values() []string {
+	return []string{
+		TagResourceTypeHealthcheck,
+		TagResourceTypeHostedzone,
+	}
+}
 
 const (
 	// VPCRegionUsEast1 is a VPCRegion enum value
@@ -15876,3 +16092,35 @@ const (
 	// VPCRegionEuSouth1 is a VPCRegion enum value
 	VPCRegionEuSouth1 = "eu-south-1"
 )
+
+// VPCRegion_Values returns all elements of the VPCRegion enum
+func VPCRegion_Values() []string {
+	return []string{
+		VPCRegionUsEast1,
+		VPCRegionUsEast2,
+		VPCRegionUsWest1,
+		VPCRegionUsWest2,
+		VPCRegionEuWest1,
+		VPCRegionEuWest2,
+		VPCRegionEuWest3,
+		VPCRegionEuCentral1,
+		VPCRegionApEast1,
+		VPCRegionMeSouth1,
+		VPCRegionUsGovWest1,
+		VPCRegionUsGovEast1,
+		VPCRegionUsIsoEast1,
+		VPCRegionUsIsobEast1,
+		VPCRegionApSoutheast1,
+		VPCRegionApSoutheast2,
+		VPCRegionApSouth1,
+		VPCRegionApNortheast1,
+		VPCRegionApNortheast2,
+		VPCRegionApNortheast3,
+		VPCRegionEuNorth1,
+		VPCRegionSaEast1,
+		VPCRegionCaCentral1,
+		VPCRegionCnNorth1,
+		VPCRegionAfSouth1,
+		VPCRegionEuSouth1,
+	}
+}

@@ -733,6 +733,12 @@ func (c *AutoScaling) CreateAutoScalingGroupRequest(input *CreateAutoScalingGrou
 // Scaling Groups (https://docs.aws.amazon.com/autoscaling/ec2/userguide/AutoScalingGroup.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
+// Every Auto Scaling group has three size parameters (DesiredCapacity, MaxSize,
+// and MinSize). Usually, you set these sizes based on a specific number of
+// instances. However, if you configure a mixed instances policy that defines
+// weights for the instance types, you must specify these sizes with the same
+// units that you use for weighting instances.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -6592,8 +6598,8 @@ type CreateAutoScalingGroupInput struct {
 	// With a mixed instances policy that uses instance weighting, Amazon EC2 Auto
 	// Scaling may need to go above MaxSize to meet your capacity requirements.
 	// In this event, Amazon EC2 Auto Scaling will never go above MaxSize by more
-	// than your maximum instance weight (weights that define how many capacity
-	// units each instance contributes to the capacity of the group).
+	// than your largest instance weight (weights that define how many units each
+	// instance contributes to the desired capacity of the group).
 	//
 	// MaxSize is a required field
 	MaxSize *int64 `type:"integer" required:"true"`
@@ -7035,6 +7041,11 @@ type CreateLaunchConfigurationInput struct {
 	// LaunchConfigurationName is a required field
 	LaunchConfigurationName *string `min:"1" type:"string" required:"true"`
 
+	// The metadata options for the instances. For more information, see Instance
+	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+	// in the Amazon EC2 User Guide for Linux Instances.
+	MetadataOptions *InstanceMetadataOptions `type:"structure"`
+
 	// The tenancy of the instance. An instance with dedicated tenancy runs on isolated,
 	// single-tenant hardware and can only be launched into a VPC.
 	//
@@ -7142,6 +7153,11 @@ func (s *CreateLaunchConfigurationInput) Validate() error {
 			}
 		}
 	}
+	if s.MetadataOptions != nil {
+		if err := s.MetadataOptions.Validate(); err != nil {
+			invalidParams.AddNested("MetadataOptions", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -7224,6 +7240,12 @@ func (s *CreateLaunchConfigurationInput) SetKeyName(v string) *CreateLaunchConfi
 // SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
 func (s *CreateLaunchConfigurationInput) SetLaunchConfigurationName(v string) *CreateLaunchConfigurationInput {
 	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetMetadataOptions sets the MetadataOptions field's value.
+func (s *CreateLaunchConfigurationInput) SetMetadataOptions(v *InstanceMetadataOptions) *CreateLaunchConfigurationInput {
+	s.MetadataOptions = v
 	return s
 }
 
@@ -10826,6 +10848,84 @@ func (s *InstanceDetails) SetWeightedCapacity(v string) *InstanceDetails {
 	return s
 }
 
+// The metadata options for the instances. For more information, see Instance
+// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+// in the Amazon EC2 User Guide for Linux Instances.
+type InstanceMetadataOptions struct {
+	_ struct{} `type:"structure"`
+
+	// This parameter enables or disables the HTTP metadata endpoint on your instances.
+	// If the parameter is not specified, the default state is enabled.
+	//
+	// If you specify a value of disabled, you will not be able to access your instance
+	// metadata.
+	HttpEndpoint *string `type:"string" enum:"InstanceMetadataEndpointState"`
+
+	// The desired HTTP PUT response hop limit for instance metadata requests. The
+	// larger the number, the further instance metadata requests can travel.
+	//
+	// Default: 1
+	//
+	// Possible values: Integers from 1 to 64
+	HttpPutResponseHopLimit *int64 `min:"1" type:"integer"`
+
+	// The state of token usage for your instance metadata requests. If the parameter
+	// is not specified in the request, the default state is optional.
+	//
+	// If the state is optional, you can choose to retrieve instance metadata with
+	// or without a signed token header on your request. If you retrieve the IAM
+	// role credentials without a token, the version 1.0 role credentials are returned.
+	// If you retrieve the IAM role credentials using a valid signed token, the
+	// version 2.0 role credentials are returned.
+	//
+	// If the state is required, you must send a signed token header with any instance
+	// metadata retrieval requests. In this state, retrieving the IAM role credentials
+	// always returns the version 2.0 credentials; the version 1.0 credentials are
+	// not available.
+	HttpTokens *string `type:"string" enum:"InstanceMetadataHttpTokensState"`
+}
+
+// String returns the string representation
+func (s InstanceMetadataOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstanceMetadataOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstanceMetadataOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstanceMetadataOptions"}
+	if s.HttpPutResponseHopLimit != nil && *s.HttpPutResponseHopLimit < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("HttpPutResponseHopLimit", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHttpEndpoint sets the HttpEndpoint field's value.
+func (s *InstanceMetadataOptions) SetHttpEndpoint(v string) *InstanceMetadataOptions {
+	s.HttpEndpoint = &v
+	return s
+}
+
+// SetHttpPutResponseHopLimit sets the HttpPutResponseHopLimit field's value.
+func (s *InstanceMetadataOptions) SetHttpPutResponseHopLimit(v int64) *InstanceMetadataOptions {
+	s.HttpPutResponseHopLimit = &v
+	return s
+}
+
+// SetHttpTokens sets the HttpTokens field's value.
+func (s *InstanceMetadataOptions) SetHttpTokens(v string) *InstanceMetadataOptions {
+	s.HttpTokens = &v
+	return s
+}
+
 // Describes whether detailed monitoring is enabled for the Auto Scaling instances.
 type InstanceMonitoring struct {
 	_ struct{} `type:"structure"`
@@ -11188,6 +11288,11 @@ type LaunchConfiguration struct {
 	// LaunchConfigurationName is a required field
 	LaunchConfigurationName *string `min:"1" type:"string" required:"true"`
 
+	// The metadata options for the instances. For more information, see Instance
+	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+	// in the Amazon EC2 User Guide for Linux Instances.
+	MetadataOptions *InstanceMetadataOptions `type:"structure"`
+
 	// The tenancy of the instance, either default or dedicated. An instance with
 	// dedicated tenancy runs on isolated, single-tenant hardware and can only be
 	// launched into a VPC.
@@ -11313,6 +11418,12 @@ func (s *LaunchConfiguration) SetLaunchConfigurationARN(v string) *LaunchConfigu
 // SetLaunchConfigurationName sets the LaunchConfigurationName field's value.
 func (s *LaunchConfiguration) SetLaunchConfigurationName(v string) *LaunchConfiguration {
 	s.LaunchConfigurationName = &v
+	return s
+}
+
+// SetMetadataOptions sets the MetadataOptions field's value.
+func (s *LaunchConfiguration) SetMetadataOptions(v *InstanceMetadataOptions) *LaunchConfiguration {
+	s.MetadataOptions = v
 	return s
 }
 
@@ -11973,6 +12084,16 @@ type MetricCollectionType struct {
 	//    * GroupTerminatingInstances
 	//
 	//    * GroupTotalInstances
+	//
+	//    * GroupInServiceCapacity
+	//
+	//    * GroupPendingCapacity
+	//
+	//    * GroupStandbyCapacity
+	//
+	//    * GroupTerminatingCapacity
+	//
+	//    * GroupTotalCapacity
 	Metric *string `min:"1" type:"string"`
 }
 
@@ -12572,9 +12693,9 @@ func (s PutNotificationConfigurationOutput) GoString() string {
 type PutScalingPolicyInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies how the scaling adjustment is interpreted (either an absolute number
-	// or a percentage). The valid values are ChangeInCapacity, ExactCapacity, and
-	// PercentChangeInCapacity.
+	// Specifies how the scaling adjustment is interpreted (for example, an absolute
+	// number or a percentage). The valid values are ChangeInCapacity, ExactCapacity,
+	// and PercentChangeInCapacity.
 	//
 	// Required if the policy type is StepScaling or SimpleScaling. For more information,
 	// see Scaling Adjustment Types (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-simple-step.html#as-scaling-adjustment)
@@ -13163,9 +13284,9 @@ func (s ResumeProcessesOutput) GoString() string {
 type ScalingPolicy struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies how the scaling adjustment is interpreted (either an absolute number
-	// or a percentage). The valid values are ChangeInCapacity, ExactCapacity, and
-	// PercentChangeInCapacity.
+	// Specifies how the scaling adjustment is interpreted (for example, an absolute
+	// number or a percentage). The valid values are ChangeInCapacity, ExactCapacity,
+	// and PercentChangeInCapacity.
 	AdjustmentType *string `min:"1" type:"string"`
 
 	// The CloudWatch alarms related to the policy.
@@ -14500,8 +14621,8 @@ type UpdateAutoScalingGroupInput struct {
 	// With a mixed instances policy that uses instance weighting, Amazon EC2 Auto
 	// Scaling may need to go above MaxSize to meet your capacity requirements.
 	// In this event, Amazon EC2 Auto Scaling will never go above MaxSize by more
-	// than your maximum instance weight (weights that define how many capacity
-	// units each instance contributes to the capacity of the group).
+	// than your largest instance weight (weights that define how many units each
+	// instance contributes to the desired capacity of the group).
 	MaxSize *int64 `type:"integer"`
 
 	// The minimum size of the Auto Scaling group.
@@ -14726,6 +14847,38 @@ func (s UpdateAutoScalingGroupOutput) GoString() string {
 }
 
 const (
+	// InstanceMetadataEndpointStateDisabled is a InstanceMetadataEndpointState enum value
+	InstanceMetadataEndpointStateDisabled = "disabled"
+
+	// InstanceMetadataEndpointStateEnabled is a InstanceMetadataEndpointState enum value
+	InstanceMetadataEndpointStateEnabled = "enabled"
+)
+
+// InstanceMetadataEndpointState_Values returns all elements of the InstanceMetadataEndpointState enum
+func InstanceMetadataEndpointState_Values() []string {
+	return []string{
+		InstanceMetadataEndpointStateDisabled,
+		InstanceMetadataEndpointStateEnabled,
+	}
+}
+
+const (
+	// InstanceMetadataHttpTokensStateOptional is a InstanceMetadataHttpTokensState enum value
+	InstanceMetadataHttpTokensStateOptional = "optional"
+
+	// InstanceMetadataHttpTokensStateRequired is a InstanceMetadataHttpTokensState enum value
+	InstanceMetadataHttpTokensStateRequired = "required"
+)
+
+// InstanceMetadataHttpTokensState_Values returns all elements of the InstanceMetadataHttpTokensState enum
+func InstanceMetadataHttpTokensState_Values() []string {
+	return []string{
+		InstanceMetadataHttpTokensStateOptional,
+		InstanceMetadataHttpTokensStateRequired,
+	}
+}
+
+const (
 	// InstanceRefreshStatusPending is a InstanceRefreshStatus enum value
 	InstanceRefreshStatusPending = "Pending"
 
@@ -14744,6 +14897,18 @@ const (
 	// InstanceRefreshStatusCancelled is a InstanceRefreshStatus enum value
 	InstanceRefreshStatusCancelled = "Cancelled"
 )
+
+// InstanceRefreshStatus_Values returns all elements of the InstanceRefreshStatus enum
+func InstanceRefreshStatus_Values() []string {
+	return []string{
+		InstanceRefreshStatusPending,
+		InstanceRefreshStatusInProgress,
+		InstanceRefreshStatusSuccessful,
+		InstanceRefreshStatusFailed,
+		InstanceRefreshStatusCancelling,
+		InstanceRefreshStatusCancelled,
+	}
+}
 
 const (
 	// LifecycleStatePending is a LifecycleState enum value
@@ -14786,6 +14951,25 @@ const (
 	LifecycleStateStandby = "Standby"
 )
 
+// LifecycleState_Values returns all elements of the LifecycleState enum
+func LifecycleState_Values() []string {
+	return []string{
+		LifecycleStatePending,
+		LifecycleStatePendingWait,
+		LifecycleStatePendingProceed,
+		LifecycleStateQuarantined,
+		LifecycleStateInService,
+		LifecycleStateTerminating,
+		LifecycleStateTerminatingWait,
+		LifecycleStateTerminatingProceed,
+		LifecycleStateTerminated,
+		LifecycleStateDetaching,
+		LifecycleStateDetached,
+		LifecycleStateEnteringStandby,
+		LifecycleStateStandby,
+	}
+}
+
 const (
 	// MetricStatisticAverage is a MetricStatistic enum value
 	MetricStatisticAverage = "Average"
@@ -14803,6 +14987,17 @@ const (
 	MetricStatisticSum = "Sum"
 )
 
+// MetricStatistic_Values returns all elements of the MetricStatistic enum
+func MetricStatistic_Values() []string {
+	return []string{
+		MetricStatisticAverage,
+		MetricStatisticMinimum,
+		MetricStatisticMaximum,
+		MetricStatisticSampleCount,
+		MetricStatisticSum,
+	}
+}
+
 const (
 	// MetricTypeAsgaverageCpuutilization is a MetricType enum value
 	MetricTypeAsgaverageCpuutilization = "ASGAverageCPUUtilization"
@@ -14817,10 +15012,27 @@ const (
 	MetricTypeAlbrequestCountPerTarget = "ALBRequestCountPerTarget"
 )
 
+// MetricType_Values returns all elements of the MetricType enum
+func MetricType_Values() []string {
+	return []string{
+		MetricTypeAsgaverageCpuutilization,
+		MetricTypeAsgaverageNetworkIn,
+		MetricTypeAsgaverageNetworkOut,
+		MetricTypeAlbrequestCountPerTarget,
+	}
+}
+
 const (
 	// RefreshStrategyRolling is a RefreshStrategy enum value
 	RefreshStrategyRolling = "Rolling"
 )
+
+// RefreshStrategy_Values returns all elements of the RefreshStrategy enum
+func RefreshStrategy_Values() []string {
+	return []string{
+		RefreshStrategyRolling,
+	}
+}
 
 const (
 	// ScalingActivityStatusCodePendingSpotBidPlacement is a ScalingActivityStatusCode enum value
@@ -14859,3 +15071,21 @@ const (
 	// ScalingActivityStatusCodeCancelled is a ScalingActivityStatusCode enum value
 	ScalingActivityStatusCodeCancelled = "Cancelled"
 )
+
+// ScalingActivityStatusCode_Values returns all elements of the ScalingActivityStatusCode enum
+func ScalingActivityStatusCode_Values() []string {
+	return []string{
+		ScalingActivityStatusCodePendingSpotBidPlacement,
+		ScalingActivityStatusCodeWaitingForSpotInstanceRequestId,
+		ScalingActivityStatusCodeWaitingForSpotInstanceId,
+		ScalingActivityStatusCodeWaitingForInstanceId,
+		ScalingActivityStatusCodePreInService,
+		ScalingActivityStatusCodeInProgress,
+		ScalingActivityStatusCodeWaitingForElbconnectionDraining,
+		ScalingActivityStatusCodeMidLifecycleAction,
+		ScalingActivityStatusCodeWaitingForInstanceWarmup,
+		ScalingActivityStatusCodeSuccessful,
+		ScalingActivityStatusCodeFailed,
+		ScalingActivityStatusCodeCancelled,
+	}
+}
