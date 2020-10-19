@@ -100,6 +100,18 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
+	// BpfEnabled enables the eBPF dataplane mode.
+	BPFEnabled bool `json:"bpfEnabled,omitempty"`
+	// BPFExternalServiceMode controls how traffic from outside the cluster to NodePorts and ClusterIPs is handled.
+	// In Tunnel mode, packet is tunneled from the ingress host to the host with the backing pod and back again.
+	// In DSR mode, traffic is tunneled to the host with the backing pod and then returned directly;
+	// this requires a network that allows direct return.
+	// Default: Tunnel (other options: DSR)
+	BPFExternalServiceMode string `json:"bpfExternalServiceMode,omitempty"`
+	// BPFLogLevel controls the log level used by the BPF programs. The logs are emitted
+	// to the BPF trace pipe, accessible with the command tc exec BPF debug.
+	// Default: Off (other options: Info, Debug)
+	BPFLogLevel string `json:"bpfLogLevel,omitempty"`
 	// ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or
 	// appends to the bottom. Leaving the default option is safest to prevent accidentally
 	// breaking connectivity. Default: 'insert' (other options: 'append')

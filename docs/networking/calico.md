@@ -93,6 +93,23 @@ It is possible to configure Calico to use Typha by editing a cluster and adding 
       typhaReplicas: 3
 ```
 
+### Configuring the eBPF dataplane
+{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
+
+Calico supports using an [eBPF dataplane](https://docs.projectcalico.org/about/about-ebpf) as an alternative to the standard Linux dataplane (which is iptables based). While the standard dataplane focuses on compatibility by inter-working with kube-proxy, and your own iptables rules, the eBPF dataplane focuses on performance, latency and improving user experience with features that aren’t possible in the standard dataplane. As part of that, the eBPF dataplane replaces kube-proxy with an eBPF implementation. The main “user experience” feature is to preserve the source IP of traffic from outside the cluster when traffic hits a NodePort; this makes the server-side logs and network policy much more useful on that path.
+
+For more details on enabling the eBPF dataplane please refer the [Calico Docs](https://docs.projectcalico.org/maintenance/ebpf/enabling-bpf).
+
+```yaml
+  kubeProxy:
+    enabled: false
+  networking:
+    calico:
+      bpfEnabled: true
+      bpfExternalServiceMode: Tunnel
+      bpfLogLevel: Info
+```
+
 ### Configuring WireGuard
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
 

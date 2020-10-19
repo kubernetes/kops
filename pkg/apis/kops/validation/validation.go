@@ -961,14 +961,24 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 		}
 	}
 
-	if v.ChainInsertMode != "" {
-		valid := []string{"insert", "append"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("chainInsertMode"), &v.ChainInsertMode, valid)...)
-	}
-
 	if v.AwsSrcDstCheck != "" {
 		valid := []string{"Enable", "Disable", "DoNothing"}
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("awsSrcDstCheck"), &v.AwsSrcDstCheck, valid)...)
+	}
+
+	if v.BPFExternalServiceMode != "" {
+		valid := []string{"Tunnel", "DSR"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("bpfExternalServiceMode"), &v.BPFExternalServiceMode, valid)...)
+	}
+
+	if v.BPFLogLevel != "" {
+		valid := []string{"Off", "Info", "Debug"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("bpfLogLevel"), &v.BPFLogLevel, valid)...)
+	}
+
+	if v.ChainInsertMode != "" {
+		valid := []string{"insert", "append"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("chainInsertMode"), &v.ChainInsertMode, valid)...)
 	}
 
 	if v.IptablesBackend != "" {
