@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/pkg/nodeidentity/aws"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -55,7 +56,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 	}
 
 	if g.Spec.Tenancy != "" {
-		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "tenancy"), &g.Spec.Tenancy, []string{"default", "dedicated", "host"})...)
+		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "tenancy"), &g.Spec.Tenancy, ec2.Tenancy_Values())...)
 	}
 
 	if g.Spec.MaxSize != nil && g.Spec.MinSize != nil {
