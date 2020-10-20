@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -104,9 +105,8 @@ func awsValidateSpotDurationInMinute(fieldPath *field.Path, ig *kops.InstanceGro
 func awsValidateInstanceInterruptionBehavior(fieldPath *field.Path, ig *kops.InstanceGroup) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if ig.Spec.InstanceInterruptionBehavior != nil {
-		validInterruptionBehaviors := []string{"terminate", "hibernate", "stop"}
 		instanceInterruptionBehavior := *ig.Spec.InstanceInterruptionBehavior
-		allErrs = append(allErrs, IsValidValue(fieldPath, &instanceInterruptionBehavior, validInterruptionBehaviors)...)
+		allErrs = append(allErrs, IsValidValue(fieldPath, &instanceInterruptionBehavior, ec2.InstanceInterruptionBehavior_Values())...)
 	}
 	return allErrs
 }
