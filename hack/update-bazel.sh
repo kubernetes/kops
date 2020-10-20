@@ -29,6 +29,7 @@ GOBIN="${TMP_OUT}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/g
 
 "${TMP_OUT}/gazelle" fix \
   -external=vendored \
+  -exclude=tests/e2e \
   -mode=fix \
   -proto=disable \
   -repo_root="${KOPS_ROOT}"
