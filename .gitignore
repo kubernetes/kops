@@ -99,3 +99,6 @@ _output
 
 # Used to cache terraform providers etc during testing
 .cache/
+
+# Used by E2E testing
+_artifacts
