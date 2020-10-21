@@ -39,7 +39,7 @@ https://go.k8s.io/bot-commands).
 
 ## Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
+kOps maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
 
 For more information, checkout the [office hours page.](office_hours.md)
 

@@ -182,7 +182,7 @@ ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --c
 * Information on adding NS records with [Google Cloud
   Platform](https://cloud.google.com/dns/update-name-servers)
 
-#### Using Public/Private DNS (Kops 1.5+)
+#### Using Public/Private DNS (kOps 1.5+)
 
 By default the assumption is that NS records are publicly available.  If you
 require private DNS records you should modify the commands we run later in this
@@ -270,7 +270,7 @@ If the default encryption is not set or it cannot be checked, kops will resort t
 It is possible to use a single S3 bucket for storing kops state for clusters
 located in different accounts by using [cross-account bucket policies](http://docs.aws.amazon.com/AmazonS3/latest/dev/example-walkthroughs-managing-access-example2.html#access-policies-walkthrough-cross-account-permissions-acctA-tasks).
 
-Kops will be able to use buckets configured with cross-account policies by default.
+kOps will be able to use buckets configured with cross-account policies by default.
 
 In this case you may want to override the object ACLs which kops places on the
 state files, as default AWS ACLs will make it possible for an account that has
@@ -410,7 +410,7 @@ Now that you have a working _kops_ cluster, read through the [recommendations fo
 
 ## Feedback
 
-There's an incredible team behind Kops and we encourage you to reach out to the
+There's an incredible team behind kOps and we encourage you to reach out to the
 community on the Kubernetes
 Slack(http://slack.k8s.io/).  Bring your
 questions, comments, and requests and meet the people behind the project!

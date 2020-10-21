@@ -1,6 +1,6 @@
 # Upgrading from kube-up to kops
 
-Kops let you upgrade an existing kubernetes cluster installed using kube-up, to a cluster managed by
+kOps let you upgrade an existing kubernetes cluster installed using kube-up, to a cluster managed by
 kops.
 
 ** This is a slightly risky procedure, so we recommend backing up important data before proceeding. 

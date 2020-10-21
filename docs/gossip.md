@@ -15,7 +15,7 @@ In order to use gossip-based DNS,  configure the cluster domain name to end with
 
 ### Kubernetes API
 
-When using gossip mode, you have to expose the kubernetes API using a loadbalancer. Since there is no hosted zone for gossip-based clusters, you simply use the load balancer address directly. The user experience is identical to standard clusters. Kops will add the ELB DNS name to the kops-generated kubernetes configuration.
+When using gossip mode, you have to expose the kubernetes API using a loadbalancer. Since there is no hosted zone for gossip-based clusters, you simply use the load balancer address directly. The user experience is identical to standard clusters. kOps will add the ELB DNS name to the kops-generated kubernetes configuration.
 
 ### Bastion
 

@@ -236,7 +236,7 @@ spec:
 
 ## Adding additional storage to the instance groups
 
-As of Kops 1.12.0 you can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
+As of kOps 1.12.0 you can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
 
 ```YAML
 ---
@@ -351,7 +351,7 @@ So the procedure is:
 
 AWS permits the creation of mixed instance EC2 Autoscaling Groups using a [mixed instance policy](https://aws.amazon.com/blogs/aws/new-ec2-auto-scaling-groups-with-multiple-instance-types-purchase-options/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS.
 
-Support for mixed instance groups was added in Kops 1.12.0
+Support for mixed instance groups was added in kOps 1.12.0
 
 
 ```YAML

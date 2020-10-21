@@ -17,7 +17,7 @@ kops create cluster \
 
 ### Configuring Flannel iptables resync period
 
-As of Kops 1.12.0, Flannel iptables resync option is configurable via editing a cluster and adding
+As of kOps 1.12.0, Flannel iptables resync option is configurable via editing a cluster and adding
 `iptablesResyncSeconds` option to spec:
 
 ```yaml

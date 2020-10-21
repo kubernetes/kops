@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-Kops used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Should support both `cn-north-1` and `cn-northwest-1`, but only `cn-north-1` is tested.
+kOps used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Should support both `cn-north-1` and `cn-northwest-1`, but only `cn-north-1` is tested.
 
 Most of the following procedures to provision a cluster are the same with [the guide to use kops in AWS](getting_started/aws.md). The differences will be highlighted and the similar parts will be omitted.
 

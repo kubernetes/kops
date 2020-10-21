@@ -1,6 +1,6 @@
 # IAM Roles
 
-By default Kops creates two IAM roles for the cluster: one for the masters, and one for the nodes.
+By default kOps creates two IAM roles for the cluster: one for the masters, and one for the nodes.
 
 > Please note that currently all Pods running on your cluster have access to the instance IAM role.
 > Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that.
@@ -12,7 +12,7 @@ An example of the new IAM policies can be found here:
 - Master Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict.json
 - Compute Nodes: https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_node_strict.json
 
-On provisioning a new cluster with Kops v1.8.0 or above, by default you will be using the new stricter IAM policies. Upgrading an existing cluster will use the legacy IAM privileges to reduce risk of potential regression.
+On provisioning a new cluster with kOps v1.8.0 or above, by default you will be using the new stricter IAM policies. Upgrading an existing cluster will use the legacy IAM privileges to reduce risk of potential regression.
 
 In order to update your cluster to use the strict IAM privileges, add the following within your Cluster Spec:
 ```yaml
@@ -59,15 +59,15 @@ The additional permissions are:
 ## Permissions Boundaries
 {{ kops_feature_table(kops_added_default='1.19') }}
 
-AWS Permissions Boundaries enable you to use a policy (managed or custom) to set the maximum permissions that roles created by Kops will be able to grant to instances they're attached to. It can be useful to prevent possible privilege escalations.
+AWS Permissions Boundaries enable you to use a policy (managed or custom) to set the maximum permissions that roles created by kOps will be able to grant to instances they're attached to. It can be useful to prevent possible privilege escalations.
 
-To set a Permissions Boundary for Kops' roles, update your Cluster Spec with the following and then perform a cluster update:
+To set a Permissions Boundary for kOps' roles, update your Cluster Spec with the following and then perform a cluster update:
 ```yaml
 iam:
   permissionsBoundary: aws:arn:iam:123456789000:policy:test-boundary
 ```
 
-*NOTE: Currently, Kops only supports using a single Permissions Boundary for all roles it creates. In case you need to set per-role Permissions Boundaries, we recommend that you refer to this [section](#use-existing-aws-instance-profiles) below, and provide your own roles to Kops.*
+*NOTE: Currently, kOps only supports using a single Permissions Boundary for all roles it creates. In case you need to set per-role Permissions Boundaries, we recommend that you refer to this [section](#use-existing-aws-instance-profiles) below, and provide your own roles to kOps.*
 
 ## Adding External Policies
 
@@ -86,7 +86,7 @@ spec:
     - aws:arn:iam:123456789000:policy:test-policy
 ```
 
-External Policy attachments are treated declaritively. Any policies declared will be attached to the role, any policies not specified will be detached _after_ new policies are attached. This does not replace or affect built in Kops policies in any way.
+External Policy attachments are treated declaritively. Any policies declared will be attached to the role, any policies not specified will be detached _after_ new policies are attached. This does not replace or affect built in kOps policies in any way.
 
 It's important to note that externalPolicies will only handle the attachment and detachment of policies, not creation, modification, or deletion.
 
@@ -176,12 +176,12 @@ spec:
 
 ## Use existing AWS Instance Profiles
 
-Rather than having Kops create and manage IAM roles and instance profiles, it is possible to use an existing instance profile. This is useful in organizations where security policies prevent tools from creating their own IAM roles and policies.
-Kops will still output any differences in the IAM Inline Policy for each IAM Role.
-This is convenient for determining policy changes that need to be made when upgrading Kops.
+Rather than having kOps create and manage IAM roles and instance profiles, it is possible to use an existing instance profile. This is useful in organizations where security policies prevent tools from creating their own IAM roles and policies.
+kOps will still output any differences in the IAM Inline Policy for each IAM Role.
+This is convenient for determining policy changes that need to be made when upgrading kOps.
 **Using IAM Managed Policies will not output these differences, it is up to the user to track expected changes to policies.**
 
-*NOTE: Currently Kops only supports using existing instance profiles for every instance group in the cluster, not a mix of existing and managed instance profiles.
+*NOTE: Currently kOps only supports using existing instance profiles for every instance group in the cluster, not a mix of existing and managed instance profiles.
 This is due to the lifecycle overrides being used to prevent creation of the IAM-related resources.*
 
 To do this, get a list of instance group names for the cluster:

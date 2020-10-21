@@ -51,7 +51,7 @@ There are a few ways to configure your state store.  In priority order:
 
 The local filesystem state store (`file://`) is **not** functional for running clusters. It is permitted so as to enable review workflows.
 
-For example, in a review workflow, it can be desirable to check a set of untrusted changes before they are applied to real infrastructure. If submitted untrusted changes to configuration files are naively run by `kops replace`, then Kops would overwrite the state store used by production infrastructure with changes which have not yet been approved. This is dangerous.
+For example, in a review workflow, it can be desirable to check a set of untrusted changes before they are applied to real infrastructure. If submitted untrusted changes to configuration files are naively run by `kops replace`, then kOps would overwrite the state store used by production infrastructure with changes which have not yet been approved. This is dangerous.
 
 Instead, a review workflow may download the contents of the state bucket to a local directory (using `aws s3 sync` or similar), set the state store to the local directory (e.g. `--state file:///path/to/state/store`), and then run `kops replace` and `kops update` (but for a dry-run only - _not_ `kops update --yes`). This allows the review process to make changes to a local copy of the state bucket, and check those changes, without touching the production state bucket or production infrastructure.
 
@@ -134,7 +134,7 @@ Consider the S3 bucket living in Account B and the kops cluster living in Accoun
 }
 ```
 
-Kops will then use that bucket as if it was in the remote account, including creating appropriate IAM policies that limits nodes from doing bad things.
+kOps will then use that bucket as if it was in the remote account, including creating appropriate IAM policies that limits nodes from doing bad things.
 Note that any user/role with full S3 access will be able to delete any cluster from the state store, but may not delete any instances or other things outside of S3.
 
 ## Digital Ocean (do://)
@@ -191,7 +191,7 @@ gcsClient, err := storage.New(httpClient)
 ## Vault (vault://)
 {{ kops_feature_table(kops_added_ff='1.19') }}
 
-Kops has support for using Vault as state store. It is currently an experimental feature and you have to enable the `VFSVaultSupport` feature flag to enable it.
+kOps has support for using Vault as state store. It is currently an experimental feature and you have to enable the `VFSVaultSupport` feature flag to enable it.
 
 The goal of the vault store is to be a safe storage for the kops keys and secrets store. It will not work to use this as a kops registry/config store. Among other things, etcd-manager is unable to read VFS control files from vault. Vault also cannot be used as backend for etcd backups.
 
