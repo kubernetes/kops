@@ -40,7 +40,7 @@ Adding ECR permissions will extend the IAM policy documents as below:
 The additional permissions are:
 ```json
 {
-  "Sid": "kopsK8sECR",
+  "Sid": "kOpsK8sECR",
   "Effect": "Allow",
   "Action": [
     "ecr:BatchCheckLayerAvailability",
@@ -92,7 +92,7 @@ It's important to note that externalPolicies will only handle the attachment and
 
 ## Adding Additional Policies
 
-Sometimes you may need to extend the kops IAM roles to add additional policies. You can do this
+Sometimes you may need to extend the kOps IAM roles to add additional policies. You can do this
 through the `additionalPolicies` spec field. For instance, let's say you want
 to add DynamoDB and Elasticsearch permissions to your nodes.
 
@@ -151,7 +151,7 @@ Now you can run a cluster update to have the changes take effect:
 kops update cluster ${CLUSTER_NAME} --yes
 ```
 
-You can have an additional policy for each kops role (node, master, bastion). For instance, if you wanted to apply one set of additional permissions to the master instances, and another to the nodes, you could do the following:
+You can have an additional policy for each kOps role (node, master, bastion). For instance, if you wanted to apply one set of additional permissions to the master instances, and another to the nodes, you could do the following:
 
 ```yaml
 spec:

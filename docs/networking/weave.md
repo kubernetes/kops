@@ -23,7 +23,7 @@ kops create cluster \
 ### Configuring Weave MTU
 
 The Weave MTU is configurable by editing the cluster and setting `mtu` option in the weave configuration.
-AWS VPCs support jumbo frames, so on cluster creation kops sets the weave MTU to 8912 bytes (9001 minus overhead).
+AWS VPCs support jumbo frames, so on cluster creation kOps sets the weave MTU to 8912 bytes (9001 minus overhead).
 
 ```yaml
 spec:
@@ -64,7 +64,7 @@ Note that it is possible to break the cluster networking if flags are improperly
 
 The Weave network encryption is configurable by creating a weave network secret password.
 Weaveworks recommends choosing a secret with [at least 50 bits of entropy](https://www.weave.works/docs/net/latest/tasks/manage/security-untrusted-networks/).
-If no password is supplied, kops will generate one at random.
+If no password is supplied, kOps will generate one at random.
 
 ```sh
 cat /dev/urandom | tr -dc A-Za-z0-9 | head -c9 > password

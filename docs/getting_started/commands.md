@@ -1,6 +1,6 @@
 # Commands & Arguments
-This page lists the most common kops commands.
-Please refer to the kops [cli reference](../cli/kops.md) for full documentation.
+This page lists the most common kOps commands.
+Please refer to the kOps [cli reference](../cli/kops.md) for full documentation.
 
 ## `kops create`
 
@@ -8,7 +8,7 @@ Please refer to the kops [cli reference](../cli/kops.md) for full documentation.
 
 ### `kops create -f <cluster spec>`
 
-`kops create -f <cluster spec>` will register a cluster using a kops spec yaml file. After the cluster has been registered you need to run `kops update cluster --yes` to create the cloud resources.
+`kops create -f <cluster spec>` will register a cluster using a kOps spec yaml file. After the cluster has been registered you need to run `kops update cluster --yes` to create the cloud resources.
 
 ### `kops create cluster`
 
@@ -24,7 +24,7 @@ the output matches your expectations, you can apply the changes by adding `--yes
 
 ## `kops rolling-update cluster`
 
-`kops update cluster <clustername>` updates a kubernetes cluster to match the cloud and kops specifications.
+`kops update cluster <clustername>` updates a kubernetes cluster to match the cloud and kOps specifications.
 
 As a precaution, it is safer run in 'preview' mode first using `kops rolling-update cluster --name <name>`, and once confirmed 
 the output matches your expectations, you can apply the changes by adding `--yes` to the command - `kops rolling-update cluster --name <name> --yes`.
@@ -43,7 +43,7 @@ the output matches your expectations, you can perform the actual deletion by add
 
 ## `kops toolbox template`
 
-`kops toolbox template` lets you generate a kops spec using `go` templates. This is very handy if you want to consistently manage multiple clusters.
+`kops toolbox template` lets you generate a kOps spec using `go` templates. This is very handy if you want to consistently manage multiple clusters.
 
 ## `kops version`
 

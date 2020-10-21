@@ -4,7 +4,7 @@
 
 For testing purposes, kubernetes works just fine with a single master. However, when the master becomes unavailable, for example due to upgrade or instance failure, the kubernetes API will be unavailable. Pods and services that are running in the cluster continue to operate as long as they do not depend on interacting with the API, but operations such as adding nodes, scaling pods, replacing terminated pods will not work. Running kubectl will also not work. 
 
-kops runs each master in a dedicated autoscaling groups (ASG) and stores data on EBS volumes. That way, if a master node is terminated the ASG will launch a new master instance with the master's volume. Because of the dedicated EBS volumes, each master is bound to a fixed Availability Zone (AZ). If the AZ becomes unavailable, the master instance in that AZ will also become unavailable.
+kOps runs each master in a dedicated autoscaling groups (ASG) and stores data on EBS volumes. That way, if a master node is terminated the ASG will launch a new master instance with the master's volume. Because of the dedicated EBS volumes, each master is bound to a fixed Availability Zone (AZ). If the AZ becomes unavailable, the master instance in that AZ will also become unavailable.
 
 For production use, you therefore want to run kubernetes in a HA setup with multiple masters. With multiple master nodes, you will be able both to do graceful (zero-downtime) upgrades and you will be able to survive AZ failures.
 
@@ -19,7 +19,7 @@ Note that running clusters spanning several AZs is more expensive than running c
 ### Example 1: public topology
 
 The simplest way to get started with a HA cluster is to run `kops create cluster` as shown below. The `--master-zones` flag lists the zones you want your masters
-to run in. By default, kops will create one master per AZ. Since the kubernetes etcd cluster runs on the master nodes, you have to specify an odd number of zones in order to obtain quorum.
+to run in. By default, kOps will create one master per AZ. Since the kubernetes etcd cluster runs on the master nodes, you have to specify an odd number of zones in order to obtain quorum.
 
 ```
 kops create cluster \

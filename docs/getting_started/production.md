@@ -16,7 +16,7 @@ Read through the [networking page](../networking.md) and choose a stable CNI.
 
 ## Private topology
 
-By default kops will create clusters using public topology, where all nodes and the Kubernetes API are exposed on public Internet.
+By default kOps will create clusters using public topology, where all nodes and the Kubernetes API are exposed on public Internet.
 
 Read through the [topology page](../topology.md) to understand the options you have running nodes in internal IP addresses and using a [bastion](../bastion.md) for SSH access.
 
@@ -24,7 +24,7 @@ Read through the [topology page](../topology.md) to understand the options you h
 
 The `kops` command allows you to configure some aspects of your cluster, but for almost any production cluster, you want to change settings that is not accecible through CLI. The cluster spec can be exported as a yaml file and checked into version control.
 
-Read through the [cluster spec page](../cluster_spec.md) and familiarize yourself with the key options that kops offers.
+Read through the [cluster spec page](../cluster_spec.md) and familiarize yourself with the key options that kOps offers.
 
 ## Templating
 

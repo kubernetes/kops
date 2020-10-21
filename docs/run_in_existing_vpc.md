@@ -1,7 +1,7 @@
 ## Running in a shared VPC
 
-When launching into a shared VPC, kops will reuse the VPC and Internet Gateway. If you are not using an Internet Gateway
- or NAT Gateway you can tell kops to ignore egress. By default, kops creates a new subnet per zone and a new route table, 
+When launching into a shared VPC, kOps will reuse the VPC and Internet Gateway. If you are not using an Internet Gateway
+ or NAT Gateway you can tell kOps to ignore egress. By default, kops creates a new subnet per zone and a new route table, 
  but you can instead use a shared subnet (see [below](#shared-subnets)).
 
 1. Use `kops create cluster` with the `--vpc` argument for your existing VPC:
@@ -45,7 +45,7 @@ When launching into a shared VPC, kops will reuse the VPC and Internet Gateway. 
   Review the changes to make sure they are OK—the Kubernetes settings might 
    not be ones you want on a shared VPC (in which case, open an issue!)
 
-  **Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`. kops will detect the required change,
+  **Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`. kOps will detect the required change,
    but refuse to make it automatically because it is a shared VPC. Please review the implications and make the change
    to the VPC manually.**
 
@@ -56,7 +56,7 @@ When launching into a shared VPC, kops will reuse the VPC and Internet Gateway. 
   ```
 
   This will add an additional tag to your AWS VPC resource. This tag
-  will be removed automatically if you delete your kops cluster.
+  will be removed automatically if you delete your kOps cluster.
 
   ```
   "kubernetes.io/cluster/<cluster-name>" = "shared"
@@ -139,7 +139,7 @@ spec:
 
 ### Subnet Tags
 
-  By default, kops will tag your existing subnets with the standard tags:
+  By default, kOps will tag your existing subnets with the standard tags:
 
   Public/Utility Subnets:
   ```
@@ -157,7 +157,7 @@ spec:
   
   These tags are important, for example, your services will be unable to create public or private Elastic Load Balancers (ELBs) if the respective `elb` or `internal-elb` tags are missing.
   
-  If you would like to manage these tags externally then specify `--disable-subnet-tags` during your cluster creation. This will prevent kops from tagging existing subnets and allow some custom control, such as separate subnets for internal ELBs.
+  If you would like to manage these tags externally then specify `--disable-subnet-tags` during your cluster creation. This will prevent kOps from tagging existing subnets and allow some custom control, such as separate subnets for internal ELBs.
 
 ### Shared NAT Egress
 
@@ -191,17 +191,17 @@ spec:
 Please note:
 
 * You must specify pre-created subnets for either all of the subnets or none of them.
-* kops won't alter your existing subnets. They must be correctly set up with route tables, etc.  The
+* kOps won't alter your existing subnets. They must be correctly set up with route tables, etc.  The
   Public or Utility subnets should have public IPs and an Internet Gateway configured as their default route
   in their route table.  Private subnets should not have public IPs and will typically have a NAT Gateway
   configured as their default route.
-* kops won't create a route-table at all if it's not creating subnets.
+* kOps won't create a route-table at all if it's not creating subnets.
 * In the example above the first subnet is using a shared NAT Gateway while the
   second one is using a shared NAT Instance
 
 ### Externally Managed Egress
 
-If you are using an unsupported egress configuration in your VPC, kops can be told to ignore egress by using a configuration such as:
+If you are using an unsupported egress configuration in your VPC, kOps can be told to ignore egress by using a configuration such as:
 
 ```yaml
 spec:
@@ -223,7 +223,7 @@ spec:
     egress: External
 ```
 
-This tells kops that egress is managed externally. This is preferable when using virtual private gateways 
+This tells kOps that egress is managed externally. This is preferable when using virtual private gateways 
 (currently unsupported) or using other configurations to handle egress routing. 
 
 ### Proxy VPC Egress

@@ -16,7 +16,7 @@ Take a snapshot of your EBS volumes; export all your data from kubectl etc.**
 
 Limitations:
 
-* kops splits etcd onto two volumes now: `main` and `events`.  We will keep the `main` data, but you will lose your events history.
+* kOps splits etcd onto two volumes now: `main` and `events`.  We will keep the `main` data, but you will lose your events history.
 * Doubtless others not yet known - please open issues if you encounter them!
 
 ### Overview
@@ -190,7 +190,7 @@ This method provides zero-downtime when migrating a cluster from `kube-up` to `k
 Limitations:
 
 - If you're using the default networking (`kubenet`), there is a account limit of 50 entries in a VPC's route table. If your cluster contains more than ~25 nodes, this strategy, as-is, will not work.
-    + Shifting to a CNI-compatible overlay network like `weave`, `kopeio-vxlan` (`kopeio`), `calico`, `canal`, `romana`, and similar. See the [kops networking docs](../networking.md) for more information.
+    + Shifting to a CNI-compatible overlay network like `weave`, `kopeio-vxlan` (`kopeio`), `calico`, `canal`, `romana`, and similar. See the [kOps networking docs](../networking.md) for more information.
     + One solution is to gradually shift traffic from one cluster to the other, scaling down the number of nodes on the old cluster, and scaling up the number of nodes on the new cluster.
 
 ### Steps

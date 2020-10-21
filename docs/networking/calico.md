@@ -56,7 +56,7 @@ To enable this mode in a cluster, add the following to the cluster spec:
       crossSubnet: true
 ```
 In the case of AWS, EC2 instances have source/destination checks enabled by default.
-When you enable cross-subnet mode in kops 1.19+, it is equivalent to:
+When you enable cross-subnet mode in kOps 1.19+, it is equivalent to:
 ```yaml
   networking:
     calico:
@@ -64,14 +64,14 @@ When you enable cross-subnet mode in kops 1.19+, it is equivalent to:
       IPIPMode: CrossSubnet
 ```
 An IAM policy will be added to all nodes to allow Calico to execute `ec2:DescribeInstances` and `ec2:ModifyNetworkInterfaceAttribute`, as required when [awsSrcDstCheck](https://docs.projectcalico.org/reference/resources/felixconfig#spec) is set.
-For older versions of kops, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
+For older versions of kOps, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
 will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
 Only the control plane nodes have an IAM policy to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
 
 ### Configuring Calico MTU
 
 The Calico MTU is configurable by editing the cluster and setting `mtu` option in the calico configuration.
-AWS VPCs support jumbo frames, so on cluster creation kops sets the calico MTU to 8912 bytes (9001 minus overhead).
+AWS VPCs support jumbo frames, so on cluster creation kOps sets the calico MTU to 8912 bytes (9001 minus overhead).
 
 For more details on Calico MTU please see the [Calico Docs](https://docs.projectcalico.org/networking/mtu#determine-mtu-size).
 
@@ -113,7 +113,7 @@ For more details on enabling the eBPF dataplane please refer the [Calico Docs](h
 ### Configuring WireGuard
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.16') }}
 
-Calico supports WireGuard to encrypt pod-to-pod traffic. If you enable this options, WireGuard encryption is automatically enabled for all nodes. At the moment, kops installs WireGuard automatically only when the host OS is *Ubuntu*. For other OSes, WireGuard has to be part of the base image or installed via a hook.
+Calico supports WireGuard to encrypt pod-to-pod traffic. If you enable this options, WireGuard encryption is automatically enabled for all nodes. At the moment, kOps installs WireGuard automatically only when the host OS is *Ubuntu*. For other OSes, WireGuard has to be part of the base image or installed via a hook.
 
 For more details of Calico WireGuard please refer the [Calico Docs](https://docs.projectcalico.org/security/encrypt-cluster-pod-traffic).
 
@@ -142,8 +142,8 @@ For more general information on options available with Calico see the official [
 ### New nodes are taking minutes for syncing ip routes and new pods on them can't reach kubedns
 
 This is caused by nodes in the Calico etcd nodestore no longer existing. Due to the ephemeral nature of AWS EC2 instances, new nodes are brought up with different hostnames, and nodes that are taken offline remain in the Calico nodestore. This is unlike most datacentre deployments where the hostnames are mostly static in a cluster. Read more about this issue at https://github.com/kubernetes/kops/issues/3224
-This has been solved in kops 1.9.0, when creating a new cluster no action is needed, but if the cluster was created with a prior kops version the following actions should be taken:
+This has been solved in kOps 1.9.0, when creating a new cluster no action is needed, but if the cluster was created with a prior kops version the following actions should be taken:
 
-  * Use kops to update the cluster ```kops update cluster <name> --yes``` and wait for calico-kube-controllers deployment and calico-node daemonset pods to be updated
+  * Use kOps to update the cluster ```kops update cluster <name> --yes``` and wait for calico-kube-controllers deployment and calico-node daemonset pods to be updated
   * Decommission all invalid nodes, [see here](https://docs.projectcalico.org/v2.6/usage/decommissioning-a-node)
   * All nodes that are deleted from the cluster after this actions should be cleaned from calico's etcd storage and the delay programming routes should be solved.

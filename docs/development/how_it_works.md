@@ -4,7 +4,7 @@
 
 Everything in `kops` is currently driven by a command line interface. We use [cobra](https://github.com/spf13/cobra) to define all of our command line UX.
 
-All of the CLI code for kops can be found in `/cmd/kops` [link](https://github.com/kubernetes/kops/tree/master/cmd/kops)
+All of the CLI code for kOps can be found in `/cmd/kops` [link](https://github.com/kubernetes/kops/tree/master/cmd/kops)
 
 For instance, if you are interested in finding the entry point to `kops create cluster` you would look in `/cmd/kops/create_cluster.go`. There you would find a function called `RunCreateCluster()`. That is the entry point of the command.
 
@@ -38,7 +38,7 @@ The `kops` API is a definition of struct members in Go code found [here](https:/
 
 The base level struct of the API is `api.Cluster{}` which is defined [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/cluster.go#L40). The top level struct contains meta information about the object such as the kind and version and the main data for the cluster itself can be found in `cluster.Spec`
 
-It is important to note that the API members are a representation of a Kubernetes cluster. These values are stored in the `kops` **STATE STORE** mentioned above for later use. By design kops does not store information about the state of the cloud in the state store, if it can infer it from looking at the actual state of the cloud.
+It is important to note that the API members are a representation of a Kubernetes cluster. These values are stored in the `kops` **STATE STORE** mentioned above for later use. By design kOps does not store information about the state of the cloud in the state store, if it can infer it from looking at the actual state of the cloud.
 
 More information on the API can be found [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md).
 

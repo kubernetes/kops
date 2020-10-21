@@ -8,7 +8,7 @@ can be found [here](https://kubernetes.io/docs/admin/etcd/) and
 
 ### Backup requirement
 
-A Kubernetes cluster deployed with kops stores the etcd state in two different
+A Kubernetes cluster deployed with kOps stores the etcd state in two different
 AWS EBS volumes per master node. One volume is used to store the Kubernetes
 main data, the other one for events. For a HA master with three nodes this will
 result in six volumes for etcd data (one in each AZ). An EBS volume is designed
@@ -20,7 +20,7 @@ of 0.1%-0.2% per year.
 ## Taking backups
 
 Backups are done periodically and before cluster modifications using [etcd-manager](etcd_administration.md)
-(introduced in kops 1.12). Backups for both the `main` and `events` etcd clusters
+(introduced in kOps 1.12). Backups for both the `main` and `events` etcd clusters
 are stored in object storage (like S3) together with the cluster configuration.
 
 By default, backups are taken every 15 min. Hourly backups are kept for 1 week and
