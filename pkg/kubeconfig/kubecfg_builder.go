@@ -100,6 +100,7 @@ func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
 
 // Write out a new kubeconfig
 func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) error {
+	klog.Infof("Kubeconfig fields: Server=%v Context=%v Namespace=%v User=%v KubeUser=%v CACert=%v ClientCert=%v", b.Server, b.Context, b.Namespace, b.User, b.KubeUser, string(b.CACert), string(b.ClientCert))
 	config, err := configAccess.GetStartingConfig()
 	if err != nil {
 		return fmt.Errorf("error reading kubeconfig: %v", err)

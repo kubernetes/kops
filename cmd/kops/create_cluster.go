@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -333,6 +334,14 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if c.DryRun && c.Output == "" {
 		return fmt.Errorf("unable to execute --dry-run without setting --output")
 	}
+
+	region := c.Zones[0][:len(c.Zones[0])-1]
+	cert, err := awsup.EnsureCertificate(c.ClusterName, "test-cncf-aws.k8s.io", region)
+	if err != nil {
+		return err
+	}
+	c.APISSLCertificate = cert
+	klog.Info("Using API SSL Certificate", c.APISSLCertificate)
 
 	// TODO: Reuse rootCommand stateStore logic?
 

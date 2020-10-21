@@ -906,20 +906,14 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	cluster.Spec.API = &api.AccessSpec{}
 	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
 		initializeOpenstackAPI(opt, cluster)
-	} else if opt.APILoadBalancerType != "" {
-		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
+		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 		switch cluster.Spec.Topology.Masters {
 		case api.TopologyPublic:
-			if dns.IsGossipHostname(cluster.Name) {
+			if !dns.IsGossipHostname(cluster.Name) {
 				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
-				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
-			} else {
 				cluster.Spec.API.DNS = &api.DNSAccessSpec{}
 			}
-
-		case api.TopologyPrivate:
-			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 
 		default:
 			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)

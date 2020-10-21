@@ -104,6 +104,7 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a SSL cert for the LB or are targeting the internal DNS name
 	if cluster.Spec.API == nil || cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || internal {
+		klog.Info("Exporting cluster CA into kubeconfig")
 		cert, _, _, err := keyStore.FindKeypair(fi.CertificateIDCA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
@@ -116,6 +117,8 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 		} else {
 			return nil, fmt.Errorf("cannot find CA certificate")
 		}
+	} else {
+		klog.Info("NOT exporting cluster CA into kubeconfig")
 	}
 
 	if admin != 0 {

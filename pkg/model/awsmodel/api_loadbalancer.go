@@ -110,7 +110,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if lbSpec.SSLCertificate != "" {
+			klog.Info("Using ACM certificate for API ELB")
 			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
+		} else {
+			klog.Info("NOT using ACM certificate for API ELB")
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
