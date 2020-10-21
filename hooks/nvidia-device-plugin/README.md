@@ -52,7 +52,7 @@ images, it has only been tested with the following:
 
 ### Test Matrix
 
-This kops hook was developed against the following version combinations.
+This kOps hook was developed against the following version combinations.
 
 | Kops Version  | Kubernetes Version | GPU Mode     | OS Image |
 | ------------- | ------------------ | ------------ | -------- |

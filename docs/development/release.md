@@ -1,20 +1,20 @@
-** This file documents the release process used through kops 1.18.
+** This file documents the release process used through kOps 1.18.
 For the new process that will be used for 1.19, please see
 [the new release process](../release-process.md)**
 
 # Release Process
 
-The kops project is released on an as-needed basis. The process is as follows:
+The kOps project is released on an as-needed basis. The process is as follows:
 
 1. An issue is proposing a new release with a changelog since the last release
 1. All [OWNERS](https://github.com/kubernetes/kops/blob/master/OWNERS) must LGTM this release
 1. An OWNER runs `git tag -s $VERSION` and inserts the changelog and pushes the tag with `git push $VERSION`
 1. The release issue is closed
-1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kops $VERSION is released`
+1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kOps $VERSION is released`
 
 ## Branches
 
-We maintain a `release-1.16` branch for kops 1.16.X, `release-1.17` for kops 1.17.X
+We maintain a `release-1.16` branch for kOps 1.16.X, `release-1.17` for kOps 1.17.X
 etc.
 
 `master` is where development happens.  We create new branches from master as a
@@ -24,7 +24,7 @@ to focus on the new functionality, and start cherry-picking back more selectivel
 to the release branches only as needed.
 
 Generally we don't encourage users to run older kops versions, or older
-branches, because newer versions of kops should remain compatible with older
+branches, because newer versions of kOps should remain compatible with older
 versions of Kubernetes.
 
 Releases should be done from the `release-1.X` branch.  The tags should be made
@@ -167,7 +167,7 @@ k8s-container-image-promoter --snapshot gcr.io/k8s-staging-kops --snapshot-tag $
 cd ~/k8s/src/k8s.io/k8s.io
 git add k8s.gcr.io/images/k8s-staging-kops/images.yaml
 git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
-git commit -m "Promote artifacts for kops ${VERSION}"
+git commit -m "Promote artifacts for kOps ${VERSION}"
 git push ${USER}
 hub pull-request
 ```
@@ -195,7 +195,7 @@ relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 * Add notes
 * Publish it
 
-## Release kops to homebrew
+## Release kOps to homebrew
 
 * Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
 * This should be done at the same time as the release, and we will iterate on how to improve timing of this.
@@ -204,11 +204,11 @@ relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 
 Once we are satisfied the release is sound:
 
-* Bump the kops recommended version in the alpha channel
+* Bump the kOps recommended version in the alpha channel
 
 Once we are satisfied the release is stable:
 
-* Bump the kops recommended version in the stable channel
+* Bump the kOps recommended version in the stable channel
 
 ## Update conformance results with CNCF
 

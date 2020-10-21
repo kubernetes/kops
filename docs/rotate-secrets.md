@@ -4,7 +4,7 @@
 
 ## Delete all secrets
 
-Delete all secrets & keypairs that kops is holding:
+Delete all secrets & keypairs that kOps is holding:
 
 ```shell
 kops get secrets  | grep ^Secret | awk '{print $2}' | xargs -I {} kops delete secret secret {}

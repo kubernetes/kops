@@ -1,6 +1,6 @@
 # Updates and Upgrades
 
-## Updating kops
+## Updating kOps
 
 ### MacOS
 
@@ -61,7 +61,7 @@ node restart), but currently you must:
 * `kops update cluster $NAME` to preview, then `kops update cluster $NAME --yes`
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
 
-Upgrade uses the latest Kubernetes version considered stable by kops, defined in `https://github.com/kubernetes/kops/blob/master/channels/stable`.
+Upgrade uses the latest Kubernetes version considered stable by kOps, defined in `https://github.com/kubernetes/kops/blob/master/channels/stable`.
 
 
 ### Terraform Users

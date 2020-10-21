@@ -1,7 +1,7 @@
 # Kubernetes Addons and Addon Manager
 
 ## Addons
-With kops you manage addons by using kubectl.
+With kOps you manage addons by using kubectl.
 
 (For a description of the addon-manager, please see [addon_management](#addon-management).)
 
@@ -154,7 +154,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 
 *This addon is deprecated. Please use [external-dns](https://github.com/kubernetes-sigs/external-dns) instead.*
 
-Please note that kops installs a Route53 DNS controller automatically (it is required for cluster discovery).
+Please note that kOps installs a Route53 DNS controller automatically (it is required for cluster discovery).
 The functionality of the route53-mapper overlaps with the dns-controller, but some users will prefer to
 use one or the other.
 [README for the included dns-controller](https://github.com/kubernetes/kops/blob/master/dns-controller/README.md)
@@ -172,27 +172,27 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 
 ## Addon Management
 
-kops incorporates management of some addons; we _have_ to manage some addons which are needed before
+kOps incorporates management of some addons; we _have_ to manage some addons which are needed before
 the kubernetes API is functional.
 
-In addition, kops offers end-user management of addons via the `channels` tool (which is still experimental,
+In addition, kOps offers end-user management of addons via the `channels` tool (which is still experimental,
 but we are working on making it a recommended part of kubernetes addon management).  We ship some
 curated addons in the [addons directory](https://github.com/kubernetes/kops/tree/master/addons), more information in the [addons document](addons.md).
 
 
-kops uses the `channels` tool for system addon management also.  Because kops uses the same tool
+kOps uses the `channels` tool for system addon management also.  Because kOps uses the same tool
 for *system* addon management as it does for *user* addon management, this means that
-addons installed by kops as part of cluster bringup can be managed alongside additional addons.
-(Though note that bootstrap addons are much more likely to be replaced during a kops upgrade).
+addons installed by kOps as part of cluster bringup can be managed alongside additional addons.
+(Though note that bootstrap addons are much more likely to be replaced during a kOps upgrade).
 
-The general kops philosophy is to try to make the set of bootstrap addons minimal, and
+The general kOps philosophy is to try to make the set of bootstrap addons minimal, and
 to make installation of subsequent addons easy.
 
 Thus, `kube-dns` and the networking overlay (if any) are the canonical bootstrap addons.
-But addons such as the dashboard or the EFK stack are easily installed after kops bootstrap,
+But addons such as the dashboard or the EFK stack are easily installed after kOps bootstrap,
 with a `kubectl apply -f https://...` or with the channels tool.
 
-In future, we may as a convenience make it easy to add optional addons to the kops manifest,
+In future, we may as a convenience make it easy to add optional addons to the kOps manifest,
 though this will just be a convenience wrapper around doing it manually.
 
 ### Update BootStrap Addons
@@ -205,7 +205,7 @@ If you want to update the bootstrap addons, you can run the following command to
 ### Versioning
 
 The channels tool adds a manifest-of-manifests file, of `Kind: Addons`, which allows for a description
-of the various manifest versions that are available.  In this way kops can manage updates
+of the various manifest versions that are available.  In this way kOps can manage updates
 as new versions of the addon are released.  For example,
 the [dashboard addon](https://github.com/kubernetes/kops/blob/master/addons/kubernetes-dashboard/addon.yaml)
 lists multiple versions.

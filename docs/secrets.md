@@ -38,7 +38,7 @@ spec:
 ```
 
 ## Workaround for changing secrets with type "Secret"
-As it is currently not possible to modify or delete + create secrets of type "Secret" with the CLI you have to modify them directly in the kops s3 bucket.
+As it is currently not possible to modify or delete + create secrets of type "Secret" with the CLI you have to modify them directly in the kOps s3 bucket.
 
 They are stored /clustername/secrets/ and contain the secret as a base64 encoded string. To change the secret base64 encode it with:
 

@@ -121,7 +121,7 @@ After about 5 minutes all three masters should have found each other. Run the fo
 kops validate cluster --wait 10m
 ```
 
-While rotating the original master is not strictly necessary, kops will say it needs updating because of the configuration change.
+While rotating the original master is not strictly necessary, kOps will say it needs updating because of the configuration change.
 
 ```
 kops rolling-update cluster --yes
