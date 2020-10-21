@@ -15,8 +15,8 @@
             ]
           }
         },
-        "MaxSize": 1,
-        "MinSize": 1,
+        "MaxSize": "1",
+        "MinSize": "1",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1aexternallbexamplecom"
@@ -87,8 +87,8 @@
             ]
           }
         },
-        "MaxSize": 2,
-        "MinSize": 2,
+        "MaxSize": "2",
+        "MinSize": "2",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1aexternallbexamplecom"

@@ -349,8 +349,8 @@ func TestAutoscalingGroupCloudformationRender(t *testing.T) {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AutoScalingGroupName": "test1",
-        "MaxSize": 10,
-        "MinSize": 5,
+        "MaxSize": "10",
+        "MinSize": "5",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnettestsg"
