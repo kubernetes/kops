@@ -7,8 +7,8 @@
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amasterslaunchtemplatesexamplecom"
         },
-        "MaxSize": 1,
-        "MinSize": 1,
+        "MaxSize": "1",
+        "MinSize": "1",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1alaunchtemplatesexamplecom"
@@ -65,8 +65,8 @@
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1bmasterslaunchtemplatesexamplecom"
         },
-        "MaxSize": 1,
-        "MinSize": 1,
+        "MaxSize": "1",
+        "MinSize": "1",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1blaunchtemplatesexamplecom"
@@ -123,8 +123,8 @@
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1cmasterslaunchtemplatesexamplecom"
         },
-        "MaxSize": 1,
-        "MinSize": 1,
+        "MaxSize": "1",
+        "MinSize": "1",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1claunchtemplatesexamplecom"
@@ -181,8 +181,8 @@
         "LaunchConfigurationName": {
           "Ref": "AWSAutoScalingLaunchConfigurationnodeslaunchtemplatesexamplecom"
         },
-        "MaxSize": 2,
-        "MinSize": 2,
+        "MaxSize": "2",
+        "MinSize": "2",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1blaunchtemplatesexamplecom"

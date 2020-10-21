@@ -15,8 +15,8 @@
             ]
           }
         },
-        "MaxSize": 1,
-        "MinSize": 1,
+        "MaxSize": "1",
+        "MinSize": "1",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
@@ -96,8 +96,8 @@
             ]
           }
         },
-        "MaxSize": 2,
-        "MinSize": 2,
+        "MaxSize": "2",
+        "MinSize": "2",
         "VPCZoneIdentifier": [
           {
             "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
@@ -1079,9 +1079,9 @@
         "LoadBalancerName": "api-complex-example-com-vd3t5n",
         "Listeners": [
           {
-            "InstancePort": 443,
+            "InstancePort": "443",
             "InstanceProtocol": "TCP",
-            "LoadBalancerPort": 443,
+            "LoadBalancerPort": "443",
             "Protocol": "TCP"
           }
         ],
@@ -1099,10 +1099,10 @@
         ],
         "HealthCheck": {
           "Target": "SSL:443",
-          "HealthyThreshold": 2,
-          "UnhealthyThreshold": 2,
-          "Interval": 10,
-          "Timeout": 5
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "2",
+          "Interval": "10",
+          "Timeout": "5"
         },
         "ConnectionSettings": {
           "IdleTimeout": 300
