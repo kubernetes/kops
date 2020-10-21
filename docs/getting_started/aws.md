@@ -1,6 +1,6 @@
-# Getting Started with kops on AWS
+# Getting Started with kOps on AWS
 
-Make sure you have [installed kops](../install.md) and [installed kubectl](../install.md).
+Make sure you have [installed kOps](../install.md) and [installed kubectl](../install.md).
 
 ## Setup your environment
 
@@ -31,7 +31,7 @@ IAMFullAccess
 AmazonVPCFullAccess
 ```
 
-You can create the kops IAM user from the command line using the following:
+You can create the kOps IAM user from the command line using the following:
 
 ```bash
 aws iam create-group --group-name kops
@@ -255,24 +255,24 @@ Information regarding cluster state store location must be set when using `kops`
 
 ### Using S3 default bucket encryption
 
-`kops` supports [default bucket encryption](https://aws.amazon.com/de/blogs/aws/new-amazon-s3-encryption-security-features/) to encrypt its state in an S3 bucket. This way, the default server side encryption set for your bucket will be used for the kops state too. You may want to use this AWS feature, e.g., for easily encrypting every written object by default or when you need to use specific encryption keys (KMS, CMK) for compliance reasons.
+`kops` supports [default bucket encryption](https://aws.amazon.com/de/blogs/aws/new-amazon-s3-encryption-security-features/) to encrypt its state in an S3 bucket. This way, the default server side encryption set for your bucket will be used for the kOps state too. You may want to use this AWS feature, e.g., for easily encrypting every written object by default or when you need to use specific encryption keys (KMS, CMK) for compliance reasons.
 
-If your S3 bucket has a default encryption set up, kops will use it:
+If your S3 bucket has a default encryption set up, kOps will use it:
 
 ```bash
 aws s3api put-bucket-encryption --bucket prefix-example-com-state-store --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 ```
 
-If the default encryption is not set or it cannot be checked, kops will resort to using server-side AES256 bucket encryption with [Amazon S3-Managed Encryption Keys (SSE-S3)](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingServerSideEncryption.html).
+If the default encryption is not set or it cannot be checked, kOps will resort to using server-side AES256 bucket encryption with [Amazon S3-Managed Encryption Keys (SSE-S3)](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingServerSideEncryption.html).
 
 ### Sharing an S3 bucket across multiple accounts
 
-It is possible to use a single S3 bucket for storing kops state for clusters
+It is possible to use a single S3 bucket for storing kOps state for clusters
 located in different accounts by using [cross-account bucket policies](http://docs.aws.amazon.com/AmazonS3/latest/dev/example-walkthroughs-managing-access-example2.html#access-policies-walkthrough-cross-account-permissions-acctA-tasks).
 
 kOps will be able to use buckets configured with cross-account policies by default.
 
-In this case you may want to override the object ACLs which kops places on the
+In this case you may want to override the object ACLs which kOps places on the
 state files, as default AWS ACLs will make it possible for an account that has
 delegated access to write files that the bucket owner cannot read.
 

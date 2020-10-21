@@ -1,6 +1,6 @@
 # Prometheus Operator Addon
 
-[Prometheus Operator](https://coreos.com/operators/prometheus) creates/configures/manages Prometheus clusters atop Kubernetes. This addon deploy prometheus-operator and [kube-prometheus](https://github.com/coreos/prometheus-operator/blob/master/contrib/kube-prometheus/README.md) in a kops cluster.
+[Prometheus Operator](https://coreos.com/operators/prometheus) creates/configures/manages Prometheus clusters atop Kubernetes. This addon deploy prometheus-operator and [kube-prometheus](https://github.com/coreos/prometheus-operator/blob/master/contrib/kube-prometheus/README.md) in a kOps cluster.
 
 ## Prerequisites
 

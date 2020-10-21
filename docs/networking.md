@@ -39,7 +39,7 @@ You can specify the network provider via the `--networking` command line switch.
 
 ### Kubenet (default)
 
-Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
+Kubernetes Operations (kOps) uses `kubenet` networking by default. This sets up networking on AWS using VPC
 networking, where the master allocates a /24 CIDR to each Node, drawing from the Node network.
 Using `kubenet` mode routes for each node are then configured in the AWS VPC routing tables.
 
@@ -68,7 +68,7 @@ For more on the `kubenet` networking provider, please see the [`kubenet` section
 and libraries for writing plugins to configure network interfaces in Linux containers.  Kubernetes
 has built in support for CNI networking components.
 
-Several CNI providers are currently built into kops:
+Several CNI providers are currently built into kOps:
 
 * [AWS VPC](networking/aws-vpc.md)
 * [Calico](networking/calico.md)
@@ -81,7 +81,7 @@ Several CNI providers are currently built into kops:
 * [Weave](networking/weave.md)
 
 kOps makes it easy for cluster operators to choose one of these options. The manifests for the providers
-are included with kops, and you simply use `--networking <provider-name>`. Replace the provider name
+are included with kOps, and you simply use `--networking <provider-name>`. Replace the provider name
 with the name listed in the provider's documentation (from the list above) when you run
 `kops cluster create`.  For instance, for a default Calico installation, execute the following:
 

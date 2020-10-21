@@ -1,4 +1,4 @@
-## kops Advisories
+## kOps Advisories
 
 - [etcd-manager certificate expiration](etcd-manager-certificate-expiration.md)
 

@@ -1,4 +1,4 @@
-# Upgrading from kube-up to kops
+# Upgrading from kube-up to kOps
 
 kOps let you upgrade an existing kubernetes cluster installed using kube-up, to a cluster managed by
 kops.
@@ -8,7 +8,7 @@ Take a snapshot of your EBS volumes; export all your data from kubectl etc. **
 
 Limitations:
 
-* kops splits etcd onto two volumes now: `main` and `events`.  We will keep the `main` data, but
+* kOps splits etcd onto two volumes now: `main` and `events`.  We will keep the `main` data, but
   you will lose your events history.
 
 ## Overview

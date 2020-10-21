@@ -1,6 +1,6 @@
 # Romana
 
-Support for Romana is deprecated as of kops 1.18 and removed in kops 1.19.
+Support for Romana is deprecated as of kOps 1.18 and removed in kOps 1.19.
 
 ## Installing
 

@@ -1,7 +1,7 @@
-# Getting Started with kops on OpenStack
+# Getting Started with kOps on OpenStack
 
 
-OpenStack support on kops is currently **beta**, which means that OpenStack support is in good shape and could be used for production. However, it is not as rigorously tested as the stable cloud providers and there are some features not supported. In particular, kops tries to support a wide variety of OpenStack setups and not all of them are equally well tested.
+OpenStack support on kOps is currently **beta**, which means that OpenStack support is in good shape and could be used for production. However, it is not as rigorously tested as the stable cloud providers and there are some features not supported. In particular, kOps tries to support a wide variety of OpenStack setups and not all of them are equally well tested.
 
 ## OpenStack requirements
 
@@ -12,7 +12,7 @@ In order to deploy a kops-managed cluster on OpenStack, you need the following O
 * Glance (image)
 * Cinder (block storage)
 
-In addition, kops can make use of the following services:
+In addition, kOps can make use of the following services:
 
 * Swift (object store)
 * Dvelve (dns)
@@ -33,7 +33,7 @@ We recommend using [Application Credentials](https://docs.openstack.org/keystone
 
 ## Environment Variables
 
-kops stores its configuration in a state store. Before creating a cluster, we need to export the path to the state store:
+kOps stores its configuration in a state store. Before creating a cluster, we need to export the path to the state store:
 
 ```bash
 export KOPS_STATE_STORE=swift://<bucket-name> # where <bucket-name> is the name of the Swift container to use for kops state
@@ -83,9 +83,9 @@ kops delete cluster my-cluster.k8s.local --yes
 
 
 ## Compute and volume zone names does not match
-Some of the openstack users do not have compute zones named exactly the same than volume zones. Good example is that there are several compute zones for instance `zone-1`, `zone-2` and `zone-3`. Then there is only one volumezone which is usually called `nova`. By default this is problem in kops, because kops assumes that if you are deploying things to `zone-1` there should be compute and volume zone called `zone-1`.
+Some of the openstack users do not have compute zones named exactly the same than volume zones. Good example is that there are several compute zones for instance `zone-1`, `zone-2` and `zone-3`. Then there is only one volumezone which is usually called `nova`. By default this is problem in kOps, because kOps assumes that if you are deploying things to `zone-1` there should be compute and volume zone called `zone-1`.
 
-However, you can still get kops working in your openstack by doing following:
+However, you can still get kOps working in your openstack by doing following:
 
 Create cluster using your compute zones:
 
@@ -159,9 +159,9 @@ In clusters without loadbalancer, the address of a single random master will be 
 
 # Using existing OpenStack network
 
-You can have kops reuse existing network components instead of provisioning one per cluster. As OpenStack support is still beta, we recommend you take extra care when deleting clusters and ensure that kops do not try to remove any resources not belonging to the cluster.
+You can have kOps reuse existing network components instead of provisioning one per cluster. As OpenStack support is still beta, we recommend you take extra care when deleting clusters and ensure that kOps do not try to remove any resources not belonging to the cluster.
 
-## Let kops provision new subnets within an existing network
+## Let kOps provision new subnets within an existing network
 
 Use an existing network by using `--network <network id>`.
 
@@ -175,7 +175,7 @@ spec:
 
 ## Use existing networks
 
-Instead of kops creating new subnets for the cluster, you can reuse an existing subnet.
+Instead of kOps creating new subnets for the cluster, you can reuse an existing subnet.
 
 When you create a new cluster, you can specify subnets using the `--subnets` and `--utility-subnets` flags.
 
@@ -208,7 +208,7 @@ kops create cluster \
 # Using with self-signed certificates in OpenStack
 
 kOps can be configured to use insecure mode towards OpenStack. However, this is not recommended as OpenStack cloudprovider in kubernetes does not support it.
-If you use insecure flag in kops it might be that the cluster does not work correctly.
+If you use insecure flag in kOps it might be that the cluster does not work correctly.
 
 ```yaml
 spec:

@@ -4,7 +4,7 @@ This is an overview of how a Kubernetes cluster comes up, when using kops.
 
 ## From spec to complete configuration
 
-The kops tool itself takes the (minimal) spec of a cluster that the user specifies,
+The kOps tool itself takes the (minimal) spec of a cluster that the user specifies,
 and computes a complete configuration, setting defaults where values are not specified,
 and deriving appropriate dependencies.  The "complete" specification includes the set
 of all flags that will be passed to all components.  All decisions about how to install the
@@ -71,7 +71,7 @@ APIServer also listens on the HTTPS port (443) on all interfaces.  This is a sec
 and requires valid authentication/authorization to use it.  This is the endpoint that node kubelets
 will reach, and also that end-users will reach.
 
-kops uses DNS to allow nodes and end-users to discover the api-server.  The apiserver pod manifest (in
+kOps uses DNS to allow nodes and end-users to discover the api-server.  The apiserver pod manifest (in
  /etc/kubernetes/manifests) includes annotations that will cause the dns-controller to create the
  records.  It creates `api.internal.mycluster.com` for use inside the cluster (using InternalIP addresses),
  and it creates `api.mycluster.com` for use outside the cluster (using ExternalIP addresses).
@@ -81,7 +81,7 @@ kops uses DNS to allow nodes and end-users to discover the api-server.  The apis
 etcd is where we have put all of our synchronization logic, so it is more complicated than most other pieces,
 and we must be really careful when bringing it up.
 
-kops follows CoreOS's recommend procedure for [bring-up of etcd on clouds](https://github.com/coreos/etcd/issues/5418):
+kOps follows CoreOS's recommend procedure for [bring-up of etcd on clouds](https://github.com/coreos/etcd/issues/5418):
 
 * We have one EBS volume for each etcd cluster member (in different nodes)
 * We attach the EBS volume to a master, and bring up etcd on that master
