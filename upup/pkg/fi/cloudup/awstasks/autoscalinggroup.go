@@ -862,8 +862,8 @@ type cloudformationAutoscalingGroup struct {
 	Name                    *string                                               `json:"AutoScalingGroupName,omitempty"`
 	LaunchConfigurationName *cloudformation.Literal                               `json:"LaunchConfigurationName,omitempty"`
 	LaunchTemplate          *cloudformationAutoscalingLaunchTemplateSpecification `json:"LaunchTemplate,omitempty"`
-	MaxSize                 *int64                                                `json:"MaxSize,omitempty"`
-	MinSize                 *int64                                                `json:"MinSize,omitempty"`
+	MaxSize                 *string                                               `json:"MaxSize,omitempty"`
+	MinSize                 *string                                               `json:"MinSize,omitempty"`
 	VPCZoneIdentifier       []*cloudformation.Literal                             `json:"VPCZoneIdentifier,omitempty"`
 	Tags                    []*cloudformationASGTag                               `json:"Tags,omitempty"`
 	MetricsCollection       []*cloudformationASGMetricsCollection                 `json:"MetricsCollection,omitempty"`
@@ -876,8 +876,8 @@ type cloudformationAutoscalingGroup struct {
 func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
 	cf := &cloudformationAutoscalingGroup{
 		Name:    e.Name,
-		MinSize: e.MinSize,
-		MaxSize: e.MaxSize,
+		MinSize: fi.ToString(e.MinSize),
+		MaxSize: fi.ToString(e.MaxSize),
 		MetricsCollection: []*cloudformationASGMetricsCollection{
 			{
 				Granularity: e.Granularity,

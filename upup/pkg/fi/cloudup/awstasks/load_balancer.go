@@ -805,18 +805,18 @@ type cloudformationLoadBalancer struct {
 }
 
 type cloudformationLoadBalancerListener struct {
-	InstancePort         int    `json:"InstancePort"`
+	InstancePort         string `json:"InstancePort"`
 	InstanceProtocol     string `json:"InstanceProtocol"`
-	LoadBalancerPort     int64  `json:"LoadBalancerPort"`
+	LoadBalancerPort     string `json:"LoadBalancerPort"`
 	LoadBalancerProtocol string `json:"Protocol"`
 }
 
 type cloudformationLoadBalancerHealthCheck struct {
 	Target             *string `json:"Target"`
-	HealthyThreshold   *int64  `json:"HealthyThreshold"`
-	UnhealthyThreshold *int64  `json:"UnhealthyThreshold"`
-	Interval           *int64  `json:"Interval"`
-	Timeout            *int64  `json:"Timeout"`
+	HealthyThreshold   *string `json:"HealthyThreshold"`
+	UnhealthyThreshold *string `json:"UnhealthyThreshold"`
+	Interval           *string `json:"Interval"`
+	Timeout            *string `json:"Timeout"`
 }
 
 type cloudformationConnectionDrainingPolicy struct {
@@ -853,15 +853,11 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 	}
 
 	for loadBalancerPort, listener := range e.Listeners {
-		loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
-		}
 
 		tf.Listener = append(tf.Listener, &cloudformationLoadBalancerListener{
 			InstanceProtocol:     "TCP",
-			InstancePort:         listener.InstancePort,
-			LoadBalancerPort:     loadBalancerPortInt,
+			InstancePort:         strconv.Itoa(listener.InstancePort),
+			LoadBalancerPort:     loadBalancerPort,
 			LoadBalancerProtocol: "TCP",
 		})
 	}
@@ -869,10 +865,10 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 	if e.HealthCheck != nil {
 		tf.HealthCheck = &cloudformationLoadBalancerHealthCheck{
 			Target:             e.HealthCheck.Target,
-			HealthyThreshold:   e.HealthCheck.HealthyThreshold,
-			UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
-			Interval:           e.HealthCheck.Interval,
-			Timeout:            e.HealthCheck.Timeout,
+			HealthyThreshold:   fi.ToString(e.HealthCheck.HealthyThreshold),
+			UnhealthyThreshold: fi.ToString(e.HealthCheck.UnhealthyThreshold),
+			Interval:           fi.ToString(e.HealthCheck.Interval),
+			Timeout:            fi.ToString(e.HealthCheck.Timeout),
 		}
 	}
 
