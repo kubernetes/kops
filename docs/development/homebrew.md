@@ -1,4 +1,4 @@
-# Installing Kops via Hombrew
+# Installing kOps via Hombrew
 
 Homebrew makes installing kops [very simple for MacOS.](../install.md)
 ```bash

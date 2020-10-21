@@ -1,12 +1,12 @@
-# Network Topologies in Kops
+# Network Topologies in kOps
 
-Kops supports a number of pre defined network topologies. They are separated into commonly used scenarios, or topologies.
+kOps supports a number of pre defined network topologies. They are separated into commonly used scenarios, or topologies.
 
 Each of the supported topologies are listed below, with an example on how to deploy them.
 
 # AWS
 
-Kops supports the following topologies on AWS
+kOps supports the following topologies on AWS
 
 |      Topology     |   Value    | Description                                                                                                 |
 | ----------------- |----------- | ----------------------------------------------------------------------------------------------------------- |

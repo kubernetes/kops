@@ -50,7 +50,7 @@ spec:
 
 You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported.
 
-Note that when using `sslCertificate`, client certificate authentication, such as with the credentials generated via `kops export kubecfg`, will not work through the load balancer. As of Kops 1.19, a `kubecfg` that bypasses the load balancer may be created with the `--internal` flag to `kops update cluster` or `kops export kubecfg`. Security groups may need to be opened to allow access from the clients to the master instances' port TCP/443, for example by using the `additionalSecurityGroups` field on the master instance groups.
+Note that when using `sslCertificate`, client certificate authentication, such as with the credentials generated via `kops export kubecfg`, will not work through the load balancer. As of kOps 1.19, a `kubecfg` that bypasses the load balancer may be created with the `--internal` flag to `kops update cluster` or `kops export kubecfg`. Security groups may need to be opened to allow access from the clients to the master instances' port TCP/443, for example by using the `additionalSecurityGroups` field on the master instance groups.
 
 ```yaml
 spec:
@@ -61,7 +61,7 @@ spec:
 ```
 
 *Openstack only*
-As of Kops 1.12.0 it is possible to use the load balancer internally by setting the `useForInternalApi: true`.
+As of kOps 1.12.0 it is possible to use the load balancer internally by setting the `useForInternalApi: true`.
 This will point both `masterPublicName` and `masterInternalName` to the load balancer. You can therefore set both of these to the same value in this configuration.
 
 ```yaml
@@ -84,7 +84,7 @@ spec:
 
 ### The default etcd configuration
 
-Kops will default to v3 using TLS by default. etcd provisioning and upgrades are handled by etcd-manager. By default, the spec looks like this:
+kOps will default to v3 using TLS by default. etcd provisioning and upgrades are handled by etcd-manager. By default, the spec looks like this:
 
 ```yaml
 etcdClusters:
@@ -110,7 +110,7 @@ The etcd version used by kops follows the recommended etcd version for the given
 
 By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
 
-As of Kops 1.12.0 it is also possible to modify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
+As of kOps 1.12.0 it is also possible to modify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
 
 ```yaml
 etcdClusters:
@@ -219,7 +219,7 @@ spec:
     zone: us-east-1a
 ```
 
-In the case that you don't use NAT gateways or internet gateways, Kops 1.12.0 introduced the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
+In the case that you don't use NAT gateways or internet gateways, kOps 1.12.0 introduced the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
 
 ```yaml
 spec:
@@ -460,7 +460,7 @@ spec:
 ```
 
 ### Setting kubelet CPU management policies
-Kops 1.12.0 added support for enabling cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
+kOps 1.12.0 added support for enabling cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
 we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
 
 ```yaml
@@ -489,7 +489,7 @@ spec:
 ### Configure a Flex Volume plugin directory
 An optional flag can be provided within the KubeletSpec to set a volume plugin directory (must be accessible for read/write operations), which is additionally provided to the Controller Manager and mounted in accordingly.
 
-Kops will set this for you based off the Operating System in use:
+kOps will set this for you based off the Operating System in use:
 - ContainerOS: `/home/kubernetes/flexvolume/`
 - Flatcar: `/var/lib/kubelet/volumeplugins/`
 - Default (in-line with upstream k8s): `/usr/libexec/kubernetes/kubelet-plugins/volume/exec/`
@@ -630,7 +630,7 @@ spec:
     enableProfiling: false
 ```
 
-For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
+For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [kOps guides on how to set it up](horizontal_pod_autoscaling.md).
 
 ## Cluster autoscaler
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.15') }}

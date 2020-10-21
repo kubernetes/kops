@@ -1,17 +1,17 @@
 # Continuous Integration
 
-Using Kops' declarative manifests it is possible to create and manage clusters entirely in a CI environment.
+Using kOps' declarative manifests it is possible to create and manage clusters entirely in a CI environment.
 Rather than using `kops create cluster` and `kops edit cluster`, the cluster and instance group manifests can be stored in version control.
 This allows cluster changes to be made through reviewable commits rather than on a local workstation.
 This is ideal for larger teams in order to avoid possible collisions from simultaneous changes being made.
-It also provides an audit trail, consistent environment, and centralized view for any Kops commands being ran.
+It also provides an audit trail, consistent environment, and centralized view for any kOps commands being ran.
 
-Running Kops in a CI environment can also be useful for upgrading Kops.
+Running kOps in a CI environment can also be useful for upgrading kOps.
 Simply download a newer version in the CI environment and run a new pipeline.
 This will allow any changes to be reviewed prior to being applied.
-This strategy can be extended to sequentially upgrade Kops on multiple clusters, allowing changes to be tested on non-production environments first.
+This strategy can be extended to sequentially upgrade kOps on multiple clusters, allowing changes to be tested on non-production environments first.
 
-This page provides examples for managing Kops clusters in CI environments.
+This page provides examples for managing kOps clusters in CI environments.
 The [Manifest documentation](./manifests_and_customizing_via_api.md) describes how to create the YAML manifest files locally and includes high level examples of commands described below.
 
 If you have a solution for a different CI platform or deployment strategy, feel free to open a Pull Request!
@@ -22,7 +22,7 @@ If you have a solution for a different CI platform or deployment strategy, feel 
 
 ### Requirements
 
-* The GitLab runners that run the jobs need the appropriate permissions to invoke the Kops commands.
+* The GitLab runners that run the jobs need the appropriate permissions to invoke the kOps commands.
   For clusters in AWS this means providing AWS IAM credentials either with IAM User Keys set as secret variables in the project, or having the runner run on an EC2 instance with an instance profile attached.
 
 

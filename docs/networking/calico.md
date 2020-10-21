@@ -84,7 +84,7 @@ spec:
 
 ### Configuring Calico to use Typha
 
-As of Kops 1.12 Calico uses the kube-apiserver as its datastore. The default setup does not make use of [Typha](https://github.com/projectcalico/typha) - a component intended to lower the impact of Calico on the k8s APIServer which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
+As of kOps 1.12 Calico uses the kube-apiserver as its datastore. The default setup does not make use of [Typha](https://github.com/projectcalico/typha) - a component intended to lower the impact of Calico on the k8s APIServer which is recommended in [clusters over 50 nodes](https://docs.projectcalico.org/latest/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastoremore-than-50-nodes) and is strongly recommended in clusters of 100+ nodes.
 It is possible to configure Calico to use Typha by editing a cluster and adding a `typhaReplicas` option to the Calico spec:
 
 ```yaml
