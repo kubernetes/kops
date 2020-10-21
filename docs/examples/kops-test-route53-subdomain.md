@@ -312,7 +312,7 @@ I0906 09:42:29.215995   13538 executor.go:91] Tasks: 71 done / 75 total; 4 can r
 I0906 09:42:30.073417   13538 executor.go:91] Tasks: 75 done / 75 total; 0 can run
 I0906 09:42:30.073471   13538 dns.go:152] Pre-creating DNS records
 I0906 09:42:32.403909   13538 update_cluster.go:247] Exporting kubecfg for cluster
-Kops has set your kubectl context to mycluster01.kopsclustertest.example.org
+kOps has set your kubectl context to mycluster01.kopsclustertest.example.org
 
 Cluster is starting.  It should be ready in a few minutes.
 

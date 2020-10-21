@@ -120,7 +120,7 @@ spec:
 kops update cluster my-cluster.k8s.local --state ${KOPS_STATE_STORE} --yes
 ```
 
-Kops should create instances to all three zones, but provision volumes from the same zone.
+kOps should create instances to all three zones, but provision volumes from the same zone.
 
 # Using external cloud controller manager
 If you want use [External CCM](https://github.com/kubernetes/cloud-provider-openstack) in your installation, this section contains instructions what you should do to get it up and running.
@@ -207,7 +207,7 @@ kops create cluster \
 
 # Using with self-signed certificates in OpenStack
 
-Kops can be configured to use insecure mode towards OpenStack. However, this is not recommended as OpenStack cloudprovider in kubernetes does not support it.
+kOps can be configured to use insecure mode towards OpenStack. However, this is not recommended as OpenStack cloudprovider in kubernetes does not support it.
 If you use insecure flag in kops it might be that the cluster does not work correctly.
 
 ```yaml

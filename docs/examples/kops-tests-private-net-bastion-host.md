@@ -177,7 +177,7 @@ I0828 13:06:49.761535   16528 executor.go:91] Tasks: 100 done / 116 total; 9 can
 I0828 13:06:50.897272   16528 executor.go:91] Tasks: 109 done / 116 total; 7 can run
 I0828 13:06:51.516158   16528 executor.go:91] Tasks: 116 done / 116 total; 0 can run
 I0828 13:06:51.944576   16528 update_cluster.go:247] Exporting kubecfg for cluster
-Kops has set your kubectl context to privatekopscluster.k8s.local
+kOps has set your kubectl context to privatekopscluster.k8s.local
 
 Cluster changes have been applied to the cloud.
 

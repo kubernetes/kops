@@ -1,7 +1,7 @@
 # Rolling Updates
 
 Upgrading and modifying a k8s cluster usually requires the replacement of cloud instances.
-In order to avoid loss of service and other disruption, Kops replaces cloud instances
+In order to avoid loss of service and other disruption, kOps replaces cloud instances
 incrementally with a rolling update.
 
 Rolling updates are performed using

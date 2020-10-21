@@ -10,14 +10,14 @@ be found in the `autoscaling/v1` API version. The alpha version, which includes
 support for scaling on memory and custom metrics, can be found in
 `autoscaling/v2beta1` (and `autoscaling/v2beta2` in 1.12 and later).
 
-Kops can assist in setting up HPA. Relevant reading you will need to go through:
+kOps can assist in setting up HPA. Relevant reading you will need to go through:
 
 * [Extending the Kubernetes API with the aggregation layer][k8s-extend-api]
 * [Configure The Aggregation Layer][k8s-aggregation-layer]
 * [Horizontal Pod Autoscaling][k8s-hpa]
 
 While the above links go into details on how Kubernetes needs to be configured
-to work with HPA, a lot of that work is already done for you by Kops.
+to work with HPA, a lot of that work is already done for you by kOps.
 Specifically:
 
 * [x] Enable the [Aggregation Layer][k8s-aggregation-layer] via the following

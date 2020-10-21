@@ -35,11 +35,11 @@ the current `release-1.X` tag.
 
 ## New Kubernetes versions and release branches
 
-Typically Kops alpha releases are created off the master branch and beta and stable releases are created off of release branches.
+Typically kOps alpha releases are created off the master branch and beta and stable releases are created off of release branches.
 In order to create a new release branch off of master prior to a beta release, perform the following steps:
 
 1. Create a new periodic E2E prow job for the "next" kubernetes minor version.
-   * All Kops prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
+   * All kOps prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
 2. Create a new presubmit E2E prow job for the new release branch.
 3. Create a new milestone in the GitHub repo.
 4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.

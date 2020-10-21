@@ -41,7 +41,7 @@ dnsZone: k8s.example.com
 awsRegion: eu-west-1
 ```
 
-When multiple environment files are passed using `--values` Kops performs a deep merge, for example given the following two files:
+When multiple environment files are passed using `--values` kOps performs a deep merge, for example given the following two files:
 ```yaml
 # File values-a.yaml
 instanceGroups:

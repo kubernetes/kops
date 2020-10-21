@@ -20,7 +20,7 @@ kops update cluster
 kops update cluster --yes
 ```
 
-Kops may fail to recreate all the keys on first try. If you get errors about ca key for 'ca' not being found, run `kops update cluster --yes` once more.
+kOps may fail to recreate all the keys on first try. If you get errors about ca key for 'ca' not being found, run `kops update cluster --yes` once more.
 
 ## Force cluster to use new secrets
 

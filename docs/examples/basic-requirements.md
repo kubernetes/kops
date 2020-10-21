@@ -1,4 +1,4 @@
-# Common Basic Requirements For Kops-Related Labs. Pre-Flight Check:
+# Common Basic Requirements For kOps-Related Labs. Pre-Flight Check:
 
 Before rushing-in to replicate any of the exercises, please ensure your basic environment is correctly set-up. See [KOPS AWS tutorial](../getting_started/aws.md) for more information.
 

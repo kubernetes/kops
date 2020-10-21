@@ -1,6 +1,6 @@
 # Authentication
 
-Kops has support for configuring authentication systems.  This should not be used with kubernetes versions
+kOps has support for configuring authentication systems.  This should not be used with kubernetes versions
 before 1.8.5 because of a serious bug with apimachinery [#55022](https://github.com/kubernetes/kubernetes/issues/55022).
 
 ## kopeio authentication
