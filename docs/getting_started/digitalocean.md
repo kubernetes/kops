@@ -71,4 +71,4 @@ kOps for DigitalOcean currently does not support these features:
 
 # Next steps
 
-Now that you have a working _kops_ cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure _kops_ for production workloads.
+Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.

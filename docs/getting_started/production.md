@@ -1,6 +1,6 @@
 # Recommendations for production setups
 
-The getting started-documentation is a fast way of spinning up a Kubernetes cluster, but there are some aspects of _kops_ that require extra consideration. This document will highlight the most important things you should know about before deploying your production workload.
+The getting started-documentation is a fast way of spinning up a Kubernetes cluster, but there are some aspects of kOps that require extra consideration. This document will highlight the most important things you should know about before deploying your production workload.
 
 ## High availability
 
@@ -10,7 +10,7 @@ Read through the [high availability documentation](../operations/high_availabili
 
 ## Networking
 
-The default networking of _kops_, kubenet, is **not** recommended for production. Most importantly, it does not support network policies, nor does it support internal networking.
+The default networking of kOps, kubenet, is **not** recommended for production. Most importantly, it does not support network policies, nor does it support internal networking.
 
 Read through the [networking page](../networking.md) and choose a stable CNI.
 

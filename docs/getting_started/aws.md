@@ -406,7 +406,7 @@ kops delete cluster --name ${NAME} --yes
 
 ## Next steps
 
-Now that you have a working _kops_ cluster, read through the [recommendations for production setups guide](production.md)
+Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md)
 
 ## Feedback
 
