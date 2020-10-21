@@ -1,6 +1,6 @@
 <img src="/docs/img/logo.jpg" width="500px" alt="kops logo">
 
-# kops - Kubernetes Operations
+# kOps - Kubernetes Operations
 
 [![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops)  [![GoDoc Widget]][GoDoc]
 
@@ -12,9 +12,9 @@ The easiest way to get a production grade Kubernetes cluster up and running.
 
 ## 2020-05-06 etcd-manager Certificate Expiration Advisory
 
-kops versions released today contain a **critical fix** to etcd-manager: 1 year after creation (or first adopting etcd-manager), clusters will stop responding due to expiration of a TLS certificate. Upgrading kops to 1.15.3, 1.16.2, 1.17.0-beta.2, or 1.18.0-alpha.3 is highly recommended. Please see the [advisory](./docs/advisories/etcd-manager-certificate-expiration.md) for the full details.
+kOps versions released today contain a **critical fix** to etcd-manager: 1 year after creation (or first adopting etcd-manager), clusters will stop responding due to expiration of a TLS certificate. Upgrading kOps to 1.15.3, 1.16.2, 1.17.0-beta.2, or 1.18.0-alpha.3 is highly recommended. Please see the [advisory](./docs/advisories/etcd-manager-certificate-expiration.md) for the full details.
 
-## What is kops?
+## What is kOps?
 
 We like to think of it as `kubectl` for clusters.
 
@@ -54,7 +54,7 @@ See [Contributing](https://kops.sigs.k8s.io/welcome/contributing/)
 
 ### Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
+kOps maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kOps. This session is open to both developers and users.
 
 We do maintain an [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) and stick to it as much as possible. If you want to hold the floor, put your item in this doc. Bullet/note form is fine. Even if your topic gets in late, we do our best to cover it.
 
