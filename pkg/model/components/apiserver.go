@@ -163,7 +163,9 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	c.BindAddress = "0.0.0.0"
 
-	c.AllowPrivileged = fi.Bool(true)
+	if b.IsKubernetesLT("1.19") {
+		c.AllowPrivileged = fi.Bool(true)
+	}
 	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
 	c.EtcdServers = []string{"http://127.0.0.1:4001"}
 	c.EtcdServersOverrides = []string{"/events#http://127.0.0.1:4002"}
