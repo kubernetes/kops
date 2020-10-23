@@ -99,12 +99,13 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to find any containerd binaries in assets")
 		}
 		for k, v := range f {
-			c.AddTask(&nodetasks.File{
+			fileTask := &nodetasks.File{
 				Path:     filepath.Join("/usr/bin", k),
 				Contents: v,
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("0755"),
-			})
+			}
+			c.AddTask(fileTask)
 		}
 	}
 
