@@ -384,6 +384,7 @@ gomod: gomod-prereqs
 	find vendor/ -name "BUILD" -delete
 	find vendor/ -name "BUILD.bazel" -delete
 	make gazelle
+	cd tests/e2e; GO111MODULE=on go mod tidy
 
 
 .PHONY: gofmt
