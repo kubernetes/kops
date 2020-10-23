@@ -111,6 +111,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-mixedinstances-examp
     value               = "master-us-test-1a.masters.mixedinstances.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -149,6 +159,16 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-mixedinstances-examp
     value               = "master-us-test-1b.masters.mixedinstances.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -185,6 +205,16 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-mixedinstances-examp
     key                 = "Name"
     propagate_at_launch = true
     value               = "master-us-test-1c.masters.mixedinstances.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/master"
@@ -241,6 +271,16 @@ resource "aws_autoscaling_group" "nodes-mixedinstances-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.mixedinstances.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -426,29 +466,35 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "master-us-test-1a.masters.mixedinstances.example.com"
-      "k8s.io/role/master"                               = "1"
-      "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                            = "mixedinstances.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "master-us-test-1a.masters.mixedinstances.example.com"
-      "k8s.io/role/master"                               = "1"
-      "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                            = "mixedinstances.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "master-us-test-1a.masters.mixedinstances.example.com"
-    "k8s.io/role/master"                               = "1"
-    "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
-    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+    "KubernetesCluster"                                                            = "mixedinstances.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.mixedinstances.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.mixedinstances.example.com_user_data")
 }
@@ -484,29 +530,35 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "master-us-test-1b.masters.mixedinstances.example.com"
-      "k8s.io/role/master"                               = "1"
-      "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                            = "mixedinstances.example.com"
+      "Name"                                                                         = "master-us-test-1b.masters.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1b"
+      "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "master-us-test-1b.masters.mixedinstances.example.com"
-      "k8s.io/role/master"                               = "1"
-      "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                            = "mixedinstances.example.com"
+      "Name"                                                                         = "master-us-test-1b.masters.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1b"
+      "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "master-us-test-1b.masters.mixedinstances.example.com"
-    "k8s.io/role/master"                               = "1"
-    "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
-    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+    "KubernetesCluster"                                                            = "mixedinstances.example.com"
+    "Name"                                                                         = "master-us-test-1b.masters.mixedinstances.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1b"
+    "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1b.masters.mixedinstances.example.com_user_data")
 }
@@ -542,29 +594,35 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "master-us-test-1c.masters.mixedinstances.example.com"
-      "k8s.io/role/master"                               = "1"
-      "kops.k8s.io/instancegroup"                        = "master-us-test-1c"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                            = "mixedinstances.example.com"
+      "Name"                                                                         = "master-us-test-1c.masters.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1c"
+      "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "master-us-test-1c.masters.mixedinstances.example.com"
-      "k8s.io/role/master"                               = "1"
-      "kops.k8s.io/instancegroup"                        = "master-us-test-1c"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                            = "mixedinstances.example.com"
+      "Name"                                                                         = "master-us-test-1c.masters.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1c"
+      "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "master-us-test-1c.masters.mixedinstances.example.com"
-    "k8s.io/role/master"                               = "1"
-    "kops.k8s.io/instancegroup"                        = "master-us-test-1c"
-    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+    "KubernetesCluster"                                                            = "mixedinstances.example.com"
+    "Name"                                                                         = "master-us-test-1c.masters.mixedinstances.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1c"
+    "kubernetes.io/cluster/mixedinstances.example.com"                             = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1c.masters.mixedinstances.example.com_user_data")
 }
@@ -596,29 +654,35 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "nodes.mixedinstances.example.com"
-      "k8s.io/role/node"                                 = "1"
-      "kops.k8s.io/instancegroup"                        = "nodes"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                          = "mixedinstances.example.com"
+      "Name"                                                                       = "nodes.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/mixedinstances.example.com"                           = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                = "mixedinstances.example.com"
-      "Name"                                             = "nodes.mixedinstances.example.com"
-      "k8s.io/role/node"                                 = "1"
-      "kops.k8s.io/instancegroup"                        = "nodes"
-      "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+      "KubernetesCluster"                                                          = "mixedinstances.example.com"
+      "Name"                                                                       = "nodes.mixedinstances.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/mixedinstances.example.com"                           = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                = "mixedinstances.example.com"
-    "Name"                                             = "nodes.mixedinstances.example.com"
-    "k8s.io/role/node"                                 = "1"
-    "kops.k8s.io/instancegroup"                        = "nodes"
-    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+    "KubernetesCluster"                                                          = "mixedinstances.example.com"
+    "Name"                                                                       = "nodes.mixedinstances.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/mixedinstances.example.com"                           = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.mixedinstances.example.com_user_data")
 }

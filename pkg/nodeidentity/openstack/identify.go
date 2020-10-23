@@ -34,8 +34,8 @@ type nodeIdentifier struct {
 	novaClient *gophercloud.ServiceClient
 }
 
-// New creates and returns a nodeidentity.Identifier for Nodes running on OpenStack
-func New() (nodeidentity.Identifier, error) {
+// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on OpenStack
+func New() (nodeidentity.LegacyIdentifier, error) {
 	env, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func New() (nodeidentity.Identifier, error) {
 }
 
 // IdentifyNode queries OpenStack for the node identity information
-func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.Info, error) {
+func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.LegacyInfo, error) {
 	providerID := node.Spec.ProviderID
 	if providerID == "" {
 		return nil, fmt.Errorf("providerID was not set for node %s", node.Name)
@@ -94,7 +94,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, err
 	}
 
-	info := &nodeidentity.Info{}
+	info := &nodeidentity.LegacyInfo{}
 	info.InstanceGroup = kopsGroup
 
 	return info, nil
