@@ -185,7 +185,7 @@ Esta vez se enfoca en los programadores, aunque nunca rechazaremos a un particip
 
 Le recomendamos que se comunique **de antemano** si planea asistir. Puedes unirte a cualquier sesión y no dudes en agregar un elemento a la [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) donde rastreamos notas en el horario de oficina.
 
-Los horarios de oficina están alojados en una [Zoom](https://zoom.us/my/k8ssigaws) video conferencia, celebrada los viernes a las [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) cada otra semana impare numerada.
+Los horarios de oficina están alojados en una [Zoom](https://zoom.us/j/97072789944?pwd=VVlUR3dhN2h5TEFQZHZTVVd4SnJUdz09) video conferencia, celebrada los viernes a las [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) cada otra semana impare numerada.
 
 Puede verificar su número de semana utilizando:
 
