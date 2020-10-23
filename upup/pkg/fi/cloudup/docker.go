@@ -41,7 +41,7 @@ const (
 	dockerFallbackVersion = "17.09.0"
 )
 
-func findDockerAssets(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func findDockerAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
 	if c.Spec.Docker == nil || fi.StringValue(c.Spec.Docker.Version) == "" {
 		return nil, nil, fmt.Errorf("unable to find Docker version")
 	}

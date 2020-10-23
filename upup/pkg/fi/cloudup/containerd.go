@@ -38,7 +38,7 @@ const (
 	containerdFallbackVersion = "1.2.13"
 )
 
-func findContainerdAssets(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
+func findContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
 	if c.Spec.Containerd == nil || fi.StringValue(c.Spec.Containerd.Version) == "" {
 		return nil, nil, fmt.Errorf("unable to find containerd version")
 	}
@@ -162,10 +162,12 @@ func findAllContainerdHashesAmd64() map[string]string {
 
 func findAllContainerdDockerMappings() map[string]string {
 	versions := map[string]string{
+		"1.2.4":  "18.09.3",
+		"1.2.5":  "18.09.4",
 		"1.2.6":  "19.03.2",
 		"1.2.10": "19.03.5",
 		"1.2.12": "19.03.6",
-		"1.2.13": "19.03.12",
+		"1.2.13": "19.03.11",
 		"1.3.7":  "19.03.13",
 	}
 

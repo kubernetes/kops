@@ -21,6 +21,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/blang/semver/v4"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/testutils"
@@ -120,15 +122,38 @@ func runDockerBuilderTest(t *testing.T, key string) {
 
 	nodeUpModelContext.Distribution = distributions.DistributionUbuntu1604
 
-	nodeUpModelContext.Assets = fi.NewAssetStore("")
-	nodeUpModelContext.Assets.AddForTest("containerd", "docker/containerd", "testing Docker content")
-	nodeUpModelContext.Assets.AddForTest("containerd-shim", "docker/containerd-shim", "testing Docker content")
-	nodeUpModelContext.Assets.AddForTest("ctr", "docker/ctr", "testing Docker content")
-	nodeUpModelContext.Assets.AddForTest("docker", "docker/docker", "testing Docker content")
-	nodeUpModelContext.Assets.AddForTest("docker-init", "docker/docker-init", "testing Docker content")
-	nodeUpModelContext.Assets.AddForTest("docker-proxy", "docker/docker-proxy", "testing Docker content")
-	nodeUpModelContext.Assets.AddForTest("dockerd", "docker/dockerd", "testing Docker content")
-	nodeUpModelContext.Assets.AddForTest("runc", "docker/runc", "testing Docker content")
+	if nodeUpModelContext.Cluster.Spec.Docker.SkipInstall == false {
+		if nodeUpModelContext.Cluster == nil || nodeUpModelContext.Cluster.Spec.Docker == nil || nodeUpModelContext.Cluster.Spec.Docker.Version == nil {
+			t.Fatalf("error finding Docker version")
+			return
+		}
+		dv := fi.StringValue(nodeUpModelContext.Cluster.Spec.Docker.Version)
+		sv, err := semver.ParseTolerant(dv)
+		if err != nil {
+			t.Fatalf("error parsing Docker version %q: %v", dv, err)
+			return
+		}
+		nodeUpModelContext.Assets = fi.NewAssetStore("")
+		if sv.GTE(semver.MustParse("19.3.0")) {
+			nodeUpModelContext.Assets.AddForTest("containerd", "docker/containerd", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("containerd-shim", "docker/containerd-shim", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("ctr", "docker/ctr", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker", "docker/docker", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-init", "docker/docker-init", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-proxy", "docker/docker-proxy", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("dockerd", "docker/dockerd", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("runc", "docker/runc", "testing Docker content")
+		} else {
+			nodeUpModelContext.Assets.AddForTest("docker", "docker/docker", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-containerd", "docker/docker-containerd", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-containerd-ctr", "docker/docker-containerd-ctr", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-containerd-shim", "docker/docker-containerd-shim", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-init", "docker/docker-init", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-proxy", "docker/docker-proxy", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("docker-runc", "docker/docker-runc", "testing Docker content")
+			nodeUpModelContext.Assets.AddForTest("dockerd", "docker/dockerd", "testing Docker content")
+		}
+	}
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),

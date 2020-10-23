@@ -599,7 +599,7 @@ func (c *NodeupModelContext) GetPrivateKey(name string) ([]byte, error) {
 
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNames []string) error {
 	for _, assetName := range assetNames {
-		re, err := regexp.Compile(fmt.Sprintf("^%s$", assetName))
+		re, err := regexp.Compile(fmt.Sprintf("^%s$", regexp.QuoteMeta(assetName)))
 		if err != nil {
 			return err
 		}
@@ -611,19 +611,17 @@ func (b *NodeupModelContext) AddCNIBinAssets(c *fi.ModelBuilderContext, assetNam
 }
 
 func (b *NodeupModelContext) addCNIBinAsset(c *fi.ModelBuilderContext, assetPath *regexp.Regexp) error {
-	a := b.Assets.FindMatches(assetPath)
-	if len(a) != 1 {
-		return fmt.Errorf("unable to locate asset %q", assetPath.String())
+	name, res, err := b.Assets.FindMatch(assetPath)
+	if err != nil {
+		return err
 	}
 
-	for k, v := range a {
-		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join(b.CNIBinDir(), k),
-			Contents: v,
-			Type:     nodetasks.FileType_File,
-			Mode:     fi.String("0755"),
-		})
-	}
+	c.AddTask(&nodetasks.File{
+		Path:     filepath.Join(b.CNIBinDir(), name),
+		Contents: res,
+		Type:     nodetasks.FileType_File,
+		Mode:     fi.String("0755"),
+	})
 
 	return nil
 }
