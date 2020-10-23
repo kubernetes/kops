@@ -296,7 +296,10 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
 	actual.Scheme = lb.Scheme
+
+	// Ignore system fields
 	actual.Lifecycle = e.Lifecycle
+	actual.ForAPIServer = e.ForAPIServer
 
 	tagMap, err := describeLoadBalancerTags(cloud, []string{*lb.LoadBalancerName})
 	if err != nil {
