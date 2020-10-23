@@ -27,6 +27,15 @@ type Identifier interface {
 }
 
 type Info struct {
+	InstanceID string
+	Labels     map[string]string
+}
+
+type LegacyIdentifier interface {
+	IdentifyNode(ctx context.Context, node *corev1.Node) (*LegacyInfo, error)
+}
+
+type LegacyInfo struct {
 	InstanceID        string
 	InstanceGroup     string
 	InstanceLifecycle string

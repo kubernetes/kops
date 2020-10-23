@@ -146,6 +146,7 @@ func buildScheme() error {
 }
 
 func addNodeController(mgr manager.Manager, opt *config.Options) error {
+	var legacyIdentifier nodeidentity.LegacyIdentifier
 	var identifier nodeidentity.Identifier
 	var err error
 	switch opt.Cloud {
@@ -154,20 +155,21 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
+
 	case "gce":
-		identifier, err = nodeidentitygce.New()
+		legacyIdentifier, err = nodeidentitygce.New()
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
 
 	case "openstack":
-		identifier, err = nodeidentityos.New()
+		legacyIdentifier, err = nodeidentityos.New()
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
 
 	case "digitalocean":
-		identifier, err = nodeidentitydo.New()
+		legacyIdentifier, err = nodeidentitydo.New()
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
@@ -179,16 +181,26 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 		return fmt.Errorf("identifier for cloud %q not implemented", opt.Cloud)
 	}
 
-	if opt.ConfigBase == "" {
-		return fmt.Errorf("must specify configBase")
-	}
+	if identifier != nil {
+		nodeController, err := controllers.NewNodeReconciler(mgr, identifier)
+		if err != nil {
+			return err
+		}
+		if err := nodeController.SetupWithManager(mgr); err != nil {
+			return err
+		}
+	} else {
+		if opt.ConfigBase == "" {
+			return fmt.Errorf("must specify configBase")
+		}
 
-	nodeController, err := controllers.NewNodeReconciler(mgr, opt.ConfigBase, identifier)
-	if err != nil {
-		return err
-	}
-	if err := nodeController.SetupWithManager(mgr); err != nil {
-		return err
+		nodeController, err := controllers.NewLegacyNodeReconciler(mgr, opt.ConfigBase, legacyIdentifier)
+		if err != nil {
+			return err
+		}
+		if err := nodeController.SetupWithManager(mgr); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -116,6 +116,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externalpolicies-exa
     value               = "fib+baz"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -163,6 +173,16 @@ resource "aws_autoscaling_group" "nodes-externalpolicies-example-com" {
     key                 = "foo/bar"
     propagate_at_launch = true
     value               = "fib+baz"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -338,35 +358,41 @@ resource "aws_launch_template" "master-us-test-1a-masters-externalpolicies-examp
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                  = "externalpolicies.example.com"
-      "Name"                                               = "master-us-test-1a.masters.externalpolicies.example.com"
-      "Owner"                                              = "John Doe"
-      "foo/bar"                                            = "fib+baz"
-      "k8s.io/role/master"                                 = "1"
-      "kops.k8s.io/instancegroup"                          = "master-us-test-1a"
-      "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+      "KubernetesCluster"                                                            = "externalpolicies.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.externalpolicies.example.com"
+      "Owner"                                                                        = "John Doe"
+      "foo/bar"                                                                      = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/externalpolicies.example.com"                           = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                  = "externalpolicies.example.com"
-      "Name"                                               = "master-us-test-1a.masters.externalpolicies.example.com"
-      "Owner"                                              = "John Doe"
-      "foo/bar"                                            = "fib+baz"
-      "k8s.io/role/master"                                 = "1"
-      "kops.k8s.io/instancegroup"                          = "master-us-test-1a"
-      "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+      "KubernetesCluster"                                                            = "externalpolicies.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.externalpolicies.example.com"
+      "Owner"                                                                        = "John Doe"
+      "foo/bar"                                                                      = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/externalpolicies.example.com"                           = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                  = "externalpolicies.example.com"
-    "Name"                                               = "master-us-test-1a.masters.externalpolicies.example.com"
-    "Owner"                                              = "John Doe"
-    "foo/bar"                                            = "fib+baz"
-    "k8s.io/role/master"                                 = "1"
-    "kops.k8s.io/instancegroup"                          = "master-us-test-1a"
-    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+    "KubernetesCluster"                                                            = "externalpolicies.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.externalpolicies.example.com"
+    "Owner"                                                                        = "John Doe"
+    "foo/bar"                                                                      = "fib+baz"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/externalpolicies.example.com"                           = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.externalpolicies.example.com_user_data")
 }
@@ -398,35 +424,41 @@ resource "aws_launch_template" "nodes-externalpolicies-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                  = "externalpolicies.example.com"
-      "Name"                                               = "nodes.externalpolicies.example.com"
-      "Owner"                                              = "John Doe"
-      "foo/bar"                                            = "fib+baz"
-      "k8s.io/role/node"                                   = "1"
-      "kops.k8s.io/instancegroup"                          = "nodes"
-      "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+      "KubernetesCluster"                                                          = "externalpolicies.example.com"
+      "Name"                                                                       = "nodes.externalpolicies.example.com"
+      "Owner"                                                                      = "John Doe"
+      "foo/bar"                                                                    = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/externalpolicies.example.com"                         = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                  = "externalpolicies.example.com"
-      "Name"                                               = "nodes.externalpolicies.example.com"
-      "Owner"                                              = "John Doe"
-      "foo/bar"                                            = "fib+baz"
-      "k8s.io/role/node"                                   = "1"
-      "kops.k8s.io/instancegroup"                          = "nodes"
-      "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+      "KubernetesCluster"                                                          = "externalpolicies.example.com"
+      "Name"                                                                       = "nodes.externalpolicies.example.com"
+      "Owner"                                                                      = "John Doe"
+      "foo/bar"                                                                    = "fib+baz"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/externalpolicies.example.com"                         = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                  = "externalpolicies.example.com"
-    "Name"                                               = "nodes.externalpolicies.example.com"
-    "Owner"                                              = "John Doe"
-    "foo/bar"                                            = "fib+baz"
-    "k8s.io/role/node"                                   = "1"
-    "kops.k8s.io/instancegroup"                          = "nodes"
-    "kubernetes.io/cluster/externalpolicies.example.com" = "owned"
+    "KubernetesCluster"                                                          = "externalpolicies.example.com"
+    "Name"                                                                       = "nodes.externalpolicies.example.com"
+    "Owner"                                                                      = "John Doe"
+    "foo/bar"                                                                    = "fib+baz"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/externalpolicies.example.com"                         = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.externalpolicies.example.com_user_data")
 }
