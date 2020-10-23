@@ -168,7 +168,7 @@ Este repositorio usa los bots de Kubernetes.  Hay una lista completa de los coma
 
 ## Horas de Oficina
 
-Los mantenedores de Kops reservaron una hora cada dos semanas para **horas de oficina** públicas. Los horarios de oficina se alojan en un [zoom video chat](https://zoom.us/my/k8ssigaws) los viernes en [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), en semanas impares numeradas. Nos esforzamos por conocer y ayudar a los programadores, ya sea trabajando en `kops` o interesados en conocer más sobre el proyecto.
+Los mantenedores de Kops reservaron una hora cada dos semanas para **horas de oficina** públicas. Los horarios de oficina se alojan en un [zoom video chat](https://zoom.us/j/97072789944?pwd=VVlUR3dhN2h5TEFQZHZTVVd4SnJUdz09) los viernes en [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), en semanas impares numeradas. Nos esforzamos por conocer y ayudar a los programadores, ya sea trabajando en `kops` o interesados en conocer más sobre el proyecto.
 
 
 ### Temas Abiertos en Horas de Oficina
