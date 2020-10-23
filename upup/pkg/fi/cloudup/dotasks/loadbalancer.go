@@ -67,10 +67,13 @@ func (lb *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	}
 
 	return &LoadBalancer{
-		Name:      fi.String(loadbalancer.Name),
-		ID:        fi.String(loadbalancer.ID),
-		Lifecycle: lb.Lifecycle,
-		Region:    fi.String(loadbalancer.Region.Slug),
+		Name:   fi.String(loadbalancer.Name),
+		ID:     fi.String(loadbalancer.ID),
+		Region: fi.String(loadbalancer.Region.Slug),
+
+		// Ignore system fields
+		Lifecycle:    lb.Lifecycle,
+		ForAPIServer: lb.ForAPIServer,
 	}, nil
 }
 
