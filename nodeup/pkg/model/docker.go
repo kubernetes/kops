@@ -79,6 +79,15 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	dockerVersion, err := b.dockerVersion()
+	if err != nil {
+		return err
+	}
+	sv, err := semver.ParseTolerant(dockerVersion)
+	if err != nil {
+		return fmt.Errorf("error parsing docker version %q: %v", dockerVersion, err)
+	}
+
 	c.AddTask(b.buildDockerGroup())
 	c.AddTask(b.buildSystemdSocket())
 
@@ -89,13 +98,23 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unable to find any Docker binaries in assets")
 		}
 		for k, v := range f {
-			klog.V(4).Infof("Found matching Docker asset: %q", k)
-			c.AddTask(&nodetasks.File{
+			fileTask := &nodetasks.File{
 				Path:     filepath.Join("/usr/bin", k),
 				Contents: v,
 				Type:     nodetasks.FileType_File,
 				Mode:     fi.String("0755"),
-			})
+			}
+			c.AddTask(fileTask)
+
+			// As a mitigation for CVE-2019-5736 we chattr docker-runc to be immutable
+			// https://github.com/kubernetes/kops/blob/master/docs/advisories/cve_2019_5736.md
+			if strings.HasSuffix(k, "runc") && sv.LT(semver.MustParse("18.9.2")) {
+				c.AddTask(&nodetasks.Chattr{
+					File: filepath.Join("/usr/bin", k),
+					Mode: "+i",
+					Deps: []fi.Task{fileTask},
+				})
+			}
 		}
 	}
 
@@ -109,16 +128,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	dockerVersion, err := b.dockerVersion()
-	if err != nil {
-		return err
-	}
-
-	v, err := semver.ParseTolerant(dockerVersion)
-	if err != nil {
-		return fmt.Errorf("error parsing docker version %q: %v", dockerVersion, err)
-	}
-	c.AddTask(b.buildSystemdService(v))
+	c.AddTask(b.buildSystemdService(sv))
 
 	if err := b.buildSysconfig(c); err != nil {
 		return err

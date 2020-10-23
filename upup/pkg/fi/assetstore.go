@@ -103,7 +103,7 @@ func NewAssetStore(cacheDir string) *AssetStore {
 func (a *AssetStore) FindMatches(expr *regexp.Regexp) map[string]Resource {
 	matches := make(map[string]Resource)
 
-	klog.Infof("Matching assets:")
+	klog.Infof("Matching assets for %q:", expr.String())
 	for _, a := range a.assets {
 		if expr.MatchString(a.AssetPath) {
 			klog.Infof("    %s", a.AssetPath)
@@ -112,6 +112,26 @@ func (a *AssetStore) FindMatches(expr *regexp.Regexp) map[string]Resource {
 	}
 
 	return matches
+}
+
+func (a *AssetStore) FindMatch(expr *regexp.Regexp) (name string, res Resource, err error) {
+	matches := a.FindMatches(expr)
+
+	switch len(matches) {
+	case 0:
+		return "", nil, fmt.Errorf("found no matching assets for expr: %q", expr.String())
+	case 1:
+		var n string
+		var r Resource
+		for k, v := range matches {
+			klog.Infof("Found single matching asset for expr %q: %q", expr.String(), k)
+			n = k
+			r = v
+		}
+		return n, r, nil
+	default:
+		return "", nil, fmt.Errorf("found multiple matching assets for expr: %q", expr.String())
+	}
 }
 
 func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
