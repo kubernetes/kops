@@ -820,7 +820,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		key := "networking.flannel"
 		versions := map[string]string{
 			"k8s-1.6":  "0.11.0-kops.2",
-			"k8s-1.12": "0.11.0-kops.3",
+			"k8s-1.12": "0.13.0-kops.1",
 		}
 
 		{
