@@ -136,6 +136,16 @@ resource "aws_autoscaling_group" "bastion-unmanaged-example-com" {
     value               = "bastion.unmanaged.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -174,6 +184,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-unmanaged-example-co
     value               = "master-us-test-1a.masters.unmanaged.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -210,6 +230,16 @@ resource "aws_autoscaling_group" "nodes-unmanaged-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.unmanaged.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -393,29 +423,35 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                           = "unmanaged.example.com"
-      "Name"                                        = "bastion.unmanaged.example.com"
-      "k8s.io/role/bastion"                         = "1"
-      "kops.k8s.io/instancegroup"                   = "bastion"
-      "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+      "KubernetesCluster"                                                          = "unmanaged.example.com"
+      "Name"                                                                       = "bastion.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/bastion"                                                        = "1"
+      "kops.k8s.io/instancegroup"                                                  = "bastion"
+      "kubernetes.io/cluster/unmanaged.example.com"                                = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                           = "unmanaged.example.com"
-      "Name"                                        = "bastion.unmanaged.example.com"
-      "k8s.io/role/bastion"                         = "1"
-      "kops.k8s.io/instancegroup"                   = "bastion"
-      "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+      "KubernetesCluster"                                                          = "unmanaged.example.com"
+      "Name"                                                                       = "bastion.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/bastion"                                                        = "1"
+      "kops.k8s.io/instancegroup"                                                  = "bastion"
+      "kubernetes.io/cluster/unmanaged.example.com"                                = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "bastion.unmanaged.example.com"
-    "k8s.io/role/bastion"                         = "1"
-    "kops.k8s.io/instancegroup"                   = "bastion"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+    "KubernetesCluster"                                                          = "unmanaged.example.com"
+    "Name"                                                                       = "bastion.unmanaged.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/bastion"                                                        = "1"
+    "kops.k8s.io/instancegroup"                                                  = "bastion"
+    "kubernetes.io/cluster/unmanaged.example.com"                                = "owned"
   }
 }
 
@@ -450,29 +486,35 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                           = "unmanaged.example.com"
-      "Name"                                        = "master-us-test-1a.masters.unmanaged.example.com"
-      "k8s.io/role/master"                          = "1"
-      "kops.k8s.io/instancegroup"                   = "master-us-test-1a"
-      "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+      "KubernetesCluster"                                                            = "unmanaged.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/unmanaged.example.com"                                  = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                           = "unmanaged.example.com"
-      "Name"                                        = "master-us-test-1a.masters.unmanaged.example.com"
-      "k8s.io/role/master"                          = "1"
-      "kops.k8s.io/instancegroup"                   = "master-us-test-1a"
-      "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+      "KubernetesCluster"                                                            = "unmanaged.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/unmanaged.example.com"                                  = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "master-us-test-1a.masters.unmanaged.example.com"
-    "k8s.io/role/master"                          = "1"
-    "kops.k8s.io/instancegroup"                   = "master-us-test-1a"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+    "KubernetesCluster"                                                            = "unmanaged.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.unmanaged.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/unmanaged.example.com"                                  = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.unmanaged.example.com_user_data")
 }
@@ -504,29 +546,35 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                           = "unmanaged.example.com"
-      "Name"                                        = "nodes.unmanaged.example.com"
-      "k8s.io/role/node"                            = "1"
-      "kops.k8s.io/instancegroup"                   = "nodes"
-      "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+      "KubernetesCluster"                                                          = "unmanaged.example.com"
+      "Name"                                                                       = "nodes.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/unmanaged.example.com"                                = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                           = "unmanaged.example.com"
-      "Name"                                        = "nodes.unmanaged.example.com"
-      "k8s.io/role/node"                            = "1"
-      "kops.k8s.io/instancegroup"                   = "nodes"
-      "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+      "KubernetesCluster"                                                          = "unmanaged.example.com"
+      "Name"                                                                       = "nodes.unmanaged.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/unmanaged.example.com"                                = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                           = "unmanaged.example.com"
-    "Name"                                        = "nodes.unmanaged.example.com"
-    "k8s.io/role/node"                            = "1"
-    "kops.k8s.io/instancegroup"                   = "nodes"
-    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+    "KubernetesCluster"                                                          = "unmanaged.example.com"
+    "Name"                                                                       = "nodes.unmanaged.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/unmanaged.example.com"                                = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.unmanaged.example.com_user_data")
 }

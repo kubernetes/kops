@@ -105,6 +105,18 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-tf11-example
   }
 
   tag = {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    value               = "master"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    value               = ""
+    propagate_at_launch = true
+  }
+
+  tag = {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -147,6 +159,18 @@ resource "aws_autoscaling_group" "nodes-minimal-tf11-example-com" {
   tag = {
     key                 = "Name"
     value               = "nodes.minimal-tf11.example.com"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    value               = "node"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    value               = ""
     propagate_at_launch = true
   }
 
@@ -292,22 +316,26 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
   }
 
   tags = {
-    KubernetesCluster                                = "minimal-tf11.example.com"
-    Name                                             = "master-us-test-1a.masters.minimal-tf11.example.com"
-    "k8s.io/role/master"                             = "1"
-    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-    "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+    KubernetesCluster                                                              = "minimal-tf11.example.com"
+    Name                                                                           = "master-us-test-1a.masters.minimal-tf11.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/minimal-tf11.example.com"                               = "owned"
   }
 
   tag_specifications = {
     resource_type = "instance"
 
     tags = {
-      KubernetesCluster                                = "minimal-tf11.example.com"
-      Name                                             = "master-us-test-1a.masters.minimal-tf11.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+      KubernetesCluster                                                              = "minimal-tf11.example.com"
+      Name                                                                           = "master-us-test-1a.masters.minimal-tf11.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/minimal-tf11.example.com"                               = "owned"
     }
   }
 
@@ -315,11 +343,13 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
     resource_type = "volume"
 
     tags = {
-      KubernetesCluster                                = "minimal-tf11.example.com"
-      Name                                             = "master-us-test-1a.masters.minimal-tf11.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+      KubernetesCluster                                                              = "minimal-tf11.example.com"
+      Name                                                                           = "master-us-test-1a.masters.minimal-tf11.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/minimal-tf11.example.com"                               = "owned"
     }
   }
 
@@ -358,22 +388,26 @@ resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
   }
 
   tags = {
-    KubernetesCluster                                = "minimal-tf11.example.com"
-    Name                                             = "nodes.minimal-tf11.example.com"
-    "k8s.io/role/node"                               = "1"
-    "kops.k8s.io/instancegroup"                      = "nodes"
-    "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+    KubernetesCluster                                                            = "minimal-tf11.example.com"
+    Name                                                                         = "nodes.minimal-tf11.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/minimal-tf11.example.com"                             = "owned"
   }
 
   tag_specifications = {
     resource_type = "instance"
 
     tags = {
-      KubernetesCluster                                = "minimal-tf11.example.com"
-      Name                                             = "nodes.minimal-tf11.example.com"
-      "k8s.io/role/node"                               = "1"
-      "kops.k8s.io/instancegroup"                      = "nodes"
-      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+      KubernetesCluster                                                            = "minimal-tf11.example.com"
+      Name                                                                         = "nodes.minimal-tf11.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/minimal-tf11.example.com"                             = "owned"
     }
   }
 
@@ -381,11 +415,13 @@ resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
     resource_type = "volume"
 
     tags = {
-      KubernetesCluster                                = "minimal-tf11.example.com"
-      Name                                             = "nodes.minimal-tf11.example.com"
-      "k8s.io/role/node"                               = "1"
-      "kops.k8s.io/instancegroup"                      = "nodes"
-      "kubernetes.io/cluster/minimal-tf11.example.com" = "owned"
+      KubernetesCluster                                                            = "minimal-tf11.example.com"
+      Name                                                                         = "nodes.minimal-tf11.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/minimal-tf11.example.com"                             = "owned"
     }
   }
 

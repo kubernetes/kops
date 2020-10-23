@@ -141,6 +141,16 @@ resource "aws_autoscaling_group" "bastion-privateweave-example-com" {
     value               = "bastion.privateweave.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/bastion"
     propagate_at_launch = true
     value               = "1"
@@ -179,6 +189,16 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateweave-example
     value               = "master-us-test-1a.masters.privateweave.example.com"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/role/master"
     propagate_at_launch = true
     value               = "1"
@@ -215,6 +235,16 @@ resource "aws_autoscaling_group" "nodes-privateweave-example-com" {
     key                 = "Name"
     propagate_at_launch = true
     value               = "nodes.privateweave.example.com"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
+    propagate_at_launch = true
+    value               = "node"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/role/node"
@@ -416,29 +446,35 @@ resource "aws_launch_template" "bastion-privateweave-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                              = "privateweave.example.com"
-      "Name"                                           = "bastion.privateweave.example.com"
-      "k8s.io/role/bastion"                            = "1"
-      "kops.k8s.io/instancegroup"                      = "bastion"
-      "kubernetes.io/cluster/privateweave.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privateweave.example.com"
+      "Name"                                                                       = "bastion.privateweave.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/bastion"                                                        = "1"
+      "kops.k8s.io/instancegroup"                                                  = "bastion"
+      "kubernetes.io/cluster/privateweave.example.com"                             = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                              = "privateweave.example.com"
-      "Name"                                           = "bastion.privateweave.example.com"
-      "k8s.io/role/bastion"                            = "1"
-      "kops.k8s.io/instancegroup"                      = "bastion"
-      "kubernetes.io/cluster/privateweave.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privateweave.example.com"
+      "Name"                                                                       = "bastion.privateweave.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/bastion"                                                        = "1"
+      "kops.k8s.io/instancegroup"                                                  = "bastion"
+      "kubernetes.io/cluster/privateweave.example.com"                             = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                              = "privateweave.example.com"
-    "Name"                                           = "bastion.privateweave.example.com"
-    "k8s.io/role/bastion"                            = "1"
-    "kops.k8s.io/instancegroup"                      = "bastion"
-    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+    "KubernetesCluster"                                                          = "privateweave.example.com"
+    "Name"                                                                       = "bastion.privateweave.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/bastion"                                                        = "1"
+    "kops.k8s.io/instancegroup"                                                  = "bastion"
+    "kubernetes.io/cluster/privateweave.example.com"                             = "owned"
   }
 }
 
@@ -473,29 +509,35 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateweave-example-c
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                              = "privateweave.example.com"
-      "Name"                                           = "master-us-test-1a.masters.privateweave.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-      "kubernetes.io/cluster/privateweave.example.com" = "owned"
+      "KubernetesCluster"                                                            = "privateweave.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.privateweave.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/privateweave.example.com"                               = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                              = "privateweave.example.com"
-      "Name"                                           = "master-us-test-1a.masters.privateweave.example.com"
-      "k8s.io/role/master"                             = "1"
-      "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-      "kubernetes.io/cluster/privateweave.example.com" = "owned"
+      "KubernetesCluster"                                                            = "privateweave.example.com"
+      "Name"                                                                         = "master-us-test-1a.masters.privateweave.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+      "k8s.io/role/master"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+      "kubernetes.io/cluster/privateweave.example.com"                               = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                              = "privateweave.example.com"
-    "Name"                                           = "master-us-test-1a.masters.privateweave.example.com"
-    "k8s.io/role/master"                             = "1"
-    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
-    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+    "KubernetesCluster"                                                            = "privateweave.example.com"
+    "Name"                                                                         = "master-us-test-1a.masters.privateweave.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
+    "k8s.io/role/master"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
+    "kubernetes.io/cluster/privateweave.example.com"                               = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privateweave.example.com_user_data")
 }
@@ -527,29 +569,35 @@ resource "aws_launch_template" "nodes-privateweave-example-com" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                              = "privateweave.example.com"
-      "Name"                                           = "nodes.privateweave.example.com"
-      "k8s.io/role/node"                               = "1"
-      "kops.k8s.io/instancegroup"                      = "nodes"
-      "kubernetes.io/cluster/privateweave.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privateweave.example.com"
+      "Name"                                                                       = "nodes.privateweave.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/privateweave.example.com"                             = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                              = "privateweave.example.com"
-      "Name"                                           = "nodes.privateweave.example.com"
-      "k8s.io/role/node"                               = "1"
-      "kops.k8s.io/instancegroup"                      = "nodes"
-      "kubernetes.io/cluster/privateweave.example.com" = "owned"
+      "KubernetesCluster"                                                          = "privateweave.example.com"
+      "Name"                                                                       = "nodes.privateweave.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/privateweave.example.com"                             = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                              = "privateweave.example.com"
-    "Name"                                           = "nodes.privateweave.example.com"
-    "k8s.io/role/node"                               = "1"
-    "kops.k8s.io/instancegroup"                      = "nodes"
-    "kubernetes.io/cluster/privateweave.example.com" = "owned"
+    "KubernetesCluster"                                                          = "privateweave.example.com"
+    "Name"                                                                       = "nodes.privateweave.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"           = "node"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+    "k8s.io/role/node"                                                           = "1"
+    "kops.k8s.io/instancegroup"                                                  = "nodes"
+    "kubernetes.io/cluster/privateweave.example.com"                             = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privateweave.example.com_user_data")
 }
