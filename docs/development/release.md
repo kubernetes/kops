@@ -38,12 +38,14 @@ the current `release-1.X` tag.
 Typically Kops alpha releases are created off the master branch and beta and stable releases are created off of release branches.
 In order to create a new release branch off of master prior to a beta release, perform the following steps:
 
-1. Create a new periodic E2E prow job for the "next" kubernetes minor version.
-   * All Kops prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
-2. Create a new presubmit E2E prow job for the new release branch.
-3. Create a new milestone in the GitHub repo.
-4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.
-5. Create the new release branch in git and push it to the GitHub repo.
+1. Create a new presubmit E2E prow job for the new release branch [here](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/kops-presubmits.yaml).
+2. Create a new milestone in the GitHub repo.
+3. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.
+4. Create the new release branch in git and push it to the GitHub repo. This will trigger a warning in #kops-dev as well as trigger the postsubmit job that creates the `https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.XX/latest-ci.txt` version marker via cloudbuild.
+5. Update [build-pipeline.py](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/build-pipeline.py), incrementing `master_k8s_version` and the list of branches to reflect all actively maintained kops branches. Run `make` to regenerate the pipeline jobs.
+6. Update the [build-grid.py](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/build-grid.py), incrementing the single non-master `kops_version` list item and incrementing the `k8s_versions` values. Update the `ko` suffixes in the `skip_jobs` list to reflect the new kops release branch being tested. Run `make` to regenerate the grid jobs.
+
+An example set of PRs are linked from [this](https://github.com/kubernetes/kops/issues/10079) issue.
 
 ## Update versions
 
