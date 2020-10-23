@@ -43,8 +43,8 @@ func TestContainerdVersionUrlHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.3.4",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.12.tgz",
-			hash:    "bc7810d58e32360652abfddc9cb43405feee4ed9592aedc1132fb35eede9fa9e",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.11.tgz",
+			hash:    "9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145",
 			err:     nil,
 		},
 		{
@@ -71,8 +71,8 @@ func TestContainerdVersionUrlHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.4.1",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.12.tgz",
-			hash:    "bc7810d58e32360652abfddc9cb43405feee4ed9592aedc1132fb35eede9fa9e",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.11.tgz",
+			hash:    "9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145",
 			err:     nil,
 		},
 	}
@@ -159,7 +159,7 @@ func TestContainerdVersionUrl(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.3.4",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.12.tgz",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.11.tgz",
 			err:     nil,
 		},
 		{
@@ -171,7 +171,7 @@ func TestContainerdVersionUrl(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.4.1",
-			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.12.tgz",
+			url:     "https://download.docker.com/linux/static/stable/aarch64/docker-19.03.11.tgz",
 			err:     nil,
 		},
 	}
@@ -254,7 +254,7 @@ func TestContainerdVersionHash(t *testing.T) {
 		{
 			arch:    architectures.ArchitectureArm64,
 			version: "1.4.1",
-			hash:    "bc7810d58e32360652abfddc9cb43405feee4ed9592aedc1132fb35eede9fa9e",
+			hash:    "9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145",
 			err:     nil,
 		},
 	}

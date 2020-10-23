@@ -1068,7 +1068,7 @@ func validateContainerdConfig(config *kops.ContainerdConfig, fldPath *field.Path
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
 				fmt.Sprintf("unable to parse version string: %s", err.Error())))
 		}
-		if sv.LT(semver.MustParse("1.2.6")) {
+		if sv.LT(semver.MustParse("1.2.4")) {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version, "unsupported legacy version"))
 		}
 	}

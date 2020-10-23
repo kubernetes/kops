@@ -1,3 +1,6 @@
+file: /usr/bin/docker-runc
+mode: +i
+---
 contents: |-
   DOCKER_OPTS=
   DOCKER_NOFILE=1000000
@@ -74,34 +77,34 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: docker/containerd
-    Key: containerd
-mode: "0755"
-path: /usr/bin/containerd
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/containerd-shim
-    Key: containerd-shim
-mode: "0755"
-path: /usr/bin/containerd-shim
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/ctr
-    Key: ctr
-mode: "0755"
-path: /usr/bin/ctr
-type: file
----
-contents:
-  Asset:
     AssetPath: docker/docker
     Key: docker
 mode: "0755"
 path: /usr/bin/docker
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-containerd
+    Key: docker-containerd
+mode: "0755"
+path: /usr/bin/docker-containerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-containerd-ctr
+    Key: docker-containerd-ctr
+mode: "0755"
+path: /usr/bin/docker-containerd-ctr
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-containerd-shim
+    Key: docker-containerd-shim
+mode: "0755"
+path: /usr/bin/docker-containerd-shim
 type: file
 ---
 contents:
@@ -122,18 +125,18 @@ type: file
 ---
 contents:
   Asset:
-    AssetPath: docker/dockerd
-    Key: dockerd
+    AssetPath: docker/docker-runc
+    Key: docker-runc
 mode: "0755"
-path: /usr/bin/dockerd
+path: /usr/bin/docker-runc
 type: file
 ---
 contents:
   Asset:
-    AssetPath: docker/runc
-    Key: runc
+    AssetPath: docker/dockerd
+    Key: dockerd
 mode: "0755"
-path: /usr/bin/runc
+path: /usr/bin/dockerd
 type: file
 ---
 contents: |2
