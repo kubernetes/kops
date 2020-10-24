@@ -104,6 +104,7 @@ func (l *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	// Ignore "system" fields
 	l.LoadbalancerId = actual.LoadbalancerId
 	actual.Lifecycle = l.Lifecycle
+	actual.ForAPIServer = l.ForAPIServer
 	return actual, nil
 }
 
