@@ -40,7 +40,18 @@ type deployer struct {
 
 	KopsRoot      string `flag:"kops-root" desc:"Path to root of the kops repo. Used with --build."`
 	StageLocation string `flag:"stage-location" desc:"Storage location for kops artifacts. Only gs:// paths are supported."`
-	BuildOptions  *builder.BuildOptions
+
+	ClusterName    string   `flag:"cluster-name" desc:"The FQDN to use for the cluster name"`
+	CloudProvider  string   `flag:"cloud-provider" desc:"Which cloud provider to use"`
+	Env            []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
+	KopsBinaryPath string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
+	StateStore     string   `flag:"-"`
+
+	SSHPrivateKeyPath string   `flag:"ssh-private-key" desc:"The path to the private key used for SSH access to instances"`
+	SSHPublicKeyPath  string   `flag:"ssh-public-key" desc:"The path to the public key passed to the cloud provider"`
+	SSHUser           []string `flag:"ssh-user" desc:"The SSH users to use for SSH access to instances"`
+
+	BuildOptions *builder.BuildOptions
 }
 
 // assert that New implements types.NewDeployer
@@ -51,21 +62,6 @@ var _ types.Deployer = &deployer{}
 
 func (d *deployer) Provider() string {
 	return Name
-}
-
-func (d *deployer) Up() error {
-	klog.Warning("Up is not implemented")
-	return nil
-}
-
-func (d *deployer) IsUp() (bool, error) {
-	klog.Warning("IsUp is not implemented")
-	return true, nil
-}
-
-func (d *deployer) Down() error {
-	klog.Warning("Down is not implemented")
-	return nil
 }
 
 func (d *deployer) DumpClusterLogs() error {
@@ -93,7 +89,7 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 func bindFlags(d *deployer) *pflag.FlagSet {
 	flags, err := gpflag.Parse(d)
 	if err != nil {
-		klog.Fatalf("unable to generate flags from deployer")
+		klog.Fatalf("unable to generate flags from deployer: %v", err)
 		return nil
 	}
 	return flags
