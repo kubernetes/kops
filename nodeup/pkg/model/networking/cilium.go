@@ -131,17 +131,19 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.ModelBuilderContext) error 
 		cert, key := b.GetBootstrapCert(name)
 
 		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join(dir, name+".crt"),
-			Contents: cert,
-			Type:     nodetasks.FileType_File,
-			Mode:     fi.String("0644"),
+			Path:           filepath.Join(dir, name+".crt"),
+			Contents:       cert,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.String("0644"),
+			BeforeServices: []string{"kubelet.service"},
 		})
 
 		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join(dir, name+".key"),
-			Contents: key,
-			Type:     nodetasks.FileType_File,
-			Mode:     fi.String("0400"),
+			Path:           filepath.Join(dir, name+".key"),
+			Contents:       key,
+			Type:           nodetasks.FileType_File,
+			Mode:           fi.String("0400"),
+			BeforeServices: []string{"kubelet.service"},
 		})
 
 		return b.BuildCertificateTask(c, signer, filepath.Join(dir, "etcd-ca.crt"), nil)
