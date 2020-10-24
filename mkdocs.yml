@@ -20,10 +20,9 @@ theme:
     - tabs
   icon:
     logo: 'material/earth'
-  favicon: 'img/logo-notext.svg'
+  favicon: 'img/favicon.png'
   palette:
-    primary: 'teal'
-    accent: 'green'
+    primary: '#25aae1'
 plugins:
   - search
   - macros:
