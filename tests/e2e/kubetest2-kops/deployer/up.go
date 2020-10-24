@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/util"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
@@ -35,6 +36,12 @@ func (d *deployer) Up() error {
 	if err != nil {
 		return err
 	}
+
+	zones, err := aws.RandomZones(1)
+	if err != nil {
+		return err
+	}
+
 	args := []string{
 		d.KopsBinaryPath, "create", "cluster",
 		"--name", d.ClusterName,
@@ -47,7 +54,7 @@ func (d *deployer) Up() error {
 		"--node-volume-size", "48",
 		"--override", "cluster.spec.nodePortAccess=0.0.0.0/0",
 		"--ssh-public-key", d.SSHPublicKeyPath,
-		"--zones", "eu-west-2a",
+		"--zones", strings.Join(zones, ","),
 		"--yes",
 	}
 	klog.Info(strings.Join(args, " "))
