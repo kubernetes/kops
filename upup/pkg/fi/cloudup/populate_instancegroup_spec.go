@@ -43,7 +43,7 @@ const (
 	defaultMasterMachineTypeDO  = "s-2vcpu-4gb"
 	defaultMasterMachineTypeALI = "ecs.n2.medium"
 
-	defaultDONodeImage  = "debian-9-x64"
+	defaultDONodeImage  = "debian-10-x64"
 	defaultALINodeImage = "centos_7_04_64_20G_alibase_201701015.vhd"
 )
 
