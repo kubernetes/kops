@@ -34,7 +34,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: kope/dns-controller:1.18.1
+        image: kope/dns-controller:1.18.2
         name: dns-controller
         resources:
           requests:

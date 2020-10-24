@@ -36,7 +36,7 @@ spec:
         - /usr/bin/kops-controller
         - --v=2
         - --conf=/etc/kubernetes/kops-controller/config.yaml
-        image: kope/kops-controller:1.18.1
+        image: kope/kops-controller:1.18.2
         name: kops-controller
         resources:
           requests:
