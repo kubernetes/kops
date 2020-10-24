@@ -53,8 +53,8 @@ data:
   # NOTE that this will open the port on ALL nodes where Cilium pods are
   # scheduled.
   prometheus-serve-addr: ":{{ .AgentPrometheusPort }}"
-  operator-prometheus-serve-addr: ":6942" 
-  enable-metrics: true
+  operator-prometheus-serve-addr: ":6942"
+  enable-metrics: "true"
   {{ end }}
   {{ if .EnableEncryption }}
   enable-ipsec: "true"
