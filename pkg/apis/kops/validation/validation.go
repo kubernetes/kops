@@ -702,15 +702,12 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 			allErrs = append(allErrs, field.Invalid(versionFld, v.Version, "Only versions 1.6 through 1.8 are supported"))
 		}
 
-		if version.Minor == 6 && (!cluster.IsKubernetesGTE("1.11") || cluster.IsKubernetesGTE("1.16")) {
-			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.6 requires kubernetesVersion between 1.11 and 1.16"))
+		if version.Minor == 6 && cluster.IsKubernetesGTE("1.16") {
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.6 requires kubernetesVersion before 1.16"))
 		}
 
-		if version.Minor == 7 && (!cluster.IsKubernetesGTE("1.12") || cluster.IsKubernetesGTE("1.17")) {
-			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.7 requires kubernetesVersion between 1.12 and 1.17"))
-		}
-		if version.Minor == 8 && !cluster.IsKubernetesGTE("1.12") {
-			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.8 requires kubernetesVersion 1.12 or newer"))
+		if version.Minor == 7 && cluster.IsKubernetesGTE("1.17") {
+			allErrs = append(allErrs, field.Forbidden(versionFld, "Version 1.7 requires kubernetesVersion before 1.17"))
 		}
 
 		if v.Hubble != nil && fi.BoolValue(v.Hubble.Enabled) {
@@ -894,7 +891,7 @@ func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minim
 
 	version := spec.Version
 	if spec.Version == "" {
-		version = components.DefaultEtcd2Version
+		version = components.DefaultEtcd3Version_1_13
 	}
 
 	sem, err := semver.Parse(strings.TrimPrefix(version, "v"))
@@ -902,15 +899,15 @@ func validateEtcdVersion(spec kops.EtcdClusterSpec, fieldPath *field.Path, minim
 		return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, "the storage version is invalid")}
 	}
 
-	// we only support v3 and v2 for now
-	if sem.Major == 3 || sem.Major == 2 {
+	// we only support v3 for now
+	if sem.Major == 3 {
 		if sem.LT(*minimalVersion) {
 			return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, fmt.Sprintf("minimum version required is %s", minimalVersion.String()))}
 		}
 		return nil
 	}
 
-	return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, "unsupported storage version, we only support major versions 2 and 3")}
+	return field.ErrorList{field.Invalid(fieldPath.Child("version"), version, "unsupported storage version, we only support major version 3")}
 }
 
 // validateEtcdMemberSpec is responsible for validate the cluster member
@@ -1172,10 +1169,6 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 }
 
 func validateClusterAutoscaler(cluster *kops.Cluster, spec *kops.ClusterAutoscalerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
-	if !cluster.IsKubernetesGTE("1.12") {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "Cluster autoscaler requires kubernetesVersion 1.12 or higher"))
-	}
-
 	allErrs = append(allErrs, IsValidValue(fldPath.Child("expander"), spec.Expander, []string{"least-waste", "random", "most-pods"})...)
 
 	if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderOpenstack {

@@ -52,10 +52,8 @@ func (b *OpenStackOptionsBulder) BuildOptions(o interface{}) error {
 		clusterSpec.CloudConfig.Openstack.BlockStorage.CreateStorageClass = fi.Bool(true)
 	}
 
-	if b.Context.IsKubernetesGTE("1.13.0") {
-		if clusterSpec.ExternalCloudControllerManager == nil {
-			clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
-		}
+	if clusterSpec.ExternalCloudControllerManager == nil {
+		clusterSpec.ExternalCloudControllerManager = &kops.CloudControllerManagerConfig{}
 	}
 	return nil
 

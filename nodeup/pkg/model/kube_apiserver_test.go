@@ -17,53 +17,13 @@ limitations under the License.
 package model
 
 import (
-	"bytes"
-	"strings"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/architectures"
 )
-
-func Test_KubeAPIServer_Builder(t *testing.T) {
-	basedir := "tests/apiServer/auditDynamicConfiguration"
-
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
-	}
-
-	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
-	if err != nil {
-		t.Fatalf("error loading model %q: %v", basedir, err)
-		return
-	}
-	keystore := &fakeCAStore{}
-	keystore.T = t
-	nodeUpModelContext.KeyStore = keystore
-
-	builder := KubeAPIServerBuilder{NodeupModelContext: nodeUpModelContext}
-
-	err = builder.Build(context)
-	if err != nil {
-		t.Fatalf("error from KubeAPIServerBuilder buildKubeletConfig: %v", err)
-		return
-	}
-	if task, ok := context.Tasks["File//etc/kubernetes/manifests/kube-apiserver.manifest"]; !ok {
-		t.Error("did not find the kubernetes API manifest after the build")
-	} else {
-		nodeTask, _ := task.(*nodetasks.File)
-		reader, _ := nodeTask.Contents.Open()
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(reader)
-		s := buf.String()
-		if strings.Contains(s, "--audit-dynamic-configuration") {
-			t.Error("Older versions of k8s should not have --audit-dynamic-configuration flag")
-		}
-	}
-}
 
 func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 	grid := []struct {

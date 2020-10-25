@@ -171,25 +171,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	// TODO: We can probably rewrite these more clearly in descending order
 	// Based on recommendations from:
 	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
-	if b.IsKubernetesLT("1.12") {
-		c.EnableAdmissionPlugins = []string{
-			"Initializers",
-			"NamespaceLifecycle",
-			"LimitRanger",
-			"ServiceAccount",
-			"PersistentVolumeLabel",
-			"DefaultStorageClass",
-			"DefaultTolerationSeconds",
-			"MutatingAdmissionWebhook",
-			"ValidatingAdmissionWebhook",
-			"NodeRestriction",
-			"ResourceQuota",
-		}
-		c.EnableAdmissionPlugins = append(c.EnableAdmissionPlugins, c.AppendAdmissionPlugins...)
-	}
-	// Based on recommendations from:
-	// https://kubernetes.io/docs/admin/admission-controllers/#is-there-a-recommended-set-of-admission-controllers-to-use
-	if b.IsKubernetesGTE("1.12") {
+	{
 		c.EnableAdmissionPlugins = []string{
 			"NamespaceLifecycle",
 			"LimitRanger",
