@@ -27,7 +27,7 @@ kops update cluster [flags]
 ```
       --admin duration[=18h0m0s]      Also export a cluster admin user credential with the specified lifetime and add it to the cluster context
       --allow-kops-downgrade          Allow an older version of kops to update the cluster than last used
-      --create-kube-config            Will control automatically creating the kube config file on your local filesystem
+      --create-kube-config            Will control automatically creating the kube config file on your local filesystem (default true)
   -h, --help                          help for cluster
       --internal                      Use the cluster's internal DNS name. Implies --create-kube-config
       --lifecycle-overrides strings   comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges
