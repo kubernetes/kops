@@ -64,11 +64,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if *b.Cluster.Spec.EncryptionConfig {
 			encryptionConfigPath := fi.String(filepath.Join(b.PathSrvKubernetes(), "encryptionconfig.yaml"))
 
-			if b.IsKubernetesGTE("1.13") {
-				b.Cluster.Spec.KubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
-			} else {
-				b.Cluster.Spec.KubeAPIServer.ExperimentalEncryptionProviderConfig = encryptionConfigPath
-			}
+			b.Cluster.Spec.KubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
 
 			key := "encryptionconfig"
 			encryptioncfg, err := b.SecretStore.Secret(key)
@@ -373,11 +369,6 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 			c.EnableAdmissionPlugins = append([]string(nil), c.AdmissionControl...)
 			c.AdmissionControl = []string{}
 		}
-	}
-
-	//remove elements from the spec that are not enabled yet
-	if b.Cluster.Spec.KubeAPIServer.AuditDynamicConfiguration != nil && !b.IsKubernetesGTE("1.13") {
-		b.Cluster.Spec.KubeAPIServer.AuditDynamicConfiguration = nil
 	}
 
 	// build the kube-apiserver flags for the service
