@@ -29,7 +29,7 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.12.9
+  kubernetesVersion: v1.18.9
   masterInternalName: api.internal.launchtemplates.example.com
   masterPublicName: api.launchtemplates.example.com
   networkCIDR: 10.0.0.0/16
