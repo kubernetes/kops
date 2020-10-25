@@ -84,7 +84,10 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.Target = "direct"
 	o.SSHPublicKey = ""
 	o.OutDir = ""
-	o.CreateKubecfg = false
+
+	// By default we export a kubecfg, but it doesn't have a static/eternal credential in it any more.
+	o.CreateKubecfg = true
+
 	o.RunTasksOptions.InitDefaults()
 }
 
@@ -147,10 +150,6 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 
 	if c.admin != 0 && c.user != "" {
 		return nil, fmt.Errorf("cannot use both --admin and --user")
-	}
-
-	if c.CreateKubecfg && c.admin == 0 && c.user == "" {
-		return nil, fmt.Errorf("--create-kube-config requires that either --admin or --user is set")
 	}
 
 	if c.admin != 0 && !c.CreateKubecfg {
@@ -312,6 +311,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		firstRun = !hasKubecfg
 
 		klog.Infof("Exporting kubecfg for cluster")
+
 		// TODO: Another flag?
 		useKopsAuthenticationPlugin := false
 		conf, err := kubeconfig.BuildKubecfg(
@@ -331,6 +331,10 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, clusterName string, 
 		err = conf.WriteKubecfg(clientcmd.NewDefaultPathOptions())
 		if err != nil {
 			return nil, err
+		}
+
+		if c.admin == 0 && c.user == "" {
+			klog.Warningf("Exported kubecfg with no user authentication; use --admin, --user or --auth-plugin flags with `kops export kubecfg`")
 		}
 	}
 
