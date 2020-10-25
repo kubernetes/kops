@@ -724,7 +724,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		checkExisting = false
 		outDir := c.OutDir
 		tfVersion := terraform.Version011
-		if featureflag.Terraform012.Enabled() {
+		if featureflag.Terraform012.Enabled() && !featureflag.TerraformJSON.Enabled() {
 			tfVersion = terraform.Version012
 		}
 		tf := terraform.NewTerraformTarget(cloud, region, project, outDir, tfVersion, cluster.Spec.Target)
