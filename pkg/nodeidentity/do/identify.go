@@ -56,8 +56,8 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
-// New creates and returns a nodeidentity.Identifier for Nodes running on DO
-func New() (nodeidentity.Identifier, error) {
+// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on DO
+func New() (nodeidentity.LegacyIdentifier, error) {
 	region, err := getMetadataRegion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get droplet region: %s", err)
@@ -116,7 +116,7 @@ func getMetadata(url string) (string, error) {
 }
 
 // IdentifyNode queries DO for the node identity information
-func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.Info, error) {
+func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*nodeidentity.LegacyInfo, error) {
 	providerID := node.Spec.ProviderID
 
 	if providerID == "" {
@@ -144,7 +144,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, err
 	}
 
-	info := &nodeidentity.Info{}
+	info := &nodeidentity.LegacyInfo{}
 	info.InstanceGroup = kopsGroup
 
 	return info, nil

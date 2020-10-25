@@ -247,6 +247,7 @@ func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptio
 				switch resource {
 				case "ami":
 				case "sshkey":
+				case "lt":
 					// ignore
 
 				default:

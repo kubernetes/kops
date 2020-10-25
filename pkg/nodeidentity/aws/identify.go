@@ -38,7 +38,8 @@ const (
 	// CloudTagInstanceGroupName is a cloud tag that defines the instance group name
 	// This is used by the aws nodeidentifier to securely identify the node instancegroup
 	CloudTagInstanceGroupName = "kops.k8s.io/instancegroup"
-
+	// ClusterAutoscalerNodeTemplateLabel is the prefix used on node labels when copying to cloud tags.
+	ClusterAutoscalerNodeTemplateLabel = "k8s.io/cluster-autoscaler/node-template/label/"
 	// The expiration time of nodeidentity.Info cache.
 	cacheTTL = 60 * time.Minute
 )
@@ -134,21 +135,21 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, fmt.Errorf("found instance %q, but state is %q", instanceID, instanceState)
 	}
 
-	lifecycle := ""
+	labels := map[string]string{}
 	if instance.InstanceLifecycle != nil {
-		lifecycle = *instance.InstanceLifecycle
+		labels[fmt.Sprintf("node-role.kubernetes.io/%s-worker", *instance.InstanceLifecycle)] = "true"
 	}
 
-	// TODO: Should we traverse to the ASG to confirm the tags there?
-	igName := getTag(instance.Tags, CloudTagInstanceGroupName)
-	if igName == "" {
-		return nil, fmt.Errorf("%s tag not set on instance %s", CloudTagInstanceGroupName, aws.StringValue(instance.InstanceId))
+	info := &nodeidentity.Info{
+		InstanceID: instanceID,
+		Labels:     labels,
 	}
 
-	info := &nodeidentity.Info{}
-	info.InstanceID = instanceID
-	info.InstanceGroup = igName
-	info.InstanceLifecycle = lifecycle
+	for _, tag := range instance.Tags {
+		if strings.HasPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel) {
+			info.Labels[strings.TrimPrefix(aws.StringValue(tag.Key), ClusterAutoscalerNodeTemplateLabel)] = aws.StringValue(tag.Value)
+		}
+	}
 
 	// If caching is enabled add the nodeidentity.Info to cache.
 	if i.cacheEnabled {
@@ -181,13 +182,4 @@ func (i *nodeIdentifier) getInstance(instanceID string) (*ec2.Instance, error) {
 
 	instance := resp.Reservations[0].Instances[0]
 	return instance, nil
-}
-
-func getTag(tags []*ec2.Tag, key string) string {
-	for _, tag := range tags {
-		if key == aws.StringValue(tag.Key) {
-			return aws.StringValue(tag.Value)
-		}
-	}
-	return ""
 }

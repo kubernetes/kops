@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["node_controller.go"],
+    srcs = [
+        "legacy_node_controller.go",
+        "node_controller.go",
+    ],
     importpath = "k8s.io/kops/cmd/kops-controller/controllers",
     visibility = ["//visibility:public"],
     deps = [
