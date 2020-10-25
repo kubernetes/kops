@@ -17,8 +17,6 @@ limitations under the License.
 package networking
 
 import (
-	"path/filepath"
-
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -41,25 +39,6 @@ func (b *CalicoBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.Distribution.IsUbuntu() {
 		c.AddTask(&nodetasks.Package{Name: "wireguard"})
-	}
-
-	// @check if tls is enabled and if so, we need to download the client certificates
-	if b.IsKubernetesLT("1.12") && !b.UseEtcdManager() && b.UseEtcdTLS() {
-		name := "calico-client"
-		dirname := "calico"
-		ca := filepath.Join(dirname, "ca.pem")
-		certificate := filepath.Join(dirname, name+".pem")
-		key := filepath.Join(dirname, name+"-key.pem")
-
-		if err := b.BuildCertificateTask(c, name, certificate, nil); err != nil {
-			return err
-		}
-		if err := b.BuildPrivateKeyTask(c, name, key, nil); err != nil {
-			return err
-		}
-		if err := b.BuildCertificateTask(c, fi.CertificateIDCA, ca, nil); err != nil {
-			return err
-		}
 	}
 
 	return nil

@@ -66,9 +66,8 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
-	useConfigFile := b.IsKubernetesGTE("1.12")
 	{
-		pod, err := b.buildPod(useConfigFile)
+		pod, err := b.buildPod()
 		if err != nil {
 			return fmt.Errorf("error building kube-scheduler pod: %v", err)
 		}
@@ -95,7 +94,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Mode:     s("0400"),
 		})
 	}
-	if useConfigFile {
+	{
 		var config *SchedulerConfig
 		if b.IsKubernetesGTE("1.19") {
 			config = NewSchedulerConfig("kubescheduler.config.k8s.io/v1beta1")
@@ -142,19 +141,15 @@ func NewSchedulerConfig(apiVersion string) *SchedulerConfig {
 }
 
 // buildPod is responsible for constructing the pod specification
-func (b *KubeSchedulerBuilder) buildPod(useConfigFile bool) (*v1.Pod, error) {
+func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	c := b.Cluster.Spec.KubeScheduler
 
 	flags, err := flagbuilder.BuildFlagsList(c)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-scheduler flags: %v", err)
 	}
-	if useConfigFile {
-		flags = append(flags, "--config="+"/var/lib/kube-scheduler/config.yaml")
-	} else {
-		// Add kubeconfig flag
-		flags = append(flags, "--kubeconfig="+defaultKubeConfig)
-	}
+
+	flags = append(flags, "--config="+"/var/lib/kube-scheduler/config.yaml")
 
 	if c.UsePolicyConfigMap != nil {
 		flags = append(flags, "--policy-configmap=scheduler-policy", "--policy-configmap-namespace=kube-system")

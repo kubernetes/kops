@@ -631,7 +631,7 @@ spec:
                       description: Name is the name of the etcd cluster (main, events etc)
                       type: string
                     provider:
-                      description: 'Provider is the provider used to run etcd: standalone, manager. We default to manager for kubernetes 1.11 or if the manager is configured; otherwise standalone.'
+                      description: 'Provider is the provider used to run etcd: Manager, Legacy. Defaults to Manager.'
                       type: string
                     version:
                       description: Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
