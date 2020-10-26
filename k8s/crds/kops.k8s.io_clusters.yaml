@@ -1358,6 +1358,9 @@ spec:
                       enabled:
                         description: Enabled activates the node-local-dns addon
                         type: boolean
+                      forwardToKubeDNS:
+                        description: If enabled, nodelocal dns will use kubedns as a default upstream
+                        type: boolean
                       localIP:
                         description: Local listen IP address. It can be any IP in the 169.254.20.0/16 space or any other IP address that can be guaranteed to not collide with any existing IP.
                         type: string
