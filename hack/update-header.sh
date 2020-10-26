@@ -16,10 +16,10 @@
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-BAD_HEADERS=$((${KOPS_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $7}')
+BAD_HEADERS=$( ("${KOPS_ROOT}/hack/verify-boilerplate.sh" || true) | awk '{ print $7}')
 FORMATS="sh go Makefile Dockerfile py"
 
-YEAR=`date -u +%Y`
+YEAR=$(date -u +%Y)
 
 for i in ${FORMATS}
 do
@@ -27,8 +27,8 @@ do
 	for j in ${BAD_HEADERS}
 	do
 		:
-	        HEADER=$(cat ${KOPS_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed "s/YEAR/${YEAR}/")
-			value=$(<${j})
+	        HEADER=$(sed "s/YEAR/${YEAR}/" "${KOPS_ROOT}/hack/boilerplate/boilerplate.${i}.txt")
+			value=$(<"${j}")
 			if [[ "$j" != *$i ]]
             then
                 continue
@@ -41,8 +41,8 @@ do
 				text="$HEADER
 
 $value"
-				echo ${j}
-				echo "$text" > ${j}
+				echo "${j}"
+				echo "$text" > "${j}"
 			fi
 	done
 done
