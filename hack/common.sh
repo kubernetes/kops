@@ -36,6 +36,7 @@ kube::util::array_contains() {
 }
 
 kube::util::read-array() {
+  # shellcheck disable=SC2034
   local i=0
   unset -v "$1"
   while IFS= read -r "$1[i++]"; do :; done
