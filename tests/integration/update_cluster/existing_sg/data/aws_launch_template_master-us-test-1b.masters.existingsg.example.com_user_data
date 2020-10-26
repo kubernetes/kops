@@ -282,10 +282,12 @@ Assets:
   - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
   - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
   - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+  - 346f9394393ee8db5f8bd1e229ee9d90e5b36931bdd754308b2ae68884dd6822@https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz
   arm64:
   - df38e04576026393055ccc77c0dce73612996561@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubelet
   - 01c2b6b43d36b6bfafc80a3737391c19ebfb8ad5@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubectl
   - 7fec91af78e9548df306f0ec43bea527c8c10cc3a9682c33e971c8522a7fcded@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz
+  - defb2ccc95c0825833216c8b9e0e15baaa51bcedb3efc1f393f5352d184dead4@https://download.docker.com/linux/static/stable/aarch64/docker-18.06.3-ce.tgz
 ClusterName: existingsg.example.com
 ConfigBase: memfs://clusters.example.com/existingsg.example.com
 InstanceGroupName: master-us-test-1b

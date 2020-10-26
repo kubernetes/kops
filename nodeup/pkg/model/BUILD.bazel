@@ -116,7 +116,6 @@ go_test(
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/distributions:go_default_library",
         "//util/pkg/exec:go_default_library",
-        "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",

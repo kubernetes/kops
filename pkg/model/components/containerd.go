@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/blang/semver/v4"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -80,26 +82,17 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
-		if fi.StringValue(containerd.Version) == "" {
-			// Docker version should always be available
-			if fi.StringValue(clusterSpec.Docker.Version) == "" {
-				return fmt.Errorf("docker version is required")
+		// Docker version should always be available
+		dockerVersion := fi.StringValue(clusterSpec.Docker.Version)
+		if dockerVersion == "" {
+			return fmt.Errorf("docker version is required")
+		} else {
+			// Skip containerd setup for older versions without containerd service
+			sv, err := semver.ParseTolerant(dockerVersion)
+			if err != nil {
+				return fmt.Errorf("unable to parse version string: %q", dockerVersion)
 			}
-
-			// Set the containerd version for known Docker versions
-			switch fi.StringValue(clusterSpec.Docker.Version) {
-			case "19.03.13":
-				containerd.Version = fi.String("1.3.7")
-			case "19.03.8", "19.03.11":
-				containerd.Version = fi.String("1.2.13")
-			case "19.03.4":
-				containerd.Version = fi.String("1.2.10")
-			case "18.09.9":
-				containerd.Version = fi.String("1.2.10")
-			case "18.09.3":
-				containerd.Version = fi.String("1.2.4")
-			default:
-				// Old version of docker, single package
+			if sv.LT(semver.MustParse("18.9.0")) {
 				containerd.SkipInstall = true
 				return nil
 			}
