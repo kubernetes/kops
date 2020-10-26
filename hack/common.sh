@@ -20,6 +20,8 @@ set -o nounset
 set -o pipefail
 
 KOPS_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. >/dev/null 2>&1 && pwd )"
+TOOLS_BIN="${KOPS_ROOT}/_output/bin"
+export KOPS_ROOT TOOLS_BIN
 
 kube::util::array_contains() {
   local search="$1"
