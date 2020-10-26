@@ -216,7 +216,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			return err
 		}
 		if d != nil {
-			if featureflag.Terraform012.Enabled() {
+			if featureflag.Terraform012.Enabled() && !featureflag.TerraformJSON.Enabled() {
 				userDataResource := fi.WrapResource(fi.NewBytesResource(d))
 
 				tf.UserData, err = target.AddFile("aws_launch_template", fi.StringValue(e.Name), "user_data", userDataResource, true)

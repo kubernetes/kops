@@ -194,9 +194,9 @@ func TestBastionAdditionalUserData(t *testing.T) {
 
 // TestMinimalJSON runs the test on a minimal data set and outputs JSON
 func TestMinimalJSON(t *testing.T) {
-	featureflag.ParseFlags("+TerraformJSON,-Terraform-0.12")
+	featureflag.ParseFlags("+TerraformJSON")
 	unsetFeaureFlag := func() {
-		featureflag.ParseFlags("-TerraformJSON,+Terraform-0.12")
+		featureflag.ParseFlags("-TerraformJSON")
 	}
 	defer unsetFeaureFlag()
 	newIntegrationTest("minimal-json.example.com", "minimal-json").withJSONOutput().runTestTerraformAWS(t)
