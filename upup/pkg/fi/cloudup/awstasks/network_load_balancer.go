@@ -74,6 +74,7 @@ type NetworkLoadBalancer struct {
 	ProxyProtocolV2    *TargetGroupProxyProtocolV2
 	Stickiness         *TargetGroupStickiness
 	DeregistationDelay *TargetGroupDeregistrationDelay
+	TargetGroup        *TargetGroup
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
@@ -85,6 +86,10 @@ func (e *NetworkLoadBalancer) CompareWithID() *string {
 type NetworkLoadBalancerListener struct {
 	InstancePort     int //TODO: Change this to LoadBalancerPort
 	SSLCertificateID string
+	//TargetGroup      []*TargetGroup
+	//DefaultAction    string
+	//TargetGroup      *TargetGroup
+	//TargetGroups     []TargetGroups
 }
 
 func (e *NetworkLoadBalancerListener) mapToAWS(loadBalancerPort int64, targetGroupArn string, loadBalancerArn string) *elbv2.CreateListenerInput {

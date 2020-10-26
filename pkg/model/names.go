@@ -85,6 +85,12 @@ func (b *KopsModelContext) LBName(prefix string) string {
 	return prefix + "." + b.ClusterName()
 }
 
+func (b *KopsModelContext) NLBTargetGroupName(prefix string, nlbListenerPort string, targetGroupPort string) string {
+	suffix := "-tg-" + nlbListenerPort + "-to-" + targetGroupPort
+	diff := 32 - len(suffix)
+	return b.GetELBName32(prefix)[:diff] + suffix
+}
+
 func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.LoadBalancer {
 	name := b.LBName(prefix)
 	return &awstasks.LoadBalancer{Name: &name}
