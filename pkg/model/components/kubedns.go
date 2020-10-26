@@ -86,6 +86,9 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	if fi.BoolValue(nodeLocalDNS.Enabled) && nodeLocalDNS.LocalIP == "" {
 		nodeLocalDNS.LocalIP = "169.254.20.10"
 	}
+	if fi.BoolValue(nodeLocalDNS.Enabled) && nodeLocalDNS.ForwardToKubeDNS == nil {
+		nodeLocalDNS.ForwardToKubeDNS = fi.Bool(false)
+	}
 
 	if nodeLocalDNS.MemoryRequest == nil || nodeLocalDNS.MemoryRequest.IsZero() {
 		defaultMemoryRequest := resource.MustParse("5Mi")
