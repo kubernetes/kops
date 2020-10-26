@@ -25,7 +25,7 @@ import (
 func TestKubectlBuilder(t *testing.T) {
 	RunGoldenTest(t, "tests/golden/minimal", "kubectl", func(nodeupModelContext *NodeupModelContext, target *fi.ModelBuilderContext) error {
 		nodeupModelContext.Assets = fi.NewAssetStore("")
-		nodeupModelContext.Assets.AddForTest("kubectl", "testing kubectl content")
+		nodeupModelContext.Assets.AddForTest("kubectl", "/path/to/kubectl/asset", "testing kubectl content")
 		builder := KubectlBuilder{NodeupModelContext: nodeupModelContext}
 		return builder.Build(target)
 	})

@@ -63,6 +63,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -1094,6 +1095,21 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			}
 			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(lyftAsset, lyftAssetHash))
 		}
+
+		var containerRuntimeAssetUrl *url.URL
+		var containerRuntimeAssetHash *hashing.Hash
+		switch c.Cluster.Spec.ContainerRuntime {
+		case "docker":
+			containerRuntimeAssetUrl, containerRuntimeAssetHash, err = findDockerAsset(c.Cluster, assetBuilder, arch)
+		case "containerd":
+			containerRuntimeAssetUrl, containerRuntimeAssetHash, err = findContainerdAsset(c.Cluster, assetBuilder, arch)
+		default:
+			err = fmt.Errorf("unknown container runtime: %q", c.Cluster.Spec.ContainerRuntime)
+		}
+		if err != nil {
+			return err
+		}
+		c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(containerRuntimeAssetUrl, containerRuntimeAssetHash))
 
 		asset, err := NodeUpAsset(assetBuilder, arch)
 		if err != nil {

@@ -75,6 +75,70 @@ mode: "0755"
 path: /opt/kops/bin/docker-healthcheck
 type: file
 ---
+contents:
+  Asset:
+    AssetPath: docker/docker
+    Key: docker
+mode: "0755"
+path: /usr/bin/docker
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-containerd
+    Key: docker-containerd
+mode: "0755"
+path: /usr/bin/docker-containerd
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-containerd-ctr
+    Key: docker-containerd-ctr
+mode: "0755"
+path: /usr/bin/docker-containerd-ctr
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-containerd-shim
+    Key: docker-containerd-shim
+mode: "0755"
+path: /usr/bin/docker-containerd-shim
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-init
+    Key: docker-init
+mode: "0755"
+path: /usr/bin/docker-init
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-proxy
+    Key: docker-proxy
+mode: "0755"
+path: /usr/bin/docker-proxy
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/docker-runc
+    Key: docker-runc
+mode: "0755"
+path: /usr/bin/docker-runc
+type: file
+---
+contents:
+  Asset:
+    AssetPath: docker/dockerd
+    Key: dockerd
+mode: "0755"
+path: /usr/bin/dockerd
+type: file
+---
 contents: |2
 
 
@@ -271,11 +335,9 @@ contents: |2
 path: /usr/share/doc/docker/apache.txt
 type: file
 ---
-Name: docker-ce
-hash: 68851f4a395c63b79b34e17ba5582379621389bbc9ea53cf34f70ea9839888fb
-preventStart: true
-source: http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb
-version: 17.03.2~ce-0~ubuntu-xenial
+GID: null
+Name: docker
+System: true
 ---
 Name: docker-healthcheck.service
 definition: |
@@ -340,6 +402,25 @@ definition: |
 
   [Install]
   WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
+---
+Name: docker.socket
+definition: |
+  [Unit]
+  Description=Docker Socket for the API
+  PartOf=docker.service
+
+  [Socket]
+  ListenStream=/var/run/docker.sock
+  SocketMode=0660
+  SocketUser=root
+  SocketGroup=docker
+
+  [Install]
+  WantedBy=sockets.target
 enabled: true
 manageState: true
 running: true

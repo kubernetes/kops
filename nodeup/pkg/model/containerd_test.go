@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -28,40 +27,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/distributions"
 )
-
-func TestContainerdPackageNames(t *testing.T) {
-	for _, containerdVersion := range containerdVersions {
-		if containerdVersion.PlainBinary {
-			continue
-		}
-
-		sanityCheckPackageName(t, containerdVersion.Source, containerdVersion.Version, containerdVersion.Name)
-
-		for k, p := range containerdVersion.ExtraPackages {
-			sanityCheckPackageName(t, p.Source, p.Version, k)
-		}
-	}
-}
-
-func TestContainerdPackageHashes(t *testing.T) {
-	if os.Getenv("VERIFY_HASHES") == "" {
-		t.Skip("VERIFY_HASHES not set, won't download & verify docker hashes")
-	}
-
-	for _, containerdVersion := range containerdVersions {
-		t.Run(containerdVersion.Source, func(t *testing.T) {
-			if err := verifyPackageHash(containerdVersion.Source, containerdVersion.Hash, containerdVersion.Version); err != nil {
-				t.Errorf("error verifying package %q: %v", containerdVersion.Source, err)
-			}
-
-			for _, p := range containerdVersion.ExtraPackages {
-				if err := verifyPackageHash(p.Source, p.Hash, p.Version); err != nil {
-					t.Errorf("error verifying package %q: %v", p.Source, err)
-				}
-			}
-		})
-	}
-}
 
 func TestContainerdBuilder_Simple(t *testing.T) {
 	runContainerdBuilderTest(t, "simple")
@@ -154,11 +119,22 @@ func runContainerdBuilderTest(t *testing.T, key string) {
 	basedir := path.Join("tests/containerdbuilder/", key)
 
 	nodeUpModelContext, err := BuildNodeupModelContext(basedir)
-	nodeUpModelContext.Distribution = distributions.DistributionUbuntu1604
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", basedir, err)
 		return
 	}
+
+	nodeUpModelContext.Distribution = distributions.DistributionUbuntu1604
+
+	nodeUpModelContext.Assets = fi.NewAssetStore("")
+	nodeUpModelContext.Assets.AddForTest("containerd", "usr/local/bin/containerd", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd-shim", "usr/local/bin/containerd-shim", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd-shim-runc-v1", "usr/local/bin/containerd-shim-runc-v1", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("containerd-shim-runc-v2", "usr/local/bin/containerd-shim-runc-v2", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("crictl", "usr/local/bin/crictl", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("critest", "usr/local/bin/critest", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("ctr", "usr/local/bin/ctr", "testing containerd content")
+	nodeUpModelContext.Assets.AddForTest("runc", "usr/local/sbin/runc", "testing containerd content")
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),

@@ -5,8 +5,10 @@ go_library(
     srcs = [
         "apply_cluster.go",
         "bootstrapchannelbuilder.go",
+        "containerd.go",
         "defaults.go",
         "dns.go",
+        "docker.go",
         "loader.go",
         "networking.go",
         "new_cluster.go",
@@ -98,9 +100,11 @@ go_test(
     size = "small",
     srcs = [
         "bootstrapchannelbuilder_test.go",
+        "containerd_test.go",
         "deepvalidate_test.go",
         "defaults_test.go",
         "dns_test.go",
+        "docker_test.go",
         "networking_test.go",
         "new_cluster_test.go",
         "populatecluster_test.go",
