@@ -27,17 +27,9 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
-
-// Version represents which terraform version is targeted
-type Version string
-
-// Version011 represents terraform versions before 0.12
-const Version011 Version = "0.11"
-
-// Version012 represents terraform versions 0.12 and above
-const Version012 Version = "0.12"
 
 type TerraformTarget struct {
 	Cloud   fi.Cloud
@@ -45,7 +37,6 @@ type TerraformTarget struct {
 	Project string
 
 	ClusterName string
-	Version     Version
 
 	outDir string
 
@@ -61,12 +52,11 @@ type TerraformTarget struct {
 	clusterSpecTarget *kops.TargetSpec
 }
 
-func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string, version Version, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
+func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
 	return &TerraformTarget{
 		Cloud:   cloud,
 		Region:  region,
 		Project: project,
-		Version: version,
 
 		outDir:            outDir,
 		files:             make(map[string][]byte),
@@ -193,13 +183,10 @@ func tfGetProviderExtraConfig(c *kops.TargetSpec) map[string]string {
 
 func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 	var err error
-	switch t.Version {
-	case Version011:
-		err = t.finish011(taskMap)
-	case Version012:
-		err = t.finish012(taskMap)
-	default:
-		err = fmt.Errorf("unrecognized terraform version %v", t.Version)
+	if featureflag.TerraformJSON.Enabled() {
+		err = t.finishJSON(taskMap)
+	} else {
+		err = t.finishHCL2(taskMap)
 	}
 	if err != nil {
 		return err

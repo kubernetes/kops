@@ -195,20 +195,12 @@ func TestBastionAdditionalUserData(t *testing.T) {
 // TestMinimalJSON runs the test on a minimal data set and outputs JSON
 func TestMinimalJSON(t *testing.T) {
 	featureflag.ParseFlags("+TerraformJSON")
-	unsetFeaureFlag := func() {
+	unsetFeatureFlags := func() {
 		featureflag.ParseFlags("-TerraformJSON")
 	}
-	defer unsetFeaureFlag()
-	newIntegrationTest("minimal-json.example.com", "minimal-json").withJSONOutput().runTestTerraformAWS(t)
-}
+	defer unsetFeatureFlags()
 
-func TestMinimalTerraform011(t *testing.T) {
-	featureflag.ParseFlags("-Terraform-0.12")
-	unsetFeaureFlag := func() {
-		featureflag.ParseFlags("+Terraform-0.12")
-	}
-	defer unsetFeaureFlag()
-	newIntegrationTest("minimal-tf11.example.com", "minimal-tf11").runTestTerraformAWS(t)
+	newIntegrationTest("minimal-json.example.com", "minimal-json").withJSONOutput().runTestTerraformAWS(t)
 }
 
 // TestPrivateWeave runs the test on a configuration with private topology, weave networking
