@@ -15,7 +15,7 @@
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-cd "${KOPS_ROOT}"
+cd "${KOPS_ROOT}" || exit 1
 
 GOBIN="${TOOLS_BIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
 
