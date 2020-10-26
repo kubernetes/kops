@@ -23,4 +23,4 @@ set -o pipefail
 cd "${KOPS_ROOT}"
 
 # Verify package hashes for Containerd and Docker
-VERIFY_HASHES=1 go test -v ./nodeup/pkg/model -run PackageHashes
+VERIFY_HASHES=1 go test -v ./upup/pkg/fi/cloudup -run VersionsHashes
