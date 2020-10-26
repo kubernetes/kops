@@ -109,8 +109,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			"443": {InstancePort: 443},
 		}
 
+		nlbListenerPort := "443"
 		nlbListeners := map[string]*awstasks.NetworkLoadBalancerListener{
-			"443": {InstancePort: 443},
+			nlbListenerPort: {InstancePort: 443},
+			//DefaultAction:   "forward",
 		}
 
 		if lbSpec.SSLCertificate != "" {
@@ -201,7 +203,27 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
 			c.AddTask(elb)
 		} else if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
-			c.AddTask(nlb)
+
+			targetGroupPort := fi.Int64(443)
+			targetGroupName := b.NLBTargetGroupName("api", nlbListenerPort, "443")
+			tags := b.CloudTags(targetGroupName, false)
+
+			// Override the returned name to be the expected NLB TG name
+			tags["Name"] = targetGroupName
+
+			tg := &awstasks.TargetGroup{
+				Name:     fi.String(targetGroupName),
+				VPC:      b.LinkToVPC(),
+				Tags:     tags,
+				Protocol: fi.String("TCP"),
+				Port:     targetGroupPort,
+			}
+
+			c.AddTask(tg)
+
+			nlb.TargetGroup = tg
+			//nlbListeners[nlbListenerPort].TargetGroups = append(nlbListeners[nlbListenerPort].TargetGroups, tg)
+			c.AddTask(nlb) //nlb depends on the target group task
 		}
 
 	}
