@@ -22,12 +22,9 @@ set -o pipefail
 
 cd "${KOPS_ROOT}"
 
-TMP_OUT=$(mktemp -d)
-trap "{ rm -rf ${TMP_OUT}; }" EXIT
+GOBIN="${TOOLS_BIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
 
-GOBIN="${TMP_OUT}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
-
-"${TMP_OUT}/gazelle" fix \
+"${TOOLS_BIN}/gazelle" fix \
   -external=vendored \
   -exclude=tests/e2e \
   -mode=fix \

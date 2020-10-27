@@ -16,27 +16,26 @@
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-boiler="${KOPS_ROOT}/hack/boilerplate/boilerplate.py $@"
-
-files_need_boilerplate=( `${boiler}` )
+files_need_boilerplate=()
+while IFS='' read -r line; do files_need_boilerplate+=("$line"); done < <("${KOPS_ROOT}/hack/boilerplate/boilerplate.py" "$@")
 
 if [[ -z ${files_need_boilerplate+x} ]]; then
     exit
 fi
 
-TO_REMOVE=(${KOPS_ROOT}/federation/model/bindata.go ${KOPS_ROOT}/upup/models/bindata.go)
+TO_REMOVE=("${KOPS_ROOT}/upup/models/bindata.go")
 TEMP_ARRAY=()
 
 for pkg in "${files_need_boilerplate[@]}"; do
     for remove in "${TO_REMOVE[@]}"; do
         KEEP=true
-        if [[ ${pkg} == ${remove} ]]; then
+        if [[ ${pkg} == "${remove}" ]]; then
             KEEP=false
             break
         fi
     done
     if ${KEEP}; then
-        TEMP_ARRAY+=(${pkg})
+        TEMP_ARRAY+=("${pkg}")
     fi
 done
 

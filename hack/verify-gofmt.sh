@@ -16,13 +16,11 @@
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-cd "${KOPS_ROOT}"
+cd "${KOPS_ROOT}" || exit 1
 
-GOFMT="bazel run //:gofmt -- -s -w"
-
-bad_files=$(git ls-files "*.go" | grep -v vendor | xargs $GOFMT -l)
+bad_files=$(git ls-files "*.go" | grep -v vendor | xargs bazel run //:gofmt -- -s -w -l)
 if [[ -n "${bad_files}" ]]; then
-  echo "FAIL: '$GOFMT' needs to be run on the following files: "
+  echo "FAIL: 'make gofmt' needs to be run on the following files: "
   echo "${bad_files}"
   echo "FAIL: please execute make gofmt"
   exit 1
