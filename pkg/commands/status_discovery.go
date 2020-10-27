@@ -18,7 +18,6 @@ package commands
 
 import (
 	"fmt"
-	"reflect"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -36,10 +35,6 @@ type CloudDiscoveryStatusStore struct {
 }
 
 var _ kops.StatusStore = &CloudDiscoveryStatusStore{}
-
-func isNil(v interface{}) bool {
-	return v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil())
-}
 
 func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	cloud, err := cloudup.BuildCloud(cluster)

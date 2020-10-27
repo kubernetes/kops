@@ -159,7 +159,7 @@ func FindElasticLoadBalancerByNameTag(awsCloud awsup.AWSCloud, cluster *kops.Clu
 		} else if lb != nil {
 			return &LoadBalancer{Name: fi.String(name)}, nil
 		}
-	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
 		if lb, err := FindNetworkLoadBalancerByNameTag(awsCloud, name); err != nil {
 			return nil, fmt.Errorf("error looking for AWS NLB: %v", err)
 		} else if lb != nil {
