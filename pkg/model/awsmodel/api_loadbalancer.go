@@ -217,6 +217,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Tags:     tags,
 				Protocol: fi.String("TCP"),
 				Port:     targetGroupPort,
+				Shared:   fi.Bool(false),
 			}
 
 			c.AddTask(tg)
