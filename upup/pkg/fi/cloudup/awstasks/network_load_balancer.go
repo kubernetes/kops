@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -83,6 +84,18 @@ func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
 }
 
+var _ fi.HasDependencies = &LoadBalancerListener{}
+
+func (e *NetworkLoadBalancer) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, task := range tasks {
+		if tg, ok := task.(*TargetGroup); ok && !fi.BoolValue(tg.Shared) {
+			deps = append(deps, task)
+		}
+	}
+	return deps
+}
+
 type NetworkLoadBalancerListener struct {
 	InstancePort     int //TODO: Change this to LoadBalancerPort
 	SSLCertificateID string
@@ -116,12 +129,6 @@ func (e *NetworkLoadBalancerListener) mapToAWS(loadBalancerPort int64, targetGro
 	}
 
 	return l
-}
-
-var _ fi.HasDependencies = &NetworkLoadBalancerListener{}
-
-func (e *NetworkLoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return nil
 }
 
 func findTargetGroupByLoadBalancerArn(cloud awsup.AWSCloud, loadBalancerArn string) (*elbv2.TargetGroup, error) {
@@ -601,19 +608,24 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 			}
 		}
 	}
-
+	if len(changes.Subnets) > 0 {
+		return fi.FieldIsImmutable(e.Subnets, a.Subnets, field.NewPath("Subnets"))
+	}
 	return nil
 }
 
 func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NetworkLoadBalancer) error {
 	var loadBalancerName string
 	var loadBalancerArn string
-	var targetGroupArn string
 
 	if a == nil {
 		if e.LoadBalancerName == nil {
 			return fi.RequiredField("LoadBalancerName")
 		}
+		if e.TargetGroup.ARN == nil {
+			return fmt.Errorf("missing required target group ARN for NLB creation %v", e.TargetGroup)
+		}
+
 		loadBalancerName = *e.LoadBalancerName
 
 		request := &elbv2.CreateLoadBalancerInput{}
@@ -624,12 +636,6 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		for _, subnet := range e.Subnets {
 			request.Subnets = append(request.Subnets, subnet.ID)
 		}
-
-		//request.SecurityGroups = append(request.SecurityGroups, sg.ID)
-
-		/*for _, sg := range e.SecurityGroups {
-			request.SecurityGroups = append(request.SecurityGroups, sg.ID)
-		}*/
 
 		{
 			klog.V(2).Infof("Creating NLB with Name:%q", loadBalancerName)
@@ -650,41 +656,17 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		}
 
 		{
-			prefix := loadBalancerName[:24]
-			targetGroupName := prefix + "-targets"
-			//TODO: GET 443/TCP FROM e.loadbalancer
-			request := &elbv2.CreateTargetGroupInput{
-				Name:     aws.String(targetGroupName),
-				Port:     aws.Int64(443),
-				Protocol: aws.String("TCP"),
-				VpcId:    e.VPC.ID,
-			}
-
-			klog.V(2).Infof("Creating Target Group for NLB")
-			response, err := t.Cloud.ELBV2().CreateTargetGroup(request)
-			if err != nil {
-				return fmt.Errorf("Error creating target group for NLB : %v", err)
-			}
-
-			targetGroupArn = *response.TargetGroups[0].TargetGroupArn
-
-			if err := t.AddELBV2Tags(targetGroupArn, e.Tags); err != nil {
-				return err
-			}
-		}
-
-		{
 			for loadBalancerPort, listener := range e.Listeners {
 				loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
 				if err != nil {
 					return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
 				}
-				awsListener := listener.mapToAWS(loadBalancerPortInt, targetGroupArn, loadBalancerArn)
+				awsListener := listener.mapToAWS(loadBalancerPortInt, *e.TargetGroup.ARN, loadBalancerArn)
 
 				klog.V(2).Infof("Creating Listener for NLB")
 				_, err = t.Cloud.ELBV2().CreateListener(awsListener)
 				if err != nil {
-					return fmt.Errorf("Error creating listener for NLB: %v", err)
+					return fmt.Errorf("error creating listener for NLB: %v", err)
 				}
 			}
 		}
@@ -700,14 +682,6 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		// 	return fmt.Errorf("error querying nlb: %v", err)
 		// }
 
-		loadBalancerArn = *lb.LoadBalancerArn
-		tg, err := findTargetGroupByLoadBalancerArn(t.Cloud, loadBalancerArn)
-		if err != nil {
-			return fmt.Errorf("error getting target group by lb arn %v", loadBalancerArn)
-		}
-
-		targetGroupArn = *tg.TargetGroupArn
-
 		if changes.Subnets != nil {
 			var expectedSubnets []string
 			for _, s := range e.Subnets {
@@ -721,16 +695,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 
 			oldSubnetIDs := slice.GetUniqueStrings(expectedSubnets, actualSubnets)
 			if len(oldSubnetIDs) > 0 {
-				/*request := &elb.DetachLoadBalancerFromSubnetsInput{}
-				request.SetLoadBalancerName(loadBalancerName)
-				request.SetSubnets(aws.StringSlice(oldSubnetIDs))
-
-				klog.V(2).Infof("Detaching Load Balancer from old subnets")
-				if _, err := t.Cloud.ELB().DetachLoadBalancerFromSubnets(request); err != nil {
-					return fmt.Errorf("Error detaching Load Balancer from old subnets: %v", err)
-				}*/
-				//TODO: Seems likely we would have to delete and recreate in this case.
-				return fmt.Errorf("NLB's don't support detaching subnets, perhaps we need to recreate the NLB")
+				return fmt.Errorf("network load balancers do not support detaching subnets")
 			}
 
 			newSubnetIDs := slice.GetUniqueStrings(actualSubnets, expectedSubnets)
@@ -742,24 +707,10 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 
 				klog.V(2).Infof("Attaching Load Balancer to new subnets")
 				if _, err := t.Cloud.ELBV2().SetSubnets(request); err != nil {
-					return fmt.Errorf("Error attaching Load Balancer to new subnets: %v", err)
+					return fmt.Errorf("error attaching load balancer to new subnets: %v", err)
 				}
 			}
 		}
-
-		//TODO: decide if security groups should be applied to master nodes
-		/*if changes.SecurityGroups != nil {
-			request := &elb.ApplySecurityGroupsToLoadBalancerInput{}
-			request.LoadBalancerName = aws.String(loadBalancerName)
-			for _, sg := range e.SecurityGroups {
-				request.SecurityGroups = append(request.SecurityGroups, sg.ID)
-			}
-
-			klog.V(2).Infof("Updating Load Balancer Security Groups")
-			if _, err := t.Cloud.ELB().ApplySecurityGroupsToLoadBalancer(request); err != nil {
-				return fmt.Errorf("Error updating security groups on Load Balancer: %v", err)
-			}
-		}*/
 
 		if changes.Listeners != nil {
 
@@ -790,12 +741,12 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 					return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
 				}
 
-				awsListener := listener.mapToAWS(loadBalancerPortInt, targetGroupArn, loadBalancerArn)
+				awsListener := listener.mapToAWS(loadBalancerPortInt, *e.TargetGroup.ARN, loadBalancerArn)
 
 				klog.V(2).Infof("Creating Listener for NLB")
 				_, err = t.Cloud.ELBV2().CreateListener(awsListener)
 				if err != nil {
-					return fmt.Errorf("Error creating listener for NLB: %v", err)
+					return fmt.Errorf("error creating NLB listener: %v", err)
 				}
 			}
 		}
@@ -813,7 +764,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 	if changes.HealthCheck != nil && e.HealthCheck != nil {
 		request := &elbv2.ModifyTargetGroupInput{
 			HealthCheckPort:         e.HealthCheck.Port,
-			TargetGroupArn:          aws.String(targetGroupArn),
+			TargetGroupArn:          e.TargetGroup.ARN,
 			HealthyThresholdCount:   e.HealthCheck.HealthyThreshold,
 			UnhealthyThresholdCount: e.HealthCheck.UnhealthyThreshold,
 		}
@@ -830,7 +781,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		return err
 	}
 
-	if err := e.modifyTargetGroupAttributes(t, a, e, changes, targetGroupArn); err != nil {
+	if err := e.modifyTargetGroupAttributes(t, a, e, changes, *e.TargetGroup.ARN); err != nil {
 		klog.Infof("error modifying NLB Target Group attributes: %v", err)
 		return err
 	}
