@@ -20,20 +20,19 @@ set -o pipefail
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-cd "${KOPS_ROOT}"
-
-OUTPUT_GOBIN="${KOPS_ROOT}/_output/bin"
+cd "${KOPS_ROOT}" || exit 1
 
 # Install tools we need, but from vendor/
-GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/client9/misspell/cmd/misspell
+GOBIN="${TOOLS_BIN}" go install ./vendor/github.com/client9/misspell/cmd/misspell
 
 mkdir -p .build/docs
 
 # Spell checking
+# shellcheck disable=SC2038
 find . -type f \( -name "*.go*" -o -name "*.md*" \) -a -path "./docs/releases/*" -exec basename {} \; | \
-	xargs -I{} sh -c 'sed -e "/^\* .*github.com\/kubernetes\/kops\/pull/d" docs/releases/{} > .build/docs/$(basename {})'
+	xargs -I{} sh -c "sed -e \"/^\* .*github.com\/kubernetes\/kops\/pull/d\" docs/releases/{} > .build/docs/$(basename {})"
 find . -type f \( -name "*.go*" -o -name "*.md*" \) -a \( -not -path "./vendor/*" -not -path "./docs/releases/*" \) | \
   sed -e /README-ES.md/d -e /node_modules/d |
-		xargs ${OUTPUT_GOBIN}/misspell -error
+		xargs "${TOOLS_BIN}/misspell" -error
 
 
