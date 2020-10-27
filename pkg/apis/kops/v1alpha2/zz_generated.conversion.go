@@ -1327,6 +1327,7 @@ func Convert_kops_CNINetworkingSpec_To_v1alpha2_CNINetworkingSpec(in *kops.CNINe
 func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
 	out.BPFEnabled = in.BPFEnabled
 	out.BPFExternalServiceMode = in.BPFExternalServiceMode
+	out.BPFKubeProxyIptablesCleanupEnabled = in.BPFKubeProxyIptablesCleanupEnabled
 	out.BPFLogLevel = in.BPFLogLevel
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
@@ -1358,6 +1359,7 @@ func Convert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
 	out.BPFEnabled = in.BPFEnabled
 	out.BPFExternalServiceMode = in.BPFExternalServiceMode
+	out.BPFKubeProxyIptablesCleanupEnabled = in.BPFKubeProxyIptablesCleanupEnabled
 	out.BPFLogLevel = in.BPFLogLevel
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest

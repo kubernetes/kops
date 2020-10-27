@@ -108,6 +108,9 @@ type CalicoNetworkingSpec struct {
 	// this requires a network that allows direct return.
 	// Default: Tunnel (other options: DSR)
 	BPFExternalServiceMode string `json:"bpfExternalServiceMode,omitempty"`
+	// BPFKubeProxyIptablesCleanupEnabled controls whether Felix will clean up the iptables rules
+	// created by the Kubernetes kube-proxy; should only be enabled if kube-proxy is not running.
+	BPFKubeProxyIptablesCleanupEnabled bool `json:"bpfKubeProxyIptablesCleanupEnabled,omitempty"`
 	// BPFLogLevel controls the log level used by the BPF programs. The logs are emitted
 	// to the BPF trace pipe, accessible with the command tc exec BPF debug.
 	// Default: Off (other options: Info, Debug)
