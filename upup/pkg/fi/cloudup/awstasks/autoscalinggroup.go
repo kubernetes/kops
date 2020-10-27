@@ -87,8 +87,8 @@ type AutoscalingGroup struct {
 	SuspendProcesses *[]string
 	// Tags is a collection of keypairs to apply to the node on launch
 	Tags map[string]string
-	// TargetGroupARNs is a list of ALB/NLB target group ARNs to add to the autoscaling group
-	TargetGroupARNs []*TargetGroup
+	// TargetGroups is a list of ALB/NLB target group ARNs to add to the autoscaling group
+	TargetGroups []*TargetGroup
 }
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
@@ -121,7 +121,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	}
 
 	for _, tg := range g.TargetGroupARNs {
-		actual.TargetGroupARNs = append(actual.TargetGroupARNs, &TargetGroup{ARN: aws.String(*tg)})
+		actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg)})
 	}
 
 	if g.VPCZoneIdentifier != nil {
@@ -280,7 +280,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			request.LoadBalancerNames = append(request.LoadBalancerNames, k.GetName())
 		}
 
-		for _, tg := range e.TargetGroupARNs {
+		for _, tg := range e.TargetGroups {
 			request.TargetGroupARNs = append(request.TargetGroupARNs, tg.ARN)
 		}
 
@@ -787,7 +787,7 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	}
 	terraform.SortLiterals(tf.LoadBalancers)
 
-	for _, tg := range e.TargetGroupARNs {
+	for _, tg := range e.TargetGroups {
 		tf.TargetGroupARNs = append(tf.TargetGroupARNs, tg.TerraformLink())
 	}
 	terraform.SortLiterals(tf.TargetGroupARNs)
@@ -1023,7 +1023,7 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 		cf.LoadBalancerNames = append(cf.LoadBalancerNames, k.CloudformationLink())
 	}
 
-	for _, tg := range e.TargetGroupARNs {
+	for _, tg := range e.TargetGroups {
 		cf.TargetGroupARNs = append(cf.TargetGroupARNs, tg.CloudformationLink())
 	}
 
