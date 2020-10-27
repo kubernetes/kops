@@ -16,7 +16,7 @@
 
 # Build apimachinery executables from vendor-ed dependencies
 
-. $(dirname "${BASH_SOURCE}")/common.sh
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 WORK_DIR=$(mktemp -d)
 

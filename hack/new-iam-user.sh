@@ -43,7 +43,7 @@ command -v aws >/dev/null 2>&1 || { echo >&2 "The aws cli is required to run thi
 GROUP=$1
 USER=$2
 
-aws iam create-group --group-name ${GROUP}
+aws iam create-group --group-name "${GROUP}"
 
 export arns="
 arn:aws:iam::aws:policy/AmazonEC2FullAccess
@@ -52,10 +52,10 @@ arn:aws:iam::aws:policy/AmazonS3FullAccess
 arn:aws:iam::aws:policy/IAMFullAccess
 arn:aws:iam::aws:policy/AmazonVPCFullAccess"
 
-for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name ${GROUP}; done
+for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name "${GROUP}"; done
 
-aws iam create-user --user-name ${USER}
+aws iam create-user --user-name "${USER}"
 
-aws iam add-user-to-group --user-name ${USER} --group-name ${GROUP}
+aws iam add-user-to-group --user-name "${USER}" --group-name "${GROUP}"
 
-aws iam create-access-key --user-name ${USER}
+aws iam create-access-key --user-name "${USER}"

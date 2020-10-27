@@ -453,26 +453,26 @@ verify-staticcheck: ${BINDATA_TARGETS}
 
 .PHONY: verify-shellcheck
 verify-shellcheck:
-	${KOPS_ROOT}/hack/verify-shellcheck.sh
+	hack/verify-shellcheck.sh
 
 .PHONY: verify-terraform
 verify-terraform:
-	./hack/verify-terraform.sh
+	hack/verify-terraform.sh
 
 .PHONY: verify-bindata
 verify-bindata:
-	./hack/verify-bindata.sh
+	hack/verify-bindata.sh
 
 .PHONY: verify-hashes
 verify-hashes:
-	./hack/verify-hashes.sh
+	hack/verify-hashes.sh
 
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # travis-ci is the target that travis-ci calls
@@ -480,7 +480,7 @@ ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boil
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: travis-ci
-travis-ci: verify-generate verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
+travis-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
@@ -523,7 +523,7 @@ apimachinery: apimachinery-codegen goimports
 
 .PHONY: apimachinery-codegen
 apimachinery-codegen:
-	sh -c hack/make-apimachinery.sh
+	hack/update-apimachinery.sh
 	${GOPATH}/bin/conversion-gen ${API_OPTIONS} --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
 	${GOPATH}/bin/deepcopy-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops --v=0  --output-file-base=zz_generated.deepcopy \
@@ -545,8 +545,11 @@ verify-apimachinery:
 	hack/verify-apimachinery.sh
 
 .PHONY: verify-generate
-verify-generate:
-	hack/verify-generate.sh
+verify-generate: verify-crds
+
+.PHONY: verify-crds
+verify-crds:
+	hack/verify-crds.sh
 
 # -----------------------------------------------------
 # bazel targets

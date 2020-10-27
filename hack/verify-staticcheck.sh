@@ -50,7 +50,7 @@ IGNORE=(
 export IFS='|'; ignore_pattern="^(${IGNORE[*]-})\$"; unset IFS
 
 # Ensure that we find the binaries we build before anything else.
-export GOBIN="${KOPS_ROOT}/_output/bin"
+export GOBIN="${TOOLS_BIN}"
 PATH="${GOBIN}:${PATH}"
 
 # Install staticcheck from vendor
