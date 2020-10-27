@@ -20,12 +20,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 )
 
 const (
 	defaultJobName = "pull-kops-e2e-kubernetes-aws"
-	defaultGCSPath = "gcs://kops-ci/pulls/%v"
+	defaultGCSPath = "gs://kops-ci/pulls/%v"
 )
 
 func (d *deployer) Build() error {
@@ -40,7 +41,11 @@ func (d *deployer) Build() error {
 
 func (d *deployer) verifyBuildFlags() error {
 	if d.KopsRoot == "" {
-		return errors.New("required kops-root when building from source")
+		if goPath := os.Getenv("GOPATH"); goPath != "" {
+			d.KopsRoot = path.Join(goPath, "src", "k8s.io", "kops")
+		} else {
+			return errors.New("required kops-root when building from source")
+		}
 	}
 	if d.StageLocation != "" {
 		if !strings.HasPrefix(d.StageLocation, "gs://") {
