@@ -109,8 +109,8 @@ func defaultClusterName(cloudProvider string) (string, error) {
 		return "", errors.New("JOB_NAME, and BUILD_ID env vars are required when --cluster-name is not set")
 	}
 
-	buildIDHash := md5.Sum([]byte(buildID))
-	jobHash := md5.Sum([]byte(jobName))
+	buildIDHash := fmt.Sprintf("%x", md5.Sum([]byte(buildID)))
+	jobHash := fmt.Sprintf("%x", md5.Sum([]byte(jobName)))
 
 	var suffix string
 	switch cloudProvider {
