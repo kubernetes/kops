@@ -1,6 +1,18 @@
-# Pulled and modified from:
-#   https://docs.projectcalico.org/v3.16/manifests/calico-bpf.yaml
-#   https://docs.projectcalico.org/v3.16/manifests/calico-typha.yaml
+# Pulled and modified from: https://docs.projectcalico.org/v3.16/manifests/calico-typha.yaml
+
+{{- if .Networking.Calico.BPFEnabled }}
+---
+# Set these to the IP and port of your API server; In BPF mode, we need to connect directly to the
+# API server because we take over kube-proxy's role.
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kubernetes-services-endpoint
+  namespace: kube-system
+data:
+  KUBERNETES_SERVICE_HOST: "{{ .MasterInternalName }}"
+  KUBERNETES_SERVICE_PORT: "443"
+{{- end }}
 
 ---
 # Source: calico/templates/calico-config.yaml
@@ -13,12 +25,6 @@ metadata:
   labels:
     role.kubernetes.io/networking: "1"
 data:
-  {{- if .Networking.Calico.BPFEnabled }}
-  # Set these to the IP and port of your API server; In BPF mode, we need to connect directly to the
-  # API server because we take over kube-proxy's role.
-  kubernetes_service_host: "{{ .MasterInternalName }}"
-  kubernetes_service_port: "443"
-  {{- end }}
   # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{- if .Networking.Calico.TyphaReplicas -}}calico-typha{{- else -}}none{{- end -}}"
   # Configure the backend to use.
@@ -3766,19 +3772,6 @@ spec:
               name: kubernetes-services-endpoint
               optional: true
           env:
-            {{- if .Networking.Calico.BPFEnabled }}
-            # Overrides for kubernetes API server host/port. Needed in BPF mode.
-            - name: KUBERNETES_SERVICE_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_host
-            - name: KUBERNETES_SERVICE_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_port
-            {{- end }}
             - name: KUBERNETES_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -3806,19 +3799,6 @@ spec:
               name: kubernetes-services-endpoint
               optional: true
           env:
-            {{- if .Networking.Calico.BPFEnabled }}
-            # Overrides for kubernetes API server host/port. Needed in BPF mode.
-            - name: KUBERNETES_SERVICE_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_host
-            - name: KUBERNETES_SERVICE_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_port
-            {{- end }}
             # Name of the CNI config file to create.
             - name: CNI_CONF_NAME
               value: "10-calico.conflist"
@@ -3870,19 +3850,6 @@ spec:
               name: kubernetes-services-endpoint
               optional: true
           env:
-            {{- if .Networking.Calico.BPFEnabled }}
-            # Overrides for kubernetes API server host/port. Needed in BPF mode.
-            - name: KUBERNETES_SERVICE_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_host
-            - name: KUBERNETES_SERVICE_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_port
-            {{- end }}
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
               value: "kubernetes"
