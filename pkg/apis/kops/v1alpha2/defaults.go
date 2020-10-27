@@ -70,7 +70,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 
 	}
 
-	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Class == "" {
+	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Class == "" && obj.CloudProvider == "aws" {
 		obj.API.LoadBalancer.Class = LoadBalancerClassClassic
 	}
 

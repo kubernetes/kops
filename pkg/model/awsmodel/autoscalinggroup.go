@@ -200,7 +200,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
 	}
 
-	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
 			sgTask := &awstasks.SecurityGroup{
 				ID:        fi.String("nlb-" + id),
