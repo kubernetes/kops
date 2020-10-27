@@ -312,6 +312,14 @@ func (m *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
 		m.Cluster.Spec.API.LoadBalancer.UseForInternalApi
 }
 
+// APILoadBalancerClass returns which type of load balancer to use for the api
+func (m *KopsModelContext) APILoadBalancerClass() kops.LoadBalancerClass {
+	if m.Cluster.Spec.API != nil && m.Cluster.Spec.API.LoadBalancer != nil {
+		return m.Cluster.Spec.API.LoadBalancer.Class
+	}
+	return kops.LoadBalancerClassClassic
+}
+
 // UsePrivateDNS checks if we are using private DNS
 func (m *KopsModelContext) UsePrivateDNS() bool {
 	topology := m.Cluster.Spec.Topology
