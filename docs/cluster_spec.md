@@ -11,7 +11,7 @@ On this page, we will expand on the more important configuration keys.
 This object configures how we expose the API:
 
 * `dns` will allow direct access to master instances, and configure DNS to point directly to the master nodes.
-* `loadBalancer` will configure a load balancer (ELB or NLB) in front of the master nodes, and configure DNS to point to the LB.
+* `loadBalancer` will configure a load balancer in front of the master nodes and configure DNS to point to the LB.
 
 DNS example:
 
