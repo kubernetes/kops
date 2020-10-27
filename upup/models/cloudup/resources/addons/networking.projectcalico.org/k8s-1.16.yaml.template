@@ -3939,6 +3939,9 @@ spec:
             # Controls how traffic from outside the cluster to NodePorts and ClusterIPs is handled
             - name: FELIX_BPFEXTERNALSERVICEMODE
               value: "{{- or .Networking.Calico.BPFExternalServiceMode "Tunnel" }}"
+            # Controls whether Felix will clean up the iptables rules created by the Kubernetes kube-proxy
+            - name: FELIX_BPFKUBEPROXYIPTABLESCLEANUPENABLED
+              value: "{{- .Networking.Calico.BPFKubeProxyIptablesCleanupEnabled }}"
             # Controls the log level used by the BPF programs
             - name: FELIX_BPFLOGLEVEL
               value: "{{- or .Networking.Calico.BPFLogLevel "Off" }}"
