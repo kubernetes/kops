@@ -80,9 +80,6 @@ type CreateClusterOptions struct {
 	MasterTenancy string
 	NodeTenancy   string
 
-	// Specify API loadbalancer class as classic or nlb
-	APILoadBalancerClass string
-
 	// Allow custom public master name
 	MasterPublicName string
 
@@ -284,7 +281,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
-	cmd.Flags().StringVar(&options.APILoadBalancerClass, "api-loadbalancer-class", options.APILoadBalancerClass, "Currently only supported in AWS. Sets the API loadbalancer class to eiether 'classic' or 'network'")
+	cmd.Flags().StringVar(&options.APILoadBalancerClass, "api-loadbalancer-class", options.APILoadBalancerClass, "Currently only supported in AWS. Sets the API loadbalancer class to either 'classic' or 'network'")
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
 	cmd.Flags().StringVar(&options.APISSLCertificate, "api-ssl-certificate", options.APISSLCertificate, "Currently only supported in AWS. Sets the ARN of the SSL Certificate to use for the API server loadbalancer.")
 
@@ -492,17 +489,6 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 
 	if c.MasterPublicName != "" {
 		cluster.Spec.MasterPublicName = c.MasterPublicName
-	}
-
-	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" {
-		switch c.APILoadBalancerClass {
-		case "", "classic":
-			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassClassic
-		case "network":
-			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassNetwork
-		default:
-			return fmt.Errorf("unknown api-loadbalancer-class: %q", c.APILoadBalancerClass)
-		}
 	}
 
 	if err := commands.SetClusterFields(c.Overrides, cluster, instanceGroups); err != nil {
