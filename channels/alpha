@@ -91,19 +91,19 @@ spec:
     #requiredVersion: 1.19.0
     kubernetesVersion: 1.19.3
   - range: ">=1.18.0-alpha.1"
-    recommendedVersion: "1.18.1"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.18.0
     kubernetesVersion: 1.18.10
   - range: ">=1.17.0-alpha.1"
-    recommendedVersion: "1.18.1"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.17.0
     kubernetesVersion: 1.17.13
   - range: ">=1.16.0-alpha.1"
-    recommendedVersion: "1.18.1"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.16.0
     kubernetesVersion: 1.16.15
   - range: ">=1.15.0-alpha.1"
-    recommendedVersion: "1.18.1"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.15.0
     kubernetesVersion: 1.15.12
   - range: ">=1.14.0-alpha.1"
