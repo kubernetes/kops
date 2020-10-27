@@ -70,10 +70,6 @@ func (d *deployer) verifyKopsFlags() error {
 			return errors.New("missing required --kops-binary-path")
 		}
 	}
-	_, err := os.Stat(d.KopsBinaryPath)
-	if err != nil {
-		return err
-	}
 
 	switch d.CloudProvider {
 	case "aws":
