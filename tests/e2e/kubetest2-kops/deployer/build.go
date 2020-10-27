@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -40,7 +41,11 @@ func (d *deployer) Build() error {
 
 func (d *deployer) verifyBuildFlags() error {
 	if d.KopsRoot == "" {
-		return errors.New("required kops-root when building from source")
+		if goPath := os.Getenv("GOPATH"); goPath != "" {
+			d.KopsRoot = path.Join(goPath, "k8s.io", "kops")
+		} else {
+			return errors.New("required kops-root when building from source")
+		}
 	}
 	if d.StageLocation != "" {
 		if !strings.HasPrefix(d.StageLocation, "gs://") {
