@@ -200,9 +200,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 		}
 
-		if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 			c.AddTask(elb)
-		} else if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 
 			targetGroupPort := fi.Int64(443)
 			targetGroupName := b.NLBTargetGroupName("api", nlbListenerPort, "443")
@@ -255,7 +255,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Allow traffic from ELB to egress freely
-	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		t := &awstasks.SecurityGroupRule{
 			Name:          fi.String("api-elb-egress"),
 			Lifecycle:     b.SecurityLifecycle,
@@ -267,7 +267,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
-	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:          fi.String("https-api-elb-" + cidr),
@@ -298,7 +298,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
-	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 
 			for i, masterGroup := range masterGroups {
@@ -329,7 +329,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Add precreated additional security groups to the ELB
-	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
 			t := &awstasks.SecurityGroup{
 				Name:      fi.String(id),
@@ -345,7 +345,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Allow HTTPS to the master instances from the ELB
-	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
 			c.AddTask(&awstasks.SecurityGroupRule{
@@ -360,7 +360,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		//TODO: resarch if the NLB's nodes will have constant IP's.  If so, consider the following as a TODO:
 		// Can tighten security by allowing only https access from the private ip's of the eni's associated with the nlb's nodes in each availability zone.
 		// Recommended approach is the whole vpc cidr https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups
@@ -383,9 +383,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
 		// Ensure the ELB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
-		if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 			elb.ForAPIServer = true
-		} else if b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 			nlb.ForAPIServer = true
 		}
 
