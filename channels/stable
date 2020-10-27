@@ -44,7 +44,7 @@ spec:
     - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2020-07-20
       providerID: aws
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200907
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201014
       providerID: aws
       kubernetesVersion: ">=1.18.0"
     - providerID: gce
@@ -59,10 +59,10 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.18.0"
-    recommendedVersion: 1.18.9
+    recommendedVersion: 1.18.10
     requiredVersion: 1.18.0
   - range: ">=1.17.0"
-    recommendedVersion: 1.17.12
+    recommendedVersion: 1.17.13
     requiredVersion: 1.17.0
   - range: ">=1.16.0"
     recommendedVersion: 1.16.15
@@ -89,21 +89,21 @@ spec:
   - range: ">=1.19.0-alpha.1"
     #recommendedVersion: "1.19.0-alpha.1"
     #requiredVersion: 1.19.0
-    kubernetesVersion: 1.19.2
+    kubernetesVersion: 1.19.3
   - range: ">=1.18.0-alpha.1"
-    recommendedVersion: "1.18.0"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.18.0
-    kubernetesVersion: 1.18.9
+    kubernetesVersion: 1.18.10
   - range: ">=1.17.0-alpha.1"
-    recommendedVersion: "1.17.1"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.17.0
-    kubernetesVersion: 1.17.12
+    kubernetesVersion: 1.17.13
   - range: ">=1.16.0-alpha.1"
-    recommendedVersion: "1.16.4"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.16.0
     kubernetesVersion: 1.16.15
   - range: ">=1.15.0-alpha.1"
-    recommendedVersion: "1.15.3"
+    recommendedVersion: "1.18.2"
     #requiredVersion: 1.15.0
     kubernetesVersion: 1.15.12
   - range: ">=1.14.0-alpha.1"
