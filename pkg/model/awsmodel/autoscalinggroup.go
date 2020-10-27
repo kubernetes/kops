@@ -372,7 +372,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 
 		if extLB.TargetGroupARN != nil {
-			t.TargetGroupARNs = append(t.TargetGroupARNs, &awstasks.TargetGroup{Name: extLB.TargetGroupARN, ARN: extLB.TargetGroupARN})
+			t.TargetGroups = append(t.TargetGroups, &awstasks.TargetGroup{Name: extLB.TargetGroupARN, ARN: extLB.TargetGroupARN})
 		}
 	}
 
