@@ -62,7 +62,21 @@ func (d *deployer) Up() error {
 	cmd.SetEnv(d.env()...)
 
 	exec.InheritOutput(cmd)
-	return cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	isUp, err := d.IsUp()
+	if err != nil {
+		return err
+	} else if isUp {
+		klog.V(1).Infof("cluster reported as up")
+	} else {
+		klog.Errorf("cluster reported as down")
+	}
+
+	return nil
 }
 
 func (d *deployer) IsUp() (bool, error) {
