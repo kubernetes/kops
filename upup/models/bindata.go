@@ -9257,9 +9257,21 @@ func cloudupResourcesAddonsNetworkingProjectcalicoOrgK8s112YamlTemplate() (*asse
 	return a, nil
 }
 
-var _cloudupResourcesAddonsNetworkingProjectcalicoOrgK8s116YamlTemplate = []byte(`# Pulled and modified from:
-#   https://docs.projectcalico.org/v3.16/manifests/calico-bpf.yaml
-#   https://docs.projectcalico.org/v3.16/manifests/calico-typha.yaml
+var _cloudupResourcesAddonsNetworkingProjectcalicoOrgK8s116YamlTemplate = []byte(`# Pulled and modified from: https://docs.projectcalico.org/v3.16/manifests/calico-typha.yaml
+
+{{- if .Networking.Calico.BPFEnabled }}
+---
+# Set these to the IP and port of your API server; In BPF mode, we need to connect directly to the
+# API server because we take over kube-proxy's role.
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kubernetes-services-endpoint
+  namespace: kube-system
+data:
+  KUBERNETES_SERVICE_HOST: "{{ .MasterInternalName }}"
+  KUBERNETES_SERVICE_PORT: "443"
+{{- end }}
 
 ---
 # Source: calico/templates/calico-config.yaml
@@ -9272,12 +9284,6 @@ metadata:
   labels:
     role.kubernetes.io/networking: "1"
 data:
-  {{- if .Networking.Calico.BPFEnabled }}
-  # Set these to the IP and port of your API server; In BPF mode, we need to connect directly to the
-  # API server because we take over kube-proxy's role.
-  kubernetes_service_host: "{{ .MasterInternalName }}"
-  kubernetes_service_port: "443"
-  {{- end }}
   # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{- if .Networking.Calico.TyphaReplicas -}}calico-typha{{- else -}}none{{- end -}}"
   # Configure the backend to use.
@@ -12678,14 +12684,6 @@ rules:
       - get
   - apiGroups: [""]
     resources:
-      - secrets
-    verbs:
-      # Needed when configuring bgp password in bgppeer
-      - watch
-      - list
-      - get
-  - apiGroups: [""]
-    resources:
       - endpoints
       - services
     verbs:
@@ -12900,7 +12898,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.16.3
+      - image: calico/typha:v3.16.4
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -13017,7 +13015,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.16.3
+          image: calico/cni:v3.16.4
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
           - configMapRef:
@@ -13025,19 +13023,6 @@ spec:
               name: kubernetes-services-endpoint
               optional: true
           env:
-            {{- if .Networking.Calico.BPFEnabled }}
-            # Overrides for kubernetes API server host/port. Needed in BPF mode.
-            - name: KUBERNETES_SERVICE_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_host
-            - name: KUBERNETES_SERVICE_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_port
-            {{- end }}
             - name: KUBERNETES_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -13057,7 +13042,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.16.3
+          image: calico/cni:v3.16.4
           command: ["/opt/cni/bin/install"]
           envFrom:
           - configMapRef:
@@ -13065,19 +13050,6 @@ spec:
               name: kubernetes-services-endpoint
               optional: true
           env:
-            {{- if .Networking.Calico.BPFEnabled }}
-            # Overrides for kubernetes API server host/port. Needed in BPF mode.
-            - name: KUBERNETES_SERVICE_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_host
-            - name: KUBERNETES_SERVICE_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_port
-            {{- end }}
             # Name of the CNI config file to create.
             - name: CNI_CONF_NAME
               value: "10-calico.conflist"
@@ -13111,7 +13083,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.16.3
+          image: calico/pod2daemon-flexvol:v3.16.4
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -13122,26 +13094,13 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.16.3
+          image: calico/node:v3.16.4
           envFrom:
           - configMapRef:
               # Allow KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT to be overridden for eBPF mode.
               name: kubernetes-services-endpoint
               optional: true
           env:
-            {{- if .Networking.Calico.BPFEnabled }}
-            # Overrides for kubernetes API server host/port. Needed in BPF mode.
-            - name: KUBERNETES_SERVICE_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_host
-            - name: KUBERNETES_SERVICE_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: kubernetes_service_port
-            {{- end }}
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
               value: "kubernetes"
@@ -13231,6 +13190,9 @@ spec:
             # Controls how traffic from outside the cluster to NodePorts and ClusterIPs is handled
             - name: FELIX_BPFEXTERNALSERVICEMODE
               value: "{{- or .Networking.Calico.BPFExternalServiceMode "Tunnel" }}"
+            # Controls whether Felix will clean up the iptables rules created by the Kubernetes kube-proxy
+            - name: FELIX_BPFKUBEPROXYIPTABLESCLEANUPENABLED
+              value: "{{- .Networking.Calico.BPFKubeProxyIptablesCleanupEnabled }}"
             # Controls the log level used by the BPF programs
             - name: FELIX_BPFLOGLEVEL
               value: "{{- or .Networking.Calico.BPFLogLevel "Off" }}"
@@ -13389,7 +13351,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.16.3
+          image: calico/kube-controllers:v3.16.4
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
