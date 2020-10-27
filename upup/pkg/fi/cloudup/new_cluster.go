@@ -943,7 +943,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.API.LoadBalancer.SSLCertificate = opt.APISSLCertificate
 	}
 
-	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" {
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
 		switch opt.APILoadBalancerClass {
 		case "", "classic":
 			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassClassic

@@ -211,7 +211,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateRollingUpdate(spec.RollingUpdate, fieldPath.Child("rollingUpdate"), false)...)
 	}
 
-	if spec.API != nil && spec.API.LoadBalancer != nil {
+	if spec.API != nil && spec.API.LoadBalancer != nil && spec.CloudProvider == "aws" {
 		value := string(spec.API.LoadBalancer.Class)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
 		if featureflag.Spotinst.Enabled() {
