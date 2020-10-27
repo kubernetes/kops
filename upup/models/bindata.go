@@ -4379,7 +4379,7 @@ rules:
   resources:
   - nodes
   verbs: ["list", "watch", "get", "update"]
-- apiGroups: ["extensions"]
+- apiGroups: ["extensions", "apps"]
   resources:
   - daemonsets
   verbs: ["list", "watch"]
@@ -4452,7 +4452,7 @@ spec:
       tolerations:
       - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.1" }}"
+      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.5" }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 61678
@@ -4527,8 +4527,13 @@ spec:
           name: run-dir
         - mountPath: /var/run/dockershim.sock
           name: dockershim
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
       initContainers:
-      - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.1
+      - env:
+        - name: DISABLE_TCP_EARLY_DEMUX
+          value: "false"
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.5
         imagePullPolicy: Always
         name: aws-vpc-cni-init
         resources: {}
@@ -4549,6 +4554,9 @@ spec:
       - hostPath:
           path: /var/run/dockershim.sock
         name: dockershim
+      - hostPath:
+          path: /run/xtables.lock
+        name: xtables-lock
       - hostPath:
           path: /var/log/aws-routed-eni
           type: DirectoryOrCreate
