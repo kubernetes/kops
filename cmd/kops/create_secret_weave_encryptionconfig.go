@@ -42,16 +42,16 @@ var (
 	createSecretWeaveEncryptionconfigExample = templates.Examples(i18n.T(`
 	# Create a new random weave password.
 	kops create secret weavepassword \
-		--name k8s-cluster.example.com --state s3://example.com
+		--name k8s-cluster.example.com --state s3://my-state-store
 	# Install a specific weave password.
 	kops create secret weavepassword -f /path/to/weavepassword \
-		--name k8s-cluster.example.com --state s3://example.com
+		--name k8s-cluster.example.com --state s3://my-state-store
 	# Install a specific weave password via stdin.
 	kops create secret weavepassword -f - \
-		--name k8s-cluster.example.com --state s3://example.com
+		--name k8s-cluster.example.com --state s3://my-state-store
 	# Replace an existing weavepassword secret.
 	kops create secret weavepassword -f /path/to/weavepassword --force \
-		--name k8s-cluster.example.com --state s3://example.com
+		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
 	createSecretWeaveEncryptionconfigShort = i18n.T(`Create a weave encryption config.`)

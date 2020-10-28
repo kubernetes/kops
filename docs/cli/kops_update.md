@@ -13,7 +13,7 @@ Creates or updates cloud resources to match cluster desired configuration.
 
 ```
   # After cluster has been created, configure it with:
-  kops update cluster k8s.cluster.site --yes --state=s3://kops-state-1234
+  kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store
 ```
 
 ### Options

@@ -57,7 +57,7 @@ var (
 
 	editClusterExample = templates.Examples(i18n.T(`
 		# Edit a cluster configuration in AWS.
-		kops edit cluster k8s.cluster.site --state=s3://kops-state-1234
+		kops edit cluster k8s.cluster.site --state=s3://my-state-store
 	`))
 )
 

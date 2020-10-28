@@ -32,7 +32,7 @@ var (
 
 	updateExample = templates.Examples(i18n.T(`
 		# After cluster has been created, configure it with:
-		kops update cluster k8s.cluster.site --yes --state=s3://kops-state-1234
+		kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store
 	`))
 
 	updateShort = i18n.T("Update a cluster.")
