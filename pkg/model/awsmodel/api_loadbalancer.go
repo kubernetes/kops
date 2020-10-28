@@ -295,10 +295,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 
-			for i, masterGroup := range masterGroups {
-				suffix := masterGroup.Suffix
+			for _, masterGroup := range masterGroups {
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.String(fmt.Sprintf("KubernetesAPIAccess-to-nlb-to-master%s-%s-%d", suffix, cidr, i)),
+					// TODO: figure out how to only add this to one SG (GetSecurityGroups above returns multiple)
+					Name:          fi.String(fmt.Sprintf("https-api-elb-%s", cidr)),
 					Lifecycle:     b.SecurityLifecycle,
 					CIDR:          fi.String(cidr),
 					FromPort:      fi.Int64(443),
@@ -310,7 +310,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				// Allow ICMP traffic required for PMTU discovery
 				c.AddTask(&awstasks.SecurityGroupRule{
-					Name:          fi.String(fmt.Sprintf("KubernetesAPIAccess-icmp-pmtu-to-nlb-to-api-master%s-%s-%d", suffix, cidr, i)),
+					// TODO: figure out how to only add this to one SG (GetSecurityGroups above returns multiple)
+					Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
 					CIDR:          fi.String(cidr),
 					FromPort:      fi.Int64(3),
@@ -360,10 +361,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Recommended approach is the whole vpc cidr https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups
 		// work around suggested here https://forums.aws.amazon.com/thread.jspa?threadID=263245&start=0&tstart=0
 		// https://docs.aws.amazon.com/sdk-for-go/api/aws/arn/
-		for i, masterGroup := range masterGroups {
+		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          fi.String(fmt.Sprintf("nlb-health-check-to-master%s-%d", suffix, i)),
+				Name:          fi.String(fmt.Sprintf("https-elb-to-master%s", suffix)),
 				Lifecycle:     b.SecurityLifecycle,
 				FromPort:      fi.Int64(443),
 				Protocol:      fi.String("tcp"),
