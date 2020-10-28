@@ -111,12 +111,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		nlbListenerPort := "443"
 		nlbListeners := map[string]*awstasks.NetworkLoadBalancerListener{
-			nlbListenerPort: {InstancePort: 443},
-			//DefaultAction:   "forward",
+			nlbListenerPort: {Port: 443},
 		}
 
 		if lbSpec.SSLCertificate != "" {
-			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
+			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
+			nlbListeners["443"].SSLCertificateID = lbSpec.SSLCertificate
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
