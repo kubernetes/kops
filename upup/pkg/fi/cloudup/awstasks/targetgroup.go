@@ -42,6 +42,9 @@ type TargetGroup struct {
 
 	// Shared is set if this is an external LB (one we don't create or own)
 	Shared *bool
+
+	HealthyThreshold   *int64
+	UnhealthyThreshold *int64
 }
 
 var _ fi.CompareWithID = &TargetGroup{}
@@ -78,10 +81,13 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 
 	tg := response.TargetGroups[0]
 
-	actual := &TargetGroup{}
-	actual.Port = tg.Port
-	actual.Protocol = tg.Protocol
-	actual.ARN = tg.TargetGroupArn
+	actual := &TargetGroup{
+		Port:               tg.Port,
+		Protocol:           tg.Protocol,
+		ARN:                tg.TargetGroupArn,
+		HealthyThreshold:   tg.HealthyThresholdCount,
+		UnhealthyThreshold: tg.UnhealthyThresholdCount,
+	}
 
 	// Prevent spurious changes
 	actual.Name = e.Name
