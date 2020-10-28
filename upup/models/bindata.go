@@ -4359,229 +4359,241 @@ func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s112YamlTemplate() (*as
 var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate = []byte(`# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/release-1.7/config/v1.7/aws-k8s-cni.yaml
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: aws-node
-rules:
-- apiGroups:
-  - crd.k8s.amazonaws.com
-  resources:
+"apiVersion": "rbac.authorization.k8s.io/v1"
+"kind": "ClusterRoleBinding"
+"metadata":
+  "name": "aws-node"
+"roleRef":
+  "apiGroup": "rbac.authorization.k8s.io"
+  "kind": "ClusterRole"
+  "name": "aws-node"
+"subjects":
+- "kind": "ServiceAccount"
+  "name": "aws-node"
+  "namespace": "kube-system"
+---
+"apiVersion": "rbac.authorization.k8s.io/v1"
+"kind": "ClusterRole"
+"metadata":
+  "name": "aws-node"
+"rules":
+- "apiGroups":
+  - "crd.k8s.amazonaws.com"
+  "resources":
+  - "eniconfigs"
+  "verbs":
+  - "get"
+  - "list"
+  - "watch"
+- "apiGroups":
+  - ""
+  "resources":
+  - "pods"
+  - "namespaces"
+  "verbs":
+  - "list"
+  - "watch"
+  - "get"
+- "apiGroups":
+  - ""
+  "resources":
+  - "nodes"
+  "verbs":
+  - "list"
+  - "watch"
+  - "get"
+  - "update"
+- "apiGroups":
+  - "extensions"
+  - "apps"
+  "resources":
   - "*"
-  verbs:
-  - "*"
-- apiGroups: [""]
-  resources:
-  - pods
-  - namespaces
-  verbs: ["list", "watch", "get"]
-- apiGroups: [""]
-  resources:
-  - nodes
-  verbs: ["list", "watch", "get", "update"]
-- apiGroups: ["extensions", "apps"]
-  resources:
-  - daemonsets
-  verbs: ["list", "watch"]
-
+  "verbs":
+  - "list"
+  - "watch"
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: aws-node
-  namespace: kube-system
-
+"apiVersion": "apiextensions.k8s.io/v1beta1"
+"kind": "CustomResourceDefinition"
+"metadata":
+  "name": "eniconfigs.crd.k8s.amazonaws.com"
+"spec":
+  "group": "crd.k8s.amazonaws.com"
+  "names":
+    "kind": "ENIConfig"
+    "plural": "eniconfigs"
+    "singular": "eniconfig"
+  "scope": "Cluster"
+  "versions":
+  - "name": "v1alpha1"
+    "served": true
+    "storage": true
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: aws-node
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: aws-node
-subjects:
-- kind: ServiceAccount
-  name: aws-node
-  namespace: kube-system
-
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  labels:
-    k8s-app: aws-node
-  name: aws-node
-  namespace: kube-system
-  labels:
-    k8s-app: aws-node
-spec:
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: "10%"
-  selector:
-    matchLabels:
-      k8s-app: aws-node
-  template:
-    metadata:
-      labels:
-        k8s-app: aws-node
-    spec:
-      priorityClassName: system-node-critical
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: "kubernetes.io/os"
-                operator: In
-                values:
-                - linux
-              - key: "kubernetes.io/arch"
-                operator: In
-                values:
-                - amd64
-                - arm64
-              - key: "eks.amazonaws.com/compute-type"
-                operator: NotIn
-                values:
-                - fargate
-      serviceAccountName: aws-node
-      hostNetwork: true
-      tolerations:
-      - operator: Exists
-      containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.5" }}"
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 61678
-          name: metrics
-        name: aws-node
-        readinessProbe:
-          exec:
-            command: ["/app/grpc-health-probe", "-addr=:50051"]
-          initialDelaySeconds: 1
-        livenessProbe:
-          exec:
-            command: ["/app/grpc-health-probe", "-addr=:50051"]
-          initialDelaySeconds: 60
-        env:
-        - name: CLUSTER_NAME
-          value: {{ ClusterName }}
-        - name: ADDITIONAL_ENI_TAGS
-          value: '{}'
-        - name: AWS_VPC_CNI_NODE_PORT_SUPPORT
-          value: "true"
-        - name: AWS_VPC_ENI_MTU
-          value: "9001"
-        - name: AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER
-          value: "false"
-        - name: AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG
-          value: "false"
-        - name: AWS_VPC_K8S_CNI_EXTERNALSNAT
-          value: "false"
-        - name: AWS_VPC_K8S_CNI_LOGLEVEL
-          value: DEBUG
-        - name: AWS_VPC_K8S_CNI_LOG_FILE
-          value: /host/var/log/aws-routed-eni/ipamd.log
-        - name: AWS_VPC_K8S_CNI_RANDOMIZESNAT
-          value: prng
-        - name: AWS_VPC_K8S_PLUGIN_LOG_FILE
-          value: /var/log/aws-routed-eni/plugin.log
-        - name: AWS_VPC_K8S_PLUGIN_LOG_LEVEL
-          value: DEBUG
-        - name: DISABLE_INTROSPECTION
-          value: "false"
-        - name: DISABLE_METRICS
-          value: "false"
-        - name: ENABLE_POD_ENI
-          value: "false"
-        - name: AWS_VPC_K8S_CNI_VETHPREFIX
-          value: eni
-        - name: MY_NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: WARM_ENI_TARGET
-          value: "1"
+"apiVersion": "apps/v1"
+"kind": "DaemonSet"
+"metadata":
+  "labels":
+    "k8s-app": "aws-node"
+  "name": "aws-node"
+  "namespace": "kube-system"
+"spec":
+  "selector":
+    "matchLabels":
+      "k8s-app": "aws-node"
+  "template":
+    "metadata":
+      "labels":
+        "k8s-app": "aws-node"
+    "spec":
+      "affinity":
+        "nodeAffinity":
+          "requiredDuringSchedulingIgnoredDuringExecution":
+            "nodeSelectorTerms":
+            - "matchExpressions":
+              - "key": "kubernetes.io/os"
+                "operator": "In"
+                "values":
+                - "linux"
+              - "key": "kubernetes.io/arch"
+                "operator": "In"
+                "values":
+                - "amd64"
+                - "arm64"
+              - "key": "eks.amazonaws.com/compute-type"
+                "operator": "NotIn"
+                "values":
+                - "fargate"
+      "containers":
+      - "env":
+        - "name": "ADDITIONAL_ENI_TAGS"
+          "value": "{}"
+        - "name": "AWS_VPC_CNI_NODE_PORT_SUPPORT"
+          "value": "true"
+        - "name": "AWS_VPC_ENI_MTU"
+          "value": "9001"
+        - "name": "AWS_VPC_K8S_CNI_CONFIGURE_RPFILTER"
+          "value": "false"
+        - "name": "AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG"
+          "value": "false"
+        - "name": "AWS_VPC_K8S_CNI_EXTERNALSNAT"
+          "value": "false"
+        - "name": "AWS_VPC_K8S_CNI_LOGLEVEL"
+          "value": "DEBUG"
+        - "name": "AWS_VPC_K8S_CNI_LOG_FILE"
+          "value": "/host/var/log/aws-routed-eni/ipamd.log"
+        - "name": "AWS_VPC_K8S_CNI_RANDOMIZESNAT"
+          "value": "prng"
+        - "name": "AWS_VPC_K8S_CNI_VETHPREFIX"
+          "value": "eni"
+        - "name": "AWS_VPC_K8S_PLUGIN_LOG_FILE"
+          "value": "/var/log/aws-routed-eni/plugin.log"
+        - "name": "AWS_VPC_K8S_PLUGIN_LOG_LEVEL"
+          "value": "DEBUG"
+        - "name": "DISABLE_INTROSPECTION"
+          "value": "false"
+        - "name": "DISABLE_METRICS"
+          "value": "false"
+        - "name": "ENABLE_POD_ENI"
+          "value": "false"
+        - "name": "MY_NODE_NAME"
+          "valueFrom":
+            "fieldRef":
+              "fieldPath": "spec.nodeName"
+        - "name": "WARM_ENI_TARGET"
+          "value": "1"
+        - "name": "CLUSTER_NAME"
+          "value": "{{ ClusterName }}"
         {{- range .Networking.AmazonVPC.Env }}
-        - name: {{ .Name }}
-          value: "{{ .Value }}"
+        - "name": "{{ .Name }}"
+          "value": "{{ .Value }}"
         {{- end }}
-        resources:
-          requests:
-            cpu: 10m
-        securityContext:
-          capabilities:
-            add:
-            - NET_ADMIN
-        volumeMounts:
-        - mountPath: /host/opt/cni/bin
-          name: cni-bin-dir
-        - mountPath: /host/etc/cni/net.d
-          name: cni-net-dir
-        - mountPath: /host/var/log/aws-routed-eni
-          name: log-dir
-        - mountPath: /var/run/aws-node
-          name: run-dir
-        - mountPath: /var/run/dockershim.sock
-          name: dockershim
-        - mountPath: /run/xtables.lock
-          name: xtables-lock
-      initContainers:
-      - env:
-        - name: DISABLE_TCP_EARLY_DEMUX
-          value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.5
-        imagePullPolicy: Always
-        name: aws-vpc-cni-init
-        resources: {}
-        securityContext:
-          privileged: true
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /host/opt/cni/bin
-          name: cni-bin-dir
-      volumes:
-      - hostPath:
-          path: /opt/cni/bin
-        name: cni-bin-dir
-      - hostPath:
-          path: /etc/cni/net.d
-        name: cni-net-dir
-      - hostPath:
-          path: /var/run/dockershim.sock
-        name: dockershim
-      - hostPath:
-          path: /run/xtables.lock
-        name: xtables-lock
-      - hostPath:
-          path: /var/log/aws-routed-eni
-          type: DirectoryOrCreate
-        name: log-dir
-      - hostPath:
-          path: /var/run/aws-node
-          type: DirectoryOrCreate
-        name: run-dir
-
+        "image": "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.5" }}"
+        "imagePullPolicy": "Always"
+        "livenessProbe":
+          "exec":
+            "command":
+            - "/app/grpc-health-probe"
+            - "-addr=:50051"
+          "initialDelaySeconds": 60
+        "name": "aws-node"
+        "ports":
+        - "containerPort": 61678
+          "name": "metrics"
+        "readinessProbe":
+          "exec":
+            "command":
+            - "/app/grpc-health-probe"
+            - "-addr=:50051"
+          "initialDelaySeconds": 1
+        "resources":
+          "requests":
+            "cpu": "10m"
+        "securityContext":
+          "capabilities":
+            "add":
+            - "NET_ADMIN"
+        "volumeMounts":
+        - "mountPath": "/host/opt/cni/bin"
+          "name": "cni-bin-dir"
+        - "mountPath": "/host/etc/cni/net.d"
+          "name": "cni-net-dir"
+        - "mountPath": "/host/var/log/aws-routed-eni"
+          "name": "log-dir"
+        - "mountPath": "/var/run/aws-node"
+          "name": "run-dir"
+        - "mountPath": "/var/run/dockershim.sock"
+          "name": "dockershim"
+        - "mountPath": "/run/xtables.lock"
+          "name": "xtables-lock"
+      "hostNetwork": true
+      "initContainers":
+      - "env":
+        - "name": "DISABLE_TCP_EARLY_DEMUX"
+          "value": "false"
+        "image": "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.5"
+        "imagePullPolicy": "Always"
+        "name": "aws-vpc-cni-init"
+        "securityContext":
+          "privileged": true
+        "volumeMounts":
+        - "mountPath": "/host/opt/cni/bin"
+          "name": "cni-bin-dir"
+      "priorityClassName": "system-node-critical"
+      "serviceAccountName": "aws-node"
+      "terminationGracePeriodSeconds": 10
+      "tolerations":
+      - "operator": "Exists"
+      "volumes":
+      - "hostPath":
+          "path": "/opt/cni/bin"
+        "name": "cni-bin-dir"
+      - "hostPath":
+          "path": "/etc/cni/net.d"
+        "name": "cni-net-dir"
+      - "hostPath":
+          "path": "/var/run/dockershim.sock"
+        "name": "dockershim"
+      - "hostPath":
+          "path": "/run/xtables.lock"
+        "name": "xtables-lock"
+      - "hostPath":
+          "path": "/var/log/aws-routed-eni"
+          "type": "DirectoryOrCreate"
+        "name": "log-dir"
+      - "hostPath":
+          "path": "/var/run/aws-node"
+          "type": "DirectoryOrCreate"
+        "name": "run-dir"
+  "updateStrategy":
+    "rollingUpdate":
+      "maxUnavailable": "10%"
+    "type": "RollingUpdate"
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: eniconfigs.crd.k8s.amazonaws.com
-spec:
-  scope: Cluster
-  group: crd.k8s.amazonaws.com
-  versions:
-  - name: v1alpha1
-    served: true
-    storage: true
-  names:
-    plural: eniconfigs
-    singular: eniconfig
-    kind: ENIConfig
+"apiVersion": "v1"
+"kind": "ServiceAccount"
+"metadata":
+  "name": "aws-node"
+  "namespace": "kube-system"
+...
 `)
 
 func cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplateBytes() ([]byte, error) {
