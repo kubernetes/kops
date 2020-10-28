@@ -59,16 +59,16 @@ kind: CustomResourceDefinition
 metadata:
   name: eniconfigs.crd.k8s.amazonaws.com
 spec:
-  scope: Cluster
   group: crd.k8s.amazonaws.com
+  names:
+    kind: ENIConfig
+    plural: eniconfigs
+    singular: eniconfig
+  scope: Cluster
   versions:
   - name: v1alpha1
     served: true
     storage: true
-  names:
-    plural: eniconfigs
-    singular: eniconfig
-    kind: ENIConfig
 ---
 apiVersion: apps/v1
 kind: DaemonSet
