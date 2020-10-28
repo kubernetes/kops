@@ -846,7 +846,7 @@ type cloudformationAutoscalingInstanceDistribution struct {
 	// SpotAllocationStrategy is the spot allocation stratergy
 	SpotAllocationStrategy *string `json:"SpotAllocationStrategy,omitempty"`
 	// SpotInstancePool is the number of pools
-	SpotInstancePool *int64 `json:"SpotInstancePool,omitempty"`
+	SpotInstancePools *int64 `json:"SpotInstancePools,omitempty"`
 	// SpotMaxPrice is the max bid on spot instance, defaults to demand value
 	SpotMaxPrice *string `json:"SpotMaxPrice,omitempty"`
 }
@@ -901,7 +901,7 @@ func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.Cloudformation
 				OnDemandBaseCapacity:                e.MixedOnDemandBase,
 				OnDemandPercentageAboveBaseCapacity: e.MixedOnDemandAboveBase,
 				SpotAllocationStrategy:              e.MixedSpotAllocationStrategy,
-				SpotInstancePool:                    e.MixedSpotInstancePools,
+				SpotInstancePools:                   e.MixedSpotInstancePools,
 				SpotMaxPrice:                        e.MixedSpotMaxPrice,
 			},
 		}
