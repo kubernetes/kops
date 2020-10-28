@@ -603,6 +603,8 @@ NodeLocal DNSCache can be enabled if you are using CoreDNS. It is used to improv
 
 `memoryRequest` and `cpuRequest` for the `node-local-dns` pods can also be configured. If not set, they will be configured by default to `5Mi` and `25m` respectively.
 
+If `forwardToKubeDNS` is enabled, kubedns will be used as a default upstream
+
 ```yaml
 spec:
   kubeDNS:

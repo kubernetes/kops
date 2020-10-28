@@ -19135,6 +19135,19 @@ data:
         prometheus :9253
         health {{ KubeDNS.NodeLocalDNS.LocalIP }}:{{ NodeLocalDNSHealthCheck }}
     }
+    {{- if KubeDNS.NodeLocalDNS.ForwardToKubeDNS }}
+    .:53 {
+        errors
+        cache 30
+        reload
+        loop
+        bind {{ KubeDNS.NodeLocalDNS.LocalIP }}
+        forward . {{ NodeLocalDNSClusterIP }} {
+          force_tcp
+        }
+        prometheus :9253
+    }
+    {{- else }}
     in-addr.arpa:53 {
         errors
         cache 30
@@ -19166,6 +19179,7 @@ data:
         forward . __PILLAR__UPSTREAM__SERVERS__
         prometheus :9253
     }
+    {{- end }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -19255,7 +19269,8 @@ spec:
           name: node-local-dns
           items:
             - key: Corefile
-              path: Corefile.base`)
+              path: Corefile.base
+`)
 
 func cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplateBytes() ([]byte, error) {
 	return _cloudupResourcesAddonsNodelocaldnsAddonsK8sIoK8s112YamlTemplate, nil
