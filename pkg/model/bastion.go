@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -261,25 +260,6 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(elb)
-	}
-
-	// When Spotinst Elastigroups are used, there is no need to create
-	// a separate task for the attachment of the load balancer since this
-	// is already done as part of the Elastigroup's creation, if needed.
-	if !featureflag.Spotinst.Enabled() {
-		for _, ig := range bastionInstanceGroups {
-			// We build the ASG when we iterate over the instance groups
-
-			// Attach the ELB to the ASG
-			t := &awstasks.LoadBalancerAttachment{
-				Name:      s("bastion-elb-attachment"),
-				Lifecycle: b.Lifecycle,
-
-				LoadBalancer:     elb,
-				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-			}
-			c.AddTask(t)
-		}
 	}
 
 	bastionPublicName := ""

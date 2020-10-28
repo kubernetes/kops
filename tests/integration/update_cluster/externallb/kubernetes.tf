@@ -80,27 +80,13 @@ provider "aws" {
   region = "us-test-1"
 }
 
-resource "aws_autoscaling_attachment" "extlb-my-elb-nodes" {
-  autoscaling_group_name = aws_autoscaling_group.nodes-externallb-example-com.id
-  elb                    = "my-elb"
-}
-
-resource "aws_autoscaling_attachment" "extlb-my-other-elb-master-us-test-1a" {
-  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-externallb-example-com.id
-  elb                    = "my-other-elb"
-}
-
-resource "aws_autoscaling_attachment" "exttg-aws_my-tg--0123456789abcdef-master-us-test-1a" {
-  alb_target_group_arn   = "aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef"
-  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-externallb-example-com.id
-}
-
 resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-com" {
   enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_template {
     id      = aws_launch_template.master-us-test-1a-masters-externallb-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-externallb-example-com.latest_version
   }
+  load_balancers      = ["my-other-elb"]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
@@ -140,6 +126,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = ["aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 
@@ -149,6 +136,7 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     id      = aws_launch_template.nodes-externallb-example-com.id
     version = aws_launch_template.nodes-externallb-example-com.latest_version
   }
+  load_balancers      = ["my-elb"]
   max_size            = 2
   metrics_granularity = "1Minute"
   min_size            = 2
