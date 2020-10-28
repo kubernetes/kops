@@ -18,13 +18,13 @@ kops create secret dockerconfig [flags]
 ```
   # Create a new docker config.
   kops create secret dockerconfig -f /path/to/docker/config.json \
-  --name k8s-cluster.example.com --state s3://example.com
+  --name k8s-cluster.example.com --state s3://my-state-store
   # Create a docker config via stdin.
   generate-docker-config.sh | kops create secret dockerconfig -f - \
-  --name k8s-cluster.example.com --state s3://example.com
+  --name k8s-cluster.example.com --state s3://my-state-store
   # Replace an existing docker config secret.
   kops create secret dockerconfig -f /path/to/docker/config.json --force \
-  --name k8s-cluster.example.com --state s3://example.com
+  --name k8s-cluster.example.com --state s3://my-state-store
 ```
 
 ### Options
