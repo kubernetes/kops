@@ -138,13 +138,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subnets:          lbSubnets,
 			Listeners:        nlbListeners,
 
-			// Configure fast-recovery health-checks
-			HealthCheck: &awstasks.NetworkLoadBalancerHealthCheck{
-				HealthyThreshold:   fi.Int64(2),
-				UnhealthyThreshold: fi.Int64(2),
-				Port:               fi.String("443"),
-			},
-
 			Tags: tags,
 			VPC:  b.LinkToVPC(),
 			Type: fi.String("network"),
@@ -185,9 +178,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Enabled: lbSpec.CrossZoneLoadBalancing,
 		}
 
-		nlb.CrossZoneLoadBalancing = &awstasks.NetworkLoadBalancerCrossZoneLoadBalancing{
-			Enabled: lbSpec.CrossZoneLoadBalancing,
-		}
+		nlb.CrossZoneLoadBalancing = lbSpec.CrossZoneLoadBalancing
 
 		switch lbSpec.Type {
 		case kops.LoadBalancerTypeInternal:
@@ -212,12 +203,14 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			tags["Name"] = targetGroupName
 
 			tg := &awstasks.TargetGroup{
-				Name:     fi.String(targetGroupName),
-				VPC:      b.LinkToVPC(),
-				Tags:     tags,
-				Protocol: fi.String("TCP"),
-				Port:     targetGroupPort,
-				Shared:   fi.Bool(false),
+				Name:               fi.String(targetGroupName),
+				VPC:                b.LinkToVPC(),
+				Tags:               tags,
+				Protocol:           fi.String("TCP"),
+				Port:               targetGroupPort,
+				HealthyThreshold:   fi.Int64(2),
+				UnhealthyThreshold: fi.Int64(2),
+				Shared:             fi.Bool(false),
 			}
 
 			c.AddTask(tg)
