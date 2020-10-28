@@ -637,32 +637,168 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		klog.Infof("error modifying NLB attributes: %v", err)
 		return err
 	}
+	return nil
+}
 
-	if err := e.modifyTargetGroupAttributes(t, a, e, changes, *e.TargetGroup.ARN); err != nil {
-		klog.Infof("error modifying NLB Target Group attributes: %v", err)
+type terraformNetworkLoadBalancer struct {
+	Name                   string               `json:"name" cty:"name"`
+	Internal               bool                 `json:"internal" cty:"internal"`
+	Type                   string               `json:"load_balancer_type" cty:"load_balancer_type"`
+	Subnets                []*terraform.Literal `json:"subnets" cty:"subnets"`
+	CrossZoneLoadBalancing bool                 `json:"enable_cross_zone_load_balancing" cty:"enable_cross_zone_load_balancing"`
+
+	Tags map[string]string `json:"tags" cty:"tags"`
+}
+
+type terraformNetworkLoadBalancerListener struct {
+	LoadBalancer   *terraform.Literal                           `json:"load_balancer_arn" cty:"load_balancer_arn"`
+	Port           int64                                        `json:"port" cty:"port"`
+	Protocol       string                                       `json:"protocol" cty:"protocol"`
+	CertificateARN *string                                      `json:"certificate_arn,omitempty" cty:"certificate_arn"`
+	DefaultAction  []terraformNetworkLoadBalancerListenerAction `json:"default_action" cty:"default_action"`
+}
+
+type terraformNetworkLoadBalancerListenerAction struct {
+	Type           string             `json:"type" cty:"type"`
+	TargetGroupARN *terraform.Literal `json:"target_group_arn,omitempty" cty:"target_group_arn"`
+}
+
+func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
+	nlbTF := &terraformNetworkLoadBalancer{
+		Name:                   *e.Name,
+		Internal:               fi.StringValue(e.Scheme) == "internal",
+		Type:                   "network",
+		Tags:                   e.Tags,
+		Subnets:                make([]*terraform.Literal, 0),
+		CrossZoneLoadBalancing: fi.BoolValue(e.CrossZoneLoadBalancing),
+	}
+
+	for _, subnet := range e.Subnets {
+		nlbTF.Subnets = append(nlbTF.Subnets, subnet.TerraformLink())
+	}
+
+	err := t.RenderResource("aws_lb", *e.Name, nlbTF)
+	if err != nil {
 		return err
 	}
 
+	for portStr, listener := range e.Listeners {
+		port, err := strconv.Atoi(portStr)
+		if err != nil {
+			return err
+		}
+		listenerTF := &terraformNetworkLoadBalancerListener{
+			LoadBalancer: e.TerraformLink(),
+			Port:         int64(port),
+			DefaultAction: []terraformNetworkLoadBalancerListenerAction{
+				{
+					Type:           "forward",
+					TargetGroupARN: e.TargetGroup.TerraformLink(),
+				},
+			},
+		}
+		if listener.SSLCertificateID != "" {
+			listenerTF.CertificateARN = &listener.SSLCertificateID
+			listenerTF.Protocol = "TLS"
+		} else {
+			listenerTF.Protocol = "TCP"
+		}
+
+		err = t.RenderResource("aws_lb_listener", fmt.Sprintf("%v-%v", *e.Name, portStr), listenerTF)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraform.Literal {
-	if true {
-		panic("NetworkLoadBalancer support for Terraform TBD")
+	prop := "id"
+	if len(params) > 0 {
+		prop = params[0]
 	}
+	return terraform.LiteralProperty("aws_lb", *e.Name, prop)
+}
+
+type cloudformationNetworkLoadBalancer struct {
+	Name    string                    `json:"Name"`
+	Scheme  string                    `json:"Scheme"`
+	Subnets []*cloudformation.Literal `json:"Subnets"`
+	Type    string                    `json:"Type"`
+	Tags    []cloudformationTag       `json:"Tags"`
+}
+
+type cloudformationNetworkLoadBalancerListener struct {
+	Certificates    []string                                          `json:"Certificates,omitempty"`
+	DefaultActions  []cloudformationNetworkLoadBalancerListenerAction `json:"DefaultActions"`
+	LoadBalancerARN *cloudformation.Literal                           `json:"LoadBalancerArn"`
+	Port            int64                                             `json:"Port"`
+	Protocol        string                                            `json:"Protocol"`
+}
+
+type cloudformationNetworkLoadBalancerListenerAction struct {
+	Type           string                  `json:"Type"`
+	TargetGroupARN *cloudformation.Literal `json:"TargetGroupArn"`
+}
+
+func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NetworkLoadBalancer) error {
+	nlbCF := &cloudformationNetworkLoadBalancer{
+		Name:    *e.Name,
+		Subnets: make([]*cloudformation.Literal, 0),
+		Type:    "network",
+		Tags:    buildCloudformationTags(e.Tags),
+	}
+	for _, subnet := range e.Subnets {
+		nlbCF.Subnets = append(nlbCF.Subnets, subnet.CloudformationLink())
+	}
+	if e.Scheme != nil {
+		nlbCF.Scheme = *e.Scheme
+	}
+	err := t.RenderResource("AWS::ElasticLoadBalancingV2::LoadBalancer", *e.Name, nlbCF)
+	if err != nil {
+		return err
+	}
+
+	for portStr, listener := range e.Listeners {
+		port, err := strconv.Atoi(portStr)
+		if err != nil {
+			return err
+		}
+		listenerCF := &cloudformationNetworkLoadBalancerListener{
+			LoadBalancerARN: e.CloudformationLink(),
+			Port:            int64(port),
+			DefaultActions: []cloudformationNetworkLoadBalancerListenerAction{
+				{
+					Type:           "forward",
+					TargetGroupARN: e.TargetGroup.CloudformationLink(),
+				},
+			},
+		}
+		if listener.SSLCertificateID != "" {
+			listenerCF.Certificates = []string{listener.SSLCertificateID}
+			listenerCF.Protocol = "TLS"
+		} else {
+			listenerCF.Protocol = "TCP"
+		}
+
+		err = t.RenderResource("AWS::ElasticLoadBalancingV2::Listener", fmt.Sprintf("%v-%v", *e.Name, portStr), listenerCF)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func (e *NetworkLoadBalancer) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::ElasticLoadBalancingV2::LoadBalancer", *e.Name)
 }
 
 func (e *NetworkLoadBalancer) CloudformationAttrCanonicalHostedZoneNameID() *cloudformation.Literal {
-	if true {
-		panic("NetworkLoadBalancer does support for Cloudformation TBD")
-	}
-	return nil
+	return cloudformation.GetAtt("AWS::ElasticLoadBalancingV2::LoadBalancer", *e.Name, "CanonicalHostedZoneID")
 }
 
 func (e *NetworkLoadBalancer) CloudformationAttrDNSName() *cloudformation.Literal {
-	if true {
-		panic("NetworkLoadBalancer does support for Cloudformation TBD")
-	}
-	return nil
+	return cloudformation.GetAtt("AWS::ElasticLoadBalancingV2::LoadBalancer", *e.Name, "DNSName")
+
 }
