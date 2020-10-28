@@ -24,28 +24,28 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// LoadBalancerAttachment
+// TargetGroup
 
-var _ fi.HasLifecycle = &LoadBalancerAttachment{}
+var _ fi.HasLifecycle = &TargetGroup{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *LoadBalancerAttachment) GetLifecycle() *fi.Lifecycle {
+func (o *TargetGroup) GetLifecycle() *fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
-func (o *LoadBalancerAttachment) SetLifecycle(lifecycle fi.Lifecycle) {
+func (o *TargetGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = &lifecycle
 }
 
-var _ fi.HasName = &LoadBalancerAttachment{}
+var _ fi.HasName = &TargetGroup{}
 
 // GetName returns the Name of the object, implementing fi.HasName
-func (o *LoadBalancerAttachment) GetName() *string {
+func (o *TargetGroup) GetName() *string {
 	return o.Name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
-func (o *LoadBalancerAttachment) String() string {
+func (o *TargetGroup) String() string {
 	return fi.TaskAsString(o)
 }

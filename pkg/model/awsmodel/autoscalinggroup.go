@@ -91,10 +91,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(tsk)
 
-		// @step: add any external load balancer attachments
-		if err := b.buildExternalLoadBalancerTasks(c, ig); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -353,6 +349,40 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	t.InstanceProtection = ig.Spec.InstanceProtection
 
+	// When Spotinst Elastigroups are used, there is no need to create
+	// a separate task for the attachment of the load balancer since this
+	// is already done as part of the Elastigroup's creation, if needed.
+	if !featureflag.Spotinst.Enabled() {
+		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
+			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("api"))
+		}
+
+		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("bastion"))
+		}
+	}
+
+	for _, extLB := range ig.Spec.ExternalLoadBalancers {
+		if extLB.LoadBalancerName != nil {
+			t.LoadBalancers = append(t.LoadBalancers, &awstasks.LoadBalancer{Name: extLB.LoadBalancerName})
+
+			c.AddTask(&awstasks.LoadBalancer{
+				Name:   extLB.LoadBalancerName,
+				Shared: fi.Bool(true),
+			})
+		}
+
+		if extLB.TargetGroupARN != nil {
+			t.TargetGroups = append(t.TargetGroups, &awstasks.TargetGroup{Name: extLB.TargetGroupARN, ARN: extLB.TargetGroupARN})
+
+			c.AddTask(&awstasks.TargetGroup{
+				Name:   extLB.TargetGroupARN,
+				ARN:    extLB.TargetGroupARN,
+				Shared: fi.Bool(true),
+			})
+		}
+	}
+
 	// @step: are we using a mixed instance policy
 	if ig.Spec.MixedInstancesPolicy != nil {
 		spec := ig.Spec.MixedInstancesPolicy
@@ -367,29 +397,4 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	}
 
 	return t, nil
-}
-
-// buildExternlLoadBalancerTasks is responsible for adding any ELB attachment tasks to the model
-func (b *AutoscalingGroupModelBuilder) buildExternalLoadBalancerTasks(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) error {
-	for _, x := range ig.Spec.ExternalLoadBalancers {
-		if x.LoadBalancerName != nil {
-			c.AddTask(&awstasks.ExternalLoadBalancerAttachment{
-				Name:             fi.String("extlb-" + *x.LoadBalancerName + "-" + ig.Name),
-				Lifecycle:        b.Lifecycle,
-				LoadBalancerName: *x.LoadBalancerName,
-				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-			})
-		}
-
-		if x.TargetGroupARN != nil {
-			c.AddTask(&awstasks.ExternalTargetGroupAttachment{
-				Name:             fi.String("exttg-" + *x.TargetGroupARN + "-" + ig.Name),
-				Lifecycle:        b.Lifecycle,
-				TargetGroupARN:   *x.TargetGroupARN,
-				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-			})
-		}
-	}
-
-	return nil
 }
