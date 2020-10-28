@@ -144,13 +144,45 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	return nil
 }
 
+type terraformTargetGroup struct {
+	Name        string                          `json:"name" cty:"name"`
+	Port        int64                           `json:"port" cty:"port"`
+	Protocol    string                          `json:"protocol" cty:"protocol"`
+	VPCID       terraform.Literal               `json:"vpc_id" cty:"vpc_id"`
+	Tags        map[string]string               `json:"tags,omitempty" cty:"tags"`
+	HealthCheck terraformTargetGroupHealthCheck `json:"health_check" cty:"health_check"`
+}
+
+type terraformTargetGroupHealthCheck struct {
+	HealthyThreshold   int64  `json:"healthy_threshold" cty:"healthy_threshold"`
+	UnhealthyThreshold int64  `json:"unhealthy_threshold" cty:"unhealthy_threshold"`
+	Protocol           string `json:"protocol" cty:"protocol"`
+}
+
 func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		return nil
 	}
 
-	return fmt.Errorf("non shared Target Groups is not yet supported")
+	if e.VPC == nil {
+		return fmt.Errorf("Missing VPC task from target group:\n%v\n%v", e, e.VPC)
+	}
+
+	tf := &terraformTargetGroup{
+		Name:     *e.Name,
+		Port:     *e.Port,
+		Protocol: *e.Protocol,
+		VPCID:    *e.VPC.TerraformLink(),
+		Tags:     e.Tags,
+		HealthCheck: terraformTargetGroupHealthCheck{
+			HealthyThreshold:   *e.HealthyThreshold,
+			UnhealthyThreshold: *e.UnhealthyThreshold,
+			Protocol:           *e.Protocol,
+		},
+	}
+
+	return t.RenderResource("aws_lb_target_group", *e.Name, tf)
 }
 
 func (e *TargetGroup) TerraformLink(params ...string) *terraform.Literal {
@@ -162,7 +194,19 @@ func (e *TargetGroup) TerraformLink(params ...string) *terraform.Literal {
 			klog.Warningf("ID not set on shared Target Group %v", e)
 		}
 	}
-	return terraform.LiteralProperty("aws_target_group", *e.Name, "id")
+	return terraform.LiteralProperty("aws_lb_target_group", *e.Name, "id")
+}
+
+type cloudformationTargetGroup struct {
+	Name     string                  `json:"Name"`
+	Port     int64                   `json:"Port"`
+	Protocol string                  `json:"Protocol"`
+	VPCID    *cloudformation.Literal `json:"VpcId"`
+	Tags     []cloudformationTag     `json:"Tags"`
+
+	HealthCheckProtocol string `json:"HealthCheckProtocol"`
+	HealthyThreshold    int64  `json:"HealthyThresholdCount"`
+	UnhealthyThreshold  int64  `json:"UnhealthyThresholdCount"`
 }
 
 func (_ *TargetGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *TargetGroup) error {
@@ -170,7 +214,18 @@ func (_ *TargetGroup) RenderCloudformation(t *cloudformation.CloudformationTarge
 	if shared {
 		return nil
 	}
-	return fmt.Errorf("non shared Target Groups is not yet supported")
+
+	cf := &cloudformationTargetGroup{
+		Name:                *e.Name,
+		Port:                *e.Port,
+		Protocol:            *e.Protocol,
+		VPCID:               e.VPC.CloudformationLink(),
+		Tags:                buildCloudformationTags(e.Tags),
+		HealthCheckProtocol: *e.Protocol,
+		HealthyThreshold:    *e.HealthyThreshold,
+		UnhealthyThreshold:  *e.UnhealthyThreshold,
+	}
+	return t.RenderResource("AWS::ElasticLoadBalancingV2::TargetGroup", *e.Name, cf)
 }
 
 func (e *TargetGroup) CloudformationLink() *cloudformation.Literal {
