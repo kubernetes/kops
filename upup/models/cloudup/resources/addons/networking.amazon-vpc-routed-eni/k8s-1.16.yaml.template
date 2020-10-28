@@ -80,10 +80,6 @@ metadata:
   labels:
     k8s-app: aws-node
 spec:
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: "10%"
   selector:
     matchLabels:
       k8s-app: aws-node
@@ -92,7 +88,6 @@ spec:
       labels:
         k8s-app: aws-node
     spec:
-      priorityClassName: system-node-critical
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -111,28 +106,8 @@ spec:
                 operator: NotIn
                 values:
                 - fargate
-      serviceAccountName: aws-node
-      hostNetwork: true
-      tolerations:
-      - operator: Exists
       containers:
-      - image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.5" }}"
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 61678
-          name: metrics
-        name: aws-node
-        readinessProbe:
-          exec:
-            command: ["/app/grpc-health-probe", "-addr=:50051"]
-          initialDelaySeconds: 1
-        livenessProbe:
-          exec:
-            command: ["/app/grpc-health-probe", "-addr=:50051"]
-          initialDelaySeconds: 60
-        env:
-        - name: CLUSTER_NAME
-          value: {{ ClusterName }}
+      - env:
         - name: ADDITIONAL_ENI_TAGS
           value: '{}'
         - name: AWS_VPC_CNI_NODE_PORT_SUPPORT
@@ -151,6 +126,8 @@ spec:
           value: /host/var/log/aws-routed-eni/ipamd.log
         - name: AWS_VPC_K8S_CNI_RANDOMIZESNAT
           value: prng
+        - name: AWS_VPC_K8S_CNI_VETHPREFIX
+          value: eni
         - name: AWS_VPC_K8S_PLUGIN_LOG_FILE
           value: /var/log/aws-routed-eni/plugin.log
         - name: AWS_VPC_K8S_PLUGIN_LOG_LEVEL
@@ -161,18 +138,36 @@ spec:
           value: "false"
         - name: ENABLE_POD_ENI
           value: "false"
-        - name: AWS_VPC_K8S_CNI_VETHPREFIX
-          value: eni
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
         - name: WARM_ENI_TARGET
           value: "1"
+        - name: CLUSTER_NAME
+          value: {{ ClusterName }}
         {{- range .Networking.AmazonVPC.Env }}
         - name: {{ .Name }}
           value: "{{ .Value }}"
         {{- end }}
+        image: "{{- or .Networking.AmazonVPC.ImageName "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.5" }}"
+        imagePullPolicy: Always
+        livenessProbe:
+          exec:
+            command:
+            - /app/grpc-health-probe
+            - -addr=:50051
+          initialDelaySeconds: 60
+        name: aws-node
+        ports:
+        - containerPort: 61678
+          name: metrics
+        readinessProbe:
+          exec:
+            command:
+            - /app/grpc-health-probe
+            - -addr=:50051
+          initialDelaySeconds: 1
         resources:
           requests:
             cpu: 10m
@@ -193,6 +188,7 @@ spec:
           name: dockershim
         - mountPath: /run/xtables.lock
           name: xtables-lock
+      hostNetwork: true
       initContainers:
       - env:
         - name: DISABLE_TCP_EARLY_DEMUX
@@ -208,6 +204,10 @@ spec:
         volumeMounts:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
+      priorityClassName: system-node-critical
+      serviceAccountName: aws-node
+      tolerations:
+      - operator: Exists
       volumes:
       - hostPath:
           path: /opt/cni/bin
@@ -229,6 +229,10 @@ spec:
           path: /var/run/aws-node
           type: DirectoryOrCreate
         name: run-dir
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: "10%"
+    type: RollingUpdate
 ---
 apiVersion: v1
 kind: ServiceAccount
