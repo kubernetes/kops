@@ -22,9 +22,11 @@ rules:
 - apiGroups:
   - crd.k8s.amazonaws.com
   resources:
-  - "*"
+  - eniconfigs
   verbs:
-  - "*"
+  - get
+  - list
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -47,7 +49,7 @@ rules:
   - extensions
   - apps
   resources:
-  - daemonsets
+  - "*"
   verbs:
   - list
   - watch
