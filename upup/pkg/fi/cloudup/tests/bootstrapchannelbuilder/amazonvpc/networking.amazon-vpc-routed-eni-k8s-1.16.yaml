@@ -29,6 +29,7 @@ rules:
   - update
 - apiGroups:
   - extensions
+  - apps
   resources:
   - daemonsets
   verbs:
@@ -138,7 +139,7 @@ spec:
           value: "10"
         - name: AWS_VPC_K8S_CNI_LOGLEVEL
           value: debug
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.1
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.7.5
         imagePullPolicy: Always
         livenessProbe:
           exec:
@@ -174,9 +175,14 @@ spec:
           name: run-dir
         - mountPath: /var/run/dockershim.sock
           name: dockershim
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
       hostNetwork: true
       initContainers:
-      - image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.1
+      - env:
+        - name: DISABLE_TCP_EARLY_DEMUX
+          value: "false"
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.5
         imagePullPolicy: Always
         name: aws-vpc-cni-init
         resources: {}
@@ -201,6 +207,9 @@ spec:
       - hostPath:
           path: /var/run/dockershim.sock
         name: dockershim
+      - hostPath:
+          path: /run/xtables.lock
+        name: xtables-lock
       - hostPath:
           path: /var/log/aws-routed-eni
           type: DirectoryOrCreate
