@@ -130,8 +130,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Override the returned name to be the expected ELB name
 		tags["Name"] = "api." + b.ClusterName()
 
+		name := b.NLBName("api")
 		nlb = &awstasks.NetworkLoadBalancer{
-			Name:      fi.String("api." + b.ClusterName()),
+			Name:      &name,
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: fi.String(loadBalancerName),
