@@ -24,7 +24,7 @@ kops edit instancegroup [flags]
 
 ```
   # Edit an instancegroup desired configuration.
-  kops edit ig --name k8s-cluster.example.com nodes --state=s3://kops-state-1234
+  kops edit ig --name k8s-cluster.example.com nodes --state=s3://my-state-store
 ```
 
 ### Options

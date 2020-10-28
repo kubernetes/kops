@@ -19,19 +19,19 @@ kops create cluster [flags]
 
 ```
   # Create a cluster in AWS in a single zone.
-  kops create cluster --name=kubernetes-cluster.example.com \
-  --state=s3://kops-state-1234 \
-  --zones=eu-west-1a \
+  kops create cluster --name=k8s-cluster.example.com \
+  --state=s3://my-state-store \
+  --zones=us-east-1a \
   --node-count=2
   
   # Create a cluster in AWS with HA masters. This cluster
   # has also been configured for private networking in a kops-managed VPC.
   # The bastion flag is set to create an entrypoint for admins to SSH.
-  export NODE_SIZE=${NODE_SIZE:-m4.large}
-  export MASTER_SIZE=${MASTER_SIZE:-m4.large}
-  export ZONES=${ZONES:-"us-east-1d,us-east-1b,us-east-1c"}
+  export NODE_SIZE=${NODE_SIZE:-m5.large}
+  export MASTER_SIZE=${MASTER_SIZE:-c5.large}
+  export ZONES=${ZONES:-"us-east-1a,us-east-1b,us-east-1c"}
   export KOPS_STATE_STORE="s3://my-state-store"
-  kops create cluster k8s-clusters.example.com \
+  kops create cluster k8s-cluster.example.com \
   --node-count 3 \
   --zones $ZONES \
   --node-size $NODE_SIZE \
@@ -43,10 +43,10 @@ kops create cluster [flags]
   --yes
   
   # Create a cluster in GCE.
-  export KOPS_STATE_STORE="gs://mybucket-kops"
-  export ZONES=${MASTER_ZONES:-"us-east1-b,us-east1-c,us-east1-d"}
+  export KOPS_STATE_STORE="gs://my-state-store"
+  export ZONES=${MASTER_ZONES:-"us-east1-a,us-east1-b,us-east1-c"}
   export KOPS_FEATURE_FLAGS=AlphaAllowGCE # Note: GCE support is not GA.
-  kops create cluster kubernetes-k8s-gce.example.com \
+  kops create cluster k8s-cluster.example.com \
   --zones $ZONES \
   --master-zones $ZONES \
   --node-count 3 \
@@ -54,9 +54,9 @@ kops create cluster [flags]
   
   # Generate a cluster spec to apply later.
   # Run the following, then: kops create -f filename.yaml
-  kops create cluster --name=kubernetes-cluster.example.com \
-  --state=s3://kops-state-1234 \
-  --zones=eu-west-1a \
+  kops create cluster --name=k8s-cluster.example.com \
+  --state=s3://my-state-store \
+  --zones=us-east-1a \
   --node-count=2 \
   --dry-run \
   -oyaml > filename.yaml
