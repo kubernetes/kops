@@ -18,14 +18,14 @@ kops create secret ciliumpassword [flags]
 ```
   # Create a new cilium encryption key.
   kops create secret ciliumpassword -f /path/to/ciliumpassword \
-  --name k8s-cluster.example.com --state s3://example.com
+  --name k8s-cluster.example.com --state s3://my-state-store
   # Create a new cilium encryption key via stdin.
-  cat <<EOF | kops create secret ciliumpassword --name k8s-cluster.example.com --state s3://example.com -f -
+  cat <<EOF | kops create secret ciliumpassword --name k8s-cluster.example.com --state s3://my-state-store -f -
   keys: $(echo "3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null| xxd -p -c 64)) 128")
   EOF
   # Replace an existing ciliumpassword secret
   kops create secret ciliumpassword -f /path/to/ciliumpassword --force \
-  --name k8s-cluster.example.com --state s3://example.com
+  --name k8s-cluster.example.com --state s3://my-state-store
 ```
 
 ### Options
