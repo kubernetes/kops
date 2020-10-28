@@ -91,10 +91,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(tsk)
 
-		// @step: add any external load balancer attachments
-		if err := b.buildExternalLoadBalancerTasks(c, ig); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -369,10 +365,21 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	for _, extLB := range ig.Spec.ExternalLoadBalancers {
 		if extLB.LoadBalancerName != nil {
 			t.LoadBalancers = append(t.LoadBalancers, &awstasks.LoadBalancer{Name: extLB.LoadBalancerName})
+
+			c.AddTask(&awstasks.LoadBalancer{
+				Name:   extLB.LoadBalancerName,
+				Shared: fi.Bool(true),
+			})
 		}
 
 		if extLB.TargetGroupARN != nil {
 			t.TargetGroups = append(t.TargetGroups, &awstasks.TargetGroup{Name: extLB.TargetGroupARN, ARN: extLB.TargetGroupARN})
+
+			c.AddTask(&awstasks.TargetGroup{
+				Name:   extLB.TargetGroupARN,
+				ARN:    extLB.TargetGroupARN,
+				Shared: fi.Bool(true),
+			})
 		}
 	}
 
@@ -390,26 +397,4 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	}
 
 	return t, nil
-}
-
-// buildExternlLoadBalancerTasks is responsible for adding any ELB attachment tasks to the model
-func (b *AutoscalingGroupModelBuilder) buildExternalLoadBalancerTasks(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) error {
-	for _, x := range ig.Spec.ExternalLoadBalancers {
-		if x.LoadBalancerName != nil {
-			c.AddTask(&awstasks.LoadBalancer{
-				Name:   x.LoadBalancerName,
-				Shared: fi.Bool(true),
-			})
-		}
-
-		if x.TargetGroupARN != nil {
-			c.AddTask(&awstasks.TargetGroup{
-				Name:   x.TargetGroupARN,
-				ARN:    x.TargetGroupARN,
-				Shared: fi.Bool(true),
-			})
-		}
-	}
-
-	return nil
 }
