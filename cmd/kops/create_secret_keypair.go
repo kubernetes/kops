@@ -33,7 +33,7 @@ var (
 	Add a ca certificate and private key.
 	kops create secret keypair ca \
 		--cert ~/ca.pem --key ~/ca-key.pem \
-		--name k8s-cluster.example.com --state s3://example.com
+		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
 	createSecretKeypairShort = i18n.T(`Create a secret keypair.`)

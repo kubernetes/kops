@@ -31,7 +31,7 @@ var (
 
 	upgradeExample = templates.Examples(i18n.T(`
 	# Upgrade a cluster's Kubernetes version.
-	kops upgrade cluster kubernetes-cluster.example.com --yes --state=s3://kops-state-1234
+	kops upgrade cluster k8s-cluster.example.com --yes --state=s3://my-state-store
 	`))
 
 	upgradeShort = i18n.T("Upgrade a kubernetes cluster.")

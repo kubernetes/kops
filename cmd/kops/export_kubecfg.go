@@ -42,13 +42,13 @@ var (
 
 	exportKubecfgExample = templates.Examples(i18n.T(`
 	# export a kubeconfig file with the cluster admin user (make sure you keep this user safe!)
-	kops export kubecfg kubernetes-cluster.example.com --admin
+	kops export kubecfg k8s-cluster.example.com --admin
 
 	# export using a user already existing in the kubeconfig file
-	kops export kubecfg kubernetes-cluster.example.com --user my-oidc-user
+	kops export kubecfg k8s-cluster.example.com --user my-oidc-user
 
 	# export using the internal DNS name, bypassing the cloud load balancer
-	kops export kubecfg kubernetes-cluster.example.com --internal
+	kops export kubecfg k8s-cluster.example.com --internal
 		`))
 
 	exportKubecfgShort = i18n.T(`Export kubecfg.`)

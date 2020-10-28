@@ -26,7 +26,7 @@ kops delete -f FILENAME [--yes] [flags]
   pbpaste | kops delete -f -
   
   # Delete a cluster in AWS.
-  kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
+  kops delete cluster --name=k8s.example.com --state=s3://my-state-store
   
   # Delete an instancegroup for the k8s-cluster.example.com cluster.
   # The --yes option runs the command immediately.
