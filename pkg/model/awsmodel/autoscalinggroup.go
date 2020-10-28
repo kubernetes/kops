@@ -369,7 +369,11 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	// is already done as part of the Elastigroup's creation, if needed.
 	if !featureflag.Spotinst.Enabled() {
 		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
-			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("api"))
+			if b.UseNetworkLoadBalancer() {
+				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("api", "443", "443"))
+			} else {
+				t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("api"))
+			}
 		}
 
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
