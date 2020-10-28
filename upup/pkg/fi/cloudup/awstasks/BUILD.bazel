@@ -51,7 +51,6 @@ go_library(
         "network_load_balancer.go",
         "networkloadbalancer_attributes.go",
         "networkloadbalancer_fitask.go",
-        "networkloadbalancer_healthchecks.go",
         "route.go",
         "route_fitask.go",
         "routetable.go",

@@ -60,9 +60,7 @@ type NetworkLoadBalancer struct {
 
 	Scheme *string
 
-	HealthCheck            *NetworkLoadBalancerHealthCheck
-	AccessLog              *NetworkLoadBalancerAccessLog
-	CrossZoneLoadBalancing *NetworkLoadBalancerCrossZoneLoadBalancing
+	CrossZoneLoadBalancing *bool
 	SSLCertificateID       string
 
 	Tags         map[string]string
@@ -70,12 +68,8 @@ type NetworkLoadBalancer struct {
 
 	Type *string
 
-	VPC                *VPC
-	DeletionProtection *NetworkLoadBalancerDeletionProtection
-	ProxyProtocolV2    *TargetGroupProxyProtocolV2
-	Stickiness         *TargetGroupStickiness
-	DeregistationDelay *TargetGroupDeregistrationDelay
-	TargetGroup        *TargetGroup
+	VPC         *VPC
+	TargetGroup *TargetGroup
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
@@ -129,38 +123,6 @@ func (e *NetworkLoadBalancerListener) mapToAWS(loadBalancerPort int64, targetGro
 	}
 
 	return l
-}
-
-func findTargetGroupByLoadBalancerArn(cloud awsup.AWSCloud, loadBalancerArn string) (*elbv2.TargetGroup, error) {
-	request := &elbv2.DescribeTargetGroupsInput{
-		LoadBalancerArn: aws.String(loadBalancerArn),
-	}
-
-	response, err := cloud.ELBV2().DescribeTargetGroups(request)
-
-	if err != nil {
-		return nil, fmt.Errorf("Error retrieving target groups for loadBalancerArn %v with err : %v", loadBalancerArn, err)
-	}
-
-	if len(response.TargetGroups) != 1 {
-		return nil, fmt.Errorf("Wrong # of target groups returned in findTargetGroupByLoadBalancerName for name %v", loadBalancerArn)
-	}
-
-	return response.TargetGroups[0], nil
-}
-
-func findTargetGroupByLoadBalancerName(cloud awsup.AWSCloud, loadBalancerNameTag string) (*elbv2.TargetGroup, error) {
-
-	lb, err := FindNetworkLoadBalancerByNameTag(cloud, loadBalancerNameTag)
-	if err != nil {
-		return nil, fmt.Errorf("Can't locate NLB with Name Tag %v in findTargetGroupByLoadBalancerName : %v", loadBalancerNameTag, err)
-	}
-
-	if lb == nil {
-		return nil, nil
-	}
-
-	return findTargetGroupByLoadBalancerArn(cloud, *lb.LoadBalancerArn)
 }
 
 //The load balancer name 'api.renamenlbcluster.k8s.local' can only contain characters that are alphanumeric characters and hyphens(-)\n\tstatus code: 400,
@@ -358,7 +320,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	}
 
 	loadBalancerArn := lb.LoadBalancerArn
-	var targetGroupArn *string
 
 	actual := &NetworkLoadBalancer{}
 	actual.Name = e.Name
@@ -388,27 +349,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	}*/
 
 	{
-		//What happens if someone manually creates additional target groups for this LB?
-		request := &elbv2.DescribeTargetGroupsInput{
-			LoadBalancerArn: loadBalancerArn,
-		}
-		response, err := cloud.ELBV2().DescribeTargetGroups(request)
-		if err != nil {
-			return nil, fmt.Errorf("error querying for NLB Target groups :%v", err)
-		}
-
-		if len(response.TargetGroups) == 0 {
-			return nil, fmt.Errorf("Found no Target Groups for NLB - misconfiguration :  %v", loadBalancerArn)
-		}
-
-		if len(response.TargetGroups) != 1 {
-			return nil, fmt.Errorf("Found multiple Target groups for NLB with arn %v", loadBalancerArn)
-		}
-
-		targetGroupArn = response.TargetGroups[0].TargetGroupArn
-	}
-
-	{
 		request := &elbv2.DescribeListenersInput{
 			LoadBalancerArn: loadBalancerArn,
 		}
@@ -432,12 +372,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 
 	}
 
-	healthcheck, err := findNLBHealthCheck(cloud, lb)
-	if err != nil {
-		return nil, err
-	}
-	actual.HealthCheck = healthcheck
-
 	{
 		lbAttributes, err := findNetworkLoadBalancerAttributes(cloud, aws.StringValue(loadBalancerArn))
 		if err != nil {
@@ -445,79 +379,17 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 		}
 		klog.V(4).Infof("NLB Load Balancer attributes: %+v", lbAttributes)
 
-		actual.AccessLog = &NetworkLoadBalancerAccessLog{}
-		actual.DeletionProtection = &NetworkLoadBalancerDeletionProtection{}
-		actual.CrossZoneLoadBalancing = &NetworkLoadBalancerCrossZoneLoadBalancing{}
 		for _, attribute := range lbAttributes {
 			if attribute.Value == nil {
 				continue
 			}
 			switch key, value := attribute.Key, attribute.Value; *key {
-			case "access_logs.s3.enabled":
-				b, err := strconv.ParseBool(*value)
-				if err != nil {
-					return nil, err
-				}
-				actual.AccessLog.Enabled = fi.Bool(b)
-			case "access_logs.s3.bucket":
-				actual.AccessLog.S3BucketName = value
-			case "access_logs.s3.prefix":
-				actual.AccessLog.S3BucketPrefix = value
-			case "deletion_protection.enabled":
-				b, err := strconv.ParseBool(*value)
-				if err != nil {
-					return nil, err
-				}
-				actual.DeletionProtection.Enabled = fi.Bool(b)
 			case "load_balancing.cross_zone.enabled":
 				b, err := strconv.ParseBool(*value)
 				if err != nil {
 					return nil, err
 				}
-				actual.CrossZoneLoadBalancing.Enabled = fi.Bool(b)
-			default:
-				klog.V(2).Infof("unsupported key -- ignoring, %v.\n", key)
-			}
-		}
-	}
-
-	{
-		tgAttributes, err := findTargetGroupAttributes(cloud, aws.StringValue(targetGroupArn))
-		if err != nil {
-			return nil, err
-		}
-		klog.V(4).Infof("Target Group attributes: %+v", tgAttributes)
-
-		actual.ProxyProtocolV2 = &TargetGroupProxyProtocolV2{}
-		actual.Stickiness = &TargetGroupStickiness{}
-		actual.DeregistationDelay = &TargetGroupDeregistrationDelay{}
-		for _, attribute := range tgAttributes {
-			if attribute.Value == nil {
-				continue
-			}
-			switch key, value := attribute.Key, attribute.Value; *key {
-			case "proxy_protocol_v2.enabled":
-				b, err := strconv.ParseBool(*value)
-				if err != nil {
-					return nil, err
-				}
-				actual.ProxyProtocolV2.Enabled = fi.Bool(b)
-			case "stickiness.type":
-				actual.Stickiness.Type = value
-			case "stickiness.enabled":
-				b, err := strconv.ParseBool(*value)
-				if err != nil {
-					return nil, err
-				}
-				actual.Stickiness.Enabled = fi.Bool(b)
-			case "deregistration_delay.timeout_seconds":
-				if n, err := strconv.Atoi(*value); err == nil {
-					m := int64(n)
-					actual.DeregistationDelay.TimeoutSeconds = fi.Int64(m)
-				} else {
-					return nil, err
-				}
-
+				actual.CrossZoneLoadBalancing = fi.Bool(b)
 			default:
 				klog.V(2).Infof("unsupported key -- ignoring, %v.\n", key)
 			}
@@ -603,13 +475,14 @@ func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) e
 		}
 
 		if e.CrossZoneLoadBalancing != nil {
-			if e.CrossZoneLoadBalancing.Enabled == nil {
-				return fi.RequiredField("CrossZoneLoadBalancing.Enabled")
+			if e.CrossZoneLoadBalancing == nil {
+				return fi.RequiredField("CrossZoneLoadBalancing")
 			}
 		}
-	}
-	if len(changes.Subnets) > 0 {
-		return fi.FieldIsImmutable(e.Subnets, a.Subnets, field.NewPath("Subnets"))
+	} else {
+		if len(changes.Subnets) > 0 {
+			return fi.FieldIsImmutable(e.Subnets, a.Subnets, field.NewPath("Subnets"))
+		}
 	}
 	return nil
 }
@@ -756,24 +629,8 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		return err
 	}
 
-	//TODO: why is this used in load_balancer.go seems unnecessary to remove tags right after adding them.
-	/*if err := t.RemoveELBV2Tags(loadBalancerArn, e.Tags); err != nil {
+	if err := t.RemoveELBV2Tags(loadBalancerArn, e.Tags); err != nil {
 		return err
-	}*/
-
-	if changes.HealthCheck != nil && e.HealthCheck != nil {
-		request := &elbv2.ModifyTargetGroupInput{
-			HealthCheckPort:         e.HealthCheck.Port,
-			TargetGroupArn:          e.TargetGroup.ARN,
-			HealthyThresholdCount:   e.HealthCheck.HealthyThreshold,
-			UnhealthyThresholdCount: e.HealthCheck.UnhealthyThreshold,
-		}
-
-		klog.V(2).Infof("Configuring health checks on NLB %q", loadBalancerName)
-		_, err := t.Cloud.ELBV2().ModifyTargetGroup(request)
-		if err != nil {
-			return fmt.Errorf("error configuring health checks on NLB: %v's target group", err)
-		}
 	}
 
 	if err := e.modifyLoadBalancerAttributes(t, a, e, changes, loadBalancerArn); err != nil {
