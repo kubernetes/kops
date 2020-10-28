@@ -31,7 +31,7 @@ var (
 
 	exportExample = templates.Examples(i18n.T(`
 	# export a kubecfg file
-	kops export kubecfg kubernetes-cluster.example.com
+	kops export kubecfg k8s-cluster.example.com
 		`))
 
 	exportShort = i18n.T(`Export configuration.`)

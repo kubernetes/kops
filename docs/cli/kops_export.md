@@ -13,7 +13,7 @@ Export configurations from a cluster.
 
 ```
   # export a kubecfg file
-  kops export kubecfg kubernetes-cluster.example.com
+  kops export kubecfg k8s-cluster.example.com
 ```
 
 ### Options
