@@ -77,8 +77,6 @@ metadata:
     k8s-app: aws-node
   name: aws-node
   namespace: kube-system
-  labels:
-    k8s-app: aws-node
 spec:
   selector:
     matchLabels:
@@ -196,16 +194,14 @@ spec:
         image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.7.5
         imagePullPolicy: Always
         name: aws-vpc-cni-init
-        resources: {}
         securityContext:
           privileged: true
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /host/opt/cni/bin
           name: cni-bin-dir
       priorityClassName: system-node-critical
       serviceAccountName: aws-node
+      terminationGracePeriodSeconds: 10
       tolerations:
       - operator: Exists
       volumes:
