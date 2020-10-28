@@ -153,7 +153,6 @@ containerd:
   configOverride: |
     disabled_plugins = ["cri"]
   logLevel: info
-  version: 1.3.7
 docker:
   ipMasq: false
   ipTables: false
@@ -277,10 +276,12 @@ Assets:
   - 3a90e7abf9910aebf9ef5845918c665afd4136a8832604ccfabca2defb35ce0f@https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubelet
   - bb16739fcad964c197752200ff89d89aad7b118cb1de5725dc53fe924c40e3f7@https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
   - 994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz
+  - ddb13aff1fcdcceb710bf71a210169b9c1abfd7420eeaf42cf7975f8fae2fcc8@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.13.tgz
   arm64:
   - db91a26f8baa2bce017172305e717e77be5cfc4272592be8cb0155e1cfa7719e@https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/arm64/kubelet
   - 0de307f90502cd58e5785cdcbebeb552df81fa2399190f8a662afea9e30bc74d@https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/arm64/kubectl
   - 43fbf750c5eccb10accffeeb092693c32b236fb25d919cf058c91a677822c999@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz
+  - bdf080af7d6f383ad80e415e9c1952a63c7038c149dc673b7598bfca4d3311ec@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.13.tgz
 ClusterName: privatecalico.example.com
 ConfigBase: memfs://clusters.example.com/privatecalico.example.com
 InstanceGroupName: master-us-test-1a
