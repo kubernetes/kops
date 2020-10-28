@@ -348,6 +348,7 @@ type cloudformationSecurityGroupIngress struct {
 
 	Protocol *string `json:"IpProtocol,omitempty"`
 	CidrIp   *string `json:"CidrIp,omitempty"`
+	CidrIpv6 *string `json:"CidrIpv6,omitempty"`
 }
 
 func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroupRule) error {
@@ -383,7 +384,11 @@ func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.Cloudformatio
 	}
 
 	if e.CIDR != nil {
-		tf.CidrIp = e.CIDR
+		if strings.Contains(fi.StringValue(e.CIDR), ":") {
+			tf.CidrIpv6 = e.CIDR
+		} else {
+			tf.CidrIp = e.CIDR
+		}
 	}
 
 	return t.RenderResource(cfType, *e.Name, tf)

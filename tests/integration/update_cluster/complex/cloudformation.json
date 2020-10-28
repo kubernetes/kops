@@ -640,7 +640,7 @@
         "FromPort": 443,
         "ToPort": 443,
         "IpProtocol": "tcp",
-        "CidrIp": "2001:0:8500::/40"
+        "CidrIpv6": "2001:0:8500::/40"
       }
     },
     "AWSEC2SecurityGroupIngresshttpselbtomaster": {
@@ -678,7 +678,7 @@
         "FromPort": 3,
         "ToPort": 4,
         "IpProtocol": "icmp",
-        "CidrIp": "2001:0:8500::/40"
+        "CidrIpv6": "2001:0:8500::/40"
       }
     },
     "AWSEC2SecurityGroupIngressnodeporttcpexternaltonode102030024": {
@@ -806,7 +806,7 @@
         "FromPort": 22,
         "ToPort": 22,
         "IpProtocol": "tcp",
-        "CidrIp": "2001:0:85a3::/48"
+        "CidrIpv6": "2001:0:85a3::/48"
       }
     },
     "AWSEC2SecurityGroupIngresssshexternaltonode111132": {
@@ -830,7 +830,7 @@
         "FromPort": 22,
         "ToPort": 22,
         "IpProtocol": "tcp",
-        "CidrIp": "2001:0:85a3::/48"
+        "CidrIpv6": "2001:0:85a3::/48"
       }
     },
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
