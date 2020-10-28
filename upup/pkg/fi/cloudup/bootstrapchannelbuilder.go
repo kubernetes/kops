@@ -1024,7 +1024,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		versions := map[string]string{
 			"k8s-1.10": "1.5.0-kops.2",
 			"k8s-1.12": "1.5.5-kops.1",
-			"k8s-1.16": "1.6.0-kops.1",
+			"k8s-1.16": "1.7.5-kops.1",
 		}
 
 		{
