@@ -1136,7 +1136,7 @@
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
         "Name": "api-complex-example-com",
-        "Scheme": "",
+        "Scheme": "internet-facing",
         "Subnets": [
           {
             "Ref": "AWSEC2Subnetustest1acomplexexamplecom"
