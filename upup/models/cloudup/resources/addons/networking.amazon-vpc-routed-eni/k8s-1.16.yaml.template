@@ -25,19 +25,32 @@ rules:
   - "*"
   verbs:
   - "*"
-- apiGroups: [""]
+- apiGroups:
+  - ""
   resources:
   - pods
   - namespaces
-  verbs: ["list", "watch", "get"]
-- apiGroups: [""]
+  verbs:
+  - list
+  - watch
+  - get
+- apiGroups:
+  - ""
   resources:
   - nodes
-  verbs: ["list", "watch", "get", "update"]
-- apiGroups: ["extensions", "apps"]
+  verbs:
+  - list
+  - watch
+  - get
+  - update
+- apiGroups:
+  - extensions
+  - apps
   resources:
   - daemonsets
-  verbs: ["list", "watch"]
+  verbs:
+  - list
+  - watch
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
