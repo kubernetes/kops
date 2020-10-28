@@ -2,6 +2,19 @@
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: aws-node
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-node
+subjects:
+- kind: ServiceAccount
+  name: aws-node
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: aws-node
@@ -25,28 +38,22 @@ rules:
   resources:
   - daemonsets
   verbs: ["list", "watch"]
-
 ---
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
 metadata:
-  name: aws-node
-  namespace: kube-system
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: aws-node
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: aws-node
-subjects:
-- kind: ServiceAccount
-  name: aws-node
-  namespace: kube-system
-
+  name: eniconfigs.crd.k8s.amazonaws.com
+spec:
+  scope: Cluster
+  group: crd.k8s.amazonaws.com
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+  names:
+    plural: eniconfigs
+    singular: eniconfig
+    kind: ENIConfig
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -207,20 +214,9 @@ spec:
           path: /var/run/aws-node
           type: DirectoryOrCreate
         name: run-dir
-
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: eniconfigs.crd.k8s.amazonaws.com
-spec:
-  scope: Cluster
-  group: crd.k8s.amazonaws.com
-  versions:
-  - name: v1alpha1
-    served: true
-    storage: true
-  names:
-    plural: eniconfigs
-    singular: eniconfig
-    kind: ENIConfig
+  name: aws-node
+  namespace: kube-system
