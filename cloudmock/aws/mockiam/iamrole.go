@@ -59,8 +59,11 @@ func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutpu
 		AssumeRolePolicyDocument: request.AssumeRolePolicyDocument,
 		Description:              request.Description,
 		Path:                     request.Path,
-		RoleName:                 request.RoleName,
-		RoleId:                   &roleID,
+		PermissionsBoundary: &iam.AttachedPermissionsBoundary{
+			PermissionsBoundaryArn: request.PermissionsBoundary,
+		},
+		RoleName: request.RoleName,
+		RoleId:   &roleID,
 	}
 
 	if m.Roles == nil {

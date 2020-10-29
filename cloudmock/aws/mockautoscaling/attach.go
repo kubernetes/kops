@@ -50,3 +50,20 @@ func (m *MockAutoscaling) AttachLoadBalancersRequest(*autoscaling.AttachLoadBala
 	klog.Fatalf("Not implemented")
 	return nil, nil
 }
+
+func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(request *autoscaling.AttachLoadBalancerTargetGroupsInput) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("AttachLoadBalancers: %v", request)
+
+	name := *request.AutoScalingGroupName
+
+	asg := m.Groups[name]
+	if asg == nil {
+		return nil, fmt.Errorf("Group %q not found", name)
+	}
+
+	asg.TargetGroupARNs = request.TargetGroupARNs
+	return &autoscaling.AttachLoadBalancerTargetGroupsOutput{}, nil
+}
