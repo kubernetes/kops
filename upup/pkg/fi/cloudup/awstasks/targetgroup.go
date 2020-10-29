@@ -123,10 +123,12 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 
 	if a == nil {
 		request := &elbv2.CreateTargetGroupInput{
-			Name:     e.Name,
-			Port:     e.Port,
-			Protocol: e.Protocol,
-			VpcId:    e.VPC.ID,
+			Name:                    e.Name,
+			Port:                    e.Port,
+			Protocol:                e.Protocol,
+			VpcId:                   e.VPC.ID,
+			HealthyThresholdCount:   e.HealthyThreshold,
+			UnhealthyThresholdCount: e.UnhealthyThreshold,
 		}
 
 		klog.V(2).Infof("Creating Target Group for NLB")
