@@ -42,7 +42,7 @@ RC=$?
 
 if [ $RC != 0 ]; then
   echo -e "\nCloudformation linting failed\n"
-  exit 0 # TODO: exit $RC once issues have been addressed to make this a blocking check
+  exit $RC
 else
   echo -e "\nCloudformation linting succeeded\n"
 fi
