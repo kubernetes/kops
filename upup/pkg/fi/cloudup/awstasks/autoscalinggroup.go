@@ -470,7 +470,24 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				detachLBRequest.LoadBalancerNames = e.getLBsToDetach(a.LoadBalancers)
 			}
 
-			changes.Tags = nil
+			changes.LoadBalancers = nil
+		}
+
+		var attachTGRequest *autoscaling.AttachLoadBalancerTargetGroupsInput
+		var detachTGRequest *autoscaling.DetachLoadBalancerTargetGroupsInput
+		if changes.TargetGroups != nil {
+			attachTGRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{
+				AutoScalingGroupName: e.Name,
+				TargetGroupARNs:      e.AutoscalingTargetGroups(),
+			}
+
+			if a != nil && len(a.TargetGroups) > 0 {
+				detachTGRequest = &autoscaling.DetachLoadBalancerTargetGroupsInput{
+					AutoScalingGroupName: e.Name,
+					TargetGroupARNs:      e.getTGsToDetach(a.TargetGroups),
+				}
+			}
+			changes.TargetGroups = nil
 		}
 
 		if changes.Metrics != nil || changes.Granularity != nil {
@@ -553,6 +570,16 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				return fmt.Errorf("error attaching LoadBalancers: %v", err)
 			}
 		}
+		if detachTGRequest != nil {
+			if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
+				return fmt.Errorf("error attaching TargetGroups: %v", err)
+			}
+		}
+		if attachTGRequest != nil {
+			if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachTGRequest); err != nil {
+				return fmt.Errorf("error attaching TargetGroups: %v", err)
+			}
+		}
 	}
 
 	return nil
@@ -625,6 +652,17 @@ func (e *AutoscalingGroup) AutoscalingLoadBalancers() []*string {
 	return list
 }
 
+// AutoscalingTargetGroups returns a list of TGs attatched to the ASG
+func (e *AutoscalingGroup) AutoscalingTargetGroups() []*string {
+	var list []*string
+
+	for _, v := range e.TargetGroups {
+		list = append(list, v.ARN)
+	}
+
+	return list
+}
+
 // processCompare returns processes that exist in a but not in b
 func processCompare(a *[]string, b *[]string) []*string {
 	notInB := []*string{}
@@ -663,7 +701,7 @@ func (e *AutoscalingGroup) getASGTagsToDelete(currentTags map[string]string) []*
 }
 
 // getLBsToDetach loops through the currently set LBs and builds a list of
-// LBs to be detach from the Autoscaling Group
+// LBs to be detached from the Autoscaling Group
 func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*LoadBalancer) []*string {
 	lbsToDetach := []*string{}
 	desiredLBs := map[string]bool{}
@@ -678,6 +716,24 @@ func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*LoadBalancer) []*string 
 		}
 	}
 	return lbsToDetach
+}
+
+// getTGsToDetach loops through the currently set LBs and builds a list of
+// target groups to be detached from the Autoscaling Group
+func (e *AutoscalingGroup) getTGsToDetach(currentTGs []*TargetGroup) []*string {
+	tgsToDetach := []*string{}
+	desiredTGs := map[string]bool{}
+
+	for _, v := range e.TargetGroups {
+		desiredTGs[*v.ARN] = true
+	}
+
+	for _, v := range currentTGs {
+		if _, ok := desiredTGs[*v.ARN]; !ok {
+			tgsToDetach = append(tgsToDetach, v.Name)
+		}
+	}
+	return tgsToDetach
 }
 
 type terraformASGTag struct {
