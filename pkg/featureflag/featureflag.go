@@ -91,8 +91,6 @@ var (
 	SkipEtcdVersionCheck = New("SkipEtcdVersionCheck", Bool(false))
 	// TerraformJSON outputs terraform in JSON instead of hcl output. JSON output can be also parsed by terraform 0.12
 	TerraformJSON = New("TerraformJSON", Bool(false))
-	// Terraform012 will output terraform in the 0.12 (hcl2) syntax
-	Terraform012 = New("Terraform-0.12", Bool(true))
 	// LegacyIAM will permit use of legacy IAM permissions.
 	LegacyIAM = New("LegacyIAM", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
