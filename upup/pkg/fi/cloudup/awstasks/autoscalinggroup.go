@@ -32,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/klog/v2"
 )
 
@@ -117,7 +118,50 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	}
 
 	for _, lb := range g.LoadBalancerNames {
-		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{Name: aws.String(*lb)})
+
+		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{
+			Name:             aws.String(*lb),
+			LoadBalancerName: aws.String(*lb),
+		})
+	}
+
+	{
+		// pkg/model/awsmodel/autoscalinggroup.go doesn't know the LoadBalancerName of the API ELB task that it passes to the master ASGs,
+		// it only knows the LoadBalancerName of external load balancers passed through the InstanceGroupSpec.
+		// We lookup the LoadBalancerName for LoadBalancer tasks that don't have it set in order to attach the LB to the ASG.
+		//
+		// This means some LoadBalancer tasks have LoadBalancerName and others do not.
+		// When `Find`ing the ASG and recreating the LoadBalancer tasks we need them to match how the model creates them,
+		// but we only know the LoadBalancerNames, not the task names associated with them.
+		// This reuslts in spurious changes being reported during subsequent `update cluster` runs because the API ELB task is named differently
+		// between the kops model and the ASG's `Find`.
+		//
+		// To prevent this, we need to update the API ELB task in the ASG's LoadBalancers list.
+		// Because we don't know whether any given LoadBalancerName attached to an ASG is the API ELB task or not,
+		// we have to find the API ELB task, lookup its LoadBalancerName, and then compare that to the list of attached LoadBalancers.
+		var apiLBTask *LoadBalancer
+		var apiLBDesc *elb.LoadBalancerDescription
+		for _, lb := range e.LoadBalancers {
+			// All external ELBs have their Shared field set to true. The API ELB does not.
+			// Note that Shared is set by the kops model rather than AWS tags.
+			if !fi.BoolValue(lb.Shared) {
+				apiLBTask = lb
+			}
+		}
+		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
+			apiLBDesc, err = FindLoadBalancerByNameTag(c.Cloud.(awsup.AWSCloud), fi.StringValue(apiLBTask.Name))
+			if err != nil {
+				return nil, err
+			}
+			if apiLBDesc != nil {
+				for i := 0; i < len(actual.LoadBalancers); i++ {
+					lb := actual.LoadBalancers[i]
+					if aws.StringValue(apiLBDesc.LoadBalancerName) == aws.StringValue(lb.Name) {
+						actual.LoadBalancers[i] = apiLBTask
+					}
+				}
+			}
+		}
 	}
 
 	for _, tg := range g.TargetGroupARNs {
@@ -277,7 +321,18 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 
 		for _, k := range e.LoadBalancers {
-			request.LoadBalancerNames = append(request.LoadBalancerNames, k.GetName())
+			if k.LoadBalancerName == nil {
+				lbDesc, err := FindLoadBalancerByNameTag(t.Cloud, fi.StringValue(k.GetName()))
+				if err != nil {
+					return err
+				}
+				if lbDesc == nil {
+					return fmt.Errorf("could not find load balancer to attach")
+				}
+				request.LoadBalancerNames = append(request.LoadBalancerNames, lbDesc.LoadBalancerName)
+			} else {
+				request.LoadBalancerNames = append(request.LoadBalancerNames, k.LoadBalancerName)
+			}
 		}
 
 		for _, tg := range e.TargetGroups {
@@ -477,7 +532,24 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				detachLBRequest.LoadBalancerNames = e.getLBsToDetach(a.LoadBalancers)
 			}
 
-			changes.Tags = nil
+			changes.LoadBalancers = nil
+		}
+
+		var attachTGRequest *autoscaling.AttachLoadBalancerTargetGroupsInput
+		var detachTGRequest *autoscaling.DetachLoadBalancerTargetGroupsInput
+		if changes.TargetGroups != nil {
+			attachTGRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{
+				AutoScalingGroupName: e.Name,
+				TargetGroupARNs:      e.AutoscalingTargetGroups(),
+			}
+
+			if a != nil && len(a.TargetGroups) > 0 {
+				detachTGRequest = &autoscaling.DetachLoadBalancerTargetGroupsInput{
+					AutoScalingGroupName: e.Name,
+					TargetGroupARNs:      e.getTGsToDetach(a.TargetGroups),
+				}
+			}
+			changes.TargetGroups = nil
 		}
 
 		if changes.Metrics != nil || changes.Granularity != nil {
@@ -560,6 +632,16 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				return fmt.Errorf("error attaching LoadBalancers: %v", err)
 			}
 		}
+		if detachTGRequest != nil {
+			if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
+				return fmt.Errorf("error attaching TargetGroups: %v", err)
+			}
+		}
+		if attachTGRequest != nil {
+			if _, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachTGRequest); err != nil {
+				return fmt.Errorf("error attaching TargetGroups: %v", err)
+			}
+		}
 	}
 
 	return nil
@@ -632,6 +714,17 @@ func (e *AutoscalingGroup) AutoscalingLoadBalancers() []*string {
 	return list
 }
 
+// AutoscalingTargetGroups returns a list of TGs attatched to the ASG
+func (e *AutoscalingGroup) AutoscalingTargetGroups() []*string {
+	var list []*string
+
+	for _, v := range e.TargetGroups {
+		list = append(list, v.ARN)
+	}
+
+	return list
+}
+
 // processCompare returns processes that exist in a but not in b
 func processCompare(a *[]string, b *[]string) []*string {
 	notInB := []*string{}
@@ -670,7 +763,7 @@ func (e *AutoscalingGroup) getASGTagsToDelete(currentTags map[string]string) []*
 }
 
 // getLBsToDetach loops through the currently set LBs and builds a list of
-// LBs to be detach from the Autoscaling Group
+// LBs to be detached from the Autoscaling Group
 func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*LoadBalancer) []*string {
 	lbsToDetach := []*string{}
 	desiredLBs := map[string]bool{}
@@ -685,6 +778,24 @@ func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*LoadBalancer) []*string 
 		}
 	}
 	return lbsToDetach
+}
+
+// getTGsToDetach loops through the currently set LBs and builds a list of
+// target groups to be detached from the Autoscaling Group
+func (e *AutoscalingGroup) getTGsToDetach(currentTGs []*TargetGroup) []*string {
+	tgsToDetach := []*string{}
+	desiredTGs := map[string]bool{}
+
+	for _, v := range e.TargetGroups {
+		desiredTGs[*v.ARN] = true
+	}
+
+	for _, v := range currentTGs {
+		if _, ok := desiredTGs[*v.ARN]; !ok {
+			tgsToDetach = append(tgsToDetach, v.Name)
+		}
+	}
+	return tgsToDetach
 }
 
 type terraformASGTag struct {
