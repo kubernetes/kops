@@ -364,7 +364,10 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	for _, extLB := range ig.Spec.ExternalLoadBalancers {
 		if extLB.LoadBalancerName != nil {
-			t.LoadBalancers = append(t.LoadBalancers, &awstasks.LoadBalancer{Name: extLB.LoadBalancerName})
+			t.LoadBalancers = append(t.LoadBalancers, &awstasks.LoadBalancer{
+				Name:             extLB.LoadBalancerName,
+				LoadBalancerName: extLB.LoadBalancerName,
+			})
 
 			c.AddTask(&awstasks.LoadBalancer{
 				Name:   extLB.LoadBalancerName,
