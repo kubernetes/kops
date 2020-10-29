@@ -75,8 +75,10 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 		return nil, fmt.Errorf("error describing targetgroup %s: %v", *e.Name, err)
 	}
 
-	if len(response.TargetGroups) != 1 {
+	if len(response.TargetGroups) > 1 {
 		return nil, fmt.Errorf("found %d TargetGroups with ID %q, expected 1", len(response.TargetGroups), fi.StringValue(e.Name))
+	} else if len(response.TargetGroups) == 0 {
+		return nil, nil
 	}
 
 	tg := response.TargetGroups[0]
@@ -89,9 +91,24 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 		UnhealthyThreshold: tg.UnhealthyThresholdCount,
 	}
 
+	tagsResp, err := cloud.ELBV2().DescribeTags(&elbv2.DescribeTagsInput{
+		ResourceArns: []*string{tg.TargetGroupArn},
+	})
+	if err != nil {
+		return nil, err
+	}
+	tags := make(map[string]string)
+	for _, tagDesc := range tagsResp.TagDescriptions {
+		for _, tag := range tagDesc.Tags {
+			tags[fi.StringValue(tag.Key)] = fi.StringValue(tag.Value)
+		}
+	}
+	actual.Tags = tags
+
 	// Prevent spurious changes
 	actual.Name = e.Name
 	actual.Lifecycle = e.Lifecycle
+	actual.Shared = e.Shared
 
 	return actual, nil
 }
@@ -138,6 +155,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 		}
 
 		targetGroupArn := *response.TargetGroups[0].TargetGroupArn
+		e.ARN = fi.String(targetGroupArn)
 
 		if err := t.AddELBV2Tags(targetGroupArn, e.Tags); err != nil {
 			return err
