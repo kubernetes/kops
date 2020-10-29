@@ -77,7 +77,6 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gophercloud/gophercloud v0.11.1-0.20200518183226-7aec46f32c19
 	github.com/gorilla/mux v1.7.3
-	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/huandu/xstrings v1.2.0 // indirect
