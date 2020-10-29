@@ -32,9 +32,9 @@ kops create -f FILENAME [flags]
   cat instancegroup.yaml | kops create -f -
   
   # Create a cluster in AWS
-  kops create cluster --name=kubernetes-cluster.example.com \
-  --state=s3://kops-state-1234 --zones=eu-west-1a \
-  --node-count=2 --node-size=t2.micro --master-size=t2.micro \
+  kops create cluster --name=k8s-cluster.example.com \
+  --state=s3://my-state-store --zones=us-east-1a \
+  --node-count=2 --node-size=t3.small --master-size=t3.small \
   --dns-zone=example.com
   
   # Create an instancegroup for the k8s-cluster.example.com cluster.
@@ -43,7 +43,7 @@ kops create -f FILENAME [flags]
   
   # Create a new ssh public key called admin.
   kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
-  --name k8s-cluster.example.com --state s3://example.com
+  --name k8s-cluster.example.com --state s3://my-state-store
 ```
 
 ### Options

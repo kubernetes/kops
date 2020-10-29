@@ -37,7 +37,7 @@ var (
 	createSecretSSHPublicKeyExample = templates.Examples(i18n.T(`
 	# Create a new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
-		--name k8s-cluster.example.com --state s3://example.com
+		--name k8s-cluster.example.com --state s3://my-state-store
 	`))
 
 	createSecretSSHPublicKeyShort = i18n.T(`Create an ssh public key.`)

@@ -37,11 +37,11 @@ var (
 
 	editExample = templates.Examples(i18n.T(`
 	# Edit a cluster configuration.
-	kops edit cluster k8s-cluster.example.com --state=s3://kops-state-1234
+	kops edit cluster k8s-cluster.example.com --state=s3://my-state-store
 
 	# Edit a instance group configuration.
 	kops edit ig --name k8s-cluster.example.com \
-	  --state=s3://kops-state-1234 nodes
+	  --state=s3://my-state-store nodes
 	`))
 )
 
