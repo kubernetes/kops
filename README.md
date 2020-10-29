@@ -1,5 +1,3 @@
-<img src="/docs/img/logo.jpg" width="500px" alt="kops logo">
-
 # kOps - Kubernetes Operations
 
 [![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops)  [![GoDoc Widget]][GoDoc]
