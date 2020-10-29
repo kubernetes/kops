@@ -105,22 +105,13 @@ provider "aws" {
   region = "us-test-1"
 }
 
-resource "aws_autoscaling_attachment" "bastion-privatedns2-example-com" {
-  autoscaling_group_name = aws_autoscaling_group.bastion-privatedns2-example-com.id
-  elb                    = aws_elb.bastion-privatedns2-example-com.id
-}
-
-resource "aws_autoscaling_attachment" "master-us-test-1a-masters-privatedns2-example-com" {
-  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-privatedns2-example-com.id
-  elb                    = aws_elb.api-privatedns2-example-com.id
-}
-
 resource "aws_autoscaling_group" "bastion-privatedns2-example-com" {
   enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_template {
     id      = aws_launch_template.bastion-privatedns2-example-com.id
     version = aws_launch_template.bastion-privatedns2-example-com.latest_version
   }
+  load_balancers      = [aws_elb.bastion-privatedns2-example-com.id]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
@@ -169,6 +160,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatedns2-example-
     id      = aws_launch_template.master-us-test-1a-masters-privatedns2-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-privatedns2-example-com.latest_version
   }
+  load_balancers      = [aws_elb.api-privatedns2-example-com.id]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
