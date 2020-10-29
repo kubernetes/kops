@@ -78,7 +78,7 @@
           "my-other-elb"
         ],
         "TargetGroupARNs": [
-          "aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef"
+          "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg/1"
         ]
       }
     },
