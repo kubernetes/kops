@@ -32,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/klog"
 )
 
@@ -121,6 +122,45 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			Name:             aws.String(*lb),
 			LoadBalancerName: aws.String(*lb),
 		})
+	}
+
+	{
+		// pkg/model/awsmodel/autoscalinggroup.go doesn't know the LoadBalancerName of the API ELB task that it passes to the master ASGs,
+		// it only knows the LoadBalancerName of external load balancers passed through the InstanceGroupSpec.
+		// We lookup the LoadBalancerName for LoadBalancer tasks that don't have it set in order to attach the LB to the ASG.
+		//
+		// This means some LoadBalancer tasks have LoadBalancerName and others do not.
+		// When `Find`ing the ASG and recreating the LoadBalancer tasks we need them to match how the model creates them,
+		// but we only know the LoadBalancerNames, not the task names associated with them.
+		// This reuslts in spurious changes being reported during subsequent `update cluster` runs because the API ELB task is named differently
+		// between the kops model and the ASG's `Find`.
+		//
+		// To prevent this, we need to update the API ELB task in the ASG's LoadBalancers list.
+		// Because we don't know whether any given LoadBalancerName attached to an ASG is the API ELB task or not,
+		// we have to find the API ELB task, lookup its LoadBalancerName, and then compare that to the list of attached LoadBalancers.
+		var apiLBTask *LoadBalancer
+		var apiLBDesc *elb.LoadBalancerDescription
+		for _, lb := range e.LoadBalancers {
+			// All external ELBs have their Shared field set to true. The API ELB does not.
+			// Note that Shared is set by the kops model rather than AWS tags.
+			if !fi.BoolValue(lb.Shared) {
+				apiLBTask = lb
+			}
+		}
+		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
+			apiLBDesc, err = FindLoadBalancerByNameTag(c.Cloud.(awsup.AWSCloud), fi.StringValue(apiLBTask.Name))
+			if err != nil {
+				return nil, err
+			}
+			if apiLBDesc != nil {
+				for i := 0; i < len(actual.LoadBalancers); i++ {
+					lb := actual.LoadBalancers[i]
+					if aws.StringValue(apiLBDesc.LoadBalancerName) == aws.StringValue(lb.Name) {
+						actual.LoadBalancers[i] = apiLBTask
+					}
+				}
+			}
+		}
 	}
 
 	for _, tg := range g.TargetGroupARNs {
