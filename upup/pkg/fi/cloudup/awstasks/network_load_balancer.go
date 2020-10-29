@@ -305,7 +305,7 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	lb, err := FindNetworkLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
+	lb, err := FindNetworkLoadBalancerByNameTag(cloud, e.Tags["Name"])
 	if err != nil {
 		return nil, err
 	}
@@ -409,6 +409,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
+	actual.ForAPIServer = e.ForAPIServer
 
 	klog.V(4).Infof("Found NLB %+v", actual)
 
@@ -424,7 +425,7 @@ func (e *NetworkLoadBalancer) IsForAPIServer() bool {
 func (e *NetworkLoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
-	lb, err := FindNetworkLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
+	lb, err := FindNetworkLoadBalancerByNameTag(cloud, e.Tags["Name"])
 	if err != nil {
 		return nil, err
 	}
