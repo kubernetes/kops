@@ -69,8 +69,7 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 		NewInstancesProtectedFromScaleIn: input.NewInstancesProtectedFromScaleIn,
 		PlacementGroup:                   input.PlacementGroup,
 		// Status:                           input.Status,
-		// SuspendedProcesses:               input.SuspendedProcesses,
-		// Tags:                input.Tags,
+		SuspendedProcesses:  make([]*autoscaling.SuspendedProcess, 0),
 		TargetGroupARNs:     input.TargetGroupARNs,
 		TerminationPolicies: input.TerminationPolicies,
 		VPCZoneIdentifier:   input.VPCZoneIdentifier,
@@ -124,6 +123,34 @@ func (m *MockAutoscaling) EnableMetricsCollection(request *autoscaling.EnableMet
 	response := &autoscaling.EnableMetricsCollectionOutput{}
 
 	return response, nil
+}
+
+func (m *MockAutoscaling) SuspendProcesses(input *autoscaling.ScalingProcessQuery) (*autoscaling.SuspendProcessesOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("EnableMetricsCollection: %v", input)
+
+	g := m.Groups[*input.AutoScalingGroupName]
+	if g == nil {
+		return nil, fmt.Errorf("AutoScalingGroup not found")
+	}
+
+	for _, p := range input.ScalingProcesses {
+		found := false
+		for _, asgProc := range g.SuspendedProcesses {
+			if aws.StringValue(asgProc.ProcessName) == aws.StringValue(p) {
+				found = true
+			}
+		}
+		if !found {
+			g.SuspendedProcesses = append(g.SuspendedProcesses, &autoscaling.SuspendedProcess{
+				ProcessName: p,
+			})
+		}
+	}
+
+	return &autoscaling.SuspendProcessesOutput{}, nil
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
