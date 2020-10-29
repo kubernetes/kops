@@ -116,7 +116,11 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	}
 
 	for _, lb := range g.LoadBalancerNames {
-		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{Name: aws.String(*lb)})
+
+		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{
+			Name:             aws.String(*lb),
+			LoadBalancerName: aws.String(*lb),
+		})
 	}
 
 	for _, tg := range g.TargetGroupARNs {
@@ -276,7 +280,18 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 
 		for _, k := range e.LoadBalancers {
-			request.LoadBalancerNames = append(request.LoadBalancerNames, k.GetName())
+			if k.LoadBalancerName == nil {
+				lbDesc, err := FindLoadBalancerByNameTag(t.Cloud, fi.StringValue(k.GetName()))
+				if err != nil {
+					return err
+				}
+				if lbDesc == nil {
+					return fmt.Errorf("could not find load balancer to attach")
+				}
+				request.LoadBalancerNames = append(request.LoadBalancerNames, lbDesc.LoadBalancerName)
+			} else {
+				request.LoadBalancerNames = append(request.LoadBalancerNames, k.LoadBalancerName)
+			}
 		}
 
 		for _, tg := range e.TargetGroups {
