@@ -191,9 +191,7 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	if err != nil {
 		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
 	}
-	if lb == nil {
-		klog.Warningf("Unable to find network load balancer with DNS name: %q", dnsName)
-	} else {
+	if lb != nil {
 		loadBalancerName := aws.StringValue(lb.LoadBalancerName) //TOOD: can we keep these on object
 		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   //TODO: can we keep these on object
 		tagMap, err := describeNetworkLoadBalancerTags(cloud, []string{loadBalancerArn})
@@ -205,6 +203,7 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 		if nameTag == "" {
 			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(targetDNSName))
 		}
+		nameTag = strings.Replace(nameTag, ".", "-", -1)
 		return &NetworkLoadBalancer{Name: fi.String(nameTag)}, nil
 	}
 	return nil, nil
@@ -215,9 +214,7 @@ func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dn
 	if err != nil {
 		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
 	}
-	if lb == nil {
-		klog.Warningf("Unable to find classic load balancer with DNS name: %q", dnsName)
-	} else {
+	if lb != nil {
 		loadBalancerName := aws.StringValue(lb.LoadBalancerName)
 		tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
 		if err != nil {
