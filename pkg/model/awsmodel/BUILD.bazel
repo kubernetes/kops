@@ -18,6 +18,7 @@ go_library(
         "//pkg/model/defaults:go_default_library",
         "//pkg/model/iam:go_default_library",
         "//pkg/model/spotinstmodel:go_default_library",
+        "//pkg/wellknownports:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",

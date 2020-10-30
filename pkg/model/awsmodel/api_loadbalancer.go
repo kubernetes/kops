@@ -21,6 +21,8 @@ import (
 	"sort"
 	"time"
 
+	"k8s.io/kops/pkg/wellknownports"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -110,6 +112,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
+		}
+
+		if b.UseKopsControllerForNodeBootstrap() && b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.UseForInternalApi {
+			listeners[fmt.Sprintf("%d", wellknownports.KopsControllerPort)] = &awstasks.LoadBalancerListener{InstancePort: wellknownports.KopsControllerPort}
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -262,6 +268,40 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroup: masterGroup.Task,
 				SourceGroup:   lbSG,
 				ToPort:        fi.Int64(443),
+			})
+		}
+	}
+
+	// Allow Kops-controller from nodes to ELB, thence to the master instances.
+	if b.UseKopsControllerForNodeBootstrap() && b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.UseForInternalApi {
+		nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+		if err != nil {
+			return err
+		}
+
+		for _, nodeGroup := range nodeGroups {
+			suffix := nodeGroup.Suffix
+			c.AddTask(&awstasks.SecurityGroupRule{
+				Name:          fi.String(fmt.Sprintf("kops-controller-node%s-to-elb", suffix)),
+				Lifecycle:     b.SecurityLifecycle,
+				FromPort:      fi.Int64(wellknownports.KopsControllerPort),
+				Protocol:      fi.String("tcp"),
+				SecurityGroup: lbSG,
+				SourceGroup:   nodeGroup.Task,
+				ToPort:        fi.Int64(wellknownports.KopsControllerPort),
+			})
+		}
+
+		for _, masterGroup := range masterGroups {
+			suffix := masterGroup.Suffix
+			c.AddTask(&awstasks.SecurityGroupRule{
+				Name:          fi.String(fmt.Sprintf("kops-controller-elb-to-master%s", suffix)),
+				Lifecycle:     b.SecurityLifecycle,
+				FromPort:      fi.Int64(wellknownports.KopsControllerPort),
+				Protocol:      fi.String("tcp"),
+				SecurityGroup: masterGroup.Task,
+				SourceGroup:   lbSG,
+				ToPort:        fi.Int64(wellknownports.KopsControllerPort),
 			})
 		}
 	}
