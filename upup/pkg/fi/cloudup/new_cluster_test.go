@@ -206,9 +206,7 @@ func TestSetupNetworking(t *testing.T) {
 			expected: api.Cluster{
 				Spec: api.ClusterSpec{
 					Networking: &api.NetworkingSpec{
-						Calico: &api.CalicoNetworkingSpec{
-							MajorVersion: "v3",
-						},
+						Calico: &api.CalicoNetworkingSpec{},
 					},
 				},
 			},
