@@ -618,27 +618,9 @@ func Test_Validate_Cilium(t *testing.T) {
 				Version: "v1.0.0",
 			},
 			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.11.0",
+				KubernetesVersion: "1.18.0",
 			},
 			ExpectedErrors: []string{"Invalid value::cilium.version"},
-		},
-		{
-			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.7.0",
-			},
-			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.11.0",
-			},
-			ExpectedErrors: []string{"Forbidden::cilium.version"},
-		},
-		{
-			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.7.0-rc1",
-			},
-			Spec: kops.ClusterSpec{
-				KubernetesVersion: "1.11.0",
-			},
-			ExpectedErrors: []string{"Forbidden::cilium.version"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
@@ -683,7 +665,7 @@ func Test_Validate_Cilium(t *testing.T) {
 			Cilium: &g.Cilium,
 		}
 		if g.Spec.KubernetesVersion == "" {
-			g.Spec.KubernetesVersion = "1.12.0"
+			g.Spec.KubernetesVersion = "1.15.0"
 		}
 		cluster := &kops.Cluster{
 			Spec: g.Spec,

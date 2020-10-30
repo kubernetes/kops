@@ -34,11 +34,6 @@ type EtcdOptionsBuilder struct {
 var _ loader.OptionsBuilder = &EtcdOptionsBuilder{}
 
 const (
-	DefaultEtcd2Version = "2.2.1"
-
-	//  1.11 originally recommended 3.2.18, but there was an advisory to update to 3.2.24
-	DefaultEtcd3Version_1_11 = "3.2.24"
-
 	DefaultEtcd3Version_1_13 = "3.2.24"
 
 	DefaultEtcd3Version_1_14 = "3.3.10"
@@ -53,13 +48,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 	for i := range spec.EtcdClusters {
 		c := &spec.EtcdClusters[i]
 		if c.Provider == "" {
-			if b.IsKubernetesGTE("1.12") {
-				c.Provider = kops.EtcdProviderTypeManager
-			} else if c.Manager != nil {
-				c.Provider = kops.EtcdProviderTypeManager
-			} else {
-				c.Provider = kops.EtcdProviderTypeLegacy
-			}
+			c.Provider = kops.EtcdProviderTypeManager
 		}
 
 		// Ensure the version is set
@@ -69,27 +58,23 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 				c.Version = DefaultEtcd3Version_1_17
 			} else if b.IsKubernetesGTE("1.14") {
 				c.Version = DefaultEtcd3Version_1_14
-			} else if b.IsKubernetesGTE("1.13") {
-				c.Version = DefaultEtcd3Version_1_13
 			} else {
-				c.Version = DefaultEtcd2Version
+				c.Version = DefaultEtcd3Version_1_13
 			}
 		}
 
 		if c.Version == "" && c.Provider == kops.EtcdProviderTypeManager {
-			// From 1.11, we run the k8s-recommended versions of etcd when using the manager
+			// We run the k8s-recommended versions of etcd when using the manager
 			if b.IsKubernetesGTE("1.17") {
 				c.Version = DefaultEtcd3Version_1_17
 			} else if b.IsKubernetesGTE("1.14") {
 				c.Version = DefaultEtcd3Version_1_14
-			} else if b.IsKubernetesGTE("1.13") {
-				c.Version = DefaultEtcd3Version_1_13
 			} else {
-				c.Version = DefaultEtcd3Version_1_11
+				c.Version = DefaultEtcd3Version_1_13
 			}
 		}
 
-		// From 1.12, we enable TLS if we're running EtcdManager & etcd3
+		// We enable TLS if we're running EtcdManager & etcd3
 		//
 		// (Moving to etcd3 is a disruptive upgrade, so we
 		// force TLS at the same time as we enable
@@ -106,7 +91,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 				return fmt.Errorf("unexpected etcd version %q", c.Version)
 			}
 
-			if b.IsKubernetesGTE("1.12.0") && etcdV3 {
+			if etcdV3 {
 				c.EnableEtcdTLS = true
 				c.EnableTLSAuth = true
 			}

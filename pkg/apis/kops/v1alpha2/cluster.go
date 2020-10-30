@@ -450,8 +450,8 @@ const (
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
-	// Provider is the provider used to run etcd: standalone, manager.
-	// We default to manager for kubernetes 1.11 or if the manager is configured; otherwise standalone.
+	// Provider is the provider used to run etcd: Manager, Legacy.
+	// Defaults to Manager.
 	Provider EtcdProviderType `json:"provider,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []EtcdMemberSpec `json:"etcdMembers,omitempty"`
