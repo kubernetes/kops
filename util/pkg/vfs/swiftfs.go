@@ -51,8 +51,6 @@ func NewSwiftClient() (*gophercloud.ServiceClient, error) {
 		return nil, err
 	}
 
-	authOption.AllowReauth = true
-
 	pc, err := openstack.NewClient(authOption.IdentityEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack provider client: %v", err)
@@ -145,6 +143,7 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	if env.ApplicationCredentialID != "" && env.Username == "" {
 		env.Scope = &gophercloud.AuthScope{}
 	}
+	env.AllowReauth = true
 	return env, nil
 
 }
