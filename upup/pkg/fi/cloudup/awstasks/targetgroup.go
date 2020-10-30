@@ -19,6 +19,7 @@ package awstasks
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"k8s.io/klog/v2"
@@ -89,6 +90,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 		ARN:                tg.TargetGroupArn,
 		HealthyThreshold:   tg.HealthyThresholdCount,
 		UnhealthyThreshold: tg.UnhealthyThresholdCount,
+		VPC:                &VPC{ID: tg.VpcId},
 	}
 
 	tagsResp, err := cloud.ELBV2().DescribeTags(&elbv2.DescribeTagsInput{
@@ -111,6 +113,31 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	actual.Shared = e.Shared
 
 	return actual, nil
+}
+
+func FindTargetGroupByName(cloud awsup.AWSCloud, findName string) (*elbv2.TargetGroup, error) {
+	klog.V(2).Infof("Listing all TargetGroups for FindTargetGroupByName")
+
+	request := &elbv2.DescribeTargetGroupsInput{
+		Names: []*string{aws.String(findName)},
+	}
+	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
+	request.PageSize = aws.Int64(20)
+
+	resp, err := cloud.ELBV2().DescribeTargetGroups(request)
+
+	if err != nil {
+		return nil, fmt.Errorf("error describing TargetGroups: %v", err)
+	}
+	if len(resp.TargetGroups) == 0 {
+		return nil, nil
+	}
+
+	if len(resp.TargetGroups) != 1 {
+		return nil, fmt.Errorf("Found multiple TargetGroups with Name %q", findName)
+	}
+
+	return resp.TargetGroups[0], nil
 }
 
 func (e *TargetGroup) Run(c *fi.Context) error {
@@ -162,6 +189,50 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 		}
 	}
 	return nil
+}
+
+// pkg/model/awsmodel/autoscalinggroup.go doesn't know the ARN of the API TargetGroup tasks that it passes to the master ASGs,
+// it only knows the ARN of external target groups passed through the InstanceGroupSpec.
+// We lookup the ARN for TargetGroup tasks that don't have it set in order to attach the LB to the ASG.
+//
+// This means some TargetGroup tasks have ARN set and others do not.
+// When `Find`ing the ASG and recreating the TargetGroup tasks we need them to match how the model creates them,
+// but we only know the ARNs, not the task names associated with them.
+// This reuslts in spurious changes being reported during subsequent `update cluster` runs because the API TargetGroup task is named differently
+// between the kops model and the ASG's `Find`.
+//
+// To prevent this, we need to update the API TargetGroup tasks in the ASG's TargetGroups list.
+// Because we don't know whether any given ARN attached to an ASG is an API TargetGroup task or not,
+// we have to find the API TargetGroup task, lookup its ARN, then compare that to the list of attached TargetGroups.
+func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected []*TargetGroup) ([]*TargetGroup, error) {
+	var apiTGTask *TargetGroup
+	for _, tg := range expected {
+		// All external TargetGroups have their Shared field set to true. The API TargetGroups do not.
+		// Note that Shared is set by the kops model rather than AWS tags.
+		if !fi.BoolValue(tg.Shared) {
+			apiTGTask = tg
+		}
+	}
+
+	reconciled := make([]*TargetGroup, 0)
+
+	if apiTGTask != nil && len(actual) > 0 {
+		apiTG, err := FindTargetGroupByName(cloud, fi.StringValue(apiTGTask.Name))
+		if err != nil {
+			return nil, err
+		}
+		if apiTG != nil {
+			for i := 0; i < len(actual); i++ {
+				tg := actual[i]
+				if aws.StringValue(apiTG.TargetGroupArn) == aws.StringValue(tg.ARN) {
+					reconciled = append(reconciled, apiTGTask)
+				} else {
+					reconciled = append(reconciled, tg)
+				}
+			}
+		}
+	}
+	return reconciled, nil
 }
 
 type terraformTargetGroup struct {
