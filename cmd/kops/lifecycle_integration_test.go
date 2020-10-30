@@ -106,6 +106,22 @@ func TestLifecycleSharedVPC(t *testing.T) {
 	})
 }
 
+// TestLifecycleComplex runs the test on a complex cluster
+func TestLifecycleComplex(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "complex",
+	})
+}
+
+// TestLifecycleExternlLB runs the test on a cluster with external load balancers and target groups attached
+func TestLifecycleExternalLB(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "externallb",
+	})
+}
+
 // TestLifecycleSharedSubnet runs the test on a shared subnet
 func TestLifecycleSharedSubnet(t *testing.T) {
 	runLifecycleTestAWS(&LifecycleTestOptions{
