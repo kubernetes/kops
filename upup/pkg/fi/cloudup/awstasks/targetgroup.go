@@ -191,7 +191,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	return nil
 }
 
-// pkg/model/awsmodel/autoscalinggroup.go doesn't know the ARN of the API TargetGroup tasks that it passes to the master ASGs,
+// pkg/model/awsmodel doesn't know the ARN of the API TargetGroup tasks that it passes to the master ASGs,
 // it only knows the ARN of external target groups passed through the InstanceGroupSpec.
 // We lookup the ARN for TargetGroup tasks that don't have it set in order to attach the LB to the ASG.
 //
@@ -216,22 +216,27 @@ func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected
 
 	reconciled := make([]*TargetGroup, 0)
 
-	if apiTGTask != nil && len(actual) > 0 {
-		apiTG, err := FindTargetGroupByName(cloud, fi.StringValue(apiTGTask.Name))
+	if len(actual) == 0 {
+		return reconciled, nil
+	}
+
+	var apiTG *elbv2.TargetGroup
+	var err error
+	if apiTGTask != nil {
+		apiTG, err = FindTargetGroupByName(cloud, fi.StringValue(apiTGTask.Name))
 		if err != nil {
 			return nil, err
 		}
-		if apiTG != nil {
-			for i := 0; i < len(actual); i++ {
-				tg := actual[i]
-				if aws.StringValue(apiTG.TargetGroupArn) == aws.StringValue(tg.ARN) {
-					reconciled = append(reconciled, apiTGTask)
-				} else {
-					reconciled = append(reconciled, tg)
-				}
-			}
+	}
+	for i := 0; i < len(actual); i++ {
+		tg := actual[i]
+		if apiTG != nil && aws.StringValue(apiTG.TargetGroupArn) == aws.StringValue(tg.ARN) {
+			reconciled = append(reconciled, apiTGTask)
+		} else {
+			reconciled = append(reconciled, tg)
 		}
 	}
+
 	return reconciled, nil
 }
 

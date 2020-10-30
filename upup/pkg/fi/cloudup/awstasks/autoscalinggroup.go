@@ -162,12 +162,13 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
-	for _, tg := range g.TargetGroupARNs {
-		actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg)})
-	}
+	if len(g.TargetGroupARNs) > 0 {
+		targetGroups := make([]*TargetGroup, 0)
+		for _, tg := range g.TargetGroupARNs {
+			targetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg)})
+		}
 
-	if len(actual.TargetGroups) > 0 {
-		targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), actual.TargetGroups, e.TargetGroups)
+		targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), targetGroups, e.TargetGroups)
 		if err != nil {
 			return nil, err
 		}
