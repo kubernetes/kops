@@ -64,7 +64,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
-	var lbSubnets []*awstasks.Subnet
+	var elbSubnets []*awstasks.Subnet
 	{
 		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
 		for i := range b.Cluster.Spec.Subnets {
@@ -91,11 +91,11 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		for zone, subnets := range subnetsByZone {
 			subnet := b.chooseBestSubnetForELB(zone, subnets)
 
-			lbSubnets = append(lbSubnets, b.LinkToSubnet(subnet))
+			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))
 		}
 	}
 
-	var elb *awstasks.LoadBalancer
+	var clb *awstasks.LoadBalancer
 	var nlb *awstasks.NetworkLoadBalancer
 	{
 		loadBalancerName := b.GetELBName32("api")
@@ -136,7 +136,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerName: fi.String(loadBalancerName),
-			Subnets:          lbSubnets,
+			Subnets:          elbSubnets,
 			Listeners:        nlbListeners,
 
 			Tags: tags,
@@ -144,7 +144,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type: fi.String("network"),
 		}
 
-		elb = &awstasks.LoadBalancer{
+		clb = &awstasks.LoadBalancer{
 			Name:      fi.String("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 
@@ -152,7 +152,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("api"),
 			},
-			Subnets:   lbSubnets,
+			Subnets:   elbSubnets,
 			Listeners: listeners,
 
 			// Configure fast-recovery health-checks
@@ -175,7 +175,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			lbSpec.CrossZoneLoadBalancing = fi.Bool(false)
 		}
 
-		elb.CrossZoneLoadBalancing = &awstasks.LoadBalancerCrossZoneLoadBalancing{
+		clb.CrossZoneLoadBalancing = &awstasks.LoadBalancerCrossZoneLoadBalancing{
 			Enabled: lbSpec.CrossZoneLoadBalancing,
 		}
 
@@ -183,17 +183,17 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		switch lbSpec.Type {
 		case kops.LoadBalancerTypeInternal:
-			elb.Scheme = fi.String("internal")
+			clb.Scheme = fi.String("internal")
 			nlb.Scheme = fi.String("internal")
 		case kops.LoadBalancerTypePublic:
-			elb.Scheme = nil
+			clb.Scheme = nil
 			nlb.Scheme = nil
 		default:
 			return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 		}
 
 		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
-			c.AddTask(elb)
+			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 
 			targetGroupPort := fi.Int64(443)
@@ -335,7 +335,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			if err := c.EnsureTask(t); err != nil {
 				return err
 			}
-			elb.SecurityGroups = append(elb.SecurityGroups, t)
+			clb.SecurityGroups = append(clb.SecurityGroups, t)
 		}
 	}
 
@@ -376,7 +376,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
 		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
-		elb.ForAPIServer = true
+		clb.ForAPIServer = true
 		nlb.ForAPIServer = true
 	}
 
