@@ -51,10 +51,8 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 			docker.Version = fi.String("19.03.13")
 		} else if b.IsKubernetesGTE("1.16") {
 			docker.Version = fi.String("18.09.9")
-		} else if b.IsKubernetesGTE("1.12") {
-			docker.Version = fi.String("18.06.3")
 		} else {
-			docker.Version = fi.String("17.03.2")
+			docker.Version = fi.String("18.06.3")
 		}
 	}
 

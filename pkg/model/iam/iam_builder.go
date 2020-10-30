@@ -569,24 +569,6 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 					paths = append(paths, "/pki/private/kube-router/*")
 				}
 
-				// @check if calico is enabled as the CNI provider and permit access to the client TLS certificate by default
-				if cluster.IsKubernetesLT("1.12") && networkingSpec.Calico != nil {
-					calicoClientCert := false
-					for _, x := range cluster.Spec.EtcdClusters {
-						if x.Provider == kops.EtcdProviderTypeManager {
-							calicoClientCert = false
-							break
-						}
-						if x.EnableEtcdTLS {
-							calicoClientCert = true
-						}
-					}
-
-					if calicoClientCert {
-						paths = append(paths, "/pki/private/calico-client/*")
-					}
-				}
-
 				// @check if cilium is enabled as the CNI provider and permit access to the cilium etc client TLS certificate by default
 				// As long as the Cilium Etcd cluster exists, we should do this
 				if networkingSpec.Cilium != nil && model.UseCiliumEtcd(cluster) {

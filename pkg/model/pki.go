@@ -127,17 +127,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:      "client",
 			Signer:    defaultCA,
 		})
-
-		// @check if calico is enabled as the CNI provider
-		if b.IsKubernetesLT("1.12") && b.KopsModelContext.Cluster.Spec.Networking.Calico != nil {
-			c.AddTask(&fitasks.Keypair{
-				Name:      fi.String("calico-client"),
-				Lifecycle: b.Lifecycle,
-				Subject:   "cn=calico-client",
-				Type:      "client",
-				Signer:    defaultCA,
-			})
-		}
 	}
 
 	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil && !b.UseKopsControllerForNodeBootstrap() {
