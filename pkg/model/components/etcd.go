@@ -52,8 +52,8 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		// Ensure the version is set
-		if c.Version == "" && c.Provider == kops.EtcdProviderTypeLegacy {
-			// Even if in legacy mode, etcd version 2 is unsupported as of k8s 1.13
+		if c.Version == "" {
+			// We run the k8s-recommended versions of etcd
 			if b.IsKubernetesGTE("1.17") {
 				c.Version = DefaultEtcd3Version_1_17
 			} else if b.IsKubernetesGTE("1.14") {
@@ -63,44 +63,20 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 		}
 
-		if c.Version == "" && c.Provider == kops.EtcdProviderTypeManager {
-			// We run the k8s-recommended versions of etcd when using the manager
-			if b.IsKubernetesGTE("1.17") {
-				c.Version = DefaultEtcd3Version_1_17
-			} else if b.IsKubernetesGTE("1.14") {
-				c.Version = DefaultEtcd3Version_1_14
-			} else {
-				c.Version = DefaultEtcd3Version_1_13
-			}
+		// We make sure that etcd v3 is used
+		version := strings.TrimPrefix(c.Version, "v")
+		if !strings.HasPrefix(version, "3.") {
+			return fmt.Errorf("unexpected etcd version %q", c.Version)
 		}
 
-		// We enable TLS if we're running EtcdManager & etcd3
-		//
-		// (Moving to etcd3 is a disruptive upgrade, so we
-		// force TLS at the same time as we enable
-		// etcd-manager by default).
+		// We enable TLS if we're running EtcdManager
 		if c.Provider == kops.EtcdProviderTypeManager {
-			etcdV3 := true
-			version := c.Version
-			version = strings.TrimPrefix(version, "v")
-			if strings.HasPrefix(version, "2.") {
-				etcdV3 = false
-			} else if strings.HasPrefix(version, "3.") {
-				etcdV3 = true
-			} else {
-				return fmt.Errorf("unexpected etcd version %q", c.Version)
-			}
-
-			if etcdV3 {
-				c.EnableEtcdTLS = true
-				c.EnableTLSAuth = true
-			}
+			c.EnableEtcdTLS = true
+			c.EnableTLSAuth = true
 		}
 
-		// Remap the well known images
 		// We remap the etcd manager image when we build the manifest,
 		// but we need to map the standalone images here because protokube launches them
-
 		if c.Provider == kops.EtcdProviderTypeLegacy {
 
 			// remap etcd image
