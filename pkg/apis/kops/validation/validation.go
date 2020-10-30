@@ -214,7 +214,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	if spec.API != nil && spec.API.LoadBalancer != nil && spec.CloudProvider == "aws" {
 		value := string(spec.API.LoadBalancer.Class)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
-		if featureflag.Spotinst.Enabled() {
+		if featureflag.Spotinst.Enabled() && spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
 			allErrs = append(allErrs, field.Forbidden(fieldPath, "spotinst + NLBs dissallowed"))
 		}
 	}
