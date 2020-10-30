@@ -1,10 +1,10 @@
-# Common Basic Requirements For Kops-Related Labs. Pre-Flight Check:
+# Common Basic Requirements For kOps-Related Labs. Pre-Flight Check:
 
 Before rushing-in to replicate any of the exercises, please ensure your basic environment is correctly set-up. See [KOPS AWS tutorial](../getting_started/aws.md) for more information.
 
 Basic requirements:
 
-- Configured AWS cli (aws account set-up with proper permissions/roles needed for kops). Depending on your distro, you can set-up directly from packages, or if you want the most updated version, use `pip` (python package manager) to install by running `pip install awscli` command from your local terminal. Your choice!
+- Configured AWS cli (aws account set-up with proper permissions/roles needed for kOps). Depending on your distro, you can set-up directly from packages, or if you want the most updated version, use `pip` (python package manager) to install by running `pip install awscli` command from your local terminal. Your choice!
 - Local ssh key ready on `~/.ssh/id_rsa` / `id_rsa.pub`. You can generate it using `ssh-keygen` command if you don't have one already: `ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ""`.
 - AWS Region set. 
   - Throughout most of the exercises, we'll deploy our clusters in us-east-1 region (AZs: us-east-1a, us-east-1b, us-east-1c, us-east-1d, us-east-1e and us-east-1f). 

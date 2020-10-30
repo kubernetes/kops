@@ -9,13 +9,13 @@ If these certificates are not rotated prior to their expiration, Kubernetes apis
 ## How do I know if I'm affected?
 
 Clusters are affected by this issue if they're using a version of etcd-manager < `3.0.20200428`.
-The etcd-manager version is set automatically based on the Kops version.
-These Kops versions are affected:
+The etcd-manager version is set automatically based on the kOps version.
+These kOps versions are affected:
 
-* Kops 1.10.0-alpha.1 through 1.15.2
-* Kops 1.16.0-alpha.1 through 1.16.1
-* Kops 1.17.0-alpha.1 through 1.17.0-beta.1
-* Kops 1.18.0-alpha.1 through 1.18.0-alpha.2
+* kOps 1.10.0-alpha.1 through 1.15.2
+* kOps 1.16.0-alpha.1 through 1.16.1
+* kOps 1.17.0-alpha.1 through 1.17.0-beta.1
+* kOps 1.18.0-alpha.1 through 1.18.0-alpha.2
 
 The issue can be confirmed by checking for the existence of etcd-manager pods and observing their image tags:
 
@@ -34,9 +34,9 @@ Upgrade etcd-manager. etcd-manager version >= `3.0.20200428` manages certificate
 
 We have two suggested workflows to upgrade etcd-manager in your cluster. While both workflows require a rolling-update of the master nodes, neither require control-plane downtime (if the clusters have highly available masters).
 
-1. Upgrade to Kops 1.15.3, 1.16.2, 1.17.0-beta.2, or 1.18.0-alpha.3.
+1. Upgrade to kOps 1.15.3, 1.16.2, 1.17.0-beta.2, or 1.18.0-alpha.3.
    This is the recommended approach.
-   Follow the normal steps when upgrading Kops and confirm the etcd-manager image will be updated based on the output of `kops update cluster`.
+   Follow the normal steps when upgrading kOps and confirm the etcd-manager image will be updated based on the output of `kops update cluster`.
    ```
    kops update cluster --yes
    kops rolling-update cluster --instance-group-roles=Master --cloudonly

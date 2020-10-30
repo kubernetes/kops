@@ -81,7 +81,7 @@ able to reclaim memory (because it may not observe memory pressure right away,
 since it polls `cAdvisor` to collect memory usage stats at a regular interval).
 
 All the while, keep in mind that without `kube-reserved` nor `system-reserved`
-reservations set (which is most clusters i.e. [GKE][5], [Kops][6]), the
+reservations set (which is most clusters i.e. [GKE][5], [kOps][6]), the
 scheduler doesn't account for resources that non-pod components would require to
 function properly because `Capacity` and `Allocatable` resources are more or
 less equal.

@@ -1,14 +1,14 @@
-# How to use kops in AWS China Region
+# How to use kOps in AWS China Region
 
 ## Getting Started
 
-Kops used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Should support both `cn-north-1` and `cn-northwest-1`, but only `cn-north-1` is tested.
+kOps used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Should support both `cn-north-1` and `cn-northwest-1`, but only `cn-north-1` is tested.
 
-Most of the following procedures to provision a cluster are the same with [the guide to use kops in AWS](getting_started/aws.md). The differences will be highlighted and the similar parts will be omitted.
+Most of the following procedures to provision a cluster are the same with [the guide to use kOps in AWS](getting_started/aws.md). The differences will be highlighted and the similar parts will be omitted.
 
 *NOTE: THE FOLLOWING PROCEDURES ARE ONLY TESTED WITH KOPS 1.10.0, 1.10.1 AND KUBERNETES 1.9.11, 1.10.12*
 
-### [Install kops](getting_started/aws.md#install-kops)
+### [Install kOps](getting_started/aws.md#install-kOps)
 
 ### [Install kubectl](getting_started/aws.md#install-kubectl)
 
@@ -53,9 +53,9 @@ aws s3api create-bucket --bucket prefix-example-com-state-store --create-bucket-
 
 First of all, we have to solve the slow and unstable connection to the internet outside China, or the following processes won't work. One way to do that is to build a NAT instance which can route the traffic via some reliable connection. The details won't be discussed here.
 
-### Prepare kops ami
+### Prepare kOps ami
 
-We have to build our own AMI because there is [no official kops ami in AWS China Regions][3]. There're two ways to accomplish so.
+We have to build our own AMI because there is [no official kOps ami in AWS China Regions][3]. There're two ways to accomplish so.
 
 #### ImageBuilder **RECOMMENDED**
 
@@ -93,7 +93,7 @@ ${GOPATH}/bin/imagebuilder --config aws-1.9-jessie.yaml --v=8 --publish=false --
 
 #### Copy AMI from another region
 
-Following [the comment][5] to copy the kops image from another region, e.g. `ap-southeast-1`.
+Following [the comment][5] to copy the kOps image from another region, e.g. `ap-southeast-1`.
 
 #### Get the AMI id
 

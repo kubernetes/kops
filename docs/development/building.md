@@ -1,6 +1,6 @@
 # Building from source
 
-[Installation from a binary](../install.md) is recommended for normal kops operation.  However, if you want
+[Installation from a binary](../install.md) is recommended for normal kOps operation.  However, if you want
 to build from source, it is straightforward:
 
 If you don't have a GOPATH:
@@ -29,14 +29,14 @@ Cross compiling for things like `nodeup` are now done automatically via `make no
 
 ## Debugging
 
-To enable interactive debugging, the kops binary needs to be specially compiled to include debugging symbols.
+To enable interactive debugging, the kOps binary needs to be specially compiled to include debugging symbols.
 Add `DEBUGGING=true` to the `make` invocation to set the compile flags appropriately.
 
-For example, `DEBUGGING=true make` will produce a kops binary that can be interactively debugged.
+For example, `DEBUGGING=true make` will produce a kOps binary that can be interactively debugged.
 
 ### Interactive debugging with Delve
 
-[Delve](https://github.com/derekparker/delve) can be used to interactively debug the kops binary.
+[Delve](https://github.com/derekparker/delve) can be used to interactively debug the kOps binary.
 After installing Delve, you can use it directly, or run it in headless mode for use with an
 Interactive Development Environment (IDE).
 
@@ -46,6 +46,6 @@ and then configure your IDE to connect its debugger to port 2345 on localhost.
 ## Troubleshooting
 
  - Make sure `$GOPATH` is set, and your [workspace](https://golang.org/doc/code.html#Workspaces) is configured.
- - kops will not compile with symlinks in `$GOPATH`. See issue go issue [17451](https://github.com/golang/go/issues/17451) for more information
+ - kOps will not compile with symlinks in `$GOPATH`. See issue go issue [17451](https://github.com/golang/go/issues/17451) for more information
  - building kops requires go 1.15
- - Kops will only compile if the source is checked out in `$GOPATH/src/k8s.io/kops`. If you try to use `$GOPATH/src/github.com/kubernetes/kops` you will run into issues with package imports not working as expected.
+ - kOps will only compile if the source is checked out in `$GOPATH/src/k8s.io/kops`. If you try to use `$GOPATH/src/github.com/kubernetes/kops` you will run into issues with package imports not working as expected.

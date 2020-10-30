@@ -1,4 +1,4 @@
-# Installing kops (Binaries)
+# Installing kOps (Binaries)
 
 ## MacOS
 

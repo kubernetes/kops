@@ -1,20 +1,20 @@
-** This file documents the release process used through kops 1.18.
+** This file documents the release process used through kOps 1.18.
 For the new process that will be used for 1.19, please see
 [the new release process](../release-process.md)**
 
 # Release Process
 
-The kops project is released on an as-needed basis. The process is as follows:
+The kOps project is released on an as-needed basis. The process is as follows:
 
 1. An issue is proposing a new release with a changelog since the last release
 1. All [OWNERS](https://github.com/kubernetes/kops/blob/master/OWNERS) must LGTM this release
 1. An OWNER runs `git tag -s $VERSION` and inserts the changelog and pushes the tag with `git push $VERSION`
 1. The release issue is closed
-1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kops $VERSION is released`
+1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kOps $VERSION is released`
 
 ## Branches
 
-We maintain a `release-1.16` branch for kops 1.16.X, `release-1.17` for kops 1.17.X
+We maintain a `release-1.16` branch for kOps 1.16.X, `release-1.17` for kOps 1.17.X
 etc.
 
 `master` is where development happens.  We create new branches from master as a
@@ -24,7 +24,7 @@ to focus on the new functionality, and start cherry-picking back more selectivel
 to the release branches only as needed.
 
 Generally we don't encourage users to run older kops versions, or older
-branches, because newer versions of kops should remain compatible with older
+branches, because newer versions of kOps should remain compatible with older
 versions of Kubernetes.
 
 Releases should be done from the `release-1.X` branch.  The tags should be made
@@ -35,15 +35,15 @@ the current `release-1.X` tag.
 
 ## New Kubernetes versions and release branches
 
-Typically Kops alpha releases are created off the master branch and beta and stable releases are created off of release branches.
+Typically kOps alpha releases are created off the master branch and beta and stable releases are created off of release branches.
 In order to create a new release branch off of master prior to a beta release, perform the following steps:
 
 1. Create a new presubmit E2E prow job for the new release branch [here](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/kops-presubmits.yaml).
 2. Create a new milestone in the GitHub repo.
 3. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.
 4. Create the new release branch in git and push it to the GitHub repo. This will trigger a warning in #kops-dev as well as trigger the postsubmit job that creates the `https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.XX/latest-ci.txt` version marker via cloudbuild.
-5. Update [build-pipeline.py](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/build-pipeline.py), incrementing `master_k8s_version` and the list of branches to reflect all actively maintained kops branches. Run `make` to regenerate the pipeline jobs.
-6. Update the [build-grid.py](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/build-grid.py), incrementing the single non-master `kops_version` list item and incrementing the `k8s_versions` values. Update the `ko` suffixes in the `skip_jobs` list to reflect the new kops release branch being tested. Run `make` to regenerate the grid jobs.
+5. Update [build-pipeline.py](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/build-pipeline.py), incrementing `master_k8s_version` and the list of branches to reflect all actively maintained kOps branches. Run `make` to regenerate the pipeline jobs.
+6. Update the [build-grid.py](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/kops/build-grid.py), incrementing the single non-master `kops_version` list item and incrementing the `k8s_versions` values. Update the `ko` suffixes in the `skip_jobs` list to reflect the new kOps release branch being tested. Run `make` to regenerate the grid jobs.
 
 An example set of PRs are linked from [this](https://github.com/kubernetes/kops/issues/10079) issue.
 
@@ -167,7 +167,7 @@ k8s-container-image-promoter --snapshot gcr.io/k8s-staging-kops --snapshot-tag $
 cd ~/k8s/src/k8s.io/k8s.io
 git add k8s.gcr.io/images/k8s-staging-kops/images.yaml
 git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
-git commit -m "Promote artifacts for kops ${VERSION}"
+git commit -m "Promote artifacts for kOps ${VERSION}"
 git push ${USER}
 hub pull-request
 ```
@@ -195,7 +195,7 @@ relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 * Add notes
 * Publish it
 
-## Release kops to homebrew
+## Release kOps to homebrew
 
 * Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
 * This should be done at the same time as the release, and we will iterate on how to improve timing of this.
@@ -204,11 +204,11 @@ relnotes  -config .shipbot.yaml  < /tmp/prs  >> docs/releases/${DOC}-NOTES.md
 
 Once we are satisfied the release is sound:
 
-* Bump the kops recommended version in the alpha channel
+* Bump the kOps recommended version in the alpha channel
 
 Once we are satisfied the release is stable:
 
-* Bump the kops recommended version in the stable channel
+* Bump the kOps recommended version in the stable channel
 
 ## Update conformance results with CNCF
 

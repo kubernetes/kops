@@ -1,4 +1,4 @@
-# Download kops config spec file
+# Download kOps config spec file
 
 KOPS operates off of a config spec file that is generated during the create phase.  It is uploaded to the amazon s3 bucket that is passed in during create.
 
@@ -17,7 +17,7 @@ export NETWORKCIDR="10.240.0.0/16"
 export MASTER_SIZE="m3.large"
 export WORKER_SIZE="m4.large"
 ```
-Next you call the kops command to create the cluster in your terminal:
+Next you call the kOps command to create the cluster in your terminal:
 
 ```shell
 kops create cluster $NAME              \
@@ -33,9 +33,9 @@ kops create cluster $NAME              \
    --ssh-public-key=$HOME/.ssh/lab_no_password.pub
 ```
 
-## kops command
+## kOps command
 
-You can simply use the kops command `kops get --name $NAME -o yaml > a_fun_name_you_will_remember.yml`
+You can simply use the kOps command `kops get --name $NAME -o yaml > a_fun_name_you_will_remember.yml`
 
 Note: for the above command to work the cluster NAME and the KOPS_STATE_STORE will have to be exported in your environment.
 

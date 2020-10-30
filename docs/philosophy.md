@@ -1,6 +1,6 @@
-kops: Operate Kubernetes the Kubernetes Way
+kOps: Operate Kubernetes the Kubernetes Way
 
-kops (Kubernetes-Ops) is a set of tools for installing, operating and deleting Kubernetes clusters.
+kOps (Kubernetes-Ops) is a set of tools for installing, operating and deleting Kubernetes clusters.
 
 It follows the Kubernetes design philosophy: the user creates a Cluster configuration object in JSON/YAML,
 and then controllers create the Cluster.
@@ -8,7 +8,7 @@ and then controllers create the Cluster.
 Each component (kubelet, kube-apiserver...) is explicitly configured: We reuse the k8s componentconfig types
 where we can, and we create additional types for the configuration of additional components.
 
-kops can:
+kOps can:
 
 * create a cluster
 * upgrade a cluster
@@ -18,8 +18,8 @@ kops can:
 * delete a cluster
 
 Some users will need or prefer to use tools like Terraform for cluster configuration,
-so kops can also output the equivalent configuration for those tools also (currently just Terraform, others
-planned).  After creation with your preferred tool, you can still use the rest of the kops tooling to operate
+so kOps can also output the equivalent configuration for those tools also (currently just Terraform, others
+planned).  After creation with your preferred tool, you can still use the rest of the kOps tooling to operate
 your cluster.
 
 ## Primary API types

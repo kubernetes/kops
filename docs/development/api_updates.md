@@ -1,11 +1,11 @@
 # API machinery
 
-Kops uses the Kubernetes API machinery.  It is well designed, and very powerful, but you have to
+kOps uses the Kubernetes API machinery.  It is well designed, and very powerful, but you have to
 jump through some hoops to use it.
 
 Recommended reading: [kubernetes API convention doc](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) and [kubernetes API changes doc](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md).
 
-The kops APIs live in [pkg/apis/kops](https://github.com/kubernetes/kops/tree/master/pkg/apis/kops), both in
+The kOps APIs live in [pkg/apis/kops](https://github.com/kubernetes/kops/tree/master/pkg/apis/kops), both in
 that directory directly (the unversioned API) and in the versioned subdirectory (`v1alpha2`).
 
 ## Updating the generated API code

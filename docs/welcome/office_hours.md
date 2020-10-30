@@ -1,6 +1,6 @@
 ## Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
+kOps maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
 
 Office hours are hosted on a [zoom video chat](https://zoom.us/j/97072789944?pwd=VVlUR3dhN2h5TEFQZHZTVVd4SnJUdz09) on Fridays at [12 noon (Eastern Time)/9 am (Pacific Time)](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) during weeks with odd "numbers". To check this weeks' number, run: `date +%V`. If the response is odd, join us on Friday for office hours!
 
@@ -14,13 +14,13 @@ Our office hours call is recorded, but the tone tends to be casual. First-timers
 - Members planning for what we want to get done for the next release
 - Strategizing for larger initiatives, such as those that involve more than one sig or potentially more moving pieces
 - Help wanted requests
-- Demonstrations of cool stuff. PoCs. Fresh ideas. Show us how you use kops to go beyond the norm- help us define the future!
+- Demonstrations of cool stuff. PoCs. Fresh ideas. Show us how you use kOps to go beyond the norm- help us define the future!
 
-Office hours are designed for ALL of those contributing to kops or the community. Contributions are not limited to those who commit source code. There are so many important ways to be involved:
+Office hours are designed for ALL of those contributing to kOps or the community. Contributions are not limited to those who commit source code. There are so many important ways to be involved:
 
 - helping in the slack channels
 - triaging/writing issues
 - thinking about the topics raised at office hours and forming and advocating for your good ideas forming opinions
 - testing pre-(and official) releases
 
-Although not exhaustive, the above activities are extremely important to our continued success and are all worth contributions. If you want to talk about kops and you have doubt, just come.
+Although not exhaustive, the above activities are extremely important to our continued success and are all worth contributions. If you want to talk about kOps and you have doubt, just come.

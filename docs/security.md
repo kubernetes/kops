@@ -22,7 +22,7 @@ To change the SSH public key on an existing cluster:
 
 ## Docker Configuration
 
-If you are using a private registry such as quay.io, you may be familiar with the inconvenience of managing the `imagePullSecrets` for each namespace. It can also be a pain to use [Kops Hooks](cluster_spec.md#hooks) with private images. To configure docker on all nodes with access to one or more private registries:
+If you are using a private registry such as quay.io, you may be familiar with the inconvenience of managing the `imagePullSecrets` for each namespace. It can also be a pain to use [kOps Hooks](cluster_spec.md#hooks) with private images. To configure docker on all nodes with access to one or more private registries:
 
 * `kops create secret --name <clustername> dockerconfig -f ~/.docker/config.json`
 * `kops rolling-update cluster --name <clustername> --yes` to immediately roll all the machines so they have the new key (optional)

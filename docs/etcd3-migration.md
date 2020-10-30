@@ -4,7 +4,7 @@
 
 Kubernetes has moved from etcd2 to etcd3, which is an upgrade that involves Kubernetes API Server
 downtime. Technically there is no usable upgrade path from etcd2 to etcd3 that
-supports HA scenarios, but kops has enabled it using etcd-manager.
+supports HA scenarios, but kOps has enabled it using etcd-manager.
 
 Nonetheless, this remains a *higher-risk upgrade* than most other kubernetes
 upgrades - you are strongly recommended to plan accordingly: back up critical
@@ -29,7 +29,7 @@ bottom of this doc that outlines how to do that.
 
 ## Default upgrades
 
-When upgrading to kubernetes 1.12 with kops 1.12, by default:
+When upgrading to kubernetes 1.12 with kOps 1.12, by default:
 
 * Calico and Cilium will be updated to a configuration that uses CRDs
 * We will automatically start using etcd-manager
@@ -73,20 +73,20 @@ If you would like to upgrade more gradually, we offer the following strategies
 to spread out the disruption over several steps.  Note that they likely involve
 more disruption and are not necessarily lower risk.
 
-### Adopt etcd-manager with kops 1.11 / kubernetes 1.11
+### Adopt etcd-manager with kOps 1.11 / kubernetes 1.11
 
 If you don't already have TLS enabled with etcd, you can adopt etcd-manager before
-kops 1.12 & kubernetes 1.12 by running:
+kOps 1.12 & kubernetes 1.12 by running:
 
 ```bash
 kops set cluster cluster.spec.etcdClusters[*].provider=manager
 ```
 
-Then you can proceed to update to kops 1.12 & kubernetes 1.12, as this becomes the default.
+Then you can proceed to update to kOps 1.12 & kubernetes 1.12, as this becomes the default.
 
-### Delay adopting etcd-manager with kops 1.12
+### Delay adopting etcd-manager with kOps 1.12
 
-To delay adopting etcd-manager with kops 1.12, specify the provider as type `legacy`:
+To delay adopting etcd-manager with kOps 1.12, specify the provider as type `legacy`:
 
 ```bash
 kops set cluster cluster.spec.etcdClusters[*].provider=legacy
@@ -94,9 +94,9 @@ kops set cluster cluster.spec.etcdClusters[*].provider=legacy
 
 To remove, `kops edit` your cluster and delete the `provider: Legacy` lines from both etcdCluster blocks.
 
-### Delay adopting etcd3 with kops 1.12
+### Delay adopting etcd3 with kOps 1.12
 
-To delay adopting etcd3 with kops 1.12, specify the etcd version as 2.2.1
+To delay adopting etcd3 with kOps 1.12, specify the etcd version as 2.2.1
 
 ```bash
 kops set cluster cluster.spec.etcdClusters[*].version=2.2.1

@@ -13,7 +13,7 @@ To use the Lyft CNI, specify the following in the cluster spec.
     lyftvpc: {}
 ```
 
-in the cluster spec file or pass the `--networking lyftvpc` option on the command line to kops:
+in the cluster spec file or pass the `--networking lyftvpc` option on the command line to kOps:
 
 ```console
 $ export ZONES=mylistofzones
