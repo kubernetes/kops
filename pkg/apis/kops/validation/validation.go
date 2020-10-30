@@ -924,27 +924,6 @@ func validateEtcdMemberSpec(spec kops.EtcdMemberSpec, fieldPath *field.Path) fie
 	return allErrs
 }
 
-func ValidateEtcdVersionForCalicoV3(e kops.EtcdClusterSpec, majorVersion string, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	if e.Version == "" {
-		if majorVersion == "v3" {
-			return allErrs
-		} else {
-			allErrs = append(allErrs, field.Required(fldPath.Child("majorVersion"), "majorVersion required when etcd version is not set explicitly"))
-		}
-	} else {
-		sem, err := semver.Parse(strings.TrimPrefix(e.Version, "v"))
-		if err != nil {
-			allErrs = append(allErrs, field.InternalError(fldPath.Child("majorVersion"), fmt.Errorf("failed to parse etcd version to check compatibility: %s", err)))
-		}
-		if majorVersion == "v3" && sem.Major != 3 {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("majorVersion"), fmt.Sprintf("unable to use v3 when etcd version for %s cluster is %s", e.Name, e.Version)))
-		}
-	}
-	return allErrs
-}
-
 func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
@@ -952,14 +931,6 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 		allErrs = append(allErrs,
 			field.Invalid(fldPath.Child("typhaReplicas"), v.TyphaReplicas,
 				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
-	}
-
-	if v.MajorVersion != "" {
-		valid := []string{"v3"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("majorVersion"), &v.MajorVersion, valid)...)
-		if v.MajorVersion == "v3" {
-			allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
-		}
 	}
 
 	if v.AwsSrcDstCheck != "" {
