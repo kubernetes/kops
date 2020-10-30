@@ -217,8 +217,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(tg)
 
 			nlb.TargetGroup = tg
-			//nlbListeners[nlbListenerPort].TargetGroups = append(nlbListeners[nlbListenerPort].TargetGroups, tg)
-			c.AddTask(nlb) //nlb depends on the target group task
+
+			c.AddTask(nlb)
 		}
 
 	}
@@ -353,9 +353,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        fi.Int64(443),
 			})
 		}
-	}
-
-	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+	} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 		//TODO: resarch if the NLB's nodes will have constant IP's.  If so, consider the following as a TODO:
 		// Can tighten security by allowing only https access from the private ip's of the eni's associated with the nlb's nodes in each availability zone.
 		// Recommended approach is the whole vpc cidr https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups
@@ -376,14 +374,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
-		// Ensure the ELB hostname is included in the TLS certificate,
+		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
-		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
-			elb.ForAPIServer = true
-		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
-			nlb.ForAPIServer = true
-		}
-
+		elb.ForAPIServer = true
+		nlb.ForAPIServer = true
 	}
 
 	return nil
