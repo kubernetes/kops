@@ -79,7 +79,7 @@ spec:
   subnets:
   - us-test-1a
   externalLoadBalancers:
-  - targetGroupArn: aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef
+  - targetGroupArn: arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg/1
   - loadBalancerName: my-other-elb
 
 
