@@ -32,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/klog/v2"
 )
 
@@ -140,7 +139,6 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		// Because we don't know whether any given LoadBalancerName attached to an ASG is the API ELB task or not,
 		// we have to find the API ELB task, lookup its LoadBalancerName, and then compare that to the list of attached LoadBalancers.
 		var apiLBTask *LoadBalancer
-		var apiLBDesc *elb.LoadBalancerDescription
 		for _, lb := range e.LoadBalancers {
 			// All external ELBs have their Shared field set to true. The API ELB does not.
 			// Note that Shared is set by the kops model rather than AWS tags.
@@ -149,7 +147,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			}
 		}
 		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-			apiLBDesc, err = FindLoadBalancerByNameTag(c.Cloud.(awsup.AWSCloud), fi.StringValue(apiLBTask.Name))
+			apiLBDesc, err := FindLoadBalancerByNameTag(c.Cloud.(awsup.AWSCloud), fi.StringValue(apiLBTask.Name))
 			if err != nil {
 				return nil, err
 			}
@@ -166,6 +164,14 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	for _, tg := range g.TargetGroupARNs {
 		actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg)})
+	}
+
+	if len(actual.TargetGroups) > 0 {
+		targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), actual.TargetGroups, e.TargetGroups)
+		if err != nil {
+			return nil, err
+		}
+		actual.TargetGroups = targetGroups
 	}
 
 	if g.VPCZoneIdentifier != nil {

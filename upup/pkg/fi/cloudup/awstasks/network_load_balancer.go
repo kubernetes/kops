@@ -76,18 +76,6 @@ func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
 }
 
-var _ fi.HasDependencies = &LoadBalancerListener{}
-
-func (e *NetworkLoadBalancer) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
-	for _, task := range tasks {
-		if tg, ok := task.(*TargetGroup); ok && !fi.BoolValue(tg.Shared) {
-			deps = append(deps, task)
-		}
-	}
-	return deps
-}
-
 type NetworkLoadBalancerListener struct {
 	Port             int
 	SSLCertificateID string
@@ -117,6 +105,12 @@ func (e *NetworkLoadBalancerListener) mapToAWS(targetGroupArn string, loadBalanc
 	}
 
 	return l
+}
+
+var _ fi.HasDependencies = &NetworkLoadBalancerListener{}
+
+func (e *NetworkLoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
 }
 
 //The load balancer name 'api.renamenlbcluster.k8s.local' can only contain characters that are alphanumeric characters and hyphens(-)\n\tstatus code: 400,
@@ -317,7 +311,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 
 	actual := &NetworkLoadBalancer{}
 	actual.Name = e.Name
-	actual.Lifecycle = e.Lifecycle
 	actual.LoadBalancerName = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneId //CanonicalHostedZoneNameID
@@ -358,6 +351,24 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 				actualListener.SSLCertificateID = aws.StringValue(l.Certificates[0].CertificateArn) // What if there is more then one certificate, can we just grab the default certificate? we don't set it as default, we only set the one.
 			}
 			actual.Listeners[loadBalancerPort] = actualListener
+
+			// This will need to be rearranged when we recognized multiple listeners and target groups per NLB
+			if len(l.DefaultActions) > 0 {
+				targetGroupARN := l.DefaultActions[0].TargetGroupArn
+				if targetGroupARN != nil {
+					actual.TargetGroup = &TargetGroup{ARN: targetGroupARN}
+				}
+			}
+		}
+		// This will be cleaned up once the NLB task supports multiple target groups
+		if actual.TargetGroup != nil {
+			actualTGs := []*TargetGroup{actual.TargetGroup}
+			expectedTGs := []*TargetGroup{e.TargetGroup}
+			targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), actualTGs, expectedTGs)
+			if err != nil {
+				return nil, err
+			}
+			actual.TargetGroup = targetGroups[0]
 		}
 
 	}
@@ -410,6 +421,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
 	actual.ForAPIServer = e.ForAPIServer
+	actual.Lifecycle = e.Lifecycle
 
 	klog.V(4).Infof("Found NLB %+v", actual)
 
@@ -511,6 +523,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 				lb := response.LoadBalancers[0]
 				e.DNSName = lb.DNSName
 				e.HostedZoneId = lb.CanonicalHostedZoneId
+				e.VPC = &VPC{ID: lb.VpcId}
 				loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
 			}
 		}
