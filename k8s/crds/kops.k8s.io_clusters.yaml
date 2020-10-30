@@ -2182,7 +2182,7 @@ spec:
                         description: 'LogSeverityScreen lets us set the desired log level. (Default: info)'
                         type: string
                       majorVersion:
-                        description: MajorVersion is the version of Calico to use
+                        description: MajorVersion is deprecated as of kOps 1.20 and has no effect
                         type: string
                       mtu:
                         description: MTU to be set in the cni-network-config for calico.
