@@ -10,7 +10,7 @@ listed below, are available which implement and manage this abstraction.
 
 ## Supported networking options
 
-The following table provides the support status for various networking providers with regards to Kops version:
+The following table provides the support status for various networking providers with regards to kOps version:
 
 | Network provider | Experimental | Stable | Deprecated | Removed |
 | ------------ | -----------: | -----: | ---------: | ------: |
@@ -29,7 +29,7 @@ The following table provides the support status for various networking providers
 
 ### Which networking provider should you use?
 
-Kops maintainers have no bias over the CNI provider that you run, we only aim to be flexible and provide a working setup of the CNIs.
+kOps maintainers have no bias over the CNI provider that you run, we only aim to be flexible and provide a working setup of the CNIs.
 
 We do recommended something other than `kubenet` for production clusters due to `kubenet`'s limitations, as explained [below](#kubenet-default).
 
@@ -39,7 +39,7 @@ You can specify the network provider via the `--networking` command line switch.
 
 ### Kubenet (default)
 
-Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
+Kubernetes Operations (kOps) uses `kubenet` networking by default. This sets up networking on AWS using VPC
 networking, where the master allocates a /24 CIDR to each Node, drawing from the Node network.
 Using `kubenet` mode routes for each node are then configured in the AWS VPC routing tables.
 
@@ -68,7 +68,7 @@ For more on the `kubenet` networking provider, please see the [`kubenet` section
 and libraries for writing plugins to configure network interfaces in Linux containers.  Kubernetes
 has built in support for CNI networking components.
 
-Several CNI providers are currently built into kops:
+Several CNI providers are currently built into kOps:
 
 * [AWS VPC](networking/aws-vpc.md)
 * [Calico](networking/calico.md)
@@ -80,8 +80,8 @@ Several CNI providers are currently built into kops:
 * [Romana](networking/romana.md)
 * [Weave](networking/weave.md)
 
-Kops makes it easy for cluster operators to choose one of these options. The manifests for the providers
-are included with kops, and you simply use `--networking <provider-name>`. Replace the provider name
+kOps makes it easy for cluster operators to choose one of these options. The manifests for the providers
+are included with kOps, and you simply use `--networking <provider-name>`. Replace the provider name
 with the name listed in the provider's documentation (from the list above) when you run
 `kops cluster create`.  For instance, for a default Calico installation, execute the following:
 
@@ -93,19 +93,19 @@ Later, when you run `kops get cluster -oyaml`, you will see the option you chose
 
 ### Advanced
 
-Kops makes a best-effort attempt to expose as many configuration options as possible for the upstream CNI options that it supports within the Kops cluster spec. However, as upstream CNI options are always changing, not all options may be available, or you may wish to use a CNI option which Kops doesn't support. There may also be edge-cases to operating a given CNI that were not considered by the Kops maintainers. Allowing Kops to manage the CNI installation is sufficient for the vast majority of production clusters; however, if this is not true in your case, then Kops provides an escape-hatch that allows you to take greater control over the CNI installation.
+kOps makes a best-effort attempt to expose as many configuration options as possible for the upstream CNI options that it supports within the kOps cluster spec. However, as upstream CNI options are always changing, not all options may be available, or you may wish to use a CNI option which kOps doesn't support. There may also be edge-cases to operating a given CNI that were not considered by the kOps maintainers. Allowing kOps to manage the CNI installation is sufficient for the vast majority of production clusters; however, if this is not true in your case, then kOps provides an escape-hatch that allows you to take greater control over the CNI installation.
 
-When using the flag `--networking cni` on `kops create cluster`  or `spec.networking: cni {}`, Kops will not install any CNI at all, but expect that you install it.
+When using the flag `--networking cni` on `kops create cluster`  or `spec.networking: cni {}`, kOps will not install any CNI at all, but expect that you install it.
 
 If you try to create a new cluster in this mode, the master nodes will come up in `not ready` state. You will then be able to deploy any CNI DaemonSet by following [the vanilla kubernetes install instructions](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#pod-network). Once the CNI DaemonSet has been deployed, the master nodes should enter `ready` state and the remaining nodes should join the cluster shortly thereafter.
 
 #### Important Caveats
 
-For some of the CNI implementations, Kops does more than just launch a DaemonSet with the relevant CNI pod. For example, when installing Calico, Kops installs client certificates for Calico to enable mTLS for connections to etcd. If you were to simply replace `spec.networking`'s Calico options with `spec.networking: cni {}`, you would cause an outage.
+For some of the CNI implementations, kOps does more than just launch a DaemonSet with the relevant CNI pod. For example, when installing Calico, kOps installs client certificates for Calico to enable mTLS for connections to etcd. If you were to simply replace `spec.networking`'s Calico options with `spec.networking: cni {}`, you would cause an outage.
 
-If you do decide to take manual responsibility for maintaining the CNI, you should familiarize yourself with the parts of the Kops codebase which install your CNI ([example](https://github.com/kubernetes/kops/tree/master/nodeup/pkg/model/networking)) to ensure that you are replicating any additional actions which Kops was applying for your CNI option. You should closely follow your upstream CNI's releases and Kops's releases, to ensure that you can apply any updates or fixes issued by your upstream CNI or by the Kops maintainers.
+If you do decide to take manual responsibility for maintaining the CNI, you should familiarize yourself with the parts of the kOps codebase which install your CNI ([example](https://github.com/kubernetes/kops/tree/master/nodeup/pkg/model/networking)) to ensure that you are replicating any additional actions which kOps was applying for your CNI option. You should closely follow your upstream CNI's releases and kOps's releases, to ensure that you can apply any updates or fixes issued by your upstream CNI or by the kOps maintainers.
 
-Additionally, you should bear in mind that the Kops maintainers run e2e testing over the variety of supported CNI options that a Kops update must pass in order to be released. If you take over maintaining the CNI for your cluster, you should test potential Kops, Kubernetes, and CNI updates in a test cluster before updating.
+Additionally, you should bear in mind that the kOps maintainers run e2e testing over the variety of supported CNI options that a kOps update must pass in order to be released. If you take over maintaining the CNI for your cluster, you should test potential kOps, Kubernetes, and CNI updates in a test cluster before updating.
 
 ## Validating CNI Installation
 
@@ -125,7 +125,7 @@ for Kubernetes specific CNI challenges.
 
 Switching from `kubenet` providers to a CNI provider is considered safe. Just update the config and roll the cluster.
 
-It is also possible to switch between CNI providers, but this usually is a disruptive change. Kops will also not clean up any resources left behind by the previous CNI, _including_ the CNI daemonset.
+It is also possible to switch between CNI providers, but this usually is a disruptive change. kOps will also not clean up any resources left behind by the previous CNI, _including_ the CNI daemonset.
 
 ## Additional Reading
 

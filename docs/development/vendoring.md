@@ -1,6 +1,6 @@
 # Vendoring Go dependencies
 
-kops uses [go mod](https://github.com/golang/go/wiki/Modules) to manage
+kOps uses [go mod](https://github.com/golang/go/wiki/Modules) to manage
 vendored dependencies.
 
 ## Prerequisites

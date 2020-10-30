@@ -4,7 +4,7 @@
 
 ## Delete all secrets
 
-Delete all secrets & keypairs that kops is holding:
+Delete all secrets & keypairs that kOps is holding:
 
 ```shell
 kops get secrets  | grep ^Secret | awk '{print $2}' | xargs -I {} kops delete secret secret {}
@@ -20,7 +20,7 @@ kops update cluster
 kops update cluster --yes
 ```
 
-Kops may fail to recreate all the keys on first try. If you get errors about ca key for 'ca' not being found, run `kops update cluster --yes` once more.
+kOps may fail to recreate all the keys on first try. If you get errors about ca key for 'ca' not being found, run `kops update cluster --yes` once more.
 
 ## Force cluster to use new secrets
 

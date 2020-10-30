@@ -1,6 +1,6 @@
 # Managinging Instance Groups
 
-kops has the concept of "instance groups", which are a group of similar machines.  On AWS, they map to
+kOps has the concept of "instance groups", which are a group of similar machines.  On AWS, they map to
 an AutoScalingGroup.
 
 By default, a cluster has:
@@ -103,7 +103,7 @@ Edit `minSize` and `maxSize`, changing both from 2 to 3, save and exit your edit
 the image or the machineType, you could do that here as well.  There are actually a lot more fields,
 but most of them have their default values, so won't show up unless they are set.  The general approach is the same though.
 
-On saving you'll note that nothing happens.  Although you've changed the model, you need to tell kops to
+On saving you'll note that nothing happens.  Although you've changed the model, you need to tell kOps to
 apply your changes to the cloud.
 
 We use the same `kops update cluster` command that we used when initially creating the cluster; when
@@ -121,7 +121,7 @@ This is saying that we will alter the `TargetSize` property of the `InstanceGrou
 
 That's what we want, so we `kops update cluster --yes`.
 
-kops will resize the GCE managed instance group from 2 to 3, which will create a new GCE instance,
+kOps will resize the GCE managed instance group from 2 to 3, which will create a new GCE instance,
 which will then boot and join the cluster.  Within a minute or so you should see the new node join:
 
 ```
@@ -186,7 +186,7 @@ that the instances had not yet been reconfigured.  There's a hint at the bottom:
 Changes may require instances to restart: kops rolling-update cluster`
 ```
 
-These changes require your instances to restart (we'll remove the COS images and replace them with Debian images).  kops
+These changes require your instances to restart (we'll remove the COS images and replace them with Debian images).  kOps
 can perform a rolling update to minimize disruption, but even so you might not want to perform the update right away;
 you might want to make more changes or you might want to wait for off-peak hours.  You might just want to wait for
 the instances to terminate naturally - new instances will come up with the new configuration - though if you're not
@@ -236,7 +236,7 @@ spec:
 
 ## Adding additional storage to the instance groups
 
-As of Kops 1.12.0 you can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
+As of kOps 1.12.0 you can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
 
 ```YAML
 ---
@@ -351,7 +351,7 @@ So the procedure is:
 
 AWS permits the creation of mixed instance EC2 Autoscaling Groups using a [mixed instance policy](https://aws.amazon.com/blogs/aws/new-ec2-auto-scaling-groups-with-multiple-instance-types-purchase-options/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS.
 
-Support for mixed instance groups was added in Kops 1.12.0
+Support for mixed instance groups was added in kOps 1.12.0
 
 
 ```YAML
@@ -519,7 +519,7 @@ spec:
 If `openstack.kops.io/osVolumeSize` is not set it will default to the minimum disk specified by the image.
 # Working with InstanceGroups
 
-The kops InstanceGroup is a declarative model of a group of nodes.  By modifying the object, you
+The kOps InstanceGroup is a declarative model of a group of nodes.  By modifying the object, you
 can change the instance type you're using, the number of nodes you have, the OS image you're running - essentially
 all the per-node configuration is in the InstanceGroup.
 

@@ -111,7 +111,7 @@ kube-ingress-aws-controller, which we will use:
 }
 ```
 
-To apply the mentioned policy you have to add [additionalPolicies with kops](https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md) for your cluster, so edit your cluster.
+To apply the mentioned policy you have to add [additionalPolicies with kOps](https://github.com/kubernetes/kops/blob/master/docs/iam_roles.md) for your cluster, so edit your cluster.
 
 ```
 kops edit cluster $KOPS_CLUSTER_NAME

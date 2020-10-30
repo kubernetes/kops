@@ -11,7 +11,7 @@ To use Amazon VPC, specify the following in the cluster spec:
     amazonvpc: {}
 ```
 
-in the cluster spec file or pass the `--networking amazonvpc` option on the command line to kops:
+in the cluster spec file or pass the `--networking amazonvpc` option on the command line to kOps:
 
 ```sh
 export ZONES=<mylistofzones>

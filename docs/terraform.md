@@ -1,15 +1,15 @@
 ## Building Kubernetes clusters with Terraform
 
-Kops can generate Terraform configurations, and then you can apply them using the `terraform plan` and `terraform apply` tools. This is very handy if you are already using Terraform, or if you want to check in the Terraform output into version control.
+kOps can generate Terraform configurations, and then you can apply them using the `terraform plan` and `terraform apply` tools. This is very handy if you are already using Terraform, or if you want to check in the Terraform output into version control.
 
-The gist of it is that, instead of letting kops apply the changes, you tell kops what you want, and then kops spits out what it wants done into a `.tf` file. **_You_** are then responsible for turning those plans into reality.
+The gist of it is that, instead of letting kOps apply the changes, you tell kOps what you want, and then kOps spits out what it wants done into a `.tf` file. **_You_** are then responsible for turning those plans into reality.
 
 The Terraform output should be reasonably stable (i.e. the text files should only change where something has actually changed - items should appear in the same order etc). This is extremely useful when using version control as you can diff your changes easily.
 
-Note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs. In other terms, kops's own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience.
+Note that if you modify the Terraform files that kOps spits out, it will override your changes with the configuration state defined by its own configs. In other terms, kOps's own state is the ultimate source of truth (as far as kOps is concerned), and Terraform is a representation of that state for your convenience.
 
 ### Terraform Version Compatibility
-| Kops Version | Terraform Version | Feature Flag Notes |
+| kOps Version | Terraform Version | Feature Flag Notes |
 |--------------|-------------------|--------------------|
 | >= 1.19      | >= 0.12.26, >= 0.13 | HCL2 supported by default <br>`KOPS_FEATURE_FLAGS=Terraform-0.12` is now deprecated |
 | >= 1.18      | >= 0.12             | HCL2 supported by default |
@@ -49,9 +49,9 @@ $ kops create cluster \
   --target=terraform
 ```
 
-The above command will create kops state on S3 (defined in `--state`) and output a representation of your configuration into Terraform files. Thereafter you can preview your changes in `kubernetes.tf` and then use Terraform to create all the resources as shown below:
+The above command will create kOps state on S3 (defined in `--state`) and output a representation of your configuration into Terraform files. Thereafter you can preview your changes in `kubernetes.tf` and then use Terraform to create all the resources as shown below:
 
-Additional Terraform `.tf` files could be added at this stage to customize your deployment, but remember the kops state should continue to remain the ultimate source of truth for the Kubernetes cluster.
+Additional Terraform `.tf` files could be added at this stage to customize your deployment, but remember the kOps state should continue to remain the ultimate source of truth for the Kubernetes cluster.
 
 Initialize Terraform to set-up the S3 backend and provider plugins.
 
@@ -95,7 +95,7 @@ $ kops edit cluster \
 # editor opens, make your changes ...
 ```
 
-Then output your changes/edits to kops cluster state into the Terraform files. Run `kops update` with `--target` and `--out` parameters:
+Then output your changes/edits to kOps cluster state into the Terraform files. Run `kops update` with `--target` and `--out` parameters:
 
 ```
 $ kops update cluster \
@@ -118,7 +118,7 @@ Keep in mind that some changes will require a `kops rolling-update` to be applie
 
 #### Teardown the cluster
 
-When you eventually `terraform destroy` the cluster, you should still run `kops delete cluster`, to remove the kops cluster specification and any dynamically created Kubernetes resources (ELBs or volumes). To do this, run:
+When you eventually `terraform destroy` the cluster, you should still run `kops delete cluster`, to remove the kOps cluster specification and any dynamically created Kubernetes resources (ELBs or volumes). To do this, run:
 
 ```
 $ terraform plan -destroy
@@ -128,7 +128,7 @@ $ kops delete cluster --yes \
   --state=s3://mycompany.kubernetes
 ```
 
-Ps: You don't have to `kops delete cluster` if you just want to recreate from scratch. Deleting kops cluster state means that you've have to `kops create` again.
+Ps: You don't have to `kops delete cluster` if you just want to recreate from scratch. Deleting kOps cluster state means that you've have to `kops create` again.
 
 ### Caveats
 

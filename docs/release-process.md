@@ -1,30 +1,30 @@
-** This file documents the new release process, as used from kops 1.19
-onwards.  For the process used for versions up to kops 1.18, please
+** This file documents the new release process, as used from kOps 1.19
+onwards.  For the process used for versions up to kOps 1.18, please
 see [the old release process](development/release.md)**
 
 # Release Process
 
-The kops project is released on an as-needed basis. The process is as follows:
+The kOps project is released on an as-needed basis. The process is as follows:
 
 1. An issue is proposing a new release with a changelog since the last release
 1. All [OWNERS](https://github.com/kubernetes/kops/blob/master/OWNERS) must LGTM this release
 1. An OWNER runs `git tag -s $VERSION` and inserts the changelog and pushes the tag with `git push $VERSION`
 1. The release issue is closed
-1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kops $VERSION is released`
+1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kOps $VERSION is released`
 
 ## Branches
 
-We maintain a `release-1.17` branch for kops 1.17.X, `release-1.18` for kops 1.18.X
+We maintain a `release-1.17` branch for kOps 1.17.X, `release-1.18` for kOps 1.18.X
 etc.
 
 `master` is where development happens.  We create new branches from master as a
-new kops version is released, or in preparation for a new release.  As we are
+new kOps version is released, or in preparation for a new release.  As we are
 preparing for a new kubernetes release, we will try to advance the master branch
 to focus on the new functionality, and start cherry-picking back more selectively
 to the release branches only as needed.
 
 Generally we don't encourage users to run older kops versions, or older
-branches, because newer versions of kops should remain compatible with older
+branches, because newer versions of kOps should remain compatible with older
 versions of Kubernetes.
 
 Releases should be done from the `release-1.X` branch.  The tags should be made
@@ -35,11 +35,11 @@ the current `release-1.X` tag.
 
 ## New Kubernetes versions and release branches
 
-Typically Kops alpha releases are created off the master branch and beta and stable releases are created off of release branches.
+Typically kOps alpha releases are created off the master branch and beta and stable releases are created off of release branches.
 In order to create a new release branch off of master prior to a beta release, perform the following steps:
 
 1. Create a new periodic E2E prow job for the "next" kubernetes minor version.
-   * All Kops prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
+   * All kOps prow jobs are defined [here](https://github.com/kubernetes/test-infra/tree/master/config/jobs/kubernetes/kops)
 2. Create a new presubmit E2E prow job for the new release branch.
 3. Create a new milestone in the GitHub repo.
 4. Update [prow's milestone_applier config](https://github.com/kubernetes/test-infra/blob/dc99617c881805981b85189da232d29747f87004/config/prow/plugins.yaml#L309-L313) to update master to use the new milestone and add an entry for the new branch that targets master's old milestone.
@@ -183,7 +183,7 @@ Currently we send the image and non-image artifact promotion PRs separately.
 
 ```
 git add -p
-git commit -m "Promote kops $VERSION images"
+git commit -m "Promote kOps $VERSION images"
 git push ${USER}
 hub pull-request
 ```
@@ -207,7 +207,7 @@ Verify, then send a PR:
 
 ```
 git add artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
-git commit -m "Promote kops $VERSION binary artifacts"
+git commit -m "Promote kOps $VERSION binary artifacts"
 git push ${USER}
 hub pull-request
 ```
@@ -279,7 +279,7 @@ chmod +x ko
 ./ko version
 ```
 
-Also run through a kops create cluster flow, ideally verifying that
+Also run through a `kops create cluster` flow, ideally verifying that
 everything is pulling from the new locations.
 
 ## On github
@@ -289,7 +289,7 @@ everything is pulling from the new locations.
 * Add notes
 * Publish it
 
-## Release kops to homebrew
+## Release kOps to homebrew
 
 * Following the [documentation](homebrew.md) we must release a compatible homebrew formulae with the release.
 * This should be done at the same time as the release, and we will iterate on how to improve timing of this.
@@ -298,11 +298,11 @@ everything is pulling from the new locations.
 
 Once we are satisfied the release is sound:
 
-* Bump the kops recommended version in the alpha channel
+* Bump the kOps recommended version in the alpha channel
 
 Once we are satisfied the release is stable:
 
-* Bump the kops recommended version in the stable channel
+* Bump the kOps recommended version in the stable channel
 
 ## Update conformance results with CNCF
 

@@ -1,6 +1,6 @@
 # Images
 
-As of Kubernetes 1.18 the default images used by _kops_ are the **[official Ubuntu 20.04](#ubuntu-2004-focal)** images.
+As of Kubernetes 1.18 the default images used by kOps are the **[official Ubuntu 20.04](#ubuntu-2004-focal)** images.
 
 You can choose a different image for an instance group by editing it with `kops edit ig nodes`. You should see an `image` field in one of the following formats:
 
@@ -22,7 +22,7 @@ You can find the name for an image using:
 
 ## Security Updates
 
-Automated security updates are handled by _kops_ for Debian, Flatcar and Ubuntu distros. This can be disabled by editing the cluster configuration:
+Automated security updates are handled by kOps for Debian, Flatcar and Ubuntu distros. This can be disabled by editing the cluster configuration:
 
 ```yaml
 spec:
@@ -31,7 +31,7 @@ spec:
 
 ## Distros Support Matrix
 
-The following table provides the support status for various distros with regards to _kops_ version: 
+The following table provides the support status for various distros with regards to kOps version: 
 
 | Distro | Experimental | Stable | Deprecated | Removed | 
 | ------------ | -----------: | -----: | ---------: | ------: |
@@ -56,7 +56,7 @@ The following table provides the support status for various distros with regards
 
 Amazon Linux 2 is based on Kernel version **4.14** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible, but it's still quite old.
 
-For _kops_ versions 1.16 and 1.17, the only supported Docker version is `18.06.3`. Newer versions of Docker cannot be installed due to missing dependencies for `container-selinux`. This issue is fixed in _kops_ **1.18**.
+For kOps versions 1.16 and 1.17, the only supported Docker version is `18.06.3`. Newer versions of Docker cannot be installed due to missing dependencies for `container-selinux`. This issue is fixed in kOps **1.18**.
 
 Available images can be listed using:
 
@@ -212,27 +212,27 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 ### CoreOS
 
-Support for CoreOS was removed in _kops_ 1.18.
+Support for CoreOS was removed in kOps 1.18.
 
 You should consider using [Flatcar](#flatcar) as a replacement.
 
 ### Debian 8 (Jessie)
 
-Support for Debian 8 (Jessie) was removed in _kops_ 1.18.
+Support for Debian 8 (Jessie) was removed in kOps 1.18.
 
 ### Kope.io
 
 Support for _kope.io_ images is deprecated. These images were the default until Kubernetes 1.18, when they were replaced by the [official Ubuntu 20.04](#ubuntu-2004-focal) images. 
 
-The _kope.io_ images were based on [Debian 9 (Stretch)](#debian-9-stretch) and had all packages required by _kops_ pre-installed. Other than that, the changes to the official Debian images were [minimal](https://github.com/kubernetes-sigs/image-builder/blob/master/images/kube-deploy/imagebuilder/templates/1.18-stretch.yml#L174-L198).
+The _kope.io_ images were based on [Debian 9 (Stretch)](#debian-9-stretch) and had all packages required by kOps pre-installed. Other than that, the changes to the official Debian images were [minimal](https://github.com/kubernetes-sigs/image-builder/blob/master/images/kube-deploy/imagebuilder/templates/1.18-stretch.yml#L174-L198).
 
 ### Ubuntu 16.04 (Xenial)
 
-Support for Ubuntu 16.04 (Xenial) is deprecated and will be removed in _kops_ 1.20.
+Support for Ubuntu 16.04 (Xenial) is deprecated and will be removed in kOps 1.20.
 
 ## Owner aliases 
 
-_kops_ supports owner aliases for the official accounts of supported distros:
+kOps supports owner aliases for the official accounts of supported distros:
 
 * `kope.io` => `383156758163`
 * `amazon` => `137112412989`

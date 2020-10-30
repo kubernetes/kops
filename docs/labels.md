@@ -1,6 +1,6 @@
 # Labels
 
-There are two main types of labels that kops can create:
+There are two main types of labels that kOps can create:
 
 * `cloudLabels` become tags in AWS on the instances
 * `nodeLabels` become labels on the k8s Node objects

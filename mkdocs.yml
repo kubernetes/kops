@@ -1,4 +1,4 @@
-site_name: Kubernetes Operations - kops
+site_name: kOps - Kubernetes Operations
 # strict: true
 repo_name: 'kubernetes/kops'
 repo_url: 'https://github.com/kubernetes/kops'
@@ -19,7 +19,7 @@ theme:
   features:
     - tabs
   icon:
-    logo: 'material/earth'
+    logo: 'material/cloud-outline'
   favicon: 'img/logo-notext.svg'
   palette:
     primary: 'teal'
@@ -43,8 +43,8 @@ nav:
     - Deploying to OpenStack - Beta: "getting_started/openstack.md"
     - Deploying to Digital Ocean - Alpha: "getting_started/digitalocean.md"
     - Deploying to Spot Ocean: "getting_started/spot-ocean.md"
-    - kops Commands: "getting_started/commands.md"
-    - kops Arguments: "getting_started/arguments.md"
+    - kOps Commands: "getting_started/commands.md"
+    - kOps Arguments: "getting_started/arguments.md"
     - kubectl usage: "getting_started/kubectl.md"
     - Production setup: "getting_started/production.md"
   - CLI:
@@ -80,12 +80,12 @@ nav:
     - Cluster Templating: "operations/cluster_template.md"
     - Cluster upgrades and migrations: "operations/cluster_upgrades_and_migrations.md"
     - GPU setup: "gpu.md"
-    - kube-up to kops upgrade: "upgrade_from_kubeup.md"
+    - kube-up to kOps upgrade: "upgrade_from_kubeup.md"
     - Label management: "labels.md"
     - Secret management: "secrets.md"
     - Service Account Token Volume: "operations/service_account_token_volumes.md"
     - Moving from a Single Master to Multiple HA Masters: "single-to-multi-master.md"
-    - Running kops in a CI environment: "continuous_integration.md"
+    - Running kOps in a CI environment: "continuous_integration.md"
     - Gossip DNS: "gossip.md"
     - etcd:
       - etcd administration: "operations/etcd_administration.md"
@@ -105,7 +105,7 @@ nav:
       - Lyft VPC: "networking/lyft-vpc.md"
       - Romana: "networking/romana.md"
       - Weave: "networking/weave.md"
-    - Run kops in an existing VPC: "run_in_existing_vpc.md"
+    - Run kOps in an existing VPC: "run_in_existing_vpc.md"
     - Supported network topologies: "topology.md"
     - Subdomain setup: "creating_subdomain.md"
   - Security:
@@ -139,8 +139,8 @@ nav:
     - Developing using Docker: "development/Docker.md"
     - Documentation Guidelines: "development/documentation.md"
     - Hack Directory: "development/hack.md"
-    - How to update `kops` API: "development/api_updates.md"
-    - Low level description on how kops works: "development/how_it_works.md"
+    - How to update kOps API: "development/api_updates.md"
+    - Low level description on how kOps works: "development/how_it_works.md"
     - Notes on Gossip design: "development/gossip.md"
     - Notes on master instance sizing: "development/instancesizes.md"
     - Our release process: "development/release.md"

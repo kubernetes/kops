@@ -35,7 +35,7 @@ Also note the node label we set. This will be used to ensure the GPU Operator re
 ## Install GPU Operator
 GPU Operator is installed using `helm`. See the [general install instructions for GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html#install-gpu-operator).
 
-In order to match the _kops_ environment, create a `values.yaml` file with the following content:
+In order to match the kOps environment, create a `values.yaml` file with the following content:
 
 ```yaml
 operator:

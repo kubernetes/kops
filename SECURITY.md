@@ -13,7 +13,7 @@ Instructions for reporting a vulnerability can be found on the
 
 ## Supported Versions
 
-Information about supported Kops versions and the Kubernetes versions they support can be found on the
+Information about supported kOps versions and the Kubernetes versions they support can be found on the
 [Releases and versioning](https://kops.sigs.k8s.io/welcome/releases/) page. Information about supported Kubernetes versions can be found on the
 [Kubernetes version and version skew support policy] page on the Kubernetes website.
 

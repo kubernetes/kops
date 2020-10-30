@@ -1,13 +1,13 @@
 # The State Store
 
-kops has the notion of a 'state store'; a location where we store the configuration of your cluster.  State is stored
+kOps has the notion of a 'state store'; a location where we store the configuration of your cluster.  State is stored
 here not only when you first create a cluster, but also you can change the state and apply changes to a running cluster.
 
 Eventually, kubernetes services will also pull from the state store, so that we don't need to marshal all our
 configuration through a channel like user-data.  (This is currently done for secrets and SSL keys, for example,
 though we have to copy the data from the state store to a file where components like kubelet can read them).
 
-The state store uses kops's VFS implementation, so can in theory be stored anywhere.
+The state store uses kOps's VFS implementation, so can in theory be stored anywhere.
 As of now the following state stores are supported:
 * Amazon AWS S3 (`s3://`)
 * local filesystem (`file://`) (only for dry-run purposes, see [note](#local-filesystem-state-stores) below)
@@ -51,7 +51,7 @@ There are a few ways to configure your state store.  In priority order:
 
 The local filesystem state store (`file://`) is **not** functional for running clusters. It is permitted so as to enable review workflows.
 
-For example, in a review workflow, it can be desirable to check a set of untrusted changes before they are applied to real infrastructure. If submitted untrusted changes to configuration files are naively run by `kops replace`, then Kops would overwrite the state store used by production infrastructure with changes which have not yet been approved. This is dangerous.
+For example, in a review workflow, it can be desirable to check a set of untrusted changes before they are applied to real infrastructure. If submitted untrusted changes to configuration files are naively run by `kops replace`, then kOps would overwrite the state store used by production infrastructure with changes which have not yet been approved. This is dangerous.
 
 Instead, a review workflow may download the contents of the state bucket to a local directory (using `aws s3 sync` or similar), set the state store to the local directory (e.g. `--state file:///path/to/state/store`), and then run `kops replace` and `kops update` (but for a dry-run only - _not_ `kops update --yes`). This allows the review process to make changes to a local copy of the state bucket, and check those changes, without touching the production state bucket or production infrastructure.
 
@@ -107,7 +107,7 @@ Repeat for each cluster needing to be moved.
 #### Cross Account State-store
 
 Many enterprises prefer to run many AWS accounts. In these setups, having a shared cross-account S3 bucket for state may make inventory and management easier.
-Consider the S3 bucket living in Account B and the kops cluster living in Account A. In order to achieve this, you first need to let Account A access the s3 bucket. This is done by adding the following _bucket policy_ on the S3 bucket:
+Consider the S3 bucket living in Account B and the kOps cluster living in Account A. In order to achieve this, you first need to let Account A access the s3 bucket. This is done by adding the following _bucket policy_ on the S3 bucket:
 
 ```json
 {
@@ -134,7 +134,7 @@ Consider the S3 bucket living in Account B and the kops cluster living in Accoun
 }
 ```
 
-Kops will then use that bucket as if it was in the remote account, including creating appropriate IAM policies that limits nodes from doing bad things.
+kOps will then use that bucket as if it was in the remote account, including creating appropriate IAM policies that limits nodes from doing bad things.
 Note that any user/role with full S3 access will be able to delete any cluster from the state store, but may not delete any instances or other things outside of S3.
 
 ## Digital Ocean (do://)
@@ -191,9 +191,9 @@ gcsClient, err := storage.New(httpClient)
 ## Vault (vault://)
 {{ kops_feature_table(kops_added_ff='1.19') }}
 
-Kops has support for using Vault as state store. It is currently an experimental feature and you have to enable the `VFSVaultSupport` feature flag to enable it.
+kOps has support for using Vault as state store. It is currently an experimental feature and you have to enable the `VFSVaultSupport` feature flag to enable it.
 
-The goal of the vault store is to be a safe storage for the kops keys and secrets store. It will not work to use this as a kops registry/config store. Among other things, etcd-manager is unable to read VFS control files from vault. Vault also cannot be used as backend for etcd backups.
+The goal of the vault store is to be a safe storage for the kOps keys and secrets store. It will not work to use this as a kOps registry/config store. Among other things, etcd-manager is unable to read VFS control files from vault. Vault also cannot be used as backend for etcd backups.
 
 
 ```sh
@@ -205,7 +205,7 @@ The vault store uses IAM auth to authenticate against the vault server and expec
 
 Instructions for configuring your vault server to accept IAM authentication are at https://learn.hashicorp.com/vault/identity-access-management/iam-authentication
 
-To configure kops to use the Vault store, add this to the cluster spec:
+To configure kOps to use the Vault store, add this to the cluster spec:
 
 ```yaml
 spec:
@@ -218,7 +218,7 @@ Each of the paths specified above can be configurable, but they must be unique a
 After launching your cluster you need to add the cluster roles to Vault, binding them to the cluster's IAM identity and granting them access to the appropriate secrets and keys. The nodes will wait until they can authenticate before completing provisioning.
 
 #### Vault policies
-Note that contrary to the S3 state store, kops will not provision any policies for you. You have to provide roles for both operators and nodes.
+Note that contrary to the S3 state store, kOps will not provision any policies for you. You have to provide roles for both operators and nodes.
 
 Using the example paths above, a policy for the cluster nodes can be:
 

@@ -1,7 +1,7 @@
 # kubectl cluster admin configuration
 
 When you run `kops update cluster` during cluster creation, you automatically get a kubectl configuration for accessing the cluster. This configuration gives you full admin access to the cluster.
-If you want to create this configuration on other machine, you can run the following as long as you have access to the kops state store.
+If you want to create this configuration on other machine, you can run the following as long as you have access to the kOps state store.
 
 To create the kubecfg configuration settings for use with kubectl:
 
