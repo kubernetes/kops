@@ -42,8 +42,7 @@ spec:
   kubernetesVersion: v1.19.6
   masterPublicName: api.private.example.com
   networking:
-    calico:
-      majorVersion: v3
+    calico: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testproject
   sshAccess:
