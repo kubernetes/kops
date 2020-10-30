@@ -140,7 +140,7 @@ type CalicoNetworkingSpec struct {
 	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
 	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
-	// MajorVersion is the version of Calico to use
+	// MajorVersion is deprecated as of kOps 1.20 and has no effect
 	MajorVersion string `json:"majorVersion,omitempty"`
 	// IPv4AutoDetectionMethod configures how Calico chooses the IP address used to route
 	// between nodes.  This should be set when the host has multiple interfaces

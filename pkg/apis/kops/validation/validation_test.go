@@ -395,24 +395,11 @@ func Test_Validate_Calico(t *testing.T) {
 		},
 		{
 			Input: caliInput{
-				Calico: &kops.CalicoNetworkingSpec{
-					MajorVersion: "v3",
-				},
+				Calico: &kops.CalicoNetworkingSpec{},
 				Etcd: kops.EtcdClusterSpec{
 					Version: "3.2.18",
 				},
 			},
-		},
-		{
-			Input: caliInput{
-				Calico: &kops.CalicoNetworkingSpec{
-					MajorVersion: "v3",
-				},
-				Etcd: kops.EtcdClusterSpec{
-					Version: "2.2.18",
-				},
-			},
-			ExpectedErrors: []string{"Forbidden::calico.majorVersion"},
 		},
 		{
 			Input: caliInput{
