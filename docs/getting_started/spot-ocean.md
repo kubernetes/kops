@@ -1,4 +1,4 @@
-# Getting Started with kops on Spot Ocean
+# Getting Started with kOps on Spot Ocean
 
 [Ocean](https://spot.io/products/ocean/) by [Spot](https://spot.io/) simplifies infrastructure management for Kubernetes.  With robust, container-driven infrastructure auto-scaling and intelligent right-sizing for container resource requirements, operations can literally "set and forget" the underlying cluster.
 
@@ -20,7 +20,7 @@ Ocean not only intelligently leverages Spot Instances and reserved capacity to r
 
 ## Prerequisites
 
-Make sure you have [installed kops](../install.md) and [installed kubectl](../install.md#installing-other-dependencies).
+Make sure you have [installed kOps](../install.md) and [installed kubectl](../install.md#installing-other-dependencies).
 
 ## Setup your environment
 

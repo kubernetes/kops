@@ -1,6 +1,6 @@
-# Installing Kops via Hombrew
+# Installing kOps via Hombrew
 
-Homebrew makes installing kops [very simple for MacOS.](../install.md)
+Homebrew makes installing kOps [very simple for MacOS.](../install.md)
 ```bash
 brew update && brew install kops
 ```
@@ -13,7 +13,7 @@ brew update && brew install kops --HEAD
 
 Previously we could also ship development updates to homebrew but their [policy has changed.](https://github.com/Homebrew/brew/pull/5060#issuecomment-428149176)
 
-Note: if you already have kops installed, you need to substitute `upgrade` for `install`.
+Note: if you already have kOps installed, you need to substitute `upgrade` for `install`.
 
 You can switch between installed releases with:
 ```bash
@@ -21,9 +21,9 @@ brew switch kops 1.17.0
 brew switch kops 1.18.0
 ```
 
-# Releasing kops to Brew
+# Releasing kOps to Brew
 
-Submitting a new release of kops to Homebrew is very simple.
+Submitting a new release of kOps to Homebrew is very simple.
 
 ### From a homebrew machine
 

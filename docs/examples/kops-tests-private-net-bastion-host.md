@@ -71,13 +71,13 @@ ${NAME}
 A few things to note here:
 
 - The environment variable ${NAME} was previously exported with our cluster name: privatekopscluster.k8s.local.
-- "--cloud=aws": As kops grows and begin to support more clouds, we need to tell the command to use the specific cloud we want for our deployment. In this case: amazon web services (aws).
+- "--cloud=aws": As kOps grows and begin to support more clouds, we need to tell the command to use the specific cloud we want for our deployment. In this case: amazon web services (aws).
 - For true HA (high availability) at the master level, we need to pick a region with 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e. We used "us-east-1a,us-east-1b,us-east-1c" for our masters.
 - The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters). Again, real "HA" on Kubernetes control plane requires 3 masters.
 - The "--topology private" argument will ensure that all our instances will have private IP's and no public IP's from amazon.
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
 - Because we are just doing a simple LAB, we are using "t3.micro" machines. Please DON'T USE t3.micro on real production systems. Start with "t3.medium" as a minimum realistic/workable machine type.
-- And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kops which networking subsystem to use. More information about kops supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
+- And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kOps which networking subsystem to use. More information about kOps supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
 
 **NOTE**: You can add the "--bastion" argument here if you are not using "gossip dns" and create the bastion from start, but if you are using "gossip-dns" this will make this cluster to fail (this is a bug we are correcting now). For the moment don't use "--bastion" when using gossip DNS. We'll show you how to get around this by first creating the private cluster, then creation the bastion instance group once the cluster is running.
 
@@ -114,7 +114,7 @@ ip-172-20-74-55.ec2.internal    master  True
 Your cluster privatekopscluster.k8s.local is ready
 ```
 
-The ELB created by kops will expose the Kubernetes API trough "https" (configured on our ~/.kube/config file):
+The ELB created by kOps will expose the Kubernetes API trough "https" (configured on our ~/.kube/config file):
 
 ```bash
 grep server ~/.kube/config
@@ -138,7 +138,7 @@ kops create instancegroup bastions --role Bastion --subnet utility-us-east-1a --
 **Explanation of this command:**
 
 - This command will add to our cluster definition a new instance group called "bastions" with the "Bastion" role on the aws subnet "utility-us-east-1a". Note that the "Bastion" role need the first letter to be a capital (Bastion=ok, bastion=not ok).
-- The subnet "utility-us-east-1a" was created when we created our cluster the first time. KOPS add the "utility-" prefix to all subnets created on all specified AZ's. In other words, if we instructed kops to deploy our instances on us-east-1a, use-east-1b and use-east-1c, kops will create the subnets "utility-us-east-1a", "utility-us-east-1b" and "utility-us-east-1c". Because we need to tell kops where to deploy our bastion (or bastions), we need to specify the subnet.
+- The subnet "utility-us-east-1a" was created when we created our cluster the first time. KOPS add the "utility-" prefix to all subnets created on all specified AZ's. In other words, if we instructed kOps to deploy our instances on us-east-1a, use-east-1b and use-east-1c, kOps will create the subnets "utility-us-east-1a", "utility-us-east-1b" and "utility-us-east-1c". Because we need to tell kOps where to deploy our bastion (or bastions), we need to specify the subnet.
 
 You'll see the following output in your editor when you can change your bastion group size and add more networks.
 
@@ -177,7 +177,7 @@ I0828 13:06:49.761535   16528 executor.go:91] Tasks: 100 done / 116 total; 9 can
 I0828 13:06:50.897272   16528 executor.go:91] Tasks: 109 done / 116 total; 7 can run
 I0828 13:06:51.516158   16528 executor.go:91] Tasks: 116 done / 116 total; 0 can run
 I0828 13:06:51.944576   16528 update_cluster.go:247] Exporting kubecfg for cluster
-Kops has set your kubectl context to privatekopscluster.k8s.local
+kOps has set your kubectl context to privatekopscluster.k8s.local
 
 Cluster changes have been applied to the cloud.
 
@@ -185,7 +185,7 @@ Cluster changes have been applied to the cloud.
 Changes may require instances to restart: kops rolling-update cluster
 ```
 
-This is "kops" creating the instance group with your bastion instance. Let's validate our cluster:
+This is "kOps" creating the instance group with your bastion instance. Let's validate our cluster:
 
 ```bash
 kops validate cluster
@@ -216,13 +216,13 @@ Our bastion instance group is there. Also, kops created an ELB for our "bastions
 
 ```bash
 aws elb --output=table describe-load-balancers|grep DNSName.\*bastion|awk '{print $4}'
-bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
+bastion-privatekOpscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 ```
 
-For this LAB, the "ELB" FQDN is "bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com" We can "ssh" to it:
+For this LAB, the "ELB" FQDN is "bastion-privatekOpscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com" We can "ssh" to it:
 
 ```bash
-ssh -i ~/.ssh/id_rsa ubuntu@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
+ssh -i ~/.ssh/id_rsa ubuntu@bastion-privatekOpscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 
 The programs included with the Debian GNU/Linux system are free software;
 the exact distribution terms for each program are described in the
@@ -250,7 +250,7 @@ Identity added: /home/kops/.ssh/id_rsa (/home/kops/.ssh/id_rsa)
 Then, ssh to your bastion ELB FQDN
 
 ```bash
-ssh -A ubuntu@bastion-privatekopscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
+ssh -A ubuntu@bastion-privatekOpscluste-bgl0hp-1327959377.us-east-1.elb.amazonaws.com
 ```
 
 Or if you want to automate it:
@@ -351,11 +351,11 @@ kops update cluster ${NAME} --yes
 W0828 15:22:46.461033    5852 executor.go:109] error running task "LoadBalancer/bastion.privatekopscluster.k8s.local" (1m5s remaining to succeed): subnet changes on LoadBalancer not yet implemented: actual=[subnet-c029639a] -> expected=[subnet-23f8a90f subnet-4a24ef2e subnet-c029639a]
 ```
 
-This happens because the original ELB created by "kops" only contained the subnet "utility-us-east-1a" and it can't add the additional subnets. In order to fix this, go to your AWS console and add the remaining subnets in your ELB. Then the recurring error will disappear and your bastion layer will be fully redundant.
+This happens because the original ELB created by "kOps" only contained the subnet "utility-us-east-1a" and it can't add the additional subnets. In order to fix this, go to your AWS console and add the remaining subnets in your ELB. Then the recurring error will disappear and your bastion layer will be fully redundant.
 
 **NOTE:** Always think ahead: If you are creating a fully redundant cluster (with fully redundant bastions), always configure the redundancy from the beginning.
 
-When you are finished playing with kops, then destroy/delete your cluster:
+When you are finished playing with kOps, then destroy/delete your cluster:
 
 Finally, let's destroy our cluster:
 

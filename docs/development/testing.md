@@ -33,7 +33,7 @@ Following the examples below, kubetest will download artifacts such as a given K
 ### Running against an existing cluster
 
 You can run something like the following to have `kubetest` re-use an existing cluster.
-This assumes you have already built the kops binary from source. The exact path to the `kops` binary used in the `--kops` flag may differ.
+This assumes you have already built the kOps binary from source. The exact path to the `kops` binary used in the `--kops` flag may differ.
 
 ```
 GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --deployment=kops --cluster=my.testcluster.com --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --extract=ci/latest
@@ -49,6 +49,6 @@ By adding the `--up` flag, `kubetest` will spin up a new cluster. In most cases,
 GINKGO_PARALLEL=y kubetest --test --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort" --provider=aws --check-version-skew=false --deployment=kops --kops-state=${KOPS_STATE_STORE} --kops ${GOPATH}/bin/kops --kops-args="--network-cidr=192.168.1.0/24" --cluster=my.testcluster.com --up --kops-ssh-key ~/.ssh/id_rsa --kops-admin-access=0.0.0.0/0
 ```
 
-If you want to run the tests against your development version of kops, you need to upload the binaries and set the environment variables as described in [Adding a new feature](adding_a_feature.md).
+If you want to run the tests against your development version of kOps, you need to upload the binaries and set the environment variables as described in [Adding a new feature](adding_a_feature.md).
 
 Since we assume you are using this cluster for testing, we leave the cluster running after the tests have finished so that you can inspect the nodes if anything unexpected happens. If you do not need this, you can add the `--down` flag. Otherwise, just delete the cluster as any other cluster: `kops delete cluster my.testcluster.com --yes`

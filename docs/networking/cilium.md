@@ -27,9 +27,9 @@ kops create cluster \
 
 ### Using etcd for agent state sync
 
-This feature is in beta state as of kops 1.18.
+This feature is in beta state as of kOps 1.18.
 
-By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kops 1.18, kops can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
+By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kOps 1.18, kOps can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
 
 For new clusters you can use the `cilium-etcd` networking provider:
 
@@ -75,7 +75,7 @@ Then enable etcd as kvstore:
 
 ### Enabling BPF NodePort
 
-As of kops 1.19, BPF NodePort is enabled by default for new clusters if the kubernetes version is 1.12 or newer. It can be safely enabled as of kops 1.18.
+As of kOps 1.19, BPF NodePort is enabled by default for new clusters if the kubernetes version is 1.12 or newer. It can be safely enabled as of kOps 1.18.
 
 In this mode, the cluster is fully functional without kube-proxy, with Cilium replacing kube-proxy's NodePort implementation using BPF.
 Read more about this in the [Cilium docs](https://docs.cilium.io/en/stable/gettingstarted/nodeport/)
@@ -103,9 +103,9 @@ kops rolling-update cluster --yes
 
 ### Enabling Cilium ENI IPAM
 
-This feature is in beta state as of kops 1.18.
+This feature is in beta state as of kOps 1.18.
 
-As of Kops 1.18, you can have Cilium provision AWS managed adresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
+As of kOps 1.18, you can have Cilium provision AWS managed adresses and attach them directly to Pods much like Lyft VPC and AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.6/concepts/ipam/eni/)
 
 When using ENI IPAM you need to disable masquerading in Cilium as well.
 
@@ -118,19 +118,19 @@ When using ENI IPAM you need to disable masquerading in Cilium as well.
 
 Note that since Cilium Operator is the entity that interacts with the EC2 API to provision and attaching ENIs, we force it to run on the master nodes when this IPAM is used.
 
-Also note that this feature has only been tested on the default kops AMIs.
+Also note that this feature has only been tested on the default kOps AMIs.
 
 #### Enabling Encryption in Cilium
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.17') }}
 
-As of Kops 1.19, it is possible to enable encryption for Cilium agent.
+As of kOps 1.19, it is possible to enable encryption for Cilium agent.
 In order to enable encryption, you must first generate the pre-shared key using this command:
 ```bash
 cat <<EOF | kops create secret ciliumpassword -f -
 keys: $(echo "3 rfc4106(gcm(aes)) $(echo $(dd if=/dev/urandom count=20 bs=1 2> /dev/null| xxd -p -c 64)) 128")
 EOF
 ```
-The above command will create a dedicated secret for cilium and store it in the Kops secret store.
+The above command will create a dedicated secret for cilium and store it in the kOps secret store.
 Once the secret has been created, encryption can be enabled by setting `enableEncryption` option in `spec.networking.cilium` to `true`:
 ```yaml
   networking:

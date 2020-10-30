@@ -1,12 +1,12 @@
 ## Getting Involved and Contributing
 
-Are you interested in contributing to kops? We, the maintainers and community,
+Are you interested in contributing to kOps? We, the maintainers and community,
 would love your suggestions, contributions, and help! We have a quick-start
 guide on [adding a feature](../development/adding_a_feature.md). Also, the
 maintainers can be contacted at any time to learn more about how to get
 involved.
 
-In the interest of getting more newer folks involved with kops, we are starting to
+In the interest of getting more newer folks involved with kOps, we are starting to
 tag issues with `good-starter-issue`. These are typically issues that have
 smaller scope but are good ways to start to get acquainted with the codebase.
 
@@ -39,7 +39,7 @@ https://go.k8s.io/bot-commands).
 
 ## Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
+kOps maintainers set aside one hour every other week for **public** office hours. This time is used to gather with community members interested in kops. This session is open to both developers and users.
 
 For more information, checkout the [office hours page.](office_hours.md)
 
@@ -56,18 +56,18 @@ If you think you have found a bug please follow the instructions below.
 
 - Please spend a small amount of time giving due diligence to the issue tracker. Your issue might be a duplicate.
 - Set `-v 10` command line option and save the log output. Please paste this into your issue.
-- Note the version of kops you are running (from `kops version`), and the command line options you are using.
+- Note the version of kOps you are running (from `kops version`), and the command line options you are using.
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new).
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
-- Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media).
+- Feel free to reach out to the kOps community on [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media).
 
 
 ### Features
 
-We also use the issue tracker to track features. If you have an idea for a feature, or think you can help kops become even more awesome follow the steps below.
+We also use the issue tracker to track features. If you have an idea for a feature, or think you can help kOps become even more awesome follow the steps below.
 
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new).
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
-- Clearly define the use case, using concrete examples. EG: I type `this` and kops does `that`.
+- Clearly define the use case, using concrete examples. EG: I type `this` and kOps does `that`.
 - Some of our larger features will require some design. If you would like to include a technical design for your feature please include it in the issue.
 - After the new feature is well understood, and the design agreed upon we can start coding the feature. We would love for you to code it. So please open up a **WIP** *(work in progress)* pull request, and happy coding.

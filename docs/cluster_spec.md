@@ -2,7 +2,7 @@
 
 The `Cluster` resource contains the specification of the cluster itself.
 
-The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec) reference page.
+The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.io/kops/pkg/apis/kOps#ClusterSpec) reference page.
 
 On this page, we will expand on the more important configuration keys.
 
@@ -50,7 +50,7 @@ spec:
 
 You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported.
 
-Note that when using `sslCertificate`, client certificate authentication, such as with the credentials generated via `kops export kubecfg`, will not work through the load balancer. As of Kops 1.19, a `kubecfg` that bypasses the load balancer may be created with the `--internal` flag to `kops update cluster` or `kops export kubecfg`. Security groups may need to be opened to allow access from the clients to the master instances' port TCP/443, for example by using the `additionalSecurityGroups` field on the master instance groups.
+Note that when using `sslCertificate`, client certificate authentication, such as with the credentials generated via `kOps export kubecfg`, will not work through the load balancer. As of kOps 1.19, a `kubecfg` that bypasses the load balancer may be created with the `--internal` flag to `kops update cluster` or `kOps export kubecfg`. Security groups may need to be opened to allow access from the clients to the master instances' port TCP/443, for example by using the `additionalSecurityGroups` field on the master instance groups.
 
 ```yaml
 spec:
@@ -61,7 +61,7 @@ spec:
 ```
 
 *Openstack only*
-As of Kops 1.12.0 it is possible to use the load balancer internally by setting the `useForInternalApi: true`.
+As of kOps 1.12.0 it is possible to use the load balancer internally by setting the `useForInternalApi: true`.
 This will point both `masterPublicName` and `masterInternalName` to the load balancer. You can therefore set both of these to the same value in this configuration.
 
 ```yaml
@@ -84,7 +84,7 @@ spec:
 
 ### The default etcd configuration
 
-Kops will default to v3 using TLS by default. etcd provisioning and upgrades are handled by etcd-manager. By default, the spec looks like this:
+kOps will default to v3 using TLS by default. etcd provisioning and upgrades are handled by etcd-manager. By default, the spec looks like this:
 
 ```yaml
 etcdClusters:
@@ -106,11 +106,11 @@ etcdClusters:
   name: events
 ```
 
-The etcd version used by kops follows the recommended etcd version for the given kubernetes version. It is possible to override this by adding the `version` key to each of the etcd clusters.
+The etcd version used by kOps follows the recommended etcd version for the given kubernetes version. It is possible to override this by adding the `version` key to each of the etcd clusters.
 
 By default, the Volumes created for the etcd clusters are `gp2` and 20GB each. The volume size, type and Iops( for `io1`) can be configured via their parameters. Conversion between `gp2` and `io1` is not supported, nor are size changes.
 
-As of Kops 1.12.0 it is also possible to modify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
+As of kOps 1.12.0 it is also possible to modify the requests for your etcd cluster members using the `cpuRequest` and `memoryRequest` parameters.
 
 ```yaml
 etcdClusters:
@@ -219,7 +219,7 @@ spec:
     zone: us-east-1a
 ```
 
-In the case that you don't use NAT gateways or internet gateways, Kops 1.12.0 introduced the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
+In the case that you don't use NAT gateways or internet gateways, kOps 1.12.0 introduced the "External" flag for egress to force kOps to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kOps, typically with an existing cluster.
 
 ```yaml
 spec:
@@ -406,7 +406,7 @@ spec:
 ## externalDns
 
 This block contains configuration options for your `external-DNS` provider.
-The current external-DNS provider is the kops `dns-controller`, which can set up DNS records for Kubernetes resources.
+The current external-DNS provider is the kOps `dns-controller`, which can set up DNS records for Kubernetes resources.
 `dns-controller` is scheduled to be phased out and replaced with `external-dns`.
 
 ```yaml
@@ -415,7 +415,7 @@ spec:
     watchIngress: true
 ```
 
-Default _kops_ behavior is false. `watchIngress: true` uses the default _dns-controller_ behavior which is to watch the ingress controller for changes. Set this option at risk of interrupting Service updates in some cases.
+Default kOps behavior is false. `watchIngress: true` uses the default _dns-controller_ behavior which is to watch the ingress controller for changes. Set this option at risk of interrupting Service updates in some cases.
 
 ## kubelet
 
@@ -460,7 +460,7 @@ spec:
 ```
 
 ### Setting kubelet CPU management policies
-Kops 1.12.0 added support for enabling cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
+kOps 1.12.0 added support for enabling cpu management policies in kubernetes as per [cpu management doc](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#cpu-management-policies)
 we have to set the flag `--cpu-manager-policy` to the appropriate value on all the kubelets. This must be specified in the `kubelet` spec in our cluster.yml.
 
 ```yaml
@@ -489,7 +489,7 @@ spec:
 ### Configure a Flex Volume plugin directory
 An optional flag can be provided within the KubeletSpec to set a volume plugin directory (must be accessible for read/write operations), which is additionally provided to the Controller Manager and mounted in accordingly.
 
-Kops will set this for you based off the Operating System in use:
+kOps will set this for you based off the Operating System in use:
 - ContainerOS: `/home/kubernetes/flexvolume/`
 - Flatcar: `/var/lib/kubelet/volumeplugins/`
 - Default (in-line with upstream k8s): `/usr/libexec/kubernetes/kubelet-plugins/volume/exec/`
@@ -630,7 +630,7 @@ spec:
     enableProfiling: false
 ```
 
-For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [Kops guides on how to set it up](horizontal_pod_autoscaling.md).
+For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [kOps guides on how to set it up](horizontal_pod_autoscaling.md).
 
 ## Cluster autoscaler
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.15') }}
@@ -867,7 +867,7 @@ spec:
 
 ## containerd
 
-It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ContainerdConfig) for the full list of options.
+It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kOps#ContainerdConfig) for the full list of options.
 
 ```yaml
 spec:
@@ -879,7 +879,7 @@ spec:
 
 ## docker
 
-It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
+It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kOps#DockerConfig) for the full list of options.
 
 ### registryMirrors
 
@@ -933,7 +933,7 @@ docker:
 
 ## sshKeyName
 
-In some cases, it may be desirable to use an existing AWS SSH key instead of allowing kops to create a new one.
+In some cases, it may be desirable to use an existing AWS SSH key instead of allowing kOps to create a new one.
 Providing the name of a key already in AWS is an alternative to `--ssh-public-key`.
 
 ```yaml
@@ -976,7 +976,7 @@ snip
 
 ## target
 
-In some use-cases you may wish to augment the target output with extra options.  `target` supports a minimal amount of options you can do this with.  Currently only the terraform target supports this, but if other use cases present themselves, kops may eventually support more.
+In some use-cases you may wish to augment the target output with extra options.  `target` supports a minimal amount of options you can do this with.  Currently only the terraform target supports this, but if other use cases present themselves, kOps may eventually support more.
 
 ```yaml
 spec:
@@ -992,12 +992,12 @@ Assets define alternative locations from where to retrieve static files and cont
 
 ### containerRegistry
 
-The container registry enables kops / kubernetes to pull containers from a managed registry.
+The container registry enables kOps / kubernetes to pull containers from a managed registry.
 This is useful when pulling containers from the internet is not an option, eg. because the
 deployment is offline / internet restricted or because of special requirements that apply
 for deployed artifacts, eg. auditing of containers.
 
-For a use case example, see [How to use kops in AWS China Region](https://github.com/kubernetes/kops/blob/master/docs/aws-china.md)
+For a use case example, see [How to use kOps in AWS China Region](https://github.com/kubernetes/kops/blob/master/docs/aws-china.md)
 
 ```yaml
 spec:

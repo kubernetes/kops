@@ -35,7 +35,7 @@ Validation is done in validation.go, and is fairly simple - we just add an error
 
 ```go
 	if v.Ipam != "" {
-		// "azure" not supported by kops
+		// "azure" not supported by kOps
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.Ipam, []string{"crd", "eni"})...)
 
 		if v.Ipam == kops.CiliumIpamEni {
@@ -246,7 +246,7 @@ kops create cluster <clustername> --zones us-east-1b
 ...
 ```
 
-If you have changed the dns or kops controllers, you would want to test them as well. To do so, run the respective snippets below before creating the cluster.
+If you have changed the dns or kOps controllers, you would want to test them as well. To do so, run the respective snippets below before creating the cluster.
 
 For dns-controller:
 
@@ -282,7 +282,7 @@ Users would simply `kops edit cluster`, and add a value like:
 ```
 
 Then `kops update cluster --yes` would create the new NodeUpConfig, which is included in the instance startup script
-and thus requires a new LaunchConfiguration, and thus a `kops rolling update`.  We're working on changing settings
+and thus requires a new LaunchConfiguration, and thus a `kops-rolling update`.  We're working on changing settings
 without requiring a reboot, but likely for this particular setting it isn't the sort of thing you need to change
 very often.
 

@@ -1,6 +1,6 @@
 # Recommendations for production setups
 
-The getting started-documentation is a fast way of spinning up a Kubernetes cluster, but there are some aspects of _kops_ that require extra consideration. This document will highlight the most important things you should know about before deploying your production workload.
+The getting started-documentation is a fast way of spinning up a Kubernetes cluster, but there are some aspects of kOps that require extra consideration. This document will highlight the most important things you should know about before deploying your production workload.
 
 ## High availability
 
@@ -10,13 +10,13 @@ Read through the [high availability documentation](../operations/high_availabili
 
 ## Networking
 
-The default networking of _kops_, kubenet, is **not** recommended for production. Most importantly, it does not support network policies, nor does it support internal networking.
+The default networking of kOps, kubenet, is **not** recommended for production. Most importantly, it does not support network policies, nor does it support internal networking.
 
 Read through the [networking page](../networking.md) and choose a stable CNI.
 
 ## Private topology
 
-By default kops will create clusters using public topology, where all nodes and the Kubernetes API are exposed on public Internet.
+By default kOps will create clusters using public topology, where all nodes and the Kubernetes API are exposed on public Internet.
 
 Read through the [topology page](../topology.md) to understand the options you have running nodes in internal IP addresses and using a [bastion](../bastion.md) for SSH access.
 
@@ -24,7 +24,7 @@ Read through the [topology page](../topology.md) to understand the options you h
 
 The `kops` command allows you to configure some aspects of your cluster, but for almost any production cluster, you want to change settings that is not accecible through CLI. The cluster spec can be exported as a yaml file and checked into version control.
 
-Read through the [cluster spec page](../cluster_spec.md) and familiarize yourself with the key options that kops offers.
+Read through the [cluster spec page](../cluster_spec.md) and familiarize yourself with the key options that kOps offers.
 
 ## Templating
 
