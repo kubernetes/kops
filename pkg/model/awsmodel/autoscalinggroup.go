@@ -370,7 +370,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	if !featureflag.Spotinst.Enabled() {
 		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
 			if b.UseNetworkLoadBalancer() {
-				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("api", "443", "443"))
+				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("api"))
 			} else {
 				t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("api"))
 			}
