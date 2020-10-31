@@ -36,6 +36,7 @@ import (
 	"k8s.io/klog/v2"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/pkg/validation"
 	"k8s.io/kubectl/pkg/drain"
 )
 
@@ -92,7 +93,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 
 	if isBastion {
 		klog.V(3).Info("Not validating the cluster as instance is a bastion.")
-	} else if err = c.maybeValidate("", 1); err != nil {
+	} else if err = c.maybeValidate("", 1, group); err != nil {
 		return err
 	}
 
@@ -147,7 +148,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 					klog.Infof("waiting for %v after detaching instance", sleepAfterTerminate)
 					time.Sleep(sleepAfterTerminate)
 
-					if err := c.maybeValidate(" after detaching instance", c.ValidateCount); err != nil {
+					if err := c.maybeValidate(" after detaching instance", c.ValidateCount, group); err != nil {
 						return err
 					}
 					noneReady = false
@@ -181,7 +182,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
 
-		err = c.maybeValidate(" after terminating instance", c.ValidateCount)
+		err = c.maybeValidate(" after terminating instance", c.ValidateCount, group)
 		if err != nil {
 			return waitForPendingBeforeReturningError(runningDrains, terminateChan, err)
 		}
@@ -227,7 +228,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(group *cloudinstances.
 			}
 		}
 
-		err = c.maybeValidate(" after terminating instance", c.ValidateCount)
+		err = c.maybeValidate(" after terminating instance", c.ValidateCount, group)
 		if err != nil {
 			return err
 		}
@@ -410,14 +411,14 @@ func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
 
 }
 
-func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int) error {
+func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int, group *cloudinstances.CloudInstanceGroup) error {
 	if c.CloudOnly {
 		klog.Warningf("Not validating cluster as cloudonly flag is set.")
 
 	} else {
 		klog.Info("Validating the cluster.")
 
-		if err := c.validateClusterWithTimeout(validateCount); err != nil {
+		if err := c.validateClusterWithTimeout(validateCount, group); err != nil {
 
 			if c.FailOnValidate {
 				klog.Errorf("Cluster did not validate within %s", c.ValidationTimeout)
@@ -431,7 +432,7 @@ func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int
 }
 
 // validateClusterWithTimeout runs validation.ValidateCluster until either we get positive result or the timeout expires
-func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int) error {
+func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int, group *cloudinstances.CloudInstanceGroup) error {
 	ctx, cancel := context.WithTimeout(context.Background(), c.ValidationTimeout)
 	defer cancel()
 
@@ -445,7 +446,7 @@ func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int) err
 	for {
 		// Note that we validate at least once before checking the timeout, in case the cluster is healthy with a short timeout
 		result, err := c.ClusterValidator.Validate()
-		if err == nil && len(result.Failures) == 0 {
+		if err == nil && !hasFailureRelevantToGroup(result.Failures, group) {
 			successCount++
 			if successCount >= validateCount {
 				klog.Info("Cluster validated.")
@@ -477,12 +478,33 @@ func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int) err
 		// Reset the success count; we want N consecutive successful validations
 		successCount = 0
 
-		// Wait before retrying
+		// Wait before retrying in some cases
 		// TODO: Should we check if we have enough time left before the deadline?
 		time.Sleep(c.ValidateTickDuration)
 	}
 
 	return fmt.Errorf("cluster did not validate within a duration of %q", c.ValidationTimeout)
+}
+
+// checks if the validation failures returned after cluster validation are relevant to the current
+// instance group whose rolling update is occurring
+func hasFailureRelevantToGroup(failures []*validation.ValidationError, group *cloudinstances.CloudInstanceGroup) bool {
+	// Ignore non critical validation errors in other instance groups like below target size errors
+	for _, failure := range failures {
+		// Determining InstanceGroups for certain resources like Pods, ComponentStatus is not straightforward.
+		// Till we are able to determine the InstanceGroups for these resources without ambiguity, the
+		// InstanceGroup field of the ValidationErrors for these resources will be nil
+		if failure.InstanceGroup == nil {
+			return true
+		}
+
+		// if there is a failure in the same instance group or a failure which has cluster wide impact
+		if (failure.InstanceGroup.IsMaster()) || (failure.InstanceGroup == group.InstanceGroup) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // detachInstance detaches a Cloud Instance
@@ -608,7 +630,7 @@ func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.
 		if err != nil {
 			return fmt.Errorf("failed to detach instance: %v", err)
 		}
-		if err := c.maybeValidate(" after detaching instance", c.ValidateCount); err != nil {
+		if err := c.maybeValidate(" after detaching instance", c.ValidateCount, cloudMember.CloudInstanceGroup); err != nil {
 			return err
 		}
 	}
