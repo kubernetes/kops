@@ -547,9 +547,7 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 			return fmt.Errorf("error getting load balancer by name: %v", err)
 		}
 
-		// if lb == nil {
-		// 	return fmt.Errorf("error querying nlb: %v", err)
-		// }
+		loadBalancerArn = fi.StringValue(lb.LoadBalancerArn)
 
 		if changes.Subnets != nil {
 			var expectedSubnets []string
