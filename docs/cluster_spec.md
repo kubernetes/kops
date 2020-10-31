@@ -11,7 +11,7 @@ On this page, we will expand on the more important configuration keys.
 This object configures how we expose the API:
 
 * `dns` will allow direct access to master instances, and configure DNS to point directly to the master nodes.
-* `loadBalancer` will configure a load balancer in front of the master nodes and configure DNS to point to the LB.
+* `loadBalancer` will configure a load balancer in front of the master nodes and configure DNS to point to the it.
 
 DNS example:
 
@@ -22,7 +22,7 @@ spec:
 ```
 
 
-When configuring a LoadBalancer, you can also choose to have a public LoadBalancer or an internal (VPC only) LoadBalancer.  The `type`
+When configuring a LoadBalancer, you can also choose to have a public load balancer or an internal (VPC only) load balancer.  The `type`
 field should be `Public` or `Internal`.
 
 Also, you can add precreated additional security groups to the load balancer by setting `additionalSecurityGroups`.
@@ -80,10 +80,10 @@ spec:
       crossZoneLoadBalancing: true
 ```
 
-*AWS only*
-You can choose to have a Network Load Balancer instead of a Classic Load Balancer.  The `class`
-field should be either `Network` or `Classic` (default). Note: changing the class of load balancer in an existing
-cluster is a disruptive operation. Until the masters have gone through a rolling update, new connections to the apiserver will fail due to the old master's TLS certificates containing the old load balancer's IP address.
+**AWS only**
+You can choose to have a Network Load Balancer instead of a Classic Load Balancer.  The `class` field should be either `Network` or `Classic` (default).
+
+**Note**: changing the class of load balancer in an existing cluster is a disruptive operation. Until the masters have gone through a rolling update, new connections to the apiserver will fail due to the old master's TLS certificates containing the old load balancer's IP address.
 ```yaml
 spec:
   api:
