@@ -200,7 +200,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Create ELB itself
-	var elb *awstasks.LoadBalancer
+	var elb *awstasks.ClassicLoadBalancer
 	{
 		loadBalancerName := b.GetELBName32("bastion")
 
@@ -216,7 +216,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Override the returned name to be the expected ELB name
 		tags["Name"] = "bastion." + b.ClusterName()
 
-		elb = &awstasks.LoadBalancer{
+		elb = &awstasks.ClassicLoadBalancer{
 			Name:      s("bastion." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 
@@ -225,11 +225,11 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			},
 			Subnets: elbSubnets,
-			Listeners: map[string]*awstasks.LoadBalancerListener{
+			Listeners: map[string]*awstasks.ClassicLoadBalancerListener{
 				"22": {InstancePort: 22},
 			},
 
-			HealthCheck: &awstasks.LoadBalancerHealthCheck{
+			HealthCheck: &awstasks.ClassicLoadBalancerHealthCheck{
 				Target:             s("TCP:22"),
 				Timeout:            i64(5),
 				Interval:           i64(10),
@@ -237,7 +237,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				UnhealthyThreshold: i64(2),
 			},
 
-			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
+			ConnectionSettings: &awstasks.ClassicLoadBalancerConnectionSettings{
 				IdleTimeout: i64(int64(idleTimeout.Seconds())),
 			},
 
