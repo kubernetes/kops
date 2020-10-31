@@ -132,6 +132,7 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 	}
+
 	instanceGroups := []kopsapi.InstanceGroup{
 		{
 			ObjectMeta: metav1.ObjectMeta{
@@ -151,9 +152,10 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
-			Kind:    "InstanceGroup",
-			Name:    "node-1",
-			Message: "InstanceGroup \"node-1\" is missing from the cloud provider",
+			Kind:          "InstanceGroup",
+			Name:          "node-1",
+			Message:       "InstanceGroup \"node-1\" is missing from the cloud provider",
+			InstanceGroup: &instanceGroups[0],
 		}, v.Failures[0]) {
 		printDebug(t, v)
 	}
@@ -204,9 +206,10 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
-			Kind:    "InstanceGroup",
-			Name:    "node-1",
-			Message: "InstanceGroup \"node-1\" did not have enough nodes 2 vs 3",
+			Kind:          "InstanceGroup",
+			Name:          "node-1",
+			Message:       "InstanceGroup \"node-1\" did not have enough nodes 2 vs 3",
+			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
 	}
@@ -258,9 +261,10 @@ func Test_ValidateDetachedNodesDontCount(t *testing.T) {
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
-			Kind:    "InstanceGroup",
-			Name:    "node-1",
-			Message: "InstanceGroup \"node-1\" did not have enough nodes 1 vs 2",
+			Kind:          "InstanceGroup",
+			Name:          "node-1",
+			Message:       "InstanceGroup \"node-1\" did not have enough nodes 1 vs 2",
+			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
 	}
@@ -311,9 +315,10 @@ func Test_ValidateNodeNotReady(t *testing.T) {
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
-			Kind:    "Node",
-			Name:    "node-1b",
-			Message: "node \"node-1b\" is not ready",
+			Kind:          "Node",
+			Name:          "node-1b",
+			Message:       "node \"node-1b\" is not ready",
+			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
 	}
@@ -364,9 +369,10 @@ func Test_ValidateMastersNotEnough(t *testing.T) {
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
-			Kind:    "InstanceGroup",
-			Name:    "master-1",
-			Message: "InstanceGroup \"master-1\" did not have enough nodes 2 vs 3",
+			Kind:          "InstanceGroup",
+			Name:          "master-1",
+			Message:       "InstanceGroup \"master-1\" did not have enough nodes 2 vs 3",
+			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
 	}
@@ -417,9 +423,10 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{
-			Kind:    "Node",
-			Name:    "master-1b",
-			Message: "master \"master-1b\" is not ready",
+			Kind:          "Node",
+			Name:          "master-1b",
+			Message:       "master \"master-1b\" is not ready",
+			InstanceGroup: groups["node-1"].InstanceGroup,
 		}, v.Failures[0]) {
 		printDebug(t, v)
 	}
@@ -504,9 +511,10 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 	var podList []map[string]string
 	expectedFailures := []*ValidationError{
 		{
-			Kind:    "Node",
-			Name:    "master-1c",
-			Message: "master \"master-1c\" is not ready",
+			Kind:          "Node",
+			Name:          "master-1c",
+			Message:       "master \"master-1c\" is not ready",
+			InstanceGroup: groups["node-1"].InstanceGroup,
 		},
 	}
 
