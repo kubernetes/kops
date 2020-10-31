@@ -96,9 +96,9 @@ func (b *KopsModelContext) NLBTargetGroupName(prefix string, nlbListenerPort str
 	return b.GetELBName32(prefix)[:diff] + suffix
 }
 
-func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.LoadBalancer {
+func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.ClassicLoadBalancer {
 	name := b.ELBName(prefix)
-	return &awstasks.LoadBalancer{Name: &name}
+	return &awstasks.ClassicLoadBalancer{Name: &name}
 }
 
 func (b *KopsModelContext) LinkToNLB(prefix string) *awstasks.NetworkLoadBalancer {

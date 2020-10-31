@@ -62,7 +62,7 @@ type Elastigroup struct {
 	OnDemandInstanceType     *string
 	SpotInstanceTypes        []string
 	IAMInstanceProfile       *awstasks.IAMInstanceProfile
-	LoadBalancer             *awstasks.LoadBalancer
+	LoadBalancer             *awstasks.ClassicLoadBalancer
 	SSHKey                   *awstasks.SSHKey
 	Subnets                  []*awstasks.Subnet
 	SecurityGroups           []*awstasks.SecurityGroup
@@ -332,7 +332,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		{
 			if lc.LoadBalancersConfig != nil && len(lc.LoadBalancersConfig.LoadBalancers) > 0 {
 				lbs := lc.LoadBalancersConfig.LoadBalancers
-				actual.LoadBalancer = &awstasks.LoadBalancer{Name: lbs[0].Name}
+				actual.LoadBalancer = &awstasks.ClassicLoadBalancer{Name: lbs[0].Name}
 
 				if e.LoadBalancer != nil && actual.LoadBalancer != nil &&
 					fi.StringValue(actual.LoadBalancer.Name) != fi.StringValue(e.LoadBalancer.Name) {
