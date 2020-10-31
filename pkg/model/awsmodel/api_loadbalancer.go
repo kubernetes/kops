@@ -197,7 +197,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 
 			targetGroupPort := fi.Int64(443)
-			targetGroupName := b.NLBTargetGroupName("api", nlbListenerPort, "443")
+			targetGroupName := b.NLBTargetGroupName("api")
 			tags := b.CloudTags(targetGroupName, false)
 
 			// Override the returned name to be the expected NLB TG name

@@ -90,10 +90,8 @@ func (b *KopsModelContext) NLBName(prefix string) string {
 	return strings.ReplaceAll(prefix+"-"+b.ClusterName(), ".", "-")
 }
 
-func (b *KopsModelContext) NLBTargetGroupName(prefix string, nlbListenerPort string, targetGroupPort string) string {
-	suffix := nlbListenerPort + "-" + targetGroupPort
-	diff := 32 - len(suffix)
-	return b.GetELBName32(prefix)[:diff] + suffix
+func (b *KopsModelContext) NLBTargetGroupName(prefix string) string {
+	return b.GetELBName32(prefix)
 }
 
 func (b *KopsModelContext) LinkToCLB(prefix string) *awstasks.ClassicLoadBalancer {
@@ -106,8 +104,8 @@ func (b *KopsModelContext) LinkToNLB(prefix string) *awstasks.NetworkLoadBalance
 	return &awstasks.NetworkLoadBalancer{Name: &name}
 }
 
-func (b *KopsModelContext) LinkToTargetGroup(prefix, listenerPort, targetPort string) *awstasks.TargetGroup {
-	name := b.NLBTargetGroupName(prefix, listenerPort, targetPort) // TODO: this will need to change for the ACM cert bugfix since we'll have multiple TGs
+func (b *KopsModelContext) LinkToTargetGroup(prefix string) *awstasks.TargetGroup {
+	name := b.NLBTargetGroupName(prefix) // TODO: this will need to change for the ACM cert bugfix since we'll have multiple TGs
 	return &awstasks.TargetGroup{Name: &name}
 }
 
