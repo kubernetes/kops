@@ -95,7 +95,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	var clb *awstasks.LoadBalancer
+	var clb *awstasks.ClassicLoadBalancer
 	var nlb *awstasks.NetworkLoadBalancer
 	{
 		loadBalancerName := b.GetELBName32("api")
@@ -105,7 +105,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			idleTimeout = time.Second * time.Duration(*lbSpec.IdleTimeoutSeconds)
 		}
 
-		listeners := map[string]*awstasks.LoadBalancerListener{
+		listeners := map[string]*awstasks.ClassicLoadBalancerListener{
 			"443": {InstancePort: 443},
 		}
 
@@ -144,7 +144,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type: fi.String("network"),
 		}
 
-		clb = &awstasks.LoadBalancer{
+		clb = &awstasks.ClassicLoadBalancer{
 			Name:      fi.String("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 
@@ -156,7 +156,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Listeners: listeners,
 
 			// Configure fast-recovery health-checks
-			HealthCheck: &awstasks.LoadBalancerHealthCheck{
+			HealthCheck: &awstasks.ClassicLoadBalancerHealthCheck{
 				Target:             fi.String("SSL:443"),
 				Timeout:            fi.Int64(5),
 				Interval:           fi.Int64(10),
@@ -164,7 +164,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				UnhealthyThreshold: fi.Int64(2),
 			},
 
-			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
+			ConnectionSettings: &awstasks.ClassicLoadBalancerConnectionSettings{
 				IdleTimeout: fi.Int64(int64(idleTimeout.Seconds())),
 			},
 
@@ -175,7 +175,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			lbSpec.CrossZoneLoadBalancing = fi.Bool(false)
 		}
 
-		clb.CrossZoneLoadBalancing = &awstasks.LoadBalancerCrossZoneLoadBalancing{
+		clb.CrossZoneLoadBalancing = &awstasks.ClassicLoadBalancerCrossZoneLoadBalancing{
 			Enabled: lbSpec.CrossZoneLoadBalancing,
 		}
 
