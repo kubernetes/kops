@@ -81,8 +81,8 @@ func (b *KopsModelContext) LinkToELBSecurityGroup(prefix string) *awstasks.Secur
 	return &awstasks.SecurityGroup{Name: &name}
 }
 
-// LBName returns LB name plus cluster name
-func (b *KopsModelContext) ELBName(prefix string) string {
+// CLBName returns CLB name plus cluster name
+func (b *KopsModelContext) CLBName(prefix string) string {
 	return prefix + "." + b.ClusterName()
 }
 
@@ -96,8 +96,8 @@ func (b *KopsModelContext) NLBTargetGroupName(prefix string, nlbListenerPort str
 	return b.GetELBName32(prefix)[:diff] + suffix
 }
 
-func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.ClassicLoadBalancer {
-	name := b.ELBName(prefix)
+func (b *KopsModelContext) LinkToCLB(prefix string) *awstasks.ClassicLoadBalancer {
+	name := b.CLBName(prefix)
 	return &awstasks.ClassicLoadBalancer{Name: &name}
 }
 

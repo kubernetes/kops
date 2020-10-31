@@ -372,12 +372,12 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 			if b.UseNetworkLoadBalancer() {
 				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("api", "443", "443"))
 			} else {
-				t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("api"))
+				t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("api"))
 			}
 		}
 
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("bastion"))
+			t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("bastion"))
 		}
 	}
 
