@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/pager"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 
 	v1 "k8s.io/api/core/v1"
@@ -32,7 +33,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/dns"
 )
@@ -49,6 +49,8 @@ type ValidationError struct {
 	Kind    string `json:"type,omitempty"`
 	Name    string `json:"name,omitempty"`
 	Message string `json:"message,omitempty"`
+	// The InstanceGroup field is used to indicate which instance group this validation error is coming from
+	InstanceGroup *kops.InstanceGroup `json:"instanceGroup,omitempty"`
 }
 
 type ClusterValidator interface {
@@ -172,7 +174,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes); err != nil {
+	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, v.instanceGroups); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
@@ -185,6 +187,7 @@ func (v *ValidationCluster) collectComponentFailures(ctx context.Context, client
 		return fmt.Errorf("error listing ComponentStatuses: %v", err)
 	}
 
+	// TODO: Add logic to figure out the InstanceGroup given a component
 	for _, component := range componentList.Items {
 		for _, condition := range component.Conditions {
 			if condition.Status != v1.ConditionTrue {
@@ -205,9 +208,11 @@ var masterStaticPods = []string{
 	"kube-scheduler",
 }
 
-func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node) error {
+func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node,
+	groups []*kops.InstanceGroup) error {
 	masterWithoutPod := map[string]map[string]bool{}
 	nodeByAddress := map[string]string{}
+
 	for _, node := range nodes {
 		labels := node.GetLabels()
 		if labels != nil && labels["kubernetes.io/role"] == "master" {
@@ -238,6 +243,8 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		if pod.Status.Phase == v1.PodSucceeded {
 			return nil
 		}
+
+		// TODO: Add logic to figure out the InstanceGroup given a pod
 		if pod.Status.Phase == v1.PodPending {
 			v.addError(&ValidationError{
 				Kind:    "Pod",
@@ -311,6 +318,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 					cloudGroup.InstanceGroup.Name,
 					numNodes,
 					cloudGroup.TargetSize),
+				InstanceGroup: cloudGroup.InstanceGroup,
 			})
 		}
 
@@ -326,9 +334,10 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 				if nodeExpectedToJoin {
 					v.addError(&ValidationError{
-						Kind:    "Machine",
-						Name:    member.ID,
-						Message: fmt.Sprintf("machine %q has not yet joined cluster", member.ID),
+						Kind:          "Machine",
+						Name:          member.ID,
+						Message:       fmt.Sprintf("machine %q has not yet joined cluster", member.ID),
+						InstanceGroup: cloudGroup.InstanceGroup,
 					})
 				}
 				continue
@@ -358,9 +367,10 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 			if n.Role == "master" {
 				if !ready {
 					v.addError(&ValidationError{
-						Kind:    "Node",
-						Name:    node.Name,
-						Message: fmt.Sprintf("master %q is not ready", node.Name),
+						Kind:          "Node",
+						Name:          node.Name,
+						Message:       fmt.Sprintf("master %q is not ready", node.Name),
+						InstanceGroup: cloudGroup.InstanceGroup,
 					})
 				}
 
@@ -368,9 +378,10 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 			} else if n.Role == "node" {
 				if !ready {
 					v.addError(&ValidationError{
-						Kind:    "Node",
-						Name:    node.Name,
-						Message: fmt.Sprintf("node %q is not ready", node.Name),
+						Kind:          "Node",
+						Name:          node.Name,
+						Message:       fmt.Sprintf("node %q is not ready", node.Name),
+						InstanceGroup: cloudGroup.InstanceGroup,
 					})
 				}
 
@@ -384,9 +395,10 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 	for _, ig := range groups {
 		if !groupsSeen[ig.Name] {
 			v.addError(&ValidationError{
-				Kind:    "InstanceGroup",
-				Name:    ig.Name,
-				Message: fmt.Sprintf("InstanceGroup %q is missing from the cloud provider", ig.Name),
+				Kind:          "InstanceGroup",
+				Name:          ig.Name,
+				Message:       fmt.Sprintf("InstanceGroup %q is missing from the cloud provider", ig.Name),
+				InstanceGroup: ig,
 			})
 		}
 	}
