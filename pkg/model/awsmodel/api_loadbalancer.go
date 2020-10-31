@@ -19,6 +19,7 @@ package awsmodel
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
 
 	"k8s.io/kops/pkg/wellknownports"
@@ -115,7 +116,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		if b.UseKopsControllerForNodeBootstrap() && b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.UseForInternalApi {
-			listeners[fmt.Sprintf("%d", wellknownports.KopsControllerPort)] = &awstasks.LoadBalancerListener{InstancePort: wellknownports.KopsControllerPort}
+			listeners[strconv.Itoa(wellknownports.KopsControllerPort)] = &awstasks.LoadBalancerListener{InstancePort: wellknownports.KopsControllerPort}
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
