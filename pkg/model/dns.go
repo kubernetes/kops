@@ -97,7 +97,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		lbSpec := b.Cluster.Spec.API.LoadBalancer
 		switch lbSpec.Class {
 		case kops.LoadBalancerClassClassic, "":
-			targetLoadBalancer = awstasks.DNSTarget(b.LinkToELB("api"))
+			targetLoadBalancer = awstasks.DNSTarget(b.LinkToCLB("api"))
 		case kops.LoadBalancerClassNetwork:
 			targetLoadBalancer = awstasks.DNSTarget(b.LinkToNLB("api"))
 		}
