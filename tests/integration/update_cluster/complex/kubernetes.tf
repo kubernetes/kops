@@ -135,7 +135,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = [aws_lb_target_group.api-complex-example-com-v443-443.id]
+  target_group_arns   = [aws_lb_target_group.api-complex-example-com-vd3t5n.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-complex-example-com.id]
 }
 
@@ -421,7 +421,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
 
 resource "aws_lb_listener" "api-complex-example-com-443" {
   default_action {
-    target_group_arn = aws_lb_target_group.api-complex-example-com-v443-443.id
+    target_group_arn = aws_lb_target_group.api-complex-example-com-vd3t5n.id
     type             = "forward"
   }
   load_balancer_arn = aws_lb.api-complex-example-com.id
@@ -429,18 +429,18 @@ resource "aws_lb_listener" "api-complex-example-com-443" {
   protocol          = "TCP"
 }
 
-resource "aws_lb_target_group" "api-complex-example-com-v443-443" {
+resource "aws_lb_target_group" "api-complex-example-com-vd3t5n" {
   health_check {
     healthy_threshold   = 2
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "api-complex-example-com-v443-443"
+  name     = "api-complex-example-com-vd3t5n"
   port     = 443
   protocol = "TCP"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
-    "Name"                                      = "api-complex-example-com-v443-443"
+    "Name"                                      = "api-complex-example-com-vd3t5n"
     "Owner"                                     = "John Doe"
     "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
