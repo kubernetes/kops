@@ -375,7 +375,7 @@ var SupportedLoadBalancerClasses = []string{
 
 // LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
 type LoadBalancerAccessSpec struct {
-	// LoadBalancerClass specifies the class of load balancer to create: classic, network.
+	// LoadBalancerClass specifies the class of load balancer to create: Classic, Network.
 	Class LoadBalancerClass `json:"class,omitempty"`
 	// Type of load balancer to create may Public or Internal.
 	Type LoadBalancerType `json:"type,omitempty"`
