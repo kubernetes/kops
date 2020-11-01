@@ -74,7 +74,7 @@ spec:
                           type: string
                         type: array
                       class:
-                        description: 'LoadBalancerClass specifies the class of load balancer to create: classic, network'
+                        description: 'LoadBalancerClass specifies the class of load balancer to create: Classic, Network'
                         type: string
                       crossZoneLoadBalancing:
                         description: CrossZoneLoadBalancing allows you to enable the cross zone load balancing
