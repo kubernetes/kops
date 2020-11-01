@@ -223,12 +223,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	}
 
-	// TODO: figure out if we need to do removeExtraRules
-	// TODO: this is referenced in other parts of code, need to figure out how to stop it from being
-	// referenced
-	// I0412 16:45:28.182976   73951 loader.go:292]   tmpnlbcluster.k8s.local-addons-storage-aws.addons.k8s.io-v1.7.0
-	// error building tasks: unexpected error resolving task "LoadBalancer/api.tmpnlbcluster.k8s.local": unable to find task "SecurityGroup/api-elb.tmpnlbcluster.k8s.local", referenced from LoadBalancer/api.tmpnlbcluster.k8s.local:.SecurityGroups[0]
-	// Create security group for API ELB
 	var lbSG *awstasks.SecurityGroup
 	{
 		lbSG = &awstasks.SecurityGroup{
@@ -354,11 +348,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			})
 		}
 	} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
-		//TODO: resarch if the NLB's nodes will have constant IP's.  If so, consider the following as a TODO:
-		// Can tighten security by allowing only https access from the private ip's of the eni's associated with the nlb's nodes in each availability zone.
-		// Recommended approach is the whole vpc cidr https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-register-targets.html#target-security-groups
-		// work around suggested here https://forums.aws.amazon.com/thread.jspa?threadID=263245&start=0&tstart=0
-		// https://docs.aws.amazon.com/sdk-for-go/api/aws/arn/
 		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
 			c.AddTask(&awstasks.SecurityGroupRule{
