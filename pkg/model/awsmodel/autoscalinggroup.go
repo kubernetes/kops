@@ -371,6 +371,9 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
 			if b.UseNetworkLoadBalancer() {
 				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("api"))
+				if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
+				}
 			} else {
 				t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("api"))
 			}
