@@ -215,7 +215,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		value := string(spec.API.LoadBalancer.Class)
 		allErrs = append(allErrs, IsValidValue(fieldPath.Child("class"), &value, kops.SupportedLoadBalancerClasses)...)
 		if featureflag.Spotinst.Enabled() && spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
-			allErrs = append(allErrs, field.Forbidden(fieldPath, "spotinst + NLBs dissallowed"))
+			allErrs = append(allErrs, field.Forbidden(fieldPath, "cannot use NLB together with spotinst"))
 		}
 	}
 
