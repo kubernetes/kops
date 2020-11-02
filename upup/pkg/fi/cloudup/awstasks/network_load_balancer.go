@@ -78,15 +78,25 @@ func (e *NetworkLoadBalancer) CompareWithID() *string {
 
 type NetworkLoadBalancerListener struct {
 	Port             int
+	TargetGroupName  string
 	SSLCertificateID string
 }
 
-func (e *NetworkLoadBalancerListener) mapToAWS(targetGroupArn string, loadBalancerArn string) *elbv2.CreateListenerInput {
+func (e *NetworkLoadBalancerListener) mapToAWS(targetGroups []*TargetGroup, loadBalancerArn string) (*elbv2.CreateListenerInput, error) {
+	var tgARN string
+	for _, tg := range targetGroups {
+		if fi.StringValue(tg.Name) == e.TargetGroupName {
+			tgARN = fi.StringValue(tg.ARN)
+		}
+	}
+	if tgARN == "" {
+		return nil, fmt.Errorf("target group not found for NLB listener %+v", e)
+	}
 
 	l := &elbv2.CreateListenerInput{
 		DefaultActions: []*elbv2.Action{
 			{
-				TargetGroupArn: aws.String(targetGroupArn),
+				TargetGroupArn: aws.String(tgARN),
 				Type:           aws.String(elbv2.ActionTypeEnumForward),
 			},
 		},
@@ -104,7 +114,7 @@ func (e *NetworkLoadBalancerListener) mapToAWS(targetGroupArn string, loadBalanc
 		l.Protocol = aws.String(elbv2.ProtocolEnumTcp)
 	}
 
-	return l
+	return l, nil
 }
 
 var _ fi.HasDependencies = &NetworkLoadBalancerListener{}
@@ -545,11 +555,14 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 		}
 
 		{
-			for i, listener := range e.Listeners {
-				createListenerInput := listener.mapToAWS(*e.TargetGroups[i].ARN, loadBalancerArn)
+			for _, listener := range e.Listeners {
+				createListenerInput, err := listener.mapToAWS(e.TargetGroups, loadBalancerArn)
+				if err != nil {
+					return err
+				}
 
-				klog.V(2).Infof("Creating Listener for NLB")
-				_, err := t.Cloud.ELBV2().CreateListener(createListenerInput)
+				klog.V(2).Infof("Creating Listener for NLB with port %v", listener.Port)
+				_, err = t.Cloud.ELBV2().CreateListener(createListenerInput)
 				if err != nil {
 					return fmt.Errorf("error creating listener for NLB: %v", err)
 				}
@@ -618,11 +631,15 @@ func (_ *NetworkLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Ne
 				}
 			}
 
-			for i, listener := range changes.Listeners {
-				awsListener := listener.mapToAWS(*e.TargetGroups[i].ARN, loadBalancerArn)
+			for _, listener := range changes.Listeners {
 
-				klog.V(2).Infof("Creating Listener for NLB")
-				_, err := t.Cloud.ELBV2().CreateListener(awsListener)
+				awsListener, err := listener.mapToAWS(e.TargetGroups, loadBalancerArn)
+				if err != nil {
+					return err
+				}
+
+				klog.V(2).Infof("Creating Listener for NLB with port %v", listener.Port)
+				_, err = t.Cloud.ELBV2().CreateListener(awsListener)
 				if err != nil {
 					return fmt.Errorf("error creating NLB listener: %v", err)
 				}
