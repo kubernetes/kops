@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -39,7 +40,16 @@ type DNSName struct {
 	Zone         *DNSZone
 	ResourceType *string
 
-	TargetLoadBalancer *LoadBalancer
+	TargetLoadBalancer DNSTarget
+}
+
+type DNSTarget interface {
+	fi.Task
+	getDNSName() *string
+	getHostedZoneId() *string
+	CloudformationAttrDNSName() *cloudformation.Literal
+	CloudformationAttrCanonicalHostedZoneNameID() *cloudformation.Literal
+	TerraformLink(...string) *terraform.Literal
 }
 
 func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
@@ -110,30 +120,114 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 		dnsName := aws.StringValue(found.AliasTarget.DNSName)
 		klog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
 		if dnsName != "" {
-			// TODO: check "looks like" an ELB?
-			lb, err := findLoadBalancerByAlias(cloud, found.AliasTarget)
-			if err != nil {
-				return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
-			}
-			if lb == nil {
-				klog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
-			} else {
-				loadBalancerName := aws.StringValue(lb.LoadBalancerName)
-				tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
-				if err != nil {
-					return nil, err
-				}
-				tags := tagMap[loadBalancerName]
-				nameTag, _ := awsup.FindELBTag(tags, "Name")
-				if nameTag == "" {
-					return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(e.Name))
-				}
-				actual.TargetLoadBalancer = &LoadBalancer{Name: fi.String(nameTag)}
+			if actual.TargetLoadBalancer, err = findDNSTarget(cloud, found.AliasTarget, dnsName, e.Name); err != nil {
+				return nil, err
 			}
 		}
 	}
 
 	return actual, nil
+}
+
+func FindDNSName(awsCloud awsup.AWSCloud, cluster *kops.Cluster) (string, error) {
+	name := "api." + cluster.Name
+
+	lb, err := FindElasticLoadBalancerByNameTag(awsCloud, cluster)
+
+	if err != nil {
+		return "", fmt.Errorf("error looking for AWS ELB: %v", err)
+	}
+
+	if lb == nil {
+		return "", nil
+	}
+
+	lbDnsName := aws.StringValue(lb.getDNSName())
+
+	if lbDnsName == "" {
+		return "", fmt.Errorf("found ELB %q, but it did not have a DNSName", name)
+	}
+
+	return lbDnsName, nil
+}
+
+func FindElasticLoadBalancerByNameTag(awsCloud awsup.AWSCloud, cluster *kops.Cluster) (DNSTarget, error) {
+	name := "api." + cluster.Name
+	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+		if lb, err := FindLoadBalancerByNameTag(awsCloud, name); err != nil {
+			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
+		} else if lb != nil {
+			return &ClassicLoadBalancer{Name: fi.String(name), DNSName: lb.DNSName}, nil
+		}
+	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+		if lb, err := FindNetworkLoadBalancerByNameTag(awsCloud, name); err != nil {
+			return nil, fmt.Errorf("error looking for AWS NLB: %v", err)
+		} else if lb != nil {
+			return &NetworkLoadBalancer{Name: fi.String(name), DNSName: lb.DNSName}, nil
+		}
+	}
+	return nil, nil
+}
+
+func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+	//TODO: I would like to search dnsName for presence of ".elb" or ".nlb" to simply searching, however both nlb and elb have .elb. in the name at present
+	if ELB, err := findDNSTargetELB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
+		return nil, err
+	} else if ELB != nil {
+		return ELB, nil
+	}
+
+	if NLB, err := findDNSTargetNLB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
+		return nil, err
+	} else if NLB != nil {
+		return NLB, nil
+	}
+
+	return nil, nil
+}
+
+func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+	lb, err := findNetworkLoadBalancerByAlias(cloud, aliasTarget)
+	if err != nil {
+		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
+	}
+	if lb != nil {
+		loadBalancerName := aws.StringValue(lb.LoadBalancerName) //TOOD: can we keep these on object
+		loadBalancerArn := aws.StringValue(lb.LoadBalancerArn)   //TODO: can we keep these on object
+		tagMap, err := describeNetworkLoadBalancerTags(cloud, []string{loadBalancerArn})
+		if err != nil {
+			return nil, err
+		}
+		tags := tagMap[loadBalancerArn]
+		nameTag, _ := awsup.FindELBV2Tag(tags, "Name")
+		if nameTag == "" {
+			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(targetDNSName))
+		}
+		nameTag = strings.Replace(nameTag, ".", "-", -1)
+		return &NetworkLoadBalancer{Name: fi.String(nameTag)}, nil
+	}
+	return nil, nil
+}
+
+func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
+	lb, err := findLoadBalancerByAlias(cloud, aliasTarget)
+	if err != nil {
+		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
+	}
+	if lb != nil {
+		loadBalancerName := aws.StringValue(lb.LoadBalancerName)
+		tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
+		if err != nil {
+			return nil, err
+		}
+		tags := tagMap[loadBalancerName]
+		nameTag, _ := awsup.FindELBTag(tags, "Name")
+		if nameTag == "" {
+			return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(targetDNSName))
+		}
+		return &ClassicLoadBalancer{Name: fi.String(nameTag)}, nil
+	}
+	return nil, nil
 }
 
 func (e *DNSName) Run(c *fi.Context) error {
@@ -157,9 +251,9 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 
 	if e.TargetLoadBalancer != nil {
 		rrs.AliasTarget = &route53.AliasTarget{
-			DNSName:              e.TargetLoadBalancer.DNSName,
+			DNSName:              e.TargetLoadBalancer.getDNSName(),
 			EvaluateTargetHealth: aws.Bool(false),
-			HostedZoneId:         e.TargetLoadBalancer.HostedZoneId,
+			HostedZoneId:         e.TargetLoadBalancer.getHostedZoneId(),
 		}
 	}
 

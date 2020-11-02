@@ -36,8 +36,10 @@ import (
 
 // LoadBalancer manages an ELB.  We find the existing ELB using the Name tag.
 
+var _ DNSTarget = &ClassicLoadBalancer{}
+
 // +kops:fitask
-type LoadBalancer struct {
+type ClassicLoadBalancer struct {
 	// We use the Name tag to find the existing ELB, because we are (more or less) unrestricted when
 	// it comes to tag values, but the LoadBalancerName is length limited
 	Name      *string
@@ -54,15 +56,15 @@ type LoadBalancer struct {
 	Subnets        []*Subnet
 	SecurityGroups []*SecurityGroup
 
-	Listeners map[string]*LoadBalancerListener
+	Listeners map[string]*ClassicLoadBalancerListener
 
 	Scheme *string
 
-	HealthCheck            *LoadBalancerHealthCheck
-	AccessLog              *LoadBalancerAccessLog
-	ConnectionDraining     *LoadBalancerConnectionDraining
-	ConnectionSettings     *LoadBalancerConnectionSettings
-	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
+	HealthCheck            *ClassicLoadBalancerHealthCheck
+	AccessLog              *ClassicLoadBalancerAccessLog
+	ConnectionDraining     *ClassicLoadBalancerConnectionDraining
+	ConnectionSettings     *ClassicLoadBalancerConnectionSettings
+	CrossZoneLoadBalancing *ClassicLoadBalancerCrossZoneLoadBalancing
 	SSLCertificateID       string
 
 	Tags         map[string]string
@@ -72,18 +74,18 @@ type LoadBalancer struct {
 	Shared *bool
 }
 
-var _ fi.CompareWithID = &LoadBalancer{}
+var _ fi.CompareWithID = &ClassicLoadBalancer{}
 
-func (e *LoadBalancer) CompareWithID() *string {
+func (e *ClassicLoadBalancer) CompareWithID() *string {
 	return e.Name
 }
 
-type LoadBalancerListener struct {
+type ClassicLoadBalancerListener struct {
 	InstancePort     int
 	SSLCertificateID string
 }
 
-func (e *LoadBalancerListener) mapToAWS(loadBalancerPort int64) *elb.Listener {
+func (e *ClassicLoadBalancerListener) mapToAWS(loadBalancerPort int64) *elb.Listener {
 	l := &elb.Listener{
 		LoadBalancerPort: aws.Int64(loadBalancerPort),
 		InstancePort:     aws.Int64(int64(e.InstancePort)),
@@ -101,9 +103,9 @@ func (e *LoadBalancerListener) mapToAWS(loadBalancerPort int64) *elb.Listener {
 	return l
 }
 
-var _ fi.HasDependencies = &LoadBalancerListener{}
+var _ fi.HasDependencies = &ClassicLoadBalancerListener{}
 
-func (e *LoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *ClassicLoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
 }
 
@@ -282,7 +284,15 @@ func describeLoadBalancerTags(cloud awsup.AWSCloud, loadBalancerNames []string) 
 	return tagMap, nil
 }
 
-func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
+func (e *ClassicLoadBalancer) getDNSName() *string {
+	return e.DNSName
+}
+
+func (e *ClassicLoadBalancer) getHostedZoneId() *string {
+	return e.HostedZoneId
+}
+
+func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	lb, err := FindLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
@@ -293,7 +303,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		return nil, nil
 	}
 
-	actual := &LoadBalancer{}
+	actual := &ClassicLoadBalancer{}
 	actual.Name = e.Name
 	actual.LoadBalancerName = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
@@ -321,13 +331,13 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: sg})
 	}
 
-	actual.Listeners = make(map[string]*LoadBalancerListener)
+	actual.Listeners = make(map[string]*ClassicLoadBalancerListener)
 
 	for _, ld := range lb.ListenerDescriptions {
 		l := ld.Listener
 		loadBalancerPort := strconv.FormatInt(aws.Int64Value(l.LoadBalancerPort), 10)
 
-		actualListener := &LoadBalancerListener{}
+		actualListener := &ClassicLoadBalancerListener{}
 		actualListener.InstancePort = int(aws.Int64Value(l.InstancePort))
 		actualListener.SSLCertificateID = aws.StringValue(l.SSLCertificateId)
 		actual.Listeners[loadBalancerPort] = actualListener
@@ -347,7 +357,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	klog.V(4).Infof("ELB attributes: %+v", lbAttributes)
 
 	if lbAttributes != nil {
-		actual.AccessLog = &LoadBalancerAccessLog{}
+		actual.AccessLog = &ClassicLoadBalancerAccessLog{}
 		if lbAttributes.AccessLog.EmitInterval != nil {
 			actual.AccessLog.EmitInterval = lbAttributes.AccessLog.EmitInterval
 		}
@@ -361,7 +371,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 			actual.AccessLog.S3BucketPrefix = lbAttributes.AccessLog.S3BucketPrefix
 		}
 
-		actual.ConnectionDraining = &LoadBalancerConnectionDraining{}
+		actual.ConnectionDraining = &ClassicLoadBalancerConnectionDraining{}
 		if lbAttributes.ConnectionDraining.Enabled != nil {
 			actual.ConnectionDraining.Enabled = lbAttributes.ConnectionDraining.Enabled
 		}
@@ -369,12 +379,12 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 			actual.ConnectionDraining.Timeout = lbAttributes.ConnectionDraining.Timeout
 		}
 
-		actual.ConnectionSettings = &LoadBalancerConnectionSettings{}
+		actual.ConnectionSettings = &ClassicLoadBalancerConnectionSettings{}
 		if lbAttributes.ConnectionSettings.IdleTimeout != nil {
 			actual.ConnectionSettings.IdleTimeout = lbAttributes.ConnectionSettings.IdleTimeout
 		}
 
-		actual.CrossZoneLoadBalancing = &LoadBalancerCrossZoneLoadBalancing{}
+		actual.CrossZoneLoadBalancing = &ClassicLoadBalancerCrossZoneLoadBalancing{}
 		if lbAttributes.CrossZoneLoadBalancing.Enabled != nil {
 			actual.CrossZoneLoadBalancing.Enabled = lbAttributes.CrossZoneLoadBalancing.Enabled
 		}
@@ -410,13 +420,13 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	return actual, nil
 }
 
-var _ fi.HasAddress = &LoadBalancer{}
+var _ fi.HasAddress = &ClassicLoadBalancer{}
 
-func (e *LoadBalancer) IsForAPIServer() bool {
+func (e *ClassicLoadBalancer) IsForAPIServer() bool {
 	return e.ForAPIServer
 }
 
-func (e *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
+func (e *ClassicLoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
 	cloud := context.Cloud.(awsup.AWSCloud)
 
 	lb, err := FindLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
@@ -434,27 +444,27 @@ func (e *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
 	return &lbDnsName, nil
 }
 
-func (e *LoadBalancer) Run(c *fi.Context) error {
+func (e *ClassicLoadBalancer) Run(c *fi.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
 
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (_ *LoadBalancer) ShouldCreate(a, e, changes *LoadBalancer) (bool, error) {
+func (_ *ClassicLoadBalancer) ShouldCreate(a, e, changes *ClassicLoadBalancer) (bool, error) {
 	if fi.BoolValue(e.Shared) {
 		return false, nil
 	}
 	return true, nil
 }
 
-func (e *LoadBalancer) Normalize() {
+func (e *ClassicLoadBalancer) Normalize() {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetsById(e.Subnets))
 	sort.Stable(OrderSecurityGroupsById(e.SecurityGroups))
 }
 
-func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
+func (s *ClassicLoadBalancer) CheckChanges(a, e, changes *ClassicLoadBalancer) error {
 	if a == nil {
 		if fi.StringValue(e.Name) == "" {
 			return fi.RequiredField("Name")
@@ -496,7 +506,7 @@ func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 	return nil
 }
 
-func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
+func (_ *ClassicLoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ClassicLoadBalancer) error {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		return nil
@@ -710,7 +720,7 @@ type terraformLoadBalancerHealthCheck struct {
 	Timeout            *int64  `json:"timeout" cty:"timeout"`
 }
 
-func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+func (_ *ClassicLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ClassicLoadBalancer) error {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		return nil
@@ -805,7 +815,7 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	return t.RenderResource("aws_elb", *e.Name, tf)
 }
 
-func (e *LoadBalancer) TerraformLink(params ...string) *terraform.Literal {
+func (e *ClassicLoadBalancer) TerraformLink(params ...string) *terraform.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.Name == nil {
@@ -823,15 +833,15 @@ func (e *LoadBalancer) TerraformLink(params ...string) *terraform.Literal {
 	return terraform.LiteralProperty("aws_elb", *e.Name, prop)
 }
 
-type cloudformationLoadBalancer struct {
-	LoadBalancerName *string                               `json:"LoadBalancerName,omitempty"`
-	Listener         []*cloudformationLoadBalancerListener `json:"Listeners,omitempty"`
-	SecurityGroups   []*cloudformation.Literal             `json:"SecurityGroups,omitempty"`
-	Subnets          []*cloudformation.Literal             `json:"Subnets,omitempty"`
-	Scheme           *string                               `json:"Scheme,omitempty"`
+type cloudformationClassicLoadBalancer struct {
+	LoadBalancerName *string                                      `json:"LoadBalancerName,omitempty"`
+	Listener         []*cloudformationClassicLoadBalancerListener `json:"Listeners,omitempty"`
+	SecurityGroups   []*cloudformation.Literal                    `json:"SecurityGroups,omitempty"`
+	Subnets          []*cloudformation.Literal                    `json:"Subnets,omitempty"`
+	Scheme           *string                                      `json:"Scheme,omitempty"`
 
-	HealthCheck *cloudformationLoadBalancerHealthCheck `json:"HealthCheck,omitempty"`
-	AccessLog   *cloudformationLoadBalancerAccessLog   `json:"AccessLoggingPolicy,omitempty"`
+	HealthCheck *cloudformationClassicLoadBalancerHealthCheck `json:"HealthCheck,omitempty"`
+	AccessLog   *cloudformationClassicLoadBalancerAccessLog   `json:"AccessLoggingPolicy,omitempty"`
 
 	ConnectionDrainingPolicy *cloudformationConnectionDrainingPolicy `json:"ConnectionDrainingPolicy,omitempty"`
 	ConnectionSettings       *cloudformationConnectionSettings       `json:"ConnectionSettings,omitempty"`
@@ -841,14 +851,14 @@ type cloudformationLoadBalancer struct {
 	Tags []cloudformationTag `json:"Tags,omitempty"`
 }
 
-type cloudformationLoadBalancerListener struct {
+type cloudformationClassicLoadBalancerListener struct {
 	InstancePort         string `json:"InstancePort"`
 	InstanceProtocol     string `json:"InstanceProtocol"`
 	LoadBalancerPort     string `json:"LoadBalancerPort"`
 	LoadBalancerProtocol string `json:"Protocol"`
 }
 
-type cloudformationLoadBalancerHealthCheck struct {
+type cloudformationClassicLoadBalancerHealthCheck struct {
 	Target             *string `json:"Target"`
 	HealthyThreshold   *string `json:"HealthyThreshold"`
 	UnhealthyThreshold *string `json:"UnhealthyThreshold"`
@@ -865,7 +875,7 @@ type cloudformationConnectionSettings struct {
 	IdleTimeout *int64 `json:"IdleTimeout,omitempty"`
 }
 
-func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *LoadBalancer) error {
+func (_ *ClassicLoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ClassicLoadBalancer) error {
 	// TODO: From http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-elb.html:
 	// If this resource has a public IP address and is also in a VPC that is defined in the same template,
 	// you must use the DependsOn attribute to declare a dependency on the VPC-gateway attachment.
@@ -881,7 +891,7 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 		return fi.RequiredField("LoadBalancerName")
 	}
 
-	tf := &cloudformationLoadBalancer{
+	tf := &cloudformationClassicLoadBalancer{
 		LoadBalancerName: e.LoadBalancerName,
 		Scheme:           e.Scheme,
 	}
@@ -896,7 +906,7 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 
 	for loadBalancerPort, listener := range e.Listeners {
 
-		tf.Listener = append(tf.Listener, &cloudformationLoadBalancerListener{
+		tf.Listener = append(tf.Listener, &cloudformationClassicLoadBalancerListener{
 			InstanceProtocol:     "TCP",
 			InstancePort:         strconv.Itoa(listener.InstancePort),
 			LoadBalancerPort:     loadBalancerPort,
@@ -905,7 +915,7 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 	}
 
 	if e.HealthCheck != nil {
-		tf.HealthCheck = &cloudformationLoadBalancerHealthCheck{
+		tf.HealthCheck = &cloudformationClassicLoadBalancerHealthCheck{
 			Target:             e.HealthCheck.Target,
 			HealthyThreshold:   fi.ToString(e.HealthCheck.HealthyThreshold),
 			UnhealthyThreshold: fi.ToString(e.HealthCheck.UnhealthyThreshold),
@@ -915,7 +925,7 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 	}
 
 	if e.AccessLog != nil {
-		tf.AccessLog = &cloudformationLoadBalancerAccessLog{
+		tf.AccessLog = &cloudformationClassicLoadBalancerAccessLog{
 			EmitInterval:   e.AccessLog.EmitInterval,
 			Enabled:        e.AccessLog.Enabled,
 			S3BucketName:   e.AccessLog.S3BucketName,
@@ -950,7 +960,7 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 	return t.RenderResource("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, tf)
 }
 
-func (e *LoadBalancer) CloudformationLink() *cloudformation.Literal {
+func (e *ClassicLoadBalancer) CloudformationLink() *cloudformation.Literal {
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		if e.Name == nil {
@@ -964,10 +974,10 @@ func (e *LoadBalancer) CloudformationLink() *cloudformation.Literal {
 	return cloudformation.Ref("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name)
 }
 
-func (e *LoadBalancer) CloudformationAttrCanonicalHostedZoneNameID() *cloudformation.Literal {
+func (e *ClassicLoadBalancer) CloudformationAttrCanonicalHostedZoneNameID() *cloudformation.Literal {
 	return cloudformation.GetAtt("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, "CanonicalHostedZoneNameID")
 }
 
-func (e *LoadBalancer) CloudformationAttrDNSName() *cloudformation.Literal {
+func (e *ClassicLoadBalancer) CloudformationAttrDNSName() *cloudformation.Literal {
 	return cloudformation.GetAtt("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, "DNSName")
 }

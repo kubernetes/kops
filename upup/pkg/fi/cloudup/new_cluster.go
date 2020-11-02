@@ -121,6 +121,8 @@ type NewClusterOptions struct {
 	// DNSType is the DNS type to use; "public" or "private". Defaults to "public".
 	DNSType string
 
+	// APILoadBalancerClass determines whether to use classic or network load balancers for the API
+	APILoadBalancerClass string
 	// APILoadBalancerType is the Kubernetes API loadbalancer type to use; "public" or "internal".
 	// Defaults to using DNS instead of a load balancer if using public topology and not gossip, otherwise "public".
 	APILoadBalancerType string
@@ -939,6 +941,17 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 
 	if cluster.Spec.API.LoadBalancer != nil && opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer.SSLCertificate = opt.APISSLCertificate
+	}
+
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+		switch opt.APILoadBalancerClass {
+		case "", "classic":
+			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassClassic
+		case "network":
+			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassNetwork
+		default:
+			return fmt.Errorf("unknown api-loadbalancer-class: %q", opt.APILoadBalancerClass)
+		}
 	}
 
 	return nil

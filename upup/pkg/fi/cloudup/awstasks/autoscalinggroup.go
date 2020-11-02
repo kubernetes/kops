@@ -32,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/klog/v2"
 )
 
@@ -56,7 +55,7 @@ type AutoscalingGroup struct {
 	// LaunchTemplate is the launch template for the asg
 	LaunchTemplate *LaunchTemplate
 	// LoadBalancers is a list of elastic load balancer names to add to the autoscaling group
-	LoadBalancers []*LoadBalancer
+	LoadBalancers []*ClassicLoadBalancer
 	// MaxSize is the max number of nodes in asg
 	MaxSize *int64
 	// Metrics is a collection of metrics to monitor
@@ -119,7 +118,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	for _, lb := range g.LoadBalancerNames {
 
-		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{
+		actual.LoadBalancers = append(actual.LoadBalancers, &ClassicLoadBalancer{
 			Name:             aws.String(*lb),
 			LoadBalancerName: aws.String(*lb),
 		})
@@ -139,8 +138,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		// To prevent this, we need to update the API ELB task in the ASG's LoadBalancers list.
 		// Because we don't know whether any given LoadBalancerName attached to an ASG is the API ELB task or not,
 		// we have to find the API ELB task, lookup its LoadBalancerName, and then compare that to the list of attached LoadBalancers.
-		var apiLBTask *LoadBalancer
-		var apiLBDesc *elb.LoadBalancerDescription
+		var apiLBTask *ClassicLoadBalancer
 		for _, lb := range e.LoadBalancers {
 			// All external ELBs have their Shared field set to true. The API ELB does not.
 			// Note that Shared is set by the kops model rather than AWS tags.
@@ -149,7 +147,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			}
 		}
 		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-			apiLBDesc, err = FindLoadBalancerByNameTag(c.Cloud.(awsup.AWSCloud), fi.StringValue(apiLBTask.Name))
+			apiLBDesc, err := FindLoadBalancerByNameTag(c.Cloud.(awsup.AWSCloud), fi.StringValue(apiLBTask.Name))
 			if err != nil {
 				return nil, err
 			}
@@ -164,8 +162,17 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
-	for _, tg := range g.TargetGroupARNs {
-		actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg)})
+	if len(g.TargetGroupARNs) > 0 {
+		targetGroups := make([]*TargetGroup, 0)
+		for _, tg := range g.TargetGroupARNs {
+			targetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg)})
+		}
+
+		targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), targetGroups, e.TargetGroups)
+		if err != nil {
+			return nil, err
+		}
+		actual.TargetGroups = targetGroups
 	}
 
 	if g.VPCZoneIdentifier != nil {
@@ -764,7 +771,7 @@ func (e *AutoscalingGroup) getASGTagsToDelete(currentTags map[string]string) []*
 
 // getLBsToDetach loops through the currently set LBs and builds a list of
 // LBs to be detached from the Autoscaling Group
-func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*LoadBalancer) []*string {
+func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*ClassicLoadBalancer) []*string {
 	lbsToDetach := []*string{}
 	desiredLBs := map[string]bool{}
 

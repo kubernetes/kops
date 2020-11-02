@@ -178,6 +178,10 @@ func (c *MockAWSCloud) CreateELBV2Tags(ResourceArn string, tags map[string]strin
 	return createELBV2Tags(c, ResourceArn, tags)
 }
 
+func (c *MockAWSCloud) RemoveELBV2Tags(ResourceArn string, tags map[string]string) error {
+	return removeELBV2Tags(c, ResourceArn, tags)
+}
+
 func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 	return nil, fmt.Errorf("MockAWSCloud DescribeInstance not implemented")
 }

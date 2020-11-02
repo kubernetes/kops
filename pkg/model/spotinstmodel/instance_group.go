@@ -254,14 +254,14 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 	}
 
 	// Load balancer.
-	var lb *awstasks.LoadBalancer
+	var lb *awstasks.ClassicLoadBalancer
 	switch ig.Spec.Role {
 	case kops.InstanceGroupRoleMaster:
 		if b.UseLoadBalancerForAPI() {
-			lb = b.LinkToELB("api")
+			lb = b.LinkToCLB("api")
 		}
 	case kops.InstanceGroupRoleBastion:
-		lb = b.LinkToELB(model.BastionELBSecurityGroupPrefix)
+		lb = b.LinkToCLB(model.BastionELBSecurityGroupPrefix)
 	}
 	if lb != nil {
 		group.LoadBalancer = lb

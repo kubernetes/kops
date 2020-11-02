@@ -26,14 +26,14 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-type LoadBalancerAccessLog struct {
+type ClassicLoadBalancerAccessLog struct {
 	EmitInterval   *int64
 	Enabled        *bool
 	S3BucketName   *string
 	S3BucketPrefix *string
 }
 
-func (_ *LoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
 }
 
@@ -44,7 +44,7 @@ type terraformLoadBalancerAccessLog struct {
 	S3BucketPrefix *string `json:"bucket_prefix,omitempty" cty:"bucket_prefix"`
 }
 
-type cloudformationLoadBalancerAccessLog struct {
+type cloudformationClassicLoadBalancerAccessLog struct {
 	EmitInterval   *int64  `json:"EmitInterval,omitempty"`
 	Enabled        *bool   `json:"Enabled,omitempty"`
 	S3BucketName   *string `json:"S3BucketName,omitempty"`
@@ -56,32 +56,32 @@ type cloudformationLoadBalancerAccessLog struct {
 //	Value *string
 //}
 //
-//func (_ *LoadBalancerAdditionalAttribute) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+//func (_ *ClassicLoadBalancerAdditionalAttribute) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 //	return nil
 //}
 
-type LoadBalancerConnectionDraining struct {
+type ClassicLoadBalancerConnectionDraining struct {
 	Enabled *bool
 	Timeout *int64
 }
 
-func (_ *LoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
 }
 
-type LoadBalancerCrossZoneLoadBalancing struct {
+type ClassicLoadBalancerCrossZoneLoadBalancing struct {
 	Enabled *bool
 }
 
-func (_ *LoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
 }
 
-type LoadBalancerConnectionSettings struct {
+type ClassicLoadBalancerConnectionSettings struct {
 	IdleTimeout *int64
 }
 
-func (_ *LoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *ClassicLoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
 }
 
@@ -101,7 +101,7 @@ func findELBAttributes(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerAttr
 	return response.LoadBalancerAttributes, nil
 }
 
-func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
+func (_ *ClassicLoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *ClassicLoadBalancer) error {
 	if changes.AccessLog == nil &&
 		changes.ConnectionDraining == nil &&
 		changes.ConnectionSettings == nil &&

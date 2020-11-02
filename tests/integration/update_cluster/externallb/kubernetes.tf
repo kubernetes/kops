@@ -126,7 +126,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = ["aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef"]
+  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg/1"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 

@@ -19,6 +19,7 @@ package model
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
@@ -80,14 +81,32 @@ func (b *KopsModelContext) LinkToELBSecurityGroup(prefix string) *awstasks.Secur
 	return &awstasks.SecurityGroup{Name: &name}
 }
 
-// ELBName returns ELB name plus cluster name
-func (b *KopsModelContext) ELBName(prefix string) string {
+// CLBName returns CLB name plus cluster name
+func (b *KopsModelContext) CLBName(prefix string) string {
 	return prefix + "." + b.ClusterName()
 }
 
-func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.LoadBalancer {
-	name := b.ELBName(prefix)
-	return &awstasks.LoadBalancer{Name: &name}
+func (b *KopsModelContext) NLBName(prefix string) string {
+	return strings.ReplaceAll(prefix+"-"+b.ClusterName(), ".", "-")
+}
+
+func (b *KopsModelContext) NLBTargetGroupName(prefix string) string {
+	return b.GetELBName32(prefix)
+}
+
+func (b *KopsModelContext) LinkToCLB(prefix string) *awstasks.ClassicLoadBalancer {
+	name := b.CLBName(prefix)
+	return &awstasks.ClassicLoadBalancer{Name: &name}
+}
+
+func (b *KopsModelContext) LinkToNLB(prefix string) *awstasks.NetworkLoadBalancer {
+	name := b.NLBName(prefix)
+	return &awstasks.NetworkLoadBalancer{Name: &name}
+}
+
+func (b *KopsModelContext) LinkToTargetGroup(prefix string) *awstasks.TargetGroup {
+	name := b.NLBTargetGroupName(prefix) // TODO: this will need to change for the ACM cert bugfix since we'll have multiple TGs
+	return &awstasks.TargetGroup{Name: &name}
 }
 
 func (b *KopsModelContext) LinkToVPC() *awstasks.VPC {
