@@ -20,19 +20,16 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/maps"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/klog/v2"
 )
 
 // CloudTagInstanceGroupRolePrefix is a cloud tag that defines the instance role
@@ -202,7 +199,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		actual.LaunchConfiguration = &LaunchConfiguration{ID: g.LaunchConfigurationName}
 	}
 	if g.LaunchTemplate != nil {
-		actual.LaunchTemplate = &LaunchTemplate{ID: g.LaunchTemplate.LaunchTemplateName}
+		actual.LaunchTemplate = &LaunchTemplate{
+			Name: g.LaunchTemplate.LaunchTemplateName,
+			ID:   g.LaunchTemplate.LaunchTemplateId,
+		}
 	}
 
 	if g.MixedInstancesPolicy != nil {
@@ -219,7 +219,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 		if g.MixedInstancesPolicy.LaunchTemplate != nil {
 			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
-				actual.LaunchTemplate = &LaunchTemplate{ID: g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName}
+				actual.LaunchTemplate = &LaunchTemplate{
+					Name: g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName,
+					ID:   g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateId,
+				}
 			}
 
 			for _, n := range g.MixedInstancesPolicy.LaunchTemplate.Overrides {
@@ -363,8 +366,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				},
 				LaunchTemplate: &autoscaling.LaunchTemplate{
 					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
-						LaunchTemplateName: e.LaunchTemplate.ID,
-						Version:            aws.String("1"),
+						LaunchTemplateName: e.LaunchTemplate.Name,
+						Version:            aws.String("$Latest"),
 					},
 				},
 			}
@@ -376,11 +379,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			}
 		} else if e.LaunchTemplate != nil {
 			request.LaunchTemplate = &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: e.LaunchTemplate.ID,
-				Version:            aws.String("1"),
+				LaunchTemplateName: e.LaunchTemplate.Name,
+				Version:            aws.String("$Latest"),
 			}
 		} else {
-			return fmt.Errorf("could not find one of launch configuration, mixed instances policy, or launch template")
+			return fmt.Errorf("could not find one of launch template, mixed instances policy, or launch configuration")
 		}
 
 		// @step: attempt to create the autoscaling group for us
@@ -441,23 +444,10 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			return req.MixedInstancesPolicy
 		}
 
-		launchTemplateVersion := "1"
-		if e.LaunchTemplate != nil {
-			dltRequest := &ec2.DescribeLaunchTemplatesInput{
-				LaunchTemplateNames: []*string{e.LaunchTemplate.ID},
-			}
-			dltResponse, err := t.Cloud.EC2().DescribeLaunchTemplates(dltRequest)
-			if err != nil {
-				klog.Warningf("could not find existing LaunchTemplate: %v", err)
-			} else {
-				launchTemplateVersion = strconv.FormatInt(*dltResponse.LaunchTemplates[0].LatestVersionNumber, 10)
-			}
-		}
-
 		if changes.LaunchTemplate != nil {
 			spec := &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: changes.LaunchTemplate.ID,
-				Version:            &launchTemplateVersion,
+				LaunchTemplateName: changes.LaunchTemplate.Name,
+				Version:            aws.String("$Latest"),
 			}
 			if e.UseMixedInstancesPolicy() {
 				setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{LaunchTemplateSpecification: spec}
@@ -491,8 +481,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			if setup(request).LaunchTemplate == nil {
 				setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{
 					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
-						LaunchTemplateName: e.LaunchTemplate.ID,
-						Version:            &launchTemplateVersion,
+						LaunchTemplateName: changes.LaunchTemplate.Name,
+						Version:            aws.String("$Latest"),
 					},
 				}
 			}
