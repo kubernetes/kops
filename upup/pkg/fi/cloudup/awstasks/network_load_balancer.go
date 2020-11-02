@@ -113,7 +113,6 @@ func (e *NetworkLoadBalancerListener) GetDependencies(tasks map[string]fi.Task) 
 	return nil
 }
 
-
 // OrderListenersByPort implements sort.Interface for []OrderTargetGroupsByPort, based on port number
 type OrderListenersByPort []*NetworkLoadBalancerListener
 
@@ -731,11 +730,15 @@ type cloudformationNetworkLoadBalancer struct {
 }
 
 type cloudformationNetworkLoadBalancerListener struct {
-	Certificates    []string                                          `json:"Certificates,omitempty"`
-	DefaultActions  []cloudformationNetworkLoadBalancerListenerAction `json:"DefaultActions"`
-	LoadBalancerARN *cloudformation.Literal                           `json:"LoadBalancerArn"`
-	Port            int64                                             `json:"Port"`
-	Protocol        string                                            `json:"Protocol"`
+	Certificates    []cloudformationNetworkLoadBalancerListenerCertificate `json:"Certificates,omitempty"`
+	DefaultActions  []cloudformationNetworkLoadBalancerListenerAction      `json:"DefaultActions"`
+	LoadBalancerARN *cloudformation.Literal                                `json:"LoadBalancerArn"`
+	Port            int64                                                  `json:"Port"`
+	Protocol        string                                                 `json:"Protocol"`
+}
+
+type cloudformationNetworkLoadBalancerListenerCertificate struct {
+	CertificateArn string `json:"CertificateArn"`
 }
 
 type cloudformationNetworkLoadBalancerListenerAction struct {
@@ -775,7 +778,9 @@ func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 			},
 		}
 		if listener.SSLCertificateID != "" {
-			listenerCF.Certificates = []string{listener.SSLCertificateID}
+			listenerCF.Certificates = []cloudformationNetworkLoadBalancerListenerCertificate{
+				{CertificateArn: listener.SSLCertificateID},
+			}
 			listenerCF.Protocol = elbv2.ProtocolEnumTls
 		} else {
 			listenerCF.Protocol = elbv2.ProtocolEnumTcp
