@@ -21,7 +21,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-type LoadBalancerHealthCheck struct {
+type ClassicLoadBalancerHealthCheck struct {
 	Target *string
 
 	HealthyThreshold   *int64
@@ -31,18 +31,18 @@ type LoadBalancerHealthCheck struct {
 	Timeout  *int64
 }
 
-var _ fi.HasDependencies = &LoadBalancerListener{}
+var _ fi.HasDependencies = &ClassicLoadBalancerListener{}
 
-func (e *LoadBalancerHealthCheck) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *ClassicLoadBalancerHealthCheck) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
 }
 
-func findHealthCheck(lb *elb.LoadBalancerDescription) (*LoadBalancerHealthCheck, error) {
+func findHealthCheck(lb *elb.LoadBalancerDescription) (*ClassicLoadBalancerHealthCheck, error) {
 	if lb == nil || lb.HealthCheck == nil {
 		return nil, nil
 	}
 
-	actual := &LoadBalancerHealthCheck{}
+	actual := &ClassicLoadBalancerHealthCheck{}
 	if lb.HealthCheck != nil {
 		actual.Target = lb.HealthCheck.Target
 		actual.HealthyThreshold = lb.HealthCheck.HealthyThreshold

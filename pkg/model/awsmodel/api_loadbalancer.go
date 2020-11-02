@@ -95,7 +95,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	var elb *awstasks.LoadBalancer
+	var clb *awstasks.ClassicLoadBalancer
+	var nlb *awstasks.NetworkLoadBalancer
 	{
 		loadBalancerName := b.GetELBName32("api")
 
@@ -104,12 +105,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			idleTimeout = time.Second * time.Duration(*lbSpec.IdleTimeoutSeconds)
 		}
 
-		listeners := map[string]*awstasks.LoadBalancerListener{
+		listeners := map[string]*awstasks.ClassicLoadBalancerListener{
 			"443": {InstancePort: 443},
 		}
 
+		nlbListenerPort := "443"
+		nlbListeners := map[string]*awstasks.NetworkLoadBalancerListener{
+			nlbListenerPort: {Port: 443},
+		}
+
 		if lbSpec.SSLCertificate != "" {
-			listeners["443"] = &awstasks.LoadBalancerListener{InstancePort: 443, SSLCertificateID: lbSpec.SSLCertificate}
+			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
+			nlbListeners["443"].SSLCertificateID = lbSpec.SSLCertificate
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -123,7 +130,21 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Override the returned name to be the expected ELB name
 		tags["Name"] = "api." + b.ClusterName()
 
-		elb = &awstasks.LoadBalancer{
+		name := b.NLBName("api")
+		nlb = &awstasks.NetworkLoadBalancer{
+			Name:      &name,
+			Lifecycle: b.Lifecycle,
+
+			LoadBalancerName: fi.String(loadBalancerName),
+			Subnets:          elbSubnets,
+			Listeners:        nlbListeners,
+
+			Tags: tags,
+			VPC:  b.LinkToVPC(),
+			Type: fi.String("network"),
+		}
+
+		clb = &awstasks.ClassicLoadBalancer{
 			Name:      fi.String("api." + b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 
@@ -135,7 +156,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Listeners: listeners,
 
 			// Configure fast-recovery health-checks
-			HealthCheck: &awstasks.LoadBalancerHealthCheck{
+			HealthCheck: &awstasks.ClassicLoadBalancerHealthCheck{
 				Target:             fi.String("SSL:443"),
 				Timeout:            fi.Int64(5),
 				Interval:           fi.Int64(10),
@@ -143,7 +164,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				UnhealthyThreshold: fi.Int64(2),
 			},
 
-			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
+			ConnectionSettings: &awstasks.ClassicLoadBalancerConnectionSettings{
 				IdleTimeout: fi.Int64(int64(idleTimeout.Seconds())),
 			},
 
@@ -154,23 +175,54 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			lbSpec.CrossZoneLoadBalancing = fi.Bool(false)
 		}
 
-		elb.CrossZoneLoadBalancing = &awstasks.LoadBalancerCrossZoneLoadBalancing{
+		clb.CrossZoneLoadBalancing = &awstasks.ClassicLoadBalancerCrossZoneLoadBalancing{
 			Enabled: lbSpec.CrossZoneLoadBalancing,
 		}
 
+		nlb.CrossZoneLoadBalancing = lbSpec.CrossZoneLoadBalancing
+
 		switch lbSpec.Type {
 		case kops.LoadBalancerTypeInternal:
-			elb.Scheme = fi.String("internal")
+			clb.Scheme = fi.String("internal")
+			nlb.Scheme = fi.String("internal")
 		case kops.LoadBalancerTypePublic:
-			elb.Scheme = nil
+			clb.Scheme = nil
+			nlb.Scheme = nil
 		default:
-			return fmt.Errorf("unknown elb Type: %q", lbSpec.Type)
+			return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 		}
 
-		c.AddTask(elb)
+		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
+			c.AddTask(clb)
+		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+
+			targetGroupPort := fi.Int64(443)
+			targetGroupName := b.NLBTargetGroupName("api")
+			tags := b.CloudTags(targetGroupName, false)
+
+			// Override the returned name to be the expected NLB TG name
+			tags["Name"] = targetGroupName
+
+			tg := &awstasks.TargetGroup{
+				Name:               fi.String(targetGroupName),
+				VPC:                b.LinkToVPC(),
+				Tags:               tags,
+				Protocol:           fi.String("TCP"),
+				Port:               targetGroupPort,
+				HealthyThreshold:   fi.Int64(2),
+				UnhealthyThreshold: fi.Int64(2),
+				Shared:             fi.Bool(false),
+			}
+
+			c.AddTask(tg)
+
+			nlb.TargetGroup = tg
+
+			c.AddTask(nlb)
+		}
+
 	}
 
-	// Create security group for API ELB
 	var lbSG *awstasks.SecurityGroup
 	{
 		lbSG = &awstasks.SecurityGroup{
@@ -191,7 +243,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Allow traffic from ELB to egress freely
-	{
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		t := &awstasks.SecurityGroupRule{
 			Name:          fi.String("api-elb-egress"),
 			Lifecycle:     b.SecurityLifecycle,
@@ -203,7 +255,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
-	{
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:          fi.String("https-api-elb-" + cidr),
@@ -229,8 +281,44 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
+	if err != nil {
+		return err
+	}
+
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
+
+			for _, masterGroup := range masterGroups {
+				t := &awstasks.SecurityGroupRule{
+					// TODO: figure out how to only add this to one SG (GetSecurityGroups above returns multiple)
+					Name:          fi.String(fmt.Sprintf("https-api-elb-%s", cidr)),
+					Lifecycle:     b.SecurityLifecycle,
+					CIDR:          fi.String(cidr),
+					FromPort:      fi.Int64(443),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: masterGroup.Task,
+					ToPort:        fi.Int64(443),
+				}
+				c.AddTask(t)
+
+				// Allow ICMP traffic required for PMTU discovery
+				c.AddTask(&awstasks.SecurityGroupRule{
+					// TODO: figure out how to only add this to one SG (GetSecurityGroups above returns multiple)
+					Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
+					Lifecycle:     b.SecurityLifecycle,
+					CIDR:          fi.String(cidr),
+					FromPort:      fi.Int64(3),
+					Protocol:      fi.String("icmp"),
+					SecurityGroup: masterGroup.Task,
+					ToPort:        fi.Int64(4),
+				})
+			}
+		}
+	}
+
 	// Add precreated additional security groups to the ELB
-	{
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
 			t := &awstasks.SecurityGroup{
 				Name:      fi.String(id),
@@ -241,17 +329,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			if err := c.EnsureTask(t); err != nil {
 				return err
 			}
-			elb.SecurityGroups = append(elb.SecurityGroups, t)
+			clb.SecurityGroups = append(clb.SecurityGroups, t)
 		}
 	}
 
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleMaster)
-	if err != nil {
-		return err
-	}
-
 	// Allow HTTPS to the master instances from the ELB
-	{
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
 		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
 			c.AddTask(&awstasks.SecurityGroupRule{
@@ -264,16 +347,29 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        fi.Int64(443),
 			})
 		}
+	} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+		for _, masterGroup := range masterGroups {
+			suffix := masterGroup.Suffix
+			c.AddTask(&awstasks.SecurityGroupRule{
+				Name:          fi.String(fmt.Sprintf("https-elb-to-master%s", suffix)),
+				Lifecycle:     b.SecurityLifecycle,
+				FromPort:      fi.Int64(443),
+				Protocol:      fi.String("tcp"),
+				SecurityGroup: masterGroup.Task,
+				ToPort:        fi.Int64(443),
+				VPC:           b.LinkToVPC(),
+			})
+		}
 	}
 
 	if dns.IsGossipHostname(b.Cluster.Name) || b.UsePrivateDNS() {
-		// Ensure the ELB hostname is included in the TLS certificate,
+		// Ensure the LB hostname is included in the TLS certificate,
 		// if we're not going to use an alias for it
-		elb.ForAPIServer = true
+		clb.ForAPIServer = true
+		nlb.ForAPIServer = true
 	}
 
 	return nil
-
 }
 
 type scoredSubnet struct {
