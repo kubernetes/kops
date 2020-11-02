@@ -19,7 +19,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -52,22 +51,11 @@ func (s *CloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 	}
 
 	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
-		name := "api." + cluster.Name
-		lb, err := awstasks.FindLoadBalancerByNameTag(awsCloud, name)
-		if lb == nil {
-			return nil, nil
-		}
-		if err != nil {
-			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
-		}
+
 		var ingresses []kops.ApiIngressStatus
-
-		if lb != nil {
-			lbDnsName := aws.StringValue(lb.DNSName)
-			if lbDnsName == "" {
-				return nil, fmt.Errorf("found ELB %q, but it did not have a DNSName", name)
-			}
-
+		if lbDnsName, err := awstasks.FindDNSName(awsCloud, cluster); err != nil {
+			return nil, fmt.Errorf("error finding aws DNSName: %v", err)
+		} else if lbDnsName != "" {
 			ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
 		}
 

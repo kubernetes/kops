@@ -20,6 +20,8 @@ go_library(
         "//upup/pkg/fi/cloudup/terraform:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elb:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/service/elbv2:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws:go_default_library",
         "//vendor/github.com/spotinst/spotinst-sdk-go/spotinst/client:go_default_library",

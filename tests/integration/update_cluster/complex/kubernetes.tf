@@ -1,11 +1,11 @@
 locals {
   cluster_name                 = "complex.example.com"
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-complex-example-com.id]
+  master_security_group_ids    = [aws_security_group.masters-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4"]
   masters_role_arn             = aws_iam_role.masters-complex-example-com.arn
   masters_role_name            = aws_iam_role.masters-complex-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-complex-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  node_security_group_ids      = [aws_security_group.nodes-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4", "sg-exampleid3", "sg-exampleid4"]
   node_subnet_ids              = [aws_subnet.us-test-1a-complex-example-com.id]
   nodes_role_arn               = aws_iam_role.nodes-complex-example-com.arn
   nodes_role_name              = aws_iam_role.nodes-complex-example-com.name
@@ -25,7 +25,7 @@ output "master_autoscaling_group_ids" {
 }
 
 output "master_security_group_ids" {
-  value = [aws_security_group.masters-complex-example-com.id]
+  value = [aws_security_group.masters-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4"]
 }
 
 output "masters_role_arn" {
@@ -41,7 +41,7 @@ output "node_autoscaling_group_ids" {
 }
 
 output "node_security_group_ids" {
-  value = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  value = [aws_security_group.nodes-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4", "sg-exampleid3", "sg-exampleid4"]
 }
 
 output "node_subnet_ids" {
@@ -86,7 +86,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     id      = aws_launch_template.master-us-test-1a-masters-complex-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-complex-example-com.latest_version
   }
-  load_balancers      = [aws_elb.api-complex-example-com.id]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
@@ -136,6 +135,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.api-complex-example-com-vd3t5n.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-complex-example-com.id]
 }
 
@@ -230,34 +230,6 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   type = "gp2"
 }
 
-resource "aws_elb" "api-complex-example-com" {
-  cross_zone_load_balancing = true
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "SSL:443"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 443
-    instance_protocol = "TCP"
-    lb_port           = 443
-    lb_protocol       = "TCP"
-  }
-  name            = "api-complex-example-com-vd3t5n"
-  security_groups = [aws_security_group.api-elb-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
-  subnets         = [aws_subnet.us-test-1a-complex-example-com.id]
-  tags = {
-    "KubernetesCluster"                         = "complex.example.com"
-    "Name"                                      = "api.complex.example.com"
-    "Owner"                                     = "John Doe"
-    "foo/bar"                                   = "fib+baz"
-    "kubernetes.io/cluster/complex.example.com" = "owned"
-  }
-}
-
 resource "aws_iam_instance_profile" "masters-complex-example-com" {
   name = "masters.complex.example.com"
   role = aws_iam_role.masters-complex-example-com.name
@@ -329,7 +301,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
-    security_groups             = [aws_security_group.masters-complex-example-com.id]
+    security_groups             = [aws_security_group.masters-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4"]
   }
   tag_specifications {
     resource_type = "instance"
@@ -403,7 +375,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
-    security_groups             = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+    security_groups             = [aws_security_group.nodes-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4", "sg-exampleid3", "sg-exampleid4"]
   }
   tag_specifications {
     resource_type = "instance"
@@ -447,11 +419,55 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.complex.example.com_user_data")
 }
 
+resource "aws_lb_listener" "api-complex-example-com-443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.api-complex-example-com-vd3t5n.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-complex-example-com.id
+  port              = 443
+  protocol          = "TCP"
+}
+
+resource "aws_lb_target_group" "api-complex-example-com-vd3t5n" {
+  health_check {
+    healthy_threshold   = 2
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "api-complex-example-com-vd3t5n"
+  port     = 443
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "api-complex-example-com-vd3t5n"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.complex-example-com.id
+}
+
+resource "aws_lb" "api-complex-example-com" {
+  enable_cross_zone_load_balancing = true
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "api-complex-example-com"
+  subnets                          = [aws_subnet.us-test-1a-complex-example-com.id]
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "api.complex.example.com"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+}
+
 resource "aws_route53_record" "api-complex-example-com" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-complex-example-com.dns_name
-    zone_id                = aws_elb.api-complex-example-com.zone_id
+    name                   = aws_lb.api-complex-example-com.dns_name
+    zone_id                = aws_lb.api-complex-example-com.zone_id
   }
   name    = "api.complex.example.com"
   type    = "A"
@@ -508,20 +524,11 @@ resource "aws_security_group_rule" "all-node-to-node" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "api-elb-egress" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  security_group_id = aws_security_group.api-elb-complex-example-com.id
-  to_port           = 0
-  type              = "egress"
-}
-
 resource "aws_security_group_rule" "https-api-elb-1-1-1-0--24" {
   cidr_blocks       = ["1.1.1.0/24"]
   from_port         = 443
   protocol          = "tcp"
-  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  security_group_id = aws_security_group.masters-complex-example-com.id
   to_port           = 443
   type              = "ingress"
 }
@@ -530,25 +537,24 @@ resource "aws_security_group_rule" "https-api-elb-2001_0_8500__--40" {
   cidr_blocks       = ["2001:0:8500::/40"]
   from_port         = 443
   protocol          = "tcp"
-  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  security_group_id = aws_security_group.masters-complex-example-com.id
   to_port           = 443
   type              = "ingress"
 }
 
 resource "aws_security_group_rule" "https-elb-to-master" {
-  from_port                = 443
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-complex-example-com.id
-  source_security_group_id = aws_security_group.api-elb-complex-example-com.id
-  to_port                  = 443
-  type                     = "ingress"
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 443
+  type              = "ingress"
 }
 
 resource "aws_security_group_rule" "icmp-pmtu-api-elb-1-1-1-0--24" {
   cidr_blocks       = ["1.1.1.0/24"]
   from_port         = 3
   protocol          = "icmp"
-  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  security_group_id = aws_security_group.masters-complex-example-com.id
   to_port           = 4
   type              = "ingress"
 }
@@ -557,7 +563,7 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-2001_0_8500__--40" {
   cidr_blocks       = ["2001:0:8500::/40"]
   from_port         = 3
   protocol          = "icmp"
-  security_group_id = aws_security_group.api-elb-complex-example-com.id
+  security_group_id = aws_security_group.masters-complex-example-com.id
   to_port           = 4
   type              = "ingress"
 }

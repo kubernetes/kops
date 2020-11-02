@@ -11,6 +11,7 @@ spec:
       - sg-exampleid3
       - sg-exampleid4
       crossZoneLoadBalancing: true
+      class: Network
   kubernetesApiAccess:
   - 1.1.1.0/24
   - 2001:0:8500::/40
