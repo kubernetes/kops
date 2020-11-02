@@ -191,6 +191,15 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	return nil
 }
 
+// OrderTargetGroupsByPort implements sort.Interface for []OrderTargetGroupsByPort, based on port number
+type OrderTargetGroupsByPort []*TargetGroup
+
+func (a OrderTargetGroupsByPort) Len() int      { return len(a) }
+func (a OrderTargetGroupsByPort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderTargetGroupsByPort) Less(i, j int) bool {
+	return fi.Int64Value(a[i].Port) < fi.Int64Value(a[j].Port)
+}
+
 // pkg/model/awsmodel doesn't know the ARN of the API TargetGroup tasks that it passes to the master ASGs,
 // it only knows the ARN of external target groups passed through the InstanceGroupSpec.
 // We lookup the ARN for TargetGroup tasks that don't have it set in order to attach the LB to the ASG.
@@ -205,12 +214,12 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 // Because we don't know whether any given ARN attached to an ASG is an API TargetGroup task or not,
 // we have to find the API TargetGroup task, lookup its ARN, then compare that to the list of attached TargetGroups.
 func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected []*TargetGroup) ([]*TargetGroup, error) {
-	var apiTGTask *TargetGroup
+	apiTGTasks := make([]*TargetGroup, 0)
 	for _, tg := range expected {
 		// All external TargetGroups have their Shared field set to true. The API TargetGroups do not.
 		// Note that Shared is set by the kops model rather than AWS tags.
 		if !fi.BoolValue(tg.Shared) {
-			apiTGTask = tg
+			apiTGTasks = append(apiTGTasks, tg)
 		}
 	}
 
@@ -220,18 +229,17 @@ func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected
 		return reconciled, nil
 	}
 
-	var apiTG *elbv2.TargetGroup
-	var err error
-	if apiTGTask != nil {
-		apiTG, err = FindTargetGroupByName(cloud, fi.StringValue(apiTGTask.Name))
+	apiTGs := make(map[string]*TargetGroup)
+	for _, task := range apiTGTasks {
+		apiTG, err := FindTargetGroupByName(cloud, fi.StringValue(task.Name))
 		if err != nil {
 			return nil, err
 		}
+		apiTGs[aws.StringValue(apiTG.TargetGroupArn)] = task
 	}
-	for i := 0; i < len(actual); i++ {
-		tg := actual[i]
-		if apiTG != nil && aws.StringValue(apiTG.TargetGroupArn) == aws.StringValue(tg.ARN) {
-			reconciled = append(reconciled, apiTGTask)
+	for _, tg := range actual {
+		if apiTask, ok := apiTGs[aws.StringValue(tg.ARN)]; ok {
+			reconciled = append(reconciled, apiTask)
 		} else {
 			reconciled = append(reconciled, tg)
 		}
