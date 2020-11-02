@@ -110,12 +110,22 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		nlbListeners := []*awstasks.NetworkLoadBalancerListener{
-			{Port: 443},
+			{
+				Port:            443,
+				TargetGroupName: b.NLBTargetGroupName("api"),
+			},
 		}
 
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
 			nlbListeners[0].SSLCertificateID = lbSpec.SSLCertificate
+			nlbListeners = append(nlbListeners, &awstasks.NetworkLoadBalancerListener{
+				Port:            8443,
+				TargetGroupName: b.NLBTargetGroupName("tcp"),
+			})
+			klog.Info("Using ACM certificate for API ELB")
+		} else {
+			klog.Info("NOT using ACM certificate for API ELB")
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -202,11 +212,15 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			// Override the returned name to be the expected NLB TG name
 			primaryTags["Name"] = targetGroupName
 
+			protocol := fi.String("TCP")
+			if lbSpec.SSLCertificate != "" {
+				protocol = fi.String("TLS")
+			}
 			tg := &awstasks.TargetGroup{
 				Name:               fi.String(targetGroupName),
 				VPC:                b.LinkToVPC(),
 				Tags:               primaryTags,
-				Protocol:           fi.String("TCP"),
+				Protocol:           protocol,
 				Port:               fi.Int64(443),
 				HealthyThreshold:   fi.Int64(2),
 				UnhealthyThreshold: fi.Int64(2),
@@ -216,6 +230,26 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(tg)
 
 			nlb.TargetGroups = append(nlb.TargetGroups, tg)
+
+			if lbSpec.SSLCertificate != "" {
+				secondaryTags := b.CloudTags(targetGroupName, false)
+				secondaryName := b.NLBTargetGroupName("tcp")
+
+				// Override the returned name to be the expected NLB TG name
+				secondaryTags["Name"] = secondaryName
+				secondaryTG := &awstasks.TargetGroup{
+					Name:               fi.String(secondaryName),
+					VPC:                b.LinkToVPC(),
+					Tags:               secondaryTags,
+					Protocol:           fi.String("TCP"),
+					Port:               fi.Int64(443),
+					HealthyThreshold:   fi.Int64(2),
+					UnhealthyThreshold: fi.Int64(2),
+					Shared:             fi.Bool(false),
+				}
+				c.AddTask(secondaryTG)
+				nlb.TargetGroups = append(nlb.TargetGroups, secondaryTG)
+			}
 
 			c.AddTask(nlb)
 		}
@@ -310,6 +344,19 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					SecurityGroup: masterGroup.Task,
 					ToPort:        fi.Int64(4),
 				})
+
+				if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+					// Allow access to masters on secondary port through NLB
+					c.AddTask(&awstasks.SecurityGroupRule{
+						Name:          fi.String(fmt.Sprintf("tcp-api-%s", cidr)),
+						Lifecycle:     b.SecurityLifecycle,
+						CIDR:          fi.String(cidr),
+						FromPort:      fi.Int64(8443),
+						Protocol:      fi.String("tcp"),
+						SecurityGroup: masterGroup.Task,
+						ToPort:        fi.Int64(8443),
+					})
+				}
 			}
 		}
 	}
