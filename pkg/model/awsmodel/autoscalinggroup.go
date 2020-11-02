@@ -200,6 +200,21 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
 	}
 
+	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
+			sgTask := &awstasks.SecurityGroup{
+				ID:        fi.String("nlb-" + id),
+				Lifecycle: b.SecurityLifecycle,
+				Name:      fi.String("nlb-" + id),
+				Shared:    fi.Bool(true),
+			}
+			if err := c.EnsureTask(sgTask); err != nil {
+				return nil, err
+			}
+			t.SecurityGroups = append(t.SecurityGroups, sgTask)
+		}
+	}
+
 	if volumeType == ec2.VolumeTypeIo1 {
 		if fi.Int32Value(ig.Spec.RootVolumeIops) <= 0 {
 			t.RootVolumeIops = fi.Int64(int64(DefaultVolumeIops))
@@ -354,17 +369,21 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	// is already done as part of the Elastigroup's creation, if needed.
 	if !featureflag.Spotinst.Enabled() {
 		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
-			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("api"))
+			if b.UseNetworkLoadBalancer() {
+				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("api"))
+			} else {
+				t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("api"))
+			}
 		}
 
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-			t.LoadBalancers = append(t.LoadBalancers, b.LinkToELB("bastion"))
+			t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("bastion"))
 		}
 	}
 
 	for _, extLB := range ig.Spec.ExternalLoadBalancers {
 		if extLB.LoadBalancerName != nil {
-			lb := &awstasks.LoadBalancer{
+			lb := &awstasks.ClassicLoadBalancer{
 				Name:             extLB.LoadBalancerName,
 				LoadBalancerName: extLB.LoadBalancerName,
 				Shared:           fi.Bool(true),

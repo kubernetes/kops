@@ -24,28 +24,28 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// LoadBalancer
+// ClassicLoadBalancer
 
-var _ fi.HasLifecycle = &LoadBalancer{}
+var _ fi.HasLifecycle = &ClassicLoadBalancer{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *LoadBalancer) GetLifecycle() *fi.Lifecycle {
+func (o *ClassicLoadBalancer) GetLifecycle() *fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
-func (o *LoadBalancer) SetLifecycle(lifecycle fi.Lifecycle) {
+func (o *ClassicLoadBalancer) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = &lifecycle
 }
 
-var _ fi.HasName = &LoadBalancer{}
+var _ fi.HasName = &ClassicLoadBalancer{}
 
 // GetName returns the Name of the object, implementing fi.HasName
-func (o *LoadBalancer) GetName() *string {
+func (o *ClassicLoadBalancer) GetName() *string {
 	return o.Name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
-func (o *LoadBalancer) String() string {
+func (o *ClassicLoadBalancer) String() string {
 	return fi.TaskAsString(o)
 }

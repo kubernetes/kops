@@ -25,6 +25,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil"
@@ -60,7 +62,7 @@ type Elastigroup struct {
 	OnDemandInstanceType     *string
 	SpotInstanceTypes        []string
 	IAMInstanceProfile       *awstasks.IAMInstanceProfile
-	LoadBalancer             *awstasks.LoadBalancer
+	LoadBalancer             *awstasks.ClassicLoadBalancer
 	SSHKey                   *awstasks.SSHKey
 	Subnets                  []*awstasks.Subnet
 	SecurityGroups           []*awstasks.SecurityGroup
@@ -330,13 +332,26 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 		{
 			if lc.LoadBalancersConfig != nil && len(lc.LoadBalancersConfig.LoadBalancers) > 0 {
 				lbs := lc.LoadBalancersConfig.LoadBalancers
-				actual.LoadBalancer = &awstasks.LoadBalancer{Name: lbs[0].Name}
+				actual.LoadBalancer = &awstasks.ClassicLoadBalancer{Name: lbs[0].Name}
 
 				if e.LoadBalancer != nil && actual.LoadBalancer != nil &&
 					fi.StringValue(actual.LoadBalancer.Name) != fi.StringValue(e.LoadBalancer.Name) {
+
+					//TODO: Verify NLB Functionality
+					nlb, err := awstasks.FindNetworkLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
+					if err != nil {
+						return nil, err
+					}
+					if fi.StringValue(nlb.LoadBalancerName) == fi.StringValue(lbs[0].Name) {
+						actual.LoadBalancer = e.LoadBalancer
+					}
+
 					elb, err := awstasks.FindLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
 					if err != nil {
 						return nil, err
+					}
+					if elb != nil && nlb != nil {
+						return nil, fmt.Errorf("found both elb and nlb:")
 					}
 					if fi.StringValue(elb.LoadBalancerName) == fi.StringValue(lbs[0].Name) {
 						actual.LoadBalancer = e.LoadBalancer
@@ -626,6 +641,27 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 
 						group.Compute.LaunchSpecification.SetLoadBalancersConfig(cfg)
 					}
+
+					//TODO: Verify using NLB functionality
+					//TODO: Consider using DNSTarget Interface and adding .getLoadBalancerName() .getLoadBalancerArn
+					nlb, err := awstasks.FindNetworkLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
+					if err != nil {
+						return err
+					}
+					if elb != nil && nlb != nil {
+						return fmt.Errorf("found both elb and nlb:")
+					}
+					if nlb != nil {
+						lb := new(aws.LoadBalancer)
+						lb.SetName(nlb.LoadBalancerName)
+						//lb.SetArn(nlb.LoadBalancerArn)
+						lb.SetType(fi.String("NETWORK"))
+
+						cfg := new(aws.LoadBalancersConfig)
+						cfg.SetLoadBalancers([]*aws.LoadBalancer{lb})
+
+						group.Compute.LaunchSpecification.SetLoadBalancersConfig(cfg)
+					}
 				}
 			}
 
@@ -735,6 +771,10 @@ readyLoop:
 	}
 
 	return nil
+}
+
+func isNil(v interface{}) bool {
+	return v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil())
 }
 
 func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) error {
@@ -1101,14 +1141,34 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			// Load balancer.
 			{
 				if changes.LoadBalancer != nil {
-					elb, err := awstasks.FindLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
+
+					//TODO: Verify using NLB functionality
+					var loadBalancerType string
+					var LoadBalancerName *string
+
+					var loadBalancer interface{}
+					loadBalancer, err = awstasks.FindLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
 					if err != nil {
-						return err
+						return fmt.Errorf("error looking for AWS ELB: %v", err)
 					}
-					if elb != nil {
+					if !isNil(loadBalancer) {
+						loadBalancerType = "CLASSIC"
+						LoadBalancerName = loadBalancer.(*elb.LoadBalancerDescription).LoadBalancerName
+					} else {
+						loadBalancer, err = awstasks.FindNetworkLoadBalancerByNameTag(cloud, fi.StringValue(e.LoadBalancer.Name))
+						if err != nil {
+							return fmt.Errorf("error looking for AWS NLB: %v", err)
+						}
+						if !isNil(loadBalancer) {
+							loadBalancerType = "NETWORK"
+							LoadBalancerName = loadBalancer.(*elbv2.LoadBalancer).LoadBalancerName
+						}
+					}
+
+					if !isNil(loadBalancer) {
 						lb := new(aws.LoadBalancer)
-						lb.SetName(elb.LoadBalancerName)
-						lb.SetType(fi.String("CLASSIC"))
+						lb.SetName(LoadBalancerName)
+						lb.SetType(fi.String(loadBalancerType))
 
 						cfg := new(aws.LoadBalancersConfig)
 						cfg.SetLoadBalancers([]*aws.LoadBalancer{lb})
