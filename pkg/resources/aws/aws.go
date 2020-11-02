@@ -145,7 +145,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		if err != nil {
 			return nil, err
 		}
-		lts, err := FindAutoScalingLaunchTemplateConfigurations(cloud, securityGroups)
+		lts, err := FindAutoScalingLaunchTemplates(cloud, clusterName, securityGroups)
 		if err != nil {
 			return nil, err
 		}
@@ -1179,47 +1179,34 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*resources.Res
 	return resourceTrackers, nil
 }
 
-// FindAutoScalingLaunchTemplateConfigurations finds any launch configurations which reference the security groups
-func FindAutoScalingLaunchTemplateConfigurations(cloud fi.Cloud, securityGroups sets.String) ([]*resources.Resource, error) {
-	var list []*resources.Resource
-
+// FindAutoScalingLaunchTemplates finds any launch configurations which reference the security groups
+func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string, securityGroups sets.String) ([]*resources.Resource, error) {
 	c, ok := cloud.(awsup.AWSCloud)
 	if !ok {
 		return nil, errors.New("expected a aws cloud provider")
 	}
 	klog.V(2).Infof("Finding all Autoscaling LaunchTemplates associated to security groups")
 
-	resp, err := c.EC2().DescribeLaunchTemplates(&ec2.DescribeLaunchTemplatesInput{MaxResults: fi.Int64(100)})
+	output, err := c.EC2().DescribeLaunchTemplates(&ec2.DescribeLaunchTemplatesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("tag:KubernetesCluster"),
+				Values: []*string{aws.String(clusterName)},
+			},
+		},
+	})
 	if err != nil {
-		return list, nil
+		return nil, nil
 	}
 
-	for _, x := range resp.LaunchTemplates {
-		// @step: grab the actual launch template
-		req, err := c.EC2().DescribeLaunchTemplateVersions(&ec2.DescribeLaunchTemplateVersionsInput{
-			LaunchTemplateName: x.LaunchTemplateName,
+	var list []*resources.Resource
+	for _, lt := range output.LaunchTemplates {
+		list = append(list, &resources.Resource{
+			Name:    aws.StringValue(lt.LaunchTemplateName),
+			ID:      aws.StringValue(lt.LaunchTemplateId),
+			Type:    TypeAutoscalingLaunchConfig,
+			Deleter: DeleteAutoScalingGroupLaunchTemplate,
 		})
-		if err != nil {
-			return list, err
-		}
-		for _, j := range req.LaunchTemplateVersions {
-			// @check if the security group references the security group above
-			var s []*string
-			for _, ni := range j.LaunchTemplateData.NetworkInterfaces {
-				s = append(s, ni.Groups...)
-			}
-			s = append(s, j.LaunchTemplateData.SecurityGroupIds...)
-			for _, y := range s {
-				if securityGroups.Has(fi.StringValue(y)) {
-					list = append(list, &resources.Resource{
-						Name:    aws.StringValue(x.LaunchTemplateName),
-						ID:      aws.StringValue(x.LaunchTemplateName),
-						Type:    TypeAutoscalingLaunchConfig,
-						Deleter: DeleteAutoScalingGroupLaunchTemplate,
-					})
-				}
-			}
-		}
 	}
 
 	return list, nil
@@ -1377,7 +1364,7 @@ func DeleteAutoScalingGroupLaunchTemplate(cloud fi.Cloud, r *resources.Resource)
 	klog.V(2).Infof("Deleting EC2 LaunchTemplate %q", r.ID)
 
 	if _, err := c.EC2().DeleteLaunchTemplate(&ec2.DeleteLaunchTemplateInput{
-		LaunchTemplateName: fi.String(r.ID),
+		LaunchTemplateId: fi.String(r.ID),
 	}); err != nil {
 		return fmt.Errorf("error deleting ec2 LaunchTemplate %q: %v", r.ID, err)
 	}
