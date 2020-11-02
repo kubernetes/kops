@@ -694,52 +694,44 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 	}
 
 	// @check the launch template then
+	var launchTemplate *autoscaling.LaunchTemplateSpecification
 	if g.LaunchTemplate != nil {
-		name = aws.StringValue(g.LaunchTemplate.LaunchTemplateName)
-		version := aws.StringValue(g.LaunchTemplate.Version)
-		if name != "" {
-			launchTemplate := name + ":" + version
-			return launchTemplate, nil
-		}
+		launchTemplate = g.LaunchTemplate
+	} else if g.MixedInstancesPolicy != nil && g.MixedInstancesPolicy.LaunchTemplate != nil && g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
+		launchTemplate = g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification
+	} else {
+		return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
 	}
 
-	// @check: ok, lets check the mixed instance policy
-	if g.MixedInstancesPolicy != nil {
-		if g.MixedInstancesPolicy.LaunchTemplate != nil {
-			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
-				var version string
-				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
-				//See what version the ASG is set to use
-				mixedVersion := aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
-				//Correctly Handle Default and Latest Versions
-				if mixedVersion == "" || mixedVersion == "$Default" || mixedVersion == "$Latest" {
-					request := &ec2.DescribeLaunchTemplatesInput{
-						LaunchTemplateNames: []*string{&name},
-					}
-					dltResponse, err := c.EC2().DescribeLaunchTemplates(request)
-					if err != nil {
-						return "", fmt.Errorf("error describing launch templates: %v", err)
-					}
-					launchTemplate := dltResponse.LaunchTemplates[0]
-					if mixedVersion == "" || mixedVersion == "$Default" {
-						version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
-					} else {
-						version = strconv.FormatInt(*launchTemplate.LatestVersionNumber, 10)
-					}
-				} else {
-					version = mixedVersion
-				}
-				klog.V(4).Infof("Launch Template Version Specified By ASG: %v", mixedVersion)
-				klog.V(4).Infof("Launch Template Version we are using for compare: %v", version)
-				if name != "" {
-					launchTemplate := name + ":" + version
-					return launchTemplate, nil
-				}
-			}
-		}
+	name = aws.StringValue(launchTemplate.LaunchTemplateName)
+	if name == "" {
+		return "", fmt.Errorf("error finding launch template for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
 	}
 
-	return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
+	version := aws.StringValue(launchTemplate.Version)
+	//Correctly Handle Default and Latest Versions
+	klog.V(4).Infof("Launch Template Version Specified By ASG: %v", version)
+	if version == "" || version == "$Default" || version == "$Latest" {
+		input := &ec2.DescribeLaunchTemplatesInput{
+			LaunchTemplateNames: []*string{&name},
+		}
+		output, err := c.EC2().DescribeLaunchTemplates(input)
+		if err != nil {
+			return "", fmt.Errorf("error describing launch templates: %q", err)
+		}
+		if len(output.LaunchTemplates) == 0 {
+			return "", fmt.Errorf("error finding launch template by name: %q", name)
+		}
+		launchTemplate := output.LaunchTemplates[0]
+		if version == "" || version == "$Default" {
+			version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
+		} else {
+			version = strconv.FormatInt(*launchTemplate.LatestVersionNumber, 10)
+		}
+	}
+	klog.V(4).Infof("Launch Template Version used for compare: %q", version)
+
+	return fmt.Sprintf("%s:%s", name, version), nil
 }
 
 // findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
