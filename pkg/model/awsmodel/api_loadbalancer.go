@@ -357,8 +357,19 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Protocol:      fi.String("tcp"),
 				SecurityGroup: masterGroup.Task,
 				ToPort:        fi.Int64(443),
-				VPC:           b.LinkToVPC(),
+				CIDR:          fi.String(b.Cluster.Spec.NetworkCIDR),
 			})
+			for _, cidr := range b.Cluster.Spec.AdditionalNetworkCIDRs {
+				c.AddTask(&awstasks.SecurityGroupRule{
+					Name:          fi.String(fmt.Sprintf("https-lb-to-master%s-%s", suffix, cidr)),
+					Lifecycle:     b.SecurityLifecycle,
+					FromPort:      fi.Int64(443),
+					Protocol:      fi.String("tcp"),
+					SecurityGroup: masterGroup.Task,
+					ToPort:        fi.Int64(443),
+					CIDR:          fi.String(cidr),
+				})
+			}
 		}
 	}
 
