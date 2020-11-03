@@ -26,7 +26,7 @@ type BootstrapRequest struct {
 	Certs map[string]string `json:"certs"`
 }
 
-// BootstrapRespose is a response to a BootstrapRequest.
+// BootstrapResponse is a response to a BootstrapRequest.
 type BootstrapResponse struct {
 	// Certs are the issued certificates.
 	Certs map[string]string
