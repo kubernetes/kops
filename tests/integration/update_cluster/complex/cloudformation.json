@@ -271,8 +271,8 @@
                 {
                   "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
                 },
-                "nlb-sg-exampleid3",
-                "nlb-sg-exampleid4"
+                "sg-exampleid3",
+                "sg-exampleid4"
               ]
             }
           ],
@@ -404,9 +404,9 @@
                 {
                   "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
                 },
-                "nlb-sg-exampleid3",
-                "nlb-sg-exampleid4",
                 "sg-exampleid3",
+                "sg-exampleid3",
+                "sg-exampleid4",
                 "sg-exampleid4"
               ]
             }
@@ -643,7 +643,32 @@
         },
         "FromPort": 443,
         "ToPort": 443,
-        "IpProtocol": "tcp"
+        "IpProtocol": "tcp",
+        "CidrIp": "172.20.0.0/16"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpslbtomaster1010016": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "10.1.0.0/16"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpslbtomaster1020016": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "10.2.0.0/16"
       }
     },
     "AWSEC2SecurityGroupIngressicmppmtuapielb111024": {

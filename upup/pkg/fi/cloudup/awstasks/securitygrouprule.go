@@ -47,7 +47,6 @@ type SecurityGroupRule struct {
 	SourceGroup *SecurityGroup
 
 	Egress *bool
-	VPC    *VPC
 }
 
 func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
@@ -105,7 +104,6 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 			ToPort:        foundRule.ToPort,
 			Protocol:      foundRule.IpProtocol,
 			Egress:        e.Egress,
-			VPC:           e.VPC,
 		}
 
 		if aws.StringValue(actual.Protocol) == "-1" {
@@ -148,19 +146,6 @@ func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
 		match := false
 		for _, ipRange := range rule.IpRanges {
 			if aws.StringValue(ipRange.CidrIp) == *e.CIDR {
-				match = true
-				break
-			}
-		}
-		if !match {
-			return false
-		}
-	}
-
-	if e.VPC != nil && e.VPC.CIDR != nil {
-		match := false
-		for _, ipRange := range rule.IpRanges {
-			if aws.StringValue(ipRange.CidrIp) == *e.VPC.CIDR {
 				match = true
 				break
 			}
@@ -266,10 +251,6 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			}
 		} else {
 			CIDR := e.CIDR
-			//TODO: Verify NLB is setting vpc CIDR
-			if e.VPC != nil { //ALLOW security group to use vpc cidr for network load balancer.
-				CIDR = e.VPC.CIDR
-			}
 			// Default to 0.0.0.0/0 ?
 			ipPermission.IpRanges = []*ec2.IpRange{
 				{CidrIp: CIDR},

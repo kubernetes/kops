@@ -1,11 +1,11 @@
 locals {
   cluster_name                 = "complex.example.com"
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4"]
+  master_security_group_ids    = [aws_security_group.masters-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
   masters_role_arn             = aws_iam_role.masters-complex-example-com.arn
   masters_role_name            = aws_iam_role.masters-complex-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-complex-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4", "sg-exampleid3", "sg-exampleid4"]
+  node_security_group_ids      = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid3", "sg-exampleid4", "sg-exampleid4"]
   node_subnet_ids              = [aws_subnet.us-test-1a-complex-example-com.id]
   nodes_role_arn               = aws_iam_role.nodes-complex-example-com.arn
   nodes_role_name              = aws_iam_role.nodes-complex-example-com.name
@@ -25,7 +25,7 @@ output "master_autoscaling_group_ids" {
 }
 
 output "master_security_group_ids" {
-  value = [aws_security_group.masters-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4"]
+  value = [aws_security_group.masters-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
 }
 
 output "masters_role_arn" {
@@ -41,7 +41,7 @@ output "node_autoscaling_group_ids" {
 }
 
 output "node_security_group_ids" {
-  value = [aws_security_group.nodes-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4", "sg-exampleid3", "sg-exampleid4"]
+  value = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid3", "sg-exampleid4", "sg-exampleid4"]
 }
 
 output "node_subnet_ids" {
@@ -301,7 +301,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
-    security_groups             = [aws_security_group.masters-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4"]
+    security_groups             = [aws_security_group.masters-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
   }
   tag_specifications {
     resource_type = "instance"
@@ -375,7 +375,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
-    security_groups             = [aws_security_group.nodes-complex-example-com.id, "nlb-sg-exampleid3", "nlb-sg-exampleid4", "sg-exampleid3", "sg-exampleid4"]
+    security_groups             = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid3", "sg-exampleid4", "sg-exampleid4"]
   }
   tag_specifications {
     resource_type = "instance"
@@ -543,6 +543,25 @@ resource "aws_security_group_rule" "https-api-elb-2001_0_8500__--40" {
 }
 
 resource "aws_security_group_rule" "https-elb-to-master" {
+  cidr_blocks       = ["172.20.0.0/16"]
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "https-lb-to-master-10-1-0-0--16" {
+  cidr_blocks       = ["10.1.0.0/16"]
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "https-lb-to-master-10-2-0-0--16" {
+  cidr_blocks       = ["10.2.0.0/16"]
   from_port         = 443
   protocol          = "tcp"
   security_group_id = aws_security_group.masters-complex-example-com.id
