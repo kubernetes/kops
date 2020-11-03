@@ -263,7 +263,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedsubnet-example-c
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.sharedsubnet.example.com-"
+  name = "master-us-test-1a.masters.sharedsubnet.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -323,7 +323,7 @@ resource "aws_launch_template" "nodes-sharedsubnet-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.sharedsubnet.example.com-"
+  name = "nodes.sharedsubnet.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true

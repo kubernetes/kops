@@ -277,7 +277,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.minimal.example.com-"
+  name = "master-us-test-1a.masters.minimal.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -337,7 +337,7 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.minimal.example.com-"
+  name = "nodes.minimal.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
