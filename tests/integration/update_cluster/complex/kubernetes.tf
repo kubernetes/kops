@@ -543,6 +543,25 @@ resource "aws_security_group_rule" "https-api-elb-2001_0_8500__--40" {
 }
 
 resource "aws_security_group_rule" "https-elb-to-master" {
+  cidr_blocks       = ["172.20.0.0/16"]
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "https-lb-to-master-10-1-0-0--16" {
+  cidr_blocks       = ["10.1.0.0/16"]
+  from_port         = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "https-lb-to-master-10-2-0-0--16" {
+  cidr_blocks       = ["10.2.0.0/16"]
   from_port         = 443
   protocol          = "tcp"
   security_group_id = aws_security_group.masters-complex-example-com.id
