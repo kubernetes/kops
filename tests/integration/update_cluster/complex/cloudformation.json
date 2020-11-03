@@ -271,8 +271,8 @@
                 {
                   "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
                 },
-                "nlb-sg-exampleid3",
-                "nlb-sg-exampleid4"
+                "sg-exampleid3",
+                "sg-exampleid4"
               ]
             }
           ],
@@ -404,9 +404,9 @@
                 {
                   "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
                 },
-                "nlb-sg-exampleid3",
-                "nlb-sg-exampleid4",
                 "sg-exampleid3",
+                "sg-exampleid3",
+                "sg-exampleid4",
                 "sg-exampleid4"
               ]
             }
