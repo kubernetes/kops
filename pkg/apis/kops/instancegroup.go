@@ -288,7 +288,7 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 }
 
-// LoadBalancers defines a load balancer
+// LoadBalancer defines a load balancer
 type LoadBalancer struct {
 	// LoadBalancerName to associate with this instance group (AWS ELB)
 	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
