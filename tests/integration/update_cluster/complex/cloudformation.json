@@ -1135,7 +1135,7 @@
     "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom": {
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
-        "Name": "api-complex-example-com",
+        "Name": "api-complex-example-com-vd3t5n",
         "Scheme": "internet-facing",
         "Subnets": [
           {

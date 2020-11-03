@@ -452,7 +452,7 @@ resource "aws_lb" "api-complex-example-com" {
   enable_cross_zone_load_balancing = true
   internal                         = false
   load_balancer_type               = "network"
-  name                             = "api-complex-example-com"
+  name                             = "api-complex-example-com-vd3t5n"
   subnets                          = [aws_subnet.us-test-1a-complex-example-com.id]
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
