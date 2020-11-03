@@ -473,7 +473,7 @@ resource "aws_launch_template" "bastion-privatedns1-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.privatedns1.example.com-"
+  name = "bastion.privatedns1.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -542,7 +542,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.privatedns1.example.com-"
+  name = "master-us-test-1a.masters.privatedns1.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -608,7 +608,7 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.privatedns1.example.com-"
+  name = "nodes.privatedns1.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true

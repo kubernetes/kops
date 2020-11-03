@@ -294,7 +294,7 @@
     },
     "aws_launch_template": {
       "master-us-test-1a-masters-minimal-json-example-com": {
-        "name_prefix": "master-us-test-1a.masters.minimal-json.example.com-",
+        "name": "master-us-test-1a.masters.minimal-json.example.com",
         "lifecycle": {
           "create_before_destroy": true
         },
@@ -369,7 +369,7 @@
         "user_data": "${file(\"${path.module}/data/aws_launch_template_master-us-test-1a.masters.minimal-json.example.com_user_data\")}"
       },
       "nodes-minimal-json-example-com": {
-        "name_prefix": "nodes.minimal-json.example.com-",
+        "name": "nodes.minimal-json.example.com",
         "lifecycle": {
           "create_before_destroy": true
         },

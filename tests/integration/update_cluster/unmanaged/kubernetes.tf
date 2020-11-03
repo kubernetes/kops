@@ -406,7 +406,7 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.unmanaged.example.com-"
+  name = "bastion.unmanaged.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -469,7 +469,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.unmanaged.example.com-"
+  name = "master-us-test-1a.masters.unmanaged.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -529,7 +529,7 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.unmanaged.example.com-"
+  name = "nodes.unmanaged.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
