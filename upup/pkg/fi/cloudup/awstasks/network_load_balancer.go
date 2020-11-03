@@ -654,7 +654,7 @@ type terraformNetworkLoadBalancerListenerAction struct {
 
 func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbTF := &terraformNetworkLoadBalancer{
-		Name:                   *e.Name,
+		Name:                   *e.LoadBalancerName,
 		Internal:               fi.StringValue(e.Scheme) == elbv2.LoadBalancerSchemeEnumInternal,
 		Type:                   elbv2.LoadBalancerTypeEnumNetwork,
 		Tags:                   e.Tags,
@@ -732,7 +732,7 @@ type cloudformationNetworkLoadBalancerListenerAction struct {
 
 func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NetworkLoadBalancer) error {
 	nlbCF := &cloudformationNetworkLoadBalancer{
-		Name:    *e.Name,
+		Name:    *e.LoadBalancerName,
 		Subnets: make([]*cloudformation.Literal, 0),
 		Type:    elbv2.LoadBalancerTypeEnumNetwork,
 		Tags:    buildCloudformationTags(e.Tags),
