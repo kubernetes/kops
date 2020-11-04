@@ -48,8 +48,8 @@ const PolicyDefaultVersion = "2012-10-17"
 
 // Policy Struct is a collection of fields that form a valid AWS policy document
 type Policy struct {
-	Version   string
 	Statement []*Statement
+	Version   string
 }
 
 // AsJSON converts the policy document to JSON format (parsable by AWS)
@@ -146,6 +146,19 @@ func (s *Statement) MarshalJSON() ([]byte, error) {
 
 	jw := &jsonWriter{w: &b}
 	jw.StartObject()
+
+	if !s.Action.IsEmpty() {
+		jw.Field("Action")
+		jw.Marshal(s.Action)
+		jw.Comma()
+	}
+
+	if len(s.Condition) != 0 {
+		jw.Field("Condition")
+		jw.Marshal(s.Condition)
+		jw.Comma()
+	}
+
 	jw.Field("Effect")
 	jw.Marshal(s.Effect)
 
@@ -154,21 +167,13 @@ func (s *Statement) MarshalJSON() ([]byte, error) {
 		jw.Field("Principal")
 		jw.Marshal(s.Principal)
 	}
-	if !s.Action.IsEmpty() {
-		jw.Comma()
-		jw.Field("Action")
-		jw.Marshal(s.Action)
-	}
+
 	if !s.Resource.IsEmpty() {
 		jw.Comma()
 		jw.Field("Resource")
 		jw.Marshal(s.Resource)
 	}
-	if len(s.Condition) != 0 {
-		jw.Comma()
-		jw.Field("Condition")
-		jw.Marshal(s.Condition)
-	}
+
 	jw.EndObject()
 
 	return b.Bytes(), jw.Error()
