@@ -1,8 +1,6 @@
 {
-  "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstances",
@@ -13,12 +11,12 @@
         "ec2:DescribeSubnets",
         "ec2:DescribeVolumes"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
@@ -27,12 +25,12 @@
         "ec2:ModifyInstanceAttribute",
         "ec2:ModifyVolume"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
@@ -43,45 +41,45 @@
         "ec2:DetachVolume",
         "ec2:RevokeSecurityGroupIngress"
       ],
-      "Resource": [
-        "*"
-      ],
       "Condition": {
         "StringEquals": {
           "ec2:ResourceTag/KubernetesCluster": "unmanaged.example.com"
         }
-      }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeTags",
         "ec2:DescribeLaunchTemplateVersions"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "autoscaling:UpdateAutoScalingGroup"
       ],
-      "Resource": [
-        "*"
-      ],
       "Condition": {
         "StringEquals": {
           "autoscaling:ResourceTag/KubernetesCluster": "unmanaged.example.com"
         }
-      }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
@@ -100,12 +98,12 @@
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:DescribeVpcs",
         "elasticloadbalancing:AddTags",
@@ -123,48 +121,50 @@
         "elasticloadbalancing:RegisterTargets",
         "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "iam:ListServerCertificates",
         "iam:GetServerCertificate"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "route53:ChangeResourceRecordSets",
         "route53:ListResourceRecordSets",
         "route53:GetHostedZone"
       ],
+      "Effect": "Allow",
       "Resource": [
         "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "route53:GetChange"
       ],
+      "Effect": "Allow",
       "Resource": [
         "arn:aws:route53:::change/*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "route53:ListHostedZones"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     }
-  ]
+  ],
+  "Version": "2012-10-17"
 }

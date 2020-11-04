@@ -17,10 +17,9 @@ limitations under the License.
 package awstasks
 
 import (
+	"encoding/json"
 	"fmt"
 	"hash/fnv"
-
-	"encoding/json"
 	"net/url"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -115,7 +114,19 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error parsing PolicyDocument for IAMRolePolicy %q: %v", aws.StringValue(e.Name), err)
 		}
-		actual.PolicyDocument = fi.WrapResource(fi.NewStringResource(policy))
+
+		// Reformat the PolicyDocument by unmarshaling and re-marshaling to JSON.
+		// This will make it possible to compare it when using CloudFormation.
+		var jsonData interface{}
+		err = json.Unmarshal([]byte(policy), &jsonData)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing cloudformation policy document from JSON: %v", err)
+		}
+		jsonBytes, err := json.MarshalIndent(jsonData, "", "  ")
+		if err != nil {
+			return nil, fmt.Errorf("error converting cloudformation policy document to JSON: %v", err)
+		}
+		actual.PolicyDocument = fi.WrapResource(fi.NewStringResource(string(jsonBytes)))
 	}
 
 	actual.Name = p.PolicyName
