@@ -222,7 +222,7 @@ func (e *SecurityGroup) TerraformLink() *terraform.Literal {
 }
 
 type cloudformationSecurityGroup struct {
-	//Name        *string            `json:"name"`
+	GroupName   *string                 `json:"GroupName"`
 	VpcId       *cloudformation.Literal `json:"VpcId"`
 	Description *string                 `json:"GroupDescription"`
 	Tags        []cloudformationTag     `json:"Tags,omitempty"`
@@ -236,7 +236,7 @@ func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTar
 	}
 
 	tf := &cloudformationSecurityGroup{
-		//Name:        e.Name,
+		GroupName:   e.Name,
 		VpcId:       e.VPC.CloudformationLink(),
 		Description: e.Description,
 		Tags:        buildCloudformationTags(e.Tags),

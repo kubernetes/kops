@@ -611,6 +611,7 @@
     "AWSEC2SecurityGroupmasterscontainerdexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.containerd.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCcontainerdexamplecom"
         },
@@ -634,6 +635,7 @@
     "AWSEC2SecurityGroupnodescontainerdexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.containerd.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCcontainerdexamplecom"
         },
@@ -806,6 +808,7 @@
     "AWSIAMInstanceProfilemasterscontainerdexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.containerd.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemasterscontainerdexamplecom"
@@ -816,6 +819,7 @@
     "AWSIAMInstanceProfilenodescontainerdexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.containerd.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodescontainerdexamplecom"
