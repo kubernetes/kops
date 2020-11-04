@@ -4,6 +4,7 @@
 // upup/models/cloudup/resources/addons/anonymous-issuer-discovery.addons.k8s.io/k8s-1.16.yaml.template
 // upup/models/cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template
 // upup/models/cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml
+// upup/models/cloudup/resources/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml.template
 // upup/models/cloudup/resources/addons/cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml.template
 // upup/models/cloudup/resources/addons/core.addons.k8s.io/addon.yaml
 // upup/models/cloudup/resources/addons/core.addons.k8s.io/k8s-1.12.yaml.template
@@ -569,6 +570,185 @@ func cloudupResourcesAddonsAuthenticationKopeIoK8s112Yaml() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _cloudupResourcesAddonsAwsCloudControllerAddonsK8sIoK8s118YamlTemplate = []byte(`---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+  labels:
+    k8s-app: aws-cloud-controller-manager
+spec:
+  selector:
+    matchLabels:
+      k8s-app: aws-cloud-controller-manager
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: aws-cloud-controller-manager
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      serviceAccountName: cloud-controller-manager
+      containers:
+        - name: aws-cloud-controller-manager
+          image: {{ if .ExternalCloudControllerManager.Image }}{{ .ExternalCloudControllerManager.Image }}{{ else }}gcr.io/k8s-staging-provider-aws/cloud-controller-manager:{{AWSCCMTag}}{{ end }}
+          args:
+{{- range $arg := CloudControllerConfigArgv }}
+            - {{ $arg }}
+{{- end }}
+          resources:
+            requests:
+              cpu: 200m
+      hostNetwork: true
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cloud-controller-manager:apiserver-authentication-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - list
+  - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cloud-controller-manager
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+
+`)
+
+func cloudupResourcesAddonsAwsCloudControllerAddonsK8sIoK8s118YamlTemplateBytes() ([]byte, error) {
+	return _cloudupResourcesAddonsAwsCloudControllerAddonsK8sIoK8s118YamlTemplate, nil
+}
+
+func cloudupResourcesAddonsAwsCloudControllerAddonsK8sIoK8s118YamlTemplate() (*asset, error) {
+	bytes, err := cloudupResourcesAddonsAwsCloudControllerAddonsK8sIoK8s118YamlTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "cloudup/resources/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml.template", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -15954,6 +16134,7 @@ var _bindata = map[string]func() (*asset, error){
 	"cloudup/resources/addons/anonymous-issuer-discovery.addons.k8s.io/k8s-1.16.yaml.template":            cloudupResourcesAddonsAnonymousIssuerDiscoveryAddonsK8sIoK8s116YamlTemplate,
 	"cloudup/resources/addons/authentication.aws/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsAuthenticationAwsK8s112YamlTemplate,
 	"cloudup/resources/addons/authentication.kope.io/k8s-1.12.yaml":                                       cloudupResourcesAddonsAuthenticationKopeIoK8s112Yaml,
+	"cloudup/resources/addons/aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml.template":                  cloudupResourcesAddonsAwsCloudControllerAddonsK8sIoK8s118YamlTemplate,
 	"cloudup/resources/addons/cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml.template":                    cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate,
 	"cloudup/resources/addons/core.addons.k8s.io/addon.yaml":                                              cloudupResourcesAddonsCoreAddonsK8sIoAddonYaml,
 	"cloudup/resources/addons/core.addons.k8s.io/k8s-1.12.yaml.template":                                  cloudupResourcesAddonsCoreAddonsK8sIoK8s112YamlTemplate,
@@ -16052,6 +16233,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				}},
 				"authentication.kope.io": {nil, map[string]*bintree{
 					"k8s-1.12.yaml": {cloudupResourcesAddonsAuthenticationKopeIoK8s112Yaml, map[string]*bintree{}},
+				}},
+				"aws-cloud-controller.addons.k8s.io": {nil, map[string]*bintree{
+					"k8s-1.18.yaml.template": {cloudupResourcesAddonsAwsCloudControllerAddonsK8sIoK8s118YamlTemplate, map[string]*bintree{}},
 				}},
 				"cluster-autoscaler.addons.k8s.io": {nil, map[string]*bintree{
 					"k8s-1.15.yaml.template": {cloudupResourcesAddonsClusterAutoscalerAddonsK8sIoK8s115YamlTemplate, map[string]*bintree{}},

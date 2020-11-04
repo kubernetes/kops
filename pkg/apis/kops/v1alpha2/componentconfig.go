@@ -609,6 +609,8 @@ type KubeControllerManagerConfig struct {
 	AuthorizationKubeconfig string `json:"authorizationKubeconfig,omitempty" flag:"authorization-kubeconfig"`
 	// AuthorizationAlwaysAllowPaths is the list of HTTP paths to skip during authorization
 	AuthorizationAlwaysAllowPaths []string `json:"authorizationAlwaysAllowPaths,omitempty" flag:"authorization-always-allow-paths"`
+	// ExternalCloudVolumePlugin is a fallback mechanism that allows a legacy, in-tree cloudprovider to be used for volume plugins even when an external cloud controller manager is being used.  This can be used instead of installing CSI.  The value should be the same as is used for the --cloud-provider flag, i.e. "aws".
+	ExternalCloudVolumePlugin string `json:"externalCloudVolumePlugin,omitempty" flag:"external-cloud-volume-plugin"`
 
 	// EnableProfiling enables profiling via web interface host:port/debug/pprof/
 	EnableProfiling *bool `json:"enableProfiling,omitempty" flag:"profiling"`
