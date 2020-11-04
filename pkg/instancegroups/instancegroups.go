@@ -597,7 +597,7 @@ func (c *RollingUpdateCluster) deleteNode(node *corev1.Node) error {
 	return nil
 }
 
-// UpdateSingeInstance performs a rolling update on a single instance
+// UpdateSingleInstance performs a rolling update on a single instance
 func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.CloudInstance, detach bool) error {
 	if detach {
 		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
