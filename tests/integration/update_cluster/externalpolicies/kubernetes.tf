@@ -411,6 +411,9 @@ resource "aws_launch_template" "nodes-externalpolicies-example-com" {
   lifecycle {
     create_before_destroy = true
   }
+  monitoring {
+    enabled = true
+  }
   name_prefix = "nodes.externalpolicies.example.com-"
   network_interfaces {
     associate_public_ip_address = true

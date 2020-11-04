@@ -395,6 +395,9 @@
           },
           "ImageId": "ami-12345678",
           "InstanceType": "t2.medium",
+          "Monitoring": {
+            "Enabled": true
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,

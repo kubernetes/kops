@@ -72,6 +72,9 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
               "MaxPrice": "10"
             }
           },
+          "Monitoring": {
+            "Enabled": true
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
@@ -155,6 +158,9 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           },
           "InstanceType": "t2.medium",
           "KeyName": "mykey",
+          "Monitoring": {
+            "Enabled": true
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
