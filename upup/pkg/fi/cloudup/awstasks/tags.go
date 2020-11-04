@@ -17,6 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -27,6 +29,9 @@ func mapEC2TagsToMap(tags []*ec2.Tag) map[string]string {
 	}
 	m := make(map[string]string)
 	for _, t := range tags {
+		if strings.HasPrefix(aws.StringValue(t.Key), "aws:cloudformation:") {
+			continue
+		}
 		m[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
 	}
 	return m
