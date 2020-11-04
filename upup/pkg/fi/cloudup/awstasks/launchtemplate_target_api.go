@@ -149,13 +149,18 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		}
 		e.ID = output.LaunchTemplate.LaunchTemplateId
 	} else {
-		// TODO: Update the LaunchTemplate tags
 		input := &ec2.CreateLaunchTemplateVersionInput{
 			LaunchTemplateName: t.Name,
 			LaunchTemplateData: data,
 		}
 		if _, err = c.Cloud.EC2().CreateLaunchTemplateVersion(input); err != nil {
 			return fmt.Errorf("error creating LaunchTemplateVersion: %v", err)
+		}
+		if changes.Tags != nil {
+			err = c.UpdateTags(fi.StringValue(a.ID), e.Tags)
+			if err != nil {
+				return fmt.Errorf("error updating LaunchTemplate tags: %v", err)
+			}
 		}
 		e.ID = a.ID
 	}
