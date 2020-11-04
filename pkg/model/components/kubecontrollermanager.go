@@ -98,6 +98,14 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	if clusterSpec.ExternalCloudControllerManager != nil {
 		kcm.CloudProvider = "external"
+
+		// External cloud provider disables KCM volume controllers, so
+		// most users would want to either install CSI or pass
+		// --external-cloud-volume-plugin to the KCM, which runs the
+		// KCM volume controllers.
+		if kcm.ExternalCloudVolumePlugin == "" {
+			klog.Infof("An external cloud controller manager is configured, but ExternalCloudVolumePlugin is not configured for the KCM.  This means a CSI plugin must be installed by the user or else volume management might not work.")
+		}
 	}
 
 	kcm.LogLevel = 2

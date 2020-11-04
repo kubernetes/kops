@@ -65,6 +65,20 @@ func TestBootstrapChannelBuilder_PublicJWKS(t *testing.T) {
 	runChannelBuilderTest(t, "public-jwks", []string{"dns-controller.addons.k8s.io-k8s-1.12", "kops-controller.addons.k8s.io-k8s-1.16", "anonymous-issuer-discovery.addons.k8s.io-k8s-1.16"})
 }
 
+func TestBootstrapChannelBuilder_AWSCloudController(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.SetupMockAWS()
+
+	featureflag.ParseFlags("+EnableExternalCloudController")
+	unsetFeatureFlag := func() {
+		featureflag.ParseFlags("-EnableExternalCloudController")
+	}
+	defer unsetFeatureFlag()
+	runChannelBuilderTest(t, "awscloudcontroller", []string{"aws-cloud-controller.addons.k8s.io-k8s-1.18"})
+}
+
 func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
 

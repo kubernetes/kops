@@ -122,6 +122,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	// will return openstack external ccm image location for current kubernetes version
 	dest["OpenStackCCMTag"] = tf.OpenStackCCMTag
+	dest["AWSCCMTag"] = tf.AWSCCMTag
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsSystemEnv"] = tf.KopsSystemEnv
@@ -530,6 +531,23 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 		}
 	}
 	return tag
+}
+
+// AWSCCMTag returns the correct tag for the cloud controller manager based on
+// the Kubernetes Version
+func (tf *TemplateFunctions) AWSCCMTag() (string, error) {
+	var tag string
+	parsed, err := util.ParseKubernetesVersion(tf.Cluster.Spec.KubernetesVersion)
+
+	// Update when we have stable releases
+	if err != nil {
+		return "", fmt.Errorf("failed to parse Kubernetes version from cluster spec: %q", err)
+	} else if parsed.Minor == 18 {
+		tag = "v1.18.0-alpha.1"
+	} else if parsed.Minor == 19 {
+		tag = "v1.19.0-alpha.1"
+	}
+	return tag, nil
 }
 
 // GetNodeInstanceGroups returns a map containing the defined instance groups of role "Node".
