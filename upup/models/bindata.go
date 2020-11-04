@@ -3889,9 +3889,7 @@ spec:
           secretName: cilium-ipsec-keys
 {{ end }}
   updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 2
-    type: RollingUpdate
+    type: OnDelete
 ---
 apiVersion: apps/v1
 kind: Deployment

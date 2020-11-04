@@ -75,6 +75,29 @@ func (c *CloudInstanceGroup) Status() string {
 	return "NeedsUpdate"
 }
 
+func (group *CloudInstanceGroup) AdjustNeedUpdate() {
+
+	if group.Ready != nil {
+		var newReady []*CloudInstance
+		for _, member := range group.Ready {
+			makeNotReady := false
+			if member.Node != nil && member.Node.Annotations != nil {
+				if _, ok := member.Node.Annotations["kops.k8s.io/needs-update"]; ok {
+					makeNotReady = true
+				}
+			}
+
+			if makeNotReady {
+				group.NeedUpdate = append(group.NeedUpdate, member)
+				member.Status = CloudInstanceStatusNeedsUpdate
+			} else {
+				newReady = append(newReady, member)
+			}
+		}
+		group.Ready = newReady
+	}
+}
+
 // GetNodeMap returns a list of nodes keyed by their external id
 func GetNodeMap(nodes []v1.Node, cluster *kopsapi.Cluster) map[string]*v1.Node {
 	nodeMap := make(map[string]*v1.Node)
