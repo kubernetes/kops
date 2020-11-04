@@ -50,9 +50,19 @@ func (t *AWSAPITarget) AddAWSTags(id string, expected map[string]string) error {
 	return t.Cloud.AddAWSTags(id, expected)
 }
 
+func (t *AWSAPITarget) GetTags(id string) (map[string]string, error) {
+	return t.Cloud.GetTags(id)
+}
+func (t *AWSAPITarget) CreateTags(id string, tags map[string]string) error {
+	return t.Cloud.CreateTags(id, tags)
+}
 func (t *AWSAPITarget) DeleteTags(id string, tags map[string]string) error {
 	return t.Cloud.DeleteTags(id, tags)
 }
+func (t *AWSAPITarget) UpdateTags(id string, tags map[string]string) error {
+	return t.Cloud.UpdateTags(id, tags)
+}
+
 func (t *AWSAPITarget) AddELBV2Tags(ResourceArn string, expected map[string]string) error {
 	actual, err := t.Cloud.GetELBV2Tags(ResourceArn)
 	if err != nil {

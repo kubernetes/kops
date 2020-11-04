@@ -158,6 +158,10 @@ func (c *MockAWSCloud) GetTags(resourceID string) (map[string]string, error) {
 	return getTags(c, resourceID)
 }
 
+func (c *MockAWSCloud) UpdateTags(id string, tags map[string]string) error {
+	return updateTags(c, id, tags)
+}
+
 func (c *MockAWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error) {
 	return getELBTags(c, loadBalancerName)
 }
