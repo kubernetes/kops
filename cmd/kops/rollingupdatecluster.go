@@ -350,7 +350,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		ValidateSuccessDuration: 10 * time.Second,
 	}
 
-	err = d.AdjustNeedUpdate(groups, list)
+	err = d.AdjustNeedUpdate(groups)
 	if err != nil {
 		return err
 	}

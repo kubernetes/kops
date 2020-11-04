@@ -126,6 +126,7 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 	var cloudInstances []*cloudinstances.CloudInstance
 
 	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodeList.Items)
+
 	if err != nil {
 		return err
 	}
@@ -133,6 +134,7 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 	for _, cg := range cloudGroups {
 		cloudInstances = append(cloudInstances, cg.Ready...)
 		cloudInstances = append(cloudInstances, cg.NeedUpdate...)
+		cg.AdjustNeedUpdate()
 	}
 
 	switch options.output {

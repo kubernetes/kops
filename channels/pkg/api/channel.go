@@ -62,6 +62,11 @@ type AddonSpec struct {
 	// version of the software we are packaging.  But we always want to reinstall when we
 	// switch kubernetes versions.
 	Id string `json:"id,omitempty"`
+
+	// NeedUpdate determines if we should mark nodes as needing an update.
+	// Legal values are control-plane, workers, and all
+	// Empty value means no update needed
+	NeedUpdate string `json:"needsRollingUpdate,omitempty"`
 }
 
 func (a *Addons) Verify() error {
