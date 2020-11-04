@@ -122,9 +122,12 @@ type AWSCloud interface {
 
 	// GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
 	GetTags(resourceId string) (map[string]string, error)
-
-	// CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	// CreateTags will add/modify tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	CreateTags(resourceId string, tags map[string]string) error
+	// DeleteTags will remove tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	DeleteTags(resourceId string, tags map[string]string) error
+	// UpdateTags will update tags of the specified resource to match tags, using getTags(), createTags() and deleteTags()
+	UpdateTags(resourceId string, tags map[string]string) error
 
 	AddAWSTags(id string, expected map[string]string) error
 	GetELBTags(loadBalancerName string) (map[string]string, error)
@@ -136,9 +139,6 @@ type AWSCloud interface {
 	// RemoveELBTags will remove tags from the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	RemoveELBTags(loadBalancerName string, tags map[string]string) error
 	RemoveELBV2Tags(ResourceArn string, tags map[string]string) error
-
-	// DeleteTags will delete tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
-	DeleteTags(id string, tags map[string]string) error
 
 	// DescribeInstance is a helper that queries for the specified instance by id
 	DescribeInstance(instanceID string) (*ec2.Instance, error)
@@ -1077,6 +1077,49 @@ func deleteTags(c AWSCloud, resourceID string, tags map[string]string) error {
 
 		return nil
 	}
+}
+
+// UpdateTags will update tags of the specified resource to match tags,
+// using getTags(), createTags() and deleteTags()
+func (c *awsCloudImplementation) UpdateTags(resourceID string, tags map[string]string) error {
+	return updateTags(c, resourceID, tags)
+}
+
+func updateTags(c AWSCloud, resourceID string, expectedTags map[string]string) error {
+	actual, err := getTags(c, resourceID)
+	if err != nil {
+		return err
+	}
+
+	missing := make(map[string]string)
+	for k, v := range expectedTags {
+		if actual[k] != v {
+			missing[k] = v
+		}
+	}
+	if len(missing) > 0 {
+		klog.V(4).Infof("Adding tags to %q: %v", resourceID, missing)
+		err = createTags(c, resourceID, missing)
+		if err != nil {
+			return err
+		}
+	}
+
+	extra := make(map[string]string)
+	for k, v := range actual {
+		if _, ok := expectedTags[k]; !ok {
+			extra[k] = v
+		}
+	}
+	if len(extra) > 0 {
+		klog.V(4).Infof("Removing tags from %q: %v", resourceID, missing)
+		err := deleteTags(c, resourceID, extra)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *awsCloudImplementation) AddAWSTags(id string, expected map[string]string) error {
