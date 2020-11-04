@@ -1,21 +1,20 @@
 {
-  "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:DescribeInstances",
         "ec2:DescribeRegions"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "s3:Get*"
       ],
+      "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/cluster.spec",
@@ -29,19 +28,18 @@
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:ListBucket",
         "s3:ListBucketVersions"
       ],
+      "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::kops-tests"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "ecr:GetAuthorizationToken",
         "ecr:BatchCheckLayerAvailability",
@@ -51,9 +49,11 @@
         "ecr:ListImages",
         "ecr:BatchGetImage"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     }
-  ]
+  ],
+  "Version": "2012-10-17"
 }

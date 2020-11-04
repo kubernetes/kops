@@ -1,8 +1,6 @@
 {
-  "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeInstances",
@@ -13,12 +11,12 @@
         "ec2:DescribeSubnets",
         "ec2:DescribeVolumes"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:CreateSecurityGroup",
         "ec2:CreateTags",
@@ -27,12 +25,12 @@
         "ec2:ModifyInstanceAttribute",
         "ec2:ModifyVolume"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:AttachVolume",
         "ec2:AuthorizeSecurityGroupIngress",
@@ -43,45 +41,45 @@
         "ec2:DetachVolume",
         "ec2:RevokeSecurityGroupIngress"
       ],
-      "Resource": [
-        "*"
-      ],
       "Condition": {
         "StringEquals": {
           "ec2:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
         }
-      }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeTags",
         "ec2:DescribeLaunchTemplateVersions"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",
         "autoscaling:UpdateAutoScalingGroup"
       ],
-      "Resource": [
-        "*"
-      ],
       "Condition": {
         "StringEquals": {
           "autoscaling:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
         }
-      }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
@@ -100,12 +98,12 @@
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "ec2:DescribeVpcs",
         "elasticloadbalancing:AddTags",
@@ -123,41 +121,41 @@
         "elasticloadbalancing:RegisterTargets",
         "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "iam:ListServerCertificates",
         "iam:GetServerCertificate"
       ],
+      "Effect": "Allow",
       "Resource": [
         "*"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "s3:Get*"
       ],
+      "Effect": "Allow",
       "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
     },
     {
-      "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:ListBucket",
         "s3:ListBucketVersions"
       ],
+      "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::kops-tests"
       ]
     },
     {
-      "Effect": "Allow",
       "Action": [
         "kms:CreateGrant",
         "kms:Decrypt",
@@ -166,11 +164,13 @@
         "kms:GenerateDataKey*",
         "kms:ReEncrypt*"
       ],
+      "Effect": "Allow",
       "Resource": [
         "key-id-1",
         "key-id-2",
         "key-id-3"
       ]
     }
-  ]
+  ],
+  "Version": "2012-10-17"
 }
