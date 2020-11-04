@@ -607,6 +607,7 @@
     "AWSEC2SecurityGroupmastersminimalexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.minimal.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCminimalexamplecom"
         },
@@ -630,6 +631,7 @@
     "AWSEC2SecurityGroupnodesminimalexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.minimal.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCminimalexamplecom"
         },

@@ -982,6 +982,7 @@
     "AWSEC2SecurityGroupapielbprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "api-elb.privatecilium.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumexamplecom"
         },
@@ -1005,6 +1006,7 @@
     "AWSEC2SecurityGroupbastionelbprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "bastion-elb.privatecilium.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumexamplecom"
         },
@@ -1028,6 +1030,7 @@
     "AWSEC2SecurityGroupbastionprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "bastion.privatecilium.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumexamplecom"
         },
@@ -1051,6 +1054,7 @@
     "AWSEC2SecurityGroupmastersprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.privatecilium.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumexamplecom"
         },
@@ -1074,6 +1078,7 @@
     "AWSEC2SecurityGroupnodesprivateciliumexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.privatecilium.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumexamplecom"
         },
@@ -1386,6 +1391,7 @@
     "AWSIAMInstanceProfilebastionsprivateciliumexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "bastions.privatecilium.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolebastionsprivateciliumexamplecom"
@@ -1396,6 +1402,7 @@
     "AWSIAMInstanceProfilemastersprivateciliumexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.privatecilium.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemastersprivateciliumexamplecom"
@@ -1406,6 +1413,7 @@
     "AWSIAMInstanceProfilenodesprivateciliumexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.privatecilium.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodesprivateciliumexamplecom"
