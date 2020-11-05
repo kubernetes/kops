@@ -127,6 +127,9 @@ func FindTargetGroupByName(cloud awsup.AWSCloud, findName string) (*elbv2.Target
 	resp, err := cloud.ELBV2().DescribeTargetGroups(request)
 
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("error describing TargetGroups: %v", err)
 	}
 	if len(resp.TargetGroups) == 0 {
@@ -235,7 +238,9 @@ func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected
 		if err != nil {
 			return nil, err
 		}
-		apiTGs[aws.StringValue(apiTG.TargetGroupArn)] = task
+		if apiTG != nil {
+			apiTGs[aws.StringValue(apiTG.TargetGroupArn)] = task
+		}
 	}
 	for _, tg := range actual {
 		if apiTask, ok := apiTGs[aws.StringValue(tg.ARN)]; ok {
