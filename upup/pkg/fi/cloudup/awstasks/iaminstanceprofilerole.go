@@ -126,14 +126,14 @@ func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a
 }
 
 type cloudformationIAMInstanceProfile struct {
-	//Path  *string              `json:"name"`
-	Roles []*cloudformation.Literal `json:"Roles"`
+	InstanceProfileName *string                   `json:"InstanceProfileName"`
+	Roles               []*cloudformation.Literal `json:"Roles"`
 }
 
 func (_ *IAMInstanceProfileRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMInstanceProfileRole) error {
 	cf := &cloudformationIAMInstanceProfile{
-		//Path:  e.InstanceProfile.Name,
-		Roles: []*cloudformation.Literal{e.Role.CloudformationLink()},
+		InstanceProfileName: e.InstanceProfile.Name,
+		Roles:               []*cloudformation.Literal{e.Role.CloudformationLink()},
 	}
 
 	return t.RenderResource("AWS::IAM::InstanceProfile", *e.InstanceProfile.Name, cf)

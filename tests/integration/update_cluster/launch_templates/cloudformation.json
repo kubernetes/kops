@@ -630,6 +630,7 @@
     "AWSEC2SecurityGroupmasterslaunchtemplatesexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.launchtemplates.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPClaunchtemplatesexamplecom"
         },
@@ -653,6 +654,7 @@
     "AWSEC2SecurityGroupnodeslaunchtemplatesexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.launchtemplates.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPClaunchtemplatesexamplecom"
         },
@@ -1035,6 +1037,7 @@
     "AWSIAMInstanceProfilemasterslaunchtemplatesexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.launchtemplates.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemasterslaunchtemplatesexamplecom"
@@ -1045,6 +1048,7 @@
     "AWSIAMInstanceProfilenodeslaunchtemplatesexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.launchtemplates.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodeslaunchtemplatesexamplecom"

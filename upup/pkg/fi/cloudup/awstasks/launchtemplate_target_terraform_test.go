@@ -72,6 +72,9 @@ resource "aws_launch_template" "test" {
   lifecycle {
     create_before_destroy = true
   }
+  monitoring {
+    enabled = true
+  }
   name_prefix = "test-"
   network_interfaces {
     associate_public_ip_address = true
@@ -141,6 +144,9 @@ resource "aws_launch_template" "test" {
   key_name      = "mykey"
   lifecycle {
     create_before_destroy = true
+  }
+  monitoring {
+    enabled = true
   }
   name_prefix = "test-"
   network_interfaces {

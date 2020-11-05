@@ -395,6 +395,9 @@
           },
           "ImageId": "ami-12345678",
           "InstanceType": "t2.medium",
+          "Monitoring": {
+            "Enabled": true
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
@@ -850,6 +853,7 @@
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "api-elb.complex.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCcomplexexamplecom"
         },
@@ -881,6 +885,7 @@
     "AWSEC2SecurityGroupmasterscomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.complex.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCcomplexexamplecom"
         },
@@ -912,6 +917,7 @@
     "AWSEC2SecurityGroupnodescomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.complex.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCcomplexexamplecom"
         },
@@ -1231,6 +1237,7 @@
     "AWSIAMInstanceProfilemasterscomplexexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.complex.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemasterscomplexexamplecom"
@@ -1241,6 +1248,7 @@
     "AWSIAMInstanceProfilenodescomplexexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.complex.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodescomplexexamplecom"

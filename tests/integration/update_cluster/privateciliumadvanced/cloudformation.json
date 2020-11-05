@@ -982,6 +982,7 @@
     "AWSEC2SecurityGroupapielbprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "api-elb.privateciliumadvanced.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
         },
@@ -1005,6 +1006,7 @@
     "AWSEC2SecurityGroupbastionelbprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "bastion-elb.privateciliumadvanced.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
         },
@@ -1028,6 +1030,7 @@
     "AWSEC2SecurityGroupbastionprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "bastion.privateciliumadvanced.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
         },
@@ -1051,6 +1054,7 @@
     "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.privateciliumadvanced.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
         },
@@ -1074,6 +1078,7 @@
     "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.privateciliumadvanced.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivateciliumadvancedexamplecom"
         },
@@ -1417,6 +1422,7 @@
     "AWSIAMInstanceProfilebastionsprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "bastions.privateciliumadvanced.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolebastionsprivateciliumadvancedexamplecom"
@@ -1427,6 +1433,7 @@
     "AWSIAMInstanceProfilemastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.privateciliumadvanced.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemastersprivateciliumadvancedexamplecom"
@@ -1437,6 +1444,7 @@
     "AWSIAMInstanceProfilenodesprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.privateciliumadvanced.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodesprivateciliumadvancedexamplecom"

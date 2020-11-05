@@ -611,6 +611,7 @@
     "AWSEC2SecurityGroupmastersminimalexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.minimal.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCminimalexamplecom"
         },
@@ -634,6 +635,7 @@
     "AWSEC2SecurityGroupnodesminimalexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.minimal.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCminimalexamplecom"
         },
@@ -806,6 +808,7 @@
     "AWSIAMInstanceProfilemastersminimalexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.minimal.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemastersminimalexamplecom"
@@ -816,6 +819,7 @@
     "AWSIAMInstanceProfilenodesminimalexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.minimal.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodesminimalexamplecom"
