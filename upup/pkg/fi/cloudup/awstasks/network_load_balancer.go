@@ -371,15 +371,27 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 			if len(l.Certificates) != 0 {
 				actualListener.SSLCertificateID = aws.StringValue(l.Certificates[0].CertificateArn) // What if there is more then one certificate, can we just grab the default certificate? we don't set it as default, we only set the one.
 			}
-			actual.Listeners = append(actual.Listeners, actualListener)
 
 			// This will need to be rearranged when we recognized multiple listeners and target groups per NLB
 			if len(l.DefaultActions) > 0 {
 				targetGroupARN := l.DefaultActions[0].TargetGroupArn
 				if targetGroupARN != nil {
 					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN})
+
+					cloud := c.Cloud.(awsup.AWSCloud)
+					descResp, err := cloud.ELBV2().DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{
+						TargetGroupArns: []*string{targetGroupARN},
+					})
+					if err != nil {
+						return nil, fmt.Errorf("error querying for NLB listener target groups: %v", err)
+					}
+					if len(descResp.TargetGroups) != 1 {
+						return nil, fmt.Errorf("unexpected DescribeTargetGroups response: %v", descResp)
+					}
+					actualListener.TargetGroupName = aws.StringValue(descResp.TargetGroups[0].TargetGroupName)
 				}
 			}
+			actual.Listeners = append(actual.Listeners, actualListener)
 		}
 		if len(actual.TargetGroups) > 0 {
 			targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), actual.TargetGroups, e.TargetGroups)
