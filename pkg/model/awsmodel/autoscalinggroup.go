@@ -372,9 +372,9 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 	if !featureflag.Spotinst.Enabled() {
 		if b.UseLoadBalancerForAPI() && ig.Spec.Role == kops.InstanceGroupRoleMaster {
 			if b.UseNetworkLoadBalancer() {
-				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("api"))
+				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
 				if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
-					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
+					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tls"))
 				}
 			} else {
 				t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("api"))

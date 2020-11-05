@@ -112,20 +112,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		nlbListeners := []*awstasks.NetworkLoadBalancerListener{
 			{
 				Port:            443,
-				TargetGroupName: b.NLBTargetGroupName("api"),
+				TargetGroupName: b.NLBTargetGroupName("tcp"),
 			},
 		}
 
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
-			nlbListeners[0].SSLCertificateID = lbSpec.SSLCertificate
+			nlbListeners[0].Port = 8443
 			nlbListeners = append(nlbListeners, &awstasks.NetworkLoadBalancerListener{
-				Port:            8443,
-				TargetGroupName: b.NLBTargetGroupName("tcp"),
+				Port:             443,
+				TargetGroupName:  b.NLBTargetGroupName("tls"),
+				SSLCertificateID: lbSpec.SSLCertificate,
 			})
-			klog.Info("Using ACM certificate for API ELB")
-		} else {
-			klog.Info("NOT using ACM certificate for API ELB")
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -206,21 +204,17 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 
-			targetGroupName := b.NLBTargetGroupName("api")
+			targetGroupName := b.NLBTargetGroupName("tcp")
 			primaryTags := b.CloudTags(targetGroupName, false)
 
 			// Override the returned name to be the expected NLB TG name
 			primaryTags["Name"] = targetGroupName
 
-			protocol := fi.String("TCP")
-			if lbSpec.SSLCertificate != "" {
-				protocol = fi.String("TLS")
-			}
 			tg := &awstasks.TargetGroup{
 				Name:               fi.String(targetGroupName),
 				VPC:                b.LinkToVPC(),
 				Tags:               primaryTags,
-				Protocol:           protocol,
+				Protocol:           fi.String("TCP"),
 				Port:               fi.Int64(443),
 				HealthyThreshold:   fi.Int64(2),
 				UnhealthyThreshold: fi.Int64(2),
@@ -233,7 +227,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			if lbSpec.SSLCertificate != "" {
 				secondaryTags := b.CloudTags(targetGroupName, false)
-				secondaryName := b.NLBTargetGroupName("tcp")
+				secondaryName := b.NLBTargetGroupName("tls")
 
 				// Override the returned name to be the expected NLB TG name
 				secondaryTags["Name"] = secondaryName
@@ -241,7 +235,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					Name:               fi.String(secondaryName),
 					VPC:                b.LinkToVPC(),
 					Tags:               secondaryTags,
-					Protocol:           fi.String("TCP"),
+					Protocol:           fi.String("TLS"),
 					Port:               fi.Int64(443),
 					HealthyThreshold:   fi.Int64(2),
 					UnhealthyThreshold: fi.Int64(2),
@@ -250,7 +244,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(secondaryTG)
 				nlb.TargetGroups = append(nlb.TargetGroups, secondaryTG)
 			}
-
+			sort.Stable(awstasks.OrderTargetGroupsByPort(nlb.TargetGroups))
 			c.AddTask(nlb)
 		}
 

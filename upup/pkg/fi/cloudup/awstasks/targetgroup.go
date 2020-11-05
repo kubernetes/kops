@@ -201,7 +201,10 @@ type OrderTargetGroupsByPort []*TargetGroup
 func (a OrderTargetGroupsByPort) Len() int      { return len(a) }
 func (a OrderTargetGroupsByPort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderTargetGroupsByPort) Less(i, j int) bool {
-	return fi.Int64Value(a[i].Port) < fi.Int64Value(a[j].Port)
+	if a[i].ARN != nil || a[j].ARN != nil {
+		return fi.StringValue(a[i].ARN) < fi.StringValue(a[j].ARN)
+	}
+	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
 }
 
 // pkg/model/awsmodel doesn't know the ARN of the API TargetGroup tasks that it passes to the master ASGs,
