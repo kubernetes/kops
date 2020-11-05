@@ -400,6 +400,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 			}
 			actual.TargetGroups = targetGroups
 		}
+		sort.Stable(OrderTargetGroupsByPort(actual.TargetGroups))
 
 	}
 
