@@ -376,6 +376,8 @@ type KubeDNSConfig struct {
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
 	// CoreDNSImage is used to override the default image used for CoreDNS
 	CoreDNSImage string `json:"coreDNSImage,omitempty"`
+	// CoreDNSAutoscalerImage is used to override the default image used for CoreDNS Autoscaler
+	CoreDNSAutoscalerImage string `json:"coreDNSAutoscalerImage,omitempty"`
 	// Domain is the dns domain
 	Domain string `json:"domain,omitempty"`
 	// ExternalCoreFile is used to provide a complete CoreDNS CoreFile by the user - ignores other provided flags which modify the CoreFile.
