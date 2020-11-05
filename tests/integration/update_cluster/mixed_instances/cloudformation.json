@@ -1004,6 +1004,7 @@
     "AWSEC2SecurityGroupmastersmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.mixedinstances.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCmixedinstancesexamplecom"
         },
@@ -1027,6 +1028,7 @@
     "AWSEC2SecurityGroupnodesmixedinstancesexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.mixedinstances.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCmixedinstancesexamplecom"
         },
@@ -1409,6 +1411,7 @@
     "AWSIAMInstanceProfilemastersmixedinstancesexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.mixedinstances.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemastersmixedinstancesexamplecom"
@@ -1419,6 +1422,7 @@
     "AWSIAMInstanceProfilenodesmixedinstancesexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.mixedinstances.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodesmixedinstancesexamplecom"

@@ -206,6 +206,11 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 	if e.Tenancy != nil {
 		data.Placement = []*cloudformationLaunchTemplatePlacement{{Tenancy: e.Tenancy}}
 	}
+	if e.InstanceMonitoring != nil {
+		data.Monitoring = &cloudformationLaunchTemplateMonitoring{
+			Enabled: e.InstanceMonitoring,
+		}
+	}
 	if e.IAMInstanceProfile != nil {
 		data.IAMInstanceProfile = &cloudformationLaunchTemplateIAMProfile{
 			Name: e.IAMInstanceProfile.CloudformationLink(),

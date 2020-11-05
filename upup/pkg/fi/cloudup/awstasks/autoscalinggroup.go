@@ -191,7 +191,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	if len(g.Tags) != 0 {
 		actual.Tags = make(map[string]string)
 		for _, tag := range g.Tags {
-			actual.Tags[fi.StringValue(tag.Key)] = fi.StringValue(tag.Value)
+			if strings.HasPrefix(aws.StringValue(tag.Key), "aws:cloudformation:") {
+				continue
+			}
+			actual.Tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
 		}
 	}
 

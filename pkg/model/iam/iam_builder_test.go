@@ -38,7 +38,7 @@ func TestRoundTrip(t *testing.T) {
 				Action:   stringorslice.Of("ec2:DescribeRegions"),
 				Resource: stringorslice.Of("*"),
 			},
-			JSON: "{\"Effect\":\"Allow\",\"Action\":\"ec2:DescribeRegions\",\"Resource\":\"*\"}",
+			JSON: "{\"Action\":\"ec2:DescribeRegions\",\"Effect\":\"Allow\",\"Resource\":\"*\"}",
 		},
 		{
 			IAM: &Statement{
@@ -46,7 +46,7 @@ func TestRoundTrip(t *testing.T) {
 				Action:   stringorslice.Of("ec2:DescribeRegions", "ec2:DescribeInstances"),
 				Resource: stringorslice.Of("a", "b"),
 			},
-			JSON: "{\"Effect\":\"Deny\",\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Resource\":[\"a\",\"b\"]}",
+			JSON: "{\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Effect\":\"Deny\",\"Resource\":[\"a\",\"b\"]}",
 		},
 		{
 			IAM: &Statement{
@@ -56,7 +56,7 @@ func TestRoundTrip(t *testing.T) {
 					"foo": 1,
 				},
 			},
-			JSON: "{\"Effect\":\"Deny\",\"Principal\":{\"Federated\":\"federated\"},\"Condition\":{\"foo\":1}}",
+			JSON: "{\"Condition\":{\"foo\":1},\"Effect\":\"Deny\",\"Principal\":{\"Federated\":\"federated\"}}",
 		},
 		{
 			IAM: &Statement{
@@ -66,7 +66,7 @@ func TestRoundTrip(t *testing.T) {
 					"bar": "baz",
 				},
 			},
-			JSON: "{\"Effect\":\"Deny\",\"Principal\":{\"Service\":\"service\"},\"Condition\":{\"bar\":\"baz\"}}",
+			JSON: "{\"Condition\":{\"bar\":\"baz\"},\"Effect\":\"Deny\",\"Principal\":{\"Service\":\"service\"}}",
 		},
 	}
 	for _, g := range grid {

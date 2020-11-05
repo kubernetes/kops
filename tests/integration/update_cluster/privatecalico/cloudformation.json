@@ -996,6 +996,7 @@
     "AWSEC2SecurityGroupapielbprivatecalicoexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "api-elb.privatecalico.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivatecalicoexamplecom"
         },
@@ -1019,6 +1020,7 @@
     "AWSEC2SecurityGroupbastionelbprivatecalicoexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "bastion-elb.privatecalico.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivatecalicoexamplecom"
         },
@@ -1042,6 +1044,7 @@
     "AWSEC2SecurityGroupbastionprivatecalicoexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "bastion.privatecalico.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivatecalicoexamplecom"
         },
@@ -1065,6 +1068,7 @@
     "AWSEC2SecurityGroupmastersprivatecalicoexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.privatecalico.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivatecalicoexamplecom"
         },
@@ -1088,6 +1092,7 @@
     "AWSEC2SecurityGroupnodesprivatecalicoexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.privatecalico.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCprivatecalicoexamplecom"
         },
@@ -1400,6 +1405,7 @@
     "AWSIAMInstanceProfilebastionsprivatecalicoexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "bastions.privatecalico.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolebastionsprivatecalicoexamplecom"
@@ -1410,6 +1416,7 @@
     "AWSIAMInstanceProfilemastersprivatecalicoexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.privatecalico.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemastersprivatecalicoexamplecom"
@@ -1420,6 +1427,7 @@
     "AWSIAMInstanceProfilenodesprivatecalicoexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.privatecalico.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodesprivatecalicoexamplecom"
