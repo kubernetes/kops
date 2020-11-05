@@ -11975,7 +11975,6 @@ spec:
           hostPath:
             path: "/etc/ssl/certs"
             type: Directory
-
       nodeSelector:
         node-role.kubernetes.io/master: ""
 {{ end -}}
