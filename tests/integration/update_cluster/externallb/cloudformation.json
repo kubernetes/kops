@@ -620,6 +620,7 @@
     "AWSEC2SecurityGroupmastersexternallbexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "masters.externallb.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCexternallbexamplecom"
         },
@@ -643,6 +644,7 @@
     "AWSEC2SecurityGroupnodesexternallbexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "nodes.externallb.example.com",
         "VpcId": {
           "Ref": "AWSEC2VPCexternallbexamplecom"
         },
@@ -815,6 +817,7 @@
     "AWSIAMInstanceProfilemastersexternallbexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "masters.externallb.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolemastersexternallbexamplecom"
@@ -825,6 +828,7 @@
     "AWSIAMInstanceProfilenodesexternallbexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
+        "InstanceProfileName": "nodes.externallb.example.com",
         "Roles": [
           {
             "Ref": "AWSIAMRolenodesexternallbexamplecom"

@@ -320,6 +320,9 @@ func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) 
 	}
 	actual.Tags = make(map[string]string)
 	for _, tag := range tagMap[*e.LoadBalancerName] {
+		if strings.HasPrefix(aws.StringValue(tag.Key), "aws:cloudformation:") {
+			continue
+		}
 		actual.Tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
 	}
 

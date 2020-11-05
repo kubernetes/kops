@@ -205,6 +205,11 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	if e.Tenancy != nil {
 		tf.Placement = []*terraformLaunchTemplatePlacement{{Tenancy: e.Tenancy}}
 	}
+	if e.InstanceMonitoring != nil {
+		tf.Monitoring = []*terraformLaunchTemplateMonitoring{
+			{Enabled: e.InstanceMonitoring},
+		}
+	}
 	if e.IAMInstanceProfile != nil {
 		tf.IAMInstanceProfile = []*terraformLaunchTemplateIAMProfile{
 			{Name: e.IAMInstanceProfile.TerraformLink()},
