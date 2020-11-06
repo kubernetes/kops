@@ -108,7 +108,7 @@ type OpenstackCloud interface {
 	ListInstances(servers.ListOptsBuilder) ([]servers.Server, error)
 
 	// CreateInstance will create an openstack server provided create opts
-	CreateInstance(servers.CreateOptsBuilder) (*servers.Server, error)
+	CreateInstance(servers.CreateOptsBuilder, string) (*servers.Server, error)
 
 	//DeleteInstanceWithID will delete instance
 	DeleteInstanceWithID(instanceID string) error
@@ -215,6 +215,9 @@ type OpenstackCloud interface {
 
 	//GetPort will return a Neutron port by ID
 	GetPort(id string) (*ports.Port, error)
+
+	//UpdatePort will update a Neutron port by ID and options
+	UpdatePort(id string, opt ports.UpdateOptsBuilder) (*ports.Port, error)
 
 	//ListPorts will return the Neutron ports which match the options
 	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
