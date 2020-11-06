@@ -84,7 +84,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 				Egress:        fi.Bool(true),
 				CIDR:          s("0.0.0.0/0"),
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 		// Nodes can talk to nodes
@@ -97,7 +97,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 	}
@@ -167,7 +167,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					ToPort:        i64(int64(r.To)),
 					Protocol:      s("udp"),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 			for _, r := range tcpRanges {
 				t := &awstasks.SecurityGroupRule{
@@ -179,7 +179,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					ToPort:        i64(int64(r.To)),
 					Protocol:      s("tcp"),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 			for _, protocol := range protocols {
 				awsName := strconv.Itoa(int(protocol))
@@ -198,7 +198,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					SourceGroup:   nodeGroup.Task,
 					Protocol:      s(awsName),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -216,7 +216,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					SecurityGroup: dest.Task,
 					SourceGroup:   src.Task,
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -244,7 +244,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				Egress:        fi.Bool(true),
 				CIDR:          s("0.0.0.0/0"),
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 		// Masters can talk to masters
@@ -257,7 +257,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 		// Masters can talk to nodes
@@ -270,7 +270,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 	}
 
@@ -402,4 +402,45 @@ func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
 	}
 
 	return s + d
+}
+
+func (b *KopsModelContext) AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGroupRule) {
+
+	name := generateName(t)
+	t.Name = fi.String(name)
+
+	klog.V(8).Infof("Adding rule %v", name)
+	c.AddTask(t)
+
+}
+
+func generateName(o *awstasks.SecurityGroupRule) string {
+
+	var target, dst, src, direction, proto string
+	if o.SourceGroup != nil {
+		target = fi.StringValue(o.SourceGroup.Name)
+	} else if o.CIDR != nil && fi.StringValue(o.CIDR) != "" {
+		target = fi.StringValue(o.CIDR)
+	} else {
+		target = "0.0.0.0/0"
+	}
+
+	if o.Protocol == nil || fi.StringValue(o.Protocol) == "" {
+		proto = "all"
+	} else {
+		proto = fi.StringValue(o.Protocol)
+	}
+
+	if o.Egress == nil || !fi.BoolValue(o.Egress) {
+		direction = "ingress"
+		src = target
+		dst = fi.StringValue(o.SecurityGroup.Name)
+	} else {
+		direction = "egress"
+		dst = target
+		src = fi.StringValue(o.SecurityGroup.Name)
+	}
+
+	return fmt.Sprintf("%s-%s-%s-%dto%d-%s", src, direction,
+		proto, fi.Int64Value(o.FromPort), fi.Int64Value(o.ToPort), dst)
 }

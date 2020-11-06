@@ -487,30 +487,6 @@
       }
     },
     "aws_security_group_rule": {
-      "all-master-to-master": {
-        "type": "ingress",
-        "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
-        "source_security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
-        "from_port": 0,
-        "to_port": 0,
-        "protocol": "-1"
-      },
-      "all-master-to-node": {
-        "type": "ingress",
-        "security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
-        "source_security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
-        "from_port": 0,
-        "to_port": 0,
-        "protocol": "-1"
-      },
-      "all-node-to-node": {
-        "type": "ingress",
-        "security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
-        "source_security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
-        "from_port": 0,
-        "to_port": 0,
-        "protocol": "-1"
-      },
       "https-external-to-master-0-0-0-0--0": {
         "type": "ingress",
         "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
@@ -521,7 +497,7 @@
           "0.0.0.0/0"
         ]
       },
-      "master-egress": {
+      "masters-minimal-json-example-com-egress-all-0to0-0-0-0-0--0": {
         "type": "egress",
         "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
         "from_port": 0,
@@ -531,7 +507,23 @@
           "0.0.0.0/0"
         ]
       },
-      "node-egress": {
+      "masters-minimal-json-example-com-ingress-all-0to0-masters-minimal-json-example-com": {
+        "type": "ingress",
+        "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
+        "source_security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
+        "from_port": 0,
+        "to_port": 0,
+        "protocol": "-1"
+      },
+      "masters-minimal-json-example-com-ingress-all-0to0-nodes-minimal-json-example-com": {
+        "type": "ingress",
+        "security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
+        "source_security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
+        "from_port": 0,
+        "to_port": 0,
+        "protocol": "-1"
+      },
+      "nodes-minimal-json-example-com-egress-all-0to0-0-0-0-0--0": {
         "type": "egress",
         "security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
         "from_port": 0,
@@ -541,7 +533,15 @@
           "0.0.0.0/0"
         ]
       },
-      "node-to-master-tcp-1-2379": {
+      "nodes-minimal-json-example-com-ingress-all-0to0-nodes-minimal-json-example-com": {
+        "type": "ingress",
+        "security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
+        "source_security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
+        "from_port": 0,
+        "to_port": 0,
+        "protocol": "-1"
+      },
+      "nodes-minimal-json-example-com-ingress-tcp-1to2379-masters-minimal-json-example-com": {
         "type": "ingress",
         "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
         "source_security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
@@ -549,7 +549,7 @@
         "to_port": 2379,
         "protocol": "tcp"
       },
-      "node-to-master-tcp-2382-4000": {
+      "nodes-minimal-json-example-com-ingress-tcp-2382to4000-masters-minimal-json-example-com": {
         "type": "ingress",
         "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
         "source_security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
@@ -557,7 +557,7 @@
         "to_port": 4000,
         "protocol": "tcp"
       },
-      "node-to-master-tcp-4003-65535": {
+      "nodes-minimal-json-example-com-ingress-tcp-4003to65535-masters-minimal-json-example-com": {
         "type": "ingress",
         "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
         "source_security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",
@@ -565,7 +565,7 @@
         "to_port": 65535,
         "protocol": "tcp"
       },
-      "node-to-master-udp-1-65535": {
+      "nodes-minimal-json-example-com-ingress-udp-1to65535-masters-minimal-json-example-com": {
         "type": "ingress",
         "security_group_id": "${aws_security_group.masters-minimal-json-example-com.id}",
         "source_security_group_id": "${aws_security_group.nodes-minimal-json-example-com.id}",

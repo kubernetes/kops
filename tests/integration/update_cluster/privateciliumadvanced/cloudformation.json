@@ -765,7 +765,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressmasteregress": {
+    "AWSEC2SecurityGroupEgressmastersprivateciliumadvancedexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -777,7 +777,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressnodeegress": {
+    "AWSEC2SecurityGroupEgressnodesprivateciliumadvancedexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -787,48 +787,6 @@
         "ToPort": 0,
         "IpProtocol": "-1",
         "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupIngressallmastertomaster": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
-      }
-    },
-    "AWSEC2SecurityGroupIngressallmastertonode": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
-      }
-    },
-    "AWSEC2SecurityGroupIngressallnodetonode": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
       }
     },
     "AWSEC2SecurityGroupIngressbastiontomasterssh": {
@@ -897,7 +855,49 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp12379": {
+    "AWSEC2SecurityGroupIngressmastersprivateciliumadvancedexamplecomingressall0to0mastersprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressmastersprivateciliumadvancedexamplecomingressall0to0nodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodesprivateciliumadvancedexamplecomingressall0to0nodesprivateciliumadvancedexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivateciliumadvancedexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodesprivateciliumadvancedexamplecomingresstcp1to2379mastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -911,7 +911,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp23834000": {
+    "AWSEC2SecurityGroupIngressnodesprivateciliumadvancedexamplecomingresstcp2383to4000mastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -925,7 +925,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp400365535": {
+    "AWSEC2SecurityGroupIngressnodesprivateciliumadvancedexamplecomingresstcp4003to65535mastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -939,7 +939,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomasterudp165535": {
+    "AWSEC2SecurityGroupIngressnodesprivateciliumadvancedexamplecomingressudp1to65535mastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
