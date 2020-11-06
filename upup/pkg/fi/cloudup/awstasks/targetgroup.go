@@ -290,7 +290,7 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		HealthCheck: terraformTargetGroupHealthCheck{
 			HealthyThreshold:   *e.HealthyThreshold,
 			UnhealthyThreshold: *e.UnhealthyThreshold,
-			Protocol:           *e.Protocol,
+			Protocol:           elbv2.ProtocolEnumTcp,
 		},
 	}
 
