@@ -169,8 +169,8 @@ func (c *MockCloud) AttachVolume(serverID string, opts volumeattach.CreateOpts) 
 	return attachVolume(c, serverID, opts)
 }
 
-func (c *MockCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
-	return createInstance(c, opt)
+func (c *MockCloud) CreateInstance(opt servers.CreateOptsBuilder, portID string) (*servers.Server, error) {
+	return createInstance(c, opt, portID)
 }
 
 func (c *MockCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error) {
@@ -353,6 +353,10 @@ func (c *MockCloud) GetPool(poolID string, memberID string) (member *v2pools.Mem
 
 func (c *MockCloud) GetPort(id string) (*ports.Port, error) {
 	return getPort(c, id)
+}
+
+func (c *MockCloud) UpdatePort(id string, opt ports.UpdateOptsBuilder) (*ports.Port, error) {
+	return updatePort(c, id, opt)
 }
 
 func (c *MockCloud) GetStorageAZFromCompute(computeAZ string) (*az.AvailabilityZone, error) {
