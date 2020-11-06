@@ -172,7 +172,7 @@ func makeGroupOS(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGr
 					Port: port.ID,
 				},
 			},
-		})
+		}, "")
 		if err != nil {
 			t.Fatalf("Failed to make group: %v", err)
 		}
