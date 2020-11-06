@@ -497,33 +497,6 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.complex-example-com.id
 }
 
-resource "aws_security_group_rule" "all-master-to-master" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.masters-complex-example-com.id
-  source_security_group_id = aws_security_group.masters-complex-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-node" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.nodes-complex-example-com.id
-  source_security_group_id = aws_security_group.masters-complex-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-node-to-node" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.nodes-complex-example-com.id
-  source_security_group_id = aws_security_group.nodes-complex-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "https-api-elb-1-1-1-0--24" {
   cidr_blocks       = ["1.1.1.0/24"]
   from_port         = 443
@@ -587,7 +560,7 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-2001_0_8500__--40" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "master-egress" {
+resource "aws_security_group_rule" "masters-complex-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -596,48 +569,21 @@ resource "aws_security_group_rule" "master-egress" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "node-egress" {
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 0
-  protocol          = "-1"
-  security_group_id = aws_security_group.nodes-complex-example-com.id
-  to_port           = 0
-  type              = "egress"
-}
-
-resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
-  from_port                = 1
-  protocol                 = "tcp"
+resource "aws_security_group_rule" "masters-complex-example-com-ingress-all-0to0-masters-complex-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
   security_group_id        = aws_security_group.masters-complex-example-com.id
-  source_security_group_id = aws_security_group.nodes-complex-example-com.id
-  to_port                  = 2379
+  source_security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port                  = 0
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2382-4000" {
-  from_port                = 2382
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-complex-example-com.id
-  source_security_group_id = aws_security_group.nodes-complex-example-com.id
-  to_port                  = 4000
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "node-to-master-tcp-4003-65535" {
-  from_port                = 4003
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.masters-complex-example-com.id
-  source_security_group_id = aws_security_group.nodes-complex-example-com.id
-  to_port                  = 65535
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "node-to-master-udp-1-65535" {
-  from_port                = 1
-  protocol                 = "udp"
-  security_group_id        = aws_security_group.masters-complex-example-com.id
-  source_security_group_id = aws_security_group.nodes-complex-example-com.id
-  to_port                  = 65535
+resource "aws_security_group_rule" "masters-complex-example-com-ingress-all-0to0-nodes-complex-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nodes-complex-example-com.id
+  source_security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port                  = 0
   type                     = "ingress"
 }
 
@@ -675,6 +621,60 @@ resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24
   security_group_id = aws_security_group.nodes-complex-example-com.id
   to_port           = 32767
   type              = "ingress"
+}
+
+resource "aws_security_group_rule" "nodes-complex-example-com-egress-all-0to0-0-0-0-0--0" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port           = 0
+  type              = "egress"
+}
+
+resource "aws_security_group_rule" "nodes-complex-example-com-ingress-all-0to0-nodes-complex-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nodes-complex-example-com.id
+  source_security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "nodes-complex-example-com-ingress-tcp-1to2379-masters-complex-example-com" {
+  from_port                = 1
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-complex-example-com.id
+  source_security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port                  = 2379
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "nodes-complex-example-com-ingress-tcp-2382to4000-masters-complex-example-com" {
+  from_port                = 2382
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-complex-example-com.id
+  source_security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port                  = 4000
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "nodes-complex-example-com-ingress-tcp-4003to65535-masters-complex-example-com" {
+  from_port                = 4003
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.masters-complex-example-com.id
+  source_security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port                  = 65535
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "nodes-complex-example-com-ingress-udp-1to65535-masters-complex-example-com" {
+  from_port                = 1
+  protocol                 = "udp"
+  security_group_id        = aws_security_group.masters-complex-example-com.id
+  source_security_group_id = aws_security_group.nodes-complex-example-com.id
+  to_port                  = 65535
+  type                     = "ingress"
 }
 
 resource "aws_security_group_rule" "ssh-external-to-master-1-1-1-1--32" {

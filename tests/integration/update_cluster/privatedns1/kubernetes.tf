@@ -730,33 +730,6 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
   route_table_id         = aws_route_table.private-us-test-1a-privatedns1-example-com.id
 }
 
-resource "aws_security_group_rule" "all-master-to-master" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.masters-privatedns1-example-com.id
-  source_security_group_id = aws_security_group.masters-privatedns1-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-node" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.nodes-privatedns1-example-com.id
-  source_security_group_id = aws_security_group.masters-privatedns1-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-node-to-node" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.nodes-privatedns1-example-com.id
-  source_security_group_id = aws_security_group.nodes-privatedns1-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "api-elb-egress" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
@@ -829,7 +802,7 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "master-egress" {
+resource "aws_security_group_rule" "masters-privatedns1-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -838,7 +811,25 @@ resource "aws_security_group_rule" "master-egress" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "node-egress" {
+resource "aws_security_group_rule" "masters-privatedns1-example-com-ingress-all-0to0-masters-privatedns1-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.masters-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.masters-privatedns1-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "masters-privatedns1-example-com-ingress-all-0to0-nodes-privatedns1-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nodes-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.masters-privatedns1-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "nodes-privatedns1-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -847,7 +838,16 @@ resource "aws_security_group_rule" "node-egress" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
+resource "aws_security_group_rule" "nodes-privatedns1-example-com-ingress-all-0to0-nodes-privatedns1-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nodes-privatedns1-example-com.id
+  source_security_group_id = aws_security_group.nodes-privatedns1-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "nodes-privatedns1-example-com-ingress-tcp-1to2379-masters-privatedns1-example-com" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-privatedns1-example-com.id
@@ -856,7 +856,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2382-4000" {
+resource "aws_security_group_rule" "nodes-privatedns1-example-com-ingress-tcp-2382to4000-masters-privatedns1-example-com" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-privatedns1-example-com.id
@@ -865,7 +865,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-2382-4000" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-4003-65535" {
+resource "aws_security_group_rule" "nodes-privatedns1-example-com-ingress-tcp-4003to65535-masters-privatedns1-example-com" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-privatedns1-example-com.id
@@ -874,7 +874,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-4003-65535" {
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-udp-1-65535" {
+resource "aws_security_group_rule" "nodes-privatedns1-example-com-ingress-udp-1to65535-masters-privatedns1-example-com" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = aws_security_group.masters-privatedns1-example-com.id
