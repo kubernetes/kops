@@ -465,7 +465,7 @@ resource "aws_lb_target_group" "tcp-complex-example-com-vpjolq" {
 resource "aws_lb_target_group" "tls-complex-example-com-5nursn" {
   health_check {
     healthy_threshold   = 2
-    protocol            = "TLS"
+    protocol            = "TCP"
     unhealthy_threshold = 2
   }
   name     = "tls-complex-example-com-5nursn"
