@@ -33,10 +33,9 @@ type KubeconfigBuilder struct {
 	Context   string
 	Namespace string
 
-	User            string
-	KubeBearerToken string
-	KubeUser        string
-	KubePassword    string
+	User         string
+	KubeUser     string
+	KubePassword string
 
 	CACert     []byte
 	ClientCert []byte
@@ -86,14 +85,8 @@ func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
 	restConfig.CAData = c.CACert
 	restConfig.CertData = c.ClientCert
 	restConfig.KeyData = c.ClientKey
-
-	// username/password or bearer token may be set, but not both
-	if c.KubeBearerToken != "" {
-		restConfig.BearerToken = c.KubeBearerToken
-	} else {
-		restConfig.Username = c.KubeUser
-		restConfig.Password = c.KubePassword
-	}
+	restConfig.Username = c.KubeUser
+	restConfig.Password = c.KubePassword
 
 	return restConfig, nil
 }
@@ -130,9 +123,7 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 			authInfo = clientcmdapi.NewAuthInfo()
 		}
 
-		if b.KubeBearerToken != "" {
-			authInfo.Token = b.KubeBearerToken
-		} else if b.KubeUser != "" && b.KubePassword != "" {
+		if b.KubeUser != "" && b.KubePassword != "" {
 			authInfo.Username = b.KubeUser
 			authInfo.Password = b.KubePassword
 		}
