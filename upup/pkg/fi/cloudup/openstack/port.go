@@ -48,6 +48,30 @@ func createPort(c OpenstackCloud, opt ports.CreateOptsBuilder) (*ports.Port, err
 	}
 }
 
+func (c *openstackCloud) UpdatePort(id string, opt ports.UpdateOptsBuilder) (*ports.Port, error) {
+	return updatePort(c, id, opt)
+}
+
+func updatePort(c OpenstackCloud, id string, opt ports.UpdateOptsBuilder) (*ports.Port, error) {
+	var p *ports.Port
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		port, err := ports.Update(c.NetworkingClient(), id, opt).Extract()
+		if err != nil {
+			return false, err
+		}
+		p = port
+		return true, nil
+	})
+	if err != nil {
+		return p, err
+	} else if done {
+		return p, nil
+	} else {
+		return p, wait.ErrWaitTimeout
+	}
+}
+
 func (c *openstackCloud) GetPort(id string) (*ports.Port, error) {
 	return getPort(c, id)
 }
