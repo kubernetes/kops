@@ -22,7 +22,9 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/mitchellh/mapstructure"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -47,16 +49,40 @@ var floatingBackoff = wait.Backoff{
 	Steps:    20,
 }
 
-func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder) (*servers.Server, error) {
-	return createInstance(c, opt)
+func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder, portID string) (*servers.Server, error) {
+	return createInstance(c, opt, portID)
 }
 
-func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder) (*servers.Server, error) {
+func IsPortInUse(err error) bool {
+	if _, ok := err.(gophercloud.ErrDefault409); ok {
+		return true
+	}
+	return false
+}
+
+func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, portID string) (*servers.Server, error) {
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 		v, err := servers.Create(c.ComputeClient(), opt).Extract()
 		if err != nil {
+			if IsPortInUse(err) && portID != "" {
+				port, err := c.GetPort(portID)
+				if err != nil {
+					return false, fmt.Errorf("error finding port %s: %v", portID, err)
+				}
+				// port is attached to deleted instance, we need reset the status of the DeviceID
+				// this is bug in OpenStack APIs
+				if port.DeviceID != "" && port.DeviceOwner == "" {
+					klog.Warningf("Port %s is attached to Device that does not exist anymore, reseting the status of DeviceID", portID)
+					_, err := c.UpdatePort(portID, ports.UpdateOpts{
+						DeviceID: fi.String(""),
+					})
+					if err != nil {
+						return false, fmt.Errorf("error updating port %s deviceid: %v", portID, err)
+					}
+				}
+			}
 			return false, fmt.Errorf("error creating server %v: %v", opt, err)
 		}
 		server = v
