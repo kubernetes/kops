@@ -812,6 +812,9 @@ gopkg.in/warnings.v0
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20190905181640-827449938966
 gopkg.in/yaml.v3
+# helm.sh/helm v2.17.0+incompatible
+## explicit
+helm.sh/helm/pkg/strvals
 # honnef.co/go/tools v0.0.1-2020.1.4
 ## explicit
 honnef.co/go/tools/arg
@@ -1222,9 +1225,6 @@ k8s.io/gengo/generator
 k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
-# k8s.io/helm v2.9.0+incompatible
-## explicit
-k8s.io/helm/pkg/strvals
 # k8s.io/klog v1.0.0
 k8s.io/klog
 # k8s.io/klog/v2 v2.3.0
