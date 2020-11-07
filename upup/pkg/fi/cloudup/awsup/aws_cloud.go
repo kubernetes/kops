@@ -723,10 +723,10 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 			return "", fmt.Errorf("error finding launch template by ID: %q", id)
 		}
 		launchTemplate := output.LaunchTemplates[0]
-		if version == "" || version == "$Default" {
-			version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
-		} else {
+		if version == "$Latest" {
 			version = strconv.FormatInt(*launchTemplate.LatestVersionNumber, 10)
+		} else {
+			version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
 		}
 	}
 	klog.V(4).Infof("Launch Template Version used for compare: %q", version)
