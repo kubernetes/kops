@@ -15,6 +15,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     manager:
+      logLevel: 3
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
@@ -28,6 +29,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     manager:
+      logLevel: 3
       env:
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
