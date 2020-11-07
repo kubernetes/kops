@@ -21,7 +21,7 @@ go_library(
     importpath = "github.com/hashicorp/hcl/v2/hclwrite",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/apparentlymart/go-textseg/textseg:go_default_library",
+        "//vendor/github.com/apparentlymart/go-textseg/v12/textseg:go_default_library",
         "//vendor/github.com/google/go-cmp/cmp:go_default_library",
         "//vendor/github.com/hashicorp/hcl/v2:go_default_library",
         "//vendor/github.com/hashicorp/hcl/v2/hclsyntax:go_default_library",
