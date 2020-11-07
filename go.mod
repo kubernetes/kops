@@ -106,6 +106,7 @@ require (
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/yaml.v2 v2.3.0
+	helm.sh/helm v2.17.0+incompatible
 	honnef.co/go/tools v0.0.1-2020.1.4
 	k8s.io/api v0.19.0
 	k8s.io/apimachinery v0.19.0
@@ -114,7 +115,6 @@ require (
 	k8s.io/cloud-provider-openstack v1.18.0
 	k8s.io/component-base v0.19.0
 	k8s.io/gengo v0.0.0-20200710205751-c0d492a0f3ca
-	k8s.io/helm v2.9.0+incompatible
 	k8s.io/klog/v2 v2.3.0
 	k8s.io/kubectl v0.0.0
 	k8s.io/legacy-cloud-providers v0.0.0
