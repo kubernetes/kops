@@ -442,6 +442,6 @@ func generateName(o *awstasks.SecurityGroupRule) string {
 		src = fi.StringValue(o.SecurityGroup.Name)
 	}
 
-	return fmt.Sprintf("%s-%s-%s-%dto%d-%s", src, direction,
+	return fmt.Sprintf("from-%s-%s-%s-%dto%d-%s", src, direction,
 		proto, fi.Int64Value(o.FromPort), fi.Int64Value(o.ToPort), dst)
 }
