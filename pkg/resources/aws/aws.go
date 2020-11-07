@@ -1181,32 +1181,33 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*resources.Res
 
 // FindAutoScalingLaunchTemplates finds any launch configurations which reference the security groups
 func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string, securityGroups sets.String) ([]*resources.Resource, error) {
-	c, ok := cloud.(awsup.AWSCloud)
-	if !ok {
-		return nil, errors.New("expected a aws cloud provider")
-	}
-	klog.V(2).Infof("Finding all Autoscaling LaunchTemplates associated to security groups")
+	c := cloud.(awsup.AWSCloud)
 
-	output, err := c.EC2().DescribeLaunchTemplates(&ec2.DescribeLaunchTemplatesInput{
+	klog.V(2).Infof("Finding all AutoScaling LaunchTemplates owned by the cluster")
+
+	input := &ec2.DescribeLaunchTemplatesInput{
 		Filters: []*ec2.Filter{
 			{
 				Name:   aws.String("tag:KubernetesCluster"),
 				Values: []*string{aws.String(clusterName)},
 			},
 		},
-	})
-	if err != nil {
-		return nil, nil
 	}
 
 	var list []*resources.Resource
-	for _, lt := range output.LaunchTemplates {
-		list = append(list, &resources.Resource{
-			Name:    aws.StringValue(lt.LaunchTemplateName),
-			ID:      aws.StringValue(lt.LaunchTemplateId),
-			Type:    TypeAutoscalingLaunchConfig,
-			Deleter: DeleteAutoScalingGroupLaunchTemplate,
-		})
+	err := c.EC2().DescribeLaunchTemplatesPages(input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
+		for _, lt := range p.LaunchTemplates {
+			list = append(list, &resources.Resource{
+				Name:    aws.StringValue(lt.LaunchTemplateName),
+				ID:      aws.StringValue(lt.LaunchTemplateId),
+				Type:    TypeAutoscalingLaunchConfig,
+				Deleter: DeleteAutoScalingGroupLaunchTemplate,
+			})
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing AutoScaling LaunchTemplates: %v", err)
 	}
 
 	return list, nil
