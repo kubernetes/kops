@@ -64,7 +64,7 @@ require (
 	github.com/coreos/etcd v3.3.17+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 	github.com/digitalocean/godo v1.54.0
-	github.com/docker/engine-api v0.0.0-20160509170047-dea108d3aa0c
+	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
