@@ -684,7 +684,7 @@
         }
       }
     },
-    "AWSEC2SecurityGroupEgressapielbegress": {
+    "AWSEC2SecurityGroupEgressfromapielbprivatesharedipexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -696,19 +696,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressbastionegress": {
-      "Type": "AWS::EC2::SecurityGroupEgress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupEgressbastionelbegress": {
+    "AWSEC2SecurityGroupEgressfrombastionelbprivatesharedipexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -720,7 +708,19 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressmastersprivatesharedipexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfrombastionprivatesharedipexamplecomegressall0to000000": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressfrommastersprivatesharedipexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -732,7 +732,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressnodesprivatesharedipexamplecomegressall0to000000": {
+    "AWSEC2SecurityGroupEgressfromnodesprivatesharedipexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -744,35 +744,19 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressbastiontomasterssh": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp22to22bastionelbprivatesharedipexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
-        "IpProtocol": "tcp"
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressbastiontonodessh": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresshttpsapielb00000": {
+    "AWSEC2SecurityGroupIngressfrom00000ingresstcp443to443apielbprivatesharedipexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -782,6 +766,146 @@
         "ToPort": 443,
         "IpProtocol": "tcp",
         "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrombastionelbprivatesharedipexamplecomingresstcp22to22bastionprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrombastionprivatesharedipexamplecomingresstcp22to22mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrombastionprivatesharedipexamplecomingresstcp22to22nodesprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrommastersprivatesharedipexamplecomingressall0to0mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfrommastersprivatesharedipexamplecomingressall0to0nodesprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesprivatesharedipexamplecomingressall0to0nodesprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesprivatesharedipexamplecomingresstcp1to2379mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 2379,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesprivatesharedipexamplecomingresstcp2382to4000mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 2382,
+        "ToPort": 4000,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesprivatesharedipexamplecomingresstcp4003to65535mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 4003,
+        "ToPort": 65535,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressfromnodesprivatesharedipexamplecomingressudp1to65535mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
       }
     },
     "AWSEC2SecurityGroupIngresshttpselbtomaster": {
@@ -807,130 +931,6 @@
         "FromPort": 3,
         "ToPort": 4,
         "IpProtocol": "icmp",
-        "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupIngressmastersprivatesharedipexamplecomingressall0to0mastersprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
-      }
-    },
-    "AWSEC2SecurityGroupIngressmastersprivatesharedipexamplecomingressall0to0nodesprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingressall0to0nodesprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingresstcp1to2379mastersprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "FromPort": 1,
-        "ToPort": 2379,
-        "IpProtocol": "tcp"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingresstcp2382to4000mastersprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "FromPort": 2382,
-        "ToPort": 4000,
-        "IpProtocol": "tcp"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingresstcp4003to65535mastersprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "FromPort": 4003,
-        "ToPort": 65535,
-        "IpProtocol": "tcp"
-      }
-    },
-    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingressudp1to65535mastersprivatesharedipexamplecom": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
-        },
-        "FromPort": 1,
-        "ToPort": 65535,
-        "IpProtocol": "udp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresssshelbtobastion": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp"
-      }
-    },
-    "AWSEC2SecurityGroupIngresssshexternaltobastionelb00000": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
-        },
-        "FromPort": 22,
-        "ToPort": 22,
-        "IpProtocol": "tcp",
         "CidrIp": "0.0.0.0/0"
       }
     },
