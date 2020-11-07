@@ -55,7 +55,8 @@ type MockEC2 struct {
 
 	InternetGateways map[string]*ec2.InternetGateway
 
-	LaunchTemplates map[string]*launchTemplateInfo
+	launchTemplateNumber int
+	LaunchTemplates      map[string]*launchTemplateInfo
 
 	NatGateways map[string]*ec2.NatGateway
 
