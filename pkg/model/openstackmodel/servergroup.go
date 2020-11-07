@@ -19,6 +19,7 @@ package openstackmodel
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -281,6 +282,8 @@ func (b *ServerGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Pool:      poolTask,
 		}
 		if useVIPACL {
+			// sort for consistent comparison
+			sort.Strings(b.Cluster.Spec.KubernetesAPIAccess)
 			listenerTask.AllowedCIDRs = b.Cluster.Spec.KubernetesAPIAccess
 		}
 		c.AddTask(listenerTask)

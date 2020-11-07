@@ -18,6 +18,7 @@ package openstacktasks
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
 	openstackutil "k8s.io/cloud-provider-openstack/pkg/util/openstack"
@@ -56,6 +57,8 @@ func (s *LBListener) CompareWithID() *string {
 }
 
 func NewLBListenerTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle *fi.Lifecycle, lb *listeners.Listener, find *LBListener) (*LBListener, error) {
+	// sort for consistent comparison
+	sort.Strings(lb.AllowedCIDRs)
 	listenerTask := &LBListener{
 		ID:           fi.String(lb.ID),
 		Name:         fi.String(lb.Name),
