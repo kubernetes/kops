@@ -84,7 +84,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 				Egress:        fi.Bool(true),
 				CIDR:          s("0.0.0.0/0"),
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 		// Nodes can talk to nodes
@@ -97,131 +97,13 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) ([]Secu
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 	}
 
 	return nodeGroups, nil
 }
-
-/*
-This is dead code, but hopefully one day we can open specific ports only, for better security
-
-func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBuilderContext) {
-	// TODO: We need to remove the ALL rule
-	//W1229 12:32:22.300132    9003 executor.go:109] error running task "SecurityGroupRule/node-to-master-443" (9m58s remaining to succeed): error creating SecurityGroupIngress: InvalidPermission.Duplicate: the specified rule "peer: sg-f6b1a68b, ALL, ALLOW" already exists
-	//status code: 400, request id: 6a69627f-9a26-4bd0-b294-a9a96f89bc46
-
-	udpPorts := []int64{}
-	tcpPorts := []int64{}
-	protocols := []Protocol{}
-
-	// allow access to API
-	tcpPorts = append(tcpPorts, 443)
-
-	// allow cadvisor
-	tcpPorts = append(tcpPorts, 4194)
-
-	// kubelet read-only used by heapster
-	tcpPorts = append(tcpPorts, 10255)
-
-	if b.Cluster.Spec.Networking != nil {
-		if b.Cluster.Spec.Networking.Kopeio != nil {
-			// VXLAN over UDP
-			udpPorts = append(udpPorts, 4789)
-		}
-
-		if b.Cluster.Spec.Networking.Weave != nil {
-			udpPorts = append(udpPorts, 6783)
-			tcpPorts = append(tcpPorts, 6783)
-			udpPorts = append(udpPorts, 6784)
-		}
-
-		if b.Cluster.Spec.Networking.Flannel != nil {
-			switch b.Cluster.Spec.Networking.Flannel.Backend {
-			case "", "udp":
-				udpPorts = append(udpPorts, 8285)
-			case "vxlan":
-				udpPorts = append(udpPorts, 8472)
-			default:
-				klog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
-			}
-		}
-
-		if b.Cluster.Spec.Networking.Calico != nil {
-			// Calico needs to access etcd
-			// TODO: Remove, replace with etcd in calico manifest
-			// https://coreos.com/etcd/docs/latest/v2/configuration.html
-			klog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
-			tcpPorts = append(tcpPorts, 4001)
-			tcpPorts = append(tcpPorts, 179)
-			protocols = append(protocols, ProtocolIPIP)
-		}
-
-		if b.Cluster.Spec.Networking.Romana != nil {
-			// Romana needs to access etcd
-			klog.Warningf("Opening etcd port on masters for access from the nodes, for romana.  This is unsafe in untrusted environments.")
-			tcpPorts = append(tcpPorts, 4001)
-			tcpPorts = append(tcpPorts, 9600)
-		}
-
-		if b.Cluster.Spec.Networking.Cilium != nil {
-			// Cilium needs to access etcd
-			klog.Warningf("Opening etcd port on masters for access from the nodes, for Cilium.  This is unsafe in untrusted environments.")
-			tcpPorts = append(tcpPorts, 4001)
-		}
-
-		if b.Cluster.Spec.Networking.Kuberouter != nil {
-			protocols = append(protocols, ProtocolIPIP)
-		}
-	}
-
-	for _, udpPort := range udpPorts {
-		t := &awstasks.SecurityGroupRule{
-			Name:          s(fmt.Sprintf("node-to-master-udp-%d", udpPort)),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			FromPort:      i64(udpPort),
-			ToPort:        i64(udpPort),
-			Protocol:      s("udp"),
-		}
-		c.AddTask(t)
-	}
-	for _, tcpPort := range tcpPorts {
-		t := &awstasks.SecurityGroupRule{
-			Name:          s(fmt.Sprintf("node-to-master-tcp-%d", tcpPort)),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			FromPort:      i64(tcpPort),
-			ToPort:        i64(tcpPort),
-			Protocol:      s("tcp"),
-		}
-		c.AddTask(t)
-	}
-	for _, protocol := range protocols {
-		awsName := strconv.Itoa(int(protocol))
-		name := awsName
-		switch protocol {
-		case ProtocolIPIP:
-			name = "ipip"
-		default:
-			klog.Warningf("unknown protocol %q - naming by number", awsName)
-		}
-
-		t := &awstasks.SecurityGroupRule{
-			Name:          s("node-to-master-protocol-" + name),
-			Lifecycle:     b.Lifecycle,
-			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			Protocol:      s(awsName),
-		}
-		c.AddTask(t)
-	}
-}
-*/
 
 func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBuilderContext, nodeGroups []SecurityGroupInfo, masterGroups []SecurityGroupInfo) {
 	type portRange struct {
@@ -285,7 +167,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					ToPort:        i64(int64(r.To)),
 					Protocol:      s("udp"),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 			for _, r := range tcpRanges {
 				t := &awstasks.SecurityGroupRule{
@@ -297,7 +179,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					ToPort:        i64(int64(r.To)),
 					Protocol:      s("tcp"),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 			for _, protocol := range protocols {
 				awsName := strconv.Itoa(int(protocol))
@@ -316,7 +198,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					SourceGroup:   nodeGroup.Task,
 					Protocol:      s(awsName),
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -334,7 +216,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 					SecurityGroup: dest.Task,
 					SourceGroup:   src.Task,
 				}
-				c.AddTask(t)
+				b.AddDirectionalGroupRule(c, t)
 			}
 		}
 	}
@@ -362,7 +244,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				Egress:        fi.Bool(true),
 				CIDR:          s("0.0.0.0/0"),
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 		// Masters can talk to masters
@@ -375,7 +257,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 
 		// Masters can talk to nodes
@@ -388,7 +270,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext, nodeG
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
 			}
-			c.AddTask(t)
+			b.AddDirectionalGroupRule(c, t)
 		}
 	}
 
@@ -520,4 +402,45 @@ func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
 	}
 
 	return s + d
+}
+
+func (b *KopsModelContext) AddDirectionalGroupRule(c *fi.ModelBuilderContext, t *awstasks.SecurityGroupRule) {
+
+	name := generateName(t)
+	t.Name = fi.String(name)
+
+	klog.V(8).Infof("Adding rule %v", name)
+	c.AddTask(t)
+
+}
+
+func generateName(o *awstasks.SecurityGroupRule) string {
+
+	var target, dst, src, direction, proto string
+	if o.SourceGroup != nil {
+		target = fi.StringValue(o.SourceGroup.Name)
+	} else if o.CIDR != nil && fi.StringValue(o.CIDR) != "" {
+		target = fi.StringValue(o.CIDR)
+	} else {
+		target = "0.0.0.0/0"
+	}
+
+	if o.Protocol == nil || fi.StringValue(o.Protocol) == "" {
+		proto = "all"
+	} else {
+		proto = fi.StringValue(o.Protocol)
+	}
+
+	if o.Egress == nil || !fi.BoolValue(o.Egress) {
+		direction = "ingress"
+		src = target
+		dst = fi.StringValue(o.SecurityGroup.Name)
+	} else {
+		direction = "egress"
+		dst = target
+		src = fi.StringValue(o.SecurityGroup.Name)
+	}
+
+	return fmt.Sprintf("%s-%s-%s-%dto%d-%s", src, direction,
+		proto, fi.Int64Value(o.FromPort), fi.Int64Value(o.ToPort), dst)
 }
