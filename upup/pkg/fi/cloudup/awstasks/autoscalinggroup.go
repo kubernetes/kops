@@ -366,8 +366,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 				},
 				LaunchTemplate: &autoscaling.LaunchTemplate{
 					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
-						LaunchTemplateName: e.LaunchTemplate.Name,
-						Version:            aws.String("$Latest"),
+						LaunchTemplateId: e.LaunchTemplate.ID,
+						Version:          aws.String("$Latest"),
 					},
 				},
 			}
@@ -379,8 +379,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			}
 		} else if e.LaunchTemplate != nil {
 			request.LaunchTemplate = &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: e.LaunchTemplate.Name,
-				Version:            aws.String("$Latest"),
+				LaunchTemplateId: e.LaunchTemplate.ID,
+				Version:          aws.String("$Latest"),
 			}
 		} else {
 			return fmt.Errorf("could not find one of launch template, mixed instances policy, or launch configuration")
@@ -446,8 +446,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		if changes.LaunchTemplate != nil {
 			spec := &autoscaling.LaunchTemplateSpecification{
-				LaunchTemplateName: changes.LaunchTemplate.Name,
-				Version:            aws.String("$Latest"),
+				LaunchTemplateId: changes.LaunchTemplate.ID,
+				Version:          aws.String("$Latest"),
 			}
 			if e.UseMixedInstancesPolicy() {
 				setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{LaunchTemplateSpecification: spec}
@@ -481,8 +481,8 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			if setup(request).LaunchTemplate == nil {
 				setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{
 					LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
-						LaunchTemplateName: changes.LaunchTemplate.Name,
-						Version:            aws.String("$Latest"),
+						LaunchTemplateId: changes.LaunchTemplate.ID,
+						Version:          aws.String("$Latest"),
 					},
 				}
 			}

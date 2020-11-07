@@ -87,8 +87,9 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 
 	klog.V(2).Infof("Mock CreateLaunchTemplate: %v", request)
 
-	crc := crc64.Checksum([]byte(aws.StringValue(request.LaunchTemplateName)), crc64.MakeTable(crc64.ECMA))
-	id := fmt.Sprintf("lt-%x", crc)
+	m.launchTemplateNumber++
+	n := m.launchTemplateNumber
+	id := fmt.Sprintf("lt-%d", n)
 
 	if m.LaunchTemplates == nil {
 		m.LaunchTemplates = make(map[string]*launchTemplateInfo)
