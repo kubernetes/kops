@@ -19,7 +19,6 @@ package awstasks
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/upup/pkg/fi"
