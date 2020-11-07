@@ -330,7 +330,12 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 		EtcdInsecure:  etcdInsecure,
 	}
 
-	config.LogVerbosity = 6
+	config.LogLevel = 6
+
+	if etcdCluster.Manager != nil && etcdCluster.Manager.LogLevel != nil {
+		klog.Warningf("overriding log level in manifest %s, new level is %d", bundle, int(*etcdCluster.Manager.LogLevel))
+		config.LogLevel = int(*etcdCluster.Manager.LogLevel)
+	}
 
 	{
 		scheme := "https"
@@ -512,8 +517,8 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec) (*v1.Pod
 
 // config defines the flags for etcd-manager
 type config struct {
-	// LogVerbosity sets the log verbosity level
-	LogVerbosity int `flag:"v"`
+	// LogLevel sets the log verbosity level
+	LogLevel int `flag:"v"`
 
 	// Containerized is set if etcd-manager is running in a container
 	Containerized bool `flag:"containerized"`

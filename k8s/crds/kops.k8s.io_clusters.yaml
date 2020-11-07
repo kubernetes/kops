@@ -622,6 +622,10 @@ spec:
                         image:
                           description: Image is the etcd manager image to use.
                           type: string
+                        logLevel:
+                          description: LogLevel allows the klog library verbose log level to be set for etcd-manager. The default is 6. https://github.com/google/glog#verbose-logging
+                          format: int32
+                          type: integer
                       type: object
                     memoryRequest:
                       anyOf:
