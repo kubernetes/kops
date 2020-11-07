@@ -18,7 +18,6 @@ package mockautoscaling
 
 import (
 	"fmt"
-	"hash/crc64"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -78,8 +77,10 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	}
 
 	if input.LaunchTemplate != nil {
-		launchTemplateCrc := crc64.Checksum([]byte(aws.StringValue(input.LaunchTemplate.LaunchTemplateName)), crc64.MakeTable(crc64.ECMA))
-		g.LaunchTemplate.LaunchTemplateId = aws.String(fmt.Sprintf("lt-%x", launchTemplateCrc))
+		g.LaunchTemplate.LaunchTemplateName = input.AutoScalingGroupName
+		if g.LaunchTemplate.LaunchTemplateId == nil {
+			return nil, fmt.Errorf("AutoScalingGroup has LaunchTemplate without ID")
+		}
 	}
 
 	for _, tag := range input.Tags {
