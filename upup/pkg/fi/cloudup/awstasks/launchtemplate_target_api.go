@@ -326,7 +326,7 @@ func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTem
 	return list, nil
 }
 
-// findLatestLaunchTemplateVersion returns the latest template
+// findLatestLaunchTemplateVersion returns the latest template version
 func (t *LaunchTemplate) findLatestLaunchTemplateVersion(c *fi.Context) (*ec2.LaunchTemplateVersion, error) {
 	cloud, ok := c.Cloud.(awsup.AWSCloud)
 	if !ok {
