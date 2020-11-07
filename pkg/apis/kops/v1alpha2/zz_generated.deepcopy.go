@@ -1323,6 +1323,11 @@ func (in *EtcdManagerSpec) DeepCopyInto(out *EtcdManagerSpec) {
 		*out = make([]EnvVar, len(*in))
 		copy(*out, *in)
 	}
+	if in.LogLevel != nil {
+		in, out := &in.LogLevel, &out.LogLevel
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
