@@ -145,7 +145,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterName string) (map[string]*res
 		if err != nil {
 			return nil, err
 		}
-		lts, err := FindAutoScalingLaunchTemplates(cloud, clusterName, securityGroups)
+		lts, err := FindAutoScalingLaunchTemplates(cloud, clusterName)
 		if err != nil {
 			return nil, err
 		}
@@ -1179,8 +1179,8 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*resources.Res
 	return resourceTrackers, nil
 }
 
-// FindAutoScalingLaunchTemplates finds any launch configurations which reference the security groups
-func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string, securityGroups sets.String) ([]*resources.Resource, error) {
+// FindAutoScalingLaunchTemplates finds any launch templates owned by the cluster (by tag).
+func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
 	c := cloud.(awsup.AWSCloud)
 
 	klog.V(2).Infof("Finding all AutoScaling LaunchTemplates owned by the cluster")
@@ -1188,8 +1188,8 @@ func FindAutoScalingLaunchTemplates(cloud fi.Cloud, clusterName string, security
 	input := &ec2.DescribeLaunchTemplatesInput{
 		Filters: []*ec2.Filter{
 			{
-				Name:   aws.String("tag:KubernetesCluster"),
-				Values: []*string{aws.String(clusterName)},
+				Name:   aws.String("tag:kubernetes.io/cluster/" + clusterName),
+				Values: []*string{aws.String("owned")},
 			},
 		},
 	}
