@@ -18,7 +18,7 @@ package mockec2
 
 import (
 	"fmt"
-	"hash/crc64"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -28,6 +28,18 @@ import (
 type launchTemplateInfo struct {
 	data *ec2.ResponseLaunchTemplateData
 	name *string
+}
+
+// DescribeLaunchTemplatesPages mocks the describing the launch templates
+func (m *MockEC2) DescribeLaunchTemplatesPages(request *ec2.DescribeLaunchTemplatesInput, callback func(*ec2.DescribeLaunchTemplatesOutput, bool) bool) error {
+	page, err := m.DescribeLaunchTemplates(request)
+	if err != nil {
+		return err
+	}
+
+	callback(page, false)
+
+	return nil
 }
 
 // DescribeLaunchTemplates mocks the describing the launch templates
@@ -44,10 +56,33 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 	}
 
 	for id, ltInfo := range m.LaunchTemplates {
-		o.LaunchTemplates = append(o.LaunchTemplates, &ec2.LaunchTemplate{
-			LaunchTemplateName: ltInfo.name,
-			LaunchTemplateId:   aws.String(id),
-		})
+		launchTemplatetName := aws.StringValue(ltInfo.name)
+
+		allFiltersMatch := true
+		for _, filter := range request.Filters {
+			filterName := aws.StringValue(filter.Name)
+			filterValue := aws.StringValue(filter.Values[0])
+
+			filterMatches := false
+			if filterName == "tag:Name" && filterValue == launchTemplatetName {
+				filterMatches = true
+			}
+			if strings.HasPrefix(filterName, "tag:kubernetes.io/cluster/") {
+				filterMatches = true
+			}
+
+			if !filterMatches {
+				allFiltersMatch = false
+				break
+			}
+		}
+
+		if allFiltersMatch {
+			o.LaunchTemplates = append(o.LaunchTemplates, &ec2.LaunchTemplate{
+				LaunchTemplateName: aws.String(launchTemplatetName),
+				LaunchTemplateId:   aws.String(id),
+			})
+		}
 	}
 
 	return o, nil

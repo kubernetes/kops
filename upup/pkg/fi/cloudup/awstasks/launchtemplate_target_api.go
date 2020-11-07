@@ -300,25 +300,30 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 
 // findAllLaunchTemplates returns all the launch templates for us
 func (t *LaunchTemplate) findAllLaunchTemplates(c *fi.Context) ([]*ec2.LaunchTemplate, error) {
-	var list []*ec2.LaunchTemplate
-
-	cloud := c.Cloud.(awsup.AWSCloud)
-
-	var next *string
-	for {
-		resp, err := cloud.EC2().DescribeLaunchTemplates(&ec2.DescribeLaunchTemplatesInput{
-			NextToken: next,
-		})
-		if err != nil {
-			return nil, err
-		}
-		list = append(list, resp.LaunchTemplates...)
-
-		if resp.NextToken == nil {
-			return list, nil
-		}
-		next = resp.NextToken
+	cloud, ok := c.Cloud.(awsup.AWSCloud)
+	if !ok {
+		return nil, fmt.Errorf("invalid cloud provider: %v, expected: %s", c.Cloud, "awsup.AWSCloud")
 	}
+
+	input := &ec2.DescribeLaunchTemplatesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("tag:Name"),
+				Values: []*string{t.Name},
+			},
+		},
+	}
+
+	var list []*ec2.LaunchTemplate
+	err := cloud.EC2().DescribeLaunchTemplatesPages(input, func(p *ec2.DescribeLaunchTemplatesOutput, lastPage bool) (shouldContinue bool) {
+		list = append(list, p.LaunchTemplates...)
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing AutoScaling LaunchTemplates: %v", err)
+	}
+
+	return list, nil
 }
 
 // findLatestLaunchTemplateVersion returns the latest template
