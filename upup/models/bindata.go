@@ -9250,13 +9250,14 @@ spec:
               value: {{ Region }}
           volumeMounts:
             - name: ssl-certs
-              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              mountPath: "/etc/ssl/certs"
               readOnly: true
           imagePullPolicy: "Always"
       volumes:
         - name: ssl-certs
           hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+            path: "/etc/ssl/certs"
+            type: Directory
       nodeSelector:
         node-role.kubernetes.io/master: ""
 {{- end -}}
@@ -13494,13 +13495,14 @@ spec:
               value: {{ Region }}
           volumeMounts:
             - name: ssl-certs
-              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              mountPath: "/etc/ssl/certs"
               readOnly: true
           imagePullPolicy: "Always"
       volumes:
         - name: ssl-certs
           hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+            path: "/etc/ssl/certs"
+            type: Directory
       nodeSelector:
         node-role.kubernetes.io/master: ""
 {{ end -}}
