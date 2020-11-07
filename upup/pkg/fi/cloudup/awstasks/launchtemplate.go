@@ -147,15 +147,14 @@ func (t *LaunchTemplate) CheckChanges(a, e, changes *LaunchTemplate) error {
 func (t *LaunchTemplate) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
-	configurations, err := t.findAllLaunchTemplates(c)
+	list, err := t.findAllLaunchTemplates(c)
 	if err != nil {
 		return nil, err
 	}
 
-	prefix := fmt.Sprintf("%s-", fi.StringValue(t.Name))
-	for _, configuration := range configurations {
-		if strings.HasPrefix(aws.StringValue(configuration.LaunchTemplateName), prefix) {
-			removals = append(removals, &deleteLaunchTemplate{lc: configuration})
+	for _, lt := range list {
+		if aws.StringValue(lt.LaunchTemplateName) != aws.StringValue(t.Name) {
+			removals = append(removals, &deleteLaunchTemplate{lc: lt})
 		}
 	}
 
