@@ -740,123 +740,6 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.existingsg-example-com.id
 }
 
-resource "aws_security_group_rule" "all-master-to-master" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.masters-existingsg-example-com.id
-  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-default-sg-master-1a" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-master-1a"
-  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-default-sg-master-1b" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-master-1b"
-  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1a-default" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.masters-existingsg-example-com.id
-  source_security_group_id = "sg-master-1a"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1a-sg-master-1a" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-master-1a"
-  source_security_group_id = "sg-master-1a"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1a-sg-master-1b" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-master-1b"
-  source_security_group_id = "sg-master-1a"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1b-default" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.masters-existingsg-example-com.id
-  source_security_group_id = "sg-master-1b"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1b-sg-master-1a" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-master-1a"
-  source_security_group_id = "sg-master-1b"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-master-sg-master-1b-sg-master-1b" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-master-1b"
-  source_security_group_id = "sg-master-1b"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-node-default-sg-nodes" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-nodes"
-  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-node-sg-master-1a-sg-nodes" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-nodes"
-  source_security_group_id = "sg-master-1a"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-master-to-node-sg-master-1b-sg-nodes" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-nodes"
-  source_security_group_id = "sg-master-1b"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "all-node-to-node-sg-nodes-sg-nodes" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = "sg-nodes"
-  source_security_group_id = "sg-nodes"
-  to_port                  = 0
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "api-elb-egress" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
@@ -911,7 +794,7 @@ resource "aws_security_group_rule" "icmp-pmtu-api-elb-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "master-egress" {
+resource "aws_security_group_rule" "masters-existingsg-example-com-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -920,7 +803,43 @@ resource "aws_security_group_rule" "master-egress" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "master-egress-sg-master-1a" {
+resource "aws_security_group_rule" "masters-existingsg-example-com-ingress-all-0to0-masters-existingsg-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.masters-existingsg-example-com.id
+  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "masters-existingsg-example-com-ingress-all-0to0-sg-master-1a-Master" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "masters-existingsg-example-com-ingress-all-0to0-sg-master-1b-Master" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "masters-existingsg-example-com-ingress-all-0to0-sg-nodes-Node" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = aws_security_group.masters-existingsg-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1a-Master-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -929,7 +848,43 @@ resource "aws_security_group_rule" "master-egress-sg-master-1a" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "master-egress-sg-master-1b" {
+resource "aws_security_group_rule" "sg-master-1a-Master-ingress-all-0to0-masters-existingsg-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.masters-existingsg-example-com.id
+  source_security_group_id = "sg-master-1a"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1a-Master-ingress-all-0to0-sg-master-1a-Master" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-master-1a"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1a-Master-ingress-all-0to0-sg-master-1b-Master" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-master-1a"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1a-Master-ingress-all-0to0-sg-nodes-Node" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "sg-master-1a"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1b-Master-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -938,7 +893,43 @@ resource "aws_security_group_rule" "master-egress-sg-master-1b" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "node-egress-sg-nodes" {
+resource "aws_security_group_rule" "sg-master-1b-Master-ingress-all-0to0-masters-existingsg-example-com" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.masters-existingsg-example-com.id
+  source_security_group_id = "sg-master-1b"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1b-Master-ingress-all-0to0-sg-master-1a-Master" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-master-1a"
+  source_security_group_id = "sg-master-1b"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1b-Master-ingress-all-0to0-sg-master-1b-Master" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-master-1b"
+  source_security_group_id = "sg-master-1b"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-master-1b-Master-ingress-all-0to0-sg-nodes-Node" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "sg-master-1b"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-nodes-Node-egress-all-0to0-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -947,7 +938,16 @@ resource "aws_security_group_rule" "node-egress-sg-nodes" {
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-nodes-default" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-all-0to0-sg-nodes-Node" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = "sg-nodes"
+  source_security_group_id = "sg-nodes"
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-1to2379-masters-existingsg-example-com" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-existingsg-example-com.id
@@ -956,7 +956,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-nodes-default" 
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-nodes-sg-master-1a" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-1to2379-sg-master-1a-Master" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = "sg-master-1a"
@@ -965,7 +965,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-nodes-sg-master
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-nodes-sg-master-1b" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-1to2379-sg-master-1b-Master" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = "sg-master-1b"
@@ -974,7 +974,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-1-2379-sg-nodes-sg-master
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-nodes-default" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-2382to4000-masters-existingsg-example-com" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-existingsg-example-com.id
@@ -983,7 +983,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-nodes-defaul
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-nodes-sg-master-1a" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-2382to4000-sg-master-1a-Master" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = "sg-master-1a"
@@ -992,7 +992,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-nodes-sg-mas
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-nodes-sg-master-1b" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-2382to4000-sg-master-1b-Master" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = "sg-master-1b"
@@ -1001,7 +1001,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-2382-4000-sg-nodes-sg-mas
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-nodes-default" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-4003to65535-masters-existingsg-example-com" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-existingsg-example-com.id
@@ -1010,7 +1010,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-nodes-defau
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-nodes-sg-master-1a" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-4003to65535-sg-master-1a-Master" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = "sg-master-1a"
@@ -1019,7 +1019,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-nodes-sg-ma
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-nodes-sg-master-1b" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-tcp-4003to65535-sg-master-1b-Master" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = "sg-master-1b"
@@ -1028,7 +1028,7 @@ resource "aws_security_group_rule" "node-to-master-tcp-4003-65535-sg-nodes-sg-ma
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-nodes-default" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-udp-1to65535-masters-existingsg-example-com" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = aws_security_group.masters-existingsg-example-com.id
@@ -1037,7 +1037,7 @@ resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-nodes-default"
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-nodes-sg-master-1a" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-udp-1to65535-sg-master-1a-Master" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = "sg-master-1a"
@@ -1046,7 +1046,7 @@ resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-nodes-sg-maste
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "node-to-master-udp-1-65535-sg-nodes-sg-master-1b" {
+resource "aws_security_group_rule" "sg-nodes-Node-ingress-udp-1to65535-sg-master-1b-Master" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = "sg-master-1b"

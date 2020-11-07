@@ -548,7 +548,7 @@
         ]
       }
     },
-    "AWSEC2SecurityGroupEgressmasteregress": {
+    "AWSEC2SecurityGroupEgressmasterscomplexexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -560,7 +560,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupEgressnodeegress": {
+    "AWSEC2SecurityGroupEgressnodescomplexexamplecomegressall0to000000": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -570,48 +570,6 @@
         "ToPort": 0,
         "IpProtocol": "-1",
         "CidrIp": "0.0.0.0/0"
-      }
-    },
-    "AWSEC2SecurityGroupIngressallmastertomaster": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
-      }
-    },
-    "AWSEC2SecurityGroupIngressallmastertonode": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
-      }
-    },
-    "AWSEC2SecurityGroupIngressallnodetonode": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
-        },
-        "FromPort": 0,
-        "ToPort": 0,
-        "IpProtocol": "-1"
       }
     },
     "AWSEC2SecurityGroupIngresshttpsapielb111024": {
@@ -698,6 +656,34 @@
         "CidrIpv6": "2001:0:8500::/40"
       }
     },
+    "AWSEC2SecurityGroupIngressmasterscomplexexamplecomingressall0to0masterscomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressmasterscomplexexamplecomingressall0to0nodescomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
     "AWSEC2SecurityGroupIngressnodeporttcpexternaltonode102030024": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -746,7 +732,21 @@
         "CidrIp": "1.2.3.4/32"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp12379": {
+    "AWSEC2SecurityGroupIngressnodescomplexexamplecomingressall0to0nodescomplexexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescomplexexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodescomplexexamplecomingresstcp1to2379masterscomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -760,7 +760,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp23824000": {
+    "AWSEC2SecurityGroupIngressnodescomplexexamplecomingresstcp2382to4000masterscomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -774,7 +774,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp400365535": {
+    "AWSEC2SecurityGroupIngressnodescomplexexamplecomingresstcp4003to65535masterscomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -788,7 +788,7 @@
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomasterudp165535": {
+    "AWSEC2SecurityGroupIngressnodescomplexexamplecomingressudp1to65535masterscomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
