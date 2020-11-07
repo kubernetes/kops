@@ -17,8 +17,9 @@ go_library(
         "//upup/pkg/fi:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",
-        "//vendor/github.com/docker/engine-api/client:go_default_library",
-        "//vendor/github.com/docker/engine-api/types:go_default_library",
+        "//vendor/github.com/docker/docker/api/types:go_default_library",
+        "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        "//vendor/github.com/docker/docker/client:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],
 )
