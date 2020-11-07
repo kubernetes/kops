@@ -703,9 +703,9 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 		return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
 	}
 
-	name = aws.StringValue(launchTemplate.LaunchTemplateName)
-	if name == "" {
-		return "", fmt.Errorf("error finding launch template for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
+	id := aws.StringValue(launchTemplate.LaunchTemplateId)
+	if id == "" {
+		return "", fmt.Errorf("error finding launch template ID for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
 	}
 
 	version := aws.StringValue(launchTemplate.Version)
@@ -713,14 +713,14 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 	klog.V(4).Infof("Launch Template Version Specified By ASG: %v", version)
 	if version == "" || version == "$Default" || version == "$Latest" {
 		input := &ec2.DescribeLaunchTemplatesInput{
-			LaunchTemplateNames: []*string{&name},
+			LaunchTemplateIds: []*string{&id},
 		}
 		output, err := c.EC2().DescribeLaunchTemplates(input)
 		if err != nil {
 			return "", fmt.Errorf("error describing launch templates: %q", err)
 		}
 		if len(output.LaunchTemplates) == 0 {
-			return "", fmt.Errorf("error finding launch template by name: %q", name)
+			return "", fmt.Errorf("error finding launch template by ID: %q", id)
 		}
 		launchTemplate := output.LaunchTemplates[0]
 		if version == "" || version == "$Default" {
@@ -731,7 +731,7 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 	}
 	klog.V(4).Infof("Launch Template Version used for compare: %q", version)
 
-	return fmt.Sprintf("%s:%s", name, version), nil
+	return fmt.Sprintf("%s:%s", id, version), nil
 }
 
 // findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
@@ -743,10 +743,10 @@ func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
 
 	// else we need to check the launch template
 	if i.LaunchTemplate != nil {
-		name = aws.StringValue(i.LaunchTemplate.LaunchTemplateName)
+		id := aws.StringValue(i.LaunchTemplate.LaunchTemplateId)
 		version := aws.StringValue(i.LaunchTemplate.Version)
-		if name != "" {
-			launchTemplate := name + ":" + version
+		if id != "" {
+			launchTemplate := id + ":" + version
 			return launchTemplate
 		}
 	}
