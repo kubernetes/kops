@@ -180,8 +180,8 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		},
 	}
 
-	if e.SpotPrice != "" {
-		marketSpotOptions := cloudformationLaunchTemplateMarketOptionsSpotOptions{MaxPrice: fi.String(e.SpotPrice)}
+	if fi.StringValue(e.SpotPrice) != "" {
+		marketSpotOptions := cloudformationLaunchTemplateMarketOptionsSpotOptions{MaxPrice: e.SpotPrice}
 		if e.SpotDurationInMinutes != nil {
 			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
 		}

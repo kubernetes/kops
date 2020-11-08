@@ -64,7 +64,7 @@ type LaunchTemplate struct {
 	// SecurityGroups is a list of security group associated
 	SecurityGroups []*SecurityGroup
 	// SpotPrice is set to the spot-price bid if this is a spot pricing request
-	SpotPrice string
+	SpotPrice *string
 	// SpotDurationInMinutes is set for requesting spot blocks
 	SpotDurationInMinutes *int64
 	// Tags are the keypairs to apply to the instance and volume on launch as well as the launch template itself.
