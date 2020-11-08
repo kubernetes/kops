@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "collection.go",
+        "constraints.go",
+        "doc.go",
+        "version.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/Masterminds/semver/v3",
+    importpath = "github.com/Masterminds/semver/v3",
+    visibility = ["//visibility:public"],
+)
