@@ -802,7 +802,7 @@ func (e *AutoscalingGroup) getTGsToDetach(currentTGs []*TargetGroup) []*string {
 
 	for _, v := range currentTGs {
 		if _, ok := desiredTGs[*v.ARN]; !ok {
-			tgsToDetach = append(tgsToDetach, v.Name)
+			tgsToDetach = append(tgsToDetach, v.ARN)
 		}
 	}
 	return tgsToDetach
