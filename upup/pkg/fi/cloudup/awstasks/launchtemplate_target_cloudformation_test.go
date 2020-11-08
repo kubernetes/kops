@@ -37,7 +37,7 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
 				RootVolumeOptimization:       fi.Bool(true),
 				RootVolumeIops:               fi.Int64(100),
 				RootVolumeSize:               fi.Int64(64),
-				SpotPrice:                    "10",
+				SpotPrice:                    fi.String("10"),
 				SpotDurationInMinutes:        fi.Int64(120),
 				InstanceInterruptionBehavior: fi.String("hibernate"),
 				SSHKey: &SSHKey{
