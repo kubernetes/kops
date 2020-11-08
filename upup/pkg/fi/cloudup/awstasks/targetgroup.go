@@ -92,6 +92,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 		UnhealthyThreshold: tg.UnhealthyThresholdCount,
 		VPC:                &VPC{ID: tg.VpcId},
 	}
+	e.ARN = tg.TargetGroupArn
 
 	tagsResp, err := cloud.ELBV2().DescribeTags(&elbv2.DescribeTagsInput{
 		ResourceArns: []*string{tg.TargetGroupArn},
