@@ -51,10 +51,8 @@ replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud
 require (
 	cloud.google.com/go v0.51.0
 	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
-	github.com/Masterminds/semver v1.3.1 // indirect
-	github.com/Masterminds/sprig v2.17.1+incompatible
+	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
-	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
 	github.com/aws/aws-sdk-go v1.35.10
 	github.com/bazelbuild/bazel-gazelle v0.19.1
@@ -79,7 +77,6 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl/v2 v2.7.0
 	github.com/hashicorp/vault/api v1.0.4
-	github.com/huandu/xstrings v1.2.0 // indirect
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/kr/fs v0.1.0 // indirect
