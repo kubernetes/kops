@@ -25,12 +25,13 @@ github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/mock
 # github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
 ## explicit
 github.com/MakeNowJust/heredoc
-# github.com/Masterminds/semver v1.3.1
+# github.com/Masterminds/goutils v1.1.0
+github.com/Masterminds/goutils
+# github.com/Masterminds/semver/v3 v3.1.0
+github.com/Masterminds/semver/v3
+# github.com/Masterminds/sprig/v3 v3.1.0
 ## explicit
-github.com/Masterminds/semver
-# github.com/Masterminds/sprig v2.17.1+incompatible
-## explicit
-github.com/Masterminds/sprig
+github.com/Masterminds/sprig/v3
 # github.com/Microsoft/go-winio v0.4.14
 github.com/Microsoft/go-winio
 github.com/Microsoft/go-winio/pkg/guid
@@ -53,9 +54,6 @@ github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
 github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
 github.com/aliyun/alibaba-cloud-sdk-go/services/slb
-# github.com/aokoli/goutils v1.0.1
-## explicit
-github.com/aokoli/goutils
 # github.com/apparentlymart/go-textseg v1.0.0
 github.com/apparentlymart/go-textseg/textseg
 # github.com/apparentlymart/go-textseg/v12 v12.0.0
@@ -400,8 +398,7 @@ github.com/hashicorp/vault/sdk/helper/hclutil
 github.com/hashicorp/vault/sdk/helper/jsonutil
 github.com/hashicorp/vault/sdk/helper/parseutil
 github.com/hashicorp/vault/sdk/helper/strutil
-# github.com/huandu/xstrings v1.2.0
-## explicit
+# github.com/huandu/xstrings v1.3.1
 github.com/huandu/xstrings
 # github.com/imdario/mergo v0.3.9
 github.com/imdario/mergo
@@ -442,6 +439,8 @@ github.com/matttproud/golang_protobuf_extensions/pbutil
 github.com/miekg/coredns/middleware/etcd/msg
 # github.com/miekg/dns v1.1.4
 github.com/miekg/dns
+# github.com/mitchellh/copystructure v1.0.0
+github.com/mitchellh/copystructure
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/go-wordwrap v1.0.0
@@ -449,6 +448,8 @@ github.com/mitchellh/go-wordwrap
 # github.com/mitchellh/mapstructure v1.1.2
 ## explicit
 github.com/mitchellh/mapstructure
+# github.com/mitchellh/reflectwalk v1.0.0
+github.com/mitchellh/reflectwalk
 # github.com/moby/term v0.0.0-20200312100748-672ec06f55cd
 github.com/moby/term
 github.com/moby/term/windows
@@ -507,7 +508,7 @@ github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.3.0
+# github.com/spf13/cast v1.3.1
 github.com/spf13/cast
 # github.com/spf13/cobra v1.0.0
 ## explicit
@@ -590,6 +591,7 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 # golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 ## explicit
+golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20

@@ -5,7 +5,7 @@ go_library(
     srcs = ["templater.go"],
     importpath = "k8s.io/kops/pkg/util/templater",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/Masterminds/sprig:go_default_library"],
+    deps = ["//vendor/github.com/Masterminds/sprig/v3:go_default_library"],
 )
 
 go_test(
