@@ -123,7 +123,7 @@ func (e *NetworkLoadBalancerListener) GetDependencies(tasks map[string]fi.Task) 
 	return nil
 }
 
-// OrderListenersByPort implements sort.Interface for []OrderTargetGroupsByPort, based on port number
+// OrderListenersByPort implements sort.Interface for []OrderListenersByPort, based on port number
 type OrderListenersByPort []*NetworkLoadBalancerListener
 
 func (a OrderListenersByPort) Len() int      { return len(a) }
@@ -336,7 +336,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 	actual.Scheme = lb.Scheme
 	actual.VPC = &VPC{ID: lb.VpcId}
 	actual.Type = lb.Type
-	actual.TargetGroups = make([]*TargetGroup, 0)
 
 	tagMap, err := describeNetworkLoadBalancerTags(cloud, []string{*loadBalancerArn})
 	if err != nil {
@@ -362,8 +361,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 		if err != nil {
 			return nil, fmt.Errorf("error querying for NLB listeners :%v", err)
 		}
-
-		actual.Listeners = make([]*NetworkLoadBalancerListener, 0)
 
 		for _, l := range response.Listeners {
 			actualListener := &NetworkLoadBalancerListener{}
@@ -400,7 +397,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 			}
 			actual.TargetGroups = targetGroups
 		}
-		sort.Stable(OrderTargetGroupsByPort(actual.TargetGroups))
+		sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
 
 	}
 
@@ -494,7 +491,7 @@ func (e *NetworkLoadBalancer) Normalize() {
 	// We need to sort our arrays consistently, so we don't get spurious changes
 	sort.Stable(OrderSubnetsById(e.Subnets))
 	sort.Stable(OrderListenersByPort(e.Listeners))
-	sort.Stable(OrderTargetGroupsByPort(e.TargetGroups))
+	sort.Stable(OrderTargetGroupsByName(e.TargetGroups))
 }
 
 func (s *NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) error {
