@@ -455,13 +455,14 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 
 		if changes.LaunchTemplate != nil {
-			// @note: at the moment we are only using launch templates when using mixed instance policies,
-			// but this might change
-			setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{
-				LaunchTemplateSpecification: &autoscaling.LaunchTemplateSpecification{
-					LaunchTemplateName: changes.LaunchTemplate.ID,
-					Version:            &launchTemplateVersion,
-				},
+			spec := &autoscaling.LaunchTemplateSpecification{
+				LaunchTemplateName: changes.LaunchTemplate.ID,
+				Version:            &launchTemplateVersion,
+			}
+			if e.UseMixedInstancesPolicy() {
+				setup(request).LaunchTemplate = &autoscaling.LaunchTemplate{LaunchTemplateSpecification: spec}
+			} else {
+				request.LaunchTemplate = spec
 			}
 			changes.LaunchTemplate = nil
 		}

@@ -181,8 +181,8 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		},
 	}
 
-	if e.SpotPrice != "" {
-		marketSpotOptions := terraformLaunchTemplateMarketOptionsSpotOptions{MaxPrice: fi.String(e.SpotPrice)}
+	if fi.StringValue(e.SpotPrice) != "" {
+		marketSpotOptions := terraformLaunchTemplateMarketOptionsSpotOptions{MaxPrice: e.SpotPrice}
 		if e.SpotDurationInMinutes != nil {
 			marketSpotOptions.BlockDurationMinutes = e.SpotDurationInMinutes
 		}

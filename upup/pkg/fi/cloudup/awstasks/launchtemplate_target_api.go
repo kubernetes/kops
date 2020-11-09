@@ -132,11 +132,11 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, ep, changes *Launch
 		lc.UserData = aws.String(base64.StdEncoding.EncodeToString(d))
 	}
 	// @step: add market options
-	if t.SpotPrice != "" {
+	if fi.StringValue(t.SpotPrice) != "" {
 		s := &ec2.LaunchTemplateSpotMarketOptionsRequest{
 			BlockDurationMinutes:         t.SpotDurationInMinutes,
 			InstanceInterruptionBehavior: t.InstanceInterruptionBehavior,
-			MaxPrice:                     fi.String(t.SpotPrice),
+			MaxPrice:                     t.SpotPrice,
 		}
 		lc.InstanceMarketOptions = &ec2.LaunchTemplateInstanceMarketOptionsRequest{
 			MarketType:  fi.String("spot"),
@@ -213,9 +213,14 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 	if lt.LaunchTemplateData.IamInstanceProfile != nil {
 		actual.IAMInstanceProfile = &IAMInstanceProfile{Name: lt.LaunchTemplateData.IamInstanceProfile.Name}
 	}
-	// @step: add instanceInterruptionBehavior if there is one
-	if lt.LaunchTemplateData.InstanceMarketOptions != nil && lt.LaunchTemplateData.InstanceMarketOptions.SpotOptions != nil {
-		actual.InstanceInterruptionBehavior = lt.LaunchTemplateData.InstanceMarketOptions.SpotOptions.InstanceInterruptionBehavior
+	// @step: add InstanceMarketOptions if there are any
+	imo := lt.LaunchTemplateData.InstanceMarketOptions
+	if imo != nil && imo.SpotOptions != nil && aws.StringValue(imo.SpotOptions.MaxPrice) != "" {
+		actual.SpotPrice = imo.SpotOptions.MaxPrice
+		actual.SpotDurationInMinutes = imo.SpotOptions.BlockDurationMinutes
+		actual.InstanceInterruptionBehavior = imo.SpotOptions.InstanceInterruptionBehavior
+	} else {
+		actual.SpotPrice = aws.String("")
 	}
 
 	// @step: get the image is order to find out the root device name as using the index
