@@ -136,7 +136,9 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	//   You cannot use a launch template that is set to request Spot Instances (InstanceMarketOptions)
 	//   when you configure an Auto Scaling group with a mixed instances policy.
 	if ig.Spec.MixedInstancesPolicy == nil {
-		lt.SpotPrice = lc.SpotPrice
+		lt.SpotPrice = fi.String(lc.SpotPrice)
+	} else {
+		lt.SpotPrice = fi.String("")
 	}
 	if ig.Spec.SpotDurationInMinutes != nil {
 		lt.SpotDurationInMinutes = ig.Spec.SpotDurationInMinutes
