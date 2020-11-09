@@ -195,12 +195,12 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	return nil
 }
 
-// OrderTargetGroupsByPort implements sort.Interface for []OrderTargetGroupsByPort, based on port number
-type OrderTargetGroupsByPort []*TargetGroup
+// OrderTargetGroupsByName implements sort.Interface for []OrderTargetGroupsByName, based on port number
+type OrderTargetGroupsByName []*TargetGroup
 
-func (a OrderTargetGroupsByPort) Len() int      { return len(a) }
-func (a OrderTargetGroupsByPort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a OrderTargetGroupsByPort) Less(i, j int) bool {
+func (a OrderTargetGroupsByName) Len() int      { return len(a) }
+func (a OrderTargetGroupsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderTargetGroupsByName) Less(i, j int) bool {
 	if a[i].ARN != nil || a[j].ARN != nil {
 		return fi.StringValue(a[i].ARN) < fi.StringValue(a[j].ARN)
 	}

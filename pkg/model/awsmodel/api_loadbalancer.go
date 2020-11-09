@@ -204,16 +204,16 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 
-			targetGroupName := b.NLBTargetGroupName("tcp")
-			primaryTags := b.CloudTags(targetGroupName, false)
+			tcpGroupName := b.NLBTargetGroupName("tcp")
+			tcpGroupTags := b.CloudTags(tcpGroupName, false)
 
 			// Override the returned name to be the expected NLB TG name
-			primaryTags["Name"] = targetGroupName
+			tcpGroupTags["Name"] = tcpGroupName
 
 			tg := &awstasks.TargetGroup{
-				Name:               fi.String(targetGroupName),
+				Name:               fi.String(tcpGroupName),
 				VPC:                b.LinkToVPC(),
-				Tags:               primaryTags,
+				Tags:               tcpGroupTags,
 				Protocol:           fi.String("TCP"),
 				Port:               fi.Int64(443),
 				HealthyThreshold:   fi.Int64(2),
@@ -226,15 +226,15 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			nlb.TargetGroups = append(nlb.TargetGroups, tg)
 
 			if lbSpec.SSLCertificate != "" {
-				secondaryTags := b.CloudTags(targetGroupName, false)
-				secondaryName := b.NLBTargetGroupName("tls")
+				tlsGroupName := b.NLBTargetGroupName("tls")
+				tlsGroupTags := b.CloudTags(tlsGroupName, false)
 
 				// Override the returned name to be the expected NLB TG name
-				secondaryTags["Name"] = secondaryName
+				tlsGroupTags["Name"] = tlsGroupName
 				secondaryTG := &awstasks.TargetGroup{
-					Name:               fi.String(secondaryName),
+					Name:               fi.String(tlsGroupName),
 					VPC:                b.LinkToVPC(),
-					Tags:               secondaryTags,
+					Tags:               tlsGroupTags,
 					Protocol:           fi.String("TLS"),
 					Port:               fi.Int64(443),
 					HealthyThreshold:   fi.Int64(2),
@@ -244,7 +244,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				c.AddTask(secondaryTG)
 				nlb.TargetGroups = append(nlb.TargetGroups, secondaryTG)
 			}
-			sort.Stable(awstasks.OrderTargetGroupsByPort(nlb.TargetGroups))
+			sort.Stable(awstasks.OrderTargetGroupsByName(nlb.TargetGroups))
 			c.AddTask(nlb)
 		}
 
