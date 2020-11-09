@@ -34,7 +34,7 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				ID:                           fi.String("test-11"),
 				InstanceMonitoring:           fi.Bool(true),
 				InstanceType:                 fi.String("t2.medium"),
-				SpotPrice:                    "0.1",
+				SpotPrice:                    fi.String("0.1"),
 				SpotDurationInMinutes:        fi.Int64(60),
 				InstanceInterruptionBehavior: fi.String("hibernate"),
 				RootVolumeOptimization:       fi.Bool(true),
