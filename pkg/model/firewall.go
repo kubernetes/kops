@@ -300,6 +300,7 @@ func (b *KopsModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Sec
 				"port=4002", // etcd events
 				"port=4789", // VXLAN
 				"port=179",  // Calico
+				"port=8443", // k8s api secondary listener
 
 				// TODO: UDP vs TCP
 				// TODO: Protocol 4 for calico

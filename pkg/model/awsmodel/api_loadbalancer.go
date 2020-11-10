@@ -109,14 +109,21 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			"443": {InstancePort: 443},
 		}
 
-		nlbListenerPort := "443"
-		nlbListeners := map[string]*awstasks.NetworkLoadBalancerListener{
-			nlbListenerPort: {Port: 443},
+		nlbListeners := []*awstasks.NetworkLoadBalancerListener{
+			{
+				Port:            443,
+				TargetGroupName: b.NLBTargetGroupName("tcp"),
+			},
 		}
 
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
-			nlbListeners["443"].SSLCertificateID = lbSpec.SSLCertificate
+			nlbListeners[0].Port = 8443
+			nlbListeners = append(nlbListeners, &awstasks.NetworkLoadBalancerListener{
+				Port:             443,
+				TargetGroupName:  b.NLBTargetGroupName("tls"),
+				SSLCertificateID: lbSpec.SSLCertificate,
+			})
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -138,6 +145,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			LoadBalancerName: fi.String(loadBalancerName),
 			Subnets:          elbSubnets,
 			Listeners:        nlbListeners,
+			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
 			Tags: tags,
 			VPC:  b.LinkToVPC(),
@@ -196,19 +204,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(clb)
 		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
 
-			targetGroupPort := fi.Int64(443)
-			targetGroupName := b.NLBTargetGroupName("api")
-			tags := b.CloudTags(targetGroupName, false)
+			tcpGroupName := b.NLBTargetGroupName("tcp")
+			tcpGroupTags := b.CloudTags(tcpGroupName, false)
 
 			// Override the returned name to be the expected NLB TG name
-			tags["Name"] = targetGroupName
+			tcpGroupTags["Name"] = tcpGroupName
 
 			tg := &awstasks.TargetGroup{
-				Name:               fi.String(targetGroupName),
+				Name:               fi.String(tcpGroupName),
 				VPC:                b.LinkToVPC(),
-				Tags:               tags,
+				Tags:               tcpGroupTags,
 				Protocol:           fi.String("TCP"),
-				Port:               targetGroupPort,
+				Port:               fi.Int64(443),
 				HealthyThreshold:   fi.Int64(2),
 				UnhealthyThreshold: fi.Int64(2),
 				Shared:             fi.Bool(false),
@@ -216,8 +223,28 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			c.AddTask(tg)
 
-			nlb.TargetGroup = tg
+			nlb.TargetGroups = append(nlb.TargetGroups, tg)
 
+			if lbSpec.SSLCertificate != "" {
+				tlsGroupName := b.NLBTargetGroupName("tls")
+				tlsGroupTags := b.CloudTags(tlsGroupName, false)
+
+				// Override the returned name to be the expected NLB TG name
+				tlsGroupTags["Name"] = tlsGroupName
+				secondaryTG := &awstasks.TargetGroup{
+					Name:               fi.String(tlsGroupName),
+					VPC:                b.LinkToVPC(),
+					Tags:               tlsGroupTags,
+					Protocol:           fi.String("TLS"),
+					Port:               fi.Int64(443),
+					HealthyThreshold:   fi.Int64(2),
+					UnhealthyThreshold: fi.Int64(2),
+					Shared:             fi.Bool(false),
+				}
+				c.AddTask(secondaryTG)
+				nlb.TargetGroups = append(nlb.TargetGroups, secondaryTG)
+			}
+			sort.Stable(awstasks.OrderTargetGroupsByName(nlb.TargetGroups))
 			c.AddTask(nlb)
 		}
 
@@ -291,7 +318,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			for _, masterGroup := range masterGroups {
 				t := &awstasks.SecurityGroupRule{
-					// TODO: figure out how to only add this to one SG (GetSecurityGroups above returns multiple)
 					Name:          fi.String(fmt.Sprintf("https-api-elb-%s", cidr)),
 					Lifecycle:     b.SecurityLifecycle,
 					CIDR:          fi.String(cidr),
@@ -304,7 +330,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				// Allow ICMP traffic required for PMTU discovery
 				c.AddTask(&awstasks.SecurityGroupRule{
-					// TODO: figure out how to only add this to one SG (GetSecurityGroups above returns multiple)
 					Name:          fi.String("icmp-pmtu-api-elb-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
 					CIDR:          fi.String(cidr),
@@ -313,6 +338,19 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 					SecurityGroup: masterGroup.Task,
 					ToPort:        fi.Int64(4),
 				})
+
+				if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+					// Allow access to masters on secondary port through NLB
+					c.AddTask(&awstasks.SecurityGroupRule{
+						Name:          fi.String(fmt.Sprintf("tcp-api-%s", cidr)),
+						Lifecycle:     b.SecurityLifecycle,
+						CIDR:          fi.String(cidr),
+						FromPort:      fi.Int64(8443),
+						Protocol:      fi.String("tcp"),
+						SecurityGroup: masterGroup.Task,
+						ToPort:        fi.Int64(8443),
+					})
+				}
 			}
 		}
 	}

@@ -135,7 +135,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = [aws_lb_target_group.api-complex-example-com-vd3t5n.id]
+  target_group_arns   = [aws_lb_target_group.tcp-complex-example-com-vpjolq.id, aws_lb_target_group.tls-complex-example-com-5nursn.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-complex-example-com.id]
 }
 
@@ -423,27 +423,57 @@ resource "aws_launch_template" "nodes-complex-example-com" {
 }
 
 resource "aws_lb_listener" "api-complex-example-com-443" {
+  certificate_arn = "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
   default_action {
-    target_group_arn = aws_lb_target_group.api-complex-example-com-vd3t5n.id
+    target_group_arn = aws_lb_target_group.tcp-complex-example-com-vpjolq.id
     type             = "forward"
   }
   load_balancer_arn = aws_lb.api-complex-example-com.id
   port              = 443
+  protocol          = "TLS"
+}
+
+resource "aws_lb_listener" "api-complex-example-com-8443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.tls-complex-example-com-5nursn.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-complex-example-com.id
+  port              = 8443
   protocol          = "TCP"
 }
 
-resource "aws_lb_target_group" "api-complex-example-com-vd3t5n" {
+resource "aws_lb_target_group" "tcp-complex-example-com-vpjolq" {
   health_check {
     healthy_threshold   = 2
     protocol            = "TCP"
     unhealthy_threshold = 2
   }
-  name     = "api-complex-example-com-vd3t5n"
+  name     = "tcp-complex-example-com-vpjolq"
   port     = 443
   protocol = "TCP"
   tags = {
     "KubernetesCluster"                         = "complex.example.com"
-    "Name"                                      = "api-complex-example-com-vd3t5n"
+    "Name"                                      = "tcp-complex-example-com-vpjolq"
+    "Owner"                                     = "John Doe"
+    "foo/bar"                                   = "fib+baz"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.complex-example-com.id
+}
+
+resource "aws_lb_target_group" "tls-complex-example-com-5nursn" {
+  health_check {
+    healthy_threshold   = 2
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "tls-complex-example-com-5nursn"
+  port     = 443
+  protocol = "TLS"
+  tags = {
+    "KubernetesCluster"                         = "complex.example.com"
+    "Name"                                      = "tls-complex-example-com-5nursn"
     "Owner"                                     = "John Doe"
     "foo/bar"                                   = "fib+baz"
     "kubernetes.io/cluster/complex.example.com" = "owned"
@@ -713,6 +743,24 @@ resource "aws_security_group_rule" "ssh-external-to-node-2001_0_85a3__--48" {
   protocol          = "tcp"
   security_group_id = aws_security_group.nodes-complex-example-com.id
   to_port           = 22
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "tcp-api-1-1-1-0--24" {
+  cidr_blocks       = ["1.1.1.0/24"]
+  from_port         = 8443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 8443
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "tcp-api-2001_0_8500__--40" {
+  cidr_blocks       = ["2001:0:8500::/40"]
+  from_port         = 8443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.masters-complex-example-com.id
+  to_port           = 8443
   type              = "ingress"
 }
 
