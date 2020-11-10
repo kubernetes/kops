@@ -362,6 +362,8 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 			return nil, fmt.Errorf("error querying for NLB listeners :%v", err)
 		}
 
+		actual.Listeners = []*NetworkLoadBalancerListener{}
+		actual.TargetGroups = []*TargetGroup{}
 		for _, l := range response.Listeners {
 			actualListener := &NetworkLoadBalancerListener{}
 			actualListener.Port = int(aws.Int64Value(l.Port))
