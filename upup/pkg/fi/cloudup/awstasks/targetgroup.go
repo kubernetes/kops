@@ -60,8 +60,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	request := &elbv2.DescribeTargetGroupsInput{}
 	if e.ARN != nil {
 		request.TargetGroupArns = []*string{e.ARN}
-	}
-	if e.Name != nil {
+	} else if e.Name != nil {
 		request.Names = []*string{e.Name}
 	}
 
@@ -128,6 +127,9 @@ func FindTargetGroupByName(cloud awsup.AWSCloud, findName string) (*elbv2.Target
 	resp, err := cloud.ELBV2().DescribeTargetGroups(request)
 
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == elbv2.ErrCodeTargetGroupNotFoundException {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("error describing TargetGroups: %v", err)
 	}
 	if len(resp.TargetGroups) == 0 {
@@ -192,6 +194,15 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	return nil
 }
 
+// OrderTargetGroupsByName implements sort.Interface for []OrderTargetGroupsByName, based on port number
+type OrderTargetGroupsByName []*TargetGroup
+
+func (a OrderTargetGroupsByName) Len() int      { return len(a) }
+func (a OrderTargetGroupsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderTargetGroupsByName) Less(i, j int) bool {
+	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
+}
+
 // pkg/model/awsmodel doesn't know the ARN of the API TargetGroup tasks that it passes to the master ASGs,
 // it only knows the ARN of external target groups passed through the InstanceGroupSpec.
 // We lookup the ARN for TargetGroup tasks that don't have it set in order to attach the LB to the ASG.
@@ -206,12 +217,12 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 // Because we don't know whether any given ARN attached to an ASG is an API TargetGroup task or not,
 // we have to find the API TargetGroup task, lookup its ARN, then compare that to the list of attached TargetGroups.
 func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected []*TargetGroup) ([]*TargetGroup, error) {
-	var apiTGTask *TargetGroup
+	apiTGTasks := make([]*TargetGroup, 0)
 	for _, tg := range expected {
 		// All external TargetGroups have their Shared field set to true. The API TargetGroups do not.
 		// Note that Shared is set by the kops model rather than AWS tags.
 		if !fi.BoolValue(tg.Shared) {
-			apiTGTask = tg
+			apiTGTasks = append(apiTGTasks, tg)
 		}
 	}
 
@@ -221,18 +232,19 @@ func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected
 		return reconciled, nil
 	}
 
-	var apiTG *elbv2.TargetGroup
-	var err error
-	if apiTGTask != nil {
-		apiTG, err = FindTargetGroupByName(cloud, fi.StringValue(apiTGTask.Name))
+	apiTGs := make(map[string]*TargetGroup)
+	for _, task := range apiTGTasks {
+		apiTG, err := FindTargetGroupByName(cloud, fi.StringValue(task.Name))
 		if err != nil {
 			return nil, err
 		}
+		if apiTG != nil {
+			apiTGs[aws.StringValue(apiTG.TargetGroupArn)] = task
+		}
 	}
-	for i := 0; i < len(actual); i++ {
-		tg := actual[i]
-		if apiTG != nil && aws.StringValue(apiTG.TargetGroupArn) == aws.StringValue(tg.ARN) {
-			reconciled = append(reconciled, apiTGTask)
+	for _, tg := range actual {
+		if apiTask, ok := apiTGs[aws.StringValue(tg.ARN)]; ok {
+			reconciled = append(reconciled, apiTask)
 		} else {
 			reconciled = append(reconciled, tg)
 		}
@@ -275,7 +287,7 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		HealthCheck: terraformTargetGroupHealthCheck{
 			HealthyThreshold:   *e.HealthyThreshold,
 			UnhealthyThreshold: *e.UnhealthyThreshold,
-			Protocol:           *e.Protocol,
+			Protocol:           elbv2.ProtocolEnumTcp,
 		},
 	}
 
