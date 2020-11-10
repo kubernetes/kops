@@ -60,8 +60,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	request := &elbv2.DescribeTargetGroupsInput{}
 	if e.ARN != nil {
 		request.TargetGroupArns = []*string{e.ARN}
-	}
-	if e.Name != nil {
+	} else if e.Name != nil {
 		request.Names = []*string{e.Name}
 	}
 
@@ -200,9 +199,6 @@ type OrderTargetGroupsByName []*TargetGroup
 func (a OrderTargetGroupsByName) Len() int      { return len(a) }
 func (a OrderTargetGroupsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderTargetGroupsByName) Less(i, j int) bool {
-	if a[i].ARN != nil || a[j].ARN != nil {
-		return fi.StringValue(a[i].ARN) < fi.StringValue(a[j].ARN)
-	}
 	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
 }
 
