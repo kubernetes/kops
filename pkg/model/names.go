@@ -105,7 +105,7 @@ func (b *KopsModelContext) LinkToNLB(prefix string) *awstasks.NetworkLoadBalance
 }
 
 func (b *KopsModelContext) LinkToTargetGroup(prefix string) *awstasks.TargetGroup {
-	name := b.NLBTargetGroupName(prefix) // TODO: this will need to change for the ACM cert bugfix since we'll have multiple TGs
+	name := b.NLBTargetGroupName(prefix)
 	return &awstasks.TargetGroup{Name: &name}
 }
 

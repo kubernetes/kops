@@ -86,7 +86,10 @@
         ],
         "TargetGroupARNs": [
           {
-            "Ref": "AWSElasticLoadBalancingV2TargetGroupapicomplexexamplecomvd3t5n"
+            "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq"
+          },
+          {
+            "Ref": "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn"
           }
         ]
       }
@@ -850,6 +853,30 @@
         "CidrIpv6": "2001:0:85a3::/48"
       }
     },
+    "AWSEC2SecurityGroupIngresstcpapi111024": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 8443,
+        "ToPort": 8443,
+        "IpProtocol": "tcp",
+        "CidrIp": "1.1.1.0/24"
+      }
+    },
+    "AWSEC2SecurityGroupIngresstcpapi20010850040": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscomplexexamplecom"
+        },
+        "FromPort": 8443,
+        "ToPort": 8443,
+        "IpProtocol": "tcp",
+        "CidrIpv6": "2001:0:8500::/40"
+      }
+    },
     "AWSEC2SecurityGroupapielbcomplexexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1148,11 +1175,16 @@
     "AWSElasticLoadBalancingV2Listenerapicomplexexamplecom443": {
       "Type": "AWS::ElasticLoadBalancingV2::Listener",
       "Properties": {
+        "Certificates": [
+          {
+            "CertificateArn": "arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678"
+          }
+        ],
         "DefaultActions": [
           {
             "Type": "forward",
             "TargetGroupArn": {
-              "Ref": "AWSElasticLoadBalancingV2TargetGroupapicomplexexamplecomvd3t5n"
+              "Ref": "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq"
             }
           }
         ],
@@ -1160,6 +1192,24 @@
           "Ref": "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom"
         },
         "Port": 443,
+        "Protocol": "TLS"
+      }
+    },
+    "AWSElasticLoadBalancingV2Listenerapicomplexexamplecom8443": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn"
+            }
+          }
+        ],
+        "LoadBalancerArn": {
+          "Ref": "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom"
+        },
+        "Port": 8443,
         "Protocol": "TCP"
       }
     },
@@ -1198,10 +1248,10 @@
         ]
       }
     },
-    "AWSElasticLoadBalancingV2TargetGroupapicomplexexamplecomvd3t5n": {
+    "AWSElasticLoadBalancingV2TargetGrouptcpcomplexexamplecomvpjolq": {
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
       "Properties": {
-        "Name": "api-complex-example-com-vd3t5n",
+        "Name": "tcp-complex-example-com-vpjolq",
         "Port": 443,
         "Protocol": "TCP",
         "VpcId": {
@@ -1214,7 +1264,7 @@
           },
           {
             "Key": "Name",
-            "Value": "api-complex-example-com-vd3t5n"
+            "Value": "tcp-complex-example-com-vpjolq"
           },
           {
             "Key": "Owner",
@@ -1230,6 +1280,42 @@
           }
         ],
         "HealthCheckProtocol": "TCP",
+        "HealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 2
+      }
+    },
+    "AWSElasticLoadBalancingV2TargetGrouptlscomplexexamplecom5nursn": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "Name": "tls-complex-example-com-5nursn",
+        "Port": 443,
+        "Protocol": "TLS",
+        "VpcId": {
+          "Ref": "AWSEC2VPCcomplexexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "complex.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "tls-complex-example-com-5nursn"
+          },
+          {
+            "Key": "Owner",
+            "Value": "John Doe"
+          },
+          {
+            "Key": "foo/bar",
+            "Value": "fib+baz"
+          },
+          {
+            "Key": "kubernetes.io/cluster/complex.example.com",
+            "Value": "owned"
+          }
+        ],
+        "HealthCheckProtocol": "TLS",
         "HealthyThresholdCount": 2,
         "UnhealthyThresholdCount": 2
       }
