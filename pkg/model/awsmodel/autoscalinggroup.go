@@ -366,6 +366,8 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	t.InstanceProtection = ig.Spec.InstanceProtection
 
+	t.TargetGroups = []*awstasks.TargetGroup{}
+
 	// When Spotinst Elastigroups are used, there is no need to create
 	// a separate task for the attachment of the load balancer since this
 	// is already done as part of the Elastigroup's creation, if needed.
@@ -386,7 +388,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 	}
 
-	for _, extLB := range ig.Spec.ExternalLoadBalancers {
+	for i, extLB := range ig.Spec.ExternalLoadBalancers {
 		if extLB.LoadBalancerName != nil {
 			lb := &awstasks.ClassicLoadBalancer{
 				Name:             extLB.LoadBalancerName,
@@ -399,7 +401,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 		if extLB.TargetGroupARN != nil {
 			tg := &awstasks.TargetGroup{
-				Name:   extLB.TargetGroupARN,
+				Name:   fi.String(fmt.Sprintf("external-tg-%d", i)),
 				ARN:    extLB.TargetGroupARN,
 				Shared: fi.Bool(true),
 			}

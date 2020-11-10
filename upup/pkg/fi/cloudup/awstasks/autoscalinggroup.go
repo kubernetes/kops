@@ -162,6 +162,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
+	actual.TargetGroups = []*TargetGroup{}
 	if len(g.TargetGroupARNs) > 0 {
 		actualTGs := make([]*TargetGroup, 0)
 		for _, tg := range g.TargetGroupARNs {
@@ -644,7 +645,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 		if detachTGRequest != nil {
 			if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
-				return fmt.Errorf("error attaching TargetGroups: %v", err)
+				return fmt.Errorf("error detaching TargetGroups: %v", err)
 			}
 		}
 		if attachTGRequest != nil {
