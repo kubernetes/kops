@@ -3494,6 +3494,11 @@ func (in *OpenstackBlockStorageConfig) DeepCopyInto(out *OpenstackBlockStorageCo
 		*out = new(bool)
 		**out = **in
 	}
+	if in.CSITopologySupport != nil {
+		in, out := &in.CSITopologySupport, &out.CSITopologySupport
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
