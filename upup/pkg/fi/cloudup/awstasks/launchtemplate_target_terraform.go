@@ -109,8 +109,8 @@ type terraformLaunchTemplateTagSpecification struct {
 }
 
 type terraformLaunchTemplate struct {
-	// NamePrefix is the name of the launch template
-	NamePrefix *string `json:"name_prefix,omitempty" cty:"name_prefix"`
+	// Name is the name of the launch template
+	Name *string `json:"name,omitempty" cty:"name"`
 	// Lifecycle is the terraform lifecycle
 	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty" cty:"lifecycle"`
 
@@ -168,7 +168,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	}
 
 	tf := terraformLaunchTemplate{
-		NamePrefix:   fi.String(fi.StringValue(e.Name) + "-"),
+		Name:         e.Name,
 		EBSOptimized: e.RootVolumeOptimization,
 		ImageID:      image,
 		InstanceType: e.InstanceType,

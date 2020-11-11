@@ -122,9 +122,12 @@ type AWSCloud interface {
 
 	// GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
 	GetTags(resourceId string) (map[string]string, error)
-
-	// CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	// CreateTags will add/modify tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	CreateTags(resourceId string, tags map[string]string) error
+	// DeleteTags will remove tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	DeleteTags(resourceId string, tags map[string]string) error
+	// UpdateTags will update tags of the specified resource to match tags, using getTags(), createTags() and deleteTags()
+	UpdateTags(resourceId string, tags map[string]string) error
 
 	AddAWSTags(id string, expected map[string]string) error
 	GetELBTags(loadBalancerName string) (map[string]string, error)
@@ -136,9 +139,6 @@ type AWSCloud interface {
 	// RemoveELBTags will remove tags from the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	RemoveELBTags(loadBalancerName string, tags map[string]string) error
 	RemoveELBV2Tags(ResourceArn string, tags map[string]string) error
-
-	// DeleteTags will delete tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
-	DeleteTags(id string, tags map[string]string) error
 
 	// DescribeInstance is a helper that queries for the specified instance by id
 	DescribeInstance(instanceID string) (*ec2.Instance, error)
@@ -694,52 +694,44 @@ func findAutoscalingGroupLaunchConfiguration(c AWSCloud, g *autoscaling.Group) (
 	}
 
 	// @check the launch template then
+	var launchTemplate *autoscaling.LaunchTemplateSpecification
 	if g.LaunchTemplate != nil {
-		name = aws.StringValue(g.LaunchTemplate.LaunchTemplateName)
-		version := aws.StringValue(g.LaunchTemplate.Version)
-		if name != "" {
-			launchTemplate := name + ":" + version
-			return launchTemplate, nil
-		}
+		launchTemplate = g.LaunchTemplate
+	} else if g.MixedInstancesPolicy != nil && g.MixedInstancesPolicy.LaunchTemplate != nil && g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
+		launchTemplate = g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification
+	} else {
+		return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
 	}
 
-	// @check: ok, lets check the mixed instance policy
-	if g.MixedInstancesPolicy != nil {
-		if g.MixedInstancesPolicy.LaunchTemplate != nil {
-			if g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification != nil {
-				var version string
-				name = aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName)
-				//See what version the ASG is set to use
-				mixedVersion := aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
-				//Correctly Handle Default and Latest Versions
-				if mixedVersion == "" || mixedVersion == "$Default" || mixedVersion == "$Latest" {
-					request := &ec2.DescribeLaunchTemplatesInput{
-						LaunchTemplateNames: []*string{&name},
-					}
-					dltResponse, err := c.EC2().DescribeLaunchTemplates(request)
-					if err != nil {
-						return "", fmt.Errorf("error describing launch templates: %v", err)
-					}
-					launchTemplate := dltResponse.LaunchTemplates[0]
-					if mixedVersion == "" || mixedVersion == "$Default" {
-						version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
-					} else {
-						version = strconv.FormatInt(*launchTemplate.LatestVersionNumber, 10)
-					}
-				} else {
-					version = mixedVersion
-				}
-				klog.V(4).Infof("Launch Template Version Specified By ASG: %v", mixedVersion)
-				klog.V(4).Infof("Launch Template Version we are using for compare: %v", version)
-				if name != "" {
-					launchTemplate := name + ":" + version
-					return launchTemplate, nil
-				}
-			}
-		}
+	id := aws.StringValue(launchTemplate.LaunchTemplateId)
+	if id == "" {
+		return "", fmt.Errorf("error finding launch template ID for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
 	}
 
-	return "", fmt.Errorf("error finding launch template or configuration for autoscaling group: %s", aws.StringValue(g.AutoScalingGroupName))
+	version := aws.StringValue(launchTemplate.Version)
+	//Correctly Handle Default and Latest Versions
+	klog.V(4).Infof("Launch Template Version Specified By ASG: %v", version)
+	if version == "" || version == "$Default" || version == "$Latest" {
+		input := &ec2.DescribeLaunchTemplatesInput{
+			LaunchTemplateIds: []*string{&id},
+		}
+		output, err := c.EC2().DescribeLaunchTemplates(input)
+		if err != nil {
+			return "", fmt.Errorf("error describing launch templates: %q", err)
+		}
+		if len(output.LaunchTemplates) == 0 {
+			return "", fmt.Errorf("error finding launch template by ID: %q", id)
+		}
+		launchTemplate := output.LaunchTemplates[0]
+		if version == "$Latest" {
+			version = strconv.FormatInt(*launchTemplate.LatestVersionNumber, 10)
+		} else {
+			version = strconv.FormatInt(*launchTemplate.DefaultVersionNumber, 10)
+		}
+	}
+	klog.V(4).Infof("Launch Template Version used for compare: %q", version)
+
+	return fmt.Sprintf("%s:%s", id, version), nil
 }
 
 // findInstanceLaunchConfiguration is responsible for discoverying the launch configuration for an instance
@@ -751,10 +743,10 @@ func findInstanceLaunchConfiguration(i *autoscaling.Instance) string {
 
 	// else we need to check the launch template
 	if i.LaunchTemplate != nil {
-		name = aws.StringValue(i.LaunchTemplate.LaunchTemplateName)
+		id := aws.StringValue(i.LaunchTemplate.LaunchTemplateId)
 		version := aws.StringValue(i.LaunchTemplate.Version)
-		if name != "" {
-			launchTemplate := name + ":" + version
+		if id != "" {
+			launchTemplate := id + ":" + version
 			return launchTemplate
 		}
 	}
@@ -1085,6 +1077,49 @@ func deleteTags(c AWSCloud, resourceID string, tags map[string]string) error {
 
 		return nil
 	}
+}
+
+// UpdateTags will update tags of the specified resource to match tags,
+// using getTags(), createTags() and deleteTags()
+func (c *awsCloudImplementation) UpdateTags(resourceID string, tags map[string]string) error {
+	return updateTags(c, resourceID, tags)
+}
+
+func updateTags(c AWSCloud, resourceID string, expectedTags map[string]string) error {
+	actual, err := getTags(c, resourceID)
+	if err != nil {
+		return err
+	}
+
+	missing := make(map[string]string)
+	for k, v := range expectedTags {
+		if actual[k] != v {
+			missing[k] = v
+		}
+	}
+	if len(missing) > 0 {
+		klog.V(4).Infof("Adding tags to %q: %v", resourceID, missing)
+		err = createTags(c, resourceID, missing)
+		if err != nil {
+			return err
+		}
+	}
+
+	extra := make(map[string]string)
+	for k, v := range actual {
+		if _, ok := expectedTags[k]; !ok {
+			extra[k] = v
+		}
+	}
+	if len(extra) > 0 {
+		klog.V(4).Infof("Removing tags from %q: %v", resourceID, missing)
+		err := deleteTags(c, resourceID, extra)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *awsCloudImplementation) AddAWSTags(id string, expected map[string]string) error {

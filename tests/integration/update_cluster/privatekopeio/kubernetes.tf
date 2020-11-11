@@ -435,7 +435,7 @@ resource "aws_launch_template" "bastion-privatekopeio-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.privatekopeio.example.com-"
+  name = "bastion.privatekopeio.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -498,7 +498,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.privatekopeio.example.com-"
+  name = "master-us-test-1a.masters.privatekopeio.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -558,7 +558,7 @@ resource "aws_launch_template" "nodes-privatekopeio-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.privatekopeio.example.com-"
+  name = "nodes.privatekopeio.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true

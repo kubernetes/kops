@@ -18,9 +18,11 @@ package mockec2
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/klog/v2"
 )
 
 type launchTemplateInfo struct {
@@ -28,10 +30,24 @@ type launchTemplateInfo struct {
 	name *string
 }
 
+// DescribeLaunchTemplatesPages mocks the describing the launch templates
+func (m *MockEC2) DescribeLaunchTemplatesPages(request *ec2.DescribeLaunchTemplatesInput, callback func(*ec2.DescribeLaunchTemplatesOutput, bool) bool) error {
+	page, err := m.DescribeLaunchTemplates(request)
+	if err != nil {
+		return err
+	}
+
+	callback(page, false)
+
+	return nil
+}
+
 // DescribeLaunchTemplates mocks the describing the launch templates
 func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesInput) (*ec2.DescribeLaunchTemplatesOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+
+	klog.V(2).Infof("Mock DescribeLaunchTemplates: %v", request)
 
 	o := &ec2.DescribeLaunchTemplatesOutput{}
 
@@ -39,10 +55,34 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 		return o, nil
 	}
 
-	for _, ltInfo := range m.LaunchTemplates {
-		o.LaunchTemplates = append(o.LaunchTemplates, &ec2.LaunchTemplate{
-			LaunchTemplateName: ltInfo.name,
-		})
+	for id, ltInfo := range m.LaunchTemplates {
+		launchTemplatetName := aws.StringValue(ltInfo.name)
+
+		allFiltersMatch := true
+		for _, filter := range request.Filters {
+			filterName := aws.StringValue(filter.Name)
+			filterValue := aws.StringValue(filter.Values[0])
+
+			filterMatches := false
+			if filterName == "tag:Name" && filterValue == launchTemplatetName {
+				filterMatches = true
+			}
+			if strings.HasPrefix(filterName, "tag:kubernetes.io/cluster/") {
+				filterMatches = true
+			}
+
+			if !filterMatches {
+				allFiltersMatch = false
+				break
+			}
+		}
+
+		if allFiltersMatch {
+			o.LaunchTemplates = append(o.LaunchTemplates, &ec2.LaunchTemplate{
+				LaunchTemplateName: aws.String(launchTemplatetName),
+				LaunchTemplateId:   aws.String(id),
+			})
+		}
 	}
 
 	return o, nil
@@ -52,6 +92,8 @@ func (m *MockEC2) DescribeLaunchTemplates(request *ec2.DescribeLaunchTemplatesIn
 func (m *MockEC2) DescribeLaunchTemplateVersions(request *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+
+	klog.V(2).Infof("Mock DescribeLaunchTemplateVersions: %v", request)
 
 	o := &ec2.DescribeLaunchTemplateVersionsOutput{}
 
@@ -78,6 +120,8 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	klog.V(2).Infof("Mock CreateLaunchTemplate: %v", request)
+
 	m.launchTemplateNumber++
 	n := m.launchTemplateNumber
 	id := fmt.Sprintf("lt-%d", n)
@@ -86,7 +130,7 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 		m.LaunchTemplates = make(map[string]*launchTemplateInfo)
 	}
 	if m.LaunchTemplates[id] != nil {
-		return nil, fmt.Errorf("duplicate LaunchTemplateName %s", id)
+		return nil, fmt.Errorf("duplicate LaunchTemplateId %s", id)
 	}
 	resp := &ec2.ResponseLaunchTemplateData{
 		DisableApiTermination: request.LaunchTemplateData.DisableApiTermination,
@@ -190,13 +234,15 @@ func (m *MockEC2) DeleteLaunchTemplate(request *ec2.DeleteLaunchTemplateInput) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	klog.V(2).Infof("Mock DeleteLaunchTemplate: %v", request)
+
 	o := &ec2.DeleteLaunchTemplateOutput{}
 
 	if m.LaunchTemplates == nil {
 		return o, nil
 	}
-	for id, lt := range m.LaunchTemplates {
-		if aws.StringValue(lt.name) == aws.StringValue(request.LaunchTemplateName) {
+	for id := range m.LaunchTemplates {
+		if id == aws.StringValue(request.LaunchTemplateId) {
 			delete(m.LaunchTemplates, id)
 		}
 	}

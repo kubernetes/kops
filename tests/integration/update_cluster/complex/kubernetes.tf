@@ -297,7 +297,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.complex.example.com-"
+  name = "master-us-test-1a.masters.complex.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -374,7 +374,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
   monitoring {
     enabled = true
   }
-  name_prefix = "nodes.complex.example.com-"
+  name = "nodes.complex.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
