@@ -222,6 +222,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 					fmt.Fprintf(b, "   internal consistency error!\n")
 					fmt.Fprintf(b, "    actual: %+v\n", r.a)
 					fmt.Fprintf(b, "    expect: %+v\n", r.e)
+					fmt.Fprintf(b, "    change: %+v\n", r.changes)
 					continue
 				}
 
