@@ -2293,6 +2293,9 @@ spec:
                       agentPrometheusPort:
                         description: AgentPrometheusPort is the port to listen to for Prometheus metrics. Defaults to 9090.
                         type: integer
+                      agentRepository:
+                        description: AgentRepository specifies the repository for cilium agent
+                        type: string
                       allowLocalhost:
                         description: AllowLocalhost is not implemented and may be removed in the future. Setting this has no effect.
                         type: string
@@ -2395,6 +2398,9 @@ spec:
                               type: string
                             type: array
                         type: object
+                      hubbleRelayRepository:
+                        description: HubbleRelayRepository specifies the repository for cilium relay
+                        type: string
                       ipam:
                         description: Ipam specifies the IP address allocation mode to use. Possible values are "crd" and "eni". "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false. "crd" will use CRDs for controlling IP address management. "hostscope" will use hostscope IPAM mode. "kubernetes" will use addersing based on node pod CIDR. Empty value will use host-scope address management.
                         type: string
@@ -2476,6 +2482,9 @@ spec:
                         type: string
                       nodeInitBootstrapFile:
                         description: NodeInitBootstrapFile is not implemented and may be removed in the future. Setting this has no effect.
+                        type: string
+                      operatorRepository:
+                        description: OperatorRepository specifies the repository for cilium operator
                         type: string
                       pprof:
                         description: Pprof is not implemented and may be removed in the future. Setting this has no effect.

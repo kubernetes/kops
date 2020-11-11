@@ -138,6 +138,16 @@ Once the secret has been created, encryption can be enabled by setting `enableEn
       enableEncryption: true
 ```
 
+#### Custom images
+
+If you want to use other image repositories than the default, you can specify them like this:
+ ```yaml
+   networking:
+    cilium:
+      agentRepository: registry.dummy.com/cillium/cillium
+      operatorRepository: registry.dummy.com/cillium/operator
+      hubbleRelayRepository: registry.dummy.com/cillium/hubble-relay
+ ```
 
 ## Getting help
 

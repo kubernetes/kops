@@ -42,6 +42,18 @@ func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
 		c.Version = "v1.8.4"
 	}
 
+	if c.AgentRepository == "" {
+		c.AgentRepository = "docker.io/cilium/cilium"
+	}
+
+	if c.OperatorRepository == "" {
+		c.OperatorRepository = "docker.io/cilium/operator"
+	}
+
+	if c.HubbleRelayRepository == "" {
+		c.HubbleRelayRepository = "docker.io/cilium/hubble-relay"
+	}
+
 	version, _ := semver.ParseTolerant(c.Version)
 
 	if c.BPFCTGlobalAnyMax == 0 {

@@ -244,7 +244,12 @@ const CiliumIpamEni = "eni"
 type CiliumNetworkingSpec struct {
 	// Version is the version of the Cilium agent and the Cilium Operator.
 	Version string `json:"version,omitempty"`
-
+	// AgentRepository specifies the repository for cilium agent
+	AgentRepository string `json:"agentRepository,omitempty"`
+	// OperatorRepository specifies the repository for cilium operator
+	OperatorRepository string `json:"operatorRepository,omitempty"`
+	// HubbleRelayRepository specifies the repository for cilium relay
+	HubbleRelayRepository string `json:"hubbleRelayRepository,omitempty"`
 	// AccessLog is not implemented and may be removed in the future.
 	// Setting this has no effect.
 	AccessLog string `json:"accessLog,omitempty"`

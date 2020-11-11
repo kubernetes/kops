@@ -1438,6 +1438,9 @@ func Convert_kops_CanalNetworkingSpec_To_v1alpha2_CanalNetworkingSpec(in *kops.C
 
 func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *CiliumNetworkingSpec, out *kops.CiliumNetworkingSpec, s conversion.Scope) error {
 	out.Version = in.Version
+	out.AgentRepository = in.AgentRepository
+	out.OperatorRepository = in.OperatorRepository
+	out.HubbleRelayRepository = in.HubbleRelayRepository
 	out.AccessLog = in.AccessLog
 	out.AgentLabels = in.AgentLabels
 	out.AgentPrometheusPort = in.AgentPrometheusPort
@@ -1530,6 +1533,9 @@ func Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *Cili
 
 func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *kops.CiliumNetworkingSpec, out *CiliumNetworkingSpec, s conversion.Scope) error {
 	out.Version = in.Version
+	out.AgentRepository = in.AgentRepository
+	out.OperatorRepository = in.OperatorRepository
+	out.HubbleRelayRepository = in.HubbleRelayRepository
 	out.AccessLog = in.AccessLog
 	out.AgentLabels = in.AgentLabels
 	out.AgentPrometheusPort = in.AgentPrometheusPort

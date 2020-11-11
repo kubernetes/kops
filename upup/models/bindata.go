@@ -3679,7 +3679,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{ .Version  }}"
+        image: "{{ .AgentRepository }}:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -3800,7 +3800,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "{{ .AgentRepository }}:{{ .Version }}"
 ## end of ` + "`" + `with .Networking.Cilium` + "`" + `
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -3965,7 +3965,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{ .Version }}"
+        image: "{{ .OperatorRepository }}:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
@@ -4090,7 +4090,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "docker.io/cilium/hubble-relay:{{ .Networking.Cilium.Version }}"
+          image: "{{ .HubbleRelayRepository }}:{{ .Version }}"
           imagePullPolicy: IfNotPresent
           command:
             - "hubble-relay"
@@ -4582,7 +4582,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{ .Version  }}"
+        image: "{{ .AgentRepository }}:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -4689,7 +4689,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "{{ .AgentRepository }}:{{ .Version }}"
 ## end of ` + "`" + `with .Networking.Cilium` + "`" + `
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -4895,7 +4895,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{ .Version }}"
+        image: "{{ .OperatorRepository }}:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
