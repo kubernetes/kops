@@ -426,7 +426,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 
 	var clusterValidator validation.ClusterValidator
 	if !options.CloudOnly {
-		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, k8sClient)
+		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, config, k8sClient)
 		if err != nil {
 			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}
