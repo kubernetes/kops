@@ -15641,6 +15641,9 @@ spec:
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
+{{ if WithDefaultBool .CloudConfig.Openstack.BlockStorage.CSITopologySupport false }}
+            - --feature-gates=Topology=true
+{{ end }}
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -15671,7 +15674,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder-csi-plugin
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:{{ OpenStackCCMTag }}
+          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCCMTag}} {{- end -}}"
           args:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
@@ -15800,7 +15803,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:{{ OpenStackCCMTag }}
+          image: "{{- if .CloudConfig.Openstack.BlockStorage.CSIPluginImage -}} {{ .CloudConfig.Openstack.BlockStorage.CSIPluginImage }} {{- else -}} docker.io/k8scloudprovider/cinder-csi-plugin:{{OpenStackCCMTag}} {{- end -}}"
           args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
