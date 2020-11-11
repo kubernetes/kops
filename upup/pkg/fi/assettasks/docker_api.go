@@ -20,8 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/docker/engine-api/client"
-	"github.com/docker/engine-api/types"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 	"k8s.io/klog/v2"
 )
 
@@ -33,7 +34,7 @@ type dockerAPI struct {
 // newDockerAPI builds a dockerAPI object, for talking to docker via the API
 func newDockerAPI() (*dockerAPI, error) {
 	klog.V(4).Infof("docker creating api client")
-	c, err := client.NewEnvClient()
+	c, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("error building docker client: %v", err)
 	}
@@ -58,10 +59,12 @@ func newDockerAPI() (*dockerAPI, error) {
 }
 
 // findImage does a `docker images` via the API, and finds the specified image
-func (d *dockerAPI) findImage(name string) (*types.Image, error) {
+func (d *dockerAPI) findImage(name string) (*types.ImageSummary, error) {
 	klog.V(4).Infof("docker query for image %q", name)
+	filter := filters.Args{}
+	filter.Add("reference", name)
 	options := types.ImageListOptions{
-		MatchName: name,
+		Filters: filter,
 	}
 	ctx := context.Background()
 	images, err := d.client.ImageList(ctx, options)
@@ -83,8 +86,7 @@ func (d *dockerAPI) tagImage(imageID string, ref string) error {
 	klog.V(4).Infof("docker tag for image %q, tag %q", imageID, ref)
 
 	ctx := context.Background()
-	options := types.ImageTagOptions{}
-	err := d.client.ImageTag(ctx, imageID, ref, options)
+	err := d.client.ImageTag(ctx, imageID, ref)
 	if err != nil {
 		return fmt.Errorf("error tagging image %q with tag %q: %v", imageID, ref, err)
 	}

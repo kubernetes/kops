@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "errors.go",
+        "handler.go",
+        "register.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/docker/distribution/registry/api/errcode",
+    importpath = "github.com/docker/distribution/registry/api/errcode",
+    visibility = ["//visibility:public"],
+)
