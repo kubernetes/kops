@@ -556,56 +556,6 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 	}
 }
 
-func Test_ValidateNoComponentFailures(t *testing.T) {
-	v, err := testValidate(t, nil, []runtime.Object{
-		&v1.ComponentStatus{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: "testcomponent",
-			},
-			Conditions: []v1.ComponentCondition{
-				{
-					Status: v1.ConditionTrue,
-				},
-			},
-		},
-	})
-
-	require.NoError(t, err)
-	assert.Empty(t, v.Failures)
-}
-
-func Test_ValidateComponentFailure(t *testing.T) {
-	for _, status := range []v1.ConditionStatus{
-		v1.ConditionFalse,
-		v1.ConditionUnknown,
-	} {
-		t.Run(string(status), func(t *testing.T) {
-			v, err := testValidate(t, nil, []runtime.Object{
-				&v1.ComponentStatus{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "testcomponent",
-					},
-					Conditions: []v1.ComponentCondition{
-						{
-							Status: status,
-						},
-					},
-				},
-			})
-
-			require.NoError(t, err)
-			if !assert.Len(t, v.Failures, 1) ||
-				!assert.Equal(t, &ValidationError{
-					Kind:    "ComponentStatus",
-					Name:    "testcomponent",
-					Message: "component \"testcomponent\" is unhealthy",
-				}, v.Failures[0]) {
-				printDebug(t, v)
-			}
-		})
-	}
-}
-
 func Test_ValidateNoPodFailures(t *testing.T) {
 	testpods := []map[string]string{}
 
