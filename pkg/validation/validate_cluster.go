@@ -170,36 +170,11 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	}
 	readyNodes := validation.validateNodes(cloudGroups, v.instanceGroups)
 
-	if err := validation.collectComponentFailures(ctx, v.k8sClient); err != nil {
-		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
-	}
-
 	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, v.instanceGroups); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
 	return validation, nil
-}
-
-func (v *ValidationCluster) collectComponentFailures(ctx context.Context, client kubernetes.Interface) error {
-	componentList, err := client.CoreV1().ComponentStatuses().List(ctx, metav1.ListOptions{})
-	if err != nil {
-		return fmt.Errorf("error listing ComponentStatuses: %v", err)
-	}
-
-	// TODO: Add logic to figure out the InstanceGroup given a component
-	for _, component := range componentList.Items {
-		for _, condition := range component.Conditions {
-			if condition.Status != v1.ConditionTrue {
-				v.addError(&ValidationError{
-					Kind:    "ComponentStatus",
-					Name:    component.Name,
-					Message: fmt.Sprintf("component %q is unhealthy", component.Name),
-				})
-			}
-		}
-	}
-	return nil
 }
 
 var masterStaticPods = []string{
