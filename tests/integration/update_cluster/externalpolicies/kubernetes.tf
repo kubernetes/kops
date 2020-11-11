@@ -268,13 +268,13 @@ resource "aws_iam_instance_profile" "nodes-externalpolicies-example-com" {
   role = aws_iam_role.nodes-externalpolicies-example-com.name
 }
 
-resource "aws_iam_role_policy_attachment" "master-policyoverride-1178482798" {
-  policy_arn = "aws:arn:iam:123456789000:policy:test-policy"
+resource "aws_iam_role_policy_attachment" "master-policyoverride-1242070525" {
+  policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
   role       = aws_iam_role.masters-externalpolicies-example-com.name
 }
 
-resource "aws_iam_role_policy_attachment" "node-policyoverride-1178482798" {
-  policy_arn = "aws:arn:iam:123456789000:policy:test-policy"
+resource "aws_iam_role_policy_attachment" "node-policyoverride-1242070525" {
+  policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
   role       = aws_iam_role.nodes-externalpolicies-example-com.name
 }
 
