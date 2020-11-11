@@ -50,11 +50,11 @@ spec:
     nodes: public
   externalPolicies:
     node:
-      - aws:arn:iam:123456789000:policy:test-policy
+      - arn:aws:iam::123456789000:policy/test-policy
     master:
-      - aws:arn:iam:123456789000:policy:test-policy
+      - arn:aws:iam::123456789000:policy/test-policy
     bastion:
-      - aws:arn:iam:123456789000:policy:test-policy
+      - arn:aws:iam::123456789000:policy/test-policy
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a
