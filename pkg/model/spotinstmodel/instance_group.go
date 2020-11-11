@@ -107,6 +107,11 @@ const (
 	// instance group to specify the scale down configuration used by the auto scaler.
 	InstanceGroupLabelAutoScalerScaleDownMaxPercentage     = "spotinst.io/autoscaler-scale-down-max-percentage"
 	InstanceGroupLabelAutoScalerScaleDownEvaluationPeriods = "spotinst.io/autoscaler-scale-down-evaluation-periods"
+
+	// InstanceGroupLabelAutoScalerResourceLimits* are the metadata labels used on the
+	// instance group to specify the resource limits configuration used by the auto scaler.
+	InstanceGroupLabelAutoScalerResourceLimitsMaxVCPU   = "spotinst.io/autoscaler-resource-limits-max-vcpu"
+	InstanceGroupLabelAutoScalerResourceLimitsMaxMemory = "spotinst.io/autoscaler-resource-limits-max-memory"
 )
 
 // InstanceGroupModelBuilder configures InstanceGroup objects
@@ -850,6 +855,30 @@ func (b *InstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *ko
 					opts.Down = new(spotinsttasks.AutoScalerDownOpts)
 				}
 				opts.Down.EvaluationPeriods = fi.Int(int(fi.Int64Value(v)))
+			}
+
+		case InstanceGroupLabelAutoScalerResourceLimitsMaxVCPU:
+			{
+				v, err := parseInt(v)
+				if err != nil {
+					return nil, err
+				}
+				if opts.ResourceLimits == nil {
+					opts.ResourceLimits = new(spotinsttasks.AutoScalerResourceLimitsOpts)
+				}
+				opts.ResourceLimits.MaxVCPU = fi.Int(int(fi.Int64Value(v)))
+			}
+
+		case InstanceGroupLabelAutoScalerResourceLimitsMaxMemory:
+			{
+				v, err := parseInt(v)
+				if err != nil {
+					return nil, err
+				}
+				if opts.ResourceLimits == nil {
+					opts.ResourceLimits = new(spotinsttasks.AutoScalerResourceLimitsOpts)
+				}
+				opts.ResourceLimits.MaxMemory = fi.Int(int(fi.Int64Value(v)))
 			}
 		}
 	}

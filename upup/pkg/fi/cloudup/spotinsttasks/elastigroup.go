@@ -81,13 +81,14 @@ type RootVolumeOpts struct {
 }
 
 type AutoScalerOpts struct {
-	Enabled   *bool
-	ClusterID *string
-	Cooldown  *int
-	Labels    map[string]string
-	Taints    []*corev1.Taint
-	Headroom  *AutoScalerHeadroomOpts
-	Down      *AutoScalerDownOpts
+	Enabled        *bool
+	ClusterID      *string
+	Cooldown       *int
+	Labels         map[string]string
+	Taints         []*corev1.Taint
+	Headroom       *AutoScalerHeadroomOpts
+	Down           *AutoScalerDownOpts
+	ResourceLimits *AutoScalerResourceLimitsOpts
 }
 
 type AutoScalerHeadroomOpts struct {
@@ -100,6 +101,11 @@ type AutoScalerHeadroomOpts struct {
 type AutoScalerDownOpts struct {
 	MaxPercentage     *float64
 	EvaluationPeriods *int
+}
+
+type AutoScalerResourceLimitsOpts struct {
+	MaxVCPU   *int
+	MaxMemory *int
 }
 
 var _ fi.Task = &Elastigroup{}
@@ -1393,12 +1399,13 @@ type terraformElastigroupIntegration struct {
 }
 
 type terraformAutoScaler struct {
-	Enabled    *bool                        `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
-	AutoConfig *bool                        `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
-	Cooldown   *int                         `json:"autoscale_cooldown,omitempty" cty:"autoscale_cooldown"`
-	Headroom   *terraformAutoScalerHeadroom `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
-	Down       *terraformAutoScalerDown     `json:"autoscale_down,omitempty" cty:"autoscale_down"`
-	Labels     []*terraformKV               `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
+	Enabled        *bool                              `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
+	AutoConfig     *bool                              `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
+	Cooldown       *int                               `json:"autoscale_cooldown,omitempty" cty:"autoscale_cooldown"`
+	Headroom       *terraformAutoScalerHeadroom       `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
+	Down           *terraformAutoScalerDown           `json:"autoscale_down,omitempty" cty:"autoscale_down"`
+	ResourceLimits *terraformAutoScalerResourceLimits `json:"resource_limits,omitempty" cty:"resource_limits"`
+	Labels         []*terraformKV                     `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
 }
 
 type terraformAutoScalerHeadroom struct {
@@ -1411,6 +1418,11 @@ type terraformAutoScalerHeadroom struct {
 type terraformAutoScalerDown struct {
 	MaxPercentage     *float64 `json:"max_scale_down_percentage,omitempty" cty:"max_scale_down_percentage"`
 	EvaluationPeriods *int     `json:"evaluation_periods,omitempty" cty:"evaluation_periods"`
+}
+
+type terraformAutoScalerResourceLimits struct {
+	MaxVCPU   *int `json:"max_vcpu,omitempty" cty:"max_vcpu"`
+	MaxMemory *int `json:"max_memory_gib,omitempty" cty:"max_memory_gib"`
 }
 
 type terraformKV struct {
