@@ -575,12 +575,12 @@ func DeleteVolume(cloud fi.Cloud, r *resources.Resource) error {
 	}
 	_, err := c.EC2().DeleteVolume(request)
 	if err != nil {
+		if awsup.AWSErrorCode(err) == "InvalidVolume.NotFound" {
+			klog.V(2).Infof("Got InvalidVolume.NotFound error deleting Volume %q; will treat as already-deleted", id)
+			return nil
+		}
 		if IsDependencyViolation(err) {
 			return err
-		}
-		if awsup.AWSErrorCode(err) == "InvalidVolume.NotFound" {
-			// Concurrently deleted
-			return nil
 		}
 		return fmt.Errorf("error deleting Volume %q: %v", id, err)
 	}
@@ -1744,7 +1744,7 @@ func DeleteElasticIP(cloud fi.Cloud, t *resources.Resource) error {
 	_, err := c.EC2().ReleaseAddress(request)
 	if err != nil {
 		if awsup.AWSErrorCode(err) == "InvalidAllocationID.NotFound" {
-			klog.V(2).Infof("Got InvalidAllocationID.NotFound error describing ElasticIP %q; will treat as already-deleted", id)
+			klog.V(2).Infof("Got InvalidAllocationID.NotFound error deleting ElasticIP %q; will treat as already-deleted", id)
 			return nil
 		}
 
