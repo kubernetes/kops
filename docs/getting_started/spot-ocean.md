@@ -167,10 +167,12 @@ metadata:
 | `spotinst.io/autoscaler-cooldown` | Specify a period of time, in seconds, that Ocean should wait between scaling actions. | `300` |
 | `spotinst.io/autoscaler-scale-down-max-percentage` | Specify the maximum scale down percentage. | none |
 | `spotinst.io/autoscaler-scale-down-evaluation-periods` | Specify the number of evaluation periods that should accumulate before a scale down action takes place. | `5` |
+| `spotinst.io/autoscaler-resource-limits-max-vcpu` | Specify the maximum number of virtual CPUs that can be allocated to the cluster. | none |
+| `spotinst.io/autoscaler-resource-limits-max-memory` | Specify the maximum amount of total physical memory (in GiB units) that can be allocated to the cluster. | none |
 
 ## Documentation
 
-If you're new to [Spot](https://spot.io/) and want to get started, please checkout our [Getting Started](https://help.spot.io/getting-started-with-spotinst/) guide, available on the [Spot Help Center](https://help.spot.io/) website.
+If you're new to [Spot](https://spot.io/) and want to get started, please checkout our [Getting Started](https://docs.spot.io/connect-your-cloud-provider/) guide, available on the [Spot Documentation](https://docs.spot.io/) website.
 
 ## Getting Help
 
