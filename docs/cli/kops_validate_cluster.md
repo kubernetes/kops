@@ -9,10 +9,10 @@ Validate a kops cluster.
 
 This commands validates the following components:
 
-  1.  All k8s masters are running and have "Ready" status.
-  2.  All k8s nodes are running and have "Ready" status.
-  3.  Component status returns healthy for all components.
-  4.  All pods with a critical priority are running and healthy.
+  1.  All control plane nodes are running and have "Ready" status.
+  2.  All worker nodes are running and have "Ready" status.
+  3.  All control plane nodes have the expected pods.
+  4.  All pods with a critical priority are running and have "Ready" status.
 
 ```
 kops validate cluster [flags]
