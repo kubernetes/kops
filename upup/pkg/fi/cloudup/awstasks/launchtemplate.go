@@ -20,16 +20,16 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"k8s.io/klog/v2"
 )
 
 // LaunchTemplate defines the specification for a launch template.
 // +kops:fitask
 type LaunchTemplate struct {
+	// ID is the launch configuration name
+	ID *string
 	// Name is the name of the configuration
 	Name *string
 	// Lifecycle is the resource lifecycle
@@ -41,10 +41,11 @@ type LaunchTemplate struct {
 	BlockDeviceMappings []*BlockDeviceMapping
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
-	// ID is the launch configuration name
-	ID *string
 	// ImageID is the AMI to use for the instances
 	ImageID *string
+	// InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated,
+	// or stopped after interruption
+	InstanceInterruptionBehavior *string
 	// InstanceMonitoring indicates if monitoring is enabled
 	InstanceMonitoring *bool
 	// InstanceType is the type of instance we are using
@@ -73,9 +74,6 @@ type LaunchTemplate struct {
 	Tenancy *string
 	// UserData is the user data configuration
 	UserData *fi.ResourceHolder
-	// InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated,
-	// or stopped after interruption
-	InstanceInterruptionBehavior *string
 }
 
 var (
@@ -87,11 +85,6 @@ var (
 // CompareWithID implements the comparable interface
 func (t *LaunchTemplate) CompareWithID() *string {
 	return t.ID
-}
-
-// LaunchTemplateName returns the lanuch template name
-func (t *LaunchTemplate) LaunchTemplateName() string {
-	return fmt.Sprintf("%s-%s", fi.StringValue(t.Name), fi.BuildTimestampString())
 }
 
 // buildRootDevice is responsible for retrieving a boot device mapping from the image name
@@ -154,22 +147,16 @@ func (t *LaunchTemplate) CheckChanges(a, e, changes *LaunchTemplate) error {
 func (t *LaunchTemplate) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
-	configurations, err := t.findLaunchTemplates(c)
+	list, err := t.findAllLaunchTemplates(c)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(configurations) <= RetainLaunchConfigurationCount() {
-		return nil, nil
+	for _, lt := range list {
+		if aws.StringValue(lt.LaunchTemplateName) != aws.StringValue(t.Name) {
+			removals = append(removals, &deleteLaunchTemplate{lc: lt})
+		}
 	}
-
-	configurations = configurations[:len(configurations)-RetainLaunchConfigurationCount()]
-
-	for _, configuration := range configurations {
-		removals = append(removals, &deleteLaunchTemplate{lc: configuration})
-	}
-
-	klog.V(2).Infof("will delete launch template: %v", removals)
 
 	return removals, nil
 }

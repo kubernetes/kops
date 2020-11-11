@@ -75,7 +75,7 @@ resource "aws_launch_template" "test" {
   monitoring {
     enabled = true
   }
-  name_prefix = "test-"
+  name = "test"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -154,7 +154,7 @@ resource "aws_launch_template" "test" {
   monitoring {
     enabled = true
   }
-  name_prefix = "test-"
+  name = "test"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
