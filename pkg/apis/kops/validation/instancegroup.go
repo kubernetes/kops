@@ -248,7 +248,7 @@ func validateInstanceProfile(v *kops.IAMProfileSpec, fldPath *field.Path) field.
 	if v != nil && v.Profile != nil {
 		instanceProfileARN := *v.Profile
 		parsedARN, err := arn.Parse(instanceProfileARN)
-		if err != nil || !strings.HasPrefix(parsedARN.Resource, "instance-profile") {
+		if err != nil || !strings.HasPrefix(parsedARN.Resource, "instance-profile/") {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("profile"), instanceProfileARN,
 				"Instance Group IAM Instance Profile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsExampleRole"))
 		}
