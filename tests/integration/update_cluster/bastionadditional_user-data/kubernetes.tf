@@ -429,7 +429,7 @@ resource "aws_launch_template" "bastion-bastionuserdata-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.bastionuserdata.example.com-"
+  name = "bastion.bastionuserdata.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -493,7 +493,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-bastionuserdata-exampl
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.bastionuserdata.example.com-"
+  name = "master-us-test-1a.masters.bastionuserdata.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -553,7 +553,7 @@ resource "aws_launch_template" "nodes-bastionuserdata-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.bastionuserdata.example.com-"
+  name = "nodes.bastionuserdata.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true

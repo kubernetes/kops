@@ -30,7 +30,7 @@ func (m *MockAutoscaling) AttachInstances(input *autoscaling.AttachInstancesInpu
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.V(2).Infof("AttachInstances %v", input)
+	klog.V(2).Infof("Mock AttachInstances %v", input)
 
 	g := m.Groups[aws.StringValue(input.AutoScalingGroupName)]
 	if g == nil {
@@ -48,7 +48,8 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.V(2).Infof("CreateAutoScalingGroup %v", input)
+	klog.V(2).Infof("Mock CreateAutoScalingGroup %v", input)
+
 	createdTime := time.Now().UTC()
 
 	g := &autoscaling.Group{
@@ -75,6 +76,13 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 		VPCZoneIdentifier:   input.VPCZoneIdentifier,
 	}
 
+	if input.LaunchTemplate != nil {
+		g.LaunchTemplate.LaunchTemplateName = input.AutoScalingGroupName
+		if g.LaunchTemplate.LaunchTemplateId == nil {
+			return nil, fmt.Errorf("AutoScalingGroup has LaunchTemplate without ID")
+		}
+	}
+
 	for _, tag := range input.Tags {
 		g.Tags = append(g.Tags, &autoscaling.TagDescription{
 			Key:               tag.Key,
@@ -97,7 +105,7 @@ func (m *MockAutoscaling) EnableMetricsCollection(request *autoscaling.EnableMet
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("EnableMetricsCollection: %v", request)
+	klog.V(2).Infof("Mock EnableMetricsCollection: %v", request)
 
 	g := m.Groups[*request.AutoScalingGroupName]
 	if g == nil {
@@ -129,7 +137,7 @@ func (m *MockAutoscaling) SuspendProcesses(input *autoscaling.ScalingProcessQuer
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("EnableMetricsCollection: %v", input)
+	klog.V(2).Infof("Mock SuspendProcesses: %v", input)
 
 	g := m.Groups[*input.AutoScalingGroupName]
 	if g == nil {
@@ -156,6 +164,8 @@ func (m *MockAutoscaling) SuspendProcesses(input *autoscaling.ScalingProcessQuer
 func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+
+	klog.V(2).Infof("Mock DescribeAutoScalingGroups: %v", input)
 
 	groups := []*autoscaling.Group{}
 	for _, group := range m.Groups {
@@ -236,7 +246,7 @@ func (m *MockAutoscaling) DeleteAutoScalingGroup(request *autoscaling.DeleteAuto
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("DeleteAutoScalingGroup: %v", request)
+	klog.V(2).Infof("Mock DeleteAutoScalingGroup: %v", request)
 
 	id := aws.StringValue(request.AutoScalingGroupName)
 	o := m.Groups[id]

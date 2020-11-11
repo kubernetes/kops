@@ -429,7 +429,7 @@ resource "aws_launch_template" "bastion-privatecanal-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.privatecanal.example.com-"
+  name = "bastion.privatecanal.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -492,7 +492,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatecanal-example-c
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.privatecanal.example.com-"
+  name = "master-us-test-1a.masters.privatecanal.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -552,7 +552,7 @@ resource "aws_launch_template" "nodes-privatecanal-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.privatecanal.example.com-"
+  name = "nodes.privatecanal.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true

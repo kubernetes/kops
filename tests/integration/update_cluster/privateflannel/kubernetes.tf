@@ -429,7 +429,7 @@ resource "aws_launch_template" "bastion-privateflannel-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.privateflannel.example.com-"
+  name = "bastion.privateflannel.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -492,7 +492,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.privateflannel.example.com-"
+  name = "master-us-test-1a.masters.privateflannel.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -552,7 +552,7 @@ resource "aws_launch_template" "nodes-privateflannel-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.privateflannel.example.com-"
+  name = "nodes.privateflannel.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
