@@ -23,21 +23,21 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/blang/semver/v4"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/upup/pkg/fi"
-
 	"k8s.io/apimachinery/pkg/api/validation"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
@@ -158,10 +158,16 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateNodeTerminationHandler(c, spec.NodeTerminationHandler, fieldPath.Child("nodeTerminationHandler"))...)
 	}
 
-	// IAM additionalPolicies
+	// IAM additional policies
 	if spec.AdditionalPolicies != nil {
 		for k, v := range *spec.AdditionalPolicies {
 			allErrs = append(allErrs, validateAdditionalPolicy(k, v, fieldPath.Child("additionalPolicies"))...)
+		}
+	}
+	// IAM external policies
+	if spec.ExternalPolicies != nil {
+		for k, v := range *spec.ExternalPolicies {
+			allErrs = append(allErrs, validateExternalPolicies(k, v, fieldPath.Child("externalPolicies"))...)
 		}
 	}
 
@@ -795,31 +801,51 @@ func validateNetworkingGCE(c *kops.ClusterSpec, v *kops.GCENetworkingSpec, fldPa
 }
 
 func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) field.ErrorList {
-	errs := field.ErrorList{}
+	allErrs := field.ErrorList{}
 
 	var valid []string
 	for _, r := range kops.AllInstanceGroupRoles {
 		valid = append(valid, strings.ToLower(string(r)))
 	}
-	errs = append(errs, IsValidValue(fldPath, &role, valid)...)
+	allErrs = append(allErrs, IsValidValue(fldPath, &role, valid)...)
 
 	statements, err := iam.ParseStatements(policy)
 	if err != nil {
-		errs = append(errs, field.Invalid(fldPath.Key(role), policy, "policy was not valid JSON: "+err.Error()))
+		allErrs = append(allErrs, field.Invalid(fldPath.Key(role), policy, "policy was not valid JSON: "+err.Error()))
 	}
 
 	// Trivial validation of policy, mostly to make sure it isn't some other random object
 	for i, statement := range statements {
 		fldEffect := fldPath.Key(role).Index(i).Child("Effect")
 		if statement.Effect == "" {
-			errs = append(errs, field.Required(fldEffect, "Effect must be specified for IAM policy"))
+			allErrs = append(allErrs, field.Required(fldEffect, "Effect must be specified for IAM policy"))
 		} else {
 			value := string(statement.Effect)
-			errs = append(errs, IsValidValue(fldEffect, &value, []string{"Allow", "Deny"})...)
+			allErrs = append(allErrs, IsValidValue(fldEffect, &value, []string{"Allow", "Deny"})...)
 		}
 	}
 
-	return errs
+	return allErrs
+}
+
+func validateExternalPolicies(role string, policies []string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	var valid []string
+	for _, r := range kops.AllInstanceGroupRoles {
+		valid = append(valid, strings.ToLower(string(r)))
+	}
+	allErrs = append(allErrs, IsValidValue(fldPath, &role, valid)...)
+
+	for _, policy := range policies {
+		parsedARN, err := arn.Parse(policy)
+		if err != nil || !strings.HasPrefix(parsedARN.Resource, "policy/") {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child(role), policy,
+				"Policy must be a valid AWS ARN such as arn:aws:iam::123456789012:policy/KopsExamplePolicy"))
+		}
+	}
+
+	return allErrs
 }
 
 func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
