@@ -654,11 +654,10 @@ Cluster autoscaler can be enabled to automatically adjust the size of the kubern
 
 ```yaml
 spec:
-  cluster:
-    clusterAutoscaler:
-      enabled: true
-      skipNodesWithLocalStorage: true
-      skipNodesWithSystemPods: true
+  clusterAutoscaler:
+    enabled: true
+    skipNodesWithLocalStorage: true
+    skipNodesWithSystemPods: true
 ```
 
 Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
