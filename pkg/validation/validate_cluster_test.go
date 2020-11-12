@@ -121,7 +121,7 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 
 	mockcloud := BuildMockCloud(t, groups, cluster, instanceGroups)
 
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, fake.NewSimpleClientset(objects...))
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset(objects...))
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 
 	mockcloud := BuildMockCloud(t, nil, cluster, instanceGroups)
 
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, fake.NewSimpleClientset())
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset())
 	require.NoError(t, err)
 	v, err := validator.Validate()
 	require.NoError(t, err)
