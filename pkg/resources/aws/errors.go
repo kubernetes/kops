@@ -26,7 +26,7 @@ func IsDependencyViolation(err error) bool {
 	switch code {
 	case "":
 		return false
-	case "DependencyViolation", "VolumeInUse", "InvalidIPAddress.InUse":
+	case "AuthFailure", "DependencyViolation", "InvalidIPAddress.InUse", "VolumeInUse", "ResourceInUse":
 		return true
 	default:
 		klog.Infof("unexpected aws error code: %q", code)
