@@ -59,7 +59,7 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.18.0"
-    recommendedVersion: 1.18.11
+    recommendedVersion: 1.18.12
     requiredVersion: 1.18.0
   - range: ">=1.17.0"
     recommendedVersion: 1.17.14
@@ -93,7 +93,7 @@ spec:
   - range: ">=1.18.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.18.0
-    kubernetesVersion: 1.18.11
+    kubernetesVersion: 1.18.12
   - range: ">=1.17.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.17.0
