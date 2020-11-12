@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/pager"
 	"k8s.io/kops/upup/pkg/fi"
 
@@ -60,7 +59,7 @@ type clusterValidatorImpl struct {
 	cluster        *kops.Cluster
 	cloud          fi.Cloud
 	instanceGroups []*kops.InstanceGroup
-	config         *rest.Config
+	host           string
 	k8sClient      kubernetes.Interface
 }
 
@@ -78,8 +77,8 @@ type ValidationNode struct {
 }
 
 // hasPlaceHolderIP checks if the API DNS has been updated.
-func hasPlaceHolderIP(config *rest.Config) (bool, error) {
-	apiAddr, err := url.Parse(config.Host)
+func hasPlaceHolderIP(host string) (bool, error) {
+	apiAddr, err := url.Parse(host)
 	if err != nil {
 		return true, fmt.Errorf("unable to parse Kubernetes cluster API URL: %v", err)
 	}
@@ -97,7 +96,7 @@ func hasPlaceHolderIP(config *rest.Config) (bool, error) {
 	return false, nil
 }
 
-func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, config *rest.Config, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface) (ClusterValidator, error) {
 	var instanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {
@@ -113,7 +112,7 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 		cluster:        cluster,
 		cloud:          cloud,
 		instanceGroups: instanceGroups,
-		config:         config,
+		host:           host,
 		k8sClient:      k8sClient,
 	}, nil
 }
@@ -127,7 +126,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 
 	// Do not use if we are running gossip
 	if !dns.IsGossipHostname(clusterName) {
-		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(v.config)
+		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(v.host)
 		if err != nil {
 			return nil, err
 		}
