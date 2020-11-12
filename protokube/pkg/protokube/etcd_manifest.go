@@ -73,9 +73,20 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 		}
 		// ensure we have the correct probe schema
 		if c.isTLS() {
-			container.LivenessProbe.TCPSocket = &v1.TCPSocketAction{
-				Host: "127.0.0.1",
-				Port: intstr.FromInt(c.ClientPort),
+			if c.TLSAuth {
+				container.LivenessProbe.Exec = &v1.ExecAction{
+					Command: []string{
+						"/bin/sh", "-ec",
+						fmt.Sprintf("ETCDCTL_API=3 etcdctl --endpoints=https://localhost:%d --cert=%s --key=%s --cacert=%s endpoint status",
+							c.ClientPort, c.TLSCert, c.TLSKey, c.TLSCA),
+					},
+				}
+
+			} else {
+				container.LivenessProbe.TCPSocket = &v1.TCPSocketAction{
+					Host: "127.0.0.1",
+					Port: intstr.FromInt(c.ClientPort),
+				}
 			}
 		} else {
 			container.LivenessProbe.HTTPGet = &v1.HTTPGetAction{
