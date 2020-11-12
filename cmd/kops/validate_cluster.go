@@ -155,7 +155,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, cmd *cobra.Command
 	timeout := time.Now().Add(options.wait)
 	pollInterval := 10 * time.Second
 
-	validator, err := validation.NewClusterValidator(cluster, cloud, list, config, k8sClient)
+	validator, err := validation.NewClusterValidator(cluster, cloud, list, config.Host, k8sClient)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error creating validatior: %v", err)
 	}
