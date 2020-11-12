@@ -280,7 +280,7 @@ resource "aws_key_pair" "kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39
 }
 
 resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-com" {
-  name_prefix = "master-us-test-1a.masters.minimal-tf11.example.com-"
+  name = "master-us-test-1a.masters.minimal-tf11.example.com"
 
   lifecycle = {
     create_before_destroy = true
@@ -357,7 +357,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
 }
 
 resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
-  name_prefix = "nodes.minimal-tf11.example.com-"
+  name = "nodes.minimal-tf11.example.com"
 
   lifecycle = {
     create_before_destroy = true
