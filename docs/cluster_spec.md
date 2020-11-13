@@ -281,18 +281,28 @@ spec:
     	- "key=value"
 ```
 
-### audit logging
+### Audit Logging
 
-Read more about this here: https://kubernetes.io/docs/admin/audit
+Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/
 
 ```yaml
 spec:
   kubeAPIServer:
-    auditLogPath: /var/log/kube-apiserver-audit.log
     auditLogMaxAge: 10
     auditLogMaxBackups: 1
     auditLogMaxSize: 100
-    auditPolicyFile: /srv/kubernetes/audit.yaml
+    auditLogPath: /var/log/kube-apiserver-audit.log
+    auditPolicyFile: /srv/kubernetes/audit/policy-config.yaml
+  fileAssets:
+  - name: audit-policy-config
+    path: /srv/kubernetes/audit/policy-config.yaml
+    roles:
+    - Master
+    content: |
+      apiVersion: audit.k8s.io/v1
+      kind: Policy
+      rules:
+      - level: Metadata
 ```
 
 **Note**: The auditPolicyFile is needed. If the flag is omitted, no events are logged.
@@ -301,24 +311,38 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 
-### dynamic audit configuration
-{{ kops_feature_table(kops_added_default='1.16', k8s_min='1.13') }}
+### Audit Webhook Backend
 
-Read more about this here: https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#dynamic-backend
+Webhook backend sends audit events to a remote API, which is assumed to be the same API as `kube-apiserver` exposes.
 
 ```yaml
 spec:
   kubeAPIServer:
-    auditDynamicConfiguration: true
+    auditWebhookBatchMaxWait: 5s
+    auditWebhookConfigFile: /srv/kubernetes/audit/webhook-config.yaml
+  fileAssets:
+  - name: audit-webhook-config
+    path: /srv/kubernetes/audit/webhook-config.yaml
+    roles:
+    - Master
+    content: |
+      apiVersion: v1
+      kind: Config
+      clusters:
+      - name: server
+        cluster:
+          server: https://my-webook-receiver
+      contexts:
+      - context:
+          cluster: server
+          user: ""
+        name: default-context
+      current-context: default-context
+      preferences: {}
+      users: []
 ```
 
-By enabling this feature you are allowing for auditsinks to be registered with the API server.  For information on audit sinks please read [Audit Sink](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#auditsink-v1alpha1-auditregistration). Currently, this feature is alpha and requires enabling the feature gate and a runtime config.
-
-**Note** For kubernetes versions greater than 1.13, this is an alpha feature that requires the API auditregistration.k8s.io/v1alpha1 to be enabled as a runtime-config option, and the feature gate DynamicAuditing to be also enabled.  The options --feature-gates=DynamicAuditing=true and --runtime-config=auditregistration.k8s.io/v1alpha1=true must be enabled on the API server in addition to this flag.  See the sections for how to enable feature gates [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#feature-gates).  See the section on how to enable alphas APIs in the runtime config [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#runtimeconfig).
-Also, an audit policy should be provided in the file assets section.  If the flag is omitted, no events are logged.
-You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
-
-Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
+**Note**: The audit logging config is also needed. If it is omitted, no events are shipped.
 
 ### Max Requests Inflight
 
