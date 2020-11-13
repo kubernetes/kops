@@ -44,7 +44,6 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var packages []string
 	if b.Distribution.IsDebianFamily() {
-		packages = append(packages, "nfs-common")
 		if b.IsKubernetesLT("1.20") {
 			packages = append(packages, "curl")
 			packages = append(packages, "wget")
@@ -56,7 +55,6 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: These packages have been auto-installed for a long time, and likely we don't need all of them any longer
 		packages = append(packages, "curl")
 		packages = append(packages, "wget")
-		packages = append(packages, "nfs-utils")
 		packages = append(packages, "python2")
 		packages = append(packages, "git")
 	} else {
