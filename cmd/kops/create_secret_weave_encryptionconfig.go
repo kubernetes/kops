@@ -35,7 +35,7 @@ var (
 	Create a new weave encryption secret, and store it in the state store.
 	Used to weave networking to use encrypted communication between nodes.
 
-	If no password is provided, kops will generate one at random.
+	If no password is provided, kOps will generate one at random.
 
 	WARNING: cannot be enabled on a running cluster without downtime.`))
 
@@ -89,7 +89,7 @@ func NewCmdCreateSecretWeaveEncryptionConfig(f *util.Factory, out io.Writer) *co
 	}
 
 	cmd.Flags().StringVarP(&options.WeavePasswordFilePath, "", "f", "", "Path to the weave password file (optional)")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kops secret if it already exists")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kOps secret if it already exists")
 
 	return cmd
 }

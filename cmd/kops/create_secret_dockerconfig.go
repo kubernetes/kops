@@ -88,7 +88,7 @@ func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Comma
 	}
 
 	cmd.Flags().StringVarP(&options.DockerConfigPath, "", "f", "", "Path to docker config JSON file")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kops secret if it already exists")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kOps secret if it already exists")
 
 	return cmd
 }
