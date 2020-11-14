@@ -52,7 +52,7 @@ const (
 
 var (
 	rootLong = templates.LongDesc(i18n.T(`
-	kOps is Kubernetes ops.
+	kOps is Kubernetes Operations.
 
 	kOps is the easiest way to get a production grade Kubernetes cluster up and running.
 	We like to think of it as kubectl for clusters.

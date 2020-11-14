@@ -3,15 +3,15 @@
 
 ## kops
 
-kops is Kubernetes ops.
+kOps is Kubernetes Operations.
 
 ### Synopsis
 
-kops is Kubernetes ops.
+kOps is Kubernetes Operations.
 
- kops is the easiest way to get a production grade Kubernetes cluster up and running. We like to think of it as kubectl for clusters.
+ kOps is the easiest way to get a production grade Kubernetes cluster up and running. We like to think of it as kubectl for clusters.
 
- kops helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently officially supported, with GCE and OpenStack in beta support.
+ kOps helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently officially supported, with GCE and OpenStack in beta support.
 
 ### Options
 
@@ -50,6 +50,6 @@ kops is Kubernetes ops.
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 * [kops update](kops_update.md)	 - Update a cluster.
 * [kops upgrade](kops_upgrade.md)	 - Upgrade a kubernetes cluster.
-* [kops validate](kops_validate.md)	 - Validate a kops cluster.
-* [kops version](kops_version.md)	 - Print the kops version information.
+* [kops validate](kops_validate.md)	 - Validate a kOps cluster.
+* [kops version](kops_version.md)	 - Print the kOps version information.
 
