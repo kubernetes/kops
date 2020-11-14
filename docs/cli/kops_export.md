@@ -44,6 +44,6 @@ Export configurations from a cluster.
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops export kubecfg](kops_export_kubecfg.md)	 - Export kubecfg.
 

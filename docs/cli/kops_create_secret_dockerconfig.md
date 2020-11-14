@@ -31,7 +31,7 @@ kops create secret dockerconfig [flags]
 
 ```
   -f, -- string   Path to docker config JSON file
-      --force     Force replace the kops secret if it already exists
+      --force     Force replace the kOps secret if it already exists
   -h, --help      help for dockerconfig
 ```
 
