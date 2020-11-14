@@ -28,6 +28,8 @@ type DockerConfig struct {
 	DataRoot *string `json:"dataRoot,omitempty" flag:"data-root"`
 	// DefaultUlimit is the ulimits for containers
 	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
+	// DefaultRuntime is the default OCI runtime for containers (default "runc")
+	DefaultRuntime *string `json:"defaultRuntime,omitempty" flag:"default-runtime"`
 	// ExecOpt is a series of options passed to the runtime
 	ExecOpt []string `json:"execOpt,omitempty" flag:"exec-opt,repeat"`
 	// ExecRoot is the root directory for execution state files (default "/var/run/docker")
@@ -60,6 +62,8 @@ type DockerConfig struct {
 	MTU *int32 `json:"mtu,omitempty" flag:"mtu"`
 	// RegistryMirrors is a referred list of docker registry mirror
 	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
+	// Runtimes registers an additional OCI compatible runtime (default [])
+	Runtimes []string `json:"runtimes,omitempty" flag:"add-runtime,repeat"`
 	// SelinuxEnabled enables SELinux support
 	SelinuxEnabled *bool `json:"selinuxEnabled,omitempty" flag:"selinux-enabled"`
 	// SkipInstall when set to true will prevent kops from installing and modifying Docker in any way
