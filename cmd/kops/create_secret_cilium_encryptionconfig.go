@@ -88,7 +88,7 @@ func NewCmdCreateSecretCiliumEncryptionConfig(f *util.Factory, out io.Writer) *c
 	}
 
 	cmd.Flags().StringVarP(&options.CiliumPasswordFilePath, "", "f", "", "Path to the cilium encryption config file")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kops secret if it already exists")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kOps secret if it already exists")
 
 	return cmd
 }

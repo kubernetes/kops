@@ -31,11 +31,11 @@ Note: terraform users will need to run all of the following commands from the sa
   # Preview a rolling-update.
   kops rolling-update cluster
   
-  # Roll the currently selected kops cluster with defaults.
+  # Roll the currently selected kOps cluster with defaults.
   # Nodes will be drained and the cluster will be validated between node replacement.
   kops rolling-update cluster --yes
   
-  # Roll the k8s-cluster.example.com kops cluster,
+  # Roll the k8s-cluster.example.com kOps cluster,
   # do not fail if the cluster does not validate,
   # wait 8 min to create new node, and wait at least
   # 8 min to validate the cluster.
@@ -44,7 +44,7 @@ Note: terraform users will need to run all of the following commands from the sa
   --master-interval=8m \
   --node-interval=8m
   
-  # Roll the k8s-cluster.example.com kops cluster,
+  # Roll the k8s-cluster.example.com kOps cluster,
   # do not validate the cluster because of the cloudonly flag.
   # Force the entire cluster to roll, even if rolling update
   # reports that the cluster does not need to be rolled.
@@ -52,7 +52,7 @@ Note: terraform users will need to run all of the following commands from the sa
   --cloudonly \
   --force
   
-  # Roll the k8s-cluster.example.com kops cluster,
+  # Roll the k8s-cluster.example.com kOps cluster,
   # only roll the node instancegroup,
   # use the new drain and validate functionality.
   kops rolling-update cluster k8s-cluster.example.com --yes \
@@ -89,6 +89,6 @@ Note: terraform users will need to run all of the following commands from the sa
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops rolling-update cluster](kops_rolling-update_cluster.md)	 - Rolling update a cluster.
 

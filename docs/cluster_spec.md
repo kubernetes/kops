@@ -22,8 +22,7 @@ spec:
 ```
 
 
-When configuring a LoadBalancer, you can also choose to have a public load balancer or an internal (VPC only) load balancer.  The `type`
-field should be `Public` or `Internal`.
+When configuring a LoadBalancer, you can also choose to have a public load balancer or an internal (VPC only) load balancer. The `type` field should be `Public` or `Internal`.
 
 Also, you can add precreated additional security groups to the load balancer by setting `additionalSecurityGroups`.
 
@@ -37,7 +36,7 @@ spec:
       - sg-xxxxxxxx
 ```
 
-Additionally, you can increase idle timeout of the load balancer by setting its `idleTimeoutSeconds`. The default idle timeout is 5 minutes, with a maximum of 3600 seconds (60 minutes) being allowed by AWS.  Note this value is ignored for load balancer Class `Network`.
+Additionally, you can increase idle timeout of the load balancer by setting its `idleTimeoutSeconds`. The default idle timeout is 5 minutes, with a maximum of 3600 seconds (60 minutes) being allowed by AWS. Note this value is ignored for load balancer Class `Network`.
 For more information see [configuring idle timeouts](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html).
 
 ```yaml
@@ -84,7 +83,7 @@ spec:
 
 {{ kops_feature_table(kops_added_default='1.19') }}
 
-You can choose to have a Network Load Balancer instead of a Classic Load Balancer.  The `class` field should be either `Network` or `Classic` (default).
+You can choose to have a Network Load Balancer instead of a Classic Load Balancer. The `class` field should be either `Network` or `Classic` (default).
 
 **Note**: changing the class of load balancer in an existing cluster is a disruptive operation. Until the masters have gone through a rolling update, new connections to the apiserver will fail due to the old master's TLS certificates containing the old load balancer's IP address.
 ```yaml
@@ -307,7 +306,7 @@ spec:
 
 **Note**: The auditPolicyFile is needed. If the flag is omitted, no events are logged.
 
-You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets)  feature to push an advanced audit policy file on the master nodes.
+You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md#fileassets) feature to push an advanced audit policy file on the master nodes.
 
 Example policy file can be found [here](https://raw.githubusercontent.com/kubernetes/website/master/content/en/examples/audit/audit-policy.yaml)
 

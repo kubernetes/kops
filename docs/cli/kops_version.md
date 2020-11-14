@@ -3,11 +3,11 @@
 
 ## kops version
 
-Print the kops version information.
+Print the kOps version information.
 
 ### Synopsis
 
-Print the kops version and git SHA.
+Print the kOps version and git SHA.
 
 ```
 kops version [flags]
@@ -23,7 +23,7 @@ kops version [flags]
 
 ```
   -h, --help    help for version
-      --short   only print the main kops version, useful for scripting
+      --short   only print the main kOps version, useful for scripting
 ```
 
 ### Options inherited from parent commands
@@ -48,5 +48,5 @@ kops version [flags]
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 

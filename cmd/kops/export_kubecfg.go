@@ -61,7 +61,7 @@ type ExportKubecfgOptions struct {
 	user           string
 	internal       bool
 
-	// UseKopsAuthenticationPlugin controls whether we should use the kops auth helper instead of a static credential
+	// UseKopsAuthenticationPlugin controls whether we should use the kOps auth helper instead of a static credential
 	UseKopsAuthenticationPlugin bool
 }
 
@@ -83,12 +83,12 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&options.KubeConfigPath, "kubeconfig", options.KubeConfigPath, "the location of the kubeconfig file to create.")
-	cmd.Flags().BoolVar(&options.all, "all", options.all, "export all clusters from the kops state store")
+	cmd.Flags().BoolVar(&options.all, "all", options.all, "export all clusters from the kOps state store")
 	cmd.Flags().DurationVar(&options.admin, "admin", options.admin, "export a cluster admin user credential with the given lifetime and add it to the cluster context")
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.user, "user", options.user, "add an existing user to the cluster context")
 	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "use the cluster's internal DNS name")
-	cmd.Flags().BoolVar(&options.UseKopsAuthenticationPlugin, "auth-plugin", options.UseKopsAuthenticationPlugin, "use the kops authentication plugin")
+	cmd.Flags().BoolVar(&options.UseKopsAuthenticationPlugin, "auth-plugin", options.UseKopsAuthenticationPlugin, "use the kOps authentication plugin")
 
 	return cmd
 }

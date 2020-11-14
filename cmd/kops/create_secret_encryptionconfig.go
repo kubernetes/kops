@@ -88,7 +88,7 @@ func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.C
 	}
 
 	cmd.Flags().StringVarP(&options.EncryptionConfigPath, "", "f", "", "Path to encryption config yaml file")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kops secret if it already exists")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kOps secret if it already exists")
 
 	return cmd
 }

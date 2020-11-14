@@ -85,7 +85,7 @@ Wait for the cluster to initialize. If all goes well, you should have a working 
 
 #### Editing the cluster
 
-It's possible to use Terraform to make changes to your infrastructure as defined by kops. In the example below we'd like to change some cluster configs:
+It's possible to use Terraform to make changes to your infrastructure as defined by kOps. In the example below we'd like to change some cluster configs:
 
 ```
 $ kops edit cluster \
