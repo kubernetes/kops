@@ -20,7 +20,7 @@ Backups and restores of etcd on kOps are covered in [etcd_backup_restore_encrypt
 
 ## Direct Data Access
 
-It's not typically necessary to view or manipulate the data inside of etcd directly with etcdctl, because all operations usually go through kubectl commands. However, it can be informative during troubleshooting, or just to understand kubernetes better. Here are the steps to accomplish that on kops.
+It's not typically necessary to view or manipulate the data inside of etcd directly with etcdctl, because all operations usually go through kubectl commands. However, it can be informative during troubleshooting, or just to understand kubernetes better. Here are the steps to accomplish that on kOps.
 
 1\. Connect to an etcd-manager pod
 

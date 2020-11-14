@@ -1,14 +1,14 @@
 # Managinging Instance Groups
 
-kOps has the concept of "instance groups", which are a group of similar machines.  On AWS, they map to
-an AutoScalingGroup.
+kOps has the concept of "instance groups", which are a group of similar machines. On AWS, they map to
+an Auto Scaling group.
 
 By default, a cluster has:
 
 * An instance group called `nodes` spanning all the zones; these instances are your workers.
 * One instance group for each master zone, called `master-<zone>` (e.g. `master-us-east-1c`).  These normally have
-  minimum size and maximum size = 1, so they will run a single instance.  We do this so that the cloud will
-  always relaunch masters, even if everything is terminated at once.  We have an instance group per zone
+  minimum size and maximum size = 1, so they will run a single instance. We do this so that the cloud will
+  always relaunch masters, even if everything is terminated at once. We have an instance group per zone
   because we need to force the cloud to run an instance in every zone, so we can mount the master volumes - we
   cannot do that across zones.
 
@@ -37,8 +37,8 @@ You can also use the `kops get ig` alias.
 
 ## Change the instance type in an instance group
 
-First you edit the instance group spec, using `kops edit ig nodes`.  Change the machine type to `t2.large`,
-for example.  Now if you `kops get ig`, you will see the large instance size.  Note though that these changes
+First you edit the instance group spec, using `kops edit ig nodes`. Change the machine type to `t2.large`,
+for example.  Now if you `kops get ig`, you will see the large instance size. Note though that these changes
 have not yet been applied (this may change soon though!).
 
 To preview the change:
@@ -76,7 +76,7 @@ master-us-central1-a	Master	n1-standard-1	1	1	us-central1
 nodes			Node	n1-standard-2	2	2	us-central1
 ```
 
-Let's change the number of nodes to 3.  We'll edit the InstanceGroup configuration using `kops edit` (which
+Let's change the number of nodes to 3. We'll edit the InstanceGroup configuration using `kops edit` (which
 should be very familiar to you if you've used `kubectl edit`).  `kops edit ig nodes` will open
 the InstanceGroup in your editor, looking a bit like this:
 
@@ -99,11 +99,11 @@ spec:
   - us-central1-a
 ```
 
-Edit `minSize` and `maxSize`, changing both from 2 to 3, save and exit your editor.  If you wanted to change
-the image or the machineType, you could do that here as well.  There are actually a lot more fields,
-but most of them have their default values, so won't show up unless they are set.  The general approach is the same though.
+Edit `minSize` and `maxSize`, changing both from 2 to 3, save and exit your editor. If you wanted to change
+the image or the machineType, you could do that here as well. There are actually a lot more fields,
+but most of them have their default values, so won't show up unless they are set. The general approach is the same though.
 
-On saving you'll note that nothing happens.  Although you've changed the model, you need to tell kOps to
+On saving you'll note that nothing happens. Although you've changed the model, you need to tell kOps to
 apply your changes to the cloud.
 
 We use the same `kops update cluster` command that we used when initially creating the cluster; when
@@ -122,7 +122,7 @@ This is saying that we will alter the `TargetSize` property of the `InstanceGrou
 That's what we want, so we `kops update cluster --yes`.
 
 kOps will resize the GCE managed instance group from 2 to 3, which will create a new GCE instance,
-which will then boot and join the cluster.  Within a minute or so you should see the new node join:
+which will then boot and join the cluster. Within a minute or so you should see the new node join:
 
 ```
 > kubectl get nodes
@@ -138,7 +138,7 @@ nodes-z2cz                  Ready     1s       v1.7.2
 
 ## Changing the image
 
-That was a fairly simple change, because we didn't have to reboot the nodes.  Most changes though do
+That was a fairly simple change, because we didn't have to reboot the nodes. Most changes though do
 require rolling your instances - this is actually a deliberate design decision, in that we are aiming
 for immutable nodes.  An example is changing your image.  We're using `cos-stable`, which is Google's
 Container OS.  Let's try Debian Stretch instead.
@@ -180,15 +180,15 @@ Will modify resources:
 Note that the `BootDiskImage` is indeed set to the debian 9 image you requested.
 
 `kops update cluster --yes` will now apply the change, but if you were to run `kubectl get nodes` you would see
-that the instances had not yet been reconfigured.  There's a hint at the bottom:
+that the instances had not yet been reconfigured. There's a hint at the bottom:
 
 ```
 Changes may require instances to restart: kops rolling-update cluster`
 ```
 
-These changes require your instances to restart (we'll remove the COS images and replace them with Debian images).  kOps
+These changes require your instances to restart (we'll remove the COS images and replace them with Debian images). kOps
 can perform a rolling update to minimize disruption, but even so you might not want to perform the update right away;
-you might want to make more changes or you might want to wait for off-peak hours.  You might just want to wait for
+you might want to make more changes or you might want to wait for off-peak hours. You might just want to wait for
 the instances to terminate naturally - new instances will come up with the new configuration - though if you're not
 using preemptible/spot instances you might be waiting for a long time.
 
@@ -333,7 +333,7 @@ $ df -h | grep nvme[12]
 
 ## Creating a new instance group
 
-Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
+Suppose you want to add a new group of nodes, perhaps with a different instance type. You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
 `--subnet` flag is required, and it receives the zone(s) of the subnet(s) in which the instance group will be. The command opens an editor with a skeleton configuration, allowing you to edit it before creation.
 
 So the procedure is:
@@ -519,7 +519,7 @@ spec:
 If `openstack.kops.io/osVolumeSize` is not set it will default to the minimum disk specified by the image.
 # Working with InstanceGroups
 
-The kOps InstanceGroup is a declarative model of a group of nodes.  By modifying the object, you
+The kOps InstanceGroup is a declarative model of a group of nodes. By modifying the object, you
 can change the instance type you're using, the number of nodes you have, the OS image you're running - essentially
 all the per-node configuration is in the InstanceGroup.
 

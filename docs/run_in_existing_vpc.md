@@ -1,8 +1,6 @@
 ## Running in a shared VPC
 
-When launching into a shared VPC, kOps will reuse the VPC and Internet Gateway. If you are not using an Internet Gateway
- or NAT Gateway you can tell kOps to ignore egress. By default, kops creates a new subnet per zone and a new route table, 
- but you can instead use a shared subnet (see [below](#shared-subnets)).
+When launching into a shared VPC, kOps will reuse the VPC and Internet Gateway. If you are not using an Internet Gateway or NAT Gateway you can tell kOps to ignore egress. By default, kOps creates a new subnet per zone and a new route table, but you can instead use a shared subnet (see [below](#shared-subnets)).
 
 1. Use `kops create cluster` with the `--vpc` argument for your existing VPC:
 
@@ -161,7 +159,7 @@ spec:
 
 ### Shared NAT Egress
 
-On AWS in private [topology](topology.md), kops creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+On AWS in private [topology](topology.md), kOps creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
 
 If you don't want to use NAT Gateways but have setup [EC2 NAT Instances](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html) in your VPC that you can share, it's possible to specify the IDs of said instances and have `kops`/`kubernetes` use them.
 
@@ -191,9 +189,9 @@ spec:
 Please note:
 
 * You must specify pre-created subnets for either all of the subnets or none of them.
-* kOps won't alter your existing subnets. They must be correctly set up with route tables, etc.  The
+* kOps won't alter your existing subnets. They must be correctly set up with route tables, etc. The
   Public or Utility subnets should have public IPs and an Internet Gateway configured as their default route
-  in their route table.  Private subnets should not have public IPs and will typically have a NAT Gateway
+  in their route table. Private subnets should not have public IPs and will typically have a NAT Gateway
   configured as their default route.
 * kOps won't create a route-table at all if it's not creating subnets.
 * In the example above the first subnet is using a shared NAT Gateway while the

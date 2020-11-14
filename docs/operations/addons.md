@@ -308,7 +308,7 @@ Thus a manifest will actually look like this:
 
 Note that the two addons have the same version, but a different `kubernetesVersion` selector.
 But they have different `id` values; addons with matching semvers but different `id`s will
-be upgraded.  (We will never downgrade to an older semver though, regardless of `id`)
+be upgraded. (We will never downgrade to an older semver though, regardless of `id`)
 
 So now in the above scenario after the downgrade to 1.5, although the semver is the same,
 the id will not match, and the `pre-k8s-16` will be installed.  (And when we upgrade back
