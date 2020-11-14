@@ -10,7 +10,7 @@ Edit clusters and other resources.
 Edit a resource configuration. This command changes the desired configuration in the registry.
 
   To set your preferred editor, you can define the EDITOR environment variable.
-  When you have done this, kops will use the editor that you have set.
+  When you have done this, kOps will use the editor that you have set.
   
   kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
 
@@ -53,7 +53,7 @@ Edit a resource configuration. This command changes the desired configuration in
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops edit cluster](kops_edit_cluster.md)	 - Edit cluster.
 * [kops edit instancegroup](kops_edit_instancegroup.md)	 - Edit instancegroup.
 

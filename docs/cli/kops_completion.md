@@ -7,9 +7,9 @@ Output shell completion code for the given shell (bash or zsh).
 
 ### Synopsis
 
-Output shell completion code for the specified shell (bash or zsh). The shell code must be evaluated to provide interactive completion of kops commands.  This can be done by sourcing it from the .bash_profile.
+Output shell completion code for the specified shell (bash or zsh). The shell code must be evaluated to provide interactive completion of kops commands. This can be done by sourcing it from the .bash_profile.
 
- Note: this requires the bash-completion framework, which is not installed by default on Mac. Once installed, bash_completion must be evaluated.  This can be done by adding the following line to the .bash_profile
+ Note: this requires the bash-completion framework, which is not installed by default on Mac. Once installed, bash_completion must be evaluated. This can be done by adding the following line to the .bash_profile
 
  Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2
 
@@ -68,5 +68,5 @@ kops completion [flags]
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 

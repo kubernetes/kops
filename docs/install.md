@@ -36,7 +36,7 @@ You can also [install from source](development/building.md).
 
 ## kubectl
 
-`kubectl` is the CLI tool to manage and operate Kubernetes clusters.  You can install it as follows.
+`kubectl` is the CLI tool to manage and operate Kubernetes clusters. You can install it as follows.
 
 ### MacOS
 

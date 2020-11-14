@@ -1,12 +1,12 @@
 # Upgrading kubernetes
 
-Upgrading kubernetes is very easy with kOps, as long as you are using a compatible version of kops.
+Upgrading kubernetes is very easy with kOps, as long as you are using a compatible version of kOps.
 The kOps `1.18.x` series (for example) supports the kubernetes 1.16, 1.17 and 1.18 series,
-as per the kubernetes deprecation policy.  Older versions of kubernetes will likely still work, but these
-are on a best-effort basis and will have little if any testing.  kOps `1.18` will not support the kubernetes
+as per the kubernetes deprecation policy. Older versions of kubernetes will likely still work, but these
+are on a best-effort basis and will have little if any testing. kOps `1.18` will not support the kubernetes
 `1.19` series, and for full support of kubernetes `1.19` it is best to wait for the kOps `1.19` series release.
 We aim to release the next major version of kOps within a few weeks of the equivalent major release of kubernetes,
-so kOps `1.19.0` will be released within a few weeks of kubernetes `1.19.0`.  We try to ensure that a 1.19 pre-release
+so kOps `1.19.0` will be released within a few weeks of kubernetes `1.19.0`. We try to ensure that a 1.19 pre-release
 (alpha or beta) is available at the kubernetes release, for early adopters.
 
 Upgrading kubernetes is similar to changing the image on an InstanceGroup, except that the kubernetes version is

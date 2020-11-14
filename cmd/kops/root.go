@@ -52,17 +52,17 @@ const (
 
 var (
 	rootLong = templates.LongDesc(i18n.T(`
-	kops is Kubernetes ops.
+	kOps is Kubernetes Operations.
 
-	kops is the easiest way to get a production grade Kubernetes cluster up and running.
+	kOps is the easiest way to get a production grade Kubernetes cluster up and running.
 	We like to think of it as kubectl for clusters.
 
-	kops helps you create, destroy, upgrade and maintain production-grade, highly available,
+	kOps helps you create, destroy, upgrade and maintain production-grade, highly available,
 	Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently
 	officially supported, with GCE and OpenStack in beta support.
 	`))
 
-	rootShort = i18n.T(`kops is Kubernetes ops.`)
+	rootShort = i18n.T(`kOps is Kubernetes Operations.`)
 )
 
 type Factory interface {

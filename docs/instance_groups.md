@@ -25,7 +25,7 @@ Autoscaling groups automatically include multiple [scaling processes](https://do
 that keep our ASGs healthy.  In some cases, you may want to disable certain scaling activities.
 
 An example of this is if you are running multiple AZs in an ASG while using a Kubernetes Autoscaler.
-The autoscaler will remove specific instances that are not being used.  In some cases, the `AZRebalance` process
+The autoscaler will remove specific instances that are not being used. In some cases, the `AZRebalance` process
 will rescale the ASG without warning.
 
 ```YAML
@@ -144,12 +144,10 @@ which would end up in a drop-in file on nodes of the instance group in question.
 
 ## mixedInstancesPolicy (AWS Only)
 
-A Mixed Instances Policy utilizing EC2 Spot and the `capacity-optimized` allocation strategy allows an EC2 Autoscaling Group to 
-select the instance types with the highest capacity. This reduces the chance of a spot interruption on your instance group. 
+A Mixed Instances Policy utilizing EC2 Spot and the `capacity-optimized` allocation strategy allows an EC2 Autoscaling Group to select the instance types with the highest capacity. This reduces the chance of a spot interruption on your instance group. 
 
 Instance groups with a mixedInstancesPolicy can be generated with the `kops toolbox instance-selector` command. 
-The instance-selector accepts user supplied resource parameters like vcpus, memory, and much more to dynamically select instance types
-that match your criteria. 
+The instance-selector accepts user supplied resource parameters like vcpus, memory, and much more to dynamically select instance types that match your criteria. 
 
 ```bash
 kops toolbox instance-selector --vcpus 4 --flexible --usage-class spot --instance-group-name spotgroup
@@ -187,7 +185,7 @@ spec:
 
 ### Instances
 
-Instances is a list of instance types which we are willing to run in the EC2 Auto Scaling group
+Instances is a list of instance types which we are willing to run in the EC2 Auto Scaling group.
 
 ### onDemandAllocationStrategy
 
