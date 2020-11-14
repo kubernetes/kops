@@ -1,4 +1,4 @@
-# Deploying Citrix Ingress Controller through KOPS
+# Deploying Citrix Ingress Controller through kOps
 
 This guide explains how to deploy [Citrix Ingress Controller](https://github.com/citrix/citrix-k8s-ingress-controller) through KOPS addon.
 

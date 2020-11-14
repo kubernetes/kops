@@ -1,10 +1,10 @@
 # The State Store
 
-kOps has the notion of a 'state store'; a location where we store the configuration of your cluster.  State is stored
+kOps has the notion of a 'state store'; a location where we store the configuration of your cluster. State is stored
 here not only when you first create a cluster, but also you can change the state and apply changes to a running cluster.
 
 Eventually, kubernetes services will also pull from the state store, so that we don't need to marshal all our
-configuration through a channel like user-data.  (This is currently done for secrets and SSL keys, for example,
+configuration through a channel like user-data. (This is currently done for secrets and SSL keys, for example,
 though we have to copy the data from the state store to a file where components like kubelet can read them).
 
 The state store uses kOps's VFS implementation, so can in theory be stored anywhere.
@@ -22,7 +22,7 @@ The state store is just files; you can copy the files down and put them into git
 
 ## {statestore}/config
 
-One of the most important files in the state store is the top-level config file.  This file stores the main
+One of the most important files in the state store is the top-level config file. This file stores the main
 configuration for your cluster (instance types, zones, etc)\
 
 When you run `kops create cluster`, we create a state store entry for you based on the command line options you specify.
@@ -39,7 +39,7 @@ reconfiguring your cluster - for example just `kops create cluster` after a dry-
 
 ## State store configuration
 
-There are a few ways to configure your state store.  In priority order:
+There are a few ways to configure your state store. In priority order:
 
 + command line argument `--state s3://yourstatestore`
 + environment variable `export KOPS_STATE_STORE=s3://yourstatestore`

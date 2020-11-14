@@ -43,6 +43,6 @@ Get additional information about cloud and cluster resources.
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops describe secrets](kops_describe_secrets.md)	 - Describe a cluster secret
 

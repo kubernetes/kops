@@ -3,7 +3,7 @@
 
 ## kops validate cluster
 
-Validate a kops cluster.
+Validate a kOps cluster.
 
 ### Synopsis
 
@@ -58,5 +58,5 @@ kops validate cluster [flags]
 
 ### SEE ALSO
 
-* [kops validate](kops_validate.md)	 - Validate a kops cluster.
+* [kops validate](kops_validate.md)	 - Validate a kOps cluster.
 

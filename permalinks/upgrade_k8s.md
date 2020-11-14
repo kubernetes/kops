@@ -3,7 +3,7 @@
 Kops has established a deprecation policy for Kubernetes version support.
 Kops will remove support for Kubernetes versions as follows:
 
-| kops version | Removes support for Kubernetes version |
+| kOps version | Removes support for Kubernetes version |
 |--------------|----------------------------------------|
 | 1.18         | 1.8 and below                          |
 | 1.19         | 1.9 and 1.10                           |

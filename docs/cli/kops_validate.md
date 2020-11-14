@@ -3,7 +3,7 @@
 
 ## kops validate
 
-Validate a kops cluster.
+Validate a kOps cluster.
 
 ### Synopsis
 
@@ -45,6 +45,6 @@ This command validates a cluster. See: kops validate cluster -h
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
-* [kops validate cluster](kops_validate_cluster.md)	 - Validate a kops cluster.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
+* [kops validate cluster](kops_validate_cluster.md)	 - Validate a kOps cluster.
 

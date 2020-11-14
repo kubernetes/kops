@@ -56,5 +56,5 @@ kops replace -f FILENAME [flags]
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 

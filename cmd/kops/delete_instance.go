@@ -44,7 +44,7 @@ type deleteInstanceOptions struct {
 	Yes       bool
 	CloudOnly bool
 
-	// The following two variables are when kops is validating a cluster
+	// The following two variables are when kOps is validating a cluster
 	// between detach and deletion.
 
 	// FailOnDrainError fail deletion if drain errors.

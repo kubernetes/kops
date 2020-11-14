@@ -1,8 +1,8 @@
 # Download kOps config spec file
 
-KOPS operates off of a config spec file that is generated during the create phase.  It is uploaded to the amazon s3 bucket that is passed in during create.
+kOps operates off of a config spec file that is generated during the create phase. It is uploaded to the amazon s3 bucket that is passed in during create.
 
-If you download the config spec file on a running cluster that is configured the way you like it, you can just pass that config spec file in to the create command and have kops create the cluster for you , `kops create -f spec_file` in a completely unattended manner.
+If you download the config spec file on a running cluster that is configured the way you like it, you can just pass that config spec file in to the create command and have kOps create the cluster for you, `kops create -f spec_file` in a completely unattended manner.
 
 Let us say you create your cluster with the following configuration options:
 
@@ -43,7 +43,7 @@ For more information on how to use and modify the configurations see [here](../m
 
 ## Managing instance groups
 
-You can also manage instance groups in separate YAML files as well.  The command `kops get --name $NAME -o yaml > $NAME.yml` exports the entire cluster.  An option is to have a YAML file for the cluster, and individual YAML files for the instance groups.  This allows you to do stuff like:
+You can also manage instance groups in separate YAML files as well. The command `kops get --name $NAME -o yaml > $NAME.yml` exports the entire cluster. An option is to have a YAML file for the cluster, and individual YAML files for the instance groups. This allows you to do stuff like:
 
 ```shell
 if ! kops get cluster --name "$NAME"; then

@@ -45,6 +45,6 @@ Imports a kubernetes cluster created by kube-up.sh into a state store.  This com
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops import cluster](kops_import_cluster.md)	 - Import a cluster.
 

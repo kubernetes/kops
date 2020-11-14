@@ -33,7 +33,7 @@ import (
 
 var (
 	toolboxConvertImportedLong = templates.LongDesc(i18n.T(`
-	Convert an imported cluster into a kops cluster.`))
+	Convert an imported cluster into a kOps cluster.`))
 
 	toolboxConvertImportedExample = templates.Examples(i18n.T(`
 
@@ -45,7 +45,7 @@ var (
 	  --newname k8s-cluster.example.com
 	`))
 
-	toolboxConvertImportedShort = i18n.T(`Convert an imported cluster into a kops cluster.`)
+	toolboxConvertImportedShort = i18n.T(`Convert an imported cluster into a kOps cluster.`)
 )
 
 type ToolboxConvertImportedOptions struct {

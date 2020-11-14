@@ -28,12 +28,12 @@ import (
 
 var (
 	versionLong = templates.LongDesc(i18n.T(`
-	Print the kops version and git SHA.`))
+	Print the kOps version and git SHA.`))
 
 	versionExample = templates.Examples(i18n.T(`
 	kops version`))
 
-	versionShort = i18n.T(`Print the kops version information.`)
+	versionShort = i18n.T(`Print the kOps version information.`)
 )
 
 // NewCmdVersion builds a cobra command for the kops version command
@@ -54,7 +54,7 @@ func NewCmdVersion(f *util.Factory, out io.Writer) *cobra.Command {
 		}
 	}
 
-	cmd.Flags().BoolVar(&options.Short, "short", options.Short, "only print the main kops version, useful for scripting")
+	cmd.Flags().BoolVar(&options.Short, "short", options.Short, "only print the main kOps version, useful for scripting")
 
 	return cmd
 }

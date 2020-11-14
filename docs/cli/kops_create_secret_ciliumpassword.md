@@ -32,7 +32,7 @@ kops create secret ciliumpassword [flags]
 
 ```
   -f, -- string   Path to the cilium encryption config file
-      --force     Force replace the kops secret if it already exists
+      --force     Force replace the kOps secret if it already exists
   -h, --help      help for ciliumpassword
 ```
 
