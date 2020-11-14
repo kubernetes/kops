@@ -151,7 +151,7 @@ func (b *BootstrapClient) queryBootstrap(c *fi.Context, req *nodeup.BootstrapReq
 
 	bootstrapUrl := url.URL{
 		Scheme: "https",
-		Host:   net.JoinHostPort(c.Cluster.Spec.MasterInternalName, strconv.Itoa(wellknownports.KopsControllerPort)),
+		Host:   net.JoinHostPort("kops-controller.internal."+c.Cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
 		Path:   "/bootstrap",
 	}
 	httpReq, err := http.NewRequest("POST", bootstrapUrl.String(), bytes.NewReader(reqBytes))
