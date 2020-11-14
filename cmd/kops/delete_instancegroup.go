@@ -35,7 +35,7 @@ import (
 
 var (
 	deleteIgLong = templates.LongDesc(i18n.T(`
-		Delete an instancegroup configuration.  kops has the concept of "instance groups",
+		Delete an instancegroup configuration. kOps has the concept of "instance groups",
 		which are a group of similar virtual machines. On AWS, they map to an
 		AutoScalingGroup. An ig work either as a Kubernetes master or a node.`))
 

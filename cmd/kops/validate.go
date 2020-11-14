@@ -37,7 +37,7 @@ var (
 	# Kops will try for 10 minutes to validate the cluster 3 times.
 	kops validate cluster --wait 10m --count 3`))
 
-	validateShort = i18n.T(`Validate a kops cluster.`)
+	validateShort = i18n.T(`Validate a kOps cluster.`)
 )
 
 func NewCmdValidate(f *util.Factory, out io.Writer) *cobra.Command {
