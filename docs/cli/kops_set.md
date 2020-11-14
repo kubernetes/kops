@@ -46,6 +46,6 @@ Set a configuration field.
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops set cluster](kops_set_cluster.md)	 - Set cluster fields.
 

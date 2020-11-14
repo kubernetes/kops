@@ -44,6 +44,6 @@ Automates checking for and applying Kubernetes updates. This upgrades a cluster 
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops upgrade cluster](kops_upgrade_cluster.md)	 - Upgrade a kubernetes cluster.
 

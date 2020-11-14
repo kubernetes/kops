@@ -68,7 +68,7 @@ kops get [flags]
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
 * [kops get clusters](kops_get_clusters.md)	 - Get one or many clusters.
 * [kops get instancegroups](kops_get_instancegroups.md)	 - Get one or many instancegroups
 * [kops get instances](kops_get_instances.md)	 - Display cluster instances.

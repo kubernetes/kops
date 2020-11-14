@@ -44,8 +44,8 @@ Misc infrequently used commands.
 
 ### SEE ALSO
 
-* [kops](kops.md)	 - kops is Kubernetes ops.
-* [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.
+* [kops](kops.md)	 - kOps is Kubernetes Operations.
+* [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kOps cluster.
 * [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cluster information
 * [kops toolbox instance-selector](kops_toolbox_instance-selector.md)	 - Generate on-demand or spot instance-group specs by providing resource specs like vcpus and memory.
 * [kops toolbox template](kops_toolbox_template.md)	 - Generate cluster.yaml from template

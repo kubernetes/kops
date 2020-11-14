@@ -113,10 +113,10 @@ kops create cluster [flags]
       --out string                       Path to write any local output
   -o, --output string                    Output format. One of json|yaml. Used with the --dry-run flag.
       --project string                   Project to use (must be set on GCE)
-      --ssh-access strings               Restrict SSH access to this CIDR. If not set, access will not be restricted by IP. (default [0.0.0.0/0])
+      --ssh-access strings               Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --ssh-public-key string            SSH public key to use (defaults to ~/.ssh/id_rsa.pub on AWS)
       --subnets strings                  Set to use shared subnets
-      --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kops to generate terraform (default "direct")
+      --target string                    Valid targets: direct, terraform, cloudformation. Set this flag to terraform if you want kOps to generate terraform (default "direct")
   -t, --topology string                  Controls network topology for the cluster: public|private. (default "public")
       --utility-subnets strings          Set to use shared utility subnets
       --vpc string                       Set to use a shared VPC

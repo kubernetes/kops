@@ -3,11 +3,11 @@
 
 ## kops toolbox convert-imported
 
-Convert an imported cluster into a kops cluster.
+Convert an imported cluster into a kOps cluster.
 
 ### Synopsis
 
-Convert an imported cluster into a kops cluster.
+Convert an imported cluster into a kOps cluster.
 
 ```
 kops toolbox convert-imported [flags]
