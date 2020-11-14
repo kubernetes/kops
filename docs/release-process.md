@@ -23,7 +23,7 @@ preparing for a new kubernetes release, we will try to advance the master branch
 to focus on the new functionality, and start cherry-picking back more selectively
 to the release branches only as needed.
 
-Generally we don't encourage users to run older kops versions, or older
+Generally we don't encourage users to run older kOps versions, or older
 branches, because newer versions of kOps should remain compatible with older
 versions of Kubernetes.
 
@@ -118,8 +118,7 @@ git fetch origin # sync back up
 
 ## Wait for CI job to complete
 
-The staging CI job should now see the tag, and build it (from the
-trusted prow cluster, using Google Cloud Build).
+The staging CI job should now see the tag, and build it (from the trusted prow cluster, using Google Cloud Build).
 
 The job is here: https://testgrid.k8s.io/sig-cluster-lifecycle-kops#kops-postsubmit-push-to-staging
 

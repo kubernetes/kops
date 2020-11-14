@@ -11,7 +11,7 @@ complete lifecycle of Ambassador in your cluster. It also automates many of the 
 Ambassador. Once installed, the Operator will automatically complete rapid installations and seamless upgrades to new
 versions of Ambassador.
 
-This addon deploys Ambassador Operator which installs Ambassador in a kops cluster.
+This addon deploys Ambassador Operator which installs Ambassador in a kOps cluster.
 
 ##### Note:
 The operator requires widely scoped permissions in order to install and manage Ambassador's lifecycle. Both, the

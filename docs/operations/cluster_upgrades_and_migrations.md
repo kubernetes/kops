@@ -52,7 +52,7 @@ kops get cluster ${OLD_NAME} -oyaml
 
 ## Move resources to a new cluster
 
-The upgrade moves some resources so they will be adopted by the new cluster.  There are a number of things this step does:
+The upgrade moves some resources so they will be adopted by the new cluster. There are a number of things this step does:
 
 * It resizes existing autoscaling groups to size 0
 * It will stop the existing master

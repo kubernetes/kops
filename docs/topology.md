@@ -47,7 +47,7 @@ More information about [networking options](networking.md) can be found in our d
 ## Changing Topology of the API server
 To change the ELB that fronts the API server from Internet facing to Internal only there are a few steps to accomplish
 
-The AWS ELB does not support changing from internet facing to Internal.  However what we can do is have kOps recreate the ELB for us.
+The AWS ELB does not support changing from internet facing to Internal. However what we can do is have kOps recreate the ELB for us.
 
 ### Steps to change the ELB from Internet-Facing to Internal
 - Edit the cluster: `kops edit cluster $NAME`
