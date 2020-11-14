@@ -62,7 +62,7 @@ var (
 	officially supported, with GCE and OpenStack in beta support.
 	`))
 
-	rootShort = i18n.T(`kOps is Kubernetes ops.`)
+	rootShort = i18n.T(`kOps is Kubernetes Operations.`)
 )
 
 type Factory interface {
