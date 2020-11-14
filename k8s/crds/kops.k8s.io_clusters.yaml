@@ -433,6 +433,9 @@ spec:
                   dataRoot:
                     description: DataRoot is the root directory of persistent docker state (default "/var/lib/docker")
                     type: string
+                  defaultRuntime:
+                    description: DefaultRuntime is the default OCI runtime for containers (default "runc")
+                    type: string
                   defaultUlimit:
                     description: DefaultUlimit is the ulimits for containers
                     items:
@@ -494,6 +497,11 @@ spec:
                     type: integer
                   registryMirrors:
                     description: RegistryMirrors is a referred list of docker registry mirror
+                    items:
+                      type: string
+                    type: array
+                  runtimes:
+                    description: Runtimes registers an additional OCI compatible runtime (default [])
                     items:
                       type: string
                     type: array
