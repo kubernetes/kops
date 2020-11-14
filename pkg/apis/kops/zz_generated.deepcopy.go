@@ -1228,6 +1228,11 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.DefaultRuntime != nil {
+		in, out := &in.DefaultRuntime, &out.DefaultRuntime
+		*out = new(string)
+		**out = **in
+	}
 	if in.ExecOpt != nil {
 		in, out := &in.ExecOpt, &out.ExecOpt
 		*out = make([]string, len(*in))
@@ -1300,6 +1305,11 @@ func (in *DockerConfig) DeepCopyInto(out *DockerConfig) {
 	}
 	if in.RegistryMirrors != nil {
 		in, out := &in.RegistryMirrors, &out.RegistryMirrors
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.Runtimes != nil {
+		in, out := &in.Runtimes, &out.Runtimes
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
