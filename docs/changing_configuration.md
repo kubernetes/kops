@@ -1,6 +1,6 @@
 ## Changing a cluster configuration
 
-(This procedure is currently unnecessarily convoluted.  Expect it to get streamlined!)
+(This procedure is currently unnecessarily convoluted. Expect it to get streamlined!)
 
 * Edit the cluster spec: `kops edit cluster ${NAME}`
 

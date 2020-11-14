@@ -1,7 +1,7 @@
 # Upgrading from kube-up to kOps
 
 kOps let you upgrade an existing kubernetes cluster installed using kube-up, to a cluster managed by
-kops.
+kOps.
 
 ** This is a slightly risky procedure, so we recommend backing up important data before proceeding. 
 Take a snapshot of your EBS volumes; export all your data from kubectl etc. **
@@ -28,7 +28,7 @@ configuration.
 
 Make sure you have set `export KOPS_STATE_STORE=s3://<mybucket>`
 
-Then import the cluster; setting `--name` and `--region` to match the old cluster.   If you're not sure
+Then import the cluster; setting `--name` and `--region` to match the old cluster. If you're not sure
 of the old cluster name, you can find it by looking at the `KubernetesCluster` tag on your AWS resources.
 
 ```
@@ -39,7 +39,7 @@ kops import cluster --region ${REGION} --name ${OLD_NAME}
 
 ## Verify the cluster configuration
 
-Now have a look at the cluster configuration, to make sure it looks right.  If it doesn't, please
+Now have a look at the cluster configuration, to make sure it looks right. If it doesn't, please
 open an issue.
 
 ```
@@ -48,7 +48,7 @@ kops get cluster ${OLD_NAME} -oyaml
 
 ## Move resources to a new cluster
 
-The upgrade moves some resources so they will be adopted by the new cluster.  There are a number of things
+The upgrade moves some resources so they will be adopted by the new cluster. There are a number of things
 this step does:
 
 * It resizes existing autoscaling groups to size 0

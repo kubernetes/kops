@@ -13,7 +13,7 @@ support Kubernetes 1.16.5, 1.15.2, and several previous Kubernetes versions.
 
 ## Compatibility Matrix
 
-| kops version  | k8s 1.14.x | k8s 1.15.x | k8s 1.16.x | k8s 1.17.x | k8s 1.18.x |
+| kOps version  | k8s 1.14.x | k8s 1.15.x | k8s 1.16.x | k8s 1.17.x | k8s 1.18.x |
 |---------------|------------|------------|------------|------------|------------|
 | 1.18.0        | ✔          | ✔          | ✔          | ✔          | ✔          |
 | 1.17.x        | ✔          | ✔          | ✔          | ✔          | ⚫         |
@@ -23,7 +23,7 @@ support Kubernetes 1.16.5, 1.15.2, and several previous Kubernetes versions.
 
 
 Use the latest version of kOps for all releases of Kubernetes, with the caveat
-that higher versions of Kubernetes are not _officially_ supported by kops.
+that higher versions of Kubernetes are not _officially_ supported by kOps.
 Releases which are ~~crossed out~~ _should_ work, but we suggest they be upgraded soon.
 
 ## Release Schedule
