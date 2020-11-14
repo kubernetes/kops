@@ -62,7 +62,7 @@ func (b *KopsControllerBuilder) Build(c *fi.ModelBuilderContext) error {
 		Signer:         fi.CertificateIDCA,
 		Type:           "server",
 		Subject:        nodetasks.PKIXName{CommonName: "kops-controller"},
-		AlternateNames: []string{b.Cluster.Spec.MasterInternalName},
+		AlternateNames: []string{"kops-controller.internal." + b.Cluster.ObjectMeta.Name},
 	}
 	c.AddTask(issueCert)
 
