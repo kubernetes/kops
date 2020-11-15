@@ -491,9 +491,8 @@ func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int, gro
 func hasFailureRelevantToGroup(failures []*validation.ValidationError, group *cloudinstances.CloudInstanceGroup) bool {
 	// Ignore non critical validation errors in other instance groups like below target size errors
 	for _, failure := range failures {
-		// Determining InstanceGroups for certain resources like Pods, ComponentStatus is not straightforward.
-		// Till we are able to determine the InstanceGroups for these resources without ambiguity, the
-		// InstanceGroup field of the ValidationErrors for these resources will be nil
+		// Certain failures like a system-critical-pod failure and dns server related failures
+		// set their InstanceGroup to nil, since we cannot associate the failure to any one group
 		if failure.InstanceGroup == nil {
 			return true
 		}
