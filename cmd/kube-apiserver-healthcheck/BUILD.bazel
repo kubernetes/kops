@@ -19,6 +19,11 @@ go_test(
 
 go_binary(
     name = "kube-apiserver-healthcheck",
+    out = select({
+        "@io_bazel_rules_go//go/platform:linux_amd64": "linux-amd64/kube-apiserver-healthcheck",
+        "@io_bazel_rules_go//go/platform:linux_arm64": "linux-arm64/kube-apiserver-healthcheck",
+        "@io_bazel_rules_go//go/platform:darwin_amd64": "darwin-amd64/kube-apiserver-healthcheck",
+    }),
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -38,7 +43,7 @@ ARCH = [
 [container_image(
     name = "image-%s" % arch,
     architecture = arch,
-    base = "@distroless_base//image",
+    base = "@distroless_base_%s//image" % arch,
     cmd = ["/kube-apiserver-healthcheck"],
     user = "10012",
     files = [
