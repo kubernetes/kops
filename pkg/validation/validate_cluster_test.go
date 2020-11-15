@@ -543,9 +543,10 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 			},
 		}...)
 		expectedFailures = append(expectedFailures, &ValidationError{
-			Kind:    "Node",
-			Name:    "master-1b",
-			Message: "master \"master-1b\" is missing " + pod + " pod",
+			Kind:          "Node",
+			Name:          "master-1b",
+			Message:       "master \"master-1b\" is missing " + pod + " pod",
+			InstanceGroup: groups["node-1"].InstanceGroup,
 		})
 	}
 
@@ -616,6 +617,76 @@ func Test_ValidateNoPodFailures(t *testing.T) {
 }
 
 func Test_ValidatePodFailure(t *testing.T) {
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+		InstanceGroup: &kopsapi.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-1",
+			},
+			Spec: kopsapi.InstanceGroupSpec{
+				Role: kopsapi.InstanceGroupRoleNode,
+			},
+		},
+		MinSize:    1,
+		TargetSize: 1,
+		Ready: []*cloudinstances.CloudInstance{
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-1a",
+					},
+					Status: v1.NodeStatus{
+						Addresses: []v1.NodeAddress{
+							{
+								Address: "1.2.3.4",
+							},
+						},
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-1b",
+					},
+					Status: v1.NodeStatus{
+						Addresses: []v1.NodeAddress{
+							{
+								Address: "5.6.7.8",
+							},
+						},
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+			{
+				ID: "i-00001",
+				Node: &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-1c",
+					},
+					Status: v1.NodeStatus{
+						Addresses: []v1.NodeAddress{
+							{
+								Address: "9.10.11.12",
+							},
+						},
+						Conditions: []v1.NodeCondition{
+							{Type: "Ready", Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	for _, tc := range []struct {
 		name     string
 		phase    v1.PodPhase
@@ -639,30 +710,40 @@ func Test_ValidatePodFailure(t *testing.T) {
 	} {
 		for _, priority := range []string{"node", "cluster"} {
 			for _, namespace := range []string{"kube-system", "otherNamespace"} {
-				t.Run(fmt.Sprintf("%s-%s-%s", tc.name, priority, namespace), func(t *testing.T) {
-					v, err := testValidate(t, nil, makePodList(
-						[]map[string]string{
-							{
-								"name":              "pod1",
-								"namespace":         namespace,
-								"priorityClassName": fmt.Sprintf("system-%s-critical", priority),
-								"ready":             "false",
-								"phase":             string(tc.phase),
+				for _, hostIp := range []string{"1.2.3.4", "5.6.7.8", "9.10.11.12"} {
+					t.Run(fmt.Sprintf("%s-%s-%s", tc.name, priority, namespace), func(t *testing.T) {
+						v, err := testValidate(t, groups, makePodList(
+							[]map[string]string{
+								{
+									"name":              "pod1",
+									"namespace":         namespace,
+									"priorityClassName": fmt.Sprintf("system-%s-critical", priority),
+									"ready":             "false",
+									"phase":             string(tc.phase),
+									"hostip":            hostIp,
+								},
 							},
-						},
-					))
-					expected := ValidationError{
-						Kind:    "Pod",
-						Name:    fmt.Sprintf("%s/pod1", namespace),
-						Message: fmt.Sprintf("system-%s-critical pod \"pod1\" is %s", priority, tc.expected),
-					}
+						))
 
-					require.NoError(t, err)
-					if !assert.Len(t, v.Failures, 1) ||
-						!assert.Equal(t, &expected, v.Failures[0]) {
-						printDebug(t, v)
-					}
-				})
+						var podInstanceGroup *kopsapi.InstanceGroup
+						if priority == "node" {
+							podInstanceGroup = groups["node-1"].InstanceGroup
+						}
+
+						expected := ValidationError{
+							Kind:          "Pod",
+							Name:          fmt.Sprintf("%s/pod1", namespace),
+							Message:       fmt.Sprintf("system-%s-critical pod \"pod1\" is %s", priority, tc.expected),
+							InstanceGroup: podInstanceGroup,
+						}
+
+						require.NoError(t, err)
+						if !assert.Len(t, v.Failures, 1) ||
+							!assert.Equal(t, &expected, v.Failures[0]) {
+							printDebug(t, v)
+						}
+					})
+				}
 			}
 		}
 	}
