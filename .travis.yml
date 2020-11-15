@@ -1,5 +1,5 @@
 language: go
-arch: arm64-graviton2
+arch: arm64
 os: linux
 dist: focal
 go: 1.15.5
