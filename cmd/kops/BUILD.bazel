@@ -126,6 +126,12 @@ go_library(
 
 go_binary(
     name = "kops",
+    out = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": "darwin-amd64/kops",
+        "@io_bazel_rules_go//go/platform:linux_amd64": "linux-amd64/kops",
+        "@io_bazel_rules_go//go/platform:linux_arm64": "linux-arm64/kops",
+        "@io_bazel_rules_go//go/platform:windows_amd64": "windows-amd64/kops",
+    }),
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
     x_defs = {

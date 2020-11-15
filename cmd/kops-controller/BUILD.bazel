@@ -29,6 +29,11 @@ go_library(
 
 go_binary(
     name = "kops-controller",
+    out = select({
+        "@io_bazel_rules_go//go/platform:linux_amd64": "linux-amd64/kops-controller",
+        "@io_bazel_rules_go//go/platform:linux_arm64": "linux-arm64/kops-controller",
+        "@io_bazel_rules_go//go/platform:darwin_amd64": "darwin-amd64/kops-controller",
+    }),
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
@@ -48,7 +53,7 @@ ARCH = [
 [container_image(
     name = "image-%s" % arch,
     architecture = arch,
-    base = "@distroless_base//image",
+    base = "@distroless_base_%s//image" % arch,
     cmd = ["/kops-controller"],
     user = "10011",
     files = [
