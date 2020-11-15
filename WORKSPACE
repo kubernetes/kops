@@ -77,67 +77,6 @@ load(
     "container_pull",
 )
 
-container_pull(
-    name = "debian_base_amd64",
-    # 'tag' is also supported, but digest is encouraged for reproducibility.
-    digest = "sha256:dc06e242160076b72bd75135fb3dd0a9e91f386b2d812ec10cbf9e65864c755d",
-    registry = "k8s.gcr.io/build-image",
-    repository = "debian-base-amd64",
-    tag = "v2.1.3",
-)
-
-git_repository(
-    name = "distroless",
-    commit = "f905a6636c5106c36cc979bdcc19f0fe4fc01ede",
-    remote = "https://github.com/googlecloudplatform/distroless.git",
-    #shallow_since = "1570036739 -0700",
-)
-
-load(
-    "@distroless//package_manager:package_manager.bzl",
-    "package_manager_repositories",
-)
-
-package_manager_repositories()
-
-load(
-    "@distroless//package_manager:dpkg.bzl",
-    "dpkg_list",
-    "dpkg_src",
-)
-
-dpkg_src(
-    name = "debian_stretch",
-    arch = "amd64",
-    distro = "stretch",
-    sha256 = "da378b113f0b1edcf5b1f2c3074fd5476c7fd6e6df3752f824aad22e7547e699",
-    snapshot = "20190520T104418Z",
-    url = "http://snapshot.debian.org/archive",
-)
-
-dpkg_list(
-    name = "package_bundle",
-    packages = [
-        "cgmanager",
-        "dbus",
-        "libapparmor1",
-        "libcgmanager0",
-        "libcryptsetup4",
-        "libdbus-1-3",
-        "libnih-dbus1",
-        "libnih1",
-        "libpam-systemd",
-        "libprocps6",
-        "libseccomp2",
-        "procps",
-        "systemd",
-        "systemd-shim",
-    ],
-    sources = [
-        "@debian_stretch//file:Packages.json",
-    ],
-)
-
 # TODO(fejta): use load.bzl, repos.bzl from repo-infra
 git_repository(
     name = "io_k8s_repo_infra",
