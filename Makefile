@@ -596,10 +596,6 @@ bazel-crossbuild-protokube-image:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle-amd64.tar
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar
 
-.PHONY: bazel-crossbuild-node-authorizer-image
-bazel-crossbuild-node-authorizer-image:
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //images:node-authorizer.tar
-
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
 bazel-push: bazel-crossbuild-nodeup
