@@ -83,14 +83,16 @@ var (
 type InstanceGroupSpec struct {
 	// Type determines the role of instances in this group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
-	// Image is the instance (ami etc) we should use
+	// MachineType is the instance class
+	MachineType string `json:"machineType,omitempty"`
+	// Image is the instance image (AMI etc)
 	Image string `json:"image,omitempty"`
+	// Architecture is the instance CPU architecture
+	Architecture string `json:"architecture,omitempty"`
 	// MinSize is the minimum size of the pool
 	MinSize *int32 `json:"minSize,omitempty"`
 	// MaxSize is the maximum size of the pool
 	MaxSize *int32 `json:"maxSize,omitempty"`
-	// MachineType is the instance class
-	MachineType string `json:"machineType,omitempty"`
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)

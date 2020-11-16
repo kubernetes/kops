@@ -3442,10 +3442,11 @@ func Convert_kops_InstanceGroupList_To_v1alpha2_InstanceGroupList(in *kops.Insta
 
 func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGroupSpec, out *kops.InstanceGroupSpec, s conversion.Scope) error {
 	out.Role = kops.InstanceGroupRole(in.Role)
+	out.MachineType = in.MachineType
 	out.Image = in.Image
+	out.Architecture = in.Architecture
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
-	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
 	out.RootVolumeIops = in.RootVolumeIops
@@ -3580,10 +3581,11 @@ func Convert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGr
 
 func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.InstanceGroupSpec, out *InstanceGroupSpec, s conversion.Scope) error {
 	out.Role = InstanceGroupRole(in.Role)
+	out.MachineType = in.MachineType
 	out.Image = in.Image
+	out.Architecture = in.Architecture
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
-	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
 	out.RootVolumeIops = in.RootVolumeIops

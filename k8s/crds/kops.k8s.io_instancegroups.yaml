@@ -76,6 +76,9 @@ spec:
                       type: string
                   type: object
                 type: array
+              architecture:
+                description: Architecture is the instance CPU architecture
+                type: string
               associatePublicIp:
                 description: AssociatePublicIP is true if we want instances to have a public IP
                 type: boolean
@@ -185,7 +188,7 @@ spec:
                     type: string
                 type: object
               image:
-                description: Image is the instance (ami etc) we should use
+                description: Image is the instance image (AMI etc)
                 type: string
               instanceInterruptionBehavior:
                 description: InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated, or stopped after interruption

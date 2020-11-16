@@ -59,6 +59,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "tenancy"), &g.Spec.Tenancy, ec2.Tenancy_Values())...)
 	}
 
+	if g.Spec.Architecture != "" {
+		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "arch"), &g.Spec.Architecture, []string{"amd64", "arm64"})...)
+	}
+
 	if g.Spec.MaxSize != nil && g.Spec.MinSize != nil {
 		if *g.Spec.MaxSize < *g.Spec.MinSize {
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "maxSize"), "maxSize must be greater than or equal to minSize."))
