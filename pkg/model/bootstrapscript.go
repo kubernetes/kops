@@ -36,7 +36,6 @@ import (
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/util/pkg/architectures"
 )
 
 type NodeUpConfigBuilder interface {
@@ -45,8 +44,8 @@ type NodeUpConfigBuilder interface {
 
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
-	NodeUpSource        map[architectures.Architecture]string
-	NodeUpSourceHash    map[architectures.Architecture]string
+	NodeUpSource        string
+	NodeUpSourceHash    string
 	NodeUpConfigBuilder NodeUpConfigBuilder
 }
 
@@ -225,17 +224,11 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 
 func (b *BootstrapScript) Run(c *fi.Context) error {
 	functions := template.FuncMap{
-		"NodeUpSourceAmd64": func() string {
-			return b.builder.NodeUpSource[architectures.ArchitectureAmd64]
+		"NodeUpSource": func() string {
+			return b.builder.NodeUpSource
 		},
-		"NodeUpSourceHashAmd64": func() string {
-			return b.builder.NodeUpSourceHash[architectures.ArchitectureAmd64]
-		},
-		"NodeUpSourceArm64": func() string {
-			return b.builder.NodeUpSource[architectures.ArchitectureArm64]
-		},
-		"NodeUpSourceHashArm64": func() string {
-			return b.builder.NodeUpSourceHash[architectures.ArchitectureArm64]
+		"NodeUpSourceHash": func() string {
+			return b.builder.NodeUpSourceHash
 		},
 		"KubeEnv": func() (string, error) {
 			return b.kubeEnv(b.ig, c)

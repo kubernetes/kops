@@ -22,7 +22,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
@@ -30,9 +29,9 @@ import (
 type Config struct {
 	// Assets are locations where we can find files to be installed
 	// TODO: Remove once everything is in containers?
-	Assets map[architectures.Architecture][]string `json:",omitempty"`
+	Assets []string `json:",omitempty"`
 	// Images are a list of images we should preload
-	Images map[architectures.Architecture][]*Image `json:"images,omitempty"`
+	Images []*Image `json:"images,omitempty"`
 	// ConfigBase is the base VFS path for config objects
 	ConfigBase *string `json:",omitempty"`
 	// ClusterLocation is the VFS path to the cluster spec (deprecated: prefer ConfigBase)
@@ -44,7 +43,7 @@ type Config struct {
 	// ClusterName is the name of the cluster
 	ClusterName string `json:",omitempty"`
 	// ProtokubeImage is the docker image to load for protokube (bootstrapping)
-	ProtokubeImage map[architectures.Architecture]*Image `json:"protokubeImage,omitempty"`
+	ProtokubeImage *Image `json:"protokubeImage,omitempty"`
 	// Channels is a list of channels that we should apply
 	Channels []string `json:"channels,omitempty"`
 	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.

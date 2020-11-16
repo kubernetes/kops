@@ -162,7 +162,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
 
-	configAssets := c.config.Assets[architecture]
+	configAssets := c.config.Assets
 	assetStore := fi.NewAssetStore(c.CacheDir)
 	for _, asset := range configAssets {
 		err := assetStore.Add(asset)
@@ -258,7 +258,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error building loader: %v", err)
 	}
 
-	for i, image := range c.config.Images[architecture] {
+	for i, image := range c.config.Images {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Sources: image.Sources,
 			Hash:    image.Hash,

@@ -56,7 +56,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	if protokubeImage := t.NodeupConfig.ProtokubeImage[t.Architecture]; protokubeImage != nil {
+	if protokubeImage := t.NodeupConfig.ProtokubeImage; protokubeImage != nil {
 		c.AddTask(&nodetasks.LoadImageTask{
 			Name:    "protokube",
 			Sources: protokubeImage.Sources,
@@ -161,8 +161,8 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 // ProtokubeImageName returns the docker image for protokube
 func (t *ProtokubeBuilder) ProtokubeImageName() string {
 	name := ""
-	if t.NodeupConfig.ProtokubeImage[t.Architecture] != nil && t.NodeupConfig.ProtokubeImage[t.Architecture].Name != "" {
-		name = t.NodeupConfig.ProtokubeImage[t.Architecture].Name
+	if t.NodeupConfig.ProtokubeImage != nil && t.NodeupConfig.ProtokubeImage.Name != "" {
+		name = t.NodeupConfig.ProtokubeImage.Name
 	}
 	if name == "" {
 		// use current default corresponding to this version of nodeup

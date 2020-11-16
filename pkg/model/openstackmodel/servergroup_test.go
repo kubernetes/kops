@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/architectures"
 )
 
 type serverGroupModelBuilderTestInput struct {
@@ -991,14 +990,8 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 	clusterLifecycle := fi.LifecycleSync
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		NodeUpConfigBuilder: &nodeupConfigBuilder{},
-		NodeUpSource: map[architectures.Architecture]string{
-			architectures.ArchitectureAmd64: "source-amd64",
-			architectures.ArchitectureArm64: "source-arm64",
-		},
-		NodeUpSourceHash: map[architectures.Architecture]string{
-			architectures.ArchitectureAmd64: "source-hash-amd64",
-			architectures.ArchitectureArm64: "source-hash-arm64",
-		},
+		NodeUpSource:        "source-url",
+		NodeUpSourceHash:    "source-hash",
 	}
 
 	builder := createBuilderForCluster(testCase.cluster, testCase.instanceGroups, clusterLifecycle, bootstrapScriptBuilder)

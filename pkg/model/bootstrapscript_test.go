@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/architectures"
 )
 
 func Test_ProxyFunc(t *testing.T) {
@@ -130,14 +129,8 @@ func TestBootstrapUserData(t *testing.T) {
 
 		bs := &BootstrapScriptBuilder{
 			NodeUpConfigBuilder: &nodeupConfigBuilder{cluster: cluster},
-			NodeUpSource: map[architectures.Architecture]string{
-				architectures.ArchitectureAmd64: "NUSourceAmd64",
-				architectures.ArchitectureArm64: "NUSourceArm64",
-			},
-			NodeUpSourceHash: map[architectures.Architecture]string{
-				architectures.ArchitectureAmd64: "NUSHashAmd64",
-				architectures.ArchitectureArm64: "NUSHashArm64",
-			},
+			NodeUpSource:        "source-url",
+			NodeUpSourceHash:    "source-hash",
 		}
 
 		res, err := bs.ResourceNodeUp(c, group)

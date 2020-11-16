@@ -610,8 +610,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		NodeUpConfigBuilder: configBuilder,
-		NodeUpSource:        c.NodeUpSource,
-		NodeUpSourceHash:    c.NodeUpHash,
+		NodeUpSource:        c.NodeUpSource[architectures.ArchitectureAmd64],
+		NodeUpSourceHash:    c.NodeUpHash[architectures.ArchitectureAmd64],
 	}
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
@@ -1303,12 +1303,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	}
 
 	config := nodeup.NewConfig(cluster, ig)
-	config.Assets = make(map[architectures.Architecture][]string)
-	for _, arch := range architectures.GetSupported() {
-		config.Assets[arch] = []string{}
-		for _, a := range n.Assets[arch] {
-			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
-		}
+	config.Assets = []string{}
+	for _, a := range n.Assets[architectures.ArchitectureAmd64] {
+		config.Assets = append(config.Assets, a.CompactString())
 	}
 	config.ClusterName = cluster.ObjectMeta.Name
 	config.ConfigBase = fi.String(n.configBase.Path())
@@ -1336,10 +1333,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		})
 	}
 
-	config.Images = n.images[role]
+	config.Images = n.images[role][architectures.ArchitectureAmd64]
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
-	config.ProtokubeImage = n.protokubeImage[role]
+	config.ProtokubeImage = n.protokubeImage[role][architectures.ArchitectureAmd64]
 
 	return config, nil
 }
