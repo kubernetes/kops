@@ -249,7 +249,7 @@ gcs-upload-and-tag: gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${BAZELUPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
 
 .PHONY: bazel-version-ci
-bazel-version-ci: bazel-crossbuild-kops-ci bazel-crossbuild-nodeup bazel-kops-controller-export bazel-kube-apiserver-healthcheck-export bazel-dns-controller-export bazel-protokube-export
+bazel-version-ci: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
@@ -575,35 +575,65 @@ bazel-build:
 bazel-build-cli:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure //cmd/kops/...
 
-.PHONY: bazel-crossbuild-kops
-bazel-crossbuild-kops:
+.PHONY: bazel-build-kops-darwin-amd64
+bazel-build-kops-darwin-amd64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
+
+.PHONY: bazel-build-kops-linux-amd64
+bazel-build-kops-linux-amd64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+
+.PHONY: bazel-build-kops-linux-arm64
+bazel-build-kops-linux-arm64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops/...
+
+.PHONY: bazel-build-kops-windows-amd64
+bazel-build-kops-windows-amd64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
 
-.PHONY: bazel-crossbuild-kops-ci
-bazel-crossbuild-kops-ci:
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+.PHONY: bazel-crossbuild-kops
+bazel-crossbuild-kops: bazel-build-kops-darwin-amd64 bazel-build-kops-linux-amd64 bazel-build-kops-linux-arm64 bazel-build-kops-windows-amd64
+	echo "Done cross-building kops"
 
-.PHONY: bazel-crossbuild-nodeup
-bazel-crossbuild-nodeup:
+.PHONY: bazel-build-nodeup-linux-amd64
+bazel-build-nodeup-linux-amd64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
+
+.PHONY: bazel-build-nodeup-linux-arm64
+bazel-build-nodeup-linux-arm64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/nodeup/...
 
-.PHONY: bazel-crossbuild-protokube
-bazel-crossbuild-protokube:
+.PHONY: bazel-crossbuild-nodeup
+bazel-crossbuild-nodeup: bazel-build-nodeup-linux-amd64 bazel-build-nodeup-linux-arm64
+	echo "Done cross-building nodeup"
+
+.PHONY: bazel-build-protokube-linux-amd64
+bazel-build-protokube-linux-amd64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+
+.PHONY: bazel-build-protokube-linux-arm64
+bazel-build-protokube-linux-arm64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --@io_bazel_rules_go//go/config:pure --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/...
 
-.PHONY: bazel-crossbuild-protokube-image
-bazel-crossbuild-protokube-image:
+.PHONY: bazel-crossbuild-protokube
+bazel-crossbuild-protokube: bazel-build-protokube-linux-amd64 bazel-build-protokube-linux-arm64
+	echo "Done cross-building protokube"
+
+.PHONY: bazel-crossbuild-protokube-image-linux-amd64
+bazel-crossbuild-protokube-image-linux-amd64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle-amd64.tar
+
+.PHONY: bazel-crossbuild-protokube-image-linux-arm64
+bazel-crossbuild-protokube-image-linux-arm64:
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar
+
+.PHONY: bazel-crossbuild-protokube-image
+bazel-crossbuild-protokube-image: bazel-crossbuild-protokube-image-linux-amd64 bazel-crossbuild-protokube-image-linux-arm64
+	echo "Done cross-building protokube images"
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
-bazel-push: bazel-crossbuild-nodeup
+bazel-push: bazel-build-nodeup-linux-amd64
 	ssh ${TARGET} touch /tmp/nodeup
 	ssh ${TARGET} chmod +w /tmp/nodeup
 	scp -C bazel-bin/cmd/nodeup/linux-amd64/nodeup  ${TARGET}:/tmp/
@@ -644,48 +674,88 @@ push-node-authorizer:
 	docker tag bazel/node-authorizer/images:node-authorizer ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
 	docker push ${DOCKER_REGISTRY}/node-authorizer:${DOCKER_TAG}
 
-.PHONY: bazel-protokube-export
-bazel-protokube-export:
+.PHONY: bazel-protokube-export-linux-amd64
+bazel-protokube-export-linux-amd64:
 	mkdir -p ${BAZELIMAGES}
 	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/cmd/protokube:image-bundle-amd64.tar.gz.sha256
-	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar.gz.sha256
 	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-amd64.tar.gz ${BAZELIMAGES}/protokube-amd64.tar.gz
-	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-arm64.tar.gz ${BAZELIMAGES}/protokube-arm64.tar.gz
 	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256
+
+.PHONY: bazel-protokube-export-linux-arm64
+bazel-protokube-export-linux-arm64:
+	mkdir -p ${BAZELIMAGES}
+	bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --action_env=PROTOKUBE_TAG=${PROTOKUBE_TAG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //protokube/cmd/protokube:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-arm64.tar.gz ${BAZELIMAGES}/protokube-arm64.tar.gz
 	cp -fp bazel-bin/protokube/cmd/protokube/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256
 
-.PHONY: bazel-kube-apiserver-healthcheck-export
-bazel-kube-apiserver-healthcheck-export:
+.PHONY: bazel-protokube-export
+bazel-protokube-export: bazel-protokube-export-linux-amd64 bazel-protokube-export-linux-arm64
+	echo "Done exporting protokube images"
+
+.PHONY: bazel-kube-apiserver-healthcheck-export-linux-amd64
+bazel-kube-apiserver-healthcheck-export-linux-amd64:
 	mkdir -p ${BAZELIMAGES}
 	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kube-apiserver-healthcheck:image-bundle-amd64.tar.gz.sha256
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:image-bundle-arm64.tar.gz.sha256
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-amd64.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz
-	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+
+.PHONY: bazel-kube-apiserver-healthcheck-export-linux-arm64
+bazel-kube-apiserver-healthcheck-export-linux-arm64:
+	mkdir -p ${BAZELIMAGES}
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KUBE_APISERVER_HEALTHCHECK_TAG=${KUBE_APISERVER_HEALTHCHECK_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kube-apiserver-healthcheck:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz
 	cp -fp bazel-bin/cmd/kube-apiserver-healthcheck/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256
 
-.PHONY: bazel-kops-controller-export
-bazel-kops-controller-export:
+.PHONY: bazel-kube-apiserver-healthcheck-export
+bazel-kube-apiserver-healthcheck-export: bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-arm64
+	echo "Done exporting kube-apiserver-healthcheck images"
+
+.PHONY: bazel-kops-controller-export-linux-amd64
+bazel-kops-controller-export-linux-amd64:
 	mkdir -p ${BAZELIMAGES}
 	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops-controller:image-bundle-amd64.tar.gz.sha256
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:image-bundle-arm64.tar.gz.sha256
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle-amd64.tar.gz ${BAZELIMAGES}/kops-controller-amd64.tar.gz
-	cp -fp bazel-bin/cmd/kops-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kops-controller-arm64.tar.gz
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256
+
+.PHONY: bazel-kops-controller-export-linux-arm64
+bazel-kops-controller-export-linux-arm64:
+	mkdir -p ${BAZELIMAGES}
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" KOPS_CONTROLLER_TAG=${KOPS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //cmd/kops-controller:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/cmd/kops-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/kops-controller-arm64.tar.gz
 	cp -fp bazel-bin/cmd/kops-controller/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256
+
+.PHONY: bazel-kops-controller-export
+bazel-kops-controller-export: bazel-kops-controller-export-linux-amd64 bazel-kops-controller-export-linux-arm64
+	echo "Done exporting kops-controller images"
+
+.PHONY: bazel-dns-controller-export-linux-amd64
+bazel-dns-controller-export-linux-amd64:
+	mkdir -p ${BAZELIMAGES}
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle-amd64.tar.gz.sha256
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz ${BAZELIMAGES}/dns-controller-amd64.tar.gz
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256
+
+.PHONY: bazel-dns-controller-export-linux-arm64
+bazel-dns-controller-export-linux-arm64:
+	mkdir -p ${BAZELIMAGES}
+	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:image-bundle-arm64.tar.gz.sha256
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/dns-controller-arm64.tar.gz
+	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256
 
 .PHONY: bazel-dns-controller-export
 bazel-dns-controller-export:
-	mkdir -p ${BAZELIMAGES}
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/cmd/dns-controller:image-bundle-amd64.tar.gz.sha256
-	DOCKER_REGISTRY="" DOCKER_IMAGE_PREFIX="k8s.gcr.io/kops/" DNS_CONTROLLER_TAG=${DNS_CONTROLLER_TAG} bazel ${BAZEL_OPTIONS} build ${BAZEL_CONFIG} --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64 //dns-controller/cmd/dns-controller:image-bundle-arm64.tar.gz.sha256
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz ${BAZELIMAGES}/dns-controller-amd64.tar.gz
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-arm64.tar.gz ${BAZELIMAGES}/dns-controller-arm64.tar.gz
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-amd64.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256
-	cp -fp bazel-bin/dns-controller/cmd/dns-controller/image-bundle-arm64.tar.gz.sha256 ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256
+	echo "Done exporting dns-controller images"
+
+.PHONY: bazel-version-dist-linux-amd64
+bazel-version-dist-linux-amd64: bazel-build-kops-linux-amd64 bazel-build-nodeup-linux-amd64 bazel-kops-controller-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-dns-controller-export-linux-amd64 bazel-protokube-export-linux-amd64
+	echo "Done building dist for amd64"
+
+.PHONY: bazel-version-dist-linux-arm64
+bazel-version-dist-linux-arm64: bazel-build-kops-linux-arm64 bazel-build-nodeup-linux-arm64 bazel-kops-controller-export-linux-arm64 bazel-kube-apiserver-healthcheck-export-linux-arm64 bazel-dns-controller-export-linux-arm64 bazel-protokube-export-linux-arm64
+	echo "Done building dist for arm64"
 
 .PHONY: bazel-version-dist
-bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-controller-export bazel-kube-apiserver-healthcheck-export bazel-dns-controller-export bazel-protokube-export
+bazel-version-dist: bazel-version-dist-linux-amd64 bazel-version-dist-linux-arm64 bazel-build-kops-darwin-amd64 bazel-build-kops-windows-amd64
 	rm -rf ${BAZELUPLOAD}
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/
