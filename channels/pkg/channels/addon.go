@@ -149,7 +149,7 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
 	}
 
-	if a.Spec.NeedUpdate != "" {
+	if a.Spec.NeedsRollingUpdate != "" {
 		err = a.AddNeedsUpdateLabel(ctx, k8sClient)
 		if err != nil {
 			return nil, fmt.Errorf("error adding needs-update label: %v", err)
@@ -166,9 +166,9 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 }
 
 func (a *Addon) AddNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.Interface) error {
-	klog.Infof("addon %v wants to roll %v nodes", a.Name, a.Spec.NeedUpdate)
+	klog.Infof("addon %v wants to update %v nodes", a.Name, a.Spec.NeedsRollingUpdate)
 	selector := ""
-	switch a.Spec.NeedUpdate {
+	switch a.Spec.NeedsRollingUpdate {
 	case "control-plane":
 		selector = "node-role.kubernetes.io/master="
 	case "worker":
