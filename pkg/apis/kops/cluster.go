@@ -477,7 +477,7 @@ type EtcdClusterSpec struct {
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// EnableTLSAuth indicates client and peer TLS auth should be enforced
 	EnableTLSAuth bool `json:"enableTLSAuth,omitempty"`
-	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
+	// Version is the version of etcd to run.
 	Version string `json:"version,omitempty"`
 	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
 	LeaderElectionTimeout *metav1.Duration `json:"leaderElectionTimeout,omitempty"`

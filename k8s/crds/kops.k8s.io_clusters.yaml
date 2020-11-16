@@ -653,7 +653,7 @@ spec:
                       description: 'Provider is the provider used to run etcd: Manager, Legacy. Defaults to Manager.'
                       type: string
                     version:
-                      description: Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
+                      description: Version is the version of etcd to run.
                       type: string
                   type: object
                 type: array
