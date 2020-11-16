@@ -95,7 +95,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.0
+    version: 1.17.0
   - id: v1.7.0
     kubernetesVersion: '>=1.7.0 <1.15.0'
     manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
@@ -103,7 +103,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.0
+    version: 1.17.0
   - id: v1.6.0
     kubernetesVersion: <1.7.0
     manifest: storage-aws.addons.k8s.io/v1.6.0.yaml
@@ -111,7 +111,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.0
+    version: 1.17.0
   - id: k8s-1.7
     kubernetesVersion: '>=1.7.0 <1.12.0'
     manifest: networking.cilium.io/k8s-1.7.yaml
