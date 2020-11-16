@@ -401,7 +401,7 @@ resource "aws_launch_template" "bastion-private-shared-subnet-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.private-shared-subnet.example.com-"
+  name = "bastion.private-shared-subnet.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -464,7 +464,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-subnet-
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.private-shared-subnet.example.com-"
+  name = "master-us-test-1a.masters.private-shared-subnet.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -524,7 +524,7 @@ resource "aws_launch_template" "nodes-private-shared-subnet-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.private-shared-subnet.example.com-"
+  name = "nodes.private-shared-subnet.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true

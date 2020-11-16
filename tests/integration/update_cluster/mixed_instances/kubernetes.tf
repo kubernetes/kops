@@ -457,7 +457,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.mixedinstances.example.com-"
+  name = "master-us-test-1a.masters.mixedinstances.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -521,7 +521,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1b.masters.mixedinstances.example.com-"
+  name = "master-us-test-1b.masters.mixedinstances.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -585,7 +585,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1c.masters.mixedinstances.example.com-"
+  name = "master-us-test-1c.masters.mixedinstances.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -645,7 +645,7 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.mixedinstances.example.com-"
+  name = "nodes.mixedinstances.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true

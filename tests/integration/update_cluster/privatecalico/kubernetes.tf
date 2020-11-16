@@ -429,7 +429,7 @@ resource "aws_launch_template" "bastion-privatecalico-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.privatecalico.example.com-"
+  name = "bastion.privatecalico.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -492,7 +492,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatecalico-example-
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.privatecalico.example.com-"
+  name = "master-us-test-1a.masters.privatecalico.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -552,7 +552,7 @@ resource "aws_launch_template" "nodes-privatecalico-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.privatecalico.example.com-"
+  name = "nodes.privatecalico.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true

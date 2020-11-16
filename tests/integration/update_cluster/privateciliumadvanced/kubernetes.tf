@@ -443,7 +443,7 @@ resource "aws_launch_template" "bastion-privateciliumadvanced-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "bastion.privateciliumadvanced.example.com-"
+  name = "bastion.privateciliumadvanced.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -506,7 +506,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.privateciliumadvanced.example.com-"
+  name = "master-us-test-1a.masters.privateciliumadvanced.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
@@ -566,7 +566,7 @@ resource "aws_launch_template" "nodes-privateciliumadvanced-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.privateciliumadvanced.example.com-"
+  name = "nodes.privateciliumadvanced.example.com"
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true

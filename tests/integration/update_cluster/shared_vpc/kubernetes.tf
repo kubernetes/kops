@@ -263,7 +263,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedvpc-example-com"
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.sharedvpc.example.com-"
+  name = "master-us-test-1a.masters.sharedvpc.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -323,7 +323,7 @@ resource "aws_launch_template" "nodes-sharedvpc-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.sharedvpc.example.com-"
+  name = "nodes.sharedvpc.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true

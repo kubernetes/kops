@@ -468,7 +468,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1a.masters.existingsg.example.com-"
+  name = "master-us-test-1a.masters.existingsg.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -532,7 +532,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1b.masters.existingsg.example.com-"
+  name = "master-us-test-1b.masters.existingsg.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -596,7 +596,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "master-us-test-1c.masters.existingsg.example.com-"
+  name = "master-us-test-1c.masters.existingsg.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -656,7 +656,7 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
   lifecycle {
     create_before_destroy = true
   }
-  name_prefix = "nodes.existingsg.example.com-"
+  name = "nodes.existingsg.example.com"
   network_interfaces {
     associate_public_ip_address = true
     delete_on_termination       = true
