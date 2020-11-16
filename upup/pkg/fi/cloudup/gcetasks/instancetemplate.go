@@ -353,6 +353,10 @@ func matches(l, r *compute.InstanceTemplate) bool {
 			c.Metadata.Fingerprint = ""
 			sort.Sort(ByKey(c.Metadata.Items))
 		}
+		// Ignore output fields
+		for _, ni := range c.NetworkInterfaces {
+			ni.Name = ""
+		}
 		return &c
 	}
 	normalize := func(v *compute.InstanceTemplate) *compute.InstanceTemplate {
