@@ -18,13 +18,18 @@ package channels
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
+
+	"k8s.io/apimachinery/pkg/types"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/api"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Addon is a wrapper around a single version of an addon
@@ -144,6 +149,13 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 		return nil, fmt.Errorf("error applying update from %q: %v", manifestURL, err)
 	}
 
+	if a.Spec.NeedsRollingUpdate != "" {
+		err = a.AddNeedsUpdateLabel(ctx, k8sClient)
+		if err != nil {
+			return nil, fmt.Errorf("error adding needs-update label: %v", err)
+		}
+	}
+
 	channel := a.buildChannel()
 	err = channel.SetInstalledVersion(ctx, k8sClient, a.ChannelVersion())
 	if err != nil {
@@ -151,4 +163,37 @@ func (a *Addon) EnsureUpdated(ctx context.Context, k8sClient kubernetes.Interfac
 	}
 
 	return required, nil
+}
+
+func (a *Addon) AddNeedsUpdateLabel(ctx context.Context, k8sClient kubernetes.Interface) error {
+	klog.Infof("addon %v wants to update %v nodes", a.Name, a.Spec.NeedsRollingUpdate)
+	selector := ""
+	switch a.Spec.NeedsRollingUpdate {
+	case "control-plane":
+		selector = "node-role.kubernetes.io/master="
+	case "worker":
+		selector = "node-role.kubernetes.io/node="
+	}
+
+	annotationPatch := &annotationPatch{Metadata: annotationPatchMetadata{Annotations: map[string]string{
+		"kops.k8s.io/needs-update": "",
+	}}}
+	annotationPatchJSON, err := json.Marshal(annotationPatch)
+	if err != nil {
+		return err
+	}
+
+	nodeInterface := k8sClient.CoreV1().Nodes()
+	nodes, err := nodeInterface.List(ctx, metav1.ListOptions{LabelSelector: selector})
+	if err != nil {
+		return err
+	}
+	for _, node := range nodes.Items {
+		_, err = nodeInterface.Patch(ctx, node.Name, types.StrategicMergePatchType, annotationPatchJSON, metav1.PatchOptions{})
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
