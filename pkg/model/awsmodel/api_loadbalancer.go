@@ -44,6 +44,7 @@ var _ fi.ModelBuilder = &APILoadBalancerBuilder{}
 
 // Build is responsible for building the KubeAPI tasks for the aws model
 func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
+
 	// Configuration where an ELB fronts the API
 	if !b.UseLoadBalancerForAPI() {
 		return nil
@@ -152,9 +153,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
-			Tags: tags,
-			VPC:  b.LinkToVPC(),
-			Type: fi.String("network"),
+			Tags:             tags,
+			VPC:              b.LinkToVPC(),
+			Type:             fi.String("network"),
+			CLBNamesToDelete: []string{b.CLBName("api")},
 		}
 
 		clb = &awstasks.ClassicLoadBalancer{
@@ -181,7 +183,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				IdleTimeout: fi.Int64(int64(idleTimeout.Seconds())),
 			},
 
-			Tags: tags,
+			Tags:             tags,
+			NLBNamesToDelete: []string{b.NLBName("api")},
+			TGNamesToDelete:  []string{b.NLBTargetGroupName("api")},
 		}
 
 		if lbSpec.CrossZoneLoadBalancing == nil {

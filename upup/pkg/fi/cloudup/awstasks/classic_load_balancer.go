@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -72,12 +73,123 @@ type ClassicLoadBalancer struct {
 
 	// Shared is set if this is an external LB (one we don't create or own)
 	Shared *bool
+
+	NLBNamesToDelete []string
+	TGNamesToDelete  []string
 }
 
 var _ fi.CompareWithID = &ClassicLoadBalancer{}
 
 func (e *ClassicLoadBalancer) CompareWithID() *string {
 	return e.Name
+}
+
+type deleteTargetGroup struct {
+	request *elbv2.DeleteTargetGroupInput
+}
+
+var _ fi.Deletion = &deleteTargetGroup{}
+
+func (d *deleteTargetGroup) TaskName() string {
+	return "TargetGroup"
+}
+
+func (d *deleteTargetGroup) Item() string {
+	return aws.StringValue(d.request.TargetGroupArn)
+}
+
+func (d *deleteTargetGroup) Delete(t fi.Target) error {
+	klog.V(2).Infof("deleting target group %v", d)
+
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+
+	klog.V(2).Infof("Calling Nlb DeleteTargetGroup for %s", aws.StringValue(d.request.TargetGroupArn))
+
+	if _, err := awsTarget.Cloud.ELBV2().DeleteTargetGroup(d.request); err != nil {
+		return fmt.Errorf("error Deleting TargetGroup from NLB: %v", err)
+	}
+
+	return nil
+}
+
+func (d *deleteTargetGroup) String() string {
+	return d.TaskName() + "-" + d.Item()
+}
+
+type deleteNetworkLoadBalancer struct {
+	request *elbv2.DeleteLoadBalancerInput
+}
+
+var _ fi.Deletion = &deleteNetworkLoadBalancer{}
+
+func (d *deleteNetworkLoadBalancer) TaskName() string {
+	return "NetworkLoadBalancer"
+}
+
+func (d *deleteNetworkLoadBalancer) Item() string {
+	return aws.StringValue(d.request.LoadBalancerArn)
+}
+
+func (d *deleteNetworkLoadBalancer) Delete(t fi.Target) error {
+	klog.V(2).Infof("deleting nlb %v", d)
+
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+
+	klog.V(2).Infof("Calling elb DeleteLoadBalancer for %s", aws.StringValue(d.request.LoadBalancerArn))
+
+	if _, err := awsTarget.Cloud.ELBV2().DeleteLoadBalancer(d.request); err != nil {
+		return fmt.Errorf("error deleting nlb %s: %v", aws.StringValue(d.request.LoadBalancerArn), err)
+	}
+
+	return nil
+}
+
+func (d *deleteNetworkLoadBalancer) String() string {
+	return d.TaskName() + "-" + d.Item()
+}
+
+func (e *ClassicLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+	var removals []fi.Deletion
+
+	cloud := c.Cloud.(awsup.AWSCloud)
+
+	for _, nlbName := range e.NLBNamesToDelete {
+		if lb, err := findNetworkLoadBalancerByLoadBalancerName(cloud, nlbName); err != nil {
+			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != elbv2.ErrCodeLoadBalancerNotFoundException {
+				return nil, err
+			}
+		} else if lb != nil {
+			// Deleting a load balancer also deletes its listeners. NLB must be deleted first to delete TG.
+			request := &elbv2.DeleteLoadBalancerInput{
+				LoadBalancerArn: lb.LoadBalancerArn,
+			}
+
+			removals = append(removals, &deleteNetworkLoadBalancer{request: request})
+			klog.V(2).Infof("will delete network load balancer:%v", lb.LoadBalancerName)
+		}
+	}
+
+	for _, tgName := range e.TGNamesToDelete {
+		if tg, err := FindTargetGroupByName(cloud, tgName); err != nil {
+			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != elbv2.ErrCodeTargetGroupNotFoundException {
+				return nil, err
+			}
+		} else if tg != nil {
+			request := &elbv2.DeleteTargetGroupInput{
+				TargetGroupArn: tg.TargetGroupArn,
+			}
+			removals = append(removals, &deleteTargetGroup{request: request})
+			klog.V(2).Infof("will delete target group with arn:%v:\n", tg.TargetGroupArn)
+		}
+	}
+
+	return removals, nil
 }
 
 type ClassicLoadBalancerListener struct {
@@ -415,6 +527,8 @@ func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) 
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
+	actual.NLBNamesToDelete = e.NLBNamesToDelete
+	actual.TGNamesToDelete = e.TGNamesToDelete
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
 

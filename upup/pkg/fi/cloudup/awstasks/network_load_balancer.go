@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -66,14 +67,76 @@ type NetworkLoadBalancer struct {
 
 	Type *string
 
-	VPC          *VPC
-	TargetGroups []*TargetGroup
+	VPC              *VPC
+	TargetGroups     []*TargetGroup
+	CLBNamesToDelete []string
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
 
 func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
+}
+
+type deleteClassicLoadBalancer struct {
+	request *elb.DeleteLoadBalancerInput
+}
+
+var _ fi.Deletion = &deleteClassicLoadBalancer{}
+
+func (d *deleteClassicLoadBalancer) TaskName() string {
+	return "ClassicLoadBalancer"
+}
+
+func (d *deleteClassicLoadBalancer) Item() string {
+	return aws.StringValue(d.request.LoadBalancerName)
+}
+
+func (d *deleteClassicLoadBalancer) Delete(t fi.Target) error {
+	klog.V(2).Infof("deleting elb %v", d)
+
+	awsTarget, ok := t.(*awsup.AWSAPITarget)
+	if !ok {
+		return fmt.Errorf("unexpected target type for deletion: %T", t)
+	}
+
+	klog.V(2).Infof("Calling elb DeleteClassicLoadBalancer for %s", aws.StringValue(d.request.LoadBalancerName))
+
+	if _, err := awsTarget.Cloud.ELB().DeleteLoadBalancer(d.request); err != nil {
+		return fmt.Errorf("error deleting clb %s: %v", aws.StringValue(d.request.LoadBalancerName), err)
+	}
+
+	return nil
+}
+
+func (d *deleteClassicLoadBalancer) String() string {
+	return d.TaskName() + "-" + d.Item()
+}
+
+func (e *NetworkLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+
+	var removals []fi.Deletion
+
+	cloud := c.Cloud.(awsup.AWSCloud)
+
+	for _, clbName := range e.CLBNamesToDelete {
+		if lb, err := findLoadBalancerByLoadBalancerName(cloud, clbName); err != nil {
+			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != elb.ErrCodeAccessPointNotFoundException {
+				return nil, err
+			}
+		} else if lb != nil {
+
+			request := &elb.DeleteLoadBalancerInput{
+				LoadBalancerName: lb.LoadBalancerName,
+			}
+
+			removals = append(removals, &deleteClassicLoadBalancer{request: request})
+
+			klog.V(2).Infof("will delete load balancer: %v", lb.LoadBalancerName)
+		}
+	}
+
+	return removals, nil
 }
 
 type NetworkLoadBalancerListener struct {
@@ -455,6 +518,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
+	actual.CLBNamesToDelete = e.CLBNamesToDelete
 	actual.ForAPIServer = e.ForAPIServer
 	actual.Lifecycle = e.Lifecycle
 
