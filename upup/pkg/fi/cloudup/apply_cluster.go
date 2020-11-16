@@ -432,8 +432,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
-				"loadBalancer":           &awstasks.LoadBalancer{},
-				"loadBalancerAttachment": &awstasks.LoadBalancerAttachment{},
+				"loadBalancer": &awstasks.LoadBalancer{},
 
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},

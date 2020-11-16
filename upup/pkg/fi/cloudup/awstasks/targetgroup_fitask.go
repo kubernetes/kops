@@ -19,57 +19,36 @@ limitations under the License.
 package awstasks
 
 import (
-	"encoding/json"
-
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// ExternalTargetGroupAttachment
+// TargetGroup
 
-// JSON marshaling boilerplate
-type realExternalTargetGroupAttachment ExternalTargetGroupAttachment
-
-// UnmarshalJSON implements conversion to JSON, supporting an alternate specification of the object as a string
-func (o *ExternalTargetGroupAttachment) UnmarshalJSON(data []byte) error {
-	var jsonName string
-	if err := json.Unmarshal(data, &jsonName); err == nil {
-		o.Name = &jsonName
-		return nil
-	}
-
-	var r realExternalTargetGroupAttachment
-	if err := json.Unmarshal(data, &r); err != nil {
-		return err
-	}
-	*o = ExternalTargetGroupAttachment(r)
-	return nil
-}
-
-var _ fi.HasLifecycle = &ExternalTargetGroupAttachment{}
+var _ fi.HasLifecycle = &TargetGroup{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *ExternalTargetGroupAttachment) GetLifecycle() *fi.Lifecycle {
+func (o *TargetGroup) GetLifecycle() *fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
-func (o *ExternalTargetGroupAttachment) SetLifecycle(lifecycle fi.Lifecycle) {
+func (o *TargetGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = &lifecycle
 }
 
-var _ fi.HasName = &ExternalTargetGroupAttachment{}
+var _ fi.HasName = &TargetGroup{}
 
 // GetName returns the Name of the object, implementing fi.HasName
-func (o *ExternalTargetGroupAttachment) GetName() *string {
+func (o *TargetGroup) GetName() *string {
 	return o.Name
 }
 
 // SetName sets the Name of the object, implementing fi.SetName
-func (o *ExternalTargetGroupAttachment) SetName(name string) {
+func (o *TargetGroup) SetName(name string) {
 	o.Name = &name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
-func (o *ExternalTargetGroupAttachment) String() string {
+func (o *TargetGroup) String() string {
 	return fi.TaskAsString(o)
 }
