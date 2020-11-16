@@ -736,7 +736,7 @@ func TestAddAnnotatedNodesToNeedsUpdate(t *testing.T) {
 	addNeedsUpdateAnnotation(groups["node-2"], "node-2a")
 	addNeedsUpdateAnnotation(groups["master-1"], "master-1b")
 
-	err := c.AdjustNeedUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.AdjustNeedUpdate(groups)
 	assert.NoError(t, err, "AddAnnotatedNodesToGroups")
 
 	assertGroupNeedUpdate(t, groups, "node-1", "node-1a", "node-1b")
@@ -759,7 +759,7 @@ func TestAddAnnotatedNodesToNeedsUpdateCloudonly(t *testing.T) {
 	c.CloudOnly = true
 	c.ClusterValidator = &assertNotCalledClusterValidator{T: t}
 
-	err := c.AdjustNeedUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.AdjustNeedUpdate(groups)
 	assert.NoError(t, err, "AddAnnotatedNodesToGroups")
 
 	assertGroupNeedUpdate(t, groups, "node-1", "node-1a", "node-1b")
@@ -776,7 +776,7 @@ func TestAddAnnotatedNodesToNeedsUpdateNodesMissing(t *testing.T) {
 	groups["node-1"].Ready[0].Node = nil
 	groups["node-1"].NeedUpdate[0].Node = nil
 
-	err := c.AdjustNeedUpdate(groups, &kopsapi.InstanceGroupList{})
+	err := c.AdjustNeedUpdate(groups)
 	assert.NoError(t, err, "AddAnnotatedNodesToGroups")
 }
 
