@@ -1212,11 +1212,17 @@ spec:
                       type: string
                     description: FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
                     type: object
+                  horizontalPodAutoscalerCpuInitializationPeriod:
+                    description: HorizontalPodAutoscalerCPUInitializationPeriod is the period after pod start when CPU samples might be skipped. (default 5m)
+                    type: string
                   horizontalPodAutoscalerDownscaleDelay:
                     description: HorizontalPodAutoscalerDownscaleDelay is a duration that specifies how long the autoscaler has to wait before another downscale operation can be performed after the current one has completed.
                     type: string
                   horizontalPodAutoscalerDownscaleStabilization:
                     description: HorizontalPodAutoscalerDownscaleStabilization is the period for which autoscaler will look backwards and not scale down below any recommendation it made during that period.
+                    type: string
+                  horizontalPodAutoscalerInitialReadinessDelay:
+                    description: HorizontalPodAutoscalerInitialReadinessDelay is the period after pod start during which readiness changes will be treated as initial readiness. (default 30s)
                     type: string
                   horizontalPodAutoscalerSyncPeriod:
                     description: HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition.
