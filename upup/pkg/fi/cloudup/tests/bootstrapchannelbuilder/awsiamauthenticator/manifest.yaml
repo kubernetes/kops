@@ -52,7 +52,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.0
+    version: 1.17.0
   - id: v1.7.0
     kubernetesVersion: <1.15.0
     manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
@@ -60,7 +60,7 @@ spec:
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.15.0
+    version: 1.17.0
   - id: k8s-1.12
     manifest: authentication.aws/k8s-1.12.yaml
     manifestHash: 7a5100a7a4938565f3bd64decc8c7767f57ae2cc
