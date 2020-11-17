@@ -608,7 +608,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 		key := "storage-aws.addons.k8s.io"
-		version := "1.15.0"
+		version := "1.17.0"
 
 		{
 			id := "v1.15.0"
