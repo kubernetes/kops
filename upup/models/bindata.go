@@ -1836,6 +1836,10 @@ spec:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
         version: v1.19.0-beta.1
+{{ if UseKopsControllerForNodeBootstrap }}
+      annotations:
+        dns.alpha.kubernetes.io/internal: kops-controller.internal.{{ ClusterName }}
+{{ end }}
     spec:
       priorityClassName: system-node-critical
       tolerations:

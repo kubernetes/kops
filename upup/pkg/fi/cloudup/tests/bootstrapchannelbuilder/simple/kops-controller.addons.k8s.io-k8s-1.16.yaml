@@ -26,6 +26,8 @@ spec:
       k8s-app: kops-controller
   template:
     metadata:
+      annotations:
+        dns.alpha.kubernetes.io/internal: kops-controller.internal.minimal.example.com
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
