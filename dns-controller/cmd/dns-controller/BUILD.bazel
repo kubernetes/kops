@@ -65,8 +65,8 @@ ARCH = [
     format = "Docker",
     image = ":image-%s" % arch,
     registry = "{STABLE_DOCKER_REGISTRY}",
-    repository = "{STABLE_DOCKER_IMAGE_PREFIX}dns-controller-%s" % arch,
-    tag = "{STABLE_DNS_CONTROLLER_TAG}",
+    repository = "{STABLE_DOCKER_IMAGE_PREFIX}dns-controller",
+    tag = "{STABLE_DNS_CONTROLLER_TAG}-%s" % arch,
 ) for arch in ARCH]
 
 [container_bundle(
