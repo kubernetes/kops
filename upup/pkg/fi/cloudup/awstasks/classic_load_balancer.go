@@ -109,7 +109,9 @@ func (d *deleteTargetGroup) Delete(t fi.Target) error {
 	klog.V(2).Infof("Calling Nlb DeleteTargetGroup for %s", aws.StringValue(d.request.TargetGroupArn))
 
 	if _, err := awsTarget.Cloud.ELBV2().DeleteTargetGroup(d.request); err != nil {
-		return fmt.Errorf("error Deleting TargetGroup from NLB: %v", err)
+		if aerr, ok := err.(awserr.Error); !ok || aerr.Code() != elbv2.ErrCodeTargetGroupNotFoundException {
+			return fmt.Errorf("error Deleting TargetGroup from NLB: %v", err)
+		}
 	}
 
 	return nil
@@ -144,7 +146,9 @@ func (d *deleteNetworkLoadBalancer) Delete(t fi.Target) error {
 	klog.V(2).Infof("Calling elb DeleteLoadBalancer for %s", aws.StringValue(d.request.LoadBalancerArn))
 
 	if _, err := awsTarget.Cloud.ELBV2().DeleteLoadBalancer(d.request); err != nil {
-		return fmt.Errorf("error deleting nlb %s: %v", aws.StringValue(d.request.LoadBalancerArn), err)
+		if aerr, ok := err.(awserr.Error); !ok || aerr.Code() != elbv2.ErrCodeLoadBalancerNotFoundException {
+			return fmt.Errorf("error deleting nlb %s: %v", aws.StringValue(d.request.LoadBalancerArn), err)
+		}
 	}
 
 	return nil
@@ -161,9 +165,7 @@ func (e *ClassicLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error
 
 	for _, nlbName := range e.NLBNamesToDelete {
 		if lb, err := findNetworkLoadBalancerByLoadBalancerName(cloud, nlbName); err != nil {
-			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != elbv2.ErrCodeLoadBalancerNotFoundException {
-				return nil, err
-			}
+			return nil, err
 		} else if lb != nil {
 			// Deleting a load balancer also deletes its listeners. NLB must be deleted first to delete TG.
 			request := &elbv2.DeleteLoadBalancerInput{
@@ -177,9 +179,7 @@ func (e *ClassicLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error
 
 	for _, tgName := range e.TGNamesToDelete {
 		if tg, err := FindTargetGroupByName(cloud, tgName); err != nil {
-			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != elbv2.ErrCodeTargetGroupNotFoundException {
-				return nil, err
-			}
+			return nil, err
 		} else if tg != nil {
 			request := &elbv2.DeleteTargetGroupInput{
 				TargetGroupArn: tg.TargetGroupArn,
@@ -238,7 +238,7 @@ func findLoadBalancerByLoadBalancerName(cloud awsup.AWSCloud, loadBalancerName s
 
 	if err != nil {
 		if awsError, ok := err.(awserr.Error); ok {
-			if awsError.Code() == "LoadBalancerNotFound" {
+			if awsError.Code() == elb.ErrCodeAccessPointNotFoundException {
 				return nil, nil
 			}
 		}

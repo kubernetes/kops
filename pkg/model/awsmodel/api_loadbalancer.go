@@ -185,7 +185,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			Tags:             tags,
 			NLBNamesToDelete: []string{b.NLBName("api")},
-			TGNamesToDelete:  []string{b.NLBTargetGroupName("api")},
+			TGNamesToDelete:  []string{b.NLBTargetGroupName("tcp"), b.NLBTargetGroupName("tls")},
 		}
 
 		if lbSpec.CrossZoneLoadBalancing == nil {

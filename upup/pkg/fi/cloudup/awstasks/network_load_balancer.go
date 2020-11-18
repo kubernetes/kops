@@ -103,7 +103,9 @@ func (d *deleteClassicLoadBalancer) Delete(t fi.Target) error {
 	klog.V(2).Infof("Calling elb DeleteClassicLoadBalancer for %s", aws.StringValue(d.request.LoadBalancerName))
 
 	if _, err := awsTarget.Cloud.ELB().DeleteLoadBalancer(d.request); err != nil {
-		return fmt.Errorf("error deleting clb %s: %v", aws.StringValue(d.request.LoadBalancerName), err)
+		if aerr, ok := err.(awserr.Error); !ok || aerr.Code() != elb.ErrCodeAccessPointNotFoundException {
+			return fmt.Errorf("error deleting clb %s: %v", aws.StringValue(d.request.LoadBalancerName), err)
+		}
 	}
 
 	return nil
@@ -121,9 +123,7 @@ func (e *NetworkLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error
 
 	for _, clbName := range e.CLBNamesToDelete {
 		if lb, err := findLoadBalancerByLoadBalancerName(cloud, clbName); err != nil {
-			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != elb.ErrCodeAccessPointNotFoundException {
-				return nil, err
-			}
+			return nil, err
 		} else if lb != nil {
 
 			request := &elb.DeleteLoadBalancerInput{
@@ -217,7 +217,7 @@ func findNetworkLoadBalancerByLoadBalancerName(cloud awsup.AWSCloud, loadBalance
 
 	if err != nil {
 		if awsError, ok := err.(awserr.Error); ok {
-			if awsError.Code() == "LoadBalancerNotFound" {
+			if awsError.Code() == elbv2.ErrCodeLoadBalancerNotFoundException {
 				return nil, nil
 			}
 		}
