@@ -62,16 +62,6 @@ ARCH = [
     stamp = True,
 ) for arch in ARCH]
 
-# TODO: Remove / replace when multi-arch images are available
-container_push(
-    name = "push-image-plain",
-    format = "Docker",
-    image = ":image-amd64",
-    registry = "{STABLE_DOCKER_REGISTRY}",
-    repository = "{STABLE_DOCKER_IMAGE_PREFIX}kops-controller",
-    tag = "{STABLE_KOPS_CONTROLLER_TAG}",
-)
-
 [container_push(
     name = "push-image-%s" % arch,
     format = "Docker",

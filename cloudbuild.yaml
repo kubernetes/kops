@@ -4,8 +4,9 @@ options:
   substitution_option: ALLOW_LOOSE
   machineType: 'N1_HIGHCPU_8'
 steps:
-# Start by just pushing the image
-- name: 'gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.2.0'
+# Push the images
+- name: 'gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-2.2.0'
+  id: images
   entrypoint: make
   env:
   # _GIT_TAG is not a valid semver, we use CI=1 instead
@@ -18,7 +19,9 @@ steps:
   - kops-controller-push
   - dns-controller-push
   - kube-apiserver-healthcheck-push
-- name: 'gcr.io/k8s-testimages/bazelbuild:v20200405-02a6dff-2.2.0'
+# Push the artifacts
+- name: 'gcr.io/k8s-testimages/bazelbuild:v20200824-5d057db-2.2.0'
+  id: artifacts
   entrypoint: make
   env:
   # _GIT_TAG is not a valid semver, we use CI=1 instead
@@ -31,6 +34,21 @@ steps:
   - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
   args:
   - gcs-upload-and-tag
+# Push the manifests
+- name: 'gcr.io/k8s-testimages/gcb-docker-gcloud:v20200824-5d057db'
+  id: manifests
+  waitFor: [images]
+  entrypoint: make
+  env:
+  - DOCKER_CLI_EXPERIMENTAL=enabled
+  - CI=$_CI
+  - PULL_BASE_REF=$_PULL_BASE_REF
+  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+  args:
+  - kops-controller-manifest
+  - dns-controller-manifest
+  - kube-apiserver-healthcheck-manifest
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
