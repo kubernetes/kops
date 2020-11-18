@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "ieproxy.go",
+        "ieproxy_unix.go",
+        "ieproxy_windows.go",
+        "kernel32_data_windows.go",
+        "pac_unix.go",
+        "pac_windows.go",
+        "proxy_middleman.go",
+        "proxy_middleman_unix.go",
+        "proxy_middleman_windows.go",
+        "utils.go",
+        "winhttp_data_windows.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/mattn/go-ieproxy",
+    importpath = "github.com/mattn/go-ieproxy",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:windows": [
+            "//vendor/golang.org/x/net/http/httpproxy:go_default_library",
+            "//vendor/golang.org/x/sys/windows:go_default_library",
+            "//vendor/golang.org/x/sys/windows/registry:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)
