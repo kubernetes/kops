@@ -367,8 +367,8 @@ dns-controller-push:
 
 .PHONY: dns-controller-manifest
 dns-controller-manifest:
-	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller:${DNS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller-amd64:${DNS_CONTROLLER_PUSH_TAG}
-	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller:${DNS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller-arm64:${DNS_CONTROLLER_PUSH_TAG}
+	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller:${DNS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller:${DNS_CONTROLLER_PUSH_TAG}-amd64
+	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller:${DNS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller:${DNS_CONTROLLER_PUSH_TAG}-arm64
 	docker manifest push --purge ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller:${DNS_CONTROLLER_PUSH_TAG}
 
 # --------------------------------------------------
@@ -823,8 +823,8 @@ kops-controller-push:
 
 .PHONY: kops-controller-manifest
 kops-controller-manifest:
-	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller-amd64:${KOPS_CONTROLLER_PUSH_TAG}
-	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller-arm64:${KOPS_CONTROLLER_PUSH_TAG}
+	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_CONTROLLER_PUSH_TAG}-amd64
+	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_CONTROLLER_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_CONTROLLER_PUSH_TAG}-arm64
 	docker manifest push --purge ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller:${KOPS_CONTROLLER_PUSH_TAG}
 
 #------------------------------------------------------
@@ -837,6 +837,6 @@ kube-apiserver-healthcheck-push:
 
 .PHONY: kube-apiserver-healthcheck-manifest
 kube-apiserver-healthcheck-manifest:
-	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck-amd64:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG}
-	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck-arm64:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG}
+	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG}-amd64
+	docker manifest create --amend ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG}-arm64
 	docker manifest push --purge ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck:${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG}
