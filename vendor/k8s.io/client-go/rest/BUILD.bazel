@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "client.go",
         "config.go",
+        "exec.go",
         "plugin.go",
         "request.go",
         "transport.go",
@@ -28,6 +29,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/client-go/pkg/apis/clientauthentication:go_default_library",
         "//vendor/k8s.io/client-go/pkg/version:go_default_library",
         "//vendor/k8s.io/client-go/plugin/pkg/client/auth/exec:go_default_library",
         "//vendor/k8s.io/client-go/rest/watch:go_default_library",
