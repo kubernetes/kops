@@ -2,6 +2,7 @@ language: go
 arch: arm64-graviton2
 os: linux
 dist: focal
+virt: vm
 go: 1.15.4
 
 go_import_path: k8s.io/kops
