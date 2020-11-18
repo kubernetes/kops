@@ -18,8 +18,10 @@ package architectures
 
 import (
 	"fmt"
-	"os"
 	"runtime"
+	"sync"
+
+	"k8s.io/klog/v2"
 )
 
 type Architecture string
@@ -28,6 +30,9 @@ const (
 	ArchitectureAmd64 Architecture = "amd64"
 	ArchitectureArm64 Architecture = "arm64"
 )
+
+var supportedArchitecturesMutex sync.Mutex
+var supportedArchitectures []Architecture
 
 func FindArchitecture() (Architecture, error) {
 	switch runtime.GOARCH {
@@ -41,18 +46,37 @@ func FindArchitecture() (Architecture, error) {
 }
 
 func GetSupported() []Architecture {
-	// Kubernetes PR builds only generate AMD64 binaries at the moment
-	// Force support only for AMD64 or ARM64
-	arch := os.Getenv("KOPS_ARCH")
-	switch arch {
-	case "amd64":
-		return []Architecture{ArchitectureAmd64}
-	case "arm64":
-		return []Architecture{ArchitectureArm64}
+	supportedArchitecturesMutex.Lock()
+	defer supportedArchitecturesMutex.Unlock()
+
+	if len(supportedArchitectures) > 0 {
+		return supportedArchitectures
 	}
 
-	return []Architecture{
-		ArchitectureAmd64,
-		ArchitectureArm64,
+	klog.Warningf("could not find any supported CPU architecture, falling back to AMD64")
+	return []Architecture{ArchitectureAmd64}
+}
+
+func AddSupported(arch Architecture) {
+	supportedArchitecturesMutex.Lock()
+	defer supportedArchitecturesMutex.Unlock()
+
+	for _, supported := range supportedArchitectures {
+		if supported == arch {
+			return
+		}
+	}
+
+	supportedArchitectures = append(supportedArchitectures, arch)
+}
+
+func FromString(arch string) (Architecture, error) {
+	switch arch {
+	case "amd64":
+		return ArchitectureAmd64, nil
+	case "arm64":
+		return ArchitectureArm64, nil
+	default:
+		return "", fmt.Errorf("unsupported arch: %q", arch)
 	}
 }

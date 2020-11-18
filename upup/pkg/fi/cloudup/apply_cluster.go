@@ -163,6 +163,24 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
+	for _, ig := range c.InstanceGroups {
+		if ig.Spec.Architecture == "" {
+			// TODO: Find CPU arch by using the image/instance info
+			if strings.Contains(ig.Spec.Image, "-arm64") {
+				ig.Spec.Architecture = string(architectures.ArchitectureAmd64)
+			} else {
+				ig.Spec.Architecture = string(architectures.ArchitectureAmd64)
+			}
+		}
+
+		arch, err := architectures.FromString(ig.Spec.Architecture)
+		if err != nil {
+			return err
+		}
+
+		architectures.AddSupported(arch)
+	}
+
 	channel, err := ChannelForCluster(c.Cluster)
 	if err != nil {
 		klog.Warningf("%v", err)
@@ -1302,9 +1320,14 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 	}
 
+	arch, err := architectures.FromString(ig.Spec.Architecture)
+	if err != nil {
+		return nil, err
+	}
+
 	config := nodeup.NewConfig(cluster, ig)
 	config.Assets = []string{}
-	for _, a := range n.Assets[architectures.ArchitectureAmd64] {
+	for _, a := range n.Assets[arch] {
 		config.Assets = append(config.Assets, a.CompactString())
 	}
 	config.ClusterName = cluster.ObjectMeta.Name
@@ -1333,10 +1356,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		})
 	}
 
-	config.Images = n.images[role][architectures.ArchitectureAmd64]
+	config.Images = n.images[role][arch]
 	config.Channels = n.channels
 	config.EtcdManifests = n.etcdManifests[role]
-	config.ProtokubeImage = n.protokubeImage[role][architectures.ArchitectureAmd64]
+	config.ProtokubeImage = n.protokubeImage[role][arch]
 
 	return config, nil
 }
