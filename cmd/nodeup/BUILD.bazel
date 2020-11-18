@@ -15,6 +15,11 @@ go_library(
 
 go_binary(
     name = "nodeup",
+    out = select({
+        "@io_bazel_rules_go//go/platform:linux_amd64": "linux-amd64/nodeup",
+        "@io_bazel_rules_go//go/platform:linux_arm64": "linux-arm64/nodeup",
+        "@io_bazel_rules_go//go/platform:darwin_amd64": "darwin-amd64/nodeup",
+    }),
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
