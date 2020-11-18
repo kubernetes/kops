@@ -713,7 +713,7 @@ bazel-version-dist: bazel-crossbuild-nodeup bazel-crossbuild-kops bazel-kops-con
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/kops.sha256
 	cp bazel-bin/cmd/kops/darwin-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha256
-	cp bazel-bin/cmd/kops/windows-amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
+	cp bazel-bin/cmd/kops/windows-amd64/kops ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe ${BAZELUPLOAD}/kops/${VERSION}/windows/amd64/kops.exe.sha256
 	cp -fr ${BAZELUPLOAD}/kops/${VERSION}/* ${BAZELDIST}/
 
