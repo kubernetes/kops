@@ -27,12 +27,7 @@ IMAGE="cfn-python-lint:${TAG}"
 # https://github.com/aws-cloudformation/cfn-python-lint/issues/1025
 function docker_build() {
   echo "Building cfn-python-lint image"
-  TMP=$(mktemp -d)
-  git clone -q -b "${TAG}" https://github.com/aws-cloudformation/cfn-python-lint "${TMP}"
-  pushd "${TMP}"
-  docker build --tag "${IMAGE}" .
-  popd
-  rm -rf "${TMP}"
+  docker build --build-arg "CFNLINT_VERSION=${TAG}" --tag "${IMAGE}" - < "${KOPS_ROOT}/hack/cfn-lint.Dockerfile"
 }
 
 docker image inspect "${IMAGE}" >/dev/null 2>&1 || docker_build
