@@ -431,6 +431,7 @@ resource "aws_lb_listener" "api-complex-example-com-443" {
   load_balancer_arn = aws_lb.api-complex-example-com.id
   port              = 443
   protocol          = "TLS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
 }
 
 resource "aws_lb_listener" "api-complex-example-com-8443" {

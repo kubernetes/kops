@@ -80,6 +80,7 @@ type NetworkLoadBalancerListener struct {
 	Port             int
 	TargetGroupName  string
 	SSLCertificateID string
+	SSLPolicy        string
 }
 
 func (e *NetworkLoadBalancerListener) mapToAWS(targetGroups []*TargetGroup, loadBalancerArn string) (*elbv2.CreateListenerInput, error) {
@@ -110,6 +111,9 @@ func (e *NetworkLoadBalancerListener) mapToAWS(targetGroups []*TargetGroup, load
 			CertificateArn: aws.String(e.SSLCertificateID),
 		})
 		l.Protocol = aws.String(elbv2.ProtocolEnumTls)
+		if e.SSLPolicy != "" {
+			l.SslPolicy = aws.String(e.SSLPolicy)
+		}
 	} else {
 		l.Protocol = aws.String(elbv2.ProtocolEnumTcp)
 	}
@@ -369,6 +373,9 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 			actualListener.Port = int(aws.Int64Value(l.Port))
 			if len(l.Certificates) != 0 {
 				actualListener.SSLCertificateID = aws.StringValue(l.Certificates[0].CertificateArn) // What if there is more then one certificate, can we just grab the default certificate? we don't set it as default, we only set the one.
+				if l.SslPolicy != nil {
+					actualListener.SSLPolicy = aws.StringValue(l.SslPolicy)
+				}
 			}
 
 			// This will need to be rearranged when we recognized multiple listeners and target groups per NLB
@@ -689,6 +696,7 @@ type terraformNetworkLoadBalancerListener struct {
 	Port           int64                                        `json:"port" cty:"port"`
 	Protocol       string                                       `json:"protocol" cty:"protocol"`
 	CertificateARN *string                                      `json:"certificate_arn,omitempty" cty:"certificate_arn"`
+	SSLPolicy      *string                                      `json:"ssl_policy,omitempty" cty:"ssl_policy"`
 	DefaultAction  []terraformNetworkLoadBalancerListenerAction `json:"default_action" cty:"default_action"`
 }
 
@@ -730,6 +738,9 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 		if listener.SSLCertificateID != "" {
 			listenerTF.CertificateARN = &listener.SSLCertificateID
 			listenerTF.Protocol = elbv2.ProtocolEnumTls
+			if listener.SSLPolicy != "" {
+				listenerTF.SSLPolicy = &listener.SSLPolicy
+			}
 		} else {
 			listenerTF.Protocol = elbv2.ProtocolEnumTcp
 		}
@@ -764,6 +775,7 @@ type cloudformationNetworkLoadBalancerListener struct {
 	LoadBalancerARN *cloudformation.Literal                                `json:"LoadBalancerArn"`
 	Port            int64                                                  `json:"Port"`
 	Protocol        string                                                 `json:"Protocol"`
+	SSLPolicy       *string                                                `json:"SslPolicy,omitempty"`
 }
 
 type cloudformationNetworkLoadBalancerListenerCertificate struct {
@@ -811,6 +823,9 @@ func (_ *NetworkLoadBalancer) RenderCloudformation(t *cloudformation.Cloudformat
 				{CertificateArn: listener.SSLCertificateID},
 			}
 			listenerCF.Protocol = elbv2.ProtocolEnumTls
+			if listener.SSLPolicy != "" {
+				listenerCF.SSLPolicy = &listener.SSLPolicy
+			}
 		} else {
 			listenerCF.Protocol = elbv2.ProtocolEnumTcp
 		}
