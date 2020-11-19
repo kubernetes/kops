@@ -119,11 +119,16 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		if lbSpec.SSLCertificate != "" {
 			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
 			nlbListeners[0].Port = 8443
-			nlbListeners = append(nlbListeners, &awstasks.NetworkLoadBalancerListener{
+
+			nlbListener := &awstasks.NetworkLoadBalancerListener{
 				Port:             443,
 				TargetGroupName:  b.NLBTargetGroupName("tls"),
 				SSLCertificateID: lbSpec.SSLCertificate,
-			})
+			}
+			if lbSpec.SSLPolicy != nil {
+				nlbListener.SSLPolicy = *lbSpec.SSLPolicy
+			}
+			nlbListeners = append(nlbListeners, nlbListener)
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
