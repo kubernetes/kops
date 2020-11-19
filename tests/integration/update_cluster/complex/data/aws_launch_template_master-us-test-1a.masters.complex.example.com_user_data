@@ -184,6 +184,8 @@ kubeAPIServer:
   authorizationMode: AlwaysAllow
   bindAddress: 0.0.0.0
   cloudProvider: aws
+  cpuLimit: 500m
+  cpuRequest: 200m
   enableAdmissionPlugins:
   - NamespaceLifecycle
   - LimitRanger
@@ -207,6 +209,8 @@ kubeAPIServer:
   - Hostname
   - ExternalIP
   logLevel: 2
+  memoryLimit: 1000Mi
+  memoryRequest: 800Mi
   requestheaderAllowedNames:
   - aggregator
   requestheaderExtraHeaderPrefixes:
