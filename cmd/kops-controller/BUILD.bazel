@@ -67,8 +67,8 @@ ARCH = [
     format = "Docker",
     image = ":image-%s" % arch,
     registry = "{STABLE_DOCKER_REGISTRY}",
-    repository = "{STABLE_DOCKER_IMAGE_PREFIX}kops-controller-%s" % arch,
-    tag = "{STABLE_KOPS_CONTROLLER_TAG}",
+    repository = "{STABLE_DOCKER_IMAGE_PREFIX}kops-controller",
+    tag = "{STABLE_KOPS_CONTROLLER_TAG}-%s" % arch,
 ) for arch in ARCH]
 
 [container_bundle(
