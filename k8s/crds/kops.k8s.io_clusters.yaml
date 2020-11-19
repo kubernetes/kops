@@ -89,6 +89,9 @@ spec:
                       sslCertificate:
                         description: SSLCertificate allows you to specify the ACM cert to be used the LB
                         type: string
+                      sslPolicy:
+                        description: SSLPolicy allows you to overwrite the LB listener's Security Policy
+                        type: string
                       type:
                         description: Type of load balancer to create may Public or Internal.
                         type: string

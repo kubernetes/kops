@@ -13,6 +13,7 @@ spec:
       crossZoneLoadBalancing: true
       class: Network
       sslCertificate: arn:aws:acm:us-test-1:000000000000:certificate/123456789012-1234-1234-1234-12345678
+      sslPolicy: ELBSecurityPolicy-2016-08 
   kubernetesApiAccess:
   - 1.1.1.0/24
   - 2001:0:8500::/40

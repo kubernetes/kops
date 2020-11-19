@@ -389,6 +389,8 @@ type LoadBalancerAccessSpec struct {
 	UseForInternalApi bool `json:"useForInternalApi,omitempty"`
 	// SSLCertificate allows you to specify the ACM cert to be used the LB
 	SSLCertificate string `json:"sslCertificate,omitempty"`
+	// SSLPolicy allows you to overwrite the LB listener's Security Policy
+	SSLPolicy *string `json:"sslPolicy,omitempty"`
 	// CrossZoneLoadBalancing allows you to enable the cross zone load balancing
 	CrossZoneLoadBalancing *bool `json:"crossZoneLoadBalancing,omitempty"`
 }
