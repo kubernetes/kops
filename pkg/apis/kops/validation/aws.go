@@ -34,6 +34,7 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	if c.Spec.API != nil {
 		if c.Spec.API.LoadBalancer != nil {
 			allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
+			allErrs = append(allErrs, awsValidateSSLPolicy(field.NewPath("spec", "api", "loadBalancer", "sslPolicy"), c.Spec.API.LoadBalancer)...)
 		}
 	}
 
@@ -141,4 +142,19 @@ func awsValidateMixedInstancesPolicy(path *field.Path, spec *kops.MixedInstances
 	errs = append(errs, IsValidValue(path.Child("spotAllocationStrategy"), spec.SpotAllocationStrategy, kops.SpotAllocationStrategies)...)
 
 	return errs
+}
+
+func awsValidateSSLPolicy(fieldPath *field.Path, spec *kops.LoadBalancerAccessSpec) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if spec.SSLPolicy != nil {
+		if spec.Class != kops.LoadBalancerClassNetwork {
+			allErrs = append(allErrs, field.Forbidden(fieldPath, "sslPolicy should be specified with Network Load Balancer"))
+		}
+		if spec.SSLCertificate == "" {
+			allErrs = append(allErrs, field.Forbidden(fieldPath, "sslPolicy should not be specified without SSLCertificate"))
+		}
+	}
+
+	return allErrs
 }

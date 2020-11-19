@@ -2,7 +2,7 @@
 
 The `Cluster` resource contains the specification of the cluster itself.
 
-The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.io/kops/pkg/apis/kOps#ClusterSpec) reference page.
+The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ClusterSpec) reference page.
 
 On this page, we will expand on the more important configuration keys.
 
@@ -49,6 +49,8 @@ spec:
 
 You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported.
 
+Also, you can change listener's [security policy](https://docs.aws.amazon.com/sdk-for-go/api/service/elbv2/#CreateListenerInput) by `sslPolicy`. Currently, only AWS Network Load Balancer is supported.
+
 Note that when using `sslCertificate`, client certificate authentication, such as with the credentials generated via `kOps export kubecfg`, will not work through the load balancer. As of kOps 1.19, a `kubecfg` that bypasses the load balancer may be created with the `--internal` flag to `kops update cluster` or `kOps export kubecfg`. Security groups may need to be opened to allow access from the clients to the master instances' port TCP/443, for example by using the `additionalSecurityGroups` field on the master instance groups.
 
 ```yaml
@@ -57,6 +59,7 @@ spec:
     loadBalancer:
       type: Public
       sslCertificate: arn:aws:acm:<region>:<accountId>:certificate/<uuid>
+      sslPolicy: ELBSecurityPolicy-TLS-1-2-2017-01
 ```
 
 *Openstack only*
