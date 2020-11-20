@@ -48,8 +48,15 @@ func (b *MiscUtilsBuilder) Build(c *fi.ModelBuilderContext) error {
 			packages = append(packages, "curl")
 			packages = append(packages, "wget")
 			packages = append(packages, "perl")
-			packages = append(packages, "python-apt")
 			packages = append(packages, "apt-transport-https")
+
+			// TODO: Do we really need python-apt?
+			switch b.Distribution {
+			case distributions.DistributionUbuntu2010:
+				// python-apt not available (though python3-apt is)
+			default:
+				packages = append(packages, "python-apt")
+			}
 		}
 	} else if b.Distribution.IsRHELFamily() {
 		// TODO: These packages have been auto-installed for a long time, and likely we don't need all of them any longer

@@ -28,6 +28,7 @@ const (
 	DistributionUbuntu1604   Distribution = "xenial"
 	DistributionUbuntu1804   Distribution = "bionic"
 	DistributionUbuntu2004   Distribution = "focal"
+	DistributionUbuntu2010   Distribution = "groovy"
 	DistributionAmazonLinux2 Distribution = "amazonlinux2"
 	DistributionRhel7        Distribution = "rhel7"
 	DistributionCentos7      Distribution = "centos7"
@@ -41,7 +42,7 @@ func (d Distribution) IsDebianFamily() bool {
 	switch d {
 	case DistributionDebian9, DistributionDebian10:
 		return true
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return false
@@ -57,7 +58,7 @@ func (d Distribution) IsUbuntu() bool {
 	switch d {
 	case DistributionDebian9, DistributionDebian10:
 		return false
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return false
@@ -73,7 +74,7 @@ func (d Distribution) IsRHELFamily() bool {
 	switch d {
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return true
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionDebian9, DistributionDebian10:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010, DistributionDebian9, DistributionDebian10:
 		return false
 	case DistributionFlatcar, DistributionContainerOS:
 		return false
@@ -85,7 +86,7 @@ func (d Distribution) IsRHELFamily() bool {
 
 func (d Distribution) IsSystemd() bool {
 	switch d {
-	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionDebian9, DistributionDebian10:
+	case DistributionUbuntu1604, DistributionUbuntu1804, DistributionUbuntu2004, DistributionUbuntu2010, DistributionDebian9, DistributionDebian10:
 		return true
 	case DistributionCentos7, DistributionRhel7, DistributionCentos8, DistributionRhel8, DistributionAmazonLinux2:
 		return true
