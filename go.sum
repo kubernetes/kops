@@ -1420,6 +1420,7 @@ k8s.io/cloud-provider v0.20.0-beta.2/go.mod h1:xu40/8K5o/wqZyuChUVqD5CoqVOVzKXE/
 k8s.io/cloud-provider-openstack v1.18.0 h1:v/ebjNEdx0hBaygsRohSS643f41lj2CwvapCbn+aLOs=
 k8s.io/cloud-provider-openstack v1.18.0/go.mod h1:03202t5Sp+4Vmk6pxJ/hVH0fEkm9gMc/pku/QpkJQMQ=
 k8s.io/cluster-bootstrap v0.20.0-beta.2/go.mod h1:kYKZIdQhCt0sh13R7Bjm1JXDg9QVjez8TLlyhtDC8Ck=
+k8s.io/code-generator v0.20.0-beta.2 h1:9b5RwuTexjs/UH3BUMCMI4lTECshBUc/DenKnKc3eCs=
 k8s.io/code-generator v0.20.0-beta.2/go.mod h1:UsqdF+VX4PU2g46NC2JRs4gc+IfrctnwHb76RNbWHJg=
 k8s.io/component-base v0.20.0-beta.2 h1:jg3eglA+HSDgimMoHoFvAiwHAGYxEy2D5HKhLPR4AjM=
 k8s.io/component-base v0.20.0-beta.2/go.mod h1:PS+w/i0JTsaQbtzk8EVPlj2WrY9E23MfWK/K4MNy7uc=
