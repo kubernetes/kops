@@ -18,8 +18,11 @@ package awsmodel
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
@@ -28,8 +31,6 @@ import (
 	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-
-	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
 const (
@@ -388,7 +389,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 	}
 
-	for i, extLB := range ig.Spec.ExternalLoadBalancers {
+	for _, extLB := range ig.Spec.ExternalLoadBalancers {
 		if extLB.LoadBalancerName != nil {
 			lb := &awstasks.ClassicLoadBalancer{
 				Name:             extLB.LoadBalancerName,
@@ -400,8 +401,16 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 
 		if extLB.TargetGroupARN != nil {
+			parsed, err := arn.Parse(fi.StringValue(extLB.TargetGroupARN))
+			if err != nil {
+				return nil, fmt.Errorf("error parsing target grup ARN: %v", err)
+			}
+			resource := strings.Split(parsed.Resource, "/")
+			if len(resource) != 3 || resource[0] != "targetgroup" {
+				return nil, fmt.Errorf("error parsing target grup ARN resource: %q", parsed.Resource)
+			}
 			tg := &awstasks.TargetGroup{
-				Name:   fi.String(fmt.Sprintf("external-tg-%d", i)),
+				Name:   fi.String(resource[1]),
 				ARN:    extLB.TargetGroupARN,
 				Shared: fi.Bool(true),
 			}
