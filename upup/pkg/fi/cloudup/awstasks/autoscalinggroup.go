@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -163,7 +164,15 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	if len(g.TargetGroupARNs) > 0 {
 		actualTGs := make([]*TargetGroup, 0)
 		for _, tg := range g.TargetGroupARNs {
-			actualTGs = append(actualTGs, &TargetGroup{ARN: aws.String(*tg)})
+			parsed, err := arn.Parse(fi.StringValue(tg))
+			if err != nil {
+				return nil, fmt.Errorf("error parsing target grup ARN: %v", err)
+			}
+			resource := strings.Split(parsed.Resource, "/")
+			if len(resource) != 3 || resource[0] != "targetgroup" {
+				return nil, fmt.Errorf("error parsing target grup ARN resource: %q", parsed.Resource)
+			}
+			actualTGs = append(actualTGs, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(resource[1])})
 		}
 		targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), actualTGs, e.TargetGroups)
 		if err != nil {

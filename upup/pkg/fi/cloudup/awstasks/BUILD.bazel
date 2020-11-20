@@ -90,6 +90,7 @@ go_library(
         "//util/pkg/maps:go_default_library",
         "//util/pkg/slice:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/arn:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
