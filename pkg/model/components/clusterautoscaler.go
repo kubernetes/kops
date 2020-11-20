@@ -44,13 +44,13 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 		if err == nil {
 			switch v.Minor {
 			case 19:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.19.0"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.19.1"
 			case 18:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.18.2"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.18.3"
 			case 17:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.17.3"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.17.4"
 			case 16:
-				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.16.6"
+				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.16.7"
 			case 15:
 				image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.15.7"
 			case 14:

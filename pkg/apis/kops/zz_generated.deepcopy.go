@@ -764,6 +764,16 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.MemoryRequest != nil {
+		in, out := &in.MemoryRequest, &out.MemoryRequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.CPURequest != nil {
+		in, out := &in.CPURequest, &out.CPURequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	return
 }
 
