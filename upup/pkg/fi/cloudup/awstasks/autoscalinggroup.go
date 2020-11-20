@@ -533,9 +533,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		var attachLBRequest *autoscaling.AttachLoadBalancersInput
 		var detachLBRequest *autoscaling.DetachLoadBalancersInput
 		if changes.LoadBalancers != nil {
-			attachLBRequest = &autoscaling.AttachLoadBalancersInput{
-				AutoScalingGroupName: e.Name,
-				LoadBalancerNames:    e.AutoscalingLoadBalancers(),
+			if e != nil && len(e.LoadBalancers) > 0 {
+				attachLBRequest = &autoscaling.AttachLoadBalancersInput{
+					AutoScalingGroupName: e.Name,
+					LoadBalancerNames:    e.AutoscalingLoadBalancers(),
+				}
 			}
 
 			if a != nil && len(a.LoadBalancers) > 0 {
@@ -549,9 +551,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		var attachTGRequest *autoscaling.AttachLoadBalancerTargetGroupsInput
 		var detachTGRequest *autoscaling.DetachLoadBalancerTargetGroupsInput
 		if changes.TargetGroups != nil {
-			attachTGRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{
-				AutoScalingGroupName: e.Name,
-				TargetGroupARNs:      e.AutoscalingTargetGroups(),
+			if e != nil && len(e.TargetGroups) > 0 {
+				attachTGRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{
+					AutoScalingGroupName: e.Name,
+					TargetGroupARNs:      e.AutoscalingTargetGroups(),
+				}
 			}
 
 			if a != nil && len(a.TargetGroups) > 0 {
