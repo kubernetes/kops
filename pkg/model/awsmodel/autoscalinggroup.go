@@ -418,6 +418,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 			c.AddTask(tg)
 		}
 	}
+	sort.Stable(awstasks.OrderTargetGroupsByName(t.TargetGroups))
 
 	// @step: are we using a mixed instance policy
 	if ig.Spec.MixedInstancesPolicy != nil {
