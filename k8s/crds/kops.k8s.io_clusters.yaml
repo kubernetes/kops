@@ -459,6 +459,14 @@ spec:
                     description: 'BalanceSimilarNodeGroups makes cluster autoscaler
                       treat similar node groups as one. Default: false'
                     type: boolean
+                  cpuRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'CPURequest of cluster autoscaler container. Default:
+                      100m'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   enabled:
                     description: 'Enabled enables the cluster autoscaler. Default:
                       false'
@@ -472,6 +480,14 @@ spec:
                     description: 'Image is the docker container used. Default: the
                       latest supported image for the specified kubernetes version.'
                     type: string
+                  memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: 'MemoryRequest of cluster autoscaler container. Default:
+                      300Mi'
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   newPodScaleUpDelay:
                     description: 'NewPodScaleUpDelay causes cluster autoscaler to
                       ignore unschedulable pods until they are a certain "age", regardless
