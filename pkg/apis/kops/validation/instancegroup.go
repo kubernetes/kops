@@ -130,6 +130,12 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 		allErrs = append(allErrs, awsValidateInstanceGroup(g, cloud.(awsup.AWSCloud))...)
 	}
 
+	for i, lb := range g.Spec.ExternalLoadBalancers {
+		path := field.NewPath("spec", "externalLoadBalancers").Index(i)
+
+		allErrs = append(allErrs, validateExternalLoadBalancer(&lb, path)...)
+	}
+
 	return allErrs
 }
 
@@ -276,5 +282,53 @@ func validateCloudLabels(ig *kops.InstanceGroup, fldPath *field.Path) (allErrs f
 			allErrs = append(allErrs, field.Invalid(fldPath.Child(aws.CloudTagInstanceGroupName), key, "Node label may only contain a single slash"))
 		}
 	}
+	return allErrs
+}
+
+func validateExternalLoadBalancer(lb *kops.LoadBalancer, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if lb.LoadBalancerName != nil && lb.TargetGroupARN != nil {
+		allErrs = append(allErrs, field.TooMany(fldPath, 2, 1))
+	}
+
+	if lb.LoadBalancerName != nil {
+		name := fi.StringValue(lb.LoadBalancerName)
+		if len(name) > 32 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("loadBalancerName"), name,
+				"Load Balancer name must have at most 32 characters"))
+		}
+	}
+
+	if lb.TargetGroupARN != nil {
+		actual := fi.StringValue(lb.TargetGroupARN)
+
+		parsed, err := arn.Parse(actual)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), actual,
+				fmt.Sprintf("Target Group ARN must be a valid AWS ARN: %v", err)))
+			return allErrs
+		}
+
+		resource := strings.Split(parsed.Resource, "/")
+		if len(resource) != 3 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), actual,
+				"Target Group ARN resource must be a valid AWS ARN resource such as \"targetgroup/tg-name/1234567890123456\""))
+			return allErrs
+		}
+
+		kind := resource[0]
+		if kind != "targetgroup" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), kind,
+				"Target Group ARN resource type must be \"targetgroup\""))
+		}
+
+		name := resource[1]
+		if len(name) > 32 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("targetGroupArn"), name,
+				"Target Group ARN resource name must have at most 32 characters"))
+		}
+	}
+
 	return allErrs
 }
