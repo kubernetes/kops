@@ -179,6 +179,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 			return nil, err
 		}
 		actual.TargetGroups = targetGroups
+		sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
 	}
 
 	if g.VPCZoneIdentifier != nil {
