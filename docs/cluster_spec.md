@@ -909,7 +909,7 @@ spec:
 
 ## containerd
 
-It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kOps#ContainerdConfig) for the full list of options.
+It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ContainerdConfig) for the full list of options.
 
 ```yaml
 spec:
@@ -921,7 +921,7 @@ spec:
 
 ## docker
 
-It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kOps#DockerConfig) for the full list of options.
+It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
 
 ### registryMirrors
 
