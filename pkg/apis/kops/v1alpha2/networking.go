@@ -86,6 +86,9 @@ type WeaveNetworkingSpec struct {
 	NPCCPULimit *resource.Quantity `json:"npcCPULimit,omitempty"`
 	// NPCExtraArgs are extra arguments that are passed to weave-npc.
 	NPCExtraArgs string `json:"npcExtraArgs,omitempty"`
+
+	// Version specifies the Weave container image tag. The default depends on the kOps version.
+	Version string `json:"version,omitempty"`
 }
 
 // FlannelNetworkingSpec declares that we want Flannel networking

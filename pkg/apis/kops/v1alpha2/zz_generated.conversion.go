@@ -5764,6 +5764,7 @@ func autoConvert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *We
 	out.NPCMemoryLimit = in.NPCMemoryLimit
 	out.NPCCPULimit = in.NPCCPULimit
 	out.NPCExtraArgs = in.NPCExtraArgs
+	out.Version = in.Version
 	return nil
 }
 
@@ -5786,6 +5787,7 @@ func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha2_WeaveNetworkingSpec(in *ko
 	out.NPCMemoryLimit = in.NPCMemoryLimit
 	out.NPCCPULimit = in.NPCCPULimit
 	out.NPCExtraArgs = in.NPCExtraArgs
+	out.Version = in.Version
 	return nil
 }
 

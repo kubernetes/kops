@@ -2677,6 +2677,9 @@ spec:
                         description: NPCMemoryRequest memory request of weave npc container. Default 200Mi
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
+                      version:
+                        description: Version specifies the Weave container image tag. The default depends on the kOps version.
+                        type: string
                     type: object
                 type: object
               nodeAuthorization:
