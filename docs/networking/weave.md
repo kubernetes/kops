@@ -74,3 +74,13 @@ kops update cluster
 
 Since unencrypted nodes will not be able to connect to nodes configured with encryption enabled, this configuration cannot be changed easily without downtime.
 
+### Override Weave image tag
+
+Weave networking comes with default specs and version which are the recommended ones, already configured by kOps .
+In case users want to override Weave image tag, thus default version, specs should be customized as follows:
+```yaml
+spec:
+  networking:
+    weave:
+      version: "2.7.0"
+```
