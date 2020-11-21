@@ -285,15 +285,11 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       volume_type           = "gp2"
     }
   }
-  block_device_mappings {
-    device_name  = "/dev/sdc"
-    virtual_name = "ephemeral0"
-  }
   iam_instance_profile {
     name = aws_iam_instance_profile.masters-complex-example-com.id
   }
   image_id      = "ami-12345678"
-  instance_type = "m3.medium"
+  instance_type = "m6g.medium"
   lifecycle {
     create_before_destroy = true
   }

@@ -252,10 +252,6 @@
                 "DeleteOnTermination": true,
                 "Encrypted": true
               }
-            },
-            {
-              "DeviceName": "/dev/sdc",
-              "VirtualName": "ephemeral0"
             }
           ],
           "IamInstanceProfile": {
@@ -264,7 +260,7 @@
             }
           },
           "ImageId": "ami-12345678",
-          "InstanceType": "m3.medium",
+          "InstanceType": "m6g.medium",
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
