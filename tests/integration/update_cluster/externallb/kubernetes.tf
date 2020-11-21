@@ -86,7 +86,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     id      = aws_launch_template.master-us-test-1a-masters-externallb-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-externallb-example-com.latest_version
   }
-  load_balancers      = ["my-other-elb"]
+  load_balancers      = ["my-external-elb-2", "my-external-elb-3"]
   max_size            = 1
   metrics_granularity = "1Minute"
   min_size            = 1
@@ -126,7 +126,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg/1"]
+  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2", "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 
@@ -136,7 +136,7 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     id      = aws_launch_template.nodes-externallb-example-com.id
     version = aws_launch_template.nodes-externallb-example-com.latest_version
   }
-  load_balancers      = ["my-elb"]
+  load_balancers      = ["my-external-elb-1"]
   max_size            = 2
   metrics_granularity = "1Minute"
   min_size            = 2
@@ -176,6 +176,7 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 
