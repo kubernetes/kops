@@ -1192,7 +1192,8 @@
           "Ref": "AWSElasticLoadBalancingV2LoadBalancerapicomplexexamplecom"
         },
         "Port": 443,
-        "Protocol": "TLS"
+        "Protocol": "TLS",
+        "SslPolicy": "ELBSecurityPolicy-2016-08"
       }
     },
     "AWSElasticLoadBalancingV2Listenerapicomplexexamplecom8443": {
