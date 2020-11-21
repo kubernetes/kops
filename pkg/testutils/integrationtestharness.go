@@ -247,8 +247,15 @@ func (h *IntegrationTestHarness) SetupMockAWS() *awsup.MockAWSCloud {
 	}, "nat-b2345678")
 
 	mockELBV2.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
-		Name: aws.String("my-external-tg"),
+		Name: aws.String("my-external-tg-1"),
 	})
+	mockELBV2.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
+		Name: aws.String("my-external-tg-2"),
+	})
+	mockELBV2.CreateTargetGroup(&elbv2.CreateTargetGroupInput{
+		Name: aws.String("my-external-tg-3"),
+	})
+
 	return cloud
 }
 
