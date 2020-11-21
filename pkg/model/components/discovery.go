@@ -36,7 +36,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 
 	useJWKS := featureflag.PublicJWKS.Enabled()
-	if !useJWKS {
+	if !useJWKS && b.IsKubernetesLT("1.20") {
 		return nil
 	}
 
@@ -45,11 +45,6 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	kubeAPIServer := clusterSpec.KubeAPIServer
-
-	if kubeAPIServer.FeatureGates == nil {
-		kubeAPIServer.FeatureGates = make(map[string]string)
-	}
-	kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
 
 	if len(kubeAPIServer.APIAudiences) == 0 {
 		kubeAPIServer.APIAudiences = []string{"kubernetes.svc.default"}
@@ -63,14 +58,21 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 	}
 
-	if kubeAPIServer.ServiceAccountJWKSURI == nil {
-		jwksURL := *kubeAPIServer.ServiceAccountIssuer
-		jwksURL = strings.TrimSuffix(jwksURL, "/") + "/openid/v1/jwks"
-
-		kubeAPIServer.ServiceAccountJWKSURI = &jwksURL
-	}
-
 	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
+
+	if useJWKS {
+		if kubeAPIServer.FeatureGates == nil {
+			kubeAPIServer.FeatureGates = make(map[string]string)
+		}
+		kubeAPIServer.FeatureGates["ServiceAccountIssuerDiscovery"] = "true"
+
+		if kubeAPIServer.ServiceAccountJWKSURI == nil {
+			jwksURL := *kubeAPIServer.ServiceAccountIssuer
+			jwksURL = strings.TrimSuffix(jwksURL, "/") + "/openid/v1/jwks"
+
+			kubeAPIServer.ServiceAccountJWKSURI = &jwksURL
+		}
+	}
 
 	return nil
 }
