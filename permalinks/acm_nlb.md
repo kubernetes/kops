@@ -26,12 +26,17 @@ It is encouraged to perform the below migration on existing clusters prior to up
 kOps 1.19.0 supports using a network load balancer (NLB) rather than a classic load balancer (CLB) for Kubernetes API access.
 The NLB can be configured with a second listener configured for TCP, allowing the client certificate authentication to succeed by passing the TLS session through to the kube-apiserver pods.
 
-Migrating from CLB to NLB involves setting the Cluster's `spec.api.loadBalancer.class: Network` and running `kops update cluster --yes`.
-The second TCP listener will be configured automatically if `sslCertificate` is set.
-This will provision a new NLB and update the API DNS record to point to the new NLB.
-
-`kops export kubecfg` will now use the secondary NLB port with its client cert auth user.
-The primary listener still uses the ACM certificate, preserving any external authentication mechanisms.
+Migrate from CLB to NLB with the following steps:
+1. Set the Cluster's `spec.api.loadBalancer.class: Network`.
+2. Run `kops update cluster --yes`.
+   The second TCP listener will be configured automatically if `sslCertificate` is set.
+   This will provision a new NLB and update the API DNS record to point to the new NLB.
+3. Any clients using kOps' admin credentials will need to run `kops export kubecfg --admin`.
+   This will use the secondary NLB port with its client cert auth user.
+   The primary listener still uses the ACM certificate, preserving any external authentication mechanisms.
+4. Manually delete the old API CLB through the AWS Management Console or CLI.
+   The CLB will have a name of `api-<hyphenated-cluster-name>-<suffix>` and will not have any instances attached.
+   A future version of kOps may do this automatically.
 
 Terraform users can follow their normal workflow, confirming that `terraform plan` reports deletion of the ELB and creation of the NLB and its target groups.
 
