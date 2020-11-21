@@ -39,6 +39,8 @@ const (
 	DefaultEtcd3Version_1_14 = "3.3.10"
 
 	DefaultEtcd3Version_1_17 = "3.4.3"
+
+	DefaultEtcd3Version_1_19 = "3.4.13"
 )
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
@@ -54,7 +56,9 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		// Ensure the version is set
 		if c.Version == "" {
 			// We run the k8s-recommended versions of etcd
-			if b.IsKubernetesGTE("1.17") {
+			if b.IsKubernetesGTE("1.19") {
+				c.Version = DefaultEtcd3Version_1_19
+			} else if b.IsKubernetesGTE("1.17") {
 				c.Version = DefaultEtcd3Version_1_17
 			} else if b.IsKubernetesGTE("1.14") {
 				c.Version = DefaultEtcd3Version_1_14
