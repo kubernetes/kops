@@ -15,7 +15,7 @@ const (
 
 // StorageService is an interface for interfacing with the storage
 // endpoints of the Digital Ocean API.
-// See: https://developers.digitalocean.com/documentation/v2#storage
+// See: https://developers.digitalocean.com/documentation/v2/#block-storage
 type StorageService interface {
 	ListVolumes(context.Context, *ListVolumeParams) ([]Volume, *Response, error)
 	GetVolume(context.Context, string) (*Volume, *Response, error)
@@ -60,6 +60,7 @@ func (f Volume) String() string {
 	return Stringify(f)
 }
 
+// URN returns the volume ID as a valid DO API URN
 func (f Volume) URN() string {
 	return ToURN("Volume", f.ID)
 }
@@ -67,6 +68,7 @@ func (f Volume) URN() string {
 type storageVolumesRoot struct {
 	Volumes []Volume `json:"volumes"`
 	Links   *Links   `json:"links"`
+	Meta    *Meta    `json:"meta"`
 }
 
 type storageVolumeRoot struct {
@@ -121,6 +123,9 @@ func (svc *StorageServiceOp) ListVolumes(ctx context.Context, params *ListVolume
 
 	if l := root.Links; l != nil {
 		resp.Links = l
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
 	}
 
 	return root.Volumes, resp, nil
@@ -202,6 +207,9 @@ func (svc *StorageServiceOp) ListSnapshots(ctx context.Context, volumeID string,
 
 	if l := root.Links; l != nil {
 		resp.Links = l
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
 	}
 
 	return root.Snapshots, resp, nil
