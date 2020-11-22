@@ -44,8 +44,6 @@ const (
 	clusterAutoscalerNodeTemplateTaint = "k8s.io/cluster-autoscaler/node-template/taint/"
 )
 
-var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(false))
-
 // KopsModelContext is the kops model
 type KopsModelContext struct {
 	iam.IAMModelContext
@@ -59,16 +57,6 @@ type KopsModelContext struct {
 // Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
 func (m *KopsModelContext) GetELBName32(prefix string) string {
 	c := m.Cluster.ObjectMeta.Name
-
-	if UseLegacyELBName.Enabled() {
-		tokens := strings.Split(c, ".")
-		s := fmt.Sprintf("%s-%s", prefix, tokens[0])
-		if len(s) > 32 {
-			s = s[:32]
-		}
-		klog.Infof("UseLegacyELBName feature-flag is set; built legacy name %q", s)
-		return s
-	}
 
 	// The LoadBalancerName is exposed publicly as the DNS name for the load balancer.
 	// So this will likely become visible in a CNAME record - this is potentially some
