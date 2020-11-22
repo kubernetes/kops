@@ -1522,7 +1522,7 @@ metadata:
   labels:
     k8s-addon: dns-controller.addons.k8s.io
     k8s-app: dns-controller
-    version: v1.19.0-beta.1
+    version: v1.19.0-beta.2
 spec:
   replicas: 1
   strategy:
@@ -1535,7 +1535,7 @@ spec:
       labels:
         k8s-addon: dns-controller.addons.k8s.io
         k8s-app: dns-controller
-        version: v1.19.0-beta.1
+        version: v1.19.0-beta.2
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -1549,7 +1549,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: k8s.gcr.io/kops/dns-controller:1.19.0-beta.1
+        image: k8s.gcr.io/kops/dns-controller:1.19.0-beta.2
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
@@ -1821,7 +1821,7 @@ metadata:
   labels:
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.19.0-beta.1
+    version: v1.19.0-beta.2
 spec:
   selector:
     matchLabels:
@@ -1835,7 +1835,7 @@ spec:
       labels:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
-        version: v1.19.0-beta.1
+        version: v1.19.0-beta.2
 {{ if UseKopsControllerForNodeBootstrap }}
       annotations:
         dns.alpha.kubernetes.io/internal: kops-controller.internal.{{ ClusterName }}
@@ -1853,7 +1853,7 @@ spec:
       serviceAccount: kops-controller
       containers:
       - name: kops-controller
-        image: k8s.gcr.io/kops/kops-controller:1.19.0-beta.1
+        image: k8s.gcr.io/kops/kops-controller:1.19.0-beta.2
         volumeMounts:
 {{ if .UseHostCertificates }}
         - mountPath: /etc/ssl/certs
