@@ -30,17 +30,12 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/values"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 )
-
-// RewriteManifests controls whether we rewrite manifests
-// Because manifest rewriting converts everything to and from YAML, we normalize everything by doing so
-var RewriteManifests = featureflag.New("RewriteManifests", featureflag.Bool(true))
 
 // AssetBuilder discovers and remaps assets.
 type AssetBuilder struct {
@@ -109,10 +104,6 @@ func NewAssetBuilder(cluster *kops.Cluster, phase string) *AssetBuilder {
 // This will:
 // * rewrite the images if they are being redirected to a mirror, and ensure the image is uploaded
 func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
-	if !RewriteManifests.Enabled() {
-		return data, nil
-	}
-
 	objects, err := kubemanifest.LoadObjectsFrom(data)
 	if err != nil {
 		return nil, err
