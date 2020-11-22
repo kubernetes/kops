@@ -8,7 +8,6 @@ go_library(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/util:go_default_library",
-        "//pkg/featureflag:go_default_library",
         "//pkg/kubemanifest:go_default_library",
         "//pkg/values:go_default_library",
         "//util/pkg/hashing:go_default_library",
