@@ -172,7 +172,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 	{
 		key := "kops-controller.addons.k8s.io"
-		version := "1.19.0-beta.1"
+		version := "1.19.0-beta.2"
 
 		{
 			location := key + "/k8s-1.16.yaml"
@@ -191,7 +191,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 
 	if featureflag.PublicJWKS.Enabled() {
 		key := "anonymous-issuer-discovery.addons.k8s.io"
-		version := "1.19.0-beta.1"
+		version := "1.19.0-beta.2"
 
 		{
 			location := key + "/k8s-1.16.yaml"
@@ -374,7 +374,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if externalDNS == nil || !externalDNS.Disable {
 		{
 			key := "dns-controller.addons.k8s.io"
-			version := "1.19.0-beta.1"
+			version := "1.19.0-beta.2"
 
 			{
 				location := key + "/k8s-1.12.yaml"
