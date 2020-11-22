@@ -55,6 +55,7 @@ type VFSContext struct {
 	ossClient *oss.Client
 
 	vaultClient *vault.Client
+	azureClient *azureClient
 }
 
 var Context = VFSContext{
@@ -178,6 +179,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "vault://") {
 		return c.buildVaultPath(p)
+	}
+
+	if strings.HasPrefix(p, "azureblob://") {
+		return c.buildAzureBlobPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -485,4 +490,43 @@ func (c *VFSContext) buildVaultPath(p string) (*VaultPath, error) {
 	}
 
 	return newVaultPath(c.vaultClient, scheme, u.Path)
+}
+
+func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse %q: %s", p, err)
+	}
+
+	if u.Scheme != "azureblob" {
+		return nil, fmt.Errorf("invalid Azure Blob schem: %q", p)
+	}
+
+	container := strings.TrimSuffix(u.Host, "/")
+	if container == "" {
+		return nil, fmt.Errorf("no container specified: %q", p)
+	}
+
+	client, err := c.getAzureBlobClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewAzureBlobPath(client, container, u.Path), nil
+}
+
+func (c *VFSContext) getAzureBlobClient() (*azureClient, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if c.azureClient != nil {
+		return c.azureClient, nil
+	}
+
+	client, err := newAzureClient()
+	if err != nil {
+		return nil, err
+	}
+	c.azureClient = client
+	return client, nil
 }
