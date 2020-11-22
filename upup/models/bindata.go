@@ -13577,7 +13577,7 @@ spec:
                   name: weave-net
                   key: network-password
             {{- end }}
-          image: 'weaveworks/weave-kube:2.7.0'
+          image: 'weaveworks/weave-kube:{{ or .Networking.Weave.Version "2.7.0" }}'
           ports:
             - name: metrics
               containerPort: 6782
@@ -13624,7 +13624,7 @@ spec:
             - name: EXTRA_ARGS
               value: "{{ .Networking.Weave.NPCExtraArgs }}"
             {{- end }}
-          image: 'weaveworks/weave-npc:2.7.0'
+          image: 'weaveworks/weave-npc:{{ or .Networking.Weave.Version "2.7.0" }}'
           ports:
             - name: metrics
               containerPort: 6781
