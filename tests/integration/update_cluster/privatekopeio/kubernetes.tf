@@ -1,13 +1,13 @@
 locals {
   bastion_autoscaling_group_ids     = [aws_autoscaling_group.bastion-privatekopeio-example-com.id]
+  bastion_role_arn                  = aws_iam_role.bastion-privatekopeio-example-com.arn
+  bastion_role_name                 = aws_iam_role.bastion-privatekopeio-example-com.name
   bastion_security_group_ids        = [aws_security_group.bastion-privatekopeio-example-com.id]
-  bastions_role_arn                 = aws_iam_role.bastions-privatekopeio-example-com.arn
-  bastions_role_name                = aws_iam_role.bastions-privatekopeio-example-com.name
   cluster_name                      = "privatekopeio.example.com"
+  master-us-test-1a_role_arn        = aws_iam_role.master-us-test-1a-privatekopeio-example-com.arn
+  master-us-test-1a_role_name       = aws_iam_role.master-us-test-1a-privatekopeio-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privatekopeio-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privatekopeio-example-com.id]
-  masters_role_arn                  = aws_iam_role.masters-privatekopeio-example-com.arn
-  masters_role_name                 = aws_iam_role.masters-privatekopeio-example-com.name
   node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-privatekopeio-example-com.id]
   node_security_group_ids           = [aws_security_group.nodes-privatekopeio-example-com.id]
   node_subnet_ids                   = [aws_subnet.us-test-1a-privatekopeio-example-com.id, aws_subnet.us-test-1b-privatekopeio-example-com.id]
@@ -29,20 +29,28 @@ output "bastion_autoscaling_group_ids" {
   value = [aws_autoscaling_group.bastion-privatekopeio-example-com.id]
 }
 
+output "bastion_role_arn" {
+  value = aws_iam_role.bastion-privatekopeio-example-com.arn
+}
+
+output "bastion_role_name" {
+  value = aws_iam_role.bastion-privatekopeio-example-com.name
+}
+
 output "bastion_security_group_ids" {
   value = [aws_security_group.bastion-privatekopeio-example-com.id]
 }
 
-output "bastions_role_arn" {
-  value = aws_iam_role.bastions-privatekopeio-example-com.arn
-}
-
-output "bastions_role_name" {
-  value = aws_iam_role.bastions-privatekopeio-example-com.name
-}
-
 output "cluster_name" {
   value = "privatekopeio.example.com"
+}
+
+output "master-us-test-1a_role_arn" {
+  value = aws_iam_role.master-us-test-1a-privatekopeio-example-com.arn
+}
+
+output "master-us-test-1a_role_name" {
+  value = aws_iam_role.master-us-test-1a-privatekopeio-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -51,14 +59,6 @@ output "master_autoscaling_group_ids" {
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-privatekopeio-example-com.id]
-}
-
-output "masters_role_arn" {
-  value = aws_iam_role.masters-privatekopeio-example-com.arn
-}
-
-output "masters_role_name" {
-  value = aws_iam_role.masters-privatekopeio-example-com.name
 }
 
 output "node_autoscaling_group_ids" {
@@ -350,14 +350,14 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "bastions-privatekopeio-example-com" {
-  name = "bastions.privatekopeio.example.com"
-  role = aws_iam_role.bastions-privatekopeio-example-com.name
+resource "aws_iam_instance_profile" "bastion-privatekopeio-example-com" {
+  name = "bastion.privatekopeio.example.com"
+  role = aws_iam_role.bastion-privatekopeio-example-com.name
 }
 
-resource "aws_iam_instance_profile" "masters-privatekopeio-example-com" {
-  name = "masters.privatekopeio.example.com"
-  role = aws_iam_role.masters-privatekopeio-example-com.name
+resource "aws_iam_instance_profile" "master-us-test-1a-privatekopeio-example-com" {
+  name = "master-us-test-1a.privatekopeio.example.com"
+  role = aws_iam_role.master-us-test-1a-privatekopeio-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-privatekopeio-example-com" {
@@ -365,16 +365,16 @@ resource "aws_iam_instance_profile" "nodes-privatekopeio-example-com" {
   role = aws_iam_role.nodes-privatekopeio-example-com.name
 }
 
-resource "aws_iam_role_policy" "bastions-privatekopeio-example-com" {
-  name   = "bastions.privatekopeio.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatekopeio.example.com_policy")
-  role   = aws_iam_role.bastions-privatekopeio-example-com.name
+resource "aws_iam_role_policy" "bastion-privatekopeio-example-com" {
+  name   = "bastion.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastion.privatekopeio.example.com_policy")
+  role   = aws_iam_role.bastion-privatekopeio-example-com.name
 }
 
-resource "aws_iam_role_policy" "masters-privatekopeio-example-com" {
-  name   = "masters.privatekopeio.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatekopeio.example.com_policy")
-  role   = aws_iam_role.masters-privatekopeio-example-com.name
+resource "aws_iam_role_policy" "master-us-test-1a-privatekopeio-example-com" {
+  name   = "master-us-test-1a.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.privatekopeio.example.com_policy")
+  role   = aws_iam_role.master-us-test-1a-privatekopeio-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
@@ -383,14 +383,14 @@ resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
   role   = aws_iam_role.nodes-privatekopeio-example-com.name
 }
 
-resource "aws_iam_role" "bastions-privatekopeio-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatekopeio.example.com_policy")
-  name               = "bastions.privatekopeio.example.com"
+resource "aws_iam_role" "bastion-privatekopeio-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_bastion.privatekopeio.example.com_policy")
+  name               = "bastion.privatekopeio.example.com"
 }
 
-resource "aws_iam_role" "masters-privatekopeio-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privatekopeio.example.com_policy")
-  name               = "masters.privatekopeio.example.com"
+resource "aws_iam_role" "master-us-test-1a-privatekopeio-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.privatekopeio.example.com_policy")
+  name               = "master-us-test-1a.privatekopeio.example.com"
 }
 
 resource "aws_iam_role" "nodes-privatekopeio-example-com" {
@@ -427,7 +427,7 @@ resource "aws_launch_template" "bastion-privatekopeio-example-com" {
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.bastions-privatekopeio-example-com.id
+    name = aws_iam_instance_profile.bastion-privatekopeio-example-com.id
   }
   image_id      = "ami-11400000"
   instance_type = "t2.micro"
@@ -490,7 +490,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatekopeio-example-
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-privatekopeio-example-com.id
+    name = aws_iam_instance_profile.master-us-test-1a-privatekopeio-example-com.id
   }
   image_id      = "ami-11400000"
   instance_type = "m3.medium"

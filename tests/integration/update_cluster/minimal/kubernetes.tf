@@ -1,9 +1,9 @@
 locals {
   cluster_name                 = "minimal.example.com"
+  master-us-test-1a_role_arn   = aws_iam_role.master-us-test-1a-minimal-example-com.arn
+  master-us-test-1a_role_name  = aws_iam_role.master-us-test-1a-minimal-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-minimal-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-minimal-example-com.arn
-  masters_role_name            = aws_iam_role.masters-minimal-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-minimal-example-com.id]
   node_security_group_ids      = [aws_security_group.nodes-minimal-example-com.id]
   node_subnet_ids              = [aws_subnet.us-test-1a-minimal-example-com.id]
@@ -20,20 +20,20 @@ output "cluster_name" {
   value = "minimal.example.com"
 }
 
+output "master-us-test-1a_role_arn" {
+  value = aws_iam_role.master-us-test-1a-minimal-example-com.arn
+}
+
+output "master-us-test-1a_role_name" {
+  value = aws_iam_role.master-us-test-1a-minimal-example-com.name
+}
+
 output "master_autoscaling_group_ids" {
   value = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
 }
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-minimal-example-com.id]
-}
-
-output "masters_role_arn" {
-  value = aws_iam_role.masters-minimal-example-com.arn
-}
-
-output "masters_role_name" {
-  value = aws_iam_role.masters-minimal-example-com.name
 }
 
 output "node_autoscaling_group_ids" {
@@ -204,9 +204,9 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
   type = "gp2"
 }
 
-resource "aws_iam_instance_profile" "masters-minimal-example-com" {
-  name = "masters.minimal.example.com"
-  role = aws_iam_role.masters-minimal-example-com.name
+resource "aws_iam_instance_profile" "master-us-test-1a-minimal-example-com" {
+  name = "master-us-test-1a.minimal.example.com"
+  role = aws_iam_role.master-us-test-1a-minimal-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
@@ -214,10 +214,10 @@ resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
   role = aws_iam_role.nodes-minimal-example-com.name
 }
 
-resource "aws_iam_role_policy" "masters-minimal-example-com" {
-  name   = "masters.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.minimal.example.com_policy")
-  role   = aws_iam_role.masters-minimal-example-com.name
+resource "aws_iam_role_policy" "master-us-test-1a-minimal-example-com" {
+  name   = "master-us-test-1a.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.minimal.example.com_policy")
+  role   = aws_iam_role.master-us-test-1a-minimal-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-minimal-example-com" {
@@ -226,9 +226,9 @@ resource "aws_iam_role_policy" "nodes-minimal-example-com" {
   role   = aws_iam_role.nodes-minimal-example-com.name
 }
 
-resource "aws_iam_role" "masters-minimal-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.minimal.example.com_policy")
-  name               = "masters.minimal.example.com"
+resource "aws_iam_role" "master-us-test-1a-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.minimal.example.com_policy")
+  name               = "master-us-test-1a.minimal.example.com"
 }
 
 resource "aws_iam_role" "nodes-minimal-example-com" {
@@ -269,7 +269,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-minimal-example-com.id
+    name = aws_iam_instance_profile.master-us-test-1a-minimal-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

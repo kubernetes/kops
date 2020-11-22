@@ -260,7 +260,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemasterscomplexexamplecom"
+              "Ref": "AWSIAMInstanceProfilemasterustest1acomplexexamplecom"
             }
           },
           "ImageId": "ami-12345678",
@@ -1321,13 +1321,13 @@
         "UnhealthyThresholdCount": 2
       }
     },
-    "AWSIAMInstanceProfilemasterscomplexexamplecom": {
+    "AWSIAMInstanceProfilemasterustest1acomplexexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.complex.example.com",
+        "InstanceProfileName": "master-us-test-1a.complex.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterscomplexexamplecom"
+            "Ref": "AWSIAMRolemasterustest1acomplexexamplecom"
           }
         ]
       }
@@ -1343,13 +1343,13 @@
         ]
       }
     },
-    "AWSIAMPolicymasterscomplexexamplecom": {
+    "AWSIAMPolicymasterustest1acomplexexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.complex.example.com",
+        "PolicyName": "master-us-test-1a.complex.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterscomplexexamplecom"
+            "Ref": "AWSIAMRolemasterustest1acomplexexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1550,10 +1550,10 @@
         }
       }
     },
-    "AWSIAMRolemasterscomplexexamplecom": {
+    "AWSIAMRolemasterustest1acomplexexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.complex.example.com",
+        "RoleName": "master-us-test-1a.complex.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {

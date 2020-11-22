@@ -3557,6 +3557,8 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	} else {
 		out.IAM = nil
 	}
+	out.ExternalPolicies = in.ExternalPolicies
+	out.AdditionalPolicy = in.AdditionalPolicy
 	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.InstanceProtection = in.InstanceProtection
 	out.SysctlParameters = in.SysctlParameters
@@ -3695,6 +3697,8 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	} else {
 		out.IAM = nil
 	}
+	out.ExternalPolicies = in.ExternalPolicies
+	out.AdditionalPolicy = in.AdditionalPolicy
 	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.InstanceProtection = in.InstanceProtection
 	out.SysctlParameters = in.SysctlParameters

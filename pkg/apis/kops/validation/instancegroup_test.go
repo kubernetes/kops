@@ -30,6 +30,149 @@ import (
 func s(v string) *string {
 	return fi.String(v)
 }
+
+func TestAdditionalPolicy(t *testing.T) {
+	grid := []struct {
+		Input          *kops.InstanceGroup
+		ExpectedErrors []string
+		ExpectedDetail string
+	}{
+		{
+			Input: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "example.com",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:             kops.InstanceGroupRoleNode,
+					AdditionalPolicy: s("additional policy and custom instance profile at the same time is not supported"),
+				},
+			},
+		},
+		{
+			Input: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "example.com",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleNode,
+					IAM: &kops.IAMProfileSpec{
+						Profile: s("arn:aws:iam::123456789012:instance-profile/S3Access"),
+					},
+				},
+			},
+		},
+		{
+			Input: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "example.com",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleNode,
+					IAM: &kops.IAMProfileSpec{
+						Profile: s("arn:aws:iam::123456789012:instance-profile/S3Access"),
+					},
+					AdditionalPolicy: s("additional policy and custom instance profile at the same time is not supported"),
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.additionalPolicy"},
+			ExpectedDetail: "AdditionalPolicy cannot be used with a cutom instance profile, use either one or the other.",
+		},
+	}
+
+	for _, g := range grid {
+		allErrs := ValidateInstanceGroup(g.Input, nil)
+		testErrors(t, g.Input, allErrs, g.ExpectedErrors)
+
+		if g.ExpectedDetail != "" {
+			found := false
+			for _, err := range allErrs {
+				if err.Detail == g.ExpectedDetail {
+					found = true
+				}
+			}
+			if !found {
+				for _, err := range allErrs {
+					t.Logf("found detail: %q", err.Detail)
+				}
+				t.Errorf("did not find expected error %q", g.ExpectedDetail)
+			}
+		}
+	}
+}
+
+func TestExternalPolicies(t *testing.T) {
+	grid := []struct {
+		Input          *kops.InstanceGroup
+		ExpectedErrors []string
+		ExpectedDetail string
+	}{
+		{
+			Input: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "example.com",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleNode,
+					ExternalPolicies: &[]string{
+						"arn:aws:iam::123456789000:policy/test-policy",
+					},
+				},
+			},
+		},
+		{
+			Input: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "example.com",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleNode,
+					IAM: &kops.IAMProfileSpec{
+						Profile: s("arn:aws:iam::123456789012:instance-profile/S3Access"),
+					},
+				},
+			},
+		},
+		{
+			Input: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "example.com",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleNode,
+					IAM: &kops.IAMProfileSpec{
+						Profile: s("arn:aws:iam::123456789012:instance-profile/S3Access"),
+					},
+					ExternalPolicies: &[]string{
+						"arn:aws:iam::123456789000:policy/test-policy",
+					},
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.externalPolicies"},
+			ExpectedDetail: "ExternalPolicies cannot be used with a cutom instance profile, use either one or the other.",
+		},
+	}
+
+	for _, g := range grid {
+		allErrs := ValidateInstanceGroup(g.Input, nil)
+		testErrors(t, g.Input, allErrs, g.ExpectedErrors)
+
+		if g.ExpectedDetail != "" {
+			found := false
+			for _, err := range allErrs {
+				if err.Detail == g.ExpectedDetail {
+					found = true
+				}
+			}
+			if !found {
+				for _, err := range allErrs {
+					t.Logf("found detail: %q", err.Detail)
+				}
+				t.Errorf("did not find expected error %q", g.ExpectedDetail)
+			}
+		}
+	}
+}
+
 func TestValidateInstanceProfile(t *testing.T) {
 	grid := []struct {
 		Input          *kops.IAMProfileSpec

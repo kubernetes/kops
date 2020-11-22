@@ -317,7 +317,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilebastionsprivatecalicoexamplecom"
+              "Ref": "AWSIAMInstanceProfilebastionprivatecalicoexamplecom"
             }
           },
           "ImageId": "ami-12345678",
@@ -428,7 +428,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemastersprivatecalicoexamplecom"
+              "Ref": "AWSIAMInstanceProfilemasterustest1aprivatecalicoexamplecom"
             }
           },
           "ImageId": "ami-12345678",
@@ -1402,24 +1402,24 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilebastionsprivatecalicoexamplecom": {
+    "AWSIAMInstanceProfilebastionprivatecalicoexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "bastions.privatecalico.example.com",
+        "InstanceProfileName": "bastion.privatecalico.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolebastionsprivatecalicoexamplecom"
+            "Ref": "AWSIAMRolebastionprivatecalicoexamplecom"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilemastersprivatecalicoexamplecom": {
+    "AWSIAMInstanceProfilemasterustest1aprivatecalicoexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.privatecalico.example.com",
+        "InstanceProfileName": "master-us-test-1a.privatecalico.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersprivatecalicoexamplecom"
+            "Ref": "AWSIAMRolemasterustest1aprivatecalicoexamplecom"
           }
         ]
       }
@@ -1435,13 +1435,13 @@
         ]
       }
     },
-    "AWSIAMPolicybastionsprivatecalicoexamplecom": {
+    "AWSIAMPolicybastionprivatecalicoexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "bastions.privatecalico.example.com",
+        "PolicyName": "bastion.privatecalico.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolebastionsprivatecalicoexamplecom"
+            "Ref": "AWSIAMRolebastionprivatecalicoexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1460,13 +1460,13 @@
         }
       }
     },
-    "AWSIAMPolicymastersprivatecalicoexamplecom": {
+    "AWSIAMPolicymasterustest1aprivatecalicoexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.privatecalico.example.com",
+        "PolicyName": "master-us-test-1a.privatecalico.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersprivatecalicoexamplecom"
+            "Ref": "AWSIAMRolemasterustest1aprivatecalicoexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1667,10 +1667,10 @@
         }
       }
     },
-    "AWSIAMRolebastionsprivatecalicoexamplecom": {
+    "AWSIAMRolebastionprivatecalicoexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "bastions.privatecalico.example.com",
+        "RoleName": "bastion.privatecalico.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1685,10 +1685,10 @@
         }
       }
     },
-    "AWSIAMRolemastersprivatecalicoexamplecom": {
+    "AWSIAMRolemasterustest1aprivatecalicoexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.privatecalico.example.com",
+        "RoleName": "master-us-test-1a.privatecalico.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {

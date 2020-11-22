@@ -65,6 +65,14 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud) field.ErrorLis
 		}
 	}
 
+	if g.Spec.IAM != nil && g.Spec.IAM.Profile != nil && g.Spec.AdditionalPolicy != nil {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "additionalPolicy"), "AdditionalPolicy cannot be used with a cutom instance profile, use either one or the other."))
+	}
+
+	if g.Spec.IAM != nil && g.Spec.IAM.Profile != nil && g.Spec.ExternalPolicies != nil {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "externalPolicies"), "ExternalPolicies cannot be used with a cutom instance profile, use either one or the other."))
+	}
+
 	if fi.Int32Value(g.Spec.RootVolumeIops) < 0 {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "rootVolumeIops"), g.Spec.RootVolumeIops, "RootVolumeIops must be greater than 0"))
 	}

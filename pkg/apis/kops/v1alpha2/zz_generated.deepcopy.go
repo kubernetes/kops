@@ -1893,6 +1893,20 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(IAMProfileSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ExternalPolicies != nil {
+		in, out := &in.ExternalPolicies, &out.ExternalPolicies
+		*out = new([]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		}
+	}
+	if in.AdditionalPolicy != nil {
+		in, out := &in.AdditionalPolicy, &out.AdditionalPolicy
+		*out = new(string)
+		**out = **in
+	}
 	if in.SecurityGroupOverride != nil {
 		in, out := &in.SecurityGroupOverride, &out.SecurityGroupOverride
 		*out = new(string)

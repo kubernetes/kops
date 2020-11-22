@@ -1,9 +1,13 @@
 locals {
   cluster_name                 = "mixedinstances.example.com"
+  master-us-test-1a_role_arn   = aws_iam_role.master-us-test-1a-mixedinstances-example-com.arn
+  master-us-test-1a_role_name  = aws_iam_role.master-us-test-1a-mixedinstances-example-com.name
+  master-us-test-1b_role_arn   = aws_iam_role.master-us-test-1b-mixedinstances-example-com.arn
+  master-us-test-1b_role_name  = aws_iam_role.master-us-test-1b-mixedinstances-example-com.name
+  master-us-test-1c_role_arn   = aws_iam_role.master-us-test-1c-mixedinstances-example-com.arn
+  master-us-test-1c_role_name  = aws_iam_role.master-us-test-1c-mixedinstances-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-mixedinstances-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-mixedinstances-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-mixedinstances-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-mixedinstances-example-com.id, aws_security_group.masters-mixedinstances-example-com.id, aws_security_group.masters-mixedinstances-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-mixedinstances-example-com.arn
-  masters_role_name            = aws_iam_role.masters-mixedinstances-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-mixedinstances-example-com.id]
   node_security_group_ids      = [aws_security_group.nodes-mixedinstances-example-com.id]
   node_subnet_ids              = [aws_subnet.us-test-1b-mixedinstances-example-com.id]
@@ -22,20 +26,36 @@ output "cluster_name" {
   value = "mixedinstances.example.com"
 }
 
+output "master-us-test-1a_role_arn" {
+  value = aws_iam_role.master-us-test-1a-mixedinstances-example-com.arn
+}
+
+output "master-us-test-1a_role_name" {
+  value = aws_iam_role.master-us-test-1a-mixedinstances-example-com.name
+}
+
+output "master-us-test-1b_role_arn" {
+  value = aws_iam_role.master-us-test-1b-mixedinstances-example-com.arn
+}
+
+output "master-us-test-1b_role_name" {
+  value = aws_iam_role.master-us-test-1b-mixedinstances-example-com.name
+}
+
+output "master-us-test-1c_role_arn" {
+  value = aws_iam_role.master-us-test-1c-mixedinstances-example-com.arn
+}
+
+output "master-us-test-1c_role_name" {
+  value = aws_iam_role.master-us-test-1c-mixedinstances-example-com.name
+}
+
 output "master_autoscaling_group_ids" {
   value = [aws_autoscaling_group.master-us-test-1a-masters-mixedinstances-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-mixedinstances-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-mixedinstances-example-com.id]
 }
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-mixedinstances-example-com.id, aws_security_group.masters-mixedinstances-example-com.id, aws_security_group.masters-mixedinstances-example-com.id]
-}
-
-output "masters_role_arn" {
-  value = aws_iam_role.masters-mixedinstances-example-com.arn
-}
-
-output "masters_role_name" {
-  value = aws_iam_role.masters-mixedinstances-example-com.name
 }
 
 output "node_autoscaling_group_ids" {
@@ -384,9 +404,19 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-mixedinstances-example-com" {
   type = "gp2"
 }
 
-resource "aws_iam_instance_profile" "masters-mixedinstances-example-com" {
-  name = "masters.mixedinstances.example.com"
-  role = aws_iam_role.masters-mixedinstances-example-com.name
+resource "aws_iam_instance_profile" "master-us-test-1a-mixedinstances-example-com" {
+  name = "master-us-test-1a.mixedinstances.example.com"
+  role = aws_iam_role.master-us-test-1a-mixedinstances-example-com.name
+}
+
+resource "aws_iam_instance_profile" "master-us-test-1b-mixedinstances-example-com" {
+  name = "master-us-test-1b.mixedinstances.example.com"
+  role = aws_iam_role.master-us-test-1b-mixedinstances-example-com.name
+}
+
+resource "aws_iam_instance_profile" "master-us-test-1c-mixedinstances-example-com" {
+  name = "master-us-test-1c.mixedinstances.example.com"
+  role = aws_iam_role.master-us-test-1c-mixedinstances-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-mixedinstances-example-com" {
@@ -394,10 +424,22 @@ resource "aws_iam_instance_profile" "nodes-mixedinstances-example-com" {
   role = aws_iam_role.nodes-mixedinstances-example-com.name
 }
 
-resource "aws_iam_role_policy" "masters-mixedinstances-example-com" {
-  name   = "masters.mixedinstances.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.mixedinstances.example.com_policy")
-  role   = aws_iam_role.masters-mixedinstances-example-com.name
+resource "aws_iam_role_policy" "master-us-test-1a-mixedinstances-example-com" {
+  name   = "master-us-test-1a.mixedinstances.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.mixedinstances.example.com_policy")
+  role   = aws_iam_role.master-us-test-1a-mixedinstances-example-com.name
+}
+
+resource "aws_iam_role_policy" "master-us-test-1b-mixedinstances-example-com" {
+  name   = "master-us-test-1b.mixedinstances.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1b.mixedinstances.example.com_policy")
+  role   = aws_iam_role.master-us-test-1b-mixedinstances-example-com.name
+}
+
+resource "aws_iam_role_policy" "master-us-test-1c-mixedinstances-example-com" {
+  name   = "master-us-test-1c.mixedinstances.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1c.mixedinstances.example.com_policy")
+  role   = aws_iam_role.master-us-test-1c-mixedinstances-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-mixedinstances-example-com" {
@@ -406,9 +448,19 @@ resource "aws_iam_role_policy" "nodes-mixedinstances-example-com" {
   role   = aws_iam_role.nodes-mixedinstances-example-com.name
 }
 
-resource "aws_iam_role" "masters-mixedinstances-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.mixedinstances.example.com_policy")
-  name               = "masters.mixedinstances.example.com"
+resource "aws_iam_role" "master-us-test-1a-mixedinstances-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.mixedinstances.example.com_policy")
+  name               = "master-us-test-1a.mixedinstances.example.com"
+}
+
+resource "aws_iam_role" "master-us-test-1b-mixedinstances-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1b.mixedinstances.example.com_policy")
+  name               = "master-us-test-1b.mixedinstances.example.com"
+}
+
+resource "aws_iam_role" "master-us-test-1c-mixedinstances-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1c.mixedinstances.example.com_policy")
+  name               = "master-us-test-1c.mixedinstances.example.com"
 }
 
 resource "aws_iam_role" "nodes-mixedinstances-example-com" {
@@ -449,7 +501,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-mixedinstances-example-com.id
+    name = aws_iam_instance_profile.master-us-test-1a-mixedinstances-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
@@ -513,7 +565,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-mixedinstances-example-com.id
+    name = aws_iam_instance_profile.master-us-test-1b-mixedinstances-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
@@ -577,7 +629,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-mixedinstances-example-com.id
+    name = aws_iam_instance_profile.master-us-test-1c-mixedinstances-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

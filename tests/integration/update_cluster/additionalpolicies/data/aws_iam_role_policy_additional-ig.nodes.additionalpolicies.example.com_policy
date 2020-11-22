@@ -1,0 +1,14 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "sts:AssumeRole"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:iam::123456789000:role/nodes-ig/*"
+      ]
+    }
+  ],
+  "Version": "2012-10-17"
+}

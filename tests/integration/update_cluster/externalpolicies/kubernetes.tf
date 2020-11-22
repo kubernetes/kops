@@ -1,9 +1,9 @@
 locals {
   cluster_name                 = "externalpolicies.example.com"
+  master-us-test-1a_role_arn   = aws_iam_role.master-us-test-1a-externalpolicies-example-com.arn
+  master-us-test-1a_role_name  = aws_iam_role.master-us-test-1a-externalpolicies-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-externalpolicies-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-externalpolicies-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-externalpolicies-example-com.arn
-  masters_role_name            = aws_iam_role.masters-externalpolicies-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-externalpolicies-example-com.id]
   node_security_group_ids      = [aws_security_group.nodes-externalpolicies-example-com.id, "sg-exampleid3", "sg-exampleid4"]
   node_subnet_ids              = [aws_subnet.us-test-1a-externalpolicies-example-com.id]
@@ -20,20 +20,20 @@ output "cluster_name" {
   value = "externalpolicies.example.com"
 }
 
+output "master-us-test-1a_role_arn" {
+  value = aws_iam_role.master-us-test-1a-externalpolicies-example-com.arn
+}
+
+output "master-us-test-1a_role_name" {
+  value = aws_iam_role.master-us-test-1a-externalpolicies-example-com.name
+}
+
 output "master_autoscaling_group_ids" {
   value = [aws_autoscaling_group.master-us-test-1a-masters-externalpolicies-example-com.id]
 }
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-externalpolicies-example-com.id]
-}
-
-output "masters_role_arn" {
-  value = aws_iam_role.masters-externalpolicies-example-com.arn
-}
-
-output "masters_role_name" {
-  value = aws_iam_role.masters-externalpolicies-example-com.name
 }
 
 output "node_autoscaling_group_ids" {
@@ -258,9 +258,9 @@ resource "aws_elb" "api-externalpolicies-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "masters-externalpolicies-example-com" {
-  name = "masters.externalpolicies.example.com"
-  role = aws_iam_role.masters-externalpolicies-example-com.name
+resource "aws_iam_instance_profile" "master-us-test-1a-externalpolicies-example-com" {
+  name = "master-us-test-1a.externalpolicies.example.com"
+  role = aws_iam_role.master-us-test-1a-externalpolicies-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-externalpolicies-example-com" {
@@ -268,20 +268,25 @@ resource "aws_iam_instance_profile" "nodes-externalpolicies-example-com" {
   role = aws_iam_role.nodes-externalpolicies-example-com.name
 }
 
-resource "aws_iam_role_policy_attachment" "master-policyoverride-1242070525" {
+resource "aws_iam_role_policy_attachment" "master-us-test-1a-externalpolicies-example-com-policyoverride-1242070525" {
   policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
-  role       = aws_iam_role.masters-externalpolicies-example-com.name
+  role       = aws_iam_role.master-us-test-1a-externalpolicies-example-com.name
 }
 
-resource "aws_iam_role_policy_attachment" "node-policyoverride-1242070525" {
+resource "aws_iam_role_policy_attachment" "nodes-externalpolicies-example-com-policyoverride-1242070525" {
   policy_arn = "arn:aws:iam::123456789000:policy/test-policy"
   role       = aws_iam_role.nodes-externalpolicies-example-com.name
 }
 
-resource "aws_iam_role_policy" "masters-externalpolicies-example-com" {
-  name   = "masters.externalpolicies.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.externalpolicies.example.com_policy")
-  role   = aws_iam_role.masters-externalpolicies-example-com.name
+resource "aws_iam_role_policy_attachment" "nodes-externalpolicies-example-com-policyoverride-ig-4286415220" {
+  policy_arn = "arn:aws:iam::123456789000:policy/test-policy-ig"
+  role       = aws_iam_role.nodes-externalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy" "master-us-test-1a-externalpolicies-example-com" {
+  name   = "master-us-test-1a.externalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.externalpolicies.example.com_policy")
+  role   = aws_iam_role.master-us-test-1a-externalpolicies-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-externalpolicies-example-com" {
@@ -290,9 +295,9 @@ resource "aws_iam_role_policy" "nodes-externalpolicies-example-com" {
   role   = aws_iam_role.nodes-externalpolicies-example-com.name
 }
 
-resource "aws_iam_role" "masters-externalpolicies-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.externalpolicies.example.com_policy")
-  name               = "masters.externalpolicies.example.com"
+resource "aws_iam_role" "master-us-test-1a-externalpolicies-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.externalpolicies.example.com_policy")
+  name               = "master-us-test-1a.externalpolicies.example.com"
 }
 
 resource "aws_iam_role" "nodes-externalpolicies-example-com" {
@@ -337,7 +342,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-externalpolicies-examp
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-externalpolicies-example-com.id
+    name = aws_iam_instance_profile.master-us-test-1a-externalpolicies-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

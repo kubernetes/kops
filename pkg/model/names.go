@@ -125,14 +125,14 @@ func (b *KopsModelContext) NameForDNSZone() string {
 }
 
 // IAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup
-func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
+func (b *KopsModelContext) IAMName(igName string, role kops.InstanceGroupRole) string {
 	switch role {
 	case kops.InstanceGroupRoleMaster:
-		return "masters." + b.ClusterName()
+		return igName + "." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
-		return "bastions." + b.ClusterName()
+		return igName + "." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
-		return "nodes." + b.ClusterName()
+		return igName + "." + b.ClusterName()
 
 	default:
 		klog.Fatalf("unknown InstanceGroup Role: %q", role)
@@ -160,7 +160,7 @@ func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*aw
 		name, err := findCustomAuthNameFromArn(fi.StringValue(ig.Spec.IAM.Profile))
 		return &awstasks.IAMInstanceProfile{Name: &name}, err
 	}
-	name := b.IAMName(ig.Spec.Role)
+	name := b.IAMName(ig.Name, ig.Spec.Role)
 	return &awstasks.IAMInstanceProfile{Name: &name}, nil
 }
 

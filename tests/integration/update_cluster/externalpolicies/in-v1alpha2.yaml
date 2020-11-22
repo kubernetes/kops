@@ -85,6 +85,8 @@ spec:
   subnets:
   - us-test-1a
   detailedInstanceMonitoring: true
+  externalPolicies:
+    - arn:aws:iam::123456789000:policy/test-policy-ig
 
 ---
 

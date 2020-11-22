@@ -1,13 +1,13 @@
 locals {
   bastion_autoscaling_group_ids     = [aws_autoscaling_group.bastion-bastionuserdata-example-com.id]
+  bastion_role_arn                  = aws_iam_role.bastion-bastionuserdata-example-com.arn
+  bastion_role_name                 = aws_iam_role.bastion-bastionuserdata-example-com.name
   bastion_security_group_ids        = [aws_security_group.bastion-bastionuserdata-example-com.id]
-  bastions_role_arn                 = aws_iam_role.bastions-bastionuserdata-example-com.arn
-  bastions_role_name                = aws_iam_role.bastions-bastionuserdata-example-com.name
   cluster_name                      = "bastionuserdata.example.com"
+  master-us-test-1a_role_arn        = aws_iam_role.master-us-test-1a-bastionuserdata-example-com.arn
+  master-us-test-1a_role_name       = aws_iam_role.master-us-test-1a-bastionuserdata-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-bastionuserdata-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-bastionuserdata-example-com.id]
-  masters_role_arn                  = aws_iam_role.masters-bastionuserdata-example-com.arn
-  masters_role_name                 = aws_iam_role.masters-bastionuserdata-example-com.name
   node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-bastionuserdata-example-com.id]
   node_security_group_ids           = [aws_security_group.nodes-bastionuserdata-example-com.id]
   node_subnet_ids                   = [aws_subnet.us-test-1a-bastionuserdata-example-com.id]
@@ -26,20 +26,28 @@ output "bastion_autoscaling_group_ids" {
   value = [aws_autoscaling_group.bastion-bastionuserdata-example-com.id]
 }
 
+output "bastion_role_arn" {
+  value = aws_iam_role.bastion-bastionuserdata-example-com.arn
+}
+
+output "bastion_role_name" {
+  value = aws_iam_role.bastion-bastionuserdata-example-com.name
+}
+
 output "bastion_security_group_ids" {
   value = [aws_security_group.bastion-bastionuserdata-example-com.id]
 }
 
-output "bastions_role_arn" {
-  value = aws_iam_role.bastions-bastionuserdata-example-com.arn
-}
-
-output "bastions_role_name" {
-  value = aws_iam_role.bastions-bastionuserdata-example-com.name
-}
-
 output "cluster_name" {
   value = "bastionuserdata.example.com"
+}
+
+output "master-us-test-1a_role_arn" {
+  value = aws_iam_role.master-us-test-1a-bastionuserdata-example-com.arn
+}
+
+output "master-us-test-1a_role_name" {
+  value = aws_iam_role.master-us-test-1a-bastionuserdata-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -48,14 +56,6 @@ output "master_autoscaling_group_ids" {
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-bastionuserdata-example-com.id]
-}
-
-output "masters_role_arn" {
-  value = aws_iam_role.masters-bastionuserdata-example-com.arn
-}
-
-output "masters_role_name" {
-  value = aws_iam_role.masters-bastionuserdata-example-com.name
 }
 
 output "node_autoscaling_group_ids" {
@@ -344,14 +344,14 @@ resource "aws_elb" "bastion-bastionuserdata-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "bastions-bastionuserdata-example-com" {
-  name = "bastions.bastionuserdata.example.com"
-  role = aws_iam_role.bastions-bastionuserdata-example-com.name
+resource "aws_iam_instance_profile" "bastion-bastionuserdata-example-com" {
+  name = "bastion.bastionuserdata.example.com"
+  role = aws_iam_role.bastion-bastionuserdata-example-com.name
 }
 
-resource "aws_iam_instance_profile" "masters-bastionuserdata-example-com" {
-  name = "masters.bastionuserdata.example.com"
-  role = aws_iam_role.masters-bastionuserdata-example-com.name
+resource "aws_iam_instance_profile" "master-us-test-1a-bastionuserdata-example-com" {
+  name = "master-us-test-1a.bastionuserdata.example.com"
+  role = aws_iam_role.master-us-test-1a-bastionuserdata-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-bastionuserdata-example-com" {
@@ -359,16 +359,16 @@ resource "aws_iam_instance_profile" "nodes-bastionuserdata-example-com" {
   role = aws_iam_role.nodes-bastionuserdata-example-com.name
 }
 
-resource "aws_iam_role_policy" "bastions-bastionuserdata-example-com" {
-  name   = "bastions.bastionuserdata.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.bastionuserdata.example.com_policy")
-  role   = aws_iam_role.bastions-bastionuserdata-example-com.name
+resource "aws_iam_role_policy" "bastion-bastionuserdata-example-com" {
+  name   = "bastion.bastionuserdata.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastion.bastionuserdata.example.com_policy")
+  role   = aws_iam_role.bastion-bastionuserdata-example-com.name
 }
 
-resource "aws_iam_role_policy" "masters-bastionuserdata-example-com" {
-  name   = "masters.bastionuserdata.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_masters.bastionuserdata.example.com_policy")
-  role   = aws_iam_role.masters-bastionuserdata-example-com.name
+resource "aws_iam_role_policy" "master-us-test-1a-bastionuserdata-example-com" {
+  name   = "master-us-test-1a.bastionuserdata.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.bastionuserdata.example.com_policy")
+  role   = aws_iam_role.master-us-test-1a-bastionuserdata-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-bastionuserdata-example-com" {
@@ -377,14 +377,14 @@ resource "aws_iam_role_policy" "nodes-bastionuserdata-example-com" {
   role   = aws_iam_role.nodes-bastionuserdata-example-com.name
 }
 
-resource "aws_iam_role" "bastions-bastionuserdata-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.bastionuserdata.example.com_policy")
-  name               = "bastions.bastionuserdata.example.com"
+resource "aws_iam_role" "bastion-bastionuserdata-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_bastion.bastionuserdata.example.com_policy")
+  name               = "bastion.bastionuserdata.example.com"
 }
 
-resource "aws_iam_role" "masters-bastionuserdata-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.bastionuserdata.example.com_policy")
-  name               = "masters.bastionuserdata.example.com"
+resource "aws_iam_role" "master-us-test-1a-bastionuserdata-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.bastionuserdata.example.com_policy")
+  name               = "master-us-test-1a.bastionuserdata.example.com"
 }
 
 resource "aws_iam_role" "nodes-bastionuserdata-example-com" {
@@ -421,7 +421,7 @@ resource "aws_launch_template" "bastion-bastionuserdata-example-com" {
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.bastions-bastionuserdata-example-com.id
+    name = aws_iam_instance_profile.bastion-bastionuserdata-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "t2.micro"
@@ -485,7 +485,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-bastionuserdata-exampl
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.masters-bastionuserdata-example-com.id
+    name = aws_iam_instance_profile.master-us-test-1a-bastionuserdata-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

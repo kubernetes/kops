@@ -55,6 +55,9 @@ spec:
           spec:
             description: InstanceGroupSpec is the specification for an instanceGroup
             properties:
+              additionalPolicy:
+                description: Additional policy to add for instance group
+                type: string
               additionalSecurityGroups:
                 description: AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
                 items:
@@ -99,6 +102,11 @@ spec:
                       description: TargetGroupARN to associate with this instance group (AWS ALB/NLB)
                       type: string
                   type: object
+                type: array
+              externalPolicies:
+                description: ExternalPolicies allows the insertion of pre-existing managed policies on instance group
+                items:
+                  type: string
                 type: array
               fileAssets:
                 description: FileAssets is a collection of file assets for this instance group

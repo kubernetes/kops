@@ -215,7 +215,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemasterscontainerdexamplecom"
+              "Ref": "AWSIAMInstanceProfilemasterustest1acontainerdexamplecom"
             }
           },
           "ImageId": "ami-11400000",
@@ -805,13 +805,13 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilemasterscontainerdexamplecom": {
+    "AWSIAMInstanceProfilemasterustest1acontainerdexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "masters.containerd.example.com",
+        "InstanceProfileName": "master-us-test-1a.containerd.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterscontainerdexamplecom"
+            "Ref": "AWSIAMRolemasterustest1acontainerdexamplecom"
           }
         ]
       }
@@ -827,13 +827,13 @@
         ]
       }
     },
-    "AWSIAMPolicymasterscontainerdexamplecom": {
+    "AWSIAMPolicymasterustest1acontainerdexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.containerd.example.com",
+        "PolicyName": "master-us-test-1a.containerd.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterscontainerdexamplecom"
+            "Ref": "AWSIAMRolemasterustest1acontainerdexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1034,10 +1034,10 @@
         }
       }
     },
-    "AWSIAMRolemasterscontainerdexamplecom": {
+    "AWSIAMRolemasterustest1acontainerdexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.containerd.example.com",
+        "RoleName": "master-us-test-1a.containerd.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {

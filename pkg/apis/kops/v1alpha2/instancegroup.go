@@ -149,6 +149,10 @@ type InstanceGroupSpec struct {
 	DetailedInstanceMonitoring *bool `json:"detailedInstanceMonitoring,omitempty"`
 	// IAMProfileSpec defines the identity of the cloud group IAM profile (AWS only).
 	IAM *IAMProfileSpec `json:"iam,omitempty"`
+	// ExternalPolicies allows the insertion of pre-existing managed policies on instance group
+	ExternalPolicies *[]string `json:"externalPolicies,omitempty"`
+	// Additional policy to add for instance group
+	AdditionalPolicy *string `json:"additionalPolicy,omitempty"`
 	// SecurityGroupOverride overrides the default security group created by Kops for this IG (AWS only).
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// InstanceProtection makes new instances in an autoscaling group protected from scale in
