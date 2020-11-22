@@ -370,7 +370,7 @@ func describeLoadBalancers(cloud awsup.AWSCloud, request *elb.DescribeLoadBalanc
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error listing ELBs: %v", err)
+		return nil, err
 	}
 
 	return found, nil

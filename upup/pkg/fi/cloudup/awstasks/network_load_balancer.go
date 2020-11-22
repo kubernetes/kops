@@ -348,7 +348,7 @@ func describeNetworkLoadBalancers(cloud awsup.AWSCloud, request *elbv2.DescribeL
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error listing NLBs: %v", err)
+		return nil, err
 	}
 
 	return found, nil

@@ -369,6 +369,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	t.LoadBalancers = []*awstasks.ClassicLoadBalancer{}
 	t.TargetGroups = []*awstasks.TargetGroup{}
+	t.LoadBalancers = []*awstasks.ClassicLoadBalancer{}
 
 	// When Spotinst Elastigroups are used, there is no need to create
 	// a separate task for the attachment of the load balancer since this

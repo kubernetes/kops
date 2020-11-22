@@ -156,7 +156,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:             tags,
 			VPC:              b.LinkToVPC(),
 			Type:             fi.String("network"),
-			CLBNamesToDelete: []string{b.CLBName("api")},
+			CLBNamesToDelete: []string{loadBalancerName},
 		}
 
 		clb = &awstasks.ClassicLoadBalancer{
@@ -184,7 +184,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			},
 
 			Tags:             tags,
-			NLBNamesToDelete: []string{b.NLBName("api")},
+			NLBNamesToDelete: []string{loadBalancerName},
 			TGNamesToDelete:  []string{b.NLBTargetGroupName("tcp"), b.NLBTargetGroupName("tls")},
 		}
 

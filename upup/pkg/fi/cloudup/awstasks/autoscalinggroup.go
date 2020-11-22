@@ -716,7 +716,8 @@ func (e *AutoscalingGroup) AutoscalingLoadBalancers() []*string {
 	var list []*string
 
 	for _, v := range e.LoadBalancers {
-		list = append(list, v.Name)
+		// Question: is it possible that e.LoadBalancers is not our API ELB?
+		list = append(list, v.LoadBalancerName)
 	}
 
 	return list
