@@ -23,9 +23,6 @@ export DIGITALOCEAN_ACCESS_TOKEN=<access-token>  # where <access-token> is the a
 export S3_ENDPOINT=nyc3.digitaloceanspaces.com # this can also be ams3.digitaloceanspaces.com or sgp1.digitaloceanspaces.com depending on where you created your Spaces bucket
 export S3_ACCESS_KEY_ID=<access-key-id>  # where <access-key-id> is the Spaces API Access Key for your bucket
 export S3_SECRET_ACCESS_KEY=<secret-key>  # where <secret-key> is the Spaces API Secret Key for your bucket
-
-# this is required since DigitalOcean support is currently in alpha so it is feature gated
-export KOPS_FEATURE_FLAGS="AlphaAllowDO"
 ```
 
 ## Creating a Single Master Cluster
@@ -46,8 +43,21 @@ kops update cluster my-cluster.example.com --yes
 kops create cluster --cloud=digitalocean --name=my-cluster.example.com --image=debian-9-x64 --networking=flannel --zones=ams3 --ssh-public-key=~/.ssh/id_rsa.pub --node-size=c-4
 kops update cluster my-cluster.example.com --yes
 
+# to validate a cluster
+kops validate cluster my-cluster.example.com
+
 # to delete a cluster
 kops delete cluster my-cluster.example.com --yes
+
+# to export kubecfg
+* follow steps as mentioned [here](https://kops.sigs.k8s.io/cli/kops_export_kubecfg/#examples). 
+
+# to update a cluster
+* follow steps as mentioned [here](https://kops.sigs.k8s.io/operations/updates_and_upgrades/#manual-update)
+
+# to install csi driver for DO block storage
+* follow steps as mentiond [here](https://github.com/digitalocean/csi-digitalocean#installing-to-kubernetes)
+
 ```
 
 ## Creating a Multi-Master HA Cluster
@@ -67,7 +77,7 @@ kops delete cluster dev5.k8s.local --yes
 
 kOps for DigitalOcean currently does not support these features:
 
-* rolling update for instance groups
+* kops terraform support for DO
 
 # Next steps
 
