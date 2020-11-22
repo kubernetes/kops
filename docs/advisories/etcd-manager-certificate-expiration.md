@@ -28,6 +28,12 @@ kubectl get pods -n kube-system -l k8s-app=etcd-manager-main \
 * If this outputs an image other than `kopeio/etcd-manager`, the cluster may be affected.
 * If this does does not output anything or outputs `kopeio/etcd-manager` images with tags >= `3.0.20200428`, the cluster is not affected.
 
+The issue can be confirmed also by checking the certificate expiry using `openssl` on each master node.
+
+```bash
+find /mnt/ -type f -name me.crt -print -exec openssl x509 -enddate -noout -in {} \;
+```
+
 ## Solution
 
 Upgrade etcd-manager. etcd-manager version >= `3.0.20200428` manages certificate lifecycle and will automatically request new certificates before expiration.
