@@ -471,6 +471,12 @@ type KubeAPIServerConfig struct {
 
 	// CPURequest, cpu request compute resource for api server. Defaults to "150m"
 	CPURequest string `json:"cpuRequest,omitempty"`
+	// CPULimit, cpu limit compute resource for api server e.g. "500m"
+	CPULimit string `json:"cpuLimit,omitempty"`
+	// MemoryRequest, memory request compute resource for api server e.g. "30Mi"
+	MemoryRequest string `json:"memoryRequest,omitempty"`
+	// MemoryLimit, memory limit compute resource for api server e.g. "30Mi"
+	MemoryLimit string `json:"memoryLimit,omitempty"`
 
 	// Amount of time to retain Kubernetes events
 	EventTTL *metav1.Duration `json:"eventTTL,omitempty" flag:"event-ttl"`
