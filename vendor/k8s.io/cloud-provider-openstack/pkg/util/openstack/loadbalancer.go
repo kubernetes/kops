@@ -29,14 +29,16 @@ import (
 	"github.com/gophercloud/gophercloud/pagination"
 	version "github.com/hashicorp/go-version"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 
 	cpoerrors "k8s.io/cloud-provider-openstack/pkg/util/errors"
 )
 
 const (
-	OctaviaFeatureTags   = 0
-	OctaviaFeatureVIPACL = 1
+	OctaviaFeatureTags    = 0
+	OctaviaFeatureVIPACL  = 1
+	OctaviaFeatureFlavors = 2
+	OctaviaFeatureTimeout = 3
 
 	loadbalancerActiveInitDelay = 1 * time.Second
 	loadbalancerActiveFactor    = 1.2
@@ -103,6 +105,16 @@ func IsOctaviaFeatureSupported(client *gophercloud.ServiceClient, feature int) b
 	case OctaviaFeatureTags:
 		verTags, _ := version.NewVersion("v2.5")
 		if currentVer.GreaterThanOrEqual(verTags) {
+			return true
+		}
+	case OctaviaFeatureFlavors:
+		verFlavors, _ := version.NewVersion("v2.6")
+		if currentVer.GreaterThanOrEqual(verFlavors) {
+			return true
+		}
+	case OctaviaFeatureTimeout:
+		verFlavors, _ := version.NewVersion("v2.1")
+		if currentVer.GreaterThanOrEqual(verFlavors) {
 			return true
 		}
 	default:
@@ -257,11 +269,78 @@ func GetPoolByName(client *gophercloud.ServiceClient, name string, lbID string) 
 	return &listenerPools[0], nil
 }
 
+// GetPoolsByListener finds pool for a listener. A listener always has exactly one pool.
+func GetPoolByListener(client *gophercloud.ServiceClient, lbID, listenerID string) (*pools.Pool, error) {
+	listenerPools := make([]pools.Pool, 0, 1)
+	err := pools.List(client, pools.ListOpts{LoadbalancerID: lbID}).EachPage(func(page pagination.Page) (bool, error) {
+		poolsList, err := pools.ExtractPools(page)
+		if err != nil {
+			return false, err
+		}
+		for _, p := range poolsList {
+			for _, l := range p.Listeners {
+				if l.ID == listenerID {
+					listenerPools = append(listenerPools, p)
+				}
+			}
+		}
+		if len(listenerPools) > 1 {
+			return false, ErrMultipleResults
+		}
+		return true, nil
+	})
+	if err != nil {
+		if cpoerrors.IsNotFound(err) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	if len(listenerPools) == 0 {
+		return nil, ErrNotFound
+	}
+
+	return &listenerPools[0], nil
+}
+
 // DeleteLoadbalancer deletes a loadbalancer with all its child objects.
 func DeleteLoadbalancer(client *gophercloud.ServiceClient, lbID string) error {
 	err := loadbalancers.Delete(client, lbID, loadbalancers.DeleteOpts{Cascade: true}).ExtractErr()
 	if err != nil && !cpoerrors.IsNotFound(err) {
 		return fmt.Errorf("error deleting loadbalancer %s: %v", lbID, err)
+	}
+
+	return nil
+}
+
+// GetMembersbyPool get all the members in the pool.
+func GetMembersbyPool(client *gophercloud.ServiceClient, poolID string) ([]pools.Member, error) {
+	var members []pools.Member
+
+	err := pools.ListMembers(client, poolID, pools.ListMembersOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+		membersList, err := pools.ExtractMembers(page)
+		if err != nil {
+			return false, err
+		}
+		members = append(members, membersList...)
+
+		return true, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}
+
+func BatchUpdatePoolMembers(client *gophercloud.ServiceClient, lbID, poolID string, opts []pools.BatchUpdateMemberOpts) error {
+	err := pools.BatchUpdateMembers(client, poolID, opts).ExtractErr()
+	if err != nil {
+		return err
+	}
+
+	if err := waitLoadbalancerActive(client, lbID); err != nil {
+		return fmt.Errorf("failed to wait for load balancer ACTIVE after updating pool members for %s: %v", poolID, err)
 	}
 
 	return nil
