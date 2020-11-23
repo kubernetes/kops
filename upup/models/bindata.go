@@ -3683,7 +3683,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{ .Version  }}"
+        image: "quay.io/cilium/cilium:{{ .Version  }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -3804,7 +3804,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "quay.io/cilium/cilium:{{ .Version }}"
 ## end of ` + "`" + `with .Networking.Cilium` + "`" + `
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -3967,7 +3967,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{ .Version }}"
+        image: "quay.io/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
@@ -4092,7 +4092,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: hubble-relay
-          image: "docker.io/cilium/hubble-relay:{{ .Networking.Cilium.Version }}"
+          image: "quay.io/cilium/hubble-relay:{{ .Networking.Cilium.Version }}"
           imagePullPolicy: IfNotPresent
           command:
             - "hubble-relay"
@@ -4584,7 +4584,7 @@ spec:
           value: {{ . }}
         {{ end }}
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/cilium:{{ .Version  }}"
+        image: "quay.io/cilium/cilium:{{ .Version  }}"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -4691,7 +4691,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{ .Version }}"
+        image: "quay.io/cilium/cilium:{{ .Version }}"
 ## end of ` + "`" + `with .Networking.Cilium` + "`" + `
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -4897,7 +4897,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{ .Version }}"
+        image: "quay.io/cilium/operator:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
@@ -6156,7 +6156,7 @@ spec:
       serviceAccountName: calico-node
       priorityClassName: system-cluster-critical
       containers:
-      - image: calico/typha:v3.9.6
+      - image: quay.io/calico/typha:v3.9.6
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -6272,7 +6272,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.9.6
+          image: quay.io/calico/cni:v3.9.6
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           env:
             - name: KUBERNETES_NODE_NAME
@@ -6292,7 +6292,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.9.6
+          image: quay.io/calico/cni:v3.9.6
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -6326,7 +6326,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.9.6
+          image: quay.io/calico/pod2daemon-flexvol:v3.9.6
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -6335,7 +6335,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.9.6
+          image: quay.io/calico/node:v3.9.6
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -6542,7 +6542,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.9.6
+          image: quay.io/calico/kube-controllers:v3.9.6
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
@@ -10326,7 +10326,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.16.4
+      - image: quay.io/calico/typha:v3.16.4
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -10443,7 +10443,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: calico/cni:v3.16.4
+          image: quay.io/calico/cni:v3.16.4
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
           - configMapRef:
@@ -10470,7 +10470,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.16.4
+          image: quay.io/calico/cni:v3.16.4
           command: ["/opt/cni/bin/install"]
           envFrom:
           - configMapRef:
@@ -10511,7 +10511,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.16.4
+          image: quay.io/calico/pod2daemon-flexvol:v3.16.4
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -10522,7 +10522,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.16.4
+          image: quay.io/calico/node:v3.16.4
           envFrom:
           - configMapRef:
               # Allow KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT to be overridden for eBPF mode.
@@ -10779,7 +10779,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.16.4
+          image: quay.io/calico/kube-controllers:v3.16.4
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
@@ -11339,7 +11339,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.7.5
+          image: quay.io/calico/cni:v3.7.5
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -11375,7 +11375,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.7.5
+          image: quay.io/calico/node:v3.7.5
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -12109,7 +12109,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.12.2
+      - image: quay.io/calico/typha:v3.12.2
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -12226,7 +12226,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.12.2
+          image: quay.io/calico/cni:v3.12.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -12262,7 +12262,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.12.2
+          image: quay.io/calico/pod2daemon-flexvol:v3.12.2
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -12273,7 +12273,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.12.2
+          image: quay.io/calico/node:v3.12.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -13032,7 +13032,7 @@ spec:
       securityContext:
         fsGroup: 65534
       containers:
-      - image: calico/typha:v3.13.4
+      - image: quay.io/calico/typha:v3.13.4
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -13143,7 +13143,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.13.4
+          image: quay.io/calico/cni:v3.13.4
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -13179,7 +13179,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: calico/pod2daemon-flexvol:v3.13.4
+          image: quay.io/calico/pod2daemon-flexvol:v3.13.4
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -13190,7 +13190,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.13.4
+          image: quay.io/calico/node:v3.13.4
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE

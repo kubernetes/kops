@@ -407,7 +407,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v3.7.5
+          image: quay.io/calico/cni:v3.7.5
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -443,7 +443,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.7.5
+          image: quay.io/calico/node:v3.7.5
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
