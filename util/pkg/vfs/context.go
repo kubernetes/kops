@@ -499,7 +499,7 @@ func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
 	}
 
 	if u.Scheme != "azureblob" {
-		return nil, fmt.Errorf("invalid Azure Blob schem: %q", p)
+		return nil, fmt.Errorf("invalid Azure Blob scheme: %q", p)
 	}
 
 	container := strings.TrimSuffix(u.Host, "/")
