@@ -916,6 +916,9 @@ spec:
                     items:
                       type: string
                     type: array
+                  cpuLimit:
+                    description: CPULimit, cpu limit compute resource for api server e.g. "500m"
+                    type: string
                   cpuRequest:
                     description: CPURequest, cpu request compute resource for api server. Defaults to "150m"
                     type: string
@@ -1017,6 +1020,12 @@ spec:
                     description: MaxRequestsInflight The maximum number of non-mutating requests in flight at a given time.
                     format: int32
                     type: integer
+                  memoryLimit:
+                    description: MemoryLimit, memory limit compute resource for api server e.g. "30Mi"
+                    type: string
+                  memoryRequest:
+                    description: MemoryRequest, memory request compute resource for api server e.g. "30Mi"
+                    type: string
                   minRequestTimeout:
                     description: MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out. Currently only honored by the watch request handler
                     format: int32
