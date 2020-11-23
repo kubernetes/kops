@@ -40,7 +40,7 @@ github.com/Masterminds/semver/v3
 # github.com/Masterminds/sprig/v3 v3.1.0
 ## explicit
 github.com/Masterminds/sprig/v3
-# github.com/Microsoft/go-winio v0.4.14
+# github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5
 github.com/Microsoft/go-winio
 github.com/Microsoft/go-winio/pkg/guid
 # github.com/PuerkitoBio/purell v1.1.1
@@ -153,7 +153,7 @@ github.com/bazelbuild/bazel-gazelle/repo
 github.com/bazelbuild/bazel-gazelle/resolve
 github.com/bazelbuild/bazel-gazelle/rule
 github.com/bazelbuild/bazel-gazelle/walk
-# github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89
+# github.com/bazelbuild/buildtools v0.0.0-20190731111112-f720930ceb60
 github.com/bazelbuild/buildtools/build
 github.com/bazelbuild/buildtools/tables
 # github.com/beorn7/perks v1.0.1
@@ -175,6 +175,8 @@ github.com/chai2010/gettext-go/gettext/po
 ## explicit
 github.com/client9/misspell
 github.com/client9/misspell/cmd/misspell
+# github.com/containerd/containerd v1.3.3
+github.com/containerd/containerd/errdefs
 # github.com/coreos/etcd v3.3.17+incompatible
 ## explicit
 github.com/coreos/etcd/client
@@ -205,7 +207,7 @@ github.com/digitalocean/godo
 github.com/docker/distribution/digestset
 github.com/docker/distribution/reference
 github.com/docker/distribution/registry/api/errcode
-# github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+# github.com/docker/docker v1.4.2-0.20200309214505-aa6a9891b09c
 ## explicit
 github.com/docker/docker/api
 github.com/docker/docker/api/types
@@ -226,7 +228,6 @@ github.com/docker/docker/api/types/volume
 github.com/docker/docker/client
 github.com/docker/docker/errdefs
 # github.com/docker/go-connections v0.4.0
-## explicit
 github.com/docker/go-connections/nat
 github.com/docker/go-connections/sockets
 github.com/docker/go-connections/tlsconfig
@@ -446,7 +447,7 @@ github.com/mailru/easyjson/jwriter
 github.com/mattn/go-colorable
 # github.com/mattn/go-ieproxy v0.0.1
 github.com/mattn/go-ieproxy
-# github.com/mattn/go-isatty v0.0.9
+# github.com/mattn/go-isatty v0.0.8
 github.com/mattn/go-isatty
 # github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 github.com/matttproud/golang_protobuf_extensions/pbutil
@@ -566,7 +567,7 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/urfave/cli v1.20.0
+# github.com/urfave/cli v1.22.2
 ## explicit
 github.com/urfave/cli
 # github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
@@ -1244,7 +1245,7 @@ k8s.io/cloud-provider/service/helpers
 k8s.io/cloud-provider/volume
 k8s.io/cloud-provider/volume/errors
 k8s.io/cloud-provider/volume/helpers
-# k8s.io/cloud-provider-openstack v1.18.0
+# k8s.io/cloud-provider-openstack v1.19.2
 ## explicit
 k8s.io/cloud-provider-openstack/pkg/util/errors
 k8s.io/cloud-provider-openstack/pkg/util/openstack

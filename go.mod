@@ -64,8 +64,7 @@ require (
 	github.com/coreos/etcd v3.3.17+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 	github.com/digitalocean/godo v1.19.0
-	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
-	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/docker/docker v1.4.2-0.20200309214505-aa6a9891b09c
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
 	github.com/ghodss/yaml v1.0.0
@@ -92,7 +91,7 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/spotinst/spotinst-sdk-go v1.58.0
 	github.com/stretchr/testify v1.6.1
-	github.com/urfave/cli v1.20.0
+	github.com/urfave/cli v1.22.2
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.10.0
@@ -111,7 +110,7 @@ require (
 	k8s.io/apimachinery v0.20.0-beta.2
 	k8s.io/cli-runtime v0.20.0-beta.2
 	k8s.io/client-go v0.20.0-beta.2
-	k8s.io/cloud-provider-openstack v1.18.0
+	k8s.io/cloud-provider-openstack v1.19.2
 	k8s.io/component-base v0.20.0-beta.2
 	k8s.io/gengo v0.0.0-20201113003025-83324d819ded
 	k8s.io/klog/v2 v2.4.0
