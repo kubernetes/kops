@@ -37,6 +37,10 @@ spec:
   kubeAPIServer:
     serviceNodePortRange: 28000-32767
     auditWebhookBatchThrottleQps: 3.14
+    cpuRequest: 200m
+    cpuLimit: 500m
+    memoryRequest: 800Mi
+    memoryLimit: 1000Mi
   kubelet:
     anonymousAuth: false
   kubernetesVersion: v1.14.0
