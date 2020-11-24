@@ -1,6 +1,6 @@
-# Getting Started with kops on DigitalOcean
+# Getting Started with kOps on DigitalOcean
 
-**WARNING**: digitalocean support on kops is currently **alpha** meaning it is in the early stages of development and subject to change, please use with caution.
+**WARNING**: digitalocean support on kOps promoted to **beta** currently meaning it is subject to change, so please use with caution.
 
 ## Requirements
 
@@ -28,7 +28,7 @@ export S3_SECRET_ACCESS_KEY=<secret-key>  # where <secret-key> is the Spaces API
 ## Creating a Single Master Cluster
 
 In the following examples, `example.com` should be replaced with the DigitalOcean domain you created when going through the [Requirements](#requirements).
-Note that you kops will only be able to successfully provision clusters in regions that support block storage (AMS3, BLR1, FRA1, LON1, NYC1, NYC3, SFO2, SGP1 and TOR1).
+Note that you kOps will only be able to successfully provision clusters in regions that support block storage (AMS3, BLR1, FRA1, LON1, NYC1, NYC3, SFO2, SGP1 and TOR1).
 
 ```bash
 # debian (the default) + flannel overlay cluster in tor1
@@ -75,10 +75,10 @@ kops delete cluster dev5.k8s.local --yes
 
 ## Features Still in Development
 
-kops for DigitalOcean currently does not support these features:
+kOps for DigitalOcean currently does not support these features:
 
 * kops terraform support for DO
 
 # Next steps
 
-Now that you have a working _kops_ cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure _kops_ for production workloads.
+Now that you have a working kOps cluster, read through the [recommendations for production setups guide](production.md) to learn more about how to configure kOps for production workloads.
