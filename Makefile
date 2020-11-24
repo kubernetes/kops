@@ -874,9 +874,44 @@ dev-upload-kube-apiserver-healthcheck: bazel-kube-apiserver-healthcheck-export #
 	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
 	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
 
+# dev-upload-linux-amd64 does a faster build and uploads to GCS / S3
+.PHONY: dev-upload-linux-amd64
+dev-upload-linux-amd64: bazel-build-nodeup-linux-amd64 bazel-kops-controller-export-linux-amd64 bazel-kube-apiserver-healthcheck-export-linux-amd64 bazel-dns-controller-export-linux-amd64 bazel-protokube-export-linux-amd64
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/
+	cp -fp bazel-bin/cmd/nodeup/linux-amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha256
+	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/protokube-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-amd64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/kops-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-amd64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/dns-controller-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/dns-controller-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-amd64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-amd64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-amd64.tar.gz.sha256
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
+# dev-upload-linux-arm64 does a faster build and uploads to GCS / S3
+.PHONY: dev-upload-linux-arm64
+dev-upload-linux-arm64: bazel-build-nodeup-linux-arm64 bazel-kops-controller-export-linux-arm64 bazel-kube-apiserver-healthcheck-export-linux-arm64 bazel-dns-controller-export-linux-arm64 bazel-protokube-export-linux-arm64
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/images/
+	mkdir -p ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/
+	cp -fp bazel-bin/cmd/nodeup/linux-arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup
+	tools/sha256 ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup ${BAZELUPLOAD}/kops/${VERSION}/linux/arm64/nodeup.sha256
+	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/protokube-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/protokube-arm64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/kops-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kops-controller-arm64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/dns-controller-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/dns-controller-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/dns-controller-arm64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
+	cp -fp ${BAZELIMAGES}/kube-apiserver-healthcheck-arm64.tar.gz.sha256 ${BAZELUPLOAD}/kops/${VERSION}/images/kube-apiserver-healthcheck-arm64.tar.gz.sha256
+	${UPLOAD_CMD} ${BAZELUPLOAD}/ ${UPLOAD_DEST}
+
 # dev-upload does a faster build and uploads to GCS / S3
 .PHONY: dev-upload
-dev-upload: dev-upload-nodeup dev-upload-protokube dev-upload-dns-controller dev-upload-kops-controller dev-upload-kube-apiserver-healthcheck
+dev-upload: dev-upload-linux-amd64 dev-upload-linux-arm64
 	echo "Done"
 
 .PHONY: crds
