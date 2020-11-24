@@ -57,10 +57,8 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
 	github.com/aws/aws-sdk-go v1.36.0
-	github.com/bazelbuild/bazel-gazelle v0.19.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
-	github.com/client9/misspell v0.3.4
 	github.com/coreos/etcd v3.3.17+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 	github.com/digitalocean/godo v1.54.0
@@ -99,13 +97,12 @@ require (
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20201112073958-5cba982894dd
-	golang.org/x/tools v0.0.0-20200626171337-aa94e735be7f
+	golang.org/x/tools v0.0.0-20200626171337-aa94e735be7f // indirect
 	google.golang.org/api v0.22.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm v2.17.0+incompatible
-	honnef.co/go/tools v0.0.1-2020.1.4
 	k8s.io/api v0.20.0
 	k8s.io/apimachinery v0.20.0
 	k8s.io/cli-runtime v0.20.0
@@ -118,6 +115,5 @@ require (
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/controller-runtime v0.6.1
-	sigs.k8s.io/controller-tools v0.2.8
 	sigs.k8s.io/yaml v1.2.0
 )

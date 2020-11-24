@@ -155,7 +155,8 @@ kops-gobindata: ${BINDATA_TARGETS}
 .PHONY: update-bindata
 update-bindata:
 	GO111MODULE=on go run github.com/go-bindata/go-bindata/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models upup/models/cloudup/...
-	GO111MODULE=on go run golang.org/x/tools/cmd/goimports -w -v ${BINDATA_TARGETS}
+	cd "${KOPS_ROOT}/hack" && GO111MODULE=on go build -o "${KOPS_ROOT}/_output/bin/goimports" golang.org/x/tools/cmd/goimports
+	"${KOPS_ROOT}/_output/bin/goimports" -w -v ${BINDATA_TARGETS}
 	gofmt -w -s ${BINDATA_TARGETS}
 
 UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/cloudup)
@@ -390,6 +391,7 @@ gomod: gomod-prereqs
 	find vendor/ -name "BUILD.bazel" -delete
 	make gazelle
 	cd tests/e2e; GO111MODULE=on go mod tidy
+	cd hack; GO111MODULE=on go mod tidy
 
 
 .PHONY: gofmt
@@ -652,10 +654,6 @@ bazel-push-aws-run: bazel-push
 gazelle:
 	hack/update-bazel.sh
 
-.PHONY: bazel-gazelle
-bazel-gazelle: gazelle
-	echo "bazel-gazelle is deprecated; please just use 'make gazelle'"
-
 .PHONY: check-markdown-links
 check-markdown-links:
 	docker run -t -v $$PWD:/tmp \
@@ -915,7 +913,8 @@ dev-upload: dev-upload-linux-amd64 dev-upload-linux-arm64
 
 .PHONY: crds
 crds:
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/ crd:crdVersions=v1
+	cd "${KOPS_ROOT}/hack" && GO111MODULE=on go build -o "${KOPS_ROOT}/_output/bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
+	"${KOPS_ROOT}/_output/bin/controller-gen" crd paths=k8s.io/kops/pkg/apis/kops/v1alpha2 output:dir=k8s/crds/ crd:crdVersions=v1
 
 #------------------------------------------------------
 # kops-controller
