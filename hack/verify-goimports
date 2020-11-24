@@ -23,24 +23,25 @@ from lib.kubernetes import devtools
 
 gopath=os.environ['GOPATH']
 
-package_name='k8s.io/kops'
+repo_root = path.abspath(path.join(path.dirname(path.abspath(__file__)), '..'))
+goimports = path.join(repo_root, '_output', 'bin', 'goimports')
 
-packages = devtools.read_packages_file(package_name)
+packages = devtools.read_packages_file(repo_root)
 
 paths = []
 
 for package in packages:
-  if package == package_name:
+  if package == 'k8s.io/kops':
     continue
   paths.append(package)
 
 # Install goimports from vendor
-print('installing goimports from vendor')
+print('installing goimports')
 
-process = subprocess.Popen(['go', 'install', 'k8s.io/kops/vendor/golang.org/x/tools/cmd/goimports'], stdout=subprocess.PIPE, cwd=path.join(gopath, 'src'))
+process = subprocess.Popen(['go', 'build', '-o', goimports, 'golang.org/x/tools/cmd/goimports'], stdout=subprocess.PIPE, cwd=path.join(repo_root, 'hack'))
 stdout, stderr = process.communicate()
 if process.returncode != 0:
-  print("FAIL: installing goimports from vendor failed")
+  print("FAIL: installing goimports failed")
   print(stderr)
   sys.exit(1)
 
@@ -49,7 +50,7 @@ print("packages %s" % paths)
 env = os.environ
 
 process = subprocess.Popen(
-  ['go', 'run', 'k8s.io/kops/vendor/golang.org/x/tools/cmd/goimports', '-l'] + paths,
+  [goimports, '-l'] + paths,
   stdout=subprocess.PIPE,
   stderr=subprocess.PIPE,
   cwd=path.join(gopath, 'src'),
