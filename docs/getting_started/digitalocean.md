@@ -1,6 +1,6 @@
 # Getting Started with kOps on DigitalOcean
 
-**WARNING**: digitalocean support on kOps is currently **alpha** meaning it is in the early stages of development and subject to change, please use with caution.
+**WARNING**: digitalocean support on kOps promoted to **beta** currently meaning it is subject to change, so please use with caution.
 
 ## Requirements
 
