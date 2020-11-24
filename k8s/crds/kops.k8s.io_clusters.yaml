@@ -2239,6 +2239,10 @@ spec:
                       prometheusProcessMetricsEnabled:
                         description: PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
                         type: boolean
+                      registry:
+                        description: Version overrides the Calico container image
+                          registry.
+                        type: string
                       typhaPrometheusMetricsEnabled:
                         description: 'TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha (default: false)'
                         type: boolean
@@ -2250,6 +2254,10 @@ spec:
                         description: TyphaReplicas is the number of replicas of Typha to deploy
                         format: int32
                         type: integer
+                      version:
+                        description: Version overrides the Calico container image
+                          tag.
+                        type: string
                       wireguardEnabled:
                         description: 'WireguardEnabled enables WireGuard encryption for all on-the-wire pod-to-pod traffic (default: false)'
                         type: boolean

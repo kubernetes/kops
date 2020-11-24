@@ -103,6 +103,11 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
+	// Version overrides the Calico container image registry.
+	Registry string `json:"registry,omitempty"`
+	// Version overrides the Calico container image tag.
+	Version string `json:"version,omitempty"`
+
 	// BpfEnabled enables the eBPF dataplane mode.
 	BPFEnabled bool `json:"bpfEnabled,omitempty"`
 	// BPFExternalServiceMode controls how traffic from outside the cluster to NodePorts and ClusterIPs is handled.
