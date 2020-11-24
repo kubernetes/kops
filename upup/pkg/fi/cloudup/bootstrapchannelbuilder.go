@@ -711,7 +711,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		key := "networking.projectcalico.org"
 		versions := map[string]string{
 			"k8s-1.12": "3.9.6-kops.1",
-			"k8s-1.16": "3.16.3-kops.2",
+			"k8s-1.16": "3.17.0-kops.1",
 		}
 
 		{
