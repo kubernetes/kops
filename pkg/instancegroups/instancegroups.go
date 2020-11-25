@@ -624,13 +624,14 @@ func (c *RollingUpdateCluster) UpdateSingleInstance(cloudMember *cloudinstances.
 		if cloudMember.CloudInstanceGroup.InstanceGroup.IsMaster() {
 			klog.Warning("cannot detach master instances. Assuming --surge=false")
 
-		}
-		err := c.detachInstance(cloudMember)
-		if err != nil {
-			return fmt.Errorf("failed to detach instance: %v", err)
-		}
-		if err := c.maybeValidate(" after detaching instance", c.ValidateCount, cloudMember.CloudInstanceGroup); err != nil {
-			return err
+		} else {
+			err := c.detachInstance(cloudMember)
+			if err != nil {
+				return fmt.Errorf("failed to detach instance: %v", err)
+			}
+			if err := c.maybeValidate(" after detaching instance", c.ValidateCount, cloudMember.CloudInstanceGroup); err != nil {
+				return err
+			}
 		}
 	}
 
