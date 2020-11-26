@@ -485,7 +485,11 @@ func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstance) error {
 	}
 
 	if _, err := c.EC2().TerminateInstances(request); err != nil {
-		return fmt.Errorf("error deleting instance %q: %v", id, err)
+		if AWSErrorCode(err) == "InvalidInstanceID.NotFound" {
+			klog.V(2).Infof("Got InvalidInstanceID.NotFound error deleting instance %q; will treat as already-deleted", id)
+		} else {
+			return fmt.Errorf("error deleting instance %q: %v", id, err)
+		}
 	}
 
 	klog.V(8).Infof("deleted aws ec2 instance %q", id)
