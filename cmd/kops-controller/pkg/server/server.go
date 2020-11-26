@@ -46,7 +46,7 @@ type Server struct {
 	keystore  pki.Keystore
 }
 
-func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
+func NewServer(opt *config.Options, verifier fi.Verifier, keystore pki.Keystore) (*Server, error) {
 	server := &http.Server{
 		Addr: opt.Server.Listen,
 		TLSConfig: &tls.Config{
@@ -60,6 +60,7 @@ func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 		certNames: sets.NewString(opt.Server.CertNames...),
 		server:    server,
 		verifier:  verifier,
+		keystore:  keystore,
 	}
 	r := http.NewServeMux()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
@@ -70,7 +71,6 @@ func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 
 func (s *Server) Start() error {
 	var err error
-	s.keystore, err = newKeystore(s.opt.Server.CABasePath, s.opt.Server.SigningCAs)
 	if err != nil {
 		return err
 	}

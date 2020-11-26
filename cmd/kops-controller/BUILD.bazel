@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//cmd/kops-controller/controllers:go_default_library",
         "//cmd/kops-controller/pkg/config:go_default_library",
+        "//cmd/kops-controller/pkg/pki:go_default_library",
         "//cmd/kops-controller/pkg/server:go_default_library",
         "//pkg/nodeidentity:go_default_library",
         "//pkg/nodeidentity/aws:go_default_library",
@@ -16,6 +17,7 @@ go_library(
         "//pkg/nodeidentity/openstack:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/certmanager/v1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/client-go/plugin/pkg/client/auth/gcp:go_default_library",

@@ -21,6 +21,7 @@ k8s.io/kops/cmd/kops/util
 k8s.io/kops/cmd/kops-controller
 k8s.io/kops/cmd/kops-controller/controllers
 k8s.io/kops/cmd/kops-controller/pkg/config
+k8s.io/kops/cmd/kops-controller/pkg/pki
 k8s.io/kops/cmd/kops-controller/pkg/server
 k8s.io/kops/cmd/kube-apiserver-healthcheck
 k8s.io/kops/cmd/nodeup

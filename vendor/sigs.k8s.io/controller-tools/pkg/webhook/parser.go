@@ -19,7 +19,7 @@ limitations under the License.
 //
 // The markers take the form:
 //
-//  +kubebuilder:webhook:failurePolicy=<string>,matchPolicy=<string>,groups=<[]string>,resources=<[]string>,verbs=<[]string>,versions=<[]string>,name=<string>,path=<string>,mutating=<bool>
+//  +kubebuilder:webhook:failurePolicy=<string>,matchPolicy=<string>,groups=<[]string>,resources=<[]string>,verbs=<[]string>,versions=<[]string>,name=<string>,path=<string>,mutating=<bool>,sideEffects=<string>
 package webhook
 
 import (
@@ -61,6 +61,13 @@ type Config struct {
 	// Allowed values are "Exact" (match only if it exactly matches the specified rule)
 	// or "Equivalent" (match a request if it modifies a resource listed in rules, even via another API group or version).
 	MatchPolicy string `marker:",optional"`
+	// SideEffects specify whether calling the webhook will have side effects.
+	// This has an impact on dry runs and `kubectl diff`: if the sideEffect is "Unknown" (the default) or "Some", then
+	// the API server will not call the webhook on a dry-run request and fails instead.
+	// If the value is "None", then the webhook has no side effects and the API server will call it on dry-run.
+	// If the value is "NoneOnDryRun", then the webhook is responsible for inspecting the "dryRun" property of the
+	// AdmissionReview sent in the request, and avoiding side effects if that value is "true."
+	SideEffects string `marker:",optional"`
 
 	// Groups specifies the API groups that this webhook receives requests for.
 	Groups []string
@@ -122,6 +129,7 @@ func (c Config) ToMutatingWebhook() (admissionreg.MutatingWebhook, error) {
 		FailurePolicy: c.failurePolicy(),
 		MatchPolicy:   matchPolicy,
 		ClientConfig:  c.clientConfig(),
+		SideEffects:   c.sideEffects(),
 	}, nil
 }
 
@@ -142,6 +150,7 @@ func (c Config) ToValidatingWebhook() (admissionreg.ValidatingWebhook, error) {
 		FailurePolicy: c.failurePolicy(),
 		MatchPolicy:   matchPolicy,
 		ClientConfig:  c.clientConfig(),
+		SideEffects:   c.sideEffects(),
 	}, nil
 }
 
@@ -216,6 +225,24 @@ func (c Config) clientConfig() admissionreg.WebhookClientConfig {
 		// Put "\n" as an placeholder as a workaround til 1.13+ is almost everywhere.
 		CABundle: []byte("\n"),
 	}
+}
+
+// sideEffects returns the sideEffects config for a webhook.
+func (c Config) sideEffects() *admissionreg.SideEffectClass {
+	var sideEffects admissionreg.SideEffectClass
+	switch strings.ToLower(c.SideEffects) {
+	case strings.ToLower(string(admissionreg.SideEffectClassNone)):
+		sideEffects = admissionreg.SideEffectClassNone
+	case strings.ToLower(string(admissionreg.SideEffectClassNoneOnDryRun)):
+		sideEffects = admissionreg.SideEffectClassNoneOnDryRun
+	case strings.ToLower(string(admissionreg.SideEffectClassSome)):
+		sideEffects = admissionreg.SideEffectClassSome
+	case "":
+		return nil
+	default:
+		return nil
+	}
+	return &sideEffects
 }
 
 // +controllertools:marker:generateHelp

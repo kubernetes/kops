@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["scheme.go"],
+    importmap = "k8s.io/kops/vendor/github.com/jetstack/cert-manager/pkg/api",
+    importpath = "github.com/jetstack/cert-manager/pkg/api",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/acme/v1:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha3:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/acme/v1beta1:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/certmanager/v1:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha3:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/certmanager/v1beta1:go_default_library",
+        "//vendor/github.com/jetstack/cert-manager/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
+        "//vendor/k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1:go_default_library",
+    ],
+)

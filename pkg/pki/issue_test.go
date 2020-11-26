@@ -28,27 +28,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type mockKeystore struct {
-	t      *testing.T
-	signer string
-	cert   *Certificate
-	key    *PrivateKey
-
-	invoked bool
-}
-
-func (m *mockKeystore) FindKeypair(name string) (*Certificate, *PrivateKey, bool, error) {
-	assert.False(m.t, m.invoked, "invoked already")
-	m.invoked = true
-	assert.Equal(m.t, m.signer, name, "name argument")
-	return m.cert, m.key, false, nil
-}
-
 func TestIssueCert(t *testing.T) {
-	caCertificate, err := ParsePEMCertificate([]byte("-----BEGIN CERTIFICATE-----\nMIIBRjCB8aADAgECAhAzhRMOcwfggPtgZNIOFU19MA0GCSqGSIb3DQEBCwUAMBIx\nEDAOBgNVBAMTB1Rlc3QgQ0EwHhcNMjAwNTE1MDIzNjI0WhcNMzAwNTE1MDIzNjI0\nWjASMRAwDgYDVQQDEwdUZXN0IENBMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAM/S\ncagGaiDA3jJWBXUr8rM19TWLA65jK/iA05FCsmQbyvETs5gbJdBfnhQp8wkKFlkt\nKxZ34k3wQUzoB1lv8/kCAwEAAaMjMCEwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB\n/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADQQCDOxvs58AVAWgWLtD3Obvy7XXsKx6d\nMzg9epbiQchLE4G/jlbgVu7vwh8l5XFNfQooG6stCU7pmLFXkXzkJQxr\n-----END CERTIFICATE-----\n"))
-	require.NoError(t, err)
-	caPrivateKey, err := ParsePEMPrivateKey([]byte("-----BEGIN RSA PRIVATE KEY-----\nMIIBPAIBAAJBAM/ScagGaiDA3jJWBXUr8rM19TWLA65jK/iA05FCsmQbyvETs5gb\nJdBfnhQp8wkKFlktKxZ34k3wQUzoB1lv8/kCAwEAAQJBAJzXQZeBX87gP9DVQsEv\nLbc6XZjPFTQi/ChLcWALaf5J7drFJHUcWbKIHzOmM3fm3lQlb/1IcwOBU5cTY0e9\nBVECIQD73kxOWWAIzKqMOvFZ9s79Et7G1HUMnVAVKJ1NS1uvYwIhANM7LULdi0YD\nbcHvDl3+Msj4cPH7CXAJFyPWaQZPlXPzAiEAhDg6jpbUl0n57guzT6sFFk2lrXMy\nzyB2PeVITp9UzkkCIEpcF7flQ+U2ycmuvVELbpdfFmupIw5ktNex4DEPjR5PAiEA\n68vR1L1Kaja/GzU76qAQaYA/V1Ag4sPmOQdEaVZKu78=\n-----END RSA PRIVATE KEY-----\n"))
-	require.NoError(t, err)
 	privateKey, err := ParsePEMPrivateKey([]byte("-----BEGIN RSA PRIVATE KEY-----\nMIIBOQIBAAJBANgL5cR2cLOB7oZZTiuiUmMwQRBaia8yLULt+XtBtDHf0lPOrn78\nvLPh7P7zRBgHczbTddcsg68g9vAfb9TC5M8CAwEAAQJAJytxCv+WS1VhU4ZZf9u8\nKDOVeEuR7uuf/SR8OPaenvPqONpYbZSVjnWnRBRHvg3HaHchQqH32UljZUojs9z4\nEQIhAO/yoqCFckfqswOGwWyYX1oNOtU8w9ulXlZqAtZieavVAiEA5n/tKHoZyx3U\nbZcks/wns1WqhAoSmDJpMyVXOVrUlBMCIDGnalQBiYasYOMn7bsFRSYjertJ2dYI\nQJ9tTK0Er90JAiAmpVQx8SbZ80pmhWzV8HUHkFligf3UHr+cn6ocJ6p0mQIgB728\npdvrS5zRPoUN8BHfWOZcPrElKTuJjP2kH6eNPvI=\n-----END RSA PRIVATE KEY-----"))
 	require.NoError(t, err)
 
@@ -139,20 +119,18 @@ func TestIssueCert(t *testing.T) {
 				minExpectedValidity = time.Now().Add(tc.req.Validity).Unix()
 			}
 
-			var keystore Keystore
+			keystore, _ := NewMockKeystore()
 			if tc.req.Type != "ca" {
 				tc.req.Signer = tc.name + "-signer"
-				keystore = &mockKeystore{
-					t:      t,
-					signer: tc.req.Signer,
-					cert:   caCertificate,
-					key:    caPrivateKey,
-				}
+				keystore.Signer = tc.req.Signer
 			}
 			certificate, key, caCert, err := IssueCert(&tc.req, keystore)
 			require.NoError(t, err)
 
 			cert := certificate.Certificate
+
+			caCertificate := keystore.cert
+
 			if tc.req.Signer == "" {
 				assert.Equal(t, cert.Issuer, cert.Subject, "self-signed")
 				assert.NoError(t, cert.CheckSignatureFrom(cert), "check signature")

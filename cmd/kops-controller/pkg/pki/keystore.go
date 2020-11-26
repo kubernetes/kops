@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package pki
 
 import (
 	"fmt"
 	"io/ioutil"
 	"path"
 
-	"k8s.io/kops/pkg/pki"
+	kopspki "k8s.io/kops/pkg/pki"
 )
 
 type keystore struct {
@@ -29,13 +29,13 @@ type keystore struct {
 }
 
 type keystoreEntry struct {
-	certificate *pki.Certificate
-	key         *pki.PrivateKey
+	certificate *kopspki.Certificate
+	key         *kopspki.PrivateKey
 }
 
-var _ pki.Keystore = keystore{}
+var _ kopspki.Keystore = keystore{}
 
-func (k keystore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, bool, error) {
+func (k keystore) FindKeypair(name string) (*kopspki.Certificate, *kopspki.PrivateKey, bool, error) {
 	entry, ok := k.keys[name]
 	if !ok {
 		return nil, nil, false, fmt.Errorf("unknown CA %q", name)
@@ -43,7 +43,7 @@ func (k keystore) FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, b
 	return entry.certificate, entry.key, false, nil
 }
 
-func newKeystore(basePath string, cas []string) (pki.Keystore, error) {
+func NewKeystore(basePath string, cas []string) (kopspki.Keystore, error) {
 	keystore := &keystore{
 		keys: map[string]keystoreEntry{},
 	}
@@ -52,7 +52,7 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, error) {
 		if err != nil {
 			return nil, fmt.Errorf("reading %q certificate: %v", name, err)
 		}
-		certificate, err := pki.ParsePEMCertificate(certBytes)
+		certificate, err := kopspki.ParsePEMCertificate(certBytes)
 		if err != nil {
 			return nil, fmt.Errorf("parsing %q certificate: %v", name, err)
 		}
@@ -61,7 +61,7 @@ func newKeystore(basePath string, cas []string) (pki.Keystore, error) {
 		if err != nil {
 			return nil, fmt.Errorf("reading %q key: %v", name, err)
 		}
-		key, err := pki.ParsePEMPrivateKey(keyBytes)
+		key, err := kopspki.ParsePEMPrivateKey(keyBytes)
 		if err != nil {
 			return nil, fmt.Errorf("parsing %q key: %v", name, err)
 		}

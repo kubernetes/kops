@@ -75,23 +75,24 @@ require (
 	github.com/google/go-cmp v0.5.2
 	github.com/google/uuid v1.1.2
 	github.com/gophercloud/gophercloud v0.11.1-0.20200518183226-7aec46f32c19
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/hcl/v2 v2.7.0
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
+	github.com/jetstack/cert-manager v1.1.0
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
 	github.com/prometheus/client_golang v1.7.1
-	github.com/sergi/go-diff v1.0.0
+	github.com/sergi/go-diff v1.1.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
 	github.com/spotinst/spotinst-sdk-go v1.58.0
 	github.com/stretchr/testify v1.6.1
-	github.com/urfave/cli v1.22.2
+	github.com/urfave/cli v1.22.4
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.10.0
@@ -114,10 +115,10 @@ require (
 	k8s.io/component-base v0.20.0-beta.2
 	k8s.io/gengo v0.0.0-20201113003025-83324d819ded
 	k8s.io/klog/v2 v2.4.0
-	k8s.io/kubectl v0.0.0
+	k8s.io/kubectl v0.19.0
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
-	sigs.k8s.io/controller-runtime v0.6.1
-	sigs.k8s.io/controller-tools v0.2.8
+	sigs.k8s.io/controller-runtime v0.6.2
+	sigs.k8s.io/controller-tools v0.2.9-0.20200414181213-645d44dca7c0
 	sigs.k8s.io/yaml v1.2.0
 )
