@@ -63,7 +63,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/coreos/etcd v3.3.17+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
-	github.com/digitalocean/godo v1.19.0
+	github.com/digitalocean/godo v1.54.0
 	github.com/docker/docker v1.4.2-0.20200309214505-aa6a9891b09c
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e

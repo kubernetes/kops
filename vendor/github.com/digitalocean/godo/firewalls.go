@@ -49,6 +49,7 @@ func (fw Firewall) String() string {
 	return Stringify(fw)
 }
 
+// URN returns the firewall name in a valid DO API URN form.
 func (fw Firewall) URN() string {
 	return ToURN("Firewall", fw.ID)
 }
@@ -237,6 +238,7 @@ type firewallRoot struct {
 type firewallsRoot struct {
 	Firewalls []Firewall `json:"firewalls"`
 	Links     *Links     `json:"links"`
+	Meta      *Meta      `json:"meta"`
 }
 
 func (fw *FirewallsServiceOp) createAndDoReq(ctx context.Context, method, path string, v interface{}) (*Response, error) {
@@ -261,6 +263,9 @@ func (fw *FirewallsServiceOp) listHelper(ctx context.Context, path string) ([]Fi
 	}
 	if l := root.Links; l != nil {
 		resp.Links = l
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
 	}
 
 	return root.Firewalls, resp, err
