@@ -26,7 +26,20 @@ spec:
 
 Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
+## Cert-manager
+{{ kops_feature_table(kops_added_default='1.20', k8s_min='1.16') }}
 
+Cert-manager handles x509 certificates for your cluster.
+
+```yaml
+spec:
+  certManager:
+    enabled: true
+```
+
+**Warning: cert-manager only supports one installation per cluster. If you are already running cert-manager, you need to remove this installation prior to enabling this addon. As long as you are using v1 versions of the cert-manager resources, it is safe to remove existing installs and replace it with this addon**
+
+Read more about cert-managre in the [official documentation](https://cert-manager.io/docs/)
 
 #### Metrics server
 {{ kops_feature_table(kops_added_default='1.19') }}
