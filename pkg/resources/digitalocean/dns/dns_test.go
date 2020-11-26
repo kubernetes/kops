@@ -30,11 +30,15 @@ import (
 )
 
 type fakeDomainService struct {
-	listFunc         func(ctx context.Context, listOpt *godo.ListOptions) ([]godo.Domain, *godo.Response, error)
-	getFunc          func(ctx context.Context, name string) (*godo.Domain, *godo.Response, error)
-	createFunc       func(ctx context.Context, domainCreateRequest *godo.DomainCreateRequest) (*godo.Domain, *godo.Response, error)
-	deleteFunc       func(ctx context.Context, name string) (*godo.Response, error)
-	recordsFunc      func(ctx context.Context, domain string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error)
+	listFunc                 func(ctx context.Context, listOpt *godo.ListOptions) ([]godo.Domain, *godo.Response, error)
+	getFunc                  func(ctx context.Context, name string) (*godo.Domain, *godo.Response, error)
+	createFunc               func(ctx context.Context, domainCreateRequest *godo.DomainCreateRequest) (*godo.Domain, *godo.Response, error)
+	deleteFunc               func(ctx context.Context, name string) (*godo.Response, error)
+	recordsFunc              func(ctx context.Context, domain string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error)
+	recordsByNameFunc        func(ctx context.Context, domain string, name string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error)
+	recordsByTypeFunc        func(ctx context.Context, domain string, name string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error)
+	recordsByTypeAndNameFunc func(ctx context.Context, domain string, ofType string, name string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error)
+
 	recordFunc       func(ctx context.Context, domain string, id int) (*godo.DomainRecord, *godo.Response, error)
 	deleteRecordFunc func(ctx context.Context, domain string, id int) (*godo.Response, error)
 	editRecordFunc   func(ctx context.Context, domain string, id int, editRequest *godo.DomainRecordEditRequest) (*godo.DomainRecord, *godo.Response, error)
@@ -77,6 +81,18 @@ func (f *fakeDomainService) EditRecord(ctx context.Context, domain string,
 func (f *fakeDomainService) CreateRecord(ctx context.Context, domain string,
 	createRequest *godo.DomainRecordEditRequest) (*godo.DomainRecord, *godo.Response, error) {
 	return f.createRecordFunc(ctx, domain, createRequest)
+}
+
+func (f *fakeDomainService) RecordsByName(ctx context.Context, domain string, name string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error) {
+	return f.recordsByNameFunc(ctx, domain, name, listOpts)
+}
+
+func (f *fakeDomainService) RecordsByType(ctx context.Context, domain string, oftype string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error) {
+	return f.recordsByTypeFunc(ctx, domain, oftype, listOpts)
+}
+
+func (f *fakeDomainService) RecordsByTypeAndName(ctx context.Context, domain string, ofType string, name string, listOpts *godo.ListOptions) ([]godo.DomainRecord, *godo.Response, error) {
+	return f.recordsByTypeAndNameFunc(ctx, domain, ofType, name, listOpts)
 }
 
 func TestZonesList(t *testing.T) {
@@ -416,6 +432,14 @@ func TestResourceRecordChangeset(t *testing.T) {
 		}
 		resp.StatusCode = http.StatusOK
 		return resp, nil
+	}
+
+	fake.editRecordFunc = func(ctx context.Context, domain string, id int, editRequest *godo.DomainRecordEditRequest) (*godo.DomainRecord, *godo.Response, error) {
+		resp := &godo.Response{
+			Response: &http.Response{},
+		}
+		resp.StatusCode = http.StatusOK
+		return &godo.DomainRecord{}, resp, nil
 	}
 
 	fake.editRecordFunc = func(ctx context.Context, domain string, id int, editRequest *godo.DomainRecordEditRequest) (*godo.DomainRecord, *godo.Response, error) {
