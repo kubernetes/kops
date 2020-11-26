@@ -167,6 +167,13 @@ spec:
                   rbac:
                     type: object
                 type: object
+              certManager:
+                description: CertManager determines the metrics server configuration.
+                properties:
+                  enabled:
+                    description: 'Enabled enables the cert manager. Default: false'
+                    type: boolean
+                type: object
               channel:
                 description: The Channel we are following
                 type: string
@@ -2143,7 +2150,7 @@ spec:
                 description: MasterPublicName is the external DNS name for the master nodes
                 type: string
               metricsServer:
-                description: MetricsServerConfig determines the metrics server configuration.
+                description: MetricsServer determines the metrics server configuration.
                 properties:
                   enabled:
                     description: 'Enabled enables the metrics server. Default: false'
@@ -2749,7 +2756,7 @@ spec:
                   type: string
                 type: array
               nodeTerminationHandler:
-                description: NodeTerminationHandlerConfig determines the cluster autoscaler configuration.
+                description: NodeTerminationHandler determines the cluster autoscaler configuration.
                 properties:
                   enableScheduledEventDraining:
                     description: 'EnableScheduledEventDraining makes node termination handler drain nodes before the maintenance window starts for an EC2 instance scheduled event. Default: false'
