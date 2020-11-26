@@ -29,13 +29,17 @@ type VPCsServiceOp struct {
 
 // VPCCreateRequest represents a request to create a Virtual Private Cloud.
 type VPCCreateRequest struct {
-	Name       string `json:"name,omitempty"`
-	RegionSlug string `json:"region,omitempty"`
+	Name        string `json:"name,omitempty"`
+	RegionSlug  string `json:"region,omitempty"`
+	Description string `json:"description,omitempty"`
+	IPRange     string `json:"ip_range,omitempty"`
 }
 
 // VPCUpdateRequest represents a request to update a Virtual Private Cloud.
 type VPCUpdateRequest struct {
-	Name string `json:"name,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Default     *bool  `json:"default,omitempty"`
 }
 
 // VPCSetField allows one to set individual fields within a VPC configuration.
@@ -47,13 +51,30 @@ type VPCSetField interface {
 // Ex.: VPCs.Set(..., VPCSetName("new-name"))
 type VPCSetName string
 
+// VPCSetDescription is used when one want to set the `description` field of a VPC.
+// Ex.: VPCs.Set(..., VPCSetDescription("vpc description"))
+type VPCSetDescription string
+
+// VPCSetDefault is used when one wants to enable the `default` field of a VPC, to
+// set a VPC as the default one in the region
+// Ex.: VPCs.Set(..., VPCSetDefault())
+func VPCSetDefault() VPCSetField {
+	return &vpcSetDefault{}
+}
+
+// vpcSetDefault satisfies the VPCSetField interface
+type vpcSetDefault struct{}
+
 // VPC represents a DigitalOcean Virtual Private Cloud configuration.
 type VPC struct {
-	ID         string    `json:"id,omitempty"`
-	Name       string    `json:"name,omitempty"`
-	RegionSlug string    `json:"region,omitempty"`
-	CreatedAt  time.Time `json:"created_at,omitempty"`
-	Default    bool      `json:"default,omitempty"`
+	ID          string    `json:"id,omitempty"`
+	URN         string    `json:"urn"`
+	Name        string    `json:"name,omitempty"`
+	Description string    `json:"description,omitempty"`
+	IPRange     string    `json:"ip_range,omitempty"`
+	RegionSlug  string    `json:"region,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	Default     bool      `json:"default,omitempty"`
 }
 
 type vpcRoot struct {
@@ -63,6 +84,7 @@ type vpcRoot struct {
 type vpcsRoot struct {
 	VPCs  []*VPC `json:"vpcs"`
 	Links *Links `json:"links"`
+	Meta  *Meta  `json:"meta"`
 }
 
 // Get returns the details of a Virtual Private Cloud.
@@ -118,6 +140,9 @@ func (v *VPCsServiceOp) List(ctx context.Context, opt *ListOptions) ([]*VPC, *Re
 	if l := root.Links; l != nil {
 		resp.Links = l
 	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
+	}
 
 	return root.VPCs, resp, nil
 }
@@ -141,6 +166,14 @@ func (v *VPCsServiceOp) Update(ctx context.Context, id string, update *VPCUpdate
 
 func (n VPCSetName) vpcSetField(in map[string]interface{}) {
 	in["name"] = n
+}
+
+func (n VPCSetDescription) vpcSetField(in map[string]interface{}) {
+	in["description"] = n
+}
+
+func (*vpcSetDefault) vpcSetField(in map[string]interface{}) {
+	in["default"] = true
 }
 
 // Set updates specific properties of a Virtual Private Cloud.

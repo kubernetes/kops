@@ -192,7 +192,7 @@ github.com/denverdino/aliyungo/slb
 github.com/denverdino/aliyungo/util
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
-# github.com/digitalocean/godo v1.19.0
+# github.com/digitalocean/godo v1.54.0
 ## explicit
 github.com/digitalocean/godo
 # github.com/docker/distribution v2.7.1+incompatible
