@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,8 +25,11 @@ const (
 type KubernetesService interface {
 	Create(context.Context, *KubernetesClusterCreateRequest) (*KubernetesCluster, *Response, error)
 	Get(context.Context, string) (*KubernetesCluster, *Response, error)
+	GetUser(context.Context, string) (*KubernetesClusterUser, *Response, error)
 	GetUpgrades(context.Context, string) ([]*KubernetesVersion, *Response, error)
 	GetKubeConfig(context.Context, string) (*KubernetesClusterConfig, *Response, error)
+	GetKubeConfigWithExpiry(context.Context, string, int64) (*KubernetesClusterConfig, *Response, error)
+	GetCredentials(context.Context, string, *KubernetesClusterCredentialsGetRequest) (*KubernetesClusterCredentials, *Response, error)
 	List(context.Context, *ListOptions) ([]*KubernetesCluster, *Response, error)
 	Update(context.Context, string, *KubernetesClusterUpdateRequest) (*KubernetesCluster, *Response, error)
 	Upgrade(context.Context, string, *KubernetesClusterUpgradeRequest) (*Response, error)
@@ -42,6 +46,11 @@ type KubernetesService interface {
 	DeleteNode(ctx context.Context, clusterID, poolID, nodeID string, req *KubernetesNodeDeleteRequest) (*Response, error)
 
 	GetOptions(context.Context) (*KubernetesOptions, *Response, error)
+	AddRegistry(ctx context.Context, req *KubernetesClusterRegistryRequest) (*Response, error)
+	RemoveRegistry(ctx context.Context, req *KubernetesClusterRegistryRequest) (*Response, error)
+
+	RunClusterlint(ctx context.Context, clusterID string, req *KubernetesRunClusterlintRequest) (string, *Response, error)
+	GetClusterlintResults(ctx context.Context, clusterID string, req *KubernetesGetClusterlintRequest) ([]*ClusterlintDiagnostic, *Response, error)
 }
 
 var _ KubernetesService = &KubernetesServiceOp{}
@@ -63,14 +72,16 @@ type KubernetesClusterCreateRequest struct {
 
 	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy"`
 	AutoUpgrade       bool                         `json:"auto_upgrade"`
+	SurgeUpgrade      bool                         `json:"surge_upgrade"`
 }
 
 // KubernetesClusterUpdateRequest represents a request to update a Kubernetes cluster.
 type KubernetesClusterUpdateRequest struct {
 	Name              string                       `json:"name,omitempty"`
 	Tags              []string                     `json:"tags,omitempty"`
-	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy"`
-	AutoUpgrade       bool                         `json:"auto_upgrade"`
+	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy,omitempty"`
+	AutoUpgrade       *bool                        `json:"auto_upgrade,omitempty"`
+	SurgeUpgrade      bool                         `json:"surge_upgrade,omitempty"`
 }
 
 // KubernetesClusterUpgradeRequest represents a request to upgrade a Kubernetes cluster.
@@ -78,21 +89,46 @@ type KubernetesClusterUpgradeRequest struct {
 	VersionSlug string `json:"version,omitempty"`
 }
 
+// Taint represents a Kubernetes taint that can be associated with a node pool
+// (and, transitively, with all nodes of that pool).
+type Taint struct {
+	Key    string
+	Value  string
+	Effect string
+}
+
+func (t Taint) String() string {
+	if t.Value == "" {
+		return fmt.Sprintf("%s:%s", t.Key, t.Effect)
+	}
+	return fmt.Sprintf("%s=%s:%s", t.Key, t.Value, t.Effect)
+}
+
 // KubernetesNodePoolCreateRequest represents a request to create a node pool for a
 // Kubernetes cluster.
 type KubernetesNodePoolCreateRequest struct {
-	Name  string   `json:"name,omitempty"`
-	Size  string   `json:"size,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	Name      string            `json:"name,omitempty"`
+	Size      string            `json:"size,omitempty"`
+	Count     int               `json:"count,omitempty"`
+	Tags      []string          `json:"tags,omitempty"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	Taints    []Taint           `json:"taints,omitempty"`
+	AutoScale bool              `json:"auto_scale,omitempty"`
+	MinNodes  int               `json:"min_nodes,omitempty"`
+	MaxNodes  int               `json:"max_nodes,omitempty"`
 }
 
 // KubernetesNodePoolUpdateRequest represents a request to update a node pool in a
 // Kubernetes cluster.
 type KubernetesNodePoolUpdateRequest struct {
-	Name  string   `json:"name,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	Name      string            `json:"name,omitempty"`
+	Count     *int              `json:"count,omitempty"`
+	Tags      []string          `json:"tags,omitempty"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	Taints    *[]Taint          `json:"taints,omitempty"`
+	AutoScale *bool             `json:"auto_scale,omitempty"`
+	MinNodes  *int              `json:"min_nodes,omitempty"`
+	MaxNodes  *int              `json:"max_nodes,omitempty"`
 }
 
 // KubernetesNodePoolRecycleNodesRequest is DEPRECATED please use DeleteNode
@@ -108,6 +144,27 @@ type KubernetesNodeDeleteRequest struct {
 
 	// SkipDrain skips draining the node before deleting it.
 	SkipDrain bool `json:"skip_drain,omitempty"`
+}
+
+// KubernetesClusterCredentialsGetRequest is a request to get cluster credentials.
+type KubernetesClusterCredentialsGetRequest struct {
+	ExpirySeconds *int `json:"expiry_seconds,omitempty"`
+}
+
+// KubernetesClusterRegistryRequest represents clusters to integrate with docr registry
+type KubernetesClusterRegistryRequest struct {
+	ClusterUUIDs []string `json:"cluster_uuids,omitempty"`
+}
+
+type KubernetesRunClusterlintRequest struct {
+	IncludeGroups []string `json:"include_groups"`
+	ExcludeGroups []string `json:"exclude_groups"`
+	IncludeChecks []string `json:"include_checks"`
+	ExcludeChecks []string `json:"exclude_checks"`
+}
+
+type KubernetesGetClusterlintRequest struct {
+	RunId string `json:"run_id"`
 }
 
 // KubernetesCluster represents a Kubernetes cluster.
@@ -127,10 +184,28 @@ type KubernetesCluster struct {
 
 	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy,omitempty"`
 	AutoUpgrade       bool                         `json:"auto_upgrade,omitempty"`
+	SurgeUpgrade      bool                         `json:"surge_upgrade,omitempty"`
+	RegistryEnabled   bool                         `json:"registry_enabled,omitempty"`
 
 	Status    *KubernetesClusterStatus `json:"status,omitempty"`
 	CreatedAt time.Time                `json:"created_at,omitempty"`
 	UpdatedAt time.Time                `json:"updated_at,omitempty"`
+}
+
+// KubernetesClusterUser represents a Kubernetes cluster user.
+type KubernetesClusterUser struct {
+	Username string   `json:"username,omitempty"`
+	Groups   []string `json:"groups,omitempty"`
+}
+
+// KubernetesClusterCredentials represents Kubernetes cluster credentials.
+type KubernetesClusterCredentials struct {
+	Server                   string    `json:"server"`
+	CertificateAuthorityData []byte    `json:"certificate_authority_data"`
+	ClientCertificateData    []byte    `json:"client_certificate_data"`
+	ClientKeyData            []byte    `json:"client_key_data"`
+	Token                    string    `json:"token"`
+	ExpiresAt                time.Time `json:"expires_at"`
 }
 
 // KubernetesMaintenancePolicy is a configuration to set the maintenance window
@@ -146,13 +221,36 @@ type KubernetesMaintenancePolicy struct {
 type KubernetesMaintenancePolicyDay int
 
 const (
+	// KubernetesMaintenanceDayAny sets the KubernetesMaintenancePolicyDay to any
+	// day of the week
 	KubernetesMaintenanceDayAny KubernetesMaintenancePolicyDay = iota
+
+	// KubernetesMaintenanceDayMonday sets the KubernetesMaintenancePolicyDay to
+	// Monday
 	KubernetesMaintenanceDayMonday
+
+	// KubernetesMaintenanceDayTuesday sets the KubernetesMaintenancePolicyDay to
+	// Tuesday
 	KubernetesMaintenanceDayTuesday
+
+	// KubernetesMaintenanceDayWednesday sets the KubernetesMaintenancePolicyDay to
+	// Wednesday
 	KubernetesMaintenanceDayWednesday
+
+	// KubernetesMaintenanceDayThursday sets the KubernetesMaintenancePolicyDay to
+	// Thursday
 	KubernetesMaintenanceDayThursday
+
+	// KubernetesMaintenanceDayFriday sets the KubernetesMaintenancePolicyDay to
+	// Friday
 	KubernetesMaintenanceDayFriday
+
+	// KubernetesMaintenanceDaySaturday sets the KubernetesMaintenancePolicyDay to
+	// Saturday
 	KubernetesMaintenanceDaySaturday
+
+	// KubernetesMaintenanceDaySunday sets the KubernetesMaintenancePolicyDay to
+	// Sunday
 	KubernetesMaintenanceDaySunday
 )
 
@@ -198,6 +296,7 @@ func (k KubernetesMaintenancePolicyDay) String() string {
 
 }
 
+// UnmarshalJSON parses the JSON string into KubernetesMaintenancePolicyDay
 func (k *KubernetesMaintenancePolicyDay) UnmarshalJSON(data []byte) error {
 	var val string
 	if err := json.Unmarshal(data, &val); err != nil {
@@ -212,6 +311,7 @@ func (k *KubernetesMaintenancePolicyDay) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// MarshalJSON returns the JSON string for KubernetesMaintenancePolicyDay
 func (k KubernetesMaintenancePolicyDay) MarshalJSON() ([]byte, error) {
 	if KubernetesMaintenanceDayAny <= k && k <= KubernetesMaintenanceDaySunday {
 		return json.Marshal(days[k])
@@ -267,20 +367,26 @@ type KubernetesClusterStatus struct {
 
 // KubernetesNodePool represents a node pool in a Kubernetes cluster.
 type KubernetesNodePool struct {
-	ID    string   `json:"id,omitempty"`
-	Name  string   `json:"name,omitempty"`
-	Size  string   `json:"size,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	ID        string            `json:"id,omitempty"`
+	Name      string            `json:"name,omitempty"`
+	Size      string            `json:"size,omitempty"`
+	Count     int               `json:"count,omitempty"`
+	Tags      []string          `json:"tags,omitempty"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	Taints    []Taint           `json:"taints,omitempty"`
+	AutoScale bool              `json:"auto_scale,omitempty"`
+	MinNodes  int               `json:"min_nodes,omitempty"`
+	MaxNodes  int               `json:"max_nodes,omitempty"`
 
 	Nodes []*KubernetesNode `json:"nodes,omitempty"`
 }
 
 // KubernetesNode represents a Node in a node pool in a Kubernetes cluster.
 type KubernetesNode struct {
-	ID     string                `json:"id,omitempty"`
-	Name   string                `json:"name,omitempty"`
-	Status *KubernetesNodeStatus `json:"status,omitempty"`
+	ID        string                `json:"id,omitempty"`
+	Name      string                `json:"name,omitempty"`
+	Status    *KubernetesNodeStatus `json:"status,omitempty"`
+	DropletID string                `json:"droplet_id,omitempty"`
 
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
@@ -317,13 +423,40 @@ type KubernetesRegion struct {
 	Slug string `json:"slug"`
 }
 
+// ClusterlintDiagnostic is a diagnostic returned from clusterlint.
+type ClusterlintDiagnostic struct {
+	CheckName string             `json:"check_name"`
+	Severity  string             `json:"severity"`
+	Message   string             `json:"message"`
+	Object    *ClusterlintObject `json:"object"`
+}
+
+// ClusterlintObject is the object a clusterlint diagnostic refers to.
+type ClusterlintObject struct {
+	Kind      string              `json:"kind"`
+	Name      string              `json:"name"`
+	Namespace string              `json:"namespace"`
+	Owners    []*ClusterlintOwner `json:"owners,omitempty"`
+}
+
+// ClusterlintOwner indicates the resource that owns the offending object.
+type ClusterlintOwner struct {
+	Kind string `json:"kind"`
+	Name string `json:"name"`
+}
+
 type kubernetesClustersRoot struct {
 	Clusters []*KubernetesCluster `json:"kubernetes_clusters,omitempty"`
 	Links    *Links               `json:"links,omitempty"`
+	Meta     *Meta                `json:"meta"`
 }
 
 type kubernetesClusterRoot struct {
 	Cluster *KubernetesCluster `json:"kubernetes_cluster,omitempty"`
+}
+
+type kubernetesClusterUserRoot struct {
+	User *KubernetesClusterUser `json:"kubernetes_cluster_user,omitempty"`
 }
 
 type kubernetesNodePoolRoot struct {
@@ -352,6 +485,21 @@ func (svc *KubernetesServiceOp) Get(ctx context.Context, clusterID string) (*Kub
 		return nil, resp, err
 	}
 	return root.Cluster, resp, nil
+}
+
+// GetUser retrieves the details of a Kubernetes cluster user.
+func (svc *KubernetesServiceOp) GetUser(ctx context.Context, clusterID string) (*KubernetesClusterUser, *Response, error) {
+	path := fmt.Sprintf("%s/%s/user", kubernetesClustersPath, clusterID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(kubernetesClusterUserRoot)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.User, resp, nil
 }
 
 // GetUpgrades retrieves versions a Kubernetes cluster can be upgraded to. An
@@ -416,6 +564,14 @@ func (svc *KubernetesServiceOp) List(ctx context.Context, opts *ListOptions) ([]
 	if err != nil {
 		return nil, resp, err
 	}
+
+	if l := root.Links; l != nil {
+		resp.Links = l
+	}
+	if m := root.Meta; m != nil {
+		resp.Meta = m
+	}
+
 	return root.Clusters, resp, nil
 }
 
@@ -442,6 +598,47 @@ func (svc *KubernetesServiceOp) GetKubeConfig(ctx context.Context, clusterID str
 		KubeconfigYAML: configBytes.Bytes(),
 	}
 	return res, resp, nil
+}
+
+// GetKubeConfigWithExpiry returns a Kubernetes config file for the specified cluster with expiry_seconds.
+func (svc *KubernetesServiceOp) GetKubeConfigWithExpiry(ctx context.Context, clusterID string, expirySeconds int64) (*KubernetesClusterConfig, *Response, error) {
+	path := fmt.Sprintf("%s/%s/kubeconfig", kubernetesClustersPath, clusterID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	q := req.URL.Query()
+	q.Add("expiry_seconds", fmt.Sprintf("%d", expirySeconds))
+	req.URL.RawQuery = q.Encode()
+	configBytes := bytes.NewBuffer(nil)
+	resp, err := svc.client.Do(ctx, req, configBytes)
+	if err != nil {
+		return nil, resp, err
+	}
+	res := &KubernetesClusterConfig{
+		KubeconfigYAML: configBytes.Bytes(),
+	}
+	return res, resp, nil
+}
+
+// GetCredentials returns a Kubernetes API server credentials for the specified cluster.
+func (svc *KubernetesServiceOp) GetCredentials(ctx context.Context, clusterID string, get *KubernetesClusterCredentialsGetRequest) (*KubernetesClusterCredentials, *Response, error) {
+	path := fmt.Sprintf("%s/%s/credentials", kubernetesClustersPath, clusterID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	q := req.URL.Query()
+	if get.ExpirySeconds != nil {
+		q.Add("expiry_seconds", strconv.Itoa(*get.ExpirySeconds))
+	}
+	req.URL.RawQuery = q.Encode()
+	credentials := new(KubernetesClusterCredentials)
+	resp, err := svc.client.Do(ctx, req, credentials)
+	if err != nil {
+		return nil, nil, err
+	}
+	return credentials, resp, nil
 }
 
 // Update updates a Kubernetes cluster's properties.
@@ -609,4 +806,80 @@ func (svc *KubernetesServiceOp) GetOptions(ctx context.Context) (*KubernetesOpti
 		return nil, resp, err
 	}
 	return root.Options, resp, nil
+}
+
+// AddRegistry integrates docr registry with all the specified clusters
+func (svc *KubernetesServiceOp) AddRegistry(ctx context.Context, req *KubernetesClusterRegistryRequest) (*Response, error) {
+	path := fmt.Sprintf("%s/registry", kubernetesBasePath)
+	request, err := svc.client.NewRequest(ctx, http.MethodPost, path, req)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := svc.client.Do(ctx, request, nil)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+// RemoveRegistry removes docr registry support for all the specified clusters
+func (svc *KubernetesServiceOp) RemoveRegistry(ctx context.Context, req *KubernetesClusterRegistryRequest) (*Response, error) {
+	path := fmt.Sprintf("%s/registry", kubernetesBasePath)
+	request, err := svc.client.NewRequest(ctx, http.MethodDelete, path, req)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := svc.client.Do(ctx, request, nil)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+type runClusterlintRoot struct {
+	RunID string `json:"run_id"`
+}
+
+// RunClusterlint schedules a clusterlint run for the specified cluster
+func (svc *KubernetesServiceOp) RunClusterlint(ctx context.Context, clusterID string, req *KubernetesRunClusterlintRequest) (string, *Response, error) {
+	path := fmt.Sprintf("%s/%s/clusterlint", kubernetesClustersPath, clusterID)
+	request, err := svc.client.NewRequest(ctx, http.MethodPost, path, req)
+	if err != nil {
+		return "", nil, err
+	}
+	root := new(runClusterlintRoot)
+	resp, err := svc.client.Do(ctx, request, root)
+	if err != nil {
+		return "", resp, err
+	}
+	return root.RunID, resp, nil
+}
+
+type clusterlintDiagnosticsRoot struct {
+	Diagnostics []*ClusterlintDiagnostic
+}
+
+// GetClusterlintResults fetches the diagnostics after clusterlint run completes
+func (svc *KubernetesServiceOp) GetClusterlintResults(ctx context.Context, clusterID string, req *KubernetesGetClusterlintRequest) ([]*ClusterlintDiagnostic, *Response, error) {
+	path := fmt.Sprintf("%s/%s/clusterlint", kubernetesClustersPath, clusterID)
+	if req != nil {
+		v := make(url.Values)
+		if req.RunId != "" {
+			v.Set("run_id", req.RunId)
+		}
+		if query := v.Encode(); query != "" {
+			path = path + "?" + query
+		}
+	}
+
+	request, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(clusterlintDiagnosticsRoot)
+	resp, err := svc.client.Do(ctx, request, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.Diagnostics, resp, nil
 }
