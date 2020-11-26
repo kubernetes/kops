@@ -18,10 +18,8 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
-  NODEUP_HASH_AMD64=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
-  NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
-  NODEUP_HASH_ARM64=dcc7f9f3c180ee76a511627e46da0ac69cdcb518cdf3be348e5ed046d491eb87
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
+  NODEUP_HASH=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
 
   export AWS_REGION=us-test-1
 
@@ -113,21 +111,6 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   }
 
   function download-release() {
-    case "$(uname -m)" in
-    x86_64*|i?86_64*|amd64*)
-      NODEUP_URL="${NODEUP_URL_AMD64}"
-      NODEUP_HASH="${NODEUP_HASH_AMD64}"
-      ;;
-    aarch64*|arm64*)
-      NODEUP_URL="${NODEUP_URL_ARM64}"
-      NODEUP_HASH="${NODEUP_HASH_ARM64}"
-      ;;
-    *)
-      echo "Unsupported host arch: $(uname -m)" >&2
-      exit 1
-      ;;
-    esac
-
     # In case of failure checking integrity of release, retry.
     cd ${INSTALL_DIR}/bin
     until try-download-release; do
@@ -272,16 +255,10 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
 
   cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
-    amd64:
-    - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
-    - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
-    - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-    - 50cdf38749642ec43d6ac50f4a3f1f7f6ac688e8d8b4e1c5b7be06e1a82f06e9@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.5.tgz
-    arm64:
-    - df38e04576026393055ccc77c0dce73612996561@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubelet
-    - 01c2b6b43d36b6bfafc80a3737391c19ebfb8ad5@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubectl
-    - 7fec91af78e9548df306f0ec43bea527c8c10cc3a9682c33e971c8522a7fcded@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz
-    - 0deddac5ae6f18ff0e6ce6a143c2cfd99c56dfb58be507770d840240fc9c51a9@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.5.tgz
+  - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
+  - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
+  - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+  - 50cdf38749642ec43d6ac50f4a3f1f7f6ac688e8d8b4e1c5b7be06e1a82f06e9@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.5.tgz
   ClusterName: containerd.example.com
   ConfigBase: memfs://clusters.example.com/containerd.example.com
   InstanceGroupName: master-us-test-1a
@@ -311,20 +288,12 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   - memfs://clusters.example.com/containerd.example.com/manifests/etcd/main.yaml
   - memfs://clusters.example.com/containerd.example.com/manifests/etcd/events.yaml
   protokubeImage:
-    amd64:
-      hash: 7b3c7f6adbda11b1ec740bd6b969c84f249b7eee818af95f2d321963088245a8
-      name: protokube:1.19.0-alpha.3
-      sources:
-      - https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/images/protokube-amd64.tar.gz
-      - https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/images-protokube-amd64.tar.gz
-      - https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/images/protokube-amd64.tar.gz
-    arm64:
-      hash: 69270ca9c1c950be65af40337adfccec0a728930fa3224bb0d2e88f181f39ead
-      name: protokube:1.19.0-alpha.3
-      sources:
-      - https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/images/protokube-arm64.tar.gz
-      - https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/images-protokube-arm64.tar.gz
-      - https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/images/protokube-arm64.tar.gz
+    hash: 7b3c7f6adbda11b1ec740bd6b969c84f249b7eee818af95f2d321963088245a8
+    name: protokube:1.19.0-alpha.3
+    sources:
+    - https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/images/protokube-amd64.tar.gz
+    - https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/images-protokube-amd64.tar.gz
+    - https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/images/protokube-amd64.tar.gz
 
   __EOF_KUBE_ENV
 
@@ -350,10 +319,8 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   set -o nounset
   set -o pipefail
 
-  NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
-  NODEUP_HASH_AMD64=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
-  NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
-  NODEUP_HASH_ARM64=dcc7f9f3c180ee76a511627e46da0ac69cdcb518cdf3be348e5ed046d491eb87
+  NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
+  NODEUP_HASH=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
 
   export AWS_REGION=us-test-1
 
@@ -445,21 +412,6 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   }
 
   function download-release() {
-    case "$(uname -m)" in
-    x86_64*|i?86_64*|amd64*)
-      NODEUP_URL="${NODEUP_URL_AMD64}"
-      NODEUP_HASH="${NODEUP_HASH_AMD64}"
-      ;;
-    aarch64*|arm64*)
-      NODEUP_URL="${NODEUP_URL_ARM64}"
-      NODEUP_HASH="${NODEUP_HASH_ARM64}"
-      ;;
-    *)
-      echo "Unsupported host arch: $(uname -m)" >&2
-      exit 1
-      ;;
-    esac
-
     # In case of failure checking integrity of release, retry.
     cd ${INSTALL_DIR}/bin
     until try-download-release; do
@@ -524,16 +476,10 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
 
   cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
   Assets:
-    amd64:
-    - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
-    - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
-    - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-    - 50cdf38749642ec43d6ac50f4a3f1f7f6ac688e8d8b4e1c5b7be06e1a82f06e9@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.5.tgz
-    arm64:
-    - df38e04576026393055ccc77c0dce73612996561@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubelet
-    - 01c2b6b43d36b6bfafc80a3737391c19ebfb8ad5@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubectl
-    - 7fec91af78e9548df306f0ec43bea527c8c10cc3a9682c33e971c8522a7fcded@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz
-    - 0deddac5ae6f18ff0e6ce6a143c2cfd99c56dfb58be507770d840240fc9c51a9@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.5.tgz
+  - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
+  - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
+  - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+  - 50cdf38749642ec43d6ac50f4a3f1f7f6ac688e8d8b4e1c5b7be06e1a82f06e9@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.5.tgz
   ClusterName: containerd.example.com
   ConfigBase: memfs://clusters.example.com/containerd.example.com
   InstanceGroupName: nodes

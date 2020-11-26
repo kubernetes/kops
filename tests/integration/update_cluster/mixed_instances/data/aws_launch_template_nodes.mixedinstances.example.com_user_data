@@ -17,10 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
-NODEUP_HASH_AMD64=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-arm64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/arm64/nodeup
-NODEUP_HASH_ARM64=dcc7f9f3c180ee76a511627e46da0ac69cdcb518cdf3be348e5ed046d491eb87
+NODEUP_URL=https://artifacts.k8s.io/binaries/kops/1.19.0-alpha.3/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.19.0-alpha.3/nodeup-linux-amd64,https://kubeupv2.s3.amazonaws.com/kops/1.19.0-alpha.3/linux/amd64/nodeup
+NODEUP_HASH=6980fda4fa37bbdc043738cf4ddac6388eb57f561895c69299c1b0ee263d465d
 
 export AWS_REGION=us-test-1
 
@@ -112,21 +110,6 @@ function try-download-release() {
 }
 
 function download-release() {
-  case "$(uname -m)" in
-  x86_64*|i?86_64*|amd64*)
-    NODEUP_URL="${NODEUP_URL_AMD64}"
-    NODEUP_HASH="${NODEUP_HASH_AMD64}"
-    ;;
-  aarch64*|arm64*)
-    NODEUP_URL="${NODEUP_URL_ARM64}"
-    NODEUP_HASH="${NODEUP_HASH_ARM64}"
-    ;;
-  *)
-    echo "Unsupported host arch: $(uname -m)" >&2
-    exit 1
-    ;;
-  esac
-
   # In case of failure checking integrity of release, retry.
   cd ${INSTALL_DIR}/bin
   until try-download-release; do
@@ -195,16 +178,10 @@ __EOF_IG_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 Assets:
-  amd64:
-  - 5028b6548e8838e1e0851f10e8bd8d9a6ef1693e3f1dac09f7d50c4c2873f20b@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubelet
-  - 6a68756a2d3d04b4d0f52b00de6493ba2c1fcb28b32f3e4a0e99b3d9f6c4e8ed@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubectl
-  - 994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz
-  - ddb13aff1fcdcceb710bf71a210169b9c1abfd7420eeaf42cf7975f8fae2fcc8@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.13.tgz
-  arm64:
-  - 21b0fb4682deea19be3ac160403db9858dc9d02b101d60eb6fc22a86523ec434@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubelet
-  - 9f466ff8d40097914a1ded0288ef8b9eb6f4ad39a9990cb2c0f8d1a710013a4f@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubectl
-  - 43fbf750c5eccb10accffeeb092693c32b236fb25d919cf058c91a677822c999@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz
-  - bdf080af7d6f383ad80e415e9c1952a63c7038c149dc673b7598bfca4d3311ec@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.13.tgz
+- 5028b6548e8838e1e0851f10e8bd8d9a6ef1693e3f1dac09f7d50c4c2873f20b@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubelet
+- 6a68756a2d3d04b4d0f52b00de6493ba2c1fcb28b32f3e4a0e99b3d9f6c4e8ed@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubectl
+- 994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz
+- ddb13aff1fcdcceb710bf71a210169b9c1abfd7420eeaf42cf7975f8fae2fcc8@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.13.tgz
 ClusterName: mixedinstances.example.com
 ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
 InstanceGroupName: nodes
