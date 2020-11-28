@@ -1,9 +1,9 @@
 locals {
   cluster_name                 = "existingsg.example.com"
-  master-us-test-1a_role_arn   = aws_iam_role.masters-existingsg-example-com.arn
-  master-us-test-1a_role_name  = aws_iam_role.masters-existingsg-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-existingsg-example-com.id, "sg-master-1a", "sg-master-1b"]
+  masters_role_arn             = aws_iam_role.masters-existingsg-example-com.arn
+  masters_role_name            = aws_iam_role.masters-existingsg-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-existingsg-example-com.id]
   node_security_group_ids      = ["sg-nodes"]
   node_subnet_ids              = [aws_subnet.us-test-1a-existingsg-example-com.id]
@@ -22,20 +22,20 @@ output "cluster_name" {
   value = "existingsg.example.com"
 }
 
-output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.masters-existingsg-example-com.arn
-}
-
-output "master-us-test-1a_role_name" {
-  value = aws_iam_role.masters-existingsg-example-com.name
-}
-
 output "master_autoscaling_group_ids" {
   value = [aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id]
 }
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-existingsg-example-com.id, "sg-master-1a", "sg-master-1b"]
+}
+
+output "masters_role_arn" {
+  value = aws_iam_role.masters-existingsg-example-com.arn
+}
+
+output "masters_role_name" {
+  value = aws_iam_role.masters-existingsg-example-com.name
 }
 
 output "node_autoscaling_group_ids" {

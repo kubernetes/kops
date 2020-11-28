@@ -124,7 +124,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName, exportId strin
 		iamRole.ExportWithID = s(roleKey)
 	} else {
 		// e.g. nodes
-		iamRole.ExportWithID = s(exportId)
+		iamRole.ExportWithID = s(roleKey + "s")
 	}
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {

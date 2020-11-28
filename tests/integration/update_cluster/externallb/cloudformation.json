@@ -229,7 +229,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemasterustest1aexternallbexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersexternallbexamplecom"
             }
           },
           "ImageId": "ami-12345678",
@@ -819,13 +819,13 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilemasterustest1aexternallbexamplecom": {
+    "AWSIAMInstanceProfilemastersexternallbexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "master-us-test-1a.externallb.example.com",
+        "InstanceProfileName": "masters.externallb.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterustest1aexternallbexamplecom"
+            "Ref": "AWSIAMRolemastersexternallbexamplecom"
           }
         ]
       }
@@ -841,13 +841,13 @@
         ]
       }
     },
-    "AWSIAMPolicymasterustest1aexternallbexamplecom": {
+    "AWSIAMPolicymastersexternallbexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "master-us-test-1a.externallb.example.com",
+        "PolicyName": "masters.externallb.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterustest1aexternallbexamplecom"
+            "Ref": "AWSIAMRolemastersexternallbexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1048,10 +1048,10 @@
         }
       }
     },
-    "AWSIAMRolemasterustest1aexternallbexamplecom": {
+    "AWSIAMRolemastersexternallbexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "master-us-test-1a.externallb.example.com",
+        "RoleName": "masters.externallb.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {

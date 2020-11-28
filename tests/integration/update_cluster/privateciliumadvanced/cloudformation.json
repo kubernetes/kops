@@ -317,7 +317,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilebastionprivateciliumadvancedexamplecom"
+              "Ref": "AWSIAMInstanceProfilebastionsprivateciliumadvancedexamplecom"
             }
           },
           "ImageId": "ami-12345678",
@@ -428,7 +428,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemasterustest1aprivateciliumadvancedexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersprivateciliumadvancedexamplecom"
             }
           },
           "ImageId": "ami-12345678",
@@ -1419,24 +1419,24 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilebastionprivateciliumadvancedexamplecom": {
+    "AWSIAMInstanceProfilebastionsprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "bastion.privateciliumadvanced.example.com",
+        "InstanceProfileName": "bastions.privateciliumadvanced.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolebastionprivateciliumadvancedexamplecom"
+            "Ref": "AWSIAMRolebastionsprivateciliumadvancedexamplecom"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilemasterustest1aprivateciliumadvancedexamplecom": {
+    "AWSIAMInstanceProfilemastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "master-us-test-1a.privateciliumadvanced.example.com",
+        "InstanceProfileName": "masters.privateciliumadvanced.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterustest1aprivateciliumadvancedexamplecom"
+            "Ref": "AWSIAMRolemastersprivateciliumadvancedexamplecom"
           }
         ]
       }
@@ -1452,13 +1452,13 @@
         ]
       }
     },
-    "AWSIAMPolicybastionprivateciliumadvancedexamplecom": {
+    "AWSIAMPolicybastionsprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "bastion.privateciliumadvanced.example.com",
+        "PolicyName": "bastions.privateciliumadvanced.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolebastionprivateciliumadvancedexamplecom"
+            "Ref": "AWSIAMRolebastionsprivateciliumadvancedexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1477,13 +1477,13 @@
         }
       }
     },
-    "AWSIAMPolicymasterustest1aprivateciliumadvancedexamplecom": {
+    "AWSIAMPolicymastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "master-us-test-1a.privateciliumadvanced.example.com",
+        "PolicyName": "masters.privateciliumadvanced.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterustest1aprivateciliumadvancedexamplecom"
+            "Ref": "AWSIAMRolemastersprivateciliumadvancedexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1704,10 +1704,10 @@
         }
       }
     },
-    "AWSIAMRolebastionprivateciliumadvancedexamplecom": {
+    "AWSIAMRolebastionsprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "bastion.privateciliumadvanced.example.com",
+        "RoleName": "bastions.privateciliumadvanced.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1722,10 +1722,10 @@
         }
       }
     },
-    "AWSIAMRolemasterustest1aprivateciliumadvancedexamplecom": {
+    "AWSIAMRolemastersprivateciliumadvancedexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "master-us-test-1a.privateciliumadvanced.example.com",
+        "RoleName": "masters.privateciliumadvanced.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {

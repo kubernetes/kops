@@ -1,14 +1,14 @@
 {
   "locals": {
     "cluster_name": "minimal-json.example.com",
-    "master-us-test-1a_role_arn": "${aws_iam_role.masters-minimal-json-example-com.arn}",
-    "master-us-test-1a_role_name": "${aws_iam_role.masters-minimal-json-example-com.name}",
     "master_autoscaling_group_ids": [
       "${aws_autoscaling_group.master-us-test-1a-masters-minimal-json-example-com.id}"
     ],
     "master_security_group_ids": [
       "${aws_security_group.masters-minimal-json-example-com.id}"
     ],
+    "masters_role_arn": "${aws_iam_role.masters-minimal-json-example-com.arn}",
+    "masters_role_name": "${aws_iam_role.masters-minimal-json-example-com.name}",
     "node_autoscaling_group_ids": [
       "${aws_autoscaling_group.nodes-minimal-json-example-com.id}"
     ],
@@ -30,12 +30,6 @@
     "cluster_name": {
       "value": "minimal-json.example.com"
     },
-    "master-us-test-1a_role_arn": {
-      "value": "${aws_iam_role.masters-minimal-json-example-com.arn}"
-    },
-    "master-us-test-1a_role_name": {
-      "value": "${aws_iam_role.masters-minimal-json-example-com.name}"
-    },
     "master_autoscaling_group_ids": {
       "value": [
         "${aws_autoscaling_group.master-us-test-1a-masters-minimal-json-example-com.id}"
@@ -45,6 +39,12 @@
       "value": [
         "${aws_security_group.masters-minimal-json-example-com.id}"
       ]
+    },
+    "masters_role_arn": {
+      "value": "${aws_iam_role.masters-minimal-json-example-com.arn}"
+    },
+    "masters_role_name": {
+      "value": "${aws_iam_role.masters-minimal-json-example-com.name}"
     },
     "node_autoscaling_group_ids": {
       "value": [

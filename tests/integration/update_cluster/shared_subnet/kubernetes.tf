@@ -1,9 +1,9 @@
 locals {
   cluster_name                 = "sharedsubnet.example.com"
-  master-us-test-1a_role_arn   = aws_iam_role.masters-sharedsubnet-example-com.arn
-  master-us-test-1a_role_name  = aws_iam_role.masters-sharedsubnet-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-sharedsubnet-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-sharedsubnet-example-com.id]
+  masters_role_arn             = aws_iam_role.masters-sharedsubnet-example-com.arn
+  masters_role_name            = aws_iam_role.masters-sharedsubnet-example-com.name
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-sharedsubnet-example-com.id]
   node_security_group_ids      = [aws_security_group.nodes-sharedsubnet-example-com.id]
   node_subnet_ids              = ["subnet-12345678"]
@@ -19,20 +19,20 @@ output "cluster_name" {
   value = "sharedsubnet.example.com"
 }
 
-output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.masters-sharedsubnet-example-com.arn
-}
-
-output "master-us-test-1a_role_name" {
-  value = aws_iam_role.masters-sharedsubnet-example-com.name
-}
-
 output "master_autoscaling_group_ids" {
   value = [aws_autoscaling_group.master-us-test-1a-masters-sharedsubnet-example-com.id]
 }
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-sharedsubnet-example-com.id]
+}
+
+output "masters_role_arn" {
+  value = aws_iam_role.masters-sharedsubnet-example-com.arn
+}
+
+output "masters_role_name" {
+  value = aws_iam_role.masters-sharedsubnet-example-com.name
 }
 
 output "node_autoscaling_group_ids" {

@@ -1,13 +1,13 @@
 locals {
   bastion_autoscaling_group_ids     = [aws_autoscaling_group.bastion-privatecanal-example-com.id]
-  bastion_role_arn                  = aws_iam_role.bastions-privatecanal-example-com.arn
-  bastion_role_name                 = aws_iam_role.bastions-privatecanal-example-com.name
   bastion_security_group_ids        = [aws_security_group.bastion-privatecanal-example-com.id]
+  bastions_role_arn                 = aws_iam_role.bastions-privatecanal-example-com.arn
+  bastions_role_name                = aws_iam_role.bastions-privatecanal-example-com.name
   cluster_name                      = "privatecanal.example.com"
-  master-us-test-1a_role_arn        = aws_iam_role.masters-privatecanal-example-com.arn
-  master-us-test-1a_role_name       = aws_iam_role.masters-privatecanal-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privatecanal-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privatecanal-example-com.id]
+  masters_role_arn                  = aws_iam_role.masters-privatecanal-example-com.arn
+  masters_role_name                 = aws_iam_role.masters-privatecanal-example-com.name
   node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-privatecanal-example-com.id]
   node_security_group_ids           = [aws_security_group.nodes-privatecanal-example-com.id]
   node_subnet_ids                   = [aws_subnet.us-test-1a-privatecanal-example-com.id]
@@ -26,28 +26,20 @@ output "bastion_autoscaling_group_ids" {
   value = [aws_autoscaling_group.bastion-privatecanal-example-com.id]
 }
 
-output "bastion_role_arn" {
-  value = aws_iam_role.bastions-privatecanal-example-com.arn
-}
-
-output "bastion_role_name" {
-  value = aws_iam_role.bastions-privatecanal-example-com.name
-}
-
 output "bastion_security_group_ids" {
   value = [aws_security_group.bastion-privatecanal-example-com.id]
 }
 
+output "bastions_role_arn" {
+  value = aws_iam_role.bastions-privatecanal-example-com.arn
+}
+
+output "bastions_role_name" {
+  value = aws_iam_role.bastions-privatecanal-example-com.name
+}
+
 output "cluster_name" {
   value = "privatecanal.example.com"
-}
-
-output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.masters-privatecanal-example-com.arn
-}
-
-output "master-us-test-1a_role_name" {
-  value = aws_iam_role.masters-privatecanal-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -56,6 +48,14 @@ output "master_autoscaling_group_ids" {
 
 output "master_security_group_ids" {
   value = [aws_security_group.masters-privatecanal-example-com.id]
+}
+
+output "masters_role_arn" {
+  value = aws_iam_role.masters-privatecanal-example-com.arn
+}
+
+output "masters_role_name" {
+  value = aws_iam_role.masters-privatecanal-example-com.name
 }
 
 output "node_autoscaling_group_ids" {
