@@ -551,11 +551,22 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			"aws_iam_role_policy_masters."+i.clusterName+"_policy",
 			"aws_iam_role_policy_nodes."+i.clusterName+"_policy",
 		)
+		if i.expectAdditionalPolicies {
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_policy_additional.masters."+i.clusterName+"_policy",
+				"aws_iam_role_policy_additional.nodes."+i.clusterName+"_policy",
+			)
+		}
 		if i.private {
 			expectedFilenames = append(expectedFilenames,
 				"aws_iam_role_bastions."+i.clusterName+"_policy",
 				"aws_iam_role_policy_bastions."+i.clusterName+"_policy",
 			)
+			if i.expectAdditionalPolicies {
+				expectedFilenames = append(expectedFilenames,
+					"aws_iam_role_policy_additional.bastions."+i.clusterName+"_policy",
+				)
+			}
 			if i.bastionUserData {
 				expectedFilenames = append(expectedFilenames, "aws_launch_template_bastion."+i.clusterName+"_user_data")
 			}
@@ -592,12 +603,23 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 			"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
 			"aws_key_pair_kubernetes." + i.clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
 		}
+		if i.expectAdditionalPolicies {
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_policy_additional.masters."+i.clusterName+"_policy",
+				"aws_iam_role_policy_additional.nodes."+i.clusterName+"_policy",
+			)
+		}
 		if i.private {
 			expectedFilenames = append(expectedFilenames,
 				"aws_iam_role_bastions."+i.clusterName+"_policy",
 				"aws_iam_role_policy_bastions."+i.clusterName+"_policy",
 				"aws_launch_template_bastion."+i.clusterName+"_user_data",
 			)
+			if i.expectAdditionalPolicies {
+				expectedFilenames = append(expectedFilenames,
+					"aws_iam_role_policy_additional.bastions."+i.clusterName+"_policy",
+				)
+			}
 		}
 	} else if phase == cloudup.PhaseCluster {
 		expectedFilenames = []string{
