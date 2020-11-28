@@ -1,11 +1,11 @@
 locals {
   bastion_autoscaling_group_ids     = [aws_autoscaling_group.bastion-privateciliumadvanced-example-com.id]
-  bastion_role_arn                  = aws_iam_role.bastion-privateciliumadvanced-example-com.arn
-  bastion_role_name                 = aws_iam_role.bastion-privateciliumadvanced-example-com.name
+  bastion_role_arn                  = aws_iam_role.bastions-privateciliumadvanced-example-com.arn
+  bastion_role_name                 = aws_iam_role.bastions-privateciliumadvanced-example-com.name
   bastion_security_group_ids        = [aws_security_group.bastion-privateciliumadvanced-example-com.id]
   cluster_name                      = "privateciliumadvanced.example.com"
-  master-us-test-1a_role_arn        = aws_iam_role.master-us-test-1a-privateciliumadvanced-example-com.arn
-  master-us-test-1a_role_name       = aws_iam_role.master-us-test-1a-privateciliumadvanced-example-com.name
+  master-us-test-1a_role_arn        = aws_iam_role.masters-privateciliumadvanced-example-com.arn
+  master-us-test-1a_role_name       = aws_iam_role.masters-privateciliumadvanced-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privateciliumadvanced-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privateciliumadvanced-example-com.id]
   node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-privateciliumadvanced-example-com.id]
@@ -27,11 +27,11 @@ output "bastion_autoscaling_group_ids" {
 }
 
 output "bastion_role_arn" {
-  value = aws_iam_role.bastion-privateciliumadvanced-example-com.arn
+  value = aws_iam_role.bastions-privateciliumadvanced-example-com.arn
 }
 
 output "bastion_role_name" {
-  value = aws_iam_role.bastion-privateciliumadvanced-example-com.name
+  value = aws_iam_role.bastions-privateciliumadvanced-example-com.name
 }
 
 output "bastion_security_group_ids" {
@@ -43,11 +43,11 @@ output "cluster_name" {
 }
 
 output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.master-us-test-1a-privateciliumadvanced-example-com.arn
+  value = aws_iam_role.masters-privateciliumadvanced-example-com.arn
 }
 
 output "master-us-test-1a_role_name" {
-  value = aws_iam_role.master-us-test-1a-privateciliumadvanced-example-com.name
+  value = aws_iam_role.masters-privateciliumadvanced-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -358,14 +358,14 @@ resource "aws_elb" "bastion-privateciliumadvanced-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "bastion-privateciliumadvanced-example-com" {
-  name = "bastion.privateciliumadvanced.example.com"
-  role = aws_iam_role.bastion-privateciliumadvanced-example-com.name
+resource "aws_iam_instance_profile" "bastions-privateciliumadvanced-example-com" {
+  name = "bastions.privateciliumadvanced.example.com"
+  role = aws_iam_role.bastions-privateciliumadvanced-example-com.name
 }
 
-resource "aws_iam_instance_profile" "master-us-test-1a-privateciliumadvanced-example-com" {
-  name = "master-us-test-1a.privateciliumadvanced.example.com"
-  role = aws_iam_role.master-us-test-1a-privateciliumadvanced-example-com.name
+resource "aws_iam_instance_profile" "masters-privateciliumadvanced-example-com" {
+  name = "masters.privateciliumadvanced.example.com"
+  role = aws_iam_role.masters-privateciliumadvanced-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-privateciliumadvanced-example-com" {
@@ -373,16 +373,16 @@ resource "aws_iam_instance_profile" "nodes-privateciliumadvanced-example-com" {
   role = aws_iam_role.nodes-privateciliumadvanced-example-com.name
 }
 
-resource "aws_iam_role_policy" "bastion-privateciliumadvanced-example-com" {
-  name   = "bastion.privateciliumadvanced.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastion.privateciliumadvanced.example.com_policy")
-  role   = aws_iam_role.bastion-privateciliumadvanced-example-com.name
+resource "aws_iam_role_policy" "bastions-privateciliumadvanced-example-com" {
+  name   = "bastions.privateciliumadvanced.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateciliumadvanced.example.com_policy")
+  role   = aws_iam_role.bastions-privateciliumadvanced-example-com.name
 }
 
-resource "aws_iam_role_policy" "master-us-test-1a-privateciliumadvanced-example-com" {
-  name   = "master-us-test-1a.privateciliumadvanced.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.privateciliumadvanced.example.com_policy")
-  role   = aws_iam_role.master-us-test-1a-privateciliumadvanced-example-com.name
+resource "aws_iam_role_policy" "masters-privateciliumadvanced-example-com" {
+  name   = "masters.privateciliumadvanced.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privateciliumadvanced.example.com_policy")
+  role   = aws_iam_role.masters-privateciliumadvanced-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-privateciliumadvanced-example-com" {
@@ -391,14 +391,14 @@ resource "aws_iam_role_policy" "nodes-privateciliumadvanced-example-com" {
   role   = aws_iam_role.nodes-privateciliumadvanced-example-com.name
 }
 
-resource "aws_iam_role" "bastion-privateciliumadvanced-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_bastion.privateciliumadvanced.example.com_policy")
-  name               = "bastion.privateciliumadvanced.example.com"
+resource "aws_iam_role" "bastions-privateciliumadvanced-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateciliumadvanced.example.com_policy")
+  name               = "bastions.privateciliumadvanced.example.com"
 }
 
-resource "aws_iam_role" "master-us-test-1a-privateciliumadvanced-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.privateciliumadvanced.example.com_policy")
-  name               = "master-us-test-1a.privateciliumadvanced.example.com"
+resource "aws_iam_role" "masters-privateciliumadvanced-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privateciliumadvanced.example.com_policy")
+  name               = "masters.privateciliumadvanced.example.com"
 }
 
 resource "aws_iam_role" "nodes-privateciliumadvanced-example-com" {
@@ -435,7 +435,7 @@ resource "aws_launch_template" "bastion-privateciliumadvanced-example-com" {
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.bastion-privateciliumadvanced-example-com.id
+    name = aws_iam_instance_profile.bastions-privateciliumadvanced-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "t2.micro"
@@ -498,7 +498,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1a-privateciliumadvanced-example-com.id
+    name = aws_iam_instance_profile.masters-privateciliumadvanced-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

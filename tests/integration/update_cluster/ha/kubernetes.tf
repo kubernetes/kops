@@ -1,11 +1,7 @@
 locals {
   cluster_name                 = "ha.example.com"
-  master-us-test-1a_role_arn   = aws_iam_role.master-us-test-1a-ha-example-com.arn
-  master-us-test-1a_role_name  = aws_iam_role.master-us-test-1a-ha-example-com.name
-  master-us-test-1b_role_arn   = aws_iam_role.master-us-test-1b-ha-example-com.arn
-  master-us-test-1b_role_name  = aws_iam_role.master-us-test-1b-ha-example-com.name
-  master-us-test-1c_role_arn   = aws_iam_role.master-us-test-1c-ha-example-com.arn
-  master-us-test-1c_role_name  = aws_iam_role.master-us-test-1c-ha-example-com.name
+  master-us-test-1a_role_arn   = aws_iam_role.masters-ha-example-com.arn
+  master-us-test-1a_role_name  = aws_iam_role.masters-ha-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-ha-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-ha-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-ha-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-ha-example-com.id, aws_security_group.masters-ha-example-com.id, aws_security_group.masters-ha-example-com.id]
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-ha-example-com.id]
@@ -27,27 +23,11 @@ output "cluster_name" {
 }
 
 output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.master-us-test-1a-ha-example-com.arn
+  value = aws_iam_role.masters-ha-example-com.arn
 }
 
 output "master-us-test-1a_role_name" {
-  value = aws_iam_role.master-us-test-1a-ha-example-com.name
-}
-
-output "master-us-test-1b_role_arn" {
-  value = aws_iam_role.master-us-test-1b-ha-example-com.arn
-}
-
-output "master-us-test-1b_role_name" {
-  value = aws_iam_role.master-us-test-1b-ha-example-com.name
-}
-
-output "master-us-test-1c_role_arn" {
-  value = aws_iam_role.master-us-test-1c-ha-example-com.arn
-}
-
-output "master-us-test-1c_role_name" {
-  value = aws_iam_role.master-us-test-1c-ha-example-com.name
+  value = aws_iam_role.masters-ha-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -386,19 +366,9 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
   type = "gp2"
 }
 
-resource "aws_iam_instance_profile" "master-us-test-1a-ha-example-com" {
-  name = "master-us-test-1a.ha.example.com"
-  role = aws_iam_role.master-us-test-1a-ha-example-com.name
-}
-
-resource "aws_iam_instance_profile" "master-us-test-1b-ha-example-com" {
-  name = "master-us-test-1b.ha.example.com"
-  role = aws_iam_role.master-us-test-1b-ha-example-com.name
-}
-
-resource "aws_iam_instance_profile" "master-us-test-1c-ha-example-com" {
-  name = "master-us-test-1c.ha.example.com"
-  role = aws_iam_role.master-us-test-1c-ha-example-com.name
+resource "aws_iam_instance_profile" "masters-ha-example-com" {
+  name = "masters.ha.example.com"
+  role = aws_iam_role.masters-ha-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-ha-example-com" {
@@ -406,22 +376,10 @@ resource "aws_iam_instance_profile" "nodes-ha-example-com" {
   role = aws_iam_role.nodes-ha-example-com.name
 }
 
-resource "aws_iam_role_policy" "master-us-test-1a-ha-example-com" {
-  name   = "master-us-test-1a.ha.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.ha.example.com_policy")
-  role   = aws_iam_role.master-us-test-1a-ha-example-com.name
-}
-
-resource "aws_iam_role_policy" "master-us-test-1b-ha-example-com" {
-  name   = "master-us-test-1b.ha.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1b.ha.example.com_policy")
-  role   = aws_iam_role.master-us-test-1b-ha-example-com.name
-}
-
-resource "aws_iam_role_policy" "master-us-test-1c-ha-example-com" {
-  name   = "master-us-test-1c.ha.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1c.ha.example.com_policy")
-  role   = aws_iam_role.master-us-test-1c-ha-example-com.name
+resource "aws_iam_role_policy" "masters-ha-example-com" {
+  name   = "masters.ha.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.ha.example.com_policy")
+  role   = aws_iam_role.masters-ha-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-ha-example-com" {
@@ -430,19 +388,9 @@ resource "aws_iam_role_policy" "nodes-ha-example-com" {
   role   = aws_iam_role.nodes-ha-example-com.name
 }
 
-resource "aws_iam_role" "master-us-test-1a-ha-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.ha.example.com_policy")
-  name               = "master-us-test-1a.ha.example.com"
-}
-
-resource "aws_iam_role" "master-us-test-1b-ha-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1b.ha.example.com_policy")
-  name               = "master-us-test-1b.ha.example.com"
-}
-
-resource "aws_iam_role" "master-us-test-1c-ha-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1c.ha.example.com_policy")
-  name               = "master-us-test-1c.ha.example.com"
+resource "aws_iam_role" "masters-ha-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.ha.example.com_policy")
+  name               = "masters.ha.example.com"
 }
 
 resource "aws_iam_role" "nodes-ha-example-com" {
@@ -483,7 +431,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-ha-example-com" {
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1a-ha-example-com.id
+    name = aws_iam_instance_profile.masters-ha-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
@@ -547,7 +495,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-ha-example-com" {
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1b-ha-example-com.id
+    name = aws_iam_instance_profile.masters-ha-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
@@ -611,7 +559,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-ha-example-com" {
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1c-ha-example-com.id
+    name = aws_iam_instance_profile.masters-ha-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

@@ -1,7 +1,7 @@
 locals {
   cluster_name                 = "sharedvpc.example.com"
-  master-us-test-1a_role_arn   = aws_iam_role.master-us-test-1a-sharedvpc-example-com.arn
-  master-us-test-1a_role_name  = aws_iam_role.master-us-test-1a-sharedvpc-example-com.name
+  master-us-test-1a_role_arn   = aws_iam_role.masters-sharedvpc-example-com.arn
+  master-us-test-1a_role_name  = aws_iam_role.masters-sharedvpc-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-sharedvpc-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-sharedvpc-example-com.id]
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-sharedvpc-example-com.id]
@@ -20,11 +20,11 @@ output "cluster_name" {
 }
 
 output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.master-us-test-1a-sharedvpc-example-com.arn
+  value = aws_iam_role.masters-sharedvpc-example-com.arn
 }
 
 output "master-us-test-1a_role_name" {
-  value = aws_iam_role.master-us-test-1a-sharedvpc-example-com.name
+  value = aws_iam_role.masters-sharedvpc-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -199,9 +199,9 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedvpc-example-com" {
   type = "gp2"
 }
 
-resource "aws_iam_instance_profile" "master-us-test-1a-sharedvpc-example-com" {
-  name = "master-us-test-1a.sharedvpc.example.com"
-  role = aws_iam_role.master-us-test-1a-sharedvpc-example-com.name
+resource "aws_iam_instance_profile" "masters-sharedvpc-example-com" {
+  name = "masters.sharedvpc.example.com"
+  role = aws_iam_role.masters-sharedvpc-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-sharedvpc-example-com" {
@@ -209,10 +209,10 @@ resource "aws_iam_instance_profile" "nodes-sharedvpc-example-com" {
   role = aws_iam_role.nodes-sharedvpc-example-com.name
 }
 
-resource "aws_iam_role_policy" "master-us-test-1a-sharedvpc-example-com" {
-  name   = "master-us-test-1a.sharedvpc.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.sharedvpc.example.com_policy")
-  role   = aws_iam_role.master-us-test-1a-sharedvpc-example-com.name
+resource "aws_iam_role_policy" "masters-sharedvpc-example-com" {
+  name   = "masters.sharedvpc.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.sharedvpc.example.com_policy")
+  role   = aws_iam_role.masters-sharedvpc-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-sharedvpc-example-com" {
@@ -221,9 +221,9 @@ resource "aws_iam_role_policy" "nodes-sharedvpc-example-com" {
   role   = aws_iam_role.nodes-sharedvpc-example-com.name
 }
 
-resource "aws_iam_role" "master-us-test-1a-sharedvpc-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.sharedvpc.example.com_policy")
-  name               = "master-us-test-1a.sharedvpc.example.com"
+resource "aws_iam_role" "masters-sharedvpc-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.sharedvpc.example.com_policy")
+  name               = "masters.sharedvpc.example.com"
 }
 
 resource "aws_iam_role" "nodes-sharedvpc-example-com" {
@@ -255,7 +255,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-sharedvpc-example-com"
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1a-sharedvpc-example-com.id
+    name = aws_iam_instance_profile.masters-sharedvpc-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

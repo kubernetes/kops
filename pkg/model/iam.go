@@ -73,9 +73,12 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		} else {
 			// Managed role case
-			iamName := b.IAMName(ig.Name, ig.Spec.Role)
-			if err := b.buildIAMTasks(role, iamName, ig, c, false); err != nil {
-				return err
+			iamName := b.IAMName(ig)
+			if !shared.Has(iamName) {
+				if err := b.buildIAMTasks(role, iamName, ig, c, false); err != nil {
+					return err
+				}
+				shared.Insert(iamName)
 			}
 		}
 	}

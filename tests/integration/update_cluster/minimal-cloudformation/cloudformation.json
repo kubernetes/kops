@@ -215,7 +215,7 @@
           ],
           "IamInstanceProfile": {
             "Name": {
-              "Ref": "AWSIAMInstanceProfilemasterustest1aminimalexamplecom"
+              "Ref": "AWSIAMInstanceProfilemastersminimalexamplecom"
             }
           },
           "ImageId": "ami-12345678",
@@ -805,13 +805,13 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilemasterustest1aminimalexamplecom": {
+    "AWSIAMInstanceProfilemastersminimalexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
-        "InstanceProfileName": "master-us-test-1a.minimal.example.com",
+        "InstanceProfileName": "masters.minimal.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterustest1aminimalexamplecom"
+            "Ref": "AWSIAMRolemastersminimalexamplecom"
           }
         ]
       }
@@ -827,13 +827,13 @@
         ]
       }
     },
-    "AWSIAMPolicymasterustest1aminimalexamplecom": {
+    "AWSIAMPolicymastersminimalexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "master-us-test-1a.minimal.example.com",
+        "PolicyName": "masters.minimal.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemasterustest1aminimalexamplecom"
+            "Ref": "AWSIAMRolemastersminimalexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -1034,10 +1034,10 @@
         }
       }
     },
-    "AWSIAMRolemasterustest1aminimalexamplecom": {
+    "AWSIAMRolemastersminimalexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "master-us-test-1a.minimal.example.com",
+        "RoleName": "masters.minimal.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {

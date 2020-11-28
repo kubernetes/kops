@@ -1,11 +1,7 @@
 locals {
   cluster_name                 = "existingsg.example.com"
-  master-us-test-1a_role_arn   = aws_iam_role.master-us-test-1a-existingsg-example-com.arn
-  master-us-test-1a_role_name  = aws_iam_role.master-us-test-1a-existingsg-example-com.name
-  master-us-test-1b_role_arn   = aws_iam_role.master-us-test-1b-existingsg-example-com.arn
-  master-us-test-1b_role_name  = aws_iam_role.master-us-test-1b-existingsg-example-com.name
-  master-us-test-1c_role_arn   = aws_iam_role.master-us-test-1c-existingsg-example-com.arn
-  master-us-test-1c_role_name  = aws_iam_role.master-us-test-1c-existingsg-example-com.name
+  master-us-test-1a_role_arn   = aws_iam_role.masters-existingsg-example-com.arn
+  master-us-test-1a_role_name  = aws_iam_role.masters-existingsg-example-com.name
   master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id]
   master_security_group_ids    = [aws_security_group.masters-existingsg-example-com.id, "sg-master-1a", "sg-master-1b"]
   node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-existingsg-example-com.id]
@@ -27,27 +23,11 @@ output "cluster_name" {
 }
 
 output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.master-us-test-1a-existingsg-example-com.arn
+  value = aws_iam_role.masters-existingsg-example-com.arn
 }
 
 output "master-us-test-1a_role_name" {
-  value = aws_iam_role.master-us-test-1a-existingsg-example-com.name
-}
-
-output "master-us-test-1b_role_arn" {
-  value = aws_iam_role.master-us-test-1b-existingsg-example-com.arn
-}
-
-output "master-us-test-1b_role_name" {
-  value = aws_iam_role.master-us-test-1b-existingsg-example-com.name
-}
-
-output "master-us-test-1c_role_arn" {
-  value = aws_iam_role.master-us-test-1c-existingsg-example-com.arn
-}
-
-output "master-us-test-1c_role_name" {
-  value = aws_iam_role.master-us-test-1c-existingsg-example-com.name
+  value = aws_iam_role.masters-existingsg-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -415,19 +395,9 @@ resource "aws_elb" "api-existingsg-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "master-us-test-1a-existingsg-example-com" {
-  name = "master-us-test-1a.existingsg.example.com"
-  role = aws_iam_role.master-us-test-1a-existingsg-example-com.name
-}
-
-resource "aws_iam_instance_profile" "master-us-test-1b-existingsg-example-com" {
-  name = "master-us-test-1b.existingsg.example.com"
-  role = aws_iam_role.master-us-test-1b-existingsg-example-com.name
-}
-
-resource "aws_iam_instance_profile" "master-us-test-1c-existingsg-example-com" {
-  name = "master-us-test-1c.existingsg.example.com"
-  role = aws_iam_role.master-us-test-1c-existingsg-example-com.name
+resource "aws_iam_instance_profile" "masters-existingsg-example-com" {
+  name = "masters.existingsg.example.com"
+  role = aws_iam_role.masters-existingsg-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-existingsg-example-com" {
@@ -435,22 +405,10 @@ resource "aws_iam_instance_profile" "nodes-existingsg-example-com" {
   role = aws_iam_role.nodes-existingsg-example-com.name
 }
 
-resource "aws_iam_role_policy" "master-us-test-1a-existingsg-example-com" {
-  name   = "master-us-test-1a.existingsg.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.existingsg.example.com_policy")
-  role   = aws_iam_role.master-us-test-1a-existingsg-example-com.name
-}
-
-resource "aws_iam_role_policy" "master-us-test-1b-existingsg-example-com" {
-  name   = "master-us-test-1b.existingsg.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1b.existingsg.example.com_policy")
-  role   = aws_iam_role.master-us-test-1b-existingsg-example-com.name
-}
-
-resource "aws_iam_role_policy" "master-us-test-1c-existingsg-example-com" {
-  name   = "master-us-test-1c.existingsg.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1c.existingsg.example.com_policy")
-  role   = aws_iam_role.master-us-test-1c-existingsg-example-com.name
+resource "aws_iam_role_policy" "masters-existingsg-example-com" {
+  name   = "masters.existingsg.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.existingsg.example.com_policy")
+  role   = aws_iam_role.masters-existingsg-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
@@ -459,19 +417,9 @@ resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
   role   = aws_iam_role.nodes-existingsg-example-com.name
 }
 
-resource "aws_iam_role" "master-us-test-1a-existingsg-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.existingsg.example.com_policy")
-  name               = "master-us-test-1a.existingsg.example.com"
-}
-
-resource "aws_iam_role" "master-us-test-1b-existingsg-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1b.existingsg.example.com_policy")
-  name               = "master-us-test-1b.existingsg.example.com"
-}
-
-resource "aws_iam_role" "master-us-test-1c-existingsg-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1c.existingsg.example.com_policy")
-  name               = "master-us-test-1c.existingsg.example.com"
+resource "aws_iam_role" "masters-existingsg-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.existingsg.example.com_policy")
+  name               = "masters.existingsg.example.com"
 }
 
 resource "aws_iam_role" "nodes-existingsg-example-com" {
@@ -512,7 +460,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1a-existingsg-example-com.id
+    name = aws_iam_instance_profile.masters-existingsg-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
@@ -576,7 +524,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1b-existingsg-example-com.id
+    name = aws_iam_instance_profile.masters-existingsg-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
@@ -640,7 +588,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1c-existingsg-example-com.id
+    name = aws_iam_instance_profile.masters-existingsg-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

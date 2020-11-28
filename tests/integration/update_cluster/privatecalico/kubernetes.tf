@@ -1,11 +1,11 @@
 locals {
   bastion_autoscaling_group_ids     = [aws_autoscaling_group.bastion-privatecalico-example-com.id]
-  bastion_role_arn                  = aws_iam_role.bastion-privatecalico-example-com.arn
-  bastion_role_name                 = aws_iam_role.bastion-privatecalico-example-com.name
+  bastion_role_arn                  = aws_iam_role.bastions-privatecalico-example-com.arn
+  bastion_role_name                 = aws_iam_role.bastions-privatecalico-example-com.name
   bastion_security_group_ids        = [aws_security_group.bastion-privatecalico-example-com.id]
   cluster_name                      = "privatecalico.example.com"
-  master-us-test-1a_role_arn        = aws_iam_role.master-us-test-1a-privatecalico-example-com.arn
-  master-us-test-1a_role_name       = aws_iam_role.master-us-test-1a-privatecalico-example-com.name
+  master-us-test-1a_role_arn        = aws_iam_role.masters-privatecalico-example-com.arn
+  master-us-test-1a_role_name       = aws_iam_role.masters-privatecalico-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privatecalico-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privatecalico-example-com.id]
   node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-privatecalico-example-com.id]
@@ -27,11 +27,11 @@ output "bastion_autoscaling_group_ids" {
 }
 
 output "bastion_role_arn" {
-  value = aws_iam_role.bastion-privatecalico-example-com.arn
+  value = aws_iam_role.bastions-privatecalico-example-com.arn
 }
 
 output "bastion_role_name" {
-  value = aws_iam_role.bastion-privatecalico-example-com.name
+  value = aws_iam_role.bastions-privatecalico-example-com.name
 }
 
 output "bastion_security_group_ids" {
@@ -43,11 +43,11 @@ output "cluster_name" {
 }
 
 output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.master-us-test-1a-privatecalico-example-com.arn
+  value = aws_iam_role.masters-privatecalico-example-com.arn
 }
 
 output "master-us-test-1a_role_name" {
-  value = aws_iam_role.master-us-test-1a-privatecalico-example-com.name
+  value = aws_iam_role.masters-privatecalico-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -344,14 +344,14 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "bastion-privatecalico-example-com" {
-  name = "bastion.privatecalico.example.com"
-  role = aws_iam_role.bastion-privatecalico-example-com.name
+resource "aws_iam_instance_profile" "bastions-privatecalico-example-com" {
+  name = "bastions.privatecalico.example.com"
+  role = aws_iam_role.bastions-privatecalico-example-com.name
 }
 
-resource "aws_iam_instance_profile" "master-us-test-1a-privatecalico-example-com" {
-  name = "master-us-test-1a.privatecalico.example.com"
-  role = aws_iam_role.master-us-test-1a-privatecalico-example-com.name
+resource "aws_iam_instance_profile" "masters-privatecalico-example-com" {
+  name = "masters.privatecalico.example.com"
+  role = aws_iam_role.masters-privatecalico-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecalico-example-com" {
@@ -359,16 +359,16 @@ resource "aws_iam_instance_profile" "nodes-privatecalico-example-com" {
   role = aws_iam_role.nodes-privatecalico-example-com.name
 }
 
-resource "aws_iam_role_policy" "bastion-privatecalico-example-com" {
-  name   = "bastion.privatecalico.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastion.privatecalico.example.com_policy")
-  role   = aws_iam_role.bastion-privatecalico-example-com.name
+resource "aws_iam_role_policy" "bastions-privatecalico-example-com" {
+  name   = "bastions.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecalico.example.com_policy")
+  role   = aws_iam_role.bastions-privatecalico-example-com.name
 }
 
-resource "aws_iam_role_policy" "master-us-test-1a-privatecalico-example-com" {
-  name   = "master-us-test-1a.privatecalico.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.privatecalico.example.com_policy")
-  role   = aws_iam_role.master-us-test-1a-privatecalico-example-com.name
+resource "aws_iam_role_policy" "masters-privatecalico-example-com" {
+  name   = "masters.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privatecalico.example.com_policy")
+  role   = aws_iam_role.masters-privatecalico-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-privatecalico-example-com" {
@@ -377,14 +377,14 @@ resource "aws_iam_role_policy" "nodes-privatecalico-example-com" {
   role   = aws_iam_role.nodes-privatecalico-example-com.name
 }
 
-resource "aws_iam_role" "bastion-privatecalico-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_bastion.privatecalico.example.com_policy")
-  name               = "bastion.privatecalico.example.com"
+resource "aws_iam_role" "bastions-privatecalico-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatecalico.example.com_policy")
+  name               = "bastions.privatecalico.example.com"
 }
 
-resource "aws_iam_role" "master-us-test-1a-privatecalico-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.privatecalico.example.com_policy")
-  name               = "master-us-test-1a.privatecalico.example.com"
+resource "aws_iam_role" "masters-privatecalico-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privatecalico.example.com_policy")
+  name               = "masters.privatecalico.example.com"
 }
 
 resource "aws_iam_role" "nodes-privatecalico-example-com" {
@@ -421,7 +421,7 @@ resource "aws_launch_template" "bastion-privatecalico-example-com" {
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.bastion-privatecalico-example-com.id
+    name = aws_iam_instance_profile.bastions-privatecalico-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "t2.micro"
@@ -484,7 +484,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatecalico-example-
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1a-privatecalico-example-com.id
+    name = aws_iam_instance_profile.masters-privatecalico-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

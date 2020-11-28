@@ -1,11 +1,11 @@
 locals {
   bastion_autoscaling_group_ids     = [aws_autoscaling_group.bastion-privateflannel-example-com.id]
-  bastion_role_arn                  = aws_iam_role.bastion-privateflannel-example-com.arn
-  bastion_role_name                 = aws_iam_role.bastion-privateflannel-example-com.name
+  bastion_role_arn                  = aws_iam_role.bastions-privateflannel-example-com.arn
+  bastion_role_name                 = aws_iam_role.bastions-privateflannel-example-com.name
   bastion_security_group_ids        = [aws_security_group.bastion-privateflannel-example-com.id]
   cluster_name                      = "privateflannel.example.com"
-  master-us-test-1a_role_arn        = aws_iam_role.master-us-test-1a-privateflannel-example-com.arn
-  master-us-test-1a_role_name       = aws_iam_role.master-us-test-1a-privateflannel-example-com.name
+  master-us-test-1a_role_arn        = aws_iam_role.masters-privateflannel-example-com.arn
+  master-us-test-1a_role_name       = aws_iam_role.masters-privateflannel-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privateflannel-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privateflannel-example-com.id]
   node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-privateflannel-example-com.id]
@@ -27,11 +27,11 @@ output "bastion_autoscaling_group_ids" {
 }
 
 output "bastion_role_arn" {
-  value = aws_iam_role.bastion-privateflannel-example-com.arn
+  value = aws_iam_role.bastions-privateflannel-example-com.arn
 }
 
 output "bastion_role_name" {
-  value = aws_iam_role.bastion-privateflannel-example-com.name
+  value = aws_iam_role.bastions-privateflannel-example-com.name
 }
 
 output "bastion_security_group_ids" {
@@ -43,11 +43,11 @@ output "cluster_name" {
 }
 
 output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.master-us-test-1a-privateflannel-example-com.arn
+  value = aws_iam_role.masters-privateflannel-example-com.arn
 }
 
 output "master-us-test-1a_role_name" {
-  value = aws_iam_role.master-us-test-1a-privateflannel-example-com.name
+  value = aws_iam_role.masters-privateflannel-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -344,14 +344,14 @@ resource "aws_elb" "bastion-privateflannel-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "bastion-privateflannel-example-com" {
-  name = "bastion.privateflannel.example.com"
-  role = aws_iam_role.bastion-privateflannel-example-com.name
+resource "aws_iam_instance_profile" "bastions-privateflannel-example-com" {
+  name = "bastions.privateflannel.example.com"
+  role = aws_iam_role.bastions-privateflannel-example-com.name
 }
 
-resource "aws_iam_instance_profile" "master-us-test-1a-privateflannel-example-com" {
-  name = "master-us-test-1a.privateflannel.example.com"
-  role = aws_iam_role.master-us-test-1a-privateflannel-example-com.name
+resource "aws_iam_instance_profile" "masters-privateflannel-example-com" {
+  name = "masters.privateflannel.example.com"
+  role = aws_iam_role.masters-privateflannel-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-privateflannel-example-com" {
@@ -359,16 +359,16 @@ resource "aws_iam_instance_profile" "nodes-privateflannel-example-com" {
   role = aws_iam_role.nodes-privateflannel-example-com.name
 }
 
-resource "aws_iam_role_policy" "bastion-privateflannel-example-com" {
-  name   = "bastion.privateflannel.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastion.privateflannel.example.com_policy")
-  role   = aws_iam_role.bastion-privateflannel-example-com.name
+resource "aws_iam_role_policy" "bastions-privateflannel-example-com" {
+  name   = "bastions.privateflannel.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateflannel.example.com_policy")
+  role   = aws_iam_role.bastions-privateflannel-example-com.name
 }
 
-resource "aws_iam_role_policy" "master-us-test-1a-privateflannel-example-com" {
-  name   = "master-us-test-1a.privateflannel.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.privateflannel.example.com_policy")
-  role   = aws_iam_role.master-us-test-1a-privateflannel-example-com.name
+resource "aws_iam_role_policy" "masters-privateflannel-example-com" {
+  name   = "masters.privateflannel.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privateflannel.example.com_policy")
+  role   = aws_iam_role.masters-privateflannel-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-privateflannel-example-com" {
@@ -377,14 +377,14 @@ resource "aws_iam_role_policy" "nodes-privateflannel-example-com" {
   role   = aws_iam_role.nodes-privateflannel-example-com.name
 }
 
-resource "aws_iam_role" "bastion-privateflannel-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_bastion.privateflannel.example.com_policy")
-  name               = "bastion.privateflannel.example.com"
+resource "aws_iam_role" "bastions-privateflannel-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateflannel.example.com_policy")
+  name               = "bastions.privateflannel.example.com"
 }
 
-resource "aws_iam_role" "master-us-test-1a-privateflannel-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.privateflannel.example.com_policy")
-  name               = "master-us-test-1a.privateflannel.example.com"
+resource "aws_iam_role" "masters-privateflannel-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privateflannel.example.com_policy")
+  name               = "masters.privateflannel.example.com"
 }
 
 resource "aws_iam_role" "nodes-privateflannel-example-com" {
@@ -421,7 +421,7 @@ resource "aws_launch_template" "bastion-privateflannel-example-com" {
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.bastion-privateflannel-example-com.id
+    name = aws_iam_instance_profile.bastions-privateflannel-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "t2.micro"
@@ -484,7 +484,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1a-privateflannel-example-com.id
+    name = aws_iam_instance_profile.masters-privateflannel-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"

@@ -1,11 +1,11 @@
 locals {
   bastion_autoscaling_group_ids     = [aws_autoscaling_group.bastion-privateweave-example-com.id]
-  bastion_role_arn                  = aws_iam_role.bastion-privateweave-example-com.arn
-  bastion_role_name                 = aws_iam_role.bastion-privateweave-example-com.name
+  bastion_role_arn                  = aws_iam_role.bastions-privateweave-example-com.arn
+  bastion_role_name                 = aws_iam_role.bastions-privateweave-example-com.name
   bastion_security_group_ids        = [aws_security_group.bastion-privateweave-example-com.id]
   cluster_name                      = "privateweave.example.com"
-  master-us-test-1a_role_arn        = aws_iam_role.master-us-test-1a-privateweave-example-com.arn
-  master-us-test-1a_role_name       = aws_iam_role.master-us-test-1a-privateweave-example-com.name
+  master-us-test-1a_role_arn        = aws_iam_role.masters-privateweave-example-com.arn
+  master-us-test-1a_role_name       = aws_iam_role.masters-privateweave-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privateweave-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privateweave-example-com.id]
   node_autoscaling_group_ids        = [aws_autoscaling_group.nodes-privateweave-example-com.id]
@@ -27,11 +27,11 @@ output "bastion_autoscaling_group_ids" {
 }
 
 output "bastion_role_arn" {
-  value = aws_iam_role.bastion-privateweave-example-com.arn
+  value = aws_iam_role.bastions-privateweave-example-com.arn
 }
 
 output "bastion_role_name" {
-  value = aws_iam_role.bastion-privateweave-example-com.name
+  value = aws_iam_role.bastions-privateweave-example-com.name
 }
 
 output "bastion_security_group_ids" {
@@ -43,11 +43,11 @@ output "cluster_name" {
 }
 
 output "master-us-test-1a_role_arn" {
-  value = aws_iam_role.master-us-test-1a-privateweave-example-com.arn
+  value = aws_iam_role.masters-privateweave-example-com.arn
 }
 
 output "master-us-test-1a_role_name" {
-  value = aws_iam_role.master-us-test-1a-privateweave-example-com.name
+  value = aws_iam_role.masters-privateweave-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -344,14 +344,14 @@ resource "aws_elb" "bastion-privateweave-example-com" {
   }
 }
 
-resource "aws_iam_instance_profile" "bastion-privateweave-example-com" {
-  name = "bastion.privateweave.example.com"
-  role = aws_iam_role.bastion-privateweave-example-com.name
+resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
+  name = "bastions.privateweave.example.com"
+  role = aws_iam_role.bastions-privateweave-example-com.name
 }
 
-resource "aws_iam_instance_profile" "master-us-test-1a-privateweave-example-com" {
-  name = "master-us-test-1a.privateweave.example.com"
-  role = aws_iam_role.master-us-test-1a-privateweave-example-com.name
+resource "aws_iam_instance_profile" "masters-privateweave-example-com" {
+  name = "masters.privateweave.example.com"
+  role = aws_iam_role.masters-privateweave-example-com.name
 }
 
 resource "aws_iam_instance_profile" "nodes-privateweave-example-com" {
@@ -359,16 +359,16 @@ resource "aws_iam_instance_profile" "nodes-privateweave-example-com" {
   role = aws_iam_role.nodes-privateweave-example-com.name
 }
 
-resource "aws_iam_role_policy" "bastion-privateweave-example-com" {
-  name   = "bastion.privateweave.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastion.privateweave.example.com_policy")
-  role   = aws_iam_role.bastion-privateweave-example-com.name
+resource "aws_iam_role_policy" "bastions-privateweave-example-com" {
+  name   = "bastions.privateweave.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateweave.example.com_policy")
+  role   = aws_iam_role.bastions-privateweave-example-com.name
 }
 
-resource "aws_iam_role_policy" "master-us-test-1a-privateweave-example-com" {
-  name   = "master-us-test-1a.privateweave.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_master-us-test-1a.privateweave.example.com_policy")
-  role   = aws_iam_role.master-us-test-1a-privateweave-example-com.name
+resource "aws_iam_role_policy" "masters-privateweave-example-com" {
+  name   = "masters.privateweave.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_masters.privateweave.example.com_policy")
+  role   = aws_iam_role.masters-privateweave-example-com.name
 }
 
 resource "aws_iam_role_policy" "nodes-privateweave-example-com" {
@@ -377,14 +377,14 @@ resource "aws_iam_role_policy" "nodes-privateweave-example-com" {
   role   = aws_iam_role.nodes-privateweave-example-com.name
 }
 
-resource "aws_iam_role" "bastion-privateweave-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_bastion.privateweave.example.com_policy")
-  name               = "bastion.privateweave.example.com"
+resource "aws_iam_role" "bastions-privateweave-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateweave.example.com_policy")
+  name               = "bastions.privateweave.example.com"
 }
 
-resource "aws_iam_role" "master-us-test-1a-privateweave-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_master-us-test-1a.privateweave.example.com_policy")
-  name               = "master-us-test-1a.privateweave.example.com"
+resource "aws_iam_role" "masters-privateweave-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privateweave.example.com_policy")
+  name               = "masters.privateweave.example.com"
 }
 
 resource "aws_iam_role" "nodes-privateweave-example-com" {
@@ -421,7 +421,7 @@ resource "aws_launch_template" "bastion-privateweave-example-com" {
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.bastion-privateweave-example-com.id
+    name = aws_iam_instance_profile.bastions-privateweave-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "t2.micro"
@@ -484,7 +484,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateweave-example-c
     virtual_name = "ephemeral0"
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.master-us-test-1a-privateweave-example-com.id
+    name = aws_iam_instance_profile.masters-privateweave-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "m3.medium"
