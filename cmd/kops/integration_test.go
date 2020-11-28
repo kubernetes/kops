@@ -52,12 +52,14 @@ import (
 const updateClusterTestBase = "../../tests/integration/update_cluster/"
 
 type integrationTest struct {
-	clusterName    string
-	srcDir         string
-	version        string
-	private        bool
-	zones          int
-	expectPolicies bool
+	clusterName                           string
+	srcDir                                string
+	version                               string
+	private                               bool
+	zones                                 int
+	expectPolicies                        bool
+	expectAdditionalPolicies              bool
+	expectInstanceGroupAdditionalPolicies bool
 	// expectServiceAccountRoles is true if we expect to assign per-ServiceAccount IAM roles (instead of just using the node roles)
 	expectServiceAccountRoles bool
 	launchConfiguration       bool
@@ -138,6 +140,16 @@ func (i *integrationTest) withBastionUserData() *integrationTest {
 	return i
 }
 
+func (i *integrationTest) withAdditionalPolicies() *integrationTest {
+	i.expectAdditionalPolicies = true
+	return i
+}
+
+func (i *integrationTest) withInstanceGroupAdditionalPolicies() *integrationTest {
+	i.expectInstanceGroupAdditionalPolicies = true
+	return i
+}
+
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal").runTestTerraformAWS(t)
@@ -169,6 +181,11 @@ func TestComplex(t *testing.T) {
 // TestExternalPolicies tests external policies output
 func TestExternalPolicies(t *testing.T) {
 	newIntegrationTest("externalpolicies.example.com", "externalpolicies").runTestTerraformAWS(t)
+}
+
+// TestAdditionalPolicies tests additional policies output
+func TestAdditionalPolicies(t *testing.T) {
+	newIntegrationTest("additionalpolicies.example.com", "additionalpolicies").withAdditionalPolicies().withInstanceGroupAdditionalPolicies().runTestTerraformAWS(t)
 }
 
 // TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -528,27 +545,27 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	}
 
 	if i.expectPolicies {
-		expectedFilenames = append(expectedFilenames, []string{
-			"aws_iam_role_masters." + i.clusterName + "_policy",
-			"aws_iam_role_nodes." + i.clusterName + "_policy",
-			"aws_iam_role_policy_masters." + i.clusterName + "_policy",
-			"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
-		}...)
+		expectedFilenames = append(expectedFilenames,
+			"aws_iam_role_masters."+i.clusterName+"_policy",
+			"aws_iam_role_nodes."+i.clusterName+"_policy",
+			"aws_iam_role_policy_masters."+i.clusterName+"_policy",
+			"aws_iam_role_policy_nodes."+i.clusterName+"_policy",
+		)
 		if i.private {
-			expectedFilenames = append(expectedFilenames, []string{
-				"aws_iam_role_bastions." + i.clusterName + "_policy",
-				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-			}...)
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_bastions."+i.clusterName+"_policy",
+				"aws_iam_role_policy_bastions."+i.clusterName+"_policy",
+			)
 			if i.bastionUserData {
 				expectedFilenames = append(expectedFilenames, "aws_launch_template_bastion."+i.clusterName+"_user_data")
 			}
 		}
 	}
 	if i.expectServiceAccountRoles {
-		expectedFilenames = append(expectedFilenames, []string{
-			"aws_iam_role_dns-controller.kube-system.sa." + i.clusterName + "_policy",
-			"aws_iam_role_policy_dns-controller.kube-system.sa." + i.clusterName + "_policy",
-		}...)
+		expectedFilenames = append(expectedFilenames,
+			"aws_iam_role_dns-controller.kube-system.sa."+i.clusterName+"_policy",
+			"aws_iam_role_policy_dns-controller.kube-system.sa."+i.clusterName+"_policy",
+		)
 	}
 	i.runTest(t, h, expectedFilenames, tfFileName, tfFileName, nil)
 }
@@ -576,11 +593,11 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 			"aws_key_pair_kubernetes." + i.clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
 		}
 		if i.private {
-			expectedFilenames = append(expectedFilenames, []string{
-				"aws_iam_role_bastions." + i.clusterName + "_policy",
-				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-				"aws_launch_template_bastion." + i.clusterName + "_user_data",
-			}...)
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_bastions."+i.clusterName+"_policy",
+				"aws_iam_role_policy_bastions."+i.clusterName+"_policy",
+				"aws_launch_template_bastion."+i.clusterName+"_user_data",
+			)
 		}
 	} else if phase == cloudup.PhaseCluster {
 		expectedFilenames = []string{
@@ -589,8 +606,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 
 		for j := 0; j < i.zones; j++ {
 			zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
-			s := "aws_launch_configuration_master-" + zone + ".masters." + i.clusterName + "_user_data"
-			expectedFilenames = append(expectedFilenames, s)
+			expectedFilenames = append(expectedFilenames, "aws_launch_configuration_master-"+zone+".masters."+i.clusterName+"_user_data")
 		}
 	}
 
@@ -614,9 +630,10 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
 		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
-
-		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
-		expectedFilenames = append(expectedFilenames, prefix+"ssh-keys")
+		expectedFilenames = append(expectedFilenames,
+			prefix+"startup-script",
+			prefix+"ssh-keys",
+		)
 	}
 
 	i.runTest(t, h, expectedFilenames, "", "", nil)
