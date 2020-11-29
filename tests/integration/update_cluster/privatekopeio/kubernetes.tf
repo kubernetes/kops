@@ -4,6 +4,12 @@ locals {
   bastions_role_arn                 = aws_iam_role.bastions-privatekopeio-example-com.arn
   bastions_role_name                = aws_iam_role.bastions-privatekopeio-example-com.name
   cluster_name                      = "privatekopeio.example.com"
+  ig_bastion_role_arn               = aws_iam_role.ig-bastion-privatekopeio-example-com.arn
+  ig_bastion_role_name              = aws_iam_role.ig-bastion-privatekopeio-example-com.name
+  ig_master-us-test-1a_role_arn     = aws_iam_role.ig-master-us-test-1a-privatekopeio-example-com.arn
+  ig_master-us-test-1a_role_name    = aws_iam_role.ig-master-us-test-1a-privatekopeio-example-com.name
+  ig_nodes_role_arn                 = aws_iam_role.ig-nodes-privatekopeio-example-com.arn
+  ig_nodes_role_name                = aws_iam_role.ig-nodes-privatekopeio-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privatekopeio-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privatekopeio-example-com.id]
   masters_role_arn                  = aws_iam_role.masters-privatekopeio-example-com.arn
@@ -43,6 +49,30 @@ output "bastions_role_name" {
 
 output "cluster_name" {
   value = "privatekopeio.example.com"
+}
+
+output "ig_bastion_role_arn" {
+  value = aws_iam_role.ig-bastion-privatekopeio-example-com.arn
+}
+
+output "ig_bastion_role_name" {
+  value = aws_iam_role.ig-bastion-privatekopeio-example-com.name
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-privatekopeio-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-privatekopeio-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-privatekopeio-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-privatekopeio-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -355,6 +385,21 @@ resource "aws_iam_instance_profile" "bastions-privatekopeio-example-com" {
   role = aws_iam_role.bastions-privatekopeio-example-com.name
 }
 
+resource "aws_iam_instance_profile" "ig-bastion-privatekopeio-example-com" {
+  name = "ig-bastion.privatekopeio.example.com"
+  role = aws_iam_role.ig-bastion-privatekopeio-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-privatekopeio-example-com" {
+  name = "ig-master-us-test-1a.privatekopeio.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-privatekopeio-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-privatekopeio-example-com" {
+  name = "ig-nodes.privatekopeio.example.com"
+  role = aws_iam_role.ig-nodes-privatekopeio-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-privatekopeio-example-com" {
   name = "masters.privatekopeio.example.com"
   role = aws_iam_role.masters-privatekopeio-example-com.name
@@ -369,6 +414,24 @@ resource "aws_iam_role_policy" "bastions-privatekopeio-example-com" {
   name   = "bastions.privatekopeio.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatekopeio.example.com_policy")
   role   = aws_iam_role.bastions-privatekopeio-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-bastion-privatekopeio-example-com" {
+  name   = "ig-bastion.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-bastion.privatekopeio.example.com_policy")
+  role   = aws_iam_role.ig-bastion-privatekopeio-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-privatekopeio-example-com" {
+  name   = "ig-master-us-test-1a.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.privatekopeio.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-privatekopeio-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-privatekopeio-example-com" {
+  name   = "ig-nodes.privatekopeio.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.privatekopeio.example.com_policy")
+  role   = aws_iam_role.ig-nodes-privatekopeio-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-privatekopeio-example-com" {
@@ -386,6 +449,21 @@ resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
 resource "aws_iam_role" "bastions-privatekopeio-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatekopeio.example.com_policy")
   name               = "bastions.privatekopeio.example.com"
+}
+
+resource "aws_iam_role" "ig-bastion-privatekopeio-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-bastion.privatekopeio.example.com_policy")
+  name               = "ig-bastion.privatekopeio.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-privatekopeio-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.privatekopeio.example.com_policy")
+  name               = "ig-master-us-test-1a.privatekopeio.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-privatekopeio-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.privatekopeio.example.com_policy")
+  name               = "ig-nodes.privatekopeio.example.com"
 }
 
 resource "aws_iam_role" "masters-privatekopeio-example-com" {

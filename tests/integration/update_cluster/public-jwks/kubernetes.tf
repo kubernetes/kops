@@ -1,5 +1,9 @@
 locals {
   cluster_name                         = "minimal.example.com"
+  ig_master-us-test-1a_role_arn        = aws_iam_role.ig-master-us-test-1a-minimal-example-com.arn
+  ig_master-us-test-1a_role_name       = aws_iam_role.ig-master-us-test-1a-minimal-example-com.name
+  ig_nodes_role_arn                    = aws_iam_role.ig-nodes-minimal-example-com.arn
+  ig_nodes_role_name                   = aws_iam_role.ig-nodes-minimal-example-com.name
   kube-system-dns-controller_role_arn  = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
   kube-system-dns-controller_role_name = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
   master_autoscaling_group_ids         = [aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id]
@@ -20,6 +24,22 @@ locals {
 
 output "cluster_name" {
   value = "minimal.example.com"
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-minimal-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-minimal-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-minimal-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-minimal-example-com.name
 }
 
 output "kube-system-dns-controller_role_arn" {
@@ -214,6 +234,16 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
   type = "gp2"
 }
 
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-minimal-example-com" {
+  name = "ig-master-us-test-1a.minimal.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-minimal-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-minimal-example-com" {
+  name = "ig-nodes.minimal.example.com"
+  role = aws_iam_role.ig-nodes-minimal-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-minimal-example-com" {
   name = "masters.minimal.example.com"
   role = aws_iam_role.masters-minimal-example-com.name
@@ -236,6 +266,18 @@ resource "aws_iam_role_policy" "dns-controller-kube-system-sa-minimal-example-co
   role   = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
 }
 
+resource "aws_iam_role_policy" "ig-master-us-test-1a-minimal-example-com" {
+  name   = "ig-master-us-test-1a.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.minimal.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-minimal-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-minimal-example-com" {
+  name   = "ig-nodes.minimal.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.minimal.example.com_policy")
+  role   = aws_iam_role.ig-nodes-minimal-example-com.name
+}
+
 resource "aws_iam_role_policy" "masters-minimal-example-com" {
   name   = "masters.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.minimal.example.com_policy")
@@ -251,6 +293,16 @@ resource "aws_iam_role_policy" "nodes-minimal-example-com" {
 resource "aws_iam_role" "dns-controller-kube-system-sa-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_dns-controller.kube-system.sa.minimal.example.com_policy")
   name               = "dns-controller.kube-system.sa.minimal.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.minimal.example.com_policy")
+  name               = "ig-master-us-test-1a.minimal.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-minimal-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.minimal.example.com_policy")
+  name               = "ig-nodes.minimal.example.com"
 }
 
 resource "aws_iam_role" "masters-minimal-example-com" {

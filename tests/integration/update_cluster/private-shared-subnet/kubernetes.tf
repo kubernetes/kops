@@ -1,23 +1,29 @@
 locals {
-  bastion_autoscaling_group_ids = [aws_autoscaling_group.bastion-private-shared-subnet-example-com.id]
-  bastion_security_group_ids    = [aws_security_group.bastion-private-shared-subnet-example-com.id]
-  bastions_role_arn             = aws_iam_role.bastions-private-shared-subnet-example-com.arn
-  bastions_role_name            = aws_iam_role.bastions-private-shared-subnet-example-com.name
-  cluster_name                  = "private-shared-subnet.example.com"
-  master_autoscaling_group_ids  = [aws_autoscaling_group.master-us-test-1a-masters-private-shared-subnet-example-com.id]
-  master_security_group_ids     = [aws_security_group.masters-private-shared-subnet-example-com.id]
-  masters_role_arn              = aws_iam_role.masters-private-shared-subnet-example-com.arn
-  masters_role_name             = aws_iam_role.masters-private-shared-subnet-example-com.name
-  node_autoscaling_group_ids    = [aws_autoscaling_group.nodes-private-shared-subnet-example-com.id]
-  node_security_group_ids       = [aws_security_group.nodes-private-shared-subnet-example-com.id]
-  node_subnet_ids               = ["subnet-12345678"]
-  nodes_role_arn                = aws_iam_role.nodes-private-shared-subnet-example-com.arn
-  nodes_role_name               = aws_iam_role.nodes-private-shared-subnet-example-com.name
-  region                        = "us-test-1"
-  subnet_ids                    = ["subnet-12345678", "subnet-abcdef"]
-  subnet_us-test-1a_id          = "subnet-12345678"
-  subnet_utility-us-test-1a_id  = "subnet-abcdef"
-  vpc_id                        = "vpc-12345678"
+  bastion_autoscaling_group_ids  = [aws_autoscaling_group.bastion-private-shared-subnet-example-com.id]
+  bastion_security_group_ids     = [aws_security_group.bastion-private-shared-subnet-example-com.id]
+  bastions_role_arn              = aws_iam_role.bastions-private-shared-subnet-example-com.arn
+  bastions_role_name             = aws_iam_role.bastions-private-shared-subnet-example-com.name
+  cluster_name                   = "private-shared-subnet.example.com"
+  ig_bastion_role_arn            = aws_iam_role.ig-bastion-private-shared-subnet-example-com.arn
+  ig_bastion_role_name           = aws_iam_role.ig-bastion-private-shared-subnet-example-com.name
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-private-shared-subnet-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-private-shared-subnet-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-private-shared-subnet-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-private-shared-subnet-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-private-shared-subnet-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-private-shared-subnet-example-com.id]
+  masters_role_arn               = aws_iam_role.masters-private-shared-subnet-example-com.arn
+  masters_role_name              = aws_iam_role.masters-private-shared-subnet-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-private-shared-subnet-example-com.id]
+  node_security_group_ids        = [aws_security_group.nodes-private-shared-subnet-example-com.id]
+  node_subnet_ids                = ["subnet-12345678"]
+  nodes_role_arn                 = aws_iam_role.nodes-private-shared-subnet-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-private-shared-subnet-example-com.name
+  region                         = "us-test-1"
+  subnet_ids                     = ["subnet-12345678", "subnet-abcdef"]
+  subnet_us-test-1a_id           = "subnet-12345678"
+  subnet_utility-us-test-1a_id   = "subnet-abcdef"
+  vpc_id                         = "vpc-12345678"
 }
 
 output "bastion_autoscaling_group_ids" {
@@ -38,6 +44,30 @@ output "bastions_role_name" {
 
 output "cluster_name" {
   value = "private-shared-subnet.example.com"
+}
+
+output "ig_bastion_role_arn" {
+  value = aws_iam_role.ig-bastion-private-shared-subnet-example-com.arn
+}
+
+output "ig_bastion_role_name" {
+  value = aws_iam_role.ig-bastion-private-shared-subnet-example-com.name
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-private-shared-subnet-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-private-shared-subnet-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-private-shared-subnet-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-private-shared-subnet-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -330,6 +360,21 @@ resource "aws_iam_instance_profile" "bastions-private-shared-subnet-example-com"
   role = aws_iam_role.bastions-private-shared-subnet-example-com.name
 }
 
+resource "aws_iam_instance_profile" "ig-bastion-private-shared-subnet-example-com" {
+  name = "ig-bastion.private-shared-subnet.example.com"
+  role = aws_iam_role.ig-bastion-private-shared-subnet-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-private-shared-subnet-example-com" {
+  name = "ig-master-us-test-1a.private-shared-subnet.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-private-shared-subnet-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-private-shared-subnet-example-com" {
+  name = "ig-nodes.private-shared-subnet.example.com"
+  role = aws_iam_role.ig-nodes-private-shared-subnet-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-private-shared-subnet-example-com" {
   name = "masters.private-shared-subnet.example.com"
   role = aws_iam_role.masters-private-shared-subnet-example-com.name
@@ -344,6 +389,24 @@ resource "aws_iam_role_policy" "bastions-private-shared-subnet-example-com" {
   name   = "bastions.private-shared-subnet.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_bastions.private-shared-subnet.example.com_policy")
   role   = aws_iam_role.bastions-private-shared-subnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-bastion-private-shared-subnet-example-com" {
+  name   = "ig-bastion.private-shared-subnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-bastion.private-shared-subnet.example.com_policy")
+  role   = aws_iam_role.ig-bastion-private-shared-subnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-private-shared-subnet-example-com" {
+  name   = "ig-master-us-test-1a.private-shared-subnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.private-shared-subnet.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-private-shared-subnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-private-shared-subnet-example-com" {
+  name   = "ig-nodes.private-shared-subnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.private-shared-subnet.example.com_policy")
+  role   = aws_iam_role.ig-nodes-private-shared-subnet-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-private-shared-subnet-example-com" {
@@ -361,6 +424,21 @@ resource "aws_iam_role_policy" "nodes-private-shared-subnet-example-com" {
 resource "aws_iam_role" "bastions-private-shared-subnet-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.private-shared-subnet.example.com_policy")
   name               = "bastions.private-shared-subnet.example.com"
+}
+
+resource "aws_iam_role" "ig-bastion-private-shared-subnet-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-bastion.private-shared-subnet.example.com_policy")
+  name               = "ig-bastion.private-shared-subnet.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-private-shared-subnet-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.private-shared-subnet.example.com_policy")
+  name               = "ig-master-us-test-1a.private-shared-subnet.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-private-shared-subnet-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.private-shared-subnet.example.com_policy")
+  name               = "ig-nodes.private-shared-subnet.example.com"
 }
 
 resource "aws_iam_role" "masters-private-shared-subnet-example-com" {

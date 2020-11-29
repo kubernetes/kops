@@ -1,24 +1,30 @@
 locals {
-  bastion_autoscaling_group_ids = [aws_autoscaling_group.bastion-unmanaged-example-com.id]
-  bastion_security_group_ids    = [aws_security_group.bastion-unmanaged-example-com.id]
-  bastions_role_arn             = aws_iam_role.bastions-unmanaged-example-com.arn
-  bastions_role_name            = aws_iam_role.bastions-unmanaged-example-com.name
-  cluster_name                  = "unmanaged.example.com"
-  master_autoscaling_group_ids  = [aws_autoscaling_group.master-us-test-1a-masters-unmanaged-example-com.id]
-  master_security_group_ids     = [aws_security_group.masters-unmanaged-example-com.id]
-  masters_role_arn              = aws_iam_role.masters-unmanaged-example-com.arn
-  masters_role_name             = aws_iam_role.masters-unmanaged-example-com.name
-  node_autoscaling_group_ids    = [aws_autoscaling_group.nodes-unmanaged-example-com.id]
-  node_security_group_ids       = [aws_security_group.nodes-unmanaged-example-com.id]
-  node_subnet_ids               = [aws_subnet.us-test-1a-unmanaged-example-com.id, aws_subnet.us-test-1b-unmanaged-example-com.id]
-  nodes_role_arn                = aws_iam_role.nodes-unmanaged-example-com.arn
-  nodes_role_name               = aws_iam_role.nodes-unmanaged-example-com.name
-  region                        = "us-test-1"
-  subnet_us-test-1a_id          = aws_subnet.us-test-1a-unmanaged-example-com.id
-  subnet_us-test-1b_id          = aws_subnet.us-test-1b-unmanaged-example-com.id
-  subnet_utility-us-test-1a_id  = aws_subnet.utility-us-test-1a-unmanaged-example-com.id
-  subnet_utility-us-test-1b_id  = aws_subnet.utility-us-test-1b-unmanaged-example-com.id
-  vpc_id                        = "vpc-12345678"
+  bastion_autoscaling_group_ids  = [aws_autoscaling_group.bastion-unmanaged-example-com.id]
+  bastion_security_group_ids     = [aws_security_group.bastion-unmanaged-example-com.id]
+  bastions_role_arn              = aws_iam_role.bastions-unmanaged-example-com.arn
+  bastions_role_name             = aws_iam_role.bastions-unmanaged-example-com.name
+  cluster_name                   = "unmanaged.example.com"
+  ig_bastion_role_arn            = aws_iam_role.ig-bastion-unmanaged-example-com.arn
+  ig_bastion_role_name           = aws_iam_role.ig-bastion-unmanaged-example-com.name
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-unmanaged-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-unmanaged-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-unmanaged-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-unmanaged-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-unmanaged-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-unmanaged-example-com.id]
+  masters_role_arn               = aws_iam_role.masters-unmanaged-example-com.arn
+  masters_role_name              = aws_iam_role.masters-unmanaged-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-unmanaged-example-com.id]
+  node_security_group_ids        = [aws_security_group.nodes-unmanaged-example-com.id]
+  node_subnet_ids                = [aws_subnet.us-test-1a-unmanaged-example-com.id, aws_subnet.us-test-1b-unmanaged-example-com.id]
+  nodes_role_arn                 = aws_iam_role.nodes-unmanaged-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-unmanaged-example-com.name
+  region                         = "us-test-1"
+  subnet_us-test-1a_id           = aws_subnet.us-test-1a-unmanaged-example-com.id
+  subnet_us-test-1b_id           = aws_subnet.us-test-1b-unmanaged-example-com.id
+  subnet_utility-us-test-1a_id   = aws_subnet.utility-us-test-1a-unmanaged-example-com.id
+  subnet_utility-us-test-1b_id   = aws_subnet.utility-us-test-1b-unmanaged-example-com.id
+  vpc_id                         = "vpc-12345678"
 }
 
 output "bastion_autoscaling_group_ids" {
@@ -39,6 +45,30 @@ output "bastions_role_name" {
 
 output "cluster_name" {
   value = "unmanaged.example.com"
+}
+
+output "ig_bastion_role_arn" {
+  value = aws_iam_role.ig-bastion-unmanaged-example-com.arn
+}
+
+output "ig_bastion_role_name" {
+  value = aws_iam_role.ig-bastion-unmanaged-example-com.name
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-unmanaged-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-unmanaged-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-unmanaged-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-unmanaged-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -335,6 +365,21 @@ resource "aws_iam_instance_profile" "bastions-unmanaged-example-com" {
   role = aws_iam_role.bastions-unmanaged-example-com.name
 }
 
+resource "aws_iam_instance_profile" "ig-bastion-unmanaged-example-com" {
+  name = "ig-bastion.unmanaged.example.com"
+  role = aws_iam_role.ig-bastion-unmanaged-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-unmanaged-example-com" {
+  name = "ig-master-us-test-1a.unmanaged.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-unmanaged-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-unmanaged-example-com" {
+  name = "ig-nodes.unmanaged.example.com"
+  role = aws_iam_role.ig-nodes-unmanaged-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-unmanaged-example-com" {
   name = "masters.unmanaged.example.com"
   role = aws_iam_role.masters-unmanaged-example-com.name
@@ -349,6 +394,24 @@ resource "aws_iam_role_policy" "bastions-unmanaged-example-com" {
   name   = "bastions.unmanaged.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_bastions.unmanaged.example.com_policy")
   role   = aws_iam_role.bastions-unmanaged-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-bastion-unmanaged-example-com" {
+  name   = "ig-bastion.unmanaged.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-bastion.unmanaged.example.com_policy")
+  role   = aws_iam_role.ig-bastion-unmanaged-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-unmanaged-example-com" {
+  name   = "ig-master-us-test-1a.unmanaged.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.unmanaged.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-unmanaged-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-unmanaged-example-com" {
+  name   = "ig-nodes.unmanaged.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.unmanaged.example.com_policy")
+  role   = aws_iam_role.ig-nodes-unmanaged-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-unmanaged-example-com" {
@@ -366,6 +429,21 @@ resource "aws_iam_role_policy" "nodes-unmanaged-example-com" {
 resource "aws_iam_role" "bastions-unmanaged-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.unmanaged.example.com_policy")
   name               = "bastions.unmanaged.example.com"
+}
+
+resource "aws_iam_role" "ig-bastion-unmanaged-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-bastion.unmanaged.example.com_policy")
+  name               = "ig-bastion.unmanaged.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-unmanaged-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.unmanaged.example.com_policy")
+  name               = "ig-master-us-test-1a.unmanaged.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-unmanaged-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.unmanaged.example.com_policy")
+  name               = "ig-nodes.unmanaged.example.com"
 }
 
 resource "aws_iam_role" "masters-unmanaged-example-com" {

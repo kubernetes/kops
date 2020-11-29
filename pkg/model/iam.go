@@ -52,6 +52,22 @@ const NodeRolePolicyTemplate = `{
 
 func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	shared := sets.NewString()
+	// Generate IAM tasks for per node role
+	for _, ig := range b.InstanceGroups {
+		if ig.Spec.IAM == nil {
+			role, err := iam.BuildNodeRoleSubject(ig.Spec.Role)
+			if err != nil {
+				return err
+			}
+			iamName := b.PerRoleIAMName(ig.Spec.Role)
+			if !shared.Has(iamName) {
+				if err := b.buildIAMTasks(role, iamName, nil, c, false); err != nil {
+					return err
+				}
+				shared.Insert(iamName)
+			}
+		}
+	}
 	// Generate IAM tasks for each shared and managed role
 	for _, ig := range b.InstanceGroups {
 		role, err := iam.BuildNodeRoleSubject(ig.Spec.Role)
@@ -73,7 +89,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		} else {
 			// Managed role case
-			iamName := b.IAMName(ig)
+			iamName := b.PerInstanceGroupIAMName(ig)
 			if !shared.Has(iamName) {
 				if err := b.buildIAMTasks(role, iamName, ig, c, false); err != nil {
 					return err
@@ -93,7 +109,7 @@ func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.M
 		return err
 	}
 
-	iamRole, err := b.buildIAMRole(role, iamName, "", c)
+	iamRole, err := b.buildIAMRole(role, iamName, nil, c)
 	if err != nil {
 		return err
 	}
@@ -105,7 +121,7 @@ func (b *IAMModelBuilder) BuildServiceAccountRoleTasks(role iam.Subject, c *fi.M
 	return nil
 }
 
-func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName, exportId string, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
+func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, ig *kops.InstanceGroup, c *fi.ModelBuilderContext) (*awstasks.IAMRole, error) {
 	roleKey, isServiceAccount := b.roleKey(role)
 
 	rolePolicy, err := b.buildAWSIAMRolePolicy(role)
@@ -124,7 +140,11 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName, exportId strin
 		iamRole.ExportWithID = s(roleKey)
 	} else {
 		// e.g. nodes
-		iamRole.ExportWithID = s(roleKey + "s")
+		if ig == nil {
+			iamRole.ExportWithID = s(roleKey + "s")
+		} else {
+			iamRole.ExportWithID = s("ig_" + ig.Name)
+		}
 	}
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.PermissionsBoundary != nil {
@@ -233,7 +253,7 @@ func (b *IAMModelBuilder) createAdditionalPolicyTask(name string, iamRole *awsta
 func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, ig *kops.InstanceGroup, c *fi.ModelBuilderContext, shared bool) error {
 	roleKey, _ := b.roleKey(role)
 
-	iamRole, err := b.buildIAMRole(role, iamName, ig.Name, c)
+	iamRole, err := b.buildIAMRole(role, iamName, ig, c)
 	if err != nil {
 		return err
 	}
@@ -279,20 +299,6 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, ig *ko
 			))
 		}
 
-		// Create External Policy defined at the instance group level task
-		if !shared {
-			var externalPolicies []string
-			if ig != nil && ig.Spec.ExternalPolicies != nil {
-				externalPolicies = *ig.Spec.ExternalPolicies
-			}
-			c.AddTask(b.createExternalPoliciesTask(
-				fmt.Sprintf("%s-policyoverride-ig", iamName),
-				iamRole,
-				externalPolicies,
-				c,
-			))
-		}
-
 		// Generate additional policies defined at the cluster level if needed, and attach to existing role
 		if !shared {
 			additionalPolicy := ""
@@ -312,22 +318,37 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, ig *ko
 			c.AddTask(t)
 		}
 
-		// Generate additional policies defined at the instance group level if needed, and attach to existing role
-		if !shared {
-			additionalPolicy := ""
-			if ig != nil && ig.Spec.AdditionalPolicy != nil {
-				additionalPolicy = *ig.Spec.AdditionalPolicy
+		// Create External Policy defined and generate additional policies
+		// defined at the instance group level if needed, and attach to existing role
+		if ig != nil && !shared {
+			{
+				var externalPolicies []string
+				if ig.Spec.ExternalPolicies != nil {
+					externalPolicies = *ig.Spec.ExternalPolicies
+				}
+				c.AddTask(b.createExternalPoliciesTask(
+					fmt.Sprintf("%s-policyoverride-ig", iamName),
+					iamRole,
+					externalPolicies,
+					c,
+				))
 			}
-			t, err := b.createAdditionalPolicyTask(
-				"additional-ig."+iamName,
-				iamRole,
-				additionalPolicy,
-				c,
-			)
-			if err != nil {
-				return err
+			{
+				additionalPolicy := ""
+				if ig != nil && ig.Spec.AdditionalPolicy != nil {
+					additionalPolicy = *ig.Spec.AdditionalPolicy
+				}
+				t, err := b.createAdditionalPolicyTask(
+					"additional-ig."+iamName,
+					iamRole,
+					additionalPolicy,
+					c,
+				)
+				if err != nil {
+					return err
+				}
+				c.AddTask(t)
 			}
-			c.AddTask(t)
 		}
 	}
 

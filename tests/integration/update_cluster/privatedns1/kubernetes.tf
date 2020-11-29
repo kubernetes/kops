@@ -4,6 +4,12 @@ locals {
   bastions_role_arn                 = aws_iam_role.bastions-privatedns1-example-com.arn
   bastions_role_name                = aws_iam_role.bastions-privatedns1-example-com.name
   cluster_name                      = "privatedns1.example.com"
+  ig_bastion_role_arn               = aws_iam_role.ig-bastion-privatedns1-example-com.arn
+  ig_bastion_role_name              = aws_iam_role.ig-bastion-privatedns1-example-com.name
+  ig_master-us-test-1a_role_arn     = aws_iam_role.ig-master-us-test-1a-privatedns1-example-com.arn
+  ig_master-us-test-1a_role_name    = aws_iam_role.ig-master-us-test-1a-privatedns1-example-com.name
+  ig_nodes_role_arn                 = aws_iam_role.ig-nodes-privatedns1-example-com.arn
+  ig_nodes_role_name                = aws_iam_role.ig-nodes-privatedns1-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privatedns1-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privatedns1-example-com.id]
   masters_role_arn                  = aws_iam_role.masters-privatedns1-example-com.arn
@@ -40,6 +46,30 @@ output "bastions_role_name" {
 
 output "cluster_name" {
   value = "privatedns1.example.com"
+}
+
+output "ig_bastion_role_arn" {
+  value = aws_iam_role.ig-bastion-privatedns1-example-com.arn
+}
+
+output "ig_bastion_role_name" {
+  value = aws_iam_role.ig-bastion-privatedns1-example-com.name
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-privatedns1-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-privatedns1-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-privatedns1-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-privatedns1-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -389,6 +419,21 @@ resource "aws_iam_instance_profile" "bastions-privatedns1-example-com" {
   role = aws_iam_role.bastions-privatedns1-example-com.name
 }
 
+resource "aws_iam_instance_profile" "ig-bastion-privatedns1-example-com" {
+  name = "ig-bastion.privatedns1.example.com"
+  role = aws_iam_role.ig-bastion-privatedns1-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-privatedns1-example-com" {
+  name = "ig-master-us-test-1a.privatedns1.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-privatedns1-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-privatedns1-example-com" {
+  name = "ig-nodes.privatedns1.example.com"
+  role = aws_iam_role.ig-nodes-privatedns1-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-privatedns1-example-com" {
   name = "masters.privatedns1.example.com"
   role = aws_iam_role.masters-privatedns1-example-com.name
@@ -403,6 +448,24 @@ resource "aws_iam_role_policy" "bastions-privatedns1-example-com" {
   name   = "bastions.privatedns1.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatedns1.example.com_policy")
   role   = aws_iam_role.bastions-privatedns1-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-bastion-privatedns1-example-com" {
+  name   = "ig-bastion.privatedns1.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-bastion.privatedns1.example.com_policy")
+  role   = aws_iam_role.ig-bastion-privatedns1-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-privatedns1-example-com" {
+  name   = "ig-master-us-test-1a.privatedns1.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.privatedns1.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-privatedns1-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-privatedns1-example-com" {
+  name   = "ig-nodes.privatedns1.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.privatedns1.example.com_policy")
+  role   = aws_iam_role.ig-nodes-privatedns1-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-privatedns1-example-com" {
@@ -420,6 +483,21 @@ resource "aws_iam_role_policy" "nodes-privatedns1-example-com" {
 resource "aws_iam_role" "bastions-privatedns1-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatedns1.example.com_policy")
   name               = "bastions.privatedns1.example.com"
+}
+
+resource "aws_iam_role" "ig-bastion-privatedns1-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-bastion.privatedns1.example.com_policy")
+  name               = "ig-bastion.privatedns1.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-privatedns1-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.privatedns1.example.com_policy")
+  name               = "ig-master-us-test-1a.privatedns1.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-privatedns1-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.privatedns1.example.com_policy")
+  name               = "ig-nodes.privatedns1.example.com"
 }
 
 resource "aws_iam_role" "masters-privatedns1-example-com" {

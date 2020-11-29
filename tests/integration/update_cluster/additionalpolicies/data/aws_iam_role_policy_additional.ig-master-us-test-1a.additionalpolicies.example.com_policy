@@ -1,0 +1,23 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "sts:AssumeRole"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:iam::123456789000:role/masters/*"
+      ]
+    },
+    {
+      "Action": [
+        "kms:*"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ]
+    }
+  ],
+  "Version": "2012-10-17"
+}

@@ -1,23 +1,43 @@
 locals {
-  cluster_name                 = "complex.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
-  masters_role_arn             = aws_iam_role.masters-complex-example-com.arn
-  masters_role_name            = aws_iam_role.masters-complex-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-complex-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid3", "sg-exampleid4", "sg-exampleid4"]
-  node_subnet_ids              = [aws_subnet.us-test-1a-complex-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-complex-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-complex-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.complex-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-complex-example-com.id
-  vpc_cidr_block               = aws_vpc.complex-example-com.cidr_block
-  vpc_id                       = aws_vpc.complex-example-com.id
+  cluster_name                   = "complex.example.com"
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-complex-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-complex-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-complex-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-complex-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-complex-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-complex-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  masters_role_arn               = aws_iam_role.masters-complex-example-com.arn
+  masters_role_name              = aws_iam_role.masters-complex-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-complex-example-com.id]
+  node_security_group_ids        = [aws_security_group.nodes-complex-example-com.id, "sg-exampleid3", "sg-exampleid3", "sg-exampleid4", "sg-exampleid4"]
+  node_subnet_ids                = [aws_subnet.us-test-1a-complex-example-com.id]
+  nodes_role_arn                 = aws_iam_role.nodes-complex-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-complex-example-com.name
+  region                         = "us-test-1"
+  route_table_public_id          = aws_route_table.complex-example-com.id
+  subnet_us-test-1a_id           = aws_subnet.us-test-1a-complex-example-com.id
+  vpc_cidr_block                 = aws_vpc.complex-example-com.cidr_block
+  vpc_id                         = aws_vpc.complex-example-com.id
 }
 
 output "cluster_name" {
   value = "complex.example.com"
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-complex-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-complex-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-complex-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-complex-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -230,6 +250,16 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   type = "gp2"
 }
 
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-complex-example-com" {
+  name = "ig-master-us-test-1a.complex.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-complex-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-complex-example-com" {
+  name = "ig-nodes.complex.example.com"
+  role = aws_iam_role.ig-nodes-complex-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-complex-example-com" {
   name = "masters.complex.example.com"
   role = aws_iam_role.masters-complex-example-com.name
@@ -238,6 +268,18 @@ resource "aws_iam_instance_profile" "masters-complex-example-com" {
 resource "aws_iam_instance_profile" "nodes-complex-example-com" {
   name = "nodes.complex.example.com"
   role = aws_iam_role.nodes-complex-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-complex-example-com" {
+  name   = "ig-master-us-test-1a.complex.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.complex.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-complex-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-complex-example-com" {
+  name   = "ig-nodes.complex.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.complex.example.com_policy")
+  role   = aws_iam_role.ig-nodes-complex-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-complex-example-com" {
@@ -250,6 +292,18 @@ resource "aws_iam_role_policy" "nodes-complex-example-com" {
   name   = "nodes.complex.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.complex.example.com_policy")
   role   = aws_iam_role.nodes-complex-example-com.name
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-complex-example-com" {
+  assume_role_policy   = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.complex.example.com_policy")
+  name                 = "ig-master-us-test-1a.complex.example.com"
+  permissions_boundary = "arn:aws:iam:00000000000:policy/boundaries"
+}
+
+resource "aws_iam_role" "ig-nodes-complex-example-com" {
+  assume_role_policy   = file("${path.module}/data/aws_iam_role_ig-nodes.complex.example.com_policy")
+  name                 = "ig-nodes.complex.example.com"
+  permissions_boundary = "arn:aws:iam:00000000000:policy/boundaries"
 }
 
 resource "aws_iam_role" "masters-complex-example-com" {

@@ -1,23 +1,43 @@
 locals {
-  cluster_name                 = "externallb.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-externallb-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-externallb-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-externallb-example-com.arn
-  masters_role_name            = aws_iam_role.masters-externallb-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-externallb-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-externallb-example-com.id]
-  node_subnet_ids              = [aws_subnet.us-test-1a-externallb-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-externallb-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-externallb-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.externallb-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-externallb-example-com.id
-  vpc_cidr_block               = aws_vpc.externallb-example-com.cidr_block
-  vpc_id                       = aws_vpc.externallb-example-com.id
+  cluster_name                   = "externallb.example.com"
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-externallb-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-externallb-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-externallb-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-externallb-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-externallb-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-externallb-example-com.id]
+  masters_role_arn               = aws_iam_role.masters-externallb-example-com.arn
+  masters_role_name              = aws_iam_role.masters-externallb-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-externallb-example-com.id]
+  node_security_group_ids        = [aws_security_group.nodes-externallb-example-com.id]
+  node_subnet_ids                = [aws_subnet.us-test-1a-externallb-example-com.id]
+  nodes_role_arn                 = aws_iam_role.nodes-externallb-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-externallb-example-com.name
+  region                         = "us-test-1"
+  route_table_public_id          = aws_route_table.externallb-example-com.id
+  subnet_us-test-1a_id           = aws_subnet.us-test-1a-externallb-example-com.id
+  vpc_cidr_block                 = aws_vpc.externallb-example-com.cidr_block
+  vpc_id                         = aws_vpc.externallb-example-com.id
 }
 
 output "cluster_name" {
   value = "externallb.example.com"
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-externallb-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-externallb-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-externallb-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-externallb-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -208,6 +228,16 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-externallb-example-com" {
   type = "gp2"
 }
 
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-externallb-example-com" {
+  name = "ig-master-us-test-1a.externallb.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-externallb-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-externallb-example-com" {
+  name = "ig-nodes.externallb.example.com"
+  role = aws_iam_role.ig-nodes-externallb-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-externallb-example-com" {
   name = "masters.externallb.example.com"
   role = aws_iam_role.masters-externallb-example-com.name
@@ -216,6 +246,18 @@ resource "aws_iam_instance_profile" "masters-externallb-example-com" {
 resource "aws_iam_instance_profile" "nodes-externallb-example-com" {
   name = "nodes.externallb.example.com"
   role = aws_iam_role.nodes-externallb-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-externallb-example-com" {
+  name   = "ig-master-us-test-1a.externallb.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.externallb.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-externallb-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-externallb-example-com" {
+  name   = "ig-nodes.externallb.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.externallb.example.com_policy")
+  role   = aws_iam_role.ig-nodes-externallb-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-externallb-example-com" {
@@ -228,6 +270,16 @@ resource "aws_iam_role_policy" "nodes-externallb-example-com" {
   name   = "nodes.externallb.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.externallb.example.com_policy")
   role   = aws_iam_role.nodes-externallb-example-com.name
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-externallb-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.externallb.example.com_policy")
+  name               = "ig-master-us-test-1a.externallb.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-externallb-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.externallb.example.com_policy")
+  name               = "ig-nodes.externallb.example.com"
 }
 
 resource "aws_iam_role" "masters-externallb-example-com" {

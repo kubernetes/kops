@@ -124,18 +124,18 @@ spec:
   subnets:
   - us-test-1a
   detailedInstanceMonitoring: true
-  # additionalPolicy: |
-  #   [
-  #     {
-  #       "Effect": "Allow",
-  #       "Action": [
-  #         "sts:AssumeRole"
-  #       ],
-  #       "Resource": [
-  #         "arn:aws:iam::123456789000:role/nodes-ig/*"
-  #       ]
-  #     }
-  #   ]
+  additionalPolicy: |
+    [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "sts:AssumeRole"
+        ],
+        "Resource": [
+          "arn:aws:iam::123456789000:role/nodes-ig/*"
+        ]
+      }
+    ]
 
 ---
 

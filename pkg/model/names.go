@@ -124,14 +124,9 @@ func (b *KopsModelContext) NameForDNSZone() string {
 	return name
 }
 
-// IAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup
-func (b *KopsModelContext) IAMName(ig *kops.InstanceGroup) string {
-	// if the instance group defines additional or external policies, use a dedicated role/instance profile
-	if ig.Spec.ExternalPolicies != nil || ig.Spec.AdditionalPolicy != nil {
-		return "ig-" + ig.Name + "." + b.ClusterName()
-	}
-	// else use the shared policies per instance group role
-	switch ig.Spec.Role {
+// PerRoleIAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup role
+func (b *KopsModelContext) PerRoleIAMName(role kops.InstanceGroupRole) string {
+	switch role {
 	case kops.InstanceGroupRoleMaster:
 		return "masters." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
@@ -139,9 +134,24 @@ func (b *KopsModelContext) IAMName(ig *kops.InstanceGroup) string {
 	case kops.InstanceGroupRoleNode:
 		return "nodes." + b.ClusterName()
 	default:
-		klog.Fatalf("unknown InstanceGroup Role: %q", ig.Spec.Role)
+		klog.Fatalf("unknown InstanceGroup Role: %q", role)
 		return ""
 	}
+}
+
+// PerInstanceGroupIAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup
+func (b *KopsModelContext) PerInstanceGroupIAMName(ig *kops.InstanceGroup) string {
+	return "ig-" + ig.Name + "." + b.ClusterName()
+}
+
+// IAMName determines the name of the IAM Role and Instance Profile to use for the InstanceGroup
+func (b *KopsModelContext) IAMName(ig *kops.InstanceGroup) string {
+	// if the instance group defines additional or external policies, use a dedicated role/instance profile
+	if ig.Spec.ExternalPolicies != nil || ig.Spec.AdditionalPolicy != nil {
+		return b.PerInstanceGroupIAMName(ig)
+	}
+	// else use the shared policies per instance group role
+	return b.PerRoleIAMName(ig.Spec.Role)
 }
 
 var roleNamRegExp = regexp.MustCompile(`([^/]+$)`)

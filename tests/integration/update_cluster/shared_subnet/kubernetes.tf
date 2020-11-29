@@ -1,22 +1,42 @@
 locals {
-  cluster_name                 = "sharedsubnet.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-sharedsubnet-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-sharedsubnet-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-sharedsubnet-example-com.arn
-  masters_role_name            = aws_iam_role.masters-sharedsubnet-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-sharedsubnet-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-sharedsubnet-example-com.id]
-  node_subnet_ids              = ["subnet-12345678"]
-  nodes_role_arn               = aws_iam_role.nodes-sharedsubnet-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-sharedsubnet-example-com.name
-  region                       = "us-test-1"
-  subnet_ids                   = ["subnet-12345678"]
-  subnet_us-test-1a_id         = "subnet-12345678"
-  vpc_id                       = "vpc-12345678"
+  cluster_name                   = "sharedsubnet.example.com"
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-sharedsubnet-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-sharedsubnet-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-sharedsubnet-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-sharedsubnet-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-sharedsubnet-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-sharedsubnet-example-com.id]
+  masters_role_arn               = aws_iam_role.masters-sharedsubnet-example-com.arn
+  masters_role_name              = aws_iam_role.masters-sharedsubnet-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-sharedsubnet-example-com.id]
+  node_security_group_ids        = [aws_security_group.nodes-sharedsubnet-example-com.id]
+  node_subnet_ids                = ["subnet-12345678"]
+  nodes_role_arn                 = aws_iam_role.nodes-sharedsubnet-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-sharedsubnet-example-com.name
+  region                         = "us-test-1"
+  subnet_ids                     = ["subnet-12345678"]
+  subnet_us-test-1a_id           = "subnet-12345678"
+  vpc_id                         = "vpc-12345678"
 }
 
 output "cluster_name" {
   value = "sharedsubnet.example.com"
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-sharedsubnet-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-sharedsubnet-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-sharedsubnet-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-sharedsubnet-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -199,6 +219,16 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedsubnet-example-com" {
   type = "gp2"
 }
 
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-sharedsubnet-example-com" {
+  name = "ig-master-us-test-1a.sharedsubnet.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-sharedsubnet-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-sharedsubnet-example-com" {
+  name = "ig-nodes.sharedsubnet.example.com"
+  role = aws_iam_role.ig-nodes-sharedsubnet-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-sharedsubnet-example-com" {
   name = "masters.sharedsubnet.example.com"
   role = aws_iam_role.masters-sharedsubnet-example-com.name
@@ -207,6 +237,18 @@ resource "aws_iam_instance_profile" "masters-sharedsubnet-example-com" {
 resource "aws_iam_instance_profile" "nodes-sharedsubnet-example-com" {
   name = "nodes.sharedsubnet.example.com"
   role = aws_iam_role.nodes-sharedsubnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-sharedsubnet-example-com" {
+  name   = "ig-master-us-test-1a.sharedsubnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.sharedsubnet.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-sharedsubnet-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-sharedsubnet-example-com" {
+  name   = "ig-nodes.sharedsubnet.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.sharedsubnet.example.com_policy")
+  role   = aws_iam_role.ig-nodes-sharedsubnet-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-sharedsubnet-example-com" {
@@ -219,6 +261,16 @@ resource "aws_iam_role_policy" "nodes-sharedsubnet-example-com" {
   name   = "nodes.sharedsubnet.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.sharedsubnet.example.com_policy")
   role   = aws_iam_role.nodes-sharedsubnet-example-com.name
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-sharedsubnet-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.sharedsubnet.example.com_policy")
+  name               = "ig-master-us-test-1a.sharedsubnet.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-sharedsubnet-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.sharedsubnet.example.com_policy")
+  name               = "ig-nodes.sharedsubnet.example.com"
 }
 
 resource "aws_iam_role" "masters-sharedsubnet-example-com" {

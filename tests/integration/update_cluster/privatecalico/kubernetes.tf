@@ -4,6 +4,12 @@ locals {
   bastions_role_arn                 = aws_iam_role.bastions-privatecalico-example-com.arn
   bastions_role_name                = aws_iam_role.bastions-privatecalico-example-com.name
   cluster_name                      = "privatecalico.example.com"
+  ig_bastion_role_arn               = aws_iam_role.ig-bastion-privatecalico-example-com.arn
+  ig_bastion_role_name              = aws_iam_role.ig-bastion-privatecalico-example-com.name
+  ig_master-us-test-1a_role_arn     = aws_iam_role.ig-master-us-test-1a-privatecalico-example-com.arn
+  ig_master-us-test-1a_role_name    = aws_iam_role.ig-master-us-test-1a-privatecalico-example-com.name
+  ig_nodes_role_arn                 = aws_iam_role.ig-nodes-privatecalico-example-com.arn
+  ig_nodes_role_name                = aws_iam_role.ig-nodes-privatecalico-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privatecalico-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privatecalico-example-com.id]
   masters_role_arn                  = aws_iam_role.masters-privatecalico-example-com.arn
@@ -40,6 +46,30 @@ output "bastions_role_name" {
 
 output "cluster_name" {
   value = "privatecalico.example.com"
+}
+
+output "ig_bastion_role_arn" {
+  value = aws_iam_role.ig-bastion-privatecalico-example-com.arn
+}
+
+output "ig_bastion_role_name" {
+  value = aws_iam_role.ig-bastion-privatecalico-example-com.name
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-privatecalico-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-privatecalico-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-privatecalico-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-privatecalico-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -349,6 +379,21 @@ resource "aws_iam_instance_profile" "bastions-privatecalico-example-com" {
   role = aws_iam_role.bastions-privatecalico-example-com.name
 }
 
+resource "aws_iam_instance_profile" "ig-bastion-privatecalico-example-com" {
+  name = "ig-bastion.privatecalico.example.com"
+  role = aws_iam_role.ig-bastion-privatecalico-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-privatecalico-example-com" {
+  name = "ig-master-us-test-1a.privatecalico.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-privatecalico-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-privatecalico-example-com" {
+  name = "ig-nodes.privatecalico.example.com"
+  role = aws_iam_role.ig-nodes-privatecalico-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-privatecalico-example-com" {
   name = "masters.privatecalico.example.com"
   role = aws_iam_role.masters-privatecalico-example-com.name
@@ -363,6 +408,24 @@ resource "aws_iam_role_policy" "bastions-privatecalico-example-com" {
   name   = "bastions.privatecalico.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecalico.example.com_policy")
   role   = aws_iam_role.bastions-privatecalico-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-bastion-privatecalico-example-com" {
+  name   = "ig-bastion.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-bastion.privatecalico.example.com_policy")
+  role   = aws_iam_role.ig-bastion-privatecalico-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-privatecalico-example-com" {
+  name   = "ig-master-us-test-1a.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.privatecalico.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-privatecalico-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-privatecalico-example-com" {
+  name   = "ig-nodes.privatecalico.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.privatecalico.example.com_policy")
+  role   = aws_iam_role.ig-nodes-privatecalico-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-privatecalico-example-com" {
@@ -380,6 +443,21 @@ resource "aws_iam_role_policy" "nodes-privatecalico-example-com" {
 resource "aws_iam_role" "bastions-privatecalico-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatecalico.example.com_policy")
   name               = "bastions.privatecalico.example.com"
+}
+
+resource "aws_iam_role" "ig-bastion-privatecalico-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-bastion.privatecalico.example.com_policy")
+  name               = "ig-bastion.privatecalico.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-privatecalico-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.privatecalico.example.com_policy")
+  name               = "ig-master-us-test-1a.privatecalico.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-privatecalico-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.privatecalico.example.com_policy")
+  name               = "ig-nodes.privatecalico.example.com"
 }
 
 resource "aws_iam_role" "masters-privatecalico-example-com" {

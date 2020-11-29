@@ -4,6 +4,12 @@ locals {
   bastions_role_arn                 = aws_iam_role.bastions-privateweave-example-com.arn
   bastions_role_name                = aws_iam_role.bastions-privateweave-example-com.name
   cluster_name                      = "privateweave.example.com"
+  ig_bastion_role_arn               = aws_iam_role.ig-bastion-privateweave-example-com.arn
+  ig_bastion_role_name              = aws_iam_role.ig-bastion-privateweave-example-com.name
+  ig_master-us-test-1a_role_arn     = aws_iam_role.ig-master-us-test-1a-privateweave-example-com.arn
+  ig_master-us-test-1a_role_name    = aws_iam_role.ig-master-us-test-1a-privateweave-example-com.name
+  ig_nodes_role_arn                 = aws_iam_role.ig-nodes-privateweave-example-com.arn
+  ig_nodes_role_name                = aws_iam_role.ig-nodes-privateweave-example-com.name
   master_autoscaling_group_ids      = [aws_autoscaling_group.master-us-test-1a-masters-privateweave-example-com.id]
   master_security_group_ids         = [aws_security_group.masters-privateweave-example-com.id]
   masters_role_arn                  = aws_iam_role.masters-privateweave-example-com.arn
@@ -40,6 +46,30 @@ output "bastions_role_name" {
 
 output "cluster_name" {
   value = "privateweave.example.com"
+}
+
+output "ig_bastion_role_arn" {
+  value = aws_iam_role.ig-bastion-privateweave-example-com.arn
+}
+
+output "ig_bastion_role_name" {
+  value = aws_iam_role.ig-bastion-privateweave-example-com.name
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-privateweave-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-privateweave-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-privateweave-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-privateweave-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -349,6 +379,21 @@ resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
   role = aws_iam_role.bastions-privateweave-example-com.name
 }
 
+resource "aws_iam_instance_profile" "ig-bastion-privateweave-example-com" {
+  name = "ig-bastion.privateweave.example.com"
+  role = aws_iam_role.ig-bastion-privateweave-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-privateweave-example-com" {
+  name = "ig-master-us-test-1a.privateweave.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-privateweave-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-privateweave-example-com" {
+  name = "ig-nodes.privateweave.example.com"
+  role = aws_iam_role.ig-nodes-privateweave-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-privateweave-example-com" {
   name = "masters.privateweave.example.com"
   role = aws_iam_role.masters-privateweave-example-com.name
@@ -363,6 +408,24 @@ resource "aws_iam_role_policy" "bastions-privateweave-example-com" {
   name   = "bastions.privateweave.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateweave.example.com_policy")
   role   = aws_iam_role.bastions-privateweave-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-bastion-privateweave-example-com" {
+  name   = "ig-bastion.privateweave.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-bastion.privateweave.example.com_policy")
+  role   = aws_iam_role.ig-bastion-privateweave-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-privateweave-example-com" {
+  name   = "ig-master-us-test-1a.privateweave.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.privateweave.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-privateweave-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-privateweave-example-com" {
+  name   = "ig-nodes.privateweave.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.privateweave.example.com_policy")
+  role   = aws_iam_role.ig-nodes-privateweave-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-privateweave-example-com" {
@@ -380,6 +443,21 @@ resource "aws_iam_role_policy" "nodes-privateweave-example-com" {
 resource "aws_iam_role" "bastions-privateweave-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privateweave.example.com_policy")
   name               = "bastions.privateweave.example.com"
+}
+
+resource "aws_iam_role" "ig-bastion-privateweave-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-bastion.privateweave.example.com_policy")
+  name               = "ig-bastion.privateweave.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-privateweave-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.privateweave.example.com_policy")
+  name               = "ig-master-us-test-1a.privateweave.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-privateweave-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.privateweave.example.com_policy")
+  name               = "ig-nodes.privateweave.example.com"
 }
 
 resource "aws_iam_role" "masters-privateweave-example-com" {

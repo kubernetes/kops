@@ -1,23 +1,43 @@
 locals {
-  cluster_name                 = "additionalpolicies.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-additionalpolicies-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-additionalpolicies-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-additionalpolicies-example-com.arn
-  masters_role_name            = aws_iam_role.masters-additionalpolicies-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-additionalpolicies-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-additionalpolicies-example-com.id, "sg-exampleid3", "sg-exampleid4"]
-  node_subnet_ids              = [aws_subnet.us-test-1a-additionalpolicies-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-additionalpolicies-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-additionalpolicies-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.additionalpolicies-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-additionalpolicies-example-com.id
-  vpc_cidr_block               = aws_vpc.additionalpolicies-example-com.cidr_block
-  vpc_id                       = aws_vpc.additionalpolicies-example-com.id
+  cluster_name                   = "additionalpolicies.example.com"
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-additionalpolicies-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-additionalpolicies-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-additionalpolicies-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-additionalpolicies-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-additionalpolicies-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-additionalpolicies-example-com.id]
+  masters_role_arn               = aws_iam_role.masters-additionalpolicies-example-com.arn
+  masters_role_name              = aws_iam_role.masters-additionalpolicies-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-additionalpolicies-example-com.id]
+  node_security_group_ids        = [aws_security_group.nodes-additionalpolicies-example-com.id, "sg-exampleid3", "sg-exampleid4"]
+  node_subnet_ids                = [aws_subnet.us-test-1a-additionalpolicies-example-com.id]
+  nodes_role_arn                 = aws_iam_role.nodes-additionalpolicies-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-additionalpolicies-example-com.name
+  region                         = "us-test-1"
+  route_table_public_id          = aws_route_table.additionalpolicies-example-com.id
+  subnet_us-test-1a_id           = aws_subnet.us-test-1a-additionalpolicies-example-com.id
+  vpc_cidr_block                 = aws_vpc.additionalpolicies-example-com.cidr_block
+  vpc_id                         = aws_vpc.additionalpolicies-example-com.id
 }
 
 output "cluster_name" {
   value = "additionalpolicies.example.com"
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-additionalpolicies-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-additionalpolicies-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-additionalpolicies-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-additionalpolicies-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -258,6 +278,16 @@ resource "aws_elb" "api-additionalpolicies-example-com" {
   }
 }
 
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-additionalpolicies-example-com" {
+  name = "ig-master-us-test-1a.additionalpolicies.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-additionalpolicies-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-additionalpolicies-example-com" {
+  name = "ig-nodes.additionalpolicies.example.com"
+  role = aws_iam_role.ig-nodes-additionalpolicies-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-additionalpolicies-example-com" {
   name = "masters.additionalpolicies.example.com"
   role = aws_iam_role.masters-additionalpolicies-example-com.name
@@ -266,6 +296,24 @@ resource "aws_iam_instance_profile" "masters-additionalpolicies-example-com" {
 resource "aws_iam_instance_profile" "nodes-additionalpolicies-example-com" {
   name = "nodes.additionalpolicies.example.com"
   role = aws_iam_role.nodes-additionalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy" "additional-ig-ig-nodes-additionalpolicies-example-com" {
+  name   = "additional-ig.ig-nodes.additionalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_additional-ig.ig-nodes.additionalpolicies.example.com_policy")
+  role   = aws_iam_role.ig-nodes-additionalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy" "additional-ig-master-us-test-1a-additionalpolicies-example-com" {
+  name   = "additional.ig-master-us-test-1a.additionalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_additional.ig-master-us-test-1a.additionalpolicies.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-additionalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy" "additional-ig-nodes-additionalpolicies-example-com" {
+  name   = "additional.ig-nodes.additionalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_additional.ig-nodes.additionalpolicies.example.com_policy")
+  role   = aws_iam_role.ig-nodes-additionalpolicies-example-com.name
 }
 
 resource "aws_iam_role_policy" "additional-masters-additionalpolicies-example-com" {
@@ -280,6 +328,18 @@ resource "aws_iam_role_policy" "additional-nodes-additionalpolicies-example-com"
   role   = aws_iam_role.nodes-additionalpolicies-example-com.name
 }
 
+resource "aws_iam_role_policy" "ig-master-us-test-1a-additionalpolicies-example-com" {
+  name   = "ig-master-us-test-1a.additionalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.additionalpolicies.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-additionalpolicies-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-additionalpolicies-example-com" {
+  name   = "ig-nodes.additionalpolicies.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.additionalpolicies.example.com_policy")
+  role   = aws_iam_role.ig-nodes-additionalpolicies-example-com.name
+}
+
 resource "aws_iam_role_policy" "masters-additionalpolicies-example-com" {
   name   = "masters.additionalpolicies.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.additionalpolicies.example.com_policy")
@@ -290,6 +350,16 @@ resource "aws_iam_role_policy" "nodes-additionalpolicies-example-com" {
   name   = "nodes.additionalpolicies.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.additionalpolicies.example.com_policy")
   role   = aws_iam_role.nodes-additionalpolicies-example-com.name
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-additionalpolicies-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.additionalpolicies.example.com_policy")
+  name               = "ig-master-us-test-1a.additionalpolicies.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-additionalpolicies-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.additionalpolicies.example.com_policy")
+  name               = "ig-nodes.additionalpolicies.example.com"
 }
 
 resource "aws_iam_role" "masters-additionalpolicies-example-com" {
@@ -405,7 +475,7 @@ resource "aws_launch_template" "nodes-additionalpolicies-example-com" {
     }
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.nodes-additionalpolicies-example-com.id
+    name = aws_iam_instance_profile.ig-nodes-additionalpolicies-example-com.id
   }
   image_id      = "ami-12345678"
   instance_type = "t2.medium"

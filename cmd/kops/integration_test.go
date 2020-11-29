@@ -545,26 +545,55 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	}
 
 	if i.expectPolicies {
+		// per role policies
 		expectedFilenames = append(expectedFilenames,
 			"aws_iam_role_masters."+i.clusterName+"_policy",
 			"aws_iam_role_nodes."+i.clusterName+"_policy",
 			"aws_iam_role_policy_masters."+i.clusterName+"_policy",
 			"aws_iam_role_policy_nodes."+i.clusterName+"_policy",
 		)
+		// per instance group policies
+		for j := 0; j < i.zones; j++ {
+			zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_ig-master-"+zone+"."+i.clusterName+"_policy",
+				"aws_iam_role_policy_ig-master-"+zone+"."+i.clusterName+"_policy",
+			)
+			if i.expectAdditionalPolicies {
+				expectedFilenames = append(expectedFilenames,
+					"aws_iam_role_policy_additional.ig-master-"+zone+"."+i.clusterName+"_policy",
+				)
+			}
+		}
+		expectedFilenames = append(expectedFilenames,
+			"aws_iam_role_ig-nodes."+i.clusterName+"_policy",
+			"aws_iam_role_policy_ig-nodes."+i.clusterName+"_policy",
+		)
 		if i.expectAdditionalPolicies {
 			expectedFilenames = append(expectedFilenames,
 				"aws_iam_role_policy_additional.masters."+i.clusterName+"_policy",
 				"aws_iam_role_policy_additional.nodes."+i.clusterName+"_policy",
+				"aws_iam_role_policy_additional.ig-nodes."+i.clusterName+"_policy",
+			)
+		}
+		if i.expectInstanceGroupAdditionalPolicies {
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_policy_additional-ig.ig-nodes."+i.clusterName+"_policy",
 			)
 		}
 		if i.private {
 			expectedFilenames = append(expectedFilenames,
+				// per role policies
 				"aws_iam_role_bastions."+i.clusterName+"_policy",
 				"aws_iam_role_policy_bastions."+i.clusterName+"_policy",
+				// per instance group policies
+				"aws_iam_role_ig-bastion."+i.clusterName+"_policy",
+				"aws_iam_role_policy_ig-bastion."+i.clusterName+"_policy",
 			)
 			if i.expectAdditionalPolicies {
 				expectedFilenames = append(expectedFilenames,
 					"aws_iam_role_policy_additional.bastions."+i.clusterName+"_policy",
+					"aws_iam_role_policy_additional.ig-bastion."+i.clusterName+"_policy",
 				)
 			}
 			if i.bastionUserData {
@@ -603,16 +632,37 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 			"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
 			"aws_key_pair_kubernetes." + i.clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
 		}
+		// per instance group policies
+		for j := 0; j < i.zones; j++ {
+			zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_ig-master-"+zone+"."+i.clusterName+"_policy",
+				"aws_iam_role_policy_ig-master-"+zone+"."+i.clusterName+"_policy",
+			)
+		}
+		expectedFilenames = append(expectedFilenames,
+			"aws_iam_role_ig-nodes."+i.clusterName+"_policy",
+			"aws_iam_role_policy_ig-nodes."+i.clusterName+"_policy",
+		)
 		if i.expectAdditionalPolicies {
 			expectedFilenames = append(expectedFilenames,
 				"aws_iam_role_policy_additional.masters."+i.clusterName+"_policy",
 				"aws_iam_role_policy_additional.nodes."+i.clusterName+"_policy",
 			)
 		}
+		if i.expectInstanceGroupAdditionalPolicies {
+			expectedFilenames = append(expectedFilenames,
+				"aws_iam_role_policy_additional-ig.nodes."+i.clusterName+"_policy",
+			)
+		}
 		if i.private {
 			expectedFilenames = append(expectedFilenames,
+				// per role policies
 				"aws_iam_role_bastions."+i.clusterName+"_policy",
 				"aws_iam_role_policy_bastions."+i.clusterName+"_policy",
+				// per instance group policies
+				"aws_iam_role_ig-bastion."+i.clusterName+"_policy",
+				"aws_iam_role_policy_ig-bastion."+i.clusterName+"_policy",
 				"aws_launch_template_bastion."+i.clusterName+"_user_data",
 			)
 			if i.expectAdditionalPolicies {

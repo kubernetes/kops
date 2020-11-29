@@ -1,25 +1,65 @@
 locals {
-  cluster_name                 = "existingsg.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-existingsg-example-com.id, "sg-master-1a", "sg-master-1b"]
-  masters_role_arn             = aws_iam_role.masters-existingsg-example-com.arn
-  masters_role_name            = aws_iam_role.masters-existingsg-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-existingsg-example-com.id]
-  node_security_group_ids      = ["sg-nodes"]
-  node_subnet_ids              = [aws_subnet.us-test-1a-existingsg-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-existingsg-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-existingsg-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.existingsg-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-existingsg-example-com.id
-  subnet_us-test-1b_id         = aws_subnet.us-test-1b-existingsg-example-com.id
-  subnet_us-test-1c_id         = aws_subnet.us-test-1c-existingsg-example-com.id
-  vpc_cidr_block               = aws_vpc.existingsg-example-com.cidr_block
-  vpc_id                       = aws_vpc.existingsg-example-com.id
+  cluster_name                   = "existingsg.example.com"
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-existingsg-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-existingsg-example-com.name
+  ig_master-us-test-1b_role_arn  = aws_iam_role.ig-master-us-test-1b-existingsg-example-com.arn
+  ig_master-us-test-1b_role_name = aws_iam_role.ig-master-us-test-1b-existingsg-example-com.name
+  ig_master-us-test-1c_role_arn  = aws_iam_role.ig-master-us-test-1c-existingsg-example-com.arn
+  ig_master-us-test-1c_role_name = aws_iam_role.ig-master-us-test-1c-existingsg-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-existingsg-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-existingsg-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-existingsg-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-existingsg-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-existingsg-example-com.id, "sg-master-1a", "sg-master-1b"]
+  masters_role_arn               = aws_iam_role.masters-existingsg-example-com.arn
+  masters_role_name              = aws_iam_role.masters-existingsg-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-existingsg-example-com.id]
+  node_security_group_ids        = ["sg-nodes"]
+  node_subnet_ids                = [aws_subnet.us-test-1a-existingsg-example-com.id]
+  nodes_role_arn                 = aws_iam_role.nodes-existingsg-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-existingsg-example-com.name
+  region                         = "us-test-1"
+  route_table_public_id          = aws_route_table.existingsg-example-com.id
+  subnet_us-test-1a_id           = aws_subnet.us-test-1a-existingsg-example-com.id
+  subnet_us-test-1b_id           = aws_subnet.us-test-1b-existingsg-example-com.id
+  subnet_us-test-1c_id           = aws_subnet.us-test-1c-existingsg-example-com.id
+  vpc_cidr_block                 = aws_vpc.existingsg-example-com.cidr_block
+  vpc_id                         = aws_vpc.existingsg-example-com.id
 }
 
 output "cluster_name" {
   value = "existingsg.example.com"
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-existingsg-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-existingsg-example-com.name
+}
+
+output "ig_master-us-test-1b_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1b-existingsg-example-com.arn
+}
+
+output "ig_master-us-test-1b_role_name" {
+  value = aws_iam_role.ig-master-us-test-1b-existingsg-example-com.name
+}
+
+output "ig_master-us-test-1c_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1c-existingsg-example-com.arn
+}
+
+output "ig_master-us-test-1c_role_name" {
+  value = aws_iam_role.ig-master-us-test-1c-existingsg-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-existingsg-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-existingsg-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -395,6 +435,26 @@ resource "aws_elb" "api-existingsg-example-com" {
   }
 }
 
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-existingsg-example-com" {
+  name = "ig-master-us-test-1a.existingsg.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-existingsg-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1b-existingsg-example-com" {
+  name = "ig-master-us-test-1b.existingsg.example.com"
+  role = aws_iam_role.ig-master-us-test-1b-existingsg-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1c-existingsg-example-com" {
+  name = "ig-master-us-test-1c.existingsg.example.com"
+  role = aws_iam_role.ig-master-us-test-1c-existingsg-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-existingsg-example-com" {
+  name = "ig-nodes.existingsg.example.com"
+  role = aws_iam_role.ig-nodes-existingsg-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-existingsg-example-com" {
   name = "masters.existingsg.example.com"
   role = aws_iam_role.masters-existingsg-example-com.name
@@ -403,6 +463,30 @@ resource "aws_iam_instance_profile" "masters-existingsg-example-com" {
 resource "aws_iam_instance_profile" "nodes-existingsg-example-com" {
   name = "nodes.existingsg.example.com"
   role = aws_iam_role.nodes-existingsg-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-existingsg-example-com" {
+  name   = "ig-master-us-test-1a.existingsg.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.existingsg.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-existingsg-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1b-existingsg-example-com" {
+  name   = "ig-master-us-test-1b.existingsg.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1b.existingsg.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1b-existingsg-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1c-existingsg-example-com" {
+  name   = "ig-master-us-test-1c.existingsg.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1c.existingsg.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1c-existingsg-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-existingsg-example-com" {
+  name   = "ig-nodes.existingsg.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.existingsg.example.com_policy")
+  role   = aws_iam_role.ig-nodes-existingsg-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-existingsg-example-com" {
@@ -415,6 +499,26 @@ resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
   name   = "nodes.existingsg.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.existingsg.example.com_policy")
   role   = aws_iam_role.nodes-existingsg-example-com.name
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-existingsg-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.existingsg.example.com_policy")
+  name               = "ig-master-us-test-1a.existingsg.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1b-existingsg-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1b.existingsg.example.com_policy")
+  name               = "ig-master-us-test-1b.existingsg.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1c-existingsg-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1c.existingsg.example.com_policy")
+  name               = "ig-master-us-test-1c.existingsg.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-existingsg-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.existingsg.example.com_policy")
+  name               = "ig-nodes.existingsg.example.com"
 }
 
 resource "aws_iam_role" "masters-existingsg-example-com" {

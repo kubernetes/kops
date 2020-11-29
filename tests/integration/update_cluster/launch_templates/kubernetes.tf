@@ -1,25 +1,65 @@
 locals {
-  cluster_name                 = "launchtemplates.example.com"
-  master_autoscaling_group_ids = [aws_autoscaling_group.master-us-test-1a-masters-launchtemplates-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-launchtemplates-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-launchtemplates-example-com.id]
-  master_security_group_ids    = [aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id]
-  masters_role_arn             = aws_iam_role.masters-launchtemplates-example-com.arn
-  masters_role_name            = aws_iam_role.masters-launchtemplates-example-com.name
-  node_autoscaling_group_ids   = [aws_autoscaling_group.nodes-launchtemplates-example-com.id]
-  node_security_group_ids      = [aws_security_group.nodes-launchtemplates-example-com.id]
-  node_subnet_ids              = [aws_subnet.us-test-1b-launchtemplates-example-com.id]
-  nodes_role_arn               = aws_iam_role.nodes-launchtemplates-example-com.arn
-  nodes_role_name              = aws_iam_role.nodes-launchtemplates-example-com.name
-  region                       = "us-test-1"
-  route_table_public_id        = aws_route_table.launchtemplates-example-com.id
-  subnet_us-test-1a_id         = aws_subnet.us-test-1a-launchtemplates-example-com.id
-  subnet_us-test-1b_id         = aws_subnet.us-test-1b-launchtemplates-example-com.id
-  subnet_us-test-1c_id         = aws_subnet.us-test-1c-launchtemplates-example-com.id
-  vpc_cidr_block               = aws_vpc.launchtemplates-example-com.cidr_block
-  vpc_id                       = aws_vpc.launchtemplates-example-com.id
+  cluster_name                   = "launchtemplates.example.com"
+  ig_master-us-test-1a_role_arn  = aws_iam_role.ig-master-us-test-1a-launchtemplates-example-com.arn
+  ig_master-us-test-1a_role_name = aws_iam_role.ig-master-us-test-1a-launchtemplates-example-com.name
+  ig_master-us-test-1b_role_arn  = aws_iam_role.ig-master-us-test-1b-launchtemplates-example-com.arn
+  ig_master-us-test-1b_role_name = aws_iam_role.ig-master-us-test-1b-launchtemplates-example-com.name
+  ig_master-us-test-1c_role_arn  = aws_iam_role.ig-master-us-test-1c-launchtemplates-example-com.arn
+  ig_master-us-test-1c_role_name = aws_iam_role.ig-master-us-test-1c-launchtemplates-example-com.name
+  ig_nodes_role_arn              = aws_iam_role.ig-nodes-launchtemplates-example-com.arn
+  ig_nodes_role_name             = aws_iam_role.ig-nodes-launchtemplates-example-com.name
+  master_autoscaling_group_ids   = [aws_autoscaling_group.master-us-test-1a-masters-launchtemplates-example-com.id, aws_autoscaling_group.master-us-test-1b-masters-launchtemplates-example-com.id, aws_autoscaling_group.master-us-test-1c-masters-launchtemplates-example-com.id]
+  master_security_group_ids      = [aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id, aws_security_group.masters-launchtemplates-example-com.id]
+  masters_role_arn               = aws_iam_role.masters-launchtemplates-example-com.arn
+  masters_role_name              = aws_iam_role.masters-launchtemplates-example-com.name
+  node_autoscaling_group_ids     = [aws_autoscaling_group.nodes-launchtemplates-example-com.id]
+  node_security_group_ids        = [aws_security_group.nodes-launchtemplates-example-com.id]
+  node_subnet_ids                = [aws_subnet.us-test-1b-launchtemplates-example-com.id]
+  nodes_role_arn                 = aws_iam_role.nodes-launchtemplates-example-com.arn
+  nodes_role_name                = aws_iam_role.nodes-launchtemplates-example-com.name
+  region                         = "us-test-1"
+  route_table_public_id          = aws_route_table.launchtemplates-example-com.id
+  subnet_us-test-1a_id           = aws_subnet.us-test-1a-launchtemplates-example-com.id
+  subnet_us-test-1b_id           = aws_subnet.us-test-1b-launchtemplates-example-com.id
+  subnet_us-test-1c_id           = aws_subnet.us-test-1c-launchtemplates-example-com.id
+  vpc_cidr_block                 = aws_vpc.launchtemplates-example-com.cidr_block
+  vpc_id                         = aws_vpc.launchtemplates-example-com.id
 }
 
 output "cluster_name" {
   value = "launchtemplates.example.com"
+}
+
+output "ig_master-us-test-1a_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1a-launchtemplates-example-com.arn
+}
+
+output "ig_master-us-test-1a_role_name" {
+  value = aws_iam_role.ig-master-us-test-1a-launchtemplates-example-com.name
+}
+
+output "ig_master-us-test-1b_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1b-launchtemplates-example-com.arn
+}
+
+output "ig_master-us-test-1b_role_name" {
+  value = aws_iam_role.ig-master-us-test-1b-launchtemplates-example-com.name
+}
+
+output "ig_master-us-test-1c_role_arn" {
+  value = aws_iam_role.ig-master-us-test-1c-launchtemplates-example-com.arn
+}
+
+output "ig_master-us-test-1c_role_name" {
+  value = aws_iam_role.ig-master-us-test-1c-launchtemplates-example-com.name
+}
+
+output "ig_nodes_role_arn" {
+  value = aws_iam_role.ig-nodes-launchtemplates-example-com.arn
+}
+
+output "ig_nodes_role_name" {
+  value = aws_iam_role.ig-nodes-launchtemplates-example-com.name
 }
 
 output "master_autoscaling_group_ids" {
@@ -355,6 +395,26 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-launchtemplates-example-com" {
   type = "gp2"
 }
 
+resource "aws_iam_instance_profile" "ig-master-us-test-1a-launchtemplates-example-com" {
+  name = "ig-master-us-test-1a.launchtemplates.example.com"
+  role = aws_iam_role.ig-master-us-test-1a-launchtemplates-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1b-launchtemplates-example-com" {
+  name = "ig-master-us-test-1b.launchtemplates.example.com"
+  role = aws_iam_role.ig-master-us-test-1b-launchtemplates-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-master-us-test-1c-launchtemplates-example-com" {
+  name = "ig-master-us-test-1c.launchtemplates.example.com"
+  role = aws_iam_role.ig-master-us-test-1c-launchtemplates-example-com.name
+}
+
+resource "aws_iam_instance_profile" "ig-nodes-launchtemplates-example-com" {
+  name = "ig-nodes.launchtemplates.example.com"
+  role = aws_iam_role.ig-nodes-launchtemplates-example-com.name
+}
+
 resource "aws_iam_instance_profile" "masters-launchtemplates-example-com" {
   name = "masters.launchtemplates.example.com"
   role = aws_iam_role.masters-launchtemplates-example-com.name
@@ -363,6 +423,30 @@ resource "aws_iam_instance_profile" "masters-launchtemplates-example-com" {
 resource "aws_iam_instance_profile" "nodes-launchtemplates-example-com" {
   name = "nodes.launchtemplates.example.com"
   role = aws_iam_role.nodes-launchtemplates-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1a-launchtemplates-example-com" {
+  name   = "ig-master-us-test-1a.launchtemplates.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1a.launchtemplates.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1a-launchtemplates-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1b-launchtemplates-example-com" {
+  name   = "ig-master-us-test-1b.launchtemplates.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1b.launchtemplates.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1b-launchtemplates-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-master-us-test-1c-launchtemplates-example-com" {
+  name   = "ig-master-us-test-1c.launchtemplates.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-master-us-test-1c.launchtemplates.example.com_policy")
+  role   = aws_iam_role.ig-master-us-test-1c-launchtemplates-example-com.name
+}
+
+resource "aws_iam_role_policy" "ig-nodes-launchtemplates-example-com" {
+  name   = "ig-nodes.launchtemplates.example.com"
+  policy = file("${path.module}/data/aws_iam_role_policy_ig-nodes.launchtemplates.example.com_policy")
+  role   = aws_iam_role.ig-nodes-launchtemplates-example-com.name
 }
 
 resource "aws_iam_role_policy" "masters-launchtemplates-example-com" {
@@ -375,6 +459,26 @@ resource "aws_iam_role_policy" "nodes-launchtemplates-example-com" {
   name   = "nodes.launchtemplates.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_nodes.launchtemplates.example.com_policy")
   role   = aws_iam_role.nodes-launchtemplates-example-com.name
+}
+
+resource "aws_iam_role" "ig-master-us-test-1a-launchtemplates-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1a.launchtemplates.example.com_policy")
+  name               = "ig-master-us-test-1a.launchtemplates.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1b-launchtemplates-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1b.launchtemplates.example.com_policy")
+  name               = "ig-master-us-test-1b.launchtemplates.example.com"
+}
+
+resource "aws_iam_role" "ig-master-us-test-1c-launchtemplates-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-master-us-test-1c.launchtemplates.example.com_policy")
+  name               = "ig-master-us-test-1c.launchtemplates.example.com"
+}
+
+resource "aws_iam_role" "ig-nodes-launchtemplates-example-com" {
+  assume_role_policy = file("${path.module}/data/aws_iam_role_ig-nodes.launchtemplates.example.com_policy")
+  name               = "ig-nodes.launchtemplates.example.com"
 }
 
 resource "aws_iam_role" "masters-launchtemplates-example-com" {
