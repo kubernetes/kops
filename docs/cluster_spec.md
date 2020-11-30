@@ -677,6 +677,20 @@ spec:
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [kOps guides on how to set it up](horizontal_pod_autoscaling.md).
 
+## Metrics server
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+Metrics Server is a scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines.
+
+```yaml
+spec:
+  metricsServer:
+    enabled: true
+```
+
+Read more about Metrics Server in the [official documentation](https://github.com/kubernetes-sigs/metrics-server).
+
+
 ## Cluster autoscaler
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.15') }}
 
