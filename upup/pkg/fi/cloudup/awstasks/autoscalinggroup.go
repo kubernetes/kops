@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -114,8 +113,8 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		MinSize: g.MinSize,
 	}
 
+	actual.LoadBalancers = []*ClassicLoadBalancer{}
 	for _, lb := range g.LoadBalancerNames {
-
 		actual.LoadBalancers = append(actual.LoadBalancers, &ClassicLoadBalancer{
 			Name:             aws.String(*lb),
 			LoadBalancerName: aws.String(*lb),
@@ -162,25 +161,19 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	actual.TargetGroups = []*TargetGroup{}
 	if len(g.TargetGroupARNs) > 0 {
-		actualTGs := make([]*TargetGroup, 0)
 		for _, tg := range g.TargetGroupARNs {
-			parsed, err := arn.Parse(fi.StringValue(tg))
+			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(tg))
 			if err != nil {
-				return nil, fmt.Errorf("error parsing target grup ARN: %v", err)
+				return nil, err
 			}
-			resource := strings.Split(parsed.Resource, "/")
-			if len(resource) != 3 || resource[0] != "targetgroup" {
-				return nil, fmt.Errorf("error parsing target grup ARN resource: %q", parsed.Resource)
+			if targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tcp") && targetGroupName != awsup.GetResourceName32(c.Cluster.Name, "tls") {
+				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(targetGroupName)})
+			} else {
+				actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(fi.StringValue(g.AutoScalingGroupName) + "-" + targetGroupName)})
 			}
-			actualTGs = append(actualTGs, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(resource[1])})
 		}
-		targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), actualTGs, e.TargetGroups)
-		if err != nil {
-			return nil, err
-		}
-		actual.TargetGroups = targetGroups
-		sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
 	}
+	sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
 
 	if g.VPCZoneIdentifier != nil {
 		subnets := strings.Split(*g.VPCZoneIdentifier, ",")
