@@ -79,6 +79,7 @@
           "my-external-elb-3"
         ],
         "TargetGroupARNs": [
+          "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1",
           "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2",
           "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3"
         ]

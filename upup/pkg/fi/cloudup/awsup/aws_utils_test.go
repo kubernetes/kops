@@ -105,3 +105,38 @@ func TestEC2TagSpecification(t *testing.T) {
 		})
 	}
 }
+
+func Test_GetResourceName32(t *testing.T) {
+	grid := []struct {
+		ClusterName string
+		Prefix      string
+		Expected    string
+	}{
+		{
+			"mycluster",
+			"bastion",
+			"bastion-mycluster-vnrjie",
+		},
+		{
+			"mycluster.example.com",
+			"bastion",
+			"bastion-mycluster-example-o8elkm",
+		},
+		{
+			"this.is.a.very.long.cluster.example.com",
+			"api",
+			"api-this-is-a-very-long-c-q4ukp4",
+		},
+		{
+			"this.is.a.very.long.cluster.example.com",
+			"bastion",
+			"bastion-this-is-a-very-lo-4ggpa2",
+		},
+	}
+	for _, g := range grid {
+		actual := GetResourceName32(g.ClusterName, g.Prefix)
+		if actual != g.Expected {
+			t.Errorf("unexpected result from %q+%q.  expected %q, got %q", g.Prefix, g.ClusterName, g.Expected, actual)
+		}
+	}
+}
