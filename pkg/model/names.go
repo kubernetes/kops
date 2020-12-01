@@ -21,12 +21,12 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-
-	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 // SecurityGroupName returns the security group name for the specific role
@@ -81,6 +81,13 @@ func (b *KopsModelContext) LinkToELBSecurityGroup(prefix string) *awstasks.Secur
 	return &awstasks.SecurityGroup{Name: &name}
 }
 
+// LBName32 will attempt to calculate a meaningful name for an ELB given a prefix
+// Will never return a string longer than 32 chars
+// Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
+func (m *KopsModelContext) LBName32(prefix string) string {
+	return awsup.GetResourceName32(m.Cluster.ObjectMeta.Name, prefix)
+}
+
 // CLBName returns CLB name plus cluster name
 func (b *KopsModelContext) CLBName(prefix string) string {
 	return prefix + "." + b.ClusterName()
@@ -91,7 +98,7 @@ func (b *KopsModelContext) NLBName(prefix string) string {
 }
 
 func (b *KopsModelContext) NLBTargetGroupName(prefix string) string {
-	return b.GetELBName32(prefix)
+	return awsup.GetResourceName32(b.Cluster.ObjectMeta.Name, prefix)
 }
 
 func (b *KopsModelContext) LinkToCLB(prefix string) *awstasks.ClassicLoadBalancer {
