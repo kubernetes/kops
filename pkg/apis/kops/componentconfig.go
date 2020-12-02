@@ -490,6 +490,11 @@ type KubeAPIServerConfig struct {
 	// CorsAllowedOrigins is a list of origins for CORS. An allowed origin can be a regular
 	// expression to support subdomain matching. If this list is empty CORS will not be enabled.
 	CorsAllowedOrigins []string `json:"corsAllowedOrigins,omitempty" flag:"cors-allowed-origins"`
+
+	// DefaultNotReadyTolerationSeconds indicates the tolerationSeconds of the toleration for notReady:NoExecute that is added by default to every pod that does not already have such a toleration.
+	DefaultNotReadyTolerationSeconds *int64 `json:"defaultNotReadyTolerationSeconds,omitempty" flag:"default-not-ready-toleration-seconds"`
+	// DefaultUnreachableTolerationSeconds indicates the tolerationSeconds of the toleration for unreachable:NoExecute that is added by default to every pod that does not already have such a toleration.
+	DefaultUnreachableTolerationSeconds *int64 `json:"defaultUnreachableTolerationSeconds,omitempty" flag:"default-unreachable-toleration-seconds"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
