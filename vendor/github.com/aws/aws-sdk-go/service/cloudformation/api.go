@@ -255,6 +255,9 @@ func (c *CloudFormation) CreateChangeSetRequest(input *CreateChangeSetInput) (re
 // the change set by using the ExecuteChangeSet action. AWS CloudFormation doesn't
 // make changes until you execute the change set.
 //
+// To create a change set for the entire stack hierachy, set IncludeNestedStacks
+// to True.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -632,6 +635,11 @@ func (c *CloudFormation) DeleteChangeSetRequest(input *DeleteChangeSetInput) (re
 //
 // If the call successfully completes, AWS CloudFormation successfully deleted
 // the change set.
+//
+// If IncludeNestedStacks specifies True during the creation of the nested change
+// set, then DeleteChangeSet will delete all change sets that belong to the
+// stacks hierarchy and will also delete all change sets for nested stacks with
+// the status of REVIEW_IN_PROGRESS.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2767,6 +2775,9 @@ func (c *CloudFormation) ExecuteChangeSetRequest(input *ExecuteChangeSetInput) (
 // If a stack policy is associated with the stack, AWS CloudFormation enforces
 // the policy during the update. You can't specify a temporary stack policy
 // that overrides the current policy.
+//
+// To create a change set for the entire stack hierachy, IncludeNestedStacks
+// must have been set to True.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5966,6 +5977,15 @@ type ChangeSetSummary struct {
 	// updated.
 	ExecutionStatus *string `type:"string" enum:"ExecutionStatus"`
 
+	// Specifies the current setting of IncludeNestedStacks for the change set.
+	IncludeNestedStacks *bool `type:"boolean"`
+
+	// The parent change set ID.
+	ParentChangeSetId *string `min:"1" type:"string"`
+
+	// The root change set ID.
+	RootChangeSetId *string `min:"1" type:"string"`
+
 	// The ID of the stack with which the change set is associated.
 	StackId *string `type:"string"`
 
@@ -6018,6 +6038,24 @@ func (s *ChangeSetSummary) SetDescription(v string) *ChangeSetSummary {
 // SetExecutionStatus sets the ExecutionStatus field's value.
 func (s *ChangeSetSummary) SetExecutionStatus(v string) *ChangeSetSummary {
 	s.ExecutionStatus = &v
+	return s
+}
+
+// SetIncludeNestedStacks sets the IncludeNestedStacks field's value.
+func (s *ChangeSetSummary) SetIncludeNestedStacks(v bool) *ChangeSetSummary {
+	s.IncludeNestedStacks = &v
+	return s
+}
+
+// SetParentChangeSetId sets the ParentChangeSetId field's value.
+func (s *ChangeSetSummary) SetParentChangeSetId(v string) *ChangeSetSummary {
+	s.ParentChangeSetId = &v
+	return s
+}
+
+// SetRootChangeSetId sets the RootChangeSetId field's value.
+func (s *ChangeSetSummary) SetRootChangeSetId(v string) *ChangeSetSummary {
+	s.RootChangeSetId = &v
 	return s
 }
 
@@ -6226,12 +6264,12 @@ type CreateChangeSetInput struct {
 	//    and AWS::Serverless (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html)
 	//    transforms, which are macros hosted by AWS CloudFormation. This capacity
 	//    does not apply to creating change sets, and specifying it when creating
-	//    change sets has no effect. Also, change sets do not currently support
-	//    nested stacks. If you want to create a stack from a stack template that
-	//    contains macros and nested stacks, you must create or update the stack
-	//    directly from the template using the CreateStack or UpdateStack action,
-	//    and specifying this capability. For more information on macros, see Using
-	//    AWS CloudFormation Macros to Perform Custom Processing on Templates (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
+	//    change sets has no effect. If you want to create a stack from a stack
+	//    template that contains macros and nested stacks, you must create or update
+	//    the stack directly from the template using the CreateStack or UpdateStack
+	//    action, and specifying this capability. For more information on macros,
+	//    see Using AWS CloudFormation Macros to Perform Custom Processing on Templates
+	//    (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
 	Capabilities []*string `type:"list"`
 
 	// The name of the change set. The name must be unique among all change sets
@@ -6267,6 +6305,11 @@ type CreateChangeSetInput struct {
 
 	// A description to help you identify this change set.
 	Description *string `min:"1" type:"string"`
+
+	// Creates a change set for the all nested stacks specified in the template.
+	// The default behavior of this action is set to False. To include nested sets
+	// in a change set, specify True.
+	IncludeNestedStacks *bool `type:"boolean"`
 
 	// The Amazon Resource Names (ARNs) of Amazon Simple Notification Service (Amazon
 	// SNS) topics that AWS CloudFormation associates with the stack. To remove
@@ -6444,6 +6487,12 @@ func (s *CreateChangeSetInput) SetDescription(v string) *CreateChangeSetInput {
 	return s
 }
 
+// SetIncludeNestedStacks sets the IncludeNestedStacks field's value.
+func (s *CreateChangeSetInput) SetIncludeNestedStacks(v bool) *CreateChangeSetInput {
+	s.IncludeNestedStacks = &v
+	return s
+}
+
 // SetNotificationARNs sets the NotificationARNs field's value.
 func (s *CreateChangeSetInput) SetNotificationARNs(v []*string) *CreateChangeSetInput {
 	s.NotificationARNs = v
@@ -6581,16 +6630,16 @@ type CreateStackInput struct {
 	//    template, without first reviewing the resulting changes in a change set,
 	//    you must acknowledge this capability. This includes the AWS::Include (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/create-reusable-transform-function-snippets-and-add-to-your-template-with-aws-include-transform.html)
 	//    and AWS::Serverless (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html)
-	//    transforms, which are macros hosted by AWS CloudFormation. Change sets
-	//    do not currently support nested stacks. If you want to create a stack
-	//    from a stack template that contains macros and nested stacks, you must
-	//    create the stack directly from the template using this capability. You
-	//    should only create stacks directly from a stack template that contains
-	//    macros if you know what processing the macro performs. Each macro relies
-	//    on an underlying Lambda service function for processing stack templates.
-	//    Be aware that the Lambda function owner can update the function operation
-	//    without AWS CloudFormation being notified. For more information, see Using
-	//    AWS CloudFormation Macros to Perform Custom Processing on Templates (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
+	//    transforms, which are macros hosted by AWS CloudFormation. If you want
+	//    to create a stack from a stack template that contains macros and nested
+	//    stacks, you must create the stack directly from the template using this
+	//    capability. You should only create stacks directly from a stack template
+	//    that contains macros if you know what processing the macro performs. Each
+	//    macro relies on an underlying Lambda service function for processing stack
+	//    templates. Be aware that the Lambda function owner can update the function
+	//    operation without AWS CloudFormation being notified. For more information,
+	//    see Using AWS CloudFormation Macros to Perform Custom Processing on Templates
+	//    (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
 	Capabilities []*string `type:"list"`
 
 	// A unique identifier for this CreateStack request. Specify this token if you
@@ -7756,9 +7805,9 @@ func (s DeleteStackSetOutput) GoString() string {
 }
 
 // [Service-managed permissions] The AWS Organizations accounts to which StackSets
-// deploys. StackSets does not deploy stack instances to the organization master
-// account, even if the master account is in your organization or in an OU in
-// your organization.
+// deploys. StackSets does not deploy stack instances to the organization management
+// account, even if the organization management account is in your organization
+// or in an OU in your organization.
 //
 // For update operations, you can specify either Accounts or OrganizationalUnitIds.
 // For create and delete operations, specify OrganizationalUnitIds.
@@ -8058,6 +8107,9 @@ type DescribeChangeSetOutput struct {
 	// updated.
 	ExecutionStatus *string `type:"string" enum:"ExecutionStatus"`
 
+	// Verifies if IncludeNestedStacks is set to True.
+	IncludeNestedStacks *bool `type:"boolean"`
+
 	// If the output exceeds 1 MB, a string that identifies the next page of changes.
 	// If there is no additional page, this value is null.
 	NextToken *string `min:"1" type:"string"`
@@ -8072,9 +8124,17 @@ type DescribeChangeSetOutput struct {
 	// data type.
 	Parameters []*Parameter `type:"list"`
 
+	// Specifies the change set ID of the parent change set in the current nested
+	// change set hierarchy.
+	ParentChangeSetId *string `min:"1" type:"string"`
+
 	// The rollback triggers for AWS CloudFormation to monitor during stack creation
 	// and updating operations, and for the specified monitoring period afterwards.
 	RollbackConfiguration *RollbackConfiguration `type:"structure"`
+
+	// Specifies the change set ID of the root change set in the current nested
+	// change set hierarchy.
+	RootChangeSetId *string `min:"1" type:"string"`
 
 	// The ARN of the stack that is associated with the change set.
 	StackId *string `type:"string"`
@@ -8147,6 +8207,12 @@ func (s *DescribeChangeSetOutput) SetExecutionStatus(v string) *DescribeChangeSe
 	return s
 }
 
+// SetIncludeNestedStacks sets the IncludeNestedStacks field's value.
+func (s *DescribeChangeSetOutput) SetIncludeNestedStacks(v bool) *DescribeChangeSetOutput {
+	s.IncludeNestedStacks = &v
+	return s
+}
+
 // SetNextToken sets the NextToken field's value.
 func (s *DescribeChangeSetOutput) SetNextToken(v string) *DescribeChangeSetOutput {
 	s.NextToken = &v
@@ -8165,9 +8231,21 @@ func (s *DescribeChangeSetOutput) SetParameters(v []*Parameter) *DescribeChangeS
 	return s
 }
 
+// SetParentChangeSetId sets the ParentChangeSetId field's value.
+func (s *DescribeChangeSetOutput) SetParentChangeSetId(v string) *DescribeChangeSetOutput {
+	s.ParentChangeSetId = &v
+	return s
+}
+
 // SetRollbackConfiguration sets the RollbackConfiguration field's value.
 func (s *DescribeChangeSetOutput) SetRollbackConfiguration(v *RollbackConfiguration) *DescribeChangeSetOutput {
 	s.RollbackConfiguration = v
+	return s
+}
+
+// SetRootChangeSetId sets the RootChangeSetId field's value.
+func (s *DescribeChangeSetOutput) SetRootChangeSetId(v string) *DescribeChangeSetOutput {
+	s.RootChangeSetId = &v
 	return s
 }
 
@@ -11559,6 +11637,9 @@ type ListTypesInput struct {
 	//    handlers, and therefore cannot actually be provisioned.
 	ProvisioningType *string `type:"string" enum:"ProvisioningType"`
 
+	// The type of extension.
+	Type *string `type:"string" enum:"RegistryType"`
+
 	// The scope at which the type is visible and usable in CloudFormation operations.
 	//
 	// Valid values include:
@@ -11621,6 +11702,12 @@ func (s *ListTypesInput) SetNextToken(v string) *ListTypesInput {
 // SetProvisioningType sets the ProvisioningType field's value.
 func (s *ListTypesInput) SetProvisioningType(v string) *ListTypesInput {
 	s.ProvisioningType = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ListTypesInput) SetType(v string) *ListTypesInput {
+	s.Type = &v
 	return s
 }
 
@@ -11724,6 +11811,62 @@ func (s *LoggingConfig) SetLogGroupName(v string) *LoggingConfig {
 // SetLogRoleArn sets the LogRoleArn field's value.
 func (s *LoggingConfig) SetLogRoleArn(v string) *LoggingConfig {
 	s.LogRoleArn = &v
+	return s
+}
+
+// Contains information about the module from which the resource was created,
+// if the resource was created from a module included in the stack template.
+//
+// For more information on modules, see Using modules to encapsulate and reuse
+// resource configurations (AWSCloudFormation/latest/UserGuide/modules.html)
+// in the CloudFormation User Guide.
+type ModuleInfo struct {
+	_ struct{} `type:"structure"`
+
+	// A concantenated list of the logical IDs of the module or modules containing
+	// the resource. Modules are listed starting with the inner-most nested module,
+	// and separated by /.
+	//
+	// In the following example, the resource was created from a module, moduleA,
+	// that is nested inside a parent module, moduleB.
+	//
+	// moduleA/moduleB
+	//
+	// For more information, see Referencing resources in a module (AWSCloudFormation/latest/UserGuide/modules.html#module-ref-resources)
+	// in the CloudFormation User Guide.
+	LogicalIdHierarchy *string `type:"string"`
+
+	// A concantenated list of the the module type or types containing the resource.
+	// Module types are listed starting with the inner-most nested module, and separated
+	// by /.
+	//
+	// In the following example, the resource was created from a module of type
+	// AWS::First::Example::MODULE, that is nested inside a parent module of type
+	// AWS::Second::Example::MODULE.
+	//
+	// AWS::First::Example::MODULE/AWS::Second::Example::MODULE
+	TypeHierarchy *string `type:"string"`
+}
+
+// String returns the string representation
+func (s ModuleInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModuleInfo) GoString() string {
+	return s.String()
+}
+
+// SetLogicalIdHierarchy sets the LogicalIdHierarchy field's value.
+func (s *ModuleInfo) SetLogicalIdHierarchy(v string) *ModuleInfo {
+	s.LogicalIdHierarchy = &v
+	return s
+}
+
+// SetTypeHierarchy sets the TypeHierarchy field's value.
+func (s *ModuleInfo) SetTypeHierarchy(v string) *ModuleInfo {
+	s.TypeHierarchy = &v
 	return s
 }
 
@@ -12196,11 +12339,12 @@ type RegisterTypeInput struct {
 	// to register, see submit (https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-cli-submit.html)
 	// in the CloudFormation CLI User Guide.
 	//
-	// As part of registering a resource provider type, CloudFormation must be able
-	// to access the S3 bucket which contains the schema handler package for that
-	// resource provider. For more information, see IAM Permissions for Registering
-	// a Resource Provider (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry.html#registry-register-permissions)
-	// in the AWS CloudFormation User Guide.
+	// The user registering the resource provider type must be able to access the
+	// the schema handler package in the S3 bucket. That is, the user needs to have
+	// GetObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html)
+	// permissions for the schema handler package. For more information, see Actions,
+	// Resources, and Condition Keys for Amazon S3 (https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazons3.html)
+	// in the AWS Identity and Access Management User Guide.
 	//
 	// SchemaHandlerPackage is a required field
 	SchemaHandlerPackage *string `min:"1" type:"string" required:"true"`
@@ -12344,8 +12488,13 @@ type ResourceChange struct {
 	_ struct{} `type:"structure"`
 
 	// The action that AWS CloudFormation takes on the resource, such as Add (adds
-	// a new resource), Modify (changes a resource), or Remove (deletes a resource).
+	// a new resource), Modify (changes a resource), Remove (deletes a resource),
+	// Import (imports a resource), or Dynamic (exact action for the resource cannot
+	// be determined).
 	Action *string `type:"string" enum:"ChangeAction"`
+
+	// The change set ID of the nested change set.
+	ChangeSetId *string `min:"1" type:"string"`
 
 	// For the Modify action, a list of ResourceChangeDetail structures that describes
 	// the changes that AWS CloudFormation will make to the resource.
@@ -12353,6 +12502,10 @@ type ResourceChange struct {
 
 	// The resource's logical ID, which is defined in the stack's template.
 	LogicalResourceId *string `type:"string"`
+
+	// Contains information about the module from which the resource was created,
+	// if the resource was created from a module included in the stack template.
+	ModuleInfo *ModuleInfo `type:"structure"`
 
 	// The resource's physical ID (resource name). Resources that you are adding
 	// don't have physical IDs because they haven't been created.
@@ -12396,6 +12549,12 @@ func (s *ResourceChange) SetAction(v string) *ResourceChange {
 	return s
 }
 
+// SetChangeSetId sets the ChangeSetId field's value.
+func (s *ResourceChange) SetChangeSetId(v string) *ResourceChange {
+	s.ChangeSetId = &v
+	return s
+}
+
 // SetDetails sets the Details field's value.
 func (s *ResourceChange) SetDetails(v []*ResourceChangeDetail) *ResourceChange {
 	s.Details = v
@@ -12405,6 +12564,12 @@ func (s *ResourceChange) SetDetails(v []*ResourceChangeDetail) *ResourceChange {
 // SetLogicalResourceId sets the LogicalResourceId field's value.
 func (s *ResourceChange) SetLogicalResourceId(v string) *ResourceChange {
 	s.LogicalResourceId = &v
+	return s
+}
+
+// SetModuleInfo sets the ModuleInfo field's value.
+func (s *ResourceChange) SetModuleInfo(v *ModuleInfo) *ResourceChange {
+	s.ModuleInfo = v
 	return s
 }
 
@@ -14024,6 +14189,10 @@ type StackResource struct {
 	// LogicalResourceId is a required field
 	LogicalResourceId *string `type:"string" required:"true"`
 
+	// Contains information about the module from which the resource was created,
+	// if the resource was created from a module included in the stack template.
+	ModuleInfo *ModuleInfo `type:"structure"`
+
 	// The name or unique identifier that corresponds to a physical instance ID
 	// of a resource supported by AWS CloudFormation.
 	PhysicalResourceId *string `type:"string"`
@@ -14080,6 +14249,12 @@ func (s *StackResource) SetDriftInformation(v *StackResourceDriftInformation) *S
 // SetLogicalResourceId sets the LogicalResourceId field's value.
 func (s *StackResource) SetLogicalResourceId(v string) *StackResource {
 	s.LogicalResourceId = &v
+	return s
+}
+
+// SetModuleInfo sets the ModuleInfo field's value.
+func (s *StackResource) SetModuleInfo(v *ModuleInfo) *StackResource {
+	s.ModuleInfo = v
 	return s
 }
 
@@ -14153,6 +14328,10 @@ type StackResourceDetail struct {
 	// in the AWS CloudFormation User Guide.
 	Metadata *string `type:"string"`
 
+	// Contains information about the module from which the resource was created,
+	// if the resource was created from a module included in the stack template.
+	ModuleInfo *ModuleInfo `type:"structure"`
+
 	// The name or unique identifier that corresponds to a physical instance ID
 	// of a resource supported by AWS CloudFormation.
 	PhysicalResourceId *string `type:"string"`
@@ -14216,6 +14395,12 @@ func (s *StackResourceDetail) SetLogicalResourceId(v string) *StackResourceDetai
 // SetMetadata sets the Metadata field's value.
 func (s *StackResourceDetail) SetMetadata(v string) *StackResourceDetail {
 	s.Metadata = &v
+	return s
+}
+
+// SetModuleInfo sets the ModuleInfo field's value.
+func (s *StackResourceDetail) SetModuleInfo(v *ModuleInfo) *StackResourceDetail {
+	s.ModuleInfo = v
 	return s
 }
 
@@ -14288,6 +14473,10 @@ type StackResourceDrift struct {
 	//
 	// LogicalResourceId is a required field
 	LogicalResourceId *string `type:"string" required:"true"`
+
+	// Contains information about the module from which the resource was created,
+	// if the resource was created from a module included in the stack template.
+	ModuleInfo *ModuleInfo `type:"structure"`
 
 	// The name or unique identifier that corresponds to a physical instance ID
 	// of a resource supported by AWS CloudFormation.
@@ -14363,6 +14552,12 @@ func (s *StackResourceDrift) SetExpectedProperties(v string) *StackResourceDrift
 // SetLogicalResourceId sets the LogicalResourceId field's value.
 func (s *StackResourceDrift) SetLogicalResourceId(v string) *StackResourceDrift {
 	s.LogicalResourceId = &v
+	return s
+}
+
+// SetModuleInfo sets the ModuleInfo field's value.
+func (s *StackResourceDrift) SetModuleInfo(v *ModuleInfo) *StackResourceDrift {
+	s.ModuleInfo = v
 	return s
 }
 
@@ -14531,6 +14726,10 @@ type StackResourceSummary struct {
 	// LogicalResourceId is a required field
 	LogicalResourceId *string `type:"string" required:"true"`
 
+	// Contains information about the module from which the resource was created,
+	// if the resource was created from a module included in the stack template.
+	ModuleInfo *ModuleInfo `type:"structure"`
+
 	// The name or unique identifier that corresponds to a physical instance ID
 	// of the resource.
 	PhysicalResourceId *string `type:"string"`
@@ -14576,6 +14775,12 @@ func (s *StackResourceSummary) SetLastUpdatedTimestamp(v time.Time) *StackResour
 // SetLogicalResourceId sets the LogicalResourceId field's value.
 func (s *StackResourceSummary) SetLogicalResourceId(v string) *StackResourceSummary {
 	s.LogicalResourceId = &v
+	return s
+}
+
+// SetModuleInfo sets the ModuleInfo field's value.
+func (s *StackResourceSummary) SetModuleInfo(v *ModuleInfo) *StackResourceSummary {
+	s.ModuleInfo = v
 	return s
 }
 
@@ -16027,16 +16232,16 @@ type UpdateStackInput struct {
 	//    template, without first reviewing the resulting changes in a change set,
 	//    you must acknowledge this capability. This includes the AWS::Include (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/create-reusable-transform-function-snippets-and-add-to-your-template-with-aws-include-transform.html)
 	//    and AWS::Serverless (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html)
-	//    transforms, which are macros hosted by AWS CloudFormation. Change sets
-	//    do not currently support nested stacks. If you want to update a stack
-	//    from a stack template that contains macros and nested stacks, you must
-	//    update the stack directly from the template using this capability. You
-	//    should only update stacks directly from a stack template that contains
-	//    macros if you know what processing the macro performs. Each macro relies
-	//    on an underlying Lambda service function for processing stack templates.
-	//    Be aware that the Lambda function owner can update the function operation
-	//    without AWS CloudFormation being notified. For more information, see Using
-	//    AWS CloudFormation Macros to Perform Custom Processing on Templates (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
+	//    transforms, which are macros hosted by AWS CloudFormation. If you want
+	//    to update a stack from a stack template that contains macros and nested
+	//    stacks, you must update the stack directly from the template using this
+	//    capability. You should only update stacks directly from a stack template
+	//    that contains macros if you know what processing the macro performs. Each
+	//    macro relies on an underlying Lambda service function for processing stack
+	//    templates. Be aware that the Lambda function owner can update the function
+	//    operation without AWS CloudFormation being notified. For more information,
+	//    see Using AWS CloudFormation Macros to Perform Custom Processing on Templates
+	//    (http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html).
 	Capabilities []*string `type:"list"`
 
 	// A unique identifier for this UpdateStack request. Specify this token if you
@@ -17195,6 +17400,9 @@ const (
 
 	// ChangeActionImport is a ChangeAction enum value
 	ChangeActionImport = "Import"
+
+	// ChangeActionDynamic is a ChangeAction enum value
+	ChangeActionDynamic = "Dynamic"
 )
 
 // ChangeAction_Values returns all elements of the ChangeAction enum
@@ -17204,6 +17412,7 @@ func ChangeAction_Values() []string {
 		ChangeActionModify,
 		ChangeActionRemove,
 		ChangeActionImport,
+		ChangeActionDynamic,
 	}
 }
 
@@ -17217,8 +17426,17 @@ const (
 	// ChangeSetStatusCreateComplete is a ChangeSetStatus enum value
 	ChangeSetStatusCreateComplete = "CREATE_COMPLETE"
 
+	// ChangeSetStatusDeletePending is a ChangeSetStatus enum value
+	ChangeSetStatusDeletePending = "DELETE_PENDING"
+
+	// ChangeSetStatusDeleteInProgress is a ChangeSetStatus enum value
+	ChangeSetStatusDeleteInProgress = "DELETE_IN_PROGRESS"
+
 	// ChangeSetStatusDeleteComplete is a ChangeSetStatus enum value
 	ChangeSetStatusDeleteComplete = "DELETE_COMPLETE"
+
+	// ChangeSetStatusDeleteFailed is a ChangeSetStatus enum value
+	ChangeSetStatusDeleteFailed = "DELETE_FAILED"
 
 	// ChangeSetStatusFailed is a ChangeSetStatus enum value
 	ChangeSetStatusFailed = "FAILED"
@@ -17230,7 +17448,10 @@ func ChangeSetStatus_Values() []string {
 		ChangeSetStatusCreatePending,
 		ChangeSetStatusCreateInProgress,
 		ChangeSetStatusCreateComplete,
+		ChangeSetStatusDeletePending,
+		ChangeSetStatusDeleteInProgress,
 		ChangeSetStatusDeleteComplete,
+		ChangeSetStatusDeleteFailed,
 		ChangeSetStatusFailed,
 	}
 }
@@ -17546,12 +17767,16 @@ func RegistrationStatus_Values() []string {
 const (
 	// RegistryTypeResource is a RegistryType enum value
 	RegistryTypeResource = "RESOURCE"
+
+	// RegistryTypeModule is a RegistryType enum value
+	RegistryTypeModule = "MODULE"
 )
 
 // RegistryType_Values returns all elements of the RegistryType enum
 func RegistryType_Values() []string {
 	return []string{
 		RegistryTypeResource,
+		RegistryTypeModule,
 	}
 }
 

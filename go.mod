@@ -56,7 +56,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
-	github.com/aws/aws-sdk-go v1.35.24
+	github.com/aws/aws-sdk-go v1.36.0
 	github.com/bazelbuild/bazel-gazelle v0.19.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
