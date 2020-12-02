@@ -23,25 +23,25 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.10.0 <1.11.0"
     # Stretch is the default for 1.11 (for nvme)
-    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2020-07-20
+    - name: kope.io/k8s-1.11-debian-stretch-amd64-hvm-ebs-2020-11-19
       providerID: aws
       kubernetesVersion: ">=1.11.0 <1.12.0"
-    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2020-07-20
+    - name: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2020-11-19
       providerID: aws
       kubernetesVersion: ">=1.12.0 <1.13.0"
-    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2020-07-20
+    - name: kope.io/k8s-1.13-debian-stretch-amd64-hvm-ebs-2020-11-19
       providerID: aws
       kubernetesVersion: ">=1.13.0 <1.14.0"
-    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2020-07-20
+    - name: kope.io/k8s-1.14-debian-stretch-amd64-hvm-ebs-2020-11-19
       providerID: aws
       kubernetesVersion: ">=1.14.0 <1.15.0"
-    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-07-20
+    - name: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2020-11-19
       providerID: aws
       kubernetesVersion: ">=1.15.0 <1.16.0"
-    - name: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2020-07-20
+    - name: kope.io/k8s-1.16-debian-stretch-amd64-hvm-ebs-2020-11-19
       providerID: aws
       kubernetesVersion: ">=1.16.0 <1.17.0"
-    - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2020-07-20
+    - name: kope.io/k8s-1.17-debian-stretch-amd64-hvm-ebs-2020-11-19
       providerID: aws
       kubernetesVersion: ">=1.17.0 <1.18.0"
     - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201026
@@ -59,10 +59,10 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.18.0"
-    recommendedVersion: 1.18.10
+    recommendedVersion: 1.18.12
     requiredVersion: 1.18.0
   - range: ">=1.17.0"
-    recommendedVersion: 1.17.13
+    recommendedVersion: 1.17.14
     requiredVersion: 1.17.0
   - range: ">=1.16.0"
     recommendedVersion: 1.16.15
@@ -89,15 +89,15 @@ spec:
   - range: ">=1.19.0-alpha.1"
     #recommendedVersion: "1.19.0-alpha.1"
     #requiredVersion: 1.19.0
-    kubernetesVersion: 1.19.3
+    kubernetesVersion: 1.19.4
   - range: ">=1.18.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.18.0
-    kubernetesVersion: 1.18.10
+    kubernetesVersion: 1.18.12
   - range: ">=1.17.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.17.0
-    kubernetesVersion: 1.17.13
+    kubernetesVersion: 1.17.14
   - range: ">=1.16.0-alpha.1"
     recommendedVersion: "1.18.2"
     #requiredVersion: 1.16.0
