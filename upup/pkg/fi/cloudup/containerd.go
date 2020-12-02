@@ -171,6 +171,7 @@ func findAllContainerdDockerMappings() map[string]string {
 		"1.2.12": "19.03.6",
 		"1.2.13": "19.03.11",
 		"1.3.7":  "19.03.13",
+		"1.3.9":  "19.03.14",
 	}
 
 	return versions
