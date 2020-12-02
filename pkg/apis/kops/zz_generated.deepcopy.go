@@ -2586,6 +2586,16 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.DefaultNotReadyTolerationSeconds != nil {
+		in, out := &in.DefaultNotReadyTolerationSeconds, &out.DefaultNotReadyTolerationSeconds
+		*out = new(int64)
+		**out = **in
+	}
+	if in.DefaultUnreachableTolerationSeconds != nil {
+		in, out := &in.DefaultUnreachableTolerationSeconds, &out.DefaultUnreachableTolerationSeconds
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 
