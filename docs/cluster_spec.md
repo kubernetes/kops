@@ -446,6 +446,17 @@ spec:
     eventTTL: 03h0m0s
 ```
 
+### Taint based Evictions
+
+There are two parameters related to taint based evictions. These parameters indicate default value of the `tolerationSeconds` for `notReady:NoExecute` and `unreachable:NoExecute`.
+
+```yaml
+spec:
+  kubeAPIServer:
+    defaultNotReadyTolerationSeconds: 600
+    defaultUnreachableTolerationSeconds: 600
+```
+
 ## externalDns
 
 This block contains configuration options for your `external-DNS` provider.
