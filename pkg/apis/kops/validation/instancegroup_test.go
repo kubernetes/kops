@@ -197,6 +197,9 @@ func TestValidBootDevice(t *testing.T) {
 			volumeType: "standard",
 		},
 		{
+			volumeType: "gp3",
+		},
+		{
 			volumeType: "gp2",
 		},
 		{
