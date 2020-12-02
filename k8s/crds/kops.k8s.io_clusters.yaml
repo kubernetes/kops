@@ -1231,6 +1231,9 @@ spec:
                   experimentalClusterSigningDuration:
                     description: ExperimentalClusterSigningDuration is the duration that determines the length of duration that the signed certificates will be given. (default 8760h0m0s)
                     type: string
+                  externalCloudVolumePlugin:
+                    description: ExternalCloudVolumePlugin is a fallback mechanism that allows a legacy, in-tree cloudprovider to be used for volume plugins even when an external cloud controller manager is being used.  This can be used instead of installing CSI.  The value should be the same as is used for the --cloud-provider flag, i.e. "aws".
+                    type: string
                   featureGates:
                     additionalProperties:
                       type: string

@@ -4170,6 +4170,7 @@ func autoConvert_v1alpha2_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
+	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
 	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
@@ -4235,6 +4236,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha2_KubeControllerMana
 	out.AuthenticationKubeconfig = in.AuthenticationKubeconfig
 	out.AuthorizationKubeconfig = in.AuthorizationKubeconfig
 	out.AuthorizationAlwaysAllowPaths = in.AuthorizationAlwaysAllowPaths
+	out.ExternalCloudVolumePlugin = in.ExternalCloudVolumePlugin
 	out.EnableProfiling = in.EnableProfiling
 	return nil
 }
