@@ -2066,7 +2066,7 @@ spec:
           operator: Exists
           tolerationSeconds: 300
       containers:
-      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.24
+      - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.30
         name: digitalocean-cloud-controller-manager
         command:
           - "/bin/digitalocean-cloud-controller-manager"
