@@ -66,7 +66,7 @@ github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
 github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
-# github.com/aws/aws-sdk-go v1.35.10
+# github.com/aws/aws-sdk-go v1.36.0
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -617,7 +617,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/mod v0.3.0
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200707034311-ab3426394381
+# golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -643,7 +643,7 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20200622214017-ed371f2e16b4
+# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
