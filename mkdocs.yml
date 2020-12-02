@@ -68,14 +68,14 @@ nav:
   - API:
     - Cluster Resource: "cluster_spec.md"
     - InstanceGroup Resource: "instance_groups.md"
-
+  - Addons:
+    - Addons: "addons.md"
   - Operations:
     - Updates & Upgrades: "operations/updates_and_upgrades.md"
     - Working with Instance Groups: "tutorial/working-with-instancegroups.md"
     - Using Manifests and Customizing: "manifests_and_customizing_via_api.md"
     - High Availability: "operations/high_availability.md"
     - Instancegroup images: "operations/images.md"
-    - Cluster Addons & Manager : "operations/addons.md"
     - Cluster configuration management: "changing_configuration.md"
     - Cluster Templating: "operations/cluster_template.md"
     - Cluster upgrades and migrations: "operations/cluster_upgrades_and_migrations.md"
@@ -148,6 +148,7 @@ nav:
     - Bazel: "development/bazel.md"
     - Vendoring: "development/vendoring.md"
     - Ports: "development/ports.md"
+    - Cluster Addons & Manager : "development/addons.md"
   - Releases:
     - "1.18": releases/1.18-NOTES.md
     - "1.17": releases/1.17-NOTES.md
