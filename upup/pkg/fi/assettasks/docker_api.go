@@ -83,8 +83,7 @@ func (d *dockerAPI) tagImage(imageID string, ref string) error {
 	klog.V(4).Infof("docker tag for image %q, tag %q", imageID, ref)
 
 	ctx := context.Background()
-	options := types.ImageTagOptions{}
-	err := d.client.ImageTag(ctx, imageID, ref, options)
+	err := d.client.ImageTag(ctx, imageID, ref)
 	if err != nil {
 		return fmt.Errorf("error tagging image %q with tag %q: %v", imageID, ref, err)
 	}
