@@ -196,7 +196,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	}
 
 	if g.Spec.RootVolumeType != nil && kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
-		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"standard", "gp2", "io1", "io2"})...)
+		allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolumeType"), g.Spec.RootVolumeType, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
 	}
 
 	return allErrs
