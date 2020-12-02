@@ -67,6 +67,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		name := b.Cluster.ObjectMeta.Name + "-addons-" + key
 		manifestPath := "addons/" + *a.Manifest
+		klog.V(4).Infof("Addon %q", name)
 
 		manifestResource := b.templates.Find(manifestPath)
 		if manifestResource == nil {
@@ -978,6 +979,28 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 					Selector: map[string]string{"k8s-addon": key},
 					Manifest: fi.String(location),
 					Id:       id,
+				})
+			}
+		}
+	}
+
+	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
+		key := "aws-cloud-controller.addons.k8s.io"
+
+		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
+			// Version refers to the addon configuration.  The CCM tag is given by
+			// the template function AWSCCMTag()
+			version := "1.18.0-kops.1"
+			{
+				id := "k8s-1.18"
+				location := key + "/" + id + ".yaml"
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Manifest:          fi.String(location),
+					Selector:          map[string]string{"k8s-addon": key},
+					KubernetesVersion: ">=1.18.0",
+					Id:                id,
 				})
 			}
 		}
