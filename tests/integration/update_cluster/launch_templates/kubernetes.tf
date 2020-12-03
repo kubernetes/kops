@@ -419,6 +419,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-launchtemplates-e
   name_prefix = "master-us-test-1a.masters.launchtemplates.example.com-"
   root_block_device {
     delete_on_termination = true
+    encrypted             = false
     volume_size           = 64
     volume_type           = "gp2"
   }
@@ -439,6 +440,7 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-launchtemplates-e
   name_prefix = "master-us-test-1b.masters.launchtemplates.example.com-"
   root_block_device {
     delete_on_termination = true
+    encrypted             = false
     volume_size           = 64
     volume_type           = "gp2"
   }
@@ -459,6 +461,7 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-launchtemplates-e
   name_prefix = "master-us-test-1c.masters.launchtemplates.example.com-"
   root_block_device {
     delete_on_termination = true
+    encrypted             = false
     volume_size           = 64
     volume_type           = "gp2"
   }
@@ -479,6 +482,7 @@ resource "aws_launch_configuration" "nodes-launchtemplates-example-com" {
   name_prefix = "nodes.launchtemplates.example.com-"
   root_block_device {
     delete_on_termination = true
+    encrypted             = false
     volume_size           = 128
     volume_type           = "gp2"
   }
