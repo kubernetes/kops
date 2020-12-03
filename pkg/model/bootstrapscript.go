@@ -18,6 +18,7 @@ package model
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
@@ -358,6 +359,14 @@ func (b *BootstrapScript) Run(c *fi.Context) error {
 			}
 			return string(content), nil
 		},
+
+		"CompressUserData": func() *bool {
+			return b.ig.Spec.CompressUserData
+		},
+
+		"GzipBase64": func(data string) (string, error) {
+			return gzipBase64(data)
+		},
 	}
 
 	awsNodeUpTemplate, err := resources.AWSNodeUpTemplate(b.ig)
@@ -519,4 +528,24 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
 		buffer.WriteString("systemctl daemon-reexec\n")
 	}
 	return buffer.String()
+}
+
+func gzipBase64(data string) (string, error) {
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+
+	_, err := gz.Write([]byte(data))
+	if err != nil {
+		return "", err
+	}
+
+	if err = gz.Flush(); err != nil {
+		return "", err
+	}
+
+	if err = gz.Close(); err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
 }

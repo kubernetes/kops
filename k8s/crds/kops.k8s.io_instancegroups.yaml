@@ -84,6 +84,9 @@ spec:
                   type: string
                 description: CloudLabels indicates the labels for instances in this group, at the AWS level
                 type: object
+              compressUserData:
+                description: CompressUserData compresses parts of the user data to save space
+                type: boolean
               detailedInstanceMonitoring:
                 description: DetailedInstanceMonitoring defines if detailed-monitoring is enabled (AWS only)
                 type: boolean
