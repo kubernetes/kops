@@ -84,6 +84,7 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	tg := response.TargetGroups[0]
 
 	actual := &TargetGroup{
+		Name:               tg.TargetGroupName,
 		Port:               tg.Port,
 		Protocol:           tg.Protocol,
 		ARN:                tg.TargetGroupArn,
@@ -108,7 +109,6 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 	actual.Tags = tags
 
 	// Prevent spurious changes
-	actual.Name = e.Name
 	actual.Lifecycle = e.Lifecycle
 	actual.Shared = e.Shared
 
@@ -201,56 +201,6 @@ func (a OrderTargetGroupsByName) Len() int      { return len(a) }
 func (a OrderTargetGroupsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a OrderTargetGroupsByName) Less(i, j int) bool {
 	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
-}
-
-// pkg/model/awsmodel doesn't know the ARN of the API TargetGroup tasks that it passes to the master ASGs,
-// it only knows the ARN of external target groups passed through the InstanceGroupSpec.
-// We lookup the ARN for TargetGroup tasks that don't have it set in order to attach the LB to the ASG.
-//
-// This means some TargetGroup tasks have ARN set and others do not.
-// When `Find`ing the ASG and recreating the TargetGroup tasks we need them to match how the model creates them,
-// but we only know the ARNs, not the task names associated with them.
-// This reuslts in spurious changes being reported during subsequent `update cluster` runs because the API TargetGroup task is named differently
-// between the kops model and the ASG's `Find`.
-//
-// To prevent this, we need to update the API TargetGroup tasks in the ASG's TargetGroups list.
-// Because we don't know whether any given ARN attached to an ASG is an API TargetGroup task or not,
-// we have to find the API TargetGroup task, lookup its ARN, then compare that to the list of attached TargetGroups.
-func ReconcileTargetGroups(cloud awsup.AWSCloud, actual []*TargetGroup, expected []*TargetGroup) ([]*TargetGroup, error) {
-	apiTGTasks := make([]*TargetGroup, 0)
-	for _, tg := range expected {
-		// All external TargetGroups have their Shared field set to true. The API TargetGroups do not.
-		// Note that Shared is set by the kops model rather than AWS tags.
-		if !fi.BoolValue(tg.Shared) {
-			apiTGTasks = append(apiTGTasks, tg)
-		}
-	}
-
-	reconciled := make([]*TargetGroup, 0)
-
-	if len(actual) == 0 {
-		return reconciled, nil
-	}
-
-	apiTGs := make(map[string]*TargetGroup)
-	for _, task := range apiTGTasks {
-		apiTG, err := FindTargetGroupByName(cloud, fi.StringValue(task.Name))
-		if err != nil {
-			return nil, err
-		}
-		if apiTG != nil {
-			apiTGs[aws.StringValue(apiTG.TargetGroupArn)] = task
-		}
-	}
-	for _, tg := range actual {
-		if apiTask, ok := apiTGs[aws.StringValue(tg.ARN)]; ok {
-			reconciled = append(reconciled, apiTask)
-		} else {
-			reconciled = append(reconciled, tg)
-		}
-	}
-
-	return reconciled, nil
 }
 
 type terraformTargetGroup struct {
