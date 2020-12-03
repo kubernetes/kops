@@ -3994,6 +3994,8 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
 	out.EnableProfiling = in.EnableProfiling
 	out.CorsAllowedOrigins = in.CorsAllowedOrigins
+	out.DefaultNotReadyTolerationSeconds = in.DefaultNotReadyTolerationSeconds
+	out.DefaultUnreachableTolerationSeconds = in.DefaultUnreachableTolerationSeconds
 	return nil
 }
 
@@ -4102,6 +4104,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.AuditDynamicConfiguration = in.AuditDynamicConfiguration
 	out.EnableProfiling = in.EnableProfiling
 	out.CorsAllowedOrigins = in.CorsAllowedOrigins
+	out.DefaultNotReadyTolerationSeconds = in.DefaultNotReadyTolerationSeconds
+	out.DefaultUnreachableTolerationSeconds = in.DefaultUnreachableTolerationSeconds
 	return nil
 }
 

@@ -918,6 +918,14 @@ spec:
                   cpuRequest:
                     description: CPURequest, cpu request compute resource for api server. Defaults to "150m"
                     type: string
+                  defaultNotReadyTolerationSeconds:
+                    description: DefaultNotReadyTolerationSeconds
+                    format: int64
+                    type: integer
+                  defaultUnreachableTolerationSeconds:
+                    description: DefaultUnreachableTolerationSeconds
+                    format: int64
+                    type: integer
                   disableAdmissionPlugins:
                     description: DisableAdmissionPlugins is a list of disabled admission plugins
                     items:
