@@ -202,7 +202,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create ELB itself
 	var elb *awstasks.ClassicLoadBalancer
 	{
-		loadBalancerName := b.GetELBName32("bastion")
+		loadBalancerName := b.LBName32("bastion")
 
 		idleTimeout := BastionELBDefaultIdleTimeout
 		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeoutSeconds != nil {

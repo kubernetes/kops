@@ -21,7 +21,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -31,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 const (
@@ -367,6 +367,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 
 	t.InstanceProtection = ig.Spec.InstanceProtection
 
+	t.LoadBalancers = []*awstasks.ClassicLoadBalancer{}
 	t.TargetGroups = []*awstasks.TargetGroup{}
 
 	// When Spotinst Elastigroups are used, there is no need to create
@@ -401,16 +402,12 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.ModelBuil
 		}
 
 		if extLB.TargetGroupARN != nil {
-			parsed, err := arn.Parse(fi.StringValue(extLB.TargetGroupARN))
+			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(extLB.TargetGroupARN))
 			if err != nil {
-				return nil, fmt.Errorf("error parsing target grup ARN: %v", err)
-			}
-			resource := strings.Split(parsed.Resource, "/")
-			if len(resource) != 3 || resource[0] != "targetgroup" {
-				return nil, fmt.Errorf("error parsing target grup ARN resource: %q", parsed.Resource)
+				return nil, err
 			}
 			tg := &awstasks.TargetGroup{
-				Name:   fi.String(resource[1]),
+				Name:   fi.String(name + "-" + targetGroupName),
 				ARN:    extLB.TargetGroupARN,
 				Shared: fi.Bool(true),
 			}

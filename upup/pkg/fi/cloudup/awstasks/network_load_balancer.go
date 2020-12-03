@@ -382,7 +382,11 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 			if len(l.DefaultActions) > 0 {
 				targetGroupARN := l.DefaultActions[0].TargetGroupArn
 				if targetGroupARN != nil {
-					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN})
+					targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(targetGroupARN))
+					if err != nil {
+						return nil, err
+					}
+					actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: targetGroupARN, Name: fi.String(targetGroupName)})
 
 					cloud := c.Cloud.(awsup.AWSCloud)
 					descResp, err := cloud.ELBV2().DescribeTargetGroups(&elbv2.DescribeTargetGroupsInput{
@@ -394,17 +398,11 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 					if len(descResp.TargetGroups) != 1 {
 						return nil, fmt.Errorf("unexpected DescribeTargetGroups response: %v", descResp)
 					}
+
 					actualListener.TargetGroupName = aws.StringValue(descResp.TargetGroups[0].TargetGroupName)
 				}
 			}
 			actual.Listeners = append(actual.Listeners, actualListener)
-		}
-		if len(actual.TargetGroups) > 0 {
-			targetGroups, err := ReconcileTargetGroups(c.Cloud.(awsup.AWSCloud), actual.TargetGroups, e.TargetGroups)
-			if err != nil {
-				return nil, err
-			}
-			actual.TargetGroups = targetGroups
 		}
 		sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
 

@@ -68,7 +68,6 @@ go_test(
     name = "go_default_test",
     srcs = [
         "bootstrapscript_test.go",
-        "context_test.go",
         "firewall_test.go",
     ],
     data = glob(["tests/**"]),  #keep
@@ -76,7 +75,6 @@ go_test(
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/nodeup:go_default_library",
-        "//pkg/model/iam:go_default_library",
         "//pkg/testutils/golden:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//util/pkg/architectures:go_default_library",
