@@ -220,7 +220,8 @@
               "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 64,
-                "DeleteOnTermination": true
+                "DeleteOnTermination": true,
+                "Encrypted": false
               }
             },
             {
@@ -331,7 +332,8 @@
               "Ebs": {
                 "VolumeType": "gp2",
                 "VolumeSize": 128,
-                "DeleteOnTermination": true
+                "DeleteOnTermination": true,
+                "Encrypted": false
               }
             }
           ],
