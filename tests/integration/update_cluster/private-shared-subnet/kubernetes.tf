@@ -388,6 +388,7 @@ resource "aws_launch_template" "bastion-private-shared-subnet-example-com" {
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
+      encrypted             = false
       volume_size           = 32
       volume_type           = "gp2"
     }
@@ -447,6 +448,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-subnet-
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
+      encrypted             = false
       volume_size           = 64
       volume_type           = "gp2"
     }
@@ -511,6 +513,7 @@ resource "aws_launch_template" "nodes-private-shared-subnet-example-com" {
     device_name = "/dev/xvda"
     ebs {
       delete_on_termination = true
+      encrypted             = false
       volume_size           = 128
       volume_type           = "gp2"
     }
