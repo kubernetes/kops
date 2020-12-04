@@ -388,6 +388,33 @@ resource "aws_route" "route-0-0-0-0--0" {
   route_table_id         = aws_route_table.compress-example-com.id
 }
 
+resource "aws_security_group_rule" "all-master-to-master" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.masters-compress-example-com.id
+  source_security_group_id = aws_security_group.masters-compress-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "all-master-to-node" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nodes-compress-example-com.id
+  source_security_group_id = aws_security_group.masters-compress-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "all-node-to-node" {
+  from_port                = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nodes-compress-example-com.id
+  source_security_group_id = aws_security_group.nodes-compress-example-com.id
+  to_port                  = 0
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "https-external-to-master-0-0-0-0--0" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 443
@@ -397,7 +424,7 @@ resource "aws_security_group_rule" "https-external-to-master-0-0-0-0--0" {
   type              = "ingress"
 }
 
-resource "aws_security_group_rule" "masters-compress-example-com-egress-all-0to0-0-0-0-0--0" {
+resource "aws_security_group_rule" "master-egress" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -406,25 +433,7 @@ resource "aws_security_group_rule" "masters-compress-example-com-egress-all-0to0
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "masters-compress-example-com-ingress-all-0to0-masters-compress-example-com" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.masters-compress-example-com.id
-  source_security_group_id = aws_security_group.masters-compress-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "masters-compress-example-com-ingress-all-0to0-nodes-compress-example-com" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.nodes-compress-example-com.id
-  source_security_group_id = aws_security_group.masters-compress-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "nodes-compress-example-com-egress-all-0to0-0-0-0-0--0" {
+resource "aws_security_group_rule" "node-egress" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
@@ -433,16 +442,7 @@ resource "aws_security_group_rule" "nodes-compress-example-com-egress-all-0to0-0
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "nodes-compress-example-com-ingress-all-0to0-nodes-compress-example-com" {
-  from_port                = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.nodes-compress-example-com.id
-  source_security_group_id = aws_security_group.nodes-compress-example-com.id
-  to_port                  = 0
-  type                     = "ingress"
-}
-
-resource "aws_security_group_rule" "nodes-compress-example-com-ingress-tcp-1to2379-masters-compress-example-com" {
+resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
   from_port                = 1
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-compress-example-com.id
@@ -451,7 +451,7 @@ resource "aws_security_group_rule" "nodes-compress-example-com-ingress-tcp-1to23
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-compress-example-com-ingress-tcp-2382to4000-masters-compress-example-com" {
+resource "aws_security_group_rule" "node-to-master-tcp-2382-4000" {
   from_port                = 2382
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-compress-example-com.id
@@ -460,7 +460,7 @@ resource "aws_security_group_rule" "nodes-compress-example-com-ingress-tcp-2382t
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-compress-example-com-ingress-tcp-4003to65535-masters-compress-example-com" {
+resource "aws_security_group_rule" "node-to-master-tcp-4003-65535" {
   from_port                = 4003
   protocol                 = "tcp"
   security_group_id        = aws_security_group.masters-compress-example-com.id
@@ -469,7 +469,7 @@ resource "aws_security_group_rule" "nodes-compress-example-com-ingress-tcp-4003t
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "nodes-compress-example-com-ingress-udp-1to65535-masters-compress-example-com" {
+resource "aws_security_group_rule" "node-to-master-udp-1-65535" {
   from_port                = 1
   protocol                 = "udp"
   security_group_id        = aws_security_group.masters-compress-example-com.id
@@ -558,11 +558,5 @@ resource "aws_vpc" "compress-example-com" {
 }
 
 terraform {
-  required_version = ">= 0.12.26"
-  required_providers {
-    aws = {
-      "source"  = "hashicorp/aws"
-      "version" = ">= 2.46.0"
-    }
-  }
+  required_version = ">= 0.12.0"
 }
