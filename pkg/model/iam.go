@@ -330,10 +330,7 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	var policy string
 	serviceAccount, ok := role.ServiceAccount()
 	if ok {
-		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
-		if err != nil {
-			return nil, err
-		}
+		serviceAccountIssuer := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
 		oidcProvider := strings.TrimPrefix(serviceAccountIssuer, "https://")
 
 		iamPolicy := &iam.Policy{
