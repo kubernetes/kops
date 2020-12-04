@@ -73,6 +73,11 @@ func TestCreateClusterGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/gce_byo_sa", "v1alpha2")
 }
 
+// TestCreateClusterHASharedZone tests kops create cluster when the master count is bigger than the number of zones
+func TestCreateClusterHASharedZone(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zone", "v1alpha2")
+}
+
 // TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the number of zones
 func TestCreateClusterHASharedZones(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha2")
