@@ -28,7 +28,7 @@ data:
   # You must set a non-zero value for Typha replicas below.
   typha_service_name: "{{- if .Networking.Calico.TyphaReplicas -}}calico-typha{{- else -}}none{{- end -}}"
   # Configure the backend to use.
-  calico_backend: "bird"
+  calico_backend: "{{- if eq .Networking.Calico.EncapsulationMode "vxlan" -}}vxlan{{- else -}}bird{{- end -}}"
 
   # Configure the MTU to use for workload interfaces and tunnels.
   # By default, MTU is auto-detected, and explicitly setting this field should not be required.
@@ -3870,10 +3870,10 @@ spec:
               value: "{{- or .Networking.Calico.IPv6AutoDetectionMethod "first-found" }}"
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
-              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}CrossSubnet{{- else -}} {{- or .Networking.Calico.IPIPMode "Always" -}} {{- end -}}"
+              value: "{{ CalicoIPv4PoolIPIPMode }}"
             # Enable or Disable VXLAN on the default IP pool.
             - name: CALICO_IPV4POOL_VXLAN
-              value: "Never"
+              value: "{{ CalicoIPv4PoolVXLANMode }}"
             # Set MTU for tunnel device used if ipip is enabled
             - name: FELIX_IPINIPMTU
               valueFrom:
@@ -3959,7 +3959,9 @@ spec:
               command:
               - /bin/calico-node
               - -felix-live
+              {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
               - -bird-live
+              {{- end }}
             periodSeconds: 10
             initialDelaySeconds: 10
             failureThreshold: 6
@@ -3968,7 +3970,9 @@ spec:
               command:
               - /bin/calico-node
               - -felix-ready
+              {{- if eq .Networking.Calico.EncapsulationMode "ipip" }}
               - -bird-ready
+              {{- end }}
             periodSeconds: 10
           {{- if .Networking.Calico.PrometheusMetricsEnabled }}
           ports:

@@ -134,9 +134,15 @@ type CalicoNetworkingSpec struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// CrossSubnet enables Calico's cross-subnet mode when set to true
 	CrossSubnet bool `json:"crossSubnet,omitempty"`
+	// EncapsulationMode specifies the network packet encapsulation protocol for Calico to use,
+	// employing such encapsulation at the necessary scope per the related CrossSubnet field. In
+	// "ipip" mode, Calico will use IP-in-IP encapsulation as needed. In "vxlan" mode, Calico will
+	// encapsulate packets as needed using the VXLAN scheme.
+	// Options: ipip (default) or vxlan
+	EncapsulationMode string `json:"encapsulationMode,omitempty"`
 	// IPIPMode is the encapsulation mode to use for the default Calico IPv4 pool created at start
 	// up, determining when to use IP-in-IP encapsulation, conveyed to the "calico-node" daemon
-	// container via the CALICO_IPV4POOL_IPIP environment variable
+	// container via the CALICO_IPV4POOL_IPIP environment variable.
 	IPIPMode string `json:"ipipMode,omitempty"`
 	// IPv4AutoDetectionMethod configures how Calico chooses the IP address used to route
 	// between nodes.  This should be set when the host has multiple interfaces

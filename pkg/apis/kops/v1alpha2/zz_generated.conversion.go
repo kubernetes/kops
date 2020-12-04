@@ -1355,6 +1355,7 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.CrossSubnet = in.CrossSubnet
+	out.EncapsulationMode = in.EncapsulationMode
 	out.IPIPMode = in.IPIPMode
 	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
 	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
@@ -1389,6 +1390,7 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.CrossSubnet = in.CrossSubnet
+	out.EncapsulationMode = in.EncapsulationMode
 	out.IPIPMode = in.IPIPMode
 	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
 	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
