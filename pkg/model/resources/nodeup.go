@@ -159,17 +159,29 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
+{{ if CompressUserData -}}
+echo "{{ GzipBase64 ClusterSpec }}" | base64 -d | gzip -d > conf/cluster_spec.yaml
+{{- else -}}
 cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 {{ ClusterSpec }}
 __EOF_CLUSTER_SPEC
+{{- end }}
 
+{{ if CompressUserData -}}
+echo "{{ GzipBase64 IGSpec }}" | base64 -d | gzip -d > conf/ig_spec.yaml
+{{- else -}}
 cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
 {{ IGSpec }}
 __EOF_IG_SPEC
+{{- end }}
 
+{{ if CompressUserData -}}
+echo "{{ GzipBase64 KubeEnv }}" | base64 -d | gzip -d > conf/kube_env.yaml
+{{- else -}}
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 {{ KubeEnv }}
 __EOF_KUBE_ENV
+{{- end }}
 
 download-release
 echo "== nodeup node config done =="
