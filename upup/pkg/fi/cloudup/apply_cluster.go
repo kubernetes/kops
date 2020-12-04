@@ -72,8 +72,6 @@ const (
 )
 
 var (
-	// AlphaAllowDO is a feature flag that gates cloudprovider support while it is alpha
-	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 	// AlphaAllowALI is a feature flag that gates aliyun support while it is alpha
