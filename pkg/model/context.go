@@ -17,9 +17,7 @@ limitations under the License.
 package model
 
 import (
-	"encoding/base32"
 	"fmt"
-	"hash/fnv"
 	"net"
 	"strings"
 
@@ -44,58 +42,12 @@ const (
 	clusterAutoscalerNodeTemplateTaint = "k8s.io/cluster-autoscaler/node-template/taint/"
 )
 
-var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(false))
-
 // KopsModelContext is the kops model
 type KopsModelContext struct {
 	iam.IAMModelContext
 	InstanceGroups []*kops.InstanceGroup
 	Region         string
 	SSHPublicKeys  [][]byte
-}
-
-// GetELBName32 will attempt to calculate a meaningful name for an ELB given a prefix
-// Will never return a string longer than 32 chars
-// Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
-func (m *KopsModelContext) GetELBName32(prefix string) string {
-	c := m.Cluster.ObjectMeta.Name
-
-	if UseLegacyELBName.Enabled() {
-		tokens := strings.Split(c, ".")
-		s := fmt.Sprintf("%s-%s", prefix, tokens[0])
-		if len(s) > 32 {
-			s = s[:32]
-		}
-		klog.Infof("UseLegacyELBName feature-flag is set; built legacy name %q", s)
-		return s
-	}
-
-	// The LoadBalancerName is exposed publicly as the DNS name for the load balancer.
-	// So this will likely become visible in a CNAME record - this is potentially some
-	// information leakage.
-	// But... if a user can see the CNAME record, they can see the actual record also,
-	// which will be the full cluster name.
-	s := prefix + "-" + strings.Replace(c, ".", "-", -1)
-
-	// We have a 32 character limit for ELB names
-	// But we always compute the hash and add it, lest we trick users into assuming that we never do this
-	h := fnv.New32a()
-	if _, err := h.Write([]byte(s)); err != nil {
-		klog.Fatalf("error hashing values: %v", err)
-	}
-	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
-	hashString = strings.ToLower(hashString)
-	if len(hashString) > 6 {
-		hashString = hashString[:6]
-	}
-
-	maxBaseLength := 32 - len(hashString) - 1
-	if len(s) > maxBaseLength {
-		s = s[:maxBaseLength]
-	}
-	s = s + "-" + hashString
-
-	return s
 }
 
 // GatherSubnets maps the subnet names in an InstanceGroup to the ClusterSubnetSpec objects (which are stored on the Cluster)

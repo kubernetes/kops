@@ -17,11 +17,15 @@ limitations under the License.
 package awsup
 
 import (
+	"encoding/base32"
 	"fmt"
+	"hash/fnv"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -196,4 +200,42 @@ func EC2TagSpecification(resourceType string, tags map[string]string) []*ec2.Tag
 	}
 
 	return []*ec2.TagSpecification{specification}
+}
+
+// GetResourceName32 will attempt to calculate a meaningful name for a resource given a prefix
+// Will never return a string longer than 32 chars
+func GetResourceName32(cluster string, prefix string) string {
+	s := prefix + "-" + strings.Replace(cluster, ".", "-", -1)
+
+	// We always compute the hash and add it, lest we trick users into assuming that we never do this
+	h := fnv.New32a()
+	if _, err := h.Write([]byte(s)); err != nil {
+		klog.Fatalf("error hashing values: %v", err)
+	}
+	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
+	hashString = strings.ToLower(hashString)
+	if len(hashString) > 6 {
+		hashString = hashString[:6]
+	}
+
+	maxBaseLength := 32 - len(hashString) - 1
+	if len(s) > maxBaseLength {
+		s = s[:maxBaseLength]
+	}
+	s = s + "-" + hashString
+
+	return s
+}
+
+// GetTargetGroupNameFromARN will attempt to parse a target group ARN and return its name
+func GetTargetGroupNameFromARN(targetGroupARN string) (string, error) {
+	parsed, err := arn.Parse(targetGroupARN)
+	if err != nil {
+		return "", fmt.Errorf("error parsing target group ARN: %v", err)
+	}
+	resource := strings.Split(parsed.Resource, "/")
+	if len(resource) != 3 || resource[0] != "targetgroup" {
+		return "", fmt.Errorf("error parsing target group ARN resource: %q", parsed.Resource)
+	}
+	return resource[1], nil
 }
