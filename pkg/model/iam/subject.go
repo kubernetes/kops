@@ -22,7 +22,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/wellknownusers"
 )
 
@@ -82,12 +81,8 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
 }
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
-func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) (string, error) {
-	if featureflag.PublicJWKS.Enabled() {
-		return "https://api." + clusterName, nil
-	}
-
-	return "", fmt.Errorf("ServiceAcccountIssuer not (currently) supported without PublicJWKS")
+func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) string {
+	return "https://api." + clusterName
 }
 
 // AddServiceAccountRole adds the appropriate mounts / env vars to enable a pod to use a service-account role
