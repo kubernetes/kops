@@ -6,6 +6,8 @@ The complete list of keys can be found at the [Cluster](https://pkg.go.dev/k8s.i
 
 On this page, we will expand on the more important configuration keys.
 
+The documentation for the optional addons can be found on the [addons page](/addons)
+
 ## api
 
 This object configures how we expose the API:
@@ -650,25 +652,6 @@ spec:
 
 **Note:** If you are upgrading to CoreDNS, kube-dns will be left in place and must be removed manually (you can scale the kube-dns and kube-dns-autoscaler deployments in the `kube-system` namespace to 0 as a starting point). The `kube-dns` Service itself should be left in place, as this retains the ClusterIP and eliminates the possibility of DNS outages in your cluster. If you would like to continue autoscaling, update the `kube-dns-autoscaler` Deployment container command for `--target=Deployment/kube-dns` to be `--target=Deployment/coredns`.
 
-## Node local DNS cache
-{{ kops_feature_table(kops_added_default='1.18', k8s_min='1.15') }}
-
-NodeLocal DNSCache can be enabled if you are using CoreDNS. It is used to improve the Cluster DNS performance by running a dns caching agent on cluster nodes as a DaemonSet.
-
-`memoryRequest` and `cpuRequest` for the `node-local-dns` pods can also be configured. If not set, they will be configured by default to `5Mi` and `25m` respectively.
-
-If `forwardToKubeDNS` is enabled, kubedns will be used as a default upstream
-
-```yaml
-spec:
-  kubeDNS:
-    provider: CoreDNS
-    nodeLocalDNS:
-      enabled: true
-      memoryRequest: 5Mi
-      cpuRequest: 25m
-```
-
 ## kubeControllerManager
 This block contains configurations for the `controller-manager`.
 
@@ -687,35 +670,6 @@ spec:
 ```
 
 For more details on `horizontalPodAutoscaler` flags see the [official HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [kOps guides on how to set it up](horizontal_pod_autoscaling.md).
-
-## Metrics server
-{{ kops_feature_table(kops_added_default='1.19') }}
-
-Metrics Server is a scalable, efficient source of container resource metrics for Kubernetes built-in autoscaling pipelines.
-
-```yaml
-spec:
-  metricsServer:
-    enabled: true
-```
-
-Read more about Metrics Server in the [official documentation](https://github.com/kubernetes-sigs/metrics-server).
-
-
-## Cluster autoscaler
-{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.15') }}
-
-Cluster autoscaler can be enabled to automatically adjust the size of the kubernetes cluster.
-
-```yaml
-spec:
-  clusterAutoscaler:
-    enabled: true
-    skipNodesWithLocalStorage: true
-    skipNodesWithSystemPods: true
-```
-
-Read more about cluster autoscaler in the [official documentation](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
 ###  Feature Gates
 
