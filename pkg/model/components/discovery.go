@@ -51,10 +51,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if kubeAPIServer.ServiceAccountIssuer == nil {
-		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName, clusterSpec)
-		if err != nil {
-			return err
-		}
+		serviceAccountIssuer := iam.ServiceAccountIssuer(b.ClusterName, clusterSpec)
 		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 	}
 

@@ -46,10 +46,7 @@ func (b *OIDCProviderBuilder) Build(c *fi.ModelBuilderContext) error {
 	var issuerURL string
 
 	if featureflag.PublicJWKS.Enabled() {
-		serviceAccountIssuer, err := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
-		if err != nil {
-			return err
-		}
+		serviceAccountIssuer := iam.ServiceAccountIssuer(b.ClusterName(), &b.Cluster.Spec)
 		issuerURL = serviceAccountIssuer
 
 		caTaskObject, found := c.Tasks["Keypair/ca"]

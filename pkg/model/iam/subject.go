@@ -81,8 +81,8 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
 }
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
-func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) (string, error) {
-	return "https://api." + clusterName, nil
+func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) string {
+	return "https://api." + clusterName
 }
 
 // AddServiceAccountRole adds the appropriate mounts / env vars to enable a pod to use a service-account role
