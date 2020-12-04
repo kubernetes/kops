@@ -162,6 +162,8 @@ type InstanceGroupSpec struct {
 	// InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated,
 	// or stopped after interruption
 	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
+	// CompressUserData compresses parts of the user data to save space
+	CompressUserData *bool `json:"compressUserData,omitempty"`
 }
 
 const (

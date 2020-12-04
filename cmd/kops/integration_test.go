@@ -166,6 +166,11 @@ func TestComplex(t *testing.T) {
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").runTestTerraformAWS(t)
 }
 
+// TestCompress runs a test on compressing structs in nodeus.sh user-data
+func TestCompress(t *testing.T) {
+	newIntegrationTest("compress.example.com", "compress").withoutSSHKey().runTestTerraformAWS(t)
+}
+
 // TestExternalPolicies tests external policies output
 func TestExternalPolicies(t *testing.T) {
 	newIntegrationTest("externalpolicies.example.com", "externalpolicies").runTestTerraformAWS(t)
