@@ -4,17 +4,11 @@ go_test(
     name = "go_default_test",
     srcs = ["integration_test.go"],
     data = [
-        "exported_testdata",  # keep
         "//channels:channeldata",  # keep
     ],
     deps = [
         "//pkg/apis/kops:go_default_library",
+        "//tests/integration/channel/simple:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
     ],
-)
-
-filegroup(
-    name = "exported_testdata",
-    srcs = glob(["simple/**"]),
-    visibility = ["//visibility:public"],
 )
