@@ -488,6 +488,26 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
+	if b.Cluster.Spec.CertManager != nil && fi.BoolValue(b.Cluster.Spec.CertManager.Enabled) {
+		{
+			key := "certmanager.io"
+			version := "1.1.0"
+
+			{
+				location := key + "/k8s-1.16.yaml"
+				id := "k8s-1.16"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:     fi.String(key),
+					Version:  fi.String(version),
+					Selector: map[string]string{"app.kubernetes.io/name": "cert-manager"},
+					Manifest: fi.String(location),
+					Id:       id,
+				})
+			}
+		}
+	}
+
 	nth := b.Cluster.Spec.NodeTerminationHandler
 
 	if nth != nil && fi.BoolValue(nth.Enabled) {
