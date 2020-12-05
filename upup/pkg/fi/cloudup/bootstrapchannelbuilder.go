@@ -491,7 +491,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	if b.Cluster.Spec.CertManager != nil && fi.BoolValue(b.Cluster.Spec.CertManager.Enabled) {
 		{
 			key := "certmanager.io"
-			version := "1.0.4"
+			version := "1.1.0"
 
 			{
 				location := key + "/k8s-1.16.yaml"
