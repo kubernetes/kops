@@ -92,7 +92,7 @@ const tagNameDetachedInstance = "kops.k8s.io/detached-from-asg"
 
 const (
 	WellKnownAccountAmazonLinux2 = "137112412989"
-	WellKnownAccountCentOS       = "679593333241"
+	WellKnownAccountCentOS       = "125523088429"
 	WellKnownAccountCoreOS       = "595879546273"
 	WellKnownAccountDebian9      = "379101102735"
 	WellKnownAccountDebian10     = "136693071363"
