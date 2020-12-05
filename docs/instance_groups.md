@@ -115,6 +115,17 @@ spec:
               - http://archive.ubuntu.com
 ```
 
+## compressUserData
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+Compresses parts of the user-data to save space and help with the size limit 
+in certain clouds. Currently only the Specs in nodeup.sh will be compressed.
+
+```YAML
+spec:
+  compressUserData: true
+```
+
 ## sysctlParameters
 {{ kops_feature_table(kops_added_default='1.17') }}
 

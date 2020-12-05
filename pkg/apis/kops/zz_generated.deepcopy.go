@@ -2084,6 +2084,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CompressUserData != nil {
+		in, out := &in.CompressUserData, &out.CompressUserData
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
