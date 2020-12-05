@@ -80,5 +80,3 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-
-

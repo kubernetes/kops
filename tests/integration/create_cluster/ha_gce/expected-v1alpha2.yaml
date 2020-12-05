@@ -13,7 +13,7 @@ spec:
     gceServiceAccount: default
   cloudProvider: gce
   configBase: memfs://tests/ha-gce.example.com
-  containerRuntime: docker
+  containerRuntime: containerd
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -45,7 +45,7 @@ spec:
   kubernetesVersion: v1.20.0
   masterPublicName: api.ha-gce.example.com
   networking:
-    kubenet: {}
+    cni: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testproject
   sshAccess:
