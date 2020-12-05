@@ -136,7 +136,9 @@ cat > conf/cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 cloudConfig: null
 containerRuntime: docker
 containerd:
-  skipInstall: true
+  configOverride: |
+    disabled_plugins = ["cri"]
+  logLevel: info
 docker:
   ipMasq: false
   ipTables: false
@@ -146,12 +148,12 @@ docker:
   - max-size=10m
   - max-file=5
   storage: overlay2,overlay,aufs
-  version: 18.06.3
+  version: 18.09.9
 kubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
   hostnameOverride: '@aws'
-  image: k8s.gcr.io/kube-proxy:v1.14.0
+  image: k8s.gcr.io/kube-proxy:v1.16.15
   logLevel: 2
 kubelet:
   anonymousAuth: false
@@ -161,8 +163,6 @@ kubelet:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    ExperimentalCriticalPodAnnotation: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
@@ -181,15 +181,15 @@ __EOF_IG_SPEC
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
 Assets:
   amd64:
-  - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
-  - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
-  - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
-  - 346f9394393ee8db5f8bd1e229ee9d90e5b36931bdd754308b2ae68884dd6822@https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz
+  - 498e9576617b1846956f73a2da3ddc430eb728d469e62fbbd629e54cf33e5882@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/amd64/kubelet
+  - e8913069293156ddf55f243814a22d2384fc18b165efb6200606fdeaad146605@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/amd64/kubectl
+  - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
+  - 82a362af7689038c51573e0fd0554da8703f0d06f4dfe95dd5bda5acf0ae45fb@https://download.docker.com/linux/static/stable/x86_64/docker-18.09.9.tgz
   arm64:
-  - df38e04576026393055ccc77c0dce73612996561@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubelet
-  - 01c2b6b43d36b6bfafc80a3737391c19ebfb8ad5@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubectl
-  - 7fec91af78e9548df306f0ec43bea527c8c10cc3a9682c33e971c8522a7fcded@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz
-  - defb2ccc95c0825833216c8b9e0e15baaa51bcedb3efc1f393f5352d184dead4@https://download.docker.com/linux/static/stable/aarch64/docker-18.06.3-ce.tgz
+  - 3d8337e2e0b613688d3828803988adeafedc9451c785478951002bf627beb36b@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/arm64/kubelet
+  - 74719f137dc6d589a3b8a667bcb0f3c57eebd8f050dd2f7ad5b59ceb892a7b99@https://storage.googleapis.com/kubernetes-release/release/v1.16.15/bin/linux/arm64/kubectl
+  - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
+  - c6f4cfe1bef71c339d5127c6c79169479bcb7830c6fb0185139d32ab726e038e@https://download.docker.com/linux/static/stable/aarch64/docker-18.09.9.tgz
 ClusterName: privatecilium.example.com
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: nodes
@@ -202,8 +202,6 @@ KubeletConfig:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    ExperimentalCriticalPodAnnotation: "true"
   hostnameOverride: '@aws'
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
