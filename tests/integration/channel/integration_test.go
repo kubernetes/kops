@@ -28,8 +28,9 @@ import (
 
 // TestKopsUpgrades tests the version logic for kops versions
 func TestKopsUpgrades(t *testing.T) {
+	sourcePath := "simple/channel.yaml"
 
-	channel, err := simple.NewMockChannel()
+	channel, err := simple.NewMockChannel(sourcePath)
 	if err != nil {
 		t.Fatalf("failed to create channel: %v", err)
 	}
