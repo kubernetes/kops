@@ -29,6 +29,7 @@ kops toolbox template [flags]
 ### Options
 
 ```
+      --channel string           Channel to use for the channel* functions
       --config-value string      Show the value of a specific configuration value
       --fail-on-missing          Fail on referencing unset variables in templates (default true)
       --format-yaml              Attempt to format the generated yaml content before output
