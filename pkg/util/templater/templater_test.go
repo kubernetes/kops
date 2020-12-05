@@ -18,6 +18,7 @@ package templater
 
 import (
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"k8s.io/kops/pkg/diff"
@@ -86,8 +87,13 @@ func TestRenderChannelFunctions(t *testing.T) {
 	cases := []renderTest{
 		{
 			Context:  map[string]interface{}{},
-			Template: `{{ ChannelRecommendedKubernetesVersion }}`,
+			Template: `{{ ChannelRecommendedKopsKubernetesVersion }}`,
 			Expected: "1.5.2",
+		},
+		{
+			Context:  map[string]interface{}{},
+			Template: `{{ ChannelRecommendedKubernetesUpgradeVersion "1.4.2" }}`,
+			Expected: "1.4.8",
 		},
 	}
 	makeRenderTests(t, cases)
@@ -194,9 +200,13 @@ type renderTest struct {
 }
 
 func makeRenderTests(t *testing.T, tests []renderTest) {
-	channel, err := simple.NewMockChannel()
+
+	sourcePath := "../../../tests/integration/channel/simple/channel.yaml"
+	s, _ := os.Getwd()
+
+	channel, err := simple.NewMockChannel(sourcePath)
 	if err != nil {
-		t.Fatalf("could not load channel: %v", err)
+		t.Fatalf("could not load channel: %v, %s", err, s)
 	}
 	r := NewTemplater(channel)
 	for i, x := range tests {
