@@ -22,6 +22,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"k8s.io/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 )
 
 // templateFuncsMap returns a map if the template functions for this template
@@ -40,8 +41,25 @@ func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
 		return content
 	}
 
-	funcs["ChannelRecommendedKubernetesVersion"] = func() string {
+	funcs["ChannelRecommendedKubernetesUpgradeVersion"] = func(version string) string {
+
+		parsed, err := util.ParseKubernetesVersion(version)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		versionInfo := kopsapi.FindKubernetesVersionSpec(r.channel.Spec.KubernetesVersions, *parsed)
+		recommended, err := versionInfo.FindRecommendedUpgrade(*parsed)
+		if err != nil {
+			panic(err.Error())
+		}
+		return recommended.String()
+
+	}
+
+	funcs["ChannelRecommendedKopsKubernetesVersion"] = func() string {
 		return kopsapi.RecommendedKubernetesVersion(r.channel, kops.Version).String()
+
 	}
 
 	return funcs

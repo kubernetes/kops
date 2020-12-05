@@ -23,8 +23,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
-func NewMockChannel() (*kops.Channel, error) {
-	sourcePath := "simple/channel.yaml"
+func NewMockChannel(sourcePath string) (*kops.Channel, error) {
 	sourceBytes, err := ioutil.ReadFile(sourcePath)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error reading sourcePath %q: %v", sourcePath, err)
