@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/tests/integration/channel/simple"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -76,6 +77,17 @@ func TestRenderIndent(t *testing.T) {
 			Context:  map[string]interface{}{"line": "this is a line of\ntext"},
 			Template: `{{ .line | indent 2 }}`,
 			Expected: "this is a line of\n  text",
+		},
+	}
+	makeRenderTests(t, cases)
+}
+
+func TestRenderChannelFunctions(t *testing.T) {
+	cases := []renderTest{
+		{
+			Context:  map[string]interface{}{},
+			Template: `{{ ChannelRecommendedKubernetesVersion }}`,
+			Expected: "1.5.2",
 		},
 	}
 	makeRenderTests(t, cases)
@@ -182,7 +194,11 @@ type renderTest struct {
 }
 
 func makeRenderTests(t *testing.T, tests []renderTest) {
-	r := NewTemplater()
+	channel, err := simple.NewMockChannel()
+	if err != nil {
+		t.Fatalf("could not load channel: %v", err)
+	}
+	r := NewTemplater(channel)
 	for i, x := range tests {
 		render, err := r.Render(x.Template, x.Context, x.Snippets, !x.DisableMissing)
 		if x.NotOK {
