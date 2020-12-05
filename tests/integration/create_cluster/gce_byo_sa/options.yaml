@@ -4,6 +4,7 @@ Zones:
 MasterZones:
 - us-test1-a
 CloudProvider: gce
+Networking: cni
 KubernetesVersion: v1.20.0
 Project: testproject
 GCEServiceAccount: test-account@testproject.iam.gserviceaccount.com
