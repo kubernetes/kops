@@ -140,6 +140,15 @@ func TestLifecyclePrivateSharedSubnet(t *testing.T) {
 	})
 }
 
+// TestLifecyclePrivateSharedIP runs the test on a subnet with private topology and shared IP
+func TestLifecyclePrivateSharedIP(t *testing.T) {
+	runLifecycleTestAWS(&LifecycleTestOptions{
+		t:      t,
+		SrcDir: "private-shared-ip",
+		Shared: []string{"eipalloc-12345678"},
+	})
+}
+
 func runLifecycleTest(h *testutils.IntegrationTestHarness, o *LifecycleTestOptions, cloud *awsup.MockAWSCloud) {
 	ctx := context.Background()
 
