@@ -343,8 +343,10 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	}
 
 	if subnet.Egress != "" {
-		if !strings.HasPrefix(subnet.Egress, "nat-") && !strings.HasPrefix(subnet.Egress, "i-") && subnet.Egress != kops.EgressExternal {
-			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress, "egress must be of type NAT Gateway or NAT EC2 Instance or 'External'"))
+		egressType := strings.Split(subnet.Egress, "-")[0]
+		if egressType != kops.EgressNatGateway && egressType != kops.EgressElasticIP && egressType != kops.EgressNatInstance && egressType != kops.EgressExternal {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("egress"), subnet.Egress,
+				"egress must be of type NAT Gateway, NAT Gateway with existing ElasticIP, NAT EC2 Instance or External"))
 		}
 		if subnet.Egress != kops.EgressExternal && subnet.Type != "Private" {
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("egress"), "egress can only be specified for private subnets"))

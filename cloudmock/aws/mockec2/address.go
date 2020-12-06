@@ -55,6 +55,10 @@ func (m *MockEC2) AllocateAddressWithId(request *ec2.AllocateAddressInput, id st
 		Domain:       s("vpc"),
 		PublicIp:     s(publicIP.String()),
 	}
+	if request.Address != nil {
+		address.PublicIp = request.Address
+	}
+
 	if m.Addresses == nil {
 		m.Addresses = make(map[string]*ec2.Address)
 	}
@@ -151,6 +155,7 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 		}
 
 		copy := *address
+		copy.Tags = m.getTags(ec2.ResourceTypeElasticIp, *address.AllocationId)
 		addresses = append(addresses, &copy)
 	}
 
