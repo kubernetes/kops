@@ -320,6 +320,28 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				c.AddTask(ngw)
 
+			} else if strings.HasPrefix(egress, "eipalloc-") {
+
+				eip := &awstasks.ElasticIP{
+					Name:                           s(zone + "." + b.ClusterName()),
+					ID:                             s(egress),
+					Lifecycle:                      b.Lifecycle,
+					AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					Shared:                         fi.Bool(true),
+					Tags:                           b.CloudTags(zone+"."+b.ClusterName(), true),
+				}
+				c.AddTask(eip)
+
+				ngw = &awstasks.NatGateway{
+					Name:                 s(zone + "." + b.ClusterName()),
+					Lifecycle:            b.Lifecycle,
+					Subnet:               utilitySubnet,
+					ElasticIP:            eip,
+					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					Tags:                 b.CloudTags(zone+"."+b.ClusterName(), false),
+				}
+				c.AddTask(ngw)
+
 			} else if strings.HasPrefix(egress, "i-") {
 
 				in = &awstasks.Instance{
