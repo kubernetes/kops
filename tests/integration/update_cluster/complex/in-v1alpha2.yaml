@@ -126,6 +126,9 @@ spec:
   rootVolumeEncryption: true
   subnets:
   - us-test-1a
+  instanceMetadata:
+    httpTokens: required
+    httpPutResponseHopLimit: 1
   additionalUserData:
   - name: myscript.sh
     type: text/x-shellscript
