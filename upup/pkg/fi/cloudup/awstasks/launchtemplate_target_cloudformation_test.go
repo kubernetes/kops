@@ -47,7 +47,9 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
 					{Name: fi.String("nodes-1"), ID: fi.String("1111")},
 					{Name: fi.String("nodes-2"), ID: fi.String("2222")},
 				},
-				Tenancy: fi.String("dedicated"),
+				Tenancy:                 fi.String("dedicated"),
+				HTTPTokens:              fi.String("required"),
+				HTTPPutResponseHopLimit: fi.Int64(1),
 			},
 			Expected: `{
   "Resources": {
@@ -71,6 +73,10 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
               "InstanceInterruptionBehavior": "hibernate",
               "MaxPrice": "10"
             }
+          },
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "required"
           },
           "Monitoring": {
             "Enabled": true
@@ -130,7 +136,9 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
 					{Name: fi.String("nodes-1"), ID: fi.String("1111")},
 					{Name: fi.String("nodes-2"), ID: fi.String("2222")},
 				},
-				Tenancy: fi.String("dedicated"),
+				Tenancy:                 fi.String("dedicated"),
+				HTTPTokens:              fi.String("optional"),
+				HTTPPutResponseHopLimit: fi.Int64(1),
 			},
 			Expected: `{
   "Resources": {
@@ -158,6 +166,10 @@ func TestLaunchTemplateCloudformationRender(t *testing.T) {
           },
           "InstanceType": "t2.medium",
           "KeyName": "mykey",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
           "Monitoring": {
             "Enabled": true
           },

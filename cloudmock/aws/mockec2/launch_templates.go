@@ -147,6 +147,12 @@ func (m *MockEC2) CreateLaunchTemplate(request *ec2.CreateLaunchTemplateInput) (
 		name: request.LaunchTemplateName,
 	}
 
+	if request.LaunchTemplateData.MetadataOptions != nil {
+		resp.MetadataOptions = &ec2.LaunchTemplateInstanceMetadataOptions{
+			HttpTokens:              request.LaunchTemplateData.MetadataOptions.HttpTokens,
+			HttpPutResponseHopLimit: request.LaunchTemplateData.MetadataOptions.HttpPutResponseHopLimit,
+		}
+	}
 	if request.LaunchTemplateData.Monitoring != nil {
 		resp.Monitoring = &ec2.LaunchTemplatesMonitoring{Enabled: request.LaunchTemplateData.Monitoring.Enabled}
 	}
