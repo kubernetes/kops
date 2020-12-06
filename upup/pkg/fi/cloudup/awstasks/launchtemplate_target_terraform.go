@@ -108,6 +108,13 @@ type terraformLaunchTemplateTagSpecification struct {
 	Tags map[string]string `json:"tags,omitempty" cty:"tags"`
 }
 
+type terraformLaunchTemplateInstanceMetadata struct {
+	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
+	HTTPPutResponseHopLimit *int64 `json:"http_put_response_hop_limit,omitempty" cty:"http_put_response_hop_limit"`
+	// HTTPTokens is the state of token usage for your instance metadata requests.
+	HTTPTokens *string `json:"http_tokens,omitempty" cty:"http_tokens"`
+}
+
 type terraformLaunchTemplate struct {
 	// Name is the name of the launch template
 	Name *string `json:"name,omitempty" cty:"name"`
@@ -128,6 +135,8 @@ type terraformLaunchTemplate struct {
 	KeyName *terraform.Literal `json:"key_name,omitempty" cty:"key_name"`
 	// MarketOptions are the spot pricing options
 	MarketOptions []*terraformLaunchTemplateMarketOptions `json:"instance_market_options,omitempty" cty:"instance_market_options"`
+	// MetadataOptions are the instance metadata options.
+	MetadataOptions *terraformLaunchTemplateInstanceMetadata `json:"metadata_options,omitempty" cty:"metadata_options"`
 	// Monitoring are the instance monitoring options
 	Monitoring []*terraformLaunchTemplateMonitoring `json:"monitoring,omitempty" cty:"monitoring"`
 	// NetworkInterfaces are the networking options
@@ -173,6 +182,10 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		ImageID:      image,
 		InstanceType: e.InstanceType,
 		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)},
+		MetadataOptions: &terraformLaunchTemplateInstanceMetadata{
+			HTTPTokens:              e.HTTPTokens,
+			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
+		},
 		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterface{
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,

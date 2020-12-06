@@ -166,6 +166,8 @@ type InstanceGroupSpec struct {
 	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior,omitempty"`
 	// CompressUserData compresses parts of the user data to save space
 	CompressUserData *bool `json:"compressUserData,omitempty"`
+	// InstanceMetadata defines the EC2 instance metadata service options (AWS Only)
+	InstanceMetadata *InstanceMetadataOptions `json:"instanceMetadata,omitempty"`
 }
 
 const (
@@ -179,6 +181,16 @@ const (
 
 // SpotAllocationStrategies is a collection of supported strategies
 var SpotAllocationStrategies = []string{SpotAllocationStrategyLowestPrices, SpotAllocationStrategyDiversified, SpotAllocationStrategyCapacityOptimized}
+
+// InstanceMetadata defines the EC2 instance metadata service options (AWS Only)
+type InstanceMetadataOptions struct {
+	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
+	// The larger the number, the further instance metadata requests can travel. The default value is 1.
+	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit,omitempty"`
+	// HTTPTokens is the state of token usage for the instance metadata requests.
+	// If the parameter is not specified in the request, the default state is "optional".
+	HTTPTokens *string `json:"httpTokens,omitempty"`
+}
 
 // MixedInstancesPolicySpec defines the specification for an autoscaling group backed by a ec2 fleet
 type MixedInstancesPolicySpec struct {

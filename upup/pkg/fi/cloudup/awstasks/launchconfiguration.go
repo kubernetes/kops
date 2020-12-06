@@ -60,6 +60,10 @@ type LaunchConfiguration struct {
 	AssociatePublicIP *bool
 	// BlockDeviceMappings is a block device mappings
 	BlockDeviceMappings []*BlockDeviceMapping
+	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
+	HTTPPutResponseHopLimit *int64
+	// HTTPTokens is the state of token usage for your instance metadata requests.
+	HTTPTokens *string
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
 	// ID is the launch configuration name
@@ -295,6 +299,11 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		ImageId:                  image.ImageId,
 		InstanceType:             e.InstanceType,
 		LaunchConfigurationName:  &launchConfigurationName,
+	}
+
+	request.MetadataOptions = &autoscaling.InstanceMetadataOptions{
+		HttpPutResponseHopLimit: e.HTTPPutResponseHopLimit,
+		HttpTokens:              e.HTTPTokens,
 	}
 
 	if e.SSHKey != nil {
