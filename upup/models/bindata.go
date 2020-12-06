@@ -1026,9 +1026,6 @@ spec:
         - image: {{ .Image }}
           name: cluster-autoscaler
           resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
             requests:
               cpu: 100m
               memory: 300Mi
