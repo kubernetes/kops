@@ -323,6 +323,10 @@
           "ImageId": "ami-12345678",
           "InstanceType": "t2.micro",
           "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
@@ -434,6 +438,10 @@
           "ImageId": "ami-12345678",
           "InstanceType": "m3.medium",
           "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": false,
@@ -541,6 +549,10 @@
           "ImageId": "ami-12345678",
           "InstanceType": "t2.medium",
           "KeyName": "kubernetes.privatecalico.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": false,

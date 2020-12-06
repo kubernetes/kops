@@ -429,6 +429,10 @@ resource "aws_launch_template" "bastion-bastionuserdata-example-com" {
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "bastion.bastionuserdata.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -493,6 +497,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-bastionuserdata-exampl
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1a.masters.bastionuserdata.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -552,6 +560,10 @@ resource "aws_launch_template" "nodes-bastionuserdata-example-com" {
   key_name      = aws_key_pair.kubernetes-bastionuserdata-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "nodes.bastionuserdata.example.com"
   network_interfaces {
