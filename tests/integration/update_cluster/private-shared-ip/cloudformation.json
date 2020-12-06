@@ -1,0 +1,1603 @@
+{
+  "Resources": {
+    "AWSAutoScalingAutoScalingGroupbastionprivatesharedipexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "bastion.private-shared-ip.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatebastionprivatesharedipexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatebastionprivatesharedipexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "MaxSize": "1",
+        "MinSize": "1",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.private-shared-ip.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "node",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/bastion",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "bastion",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ],
+        "LoadBalancerNames": [
+          {
+            "Ref": "AWSElasticLoadBalancingLoadBalancerbastionprivatesharedipexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersprivatesharedipexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "master-us-test-1a.masters.private-shared-ip.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "MaxSize": "1",
+        "MinSize": "1",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aprivatesharedipexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "master-us-test-1a.masters.private-shared-ip.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "master",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "master-us-test-1a",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ],
+        "LoadBalancerNames": [
+          {
+            "Ref": "AWSElasticLoadBalancingLoadBalancerapiprivatesharedipexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupnodesprivatesharedipexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AutoScalingGroupName": "nodes.private-shared-ip.example.com",
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref": "AWSEC2LaunchTemplatenodesprivatesharedipexamplecom"
+          },
+          "Version": {
+            "Fn::GetAtt": [
+              "AWSEC2LaunchTemplatenodesprivatesharedipexamplecom",
+              "LatestVersionNumber"
+            ]
+          }
+        },
+        "MaxSize": "2",
+        "MinSize": "2",
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aprivatesharedipexamplecom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.private-shared-ip.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+            "Value": "node",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/node",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kops.k8s.io/instancegroup",
+            "Value": "nodes",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+            "Metrics": [
+              "GroupDesiredCapacity",
+              "GroupInServiceInstances",
+              "GroupMaxSize",
+              "GroupMinSize",
+              "GroupPendingInstances",
+              "GroupStandbyInstances",
+              "GroupTerminatingInstances",
+              "GroupTotalInstances"
+            ]
+          }
+        ]
+      }
+    },
+    "AWSEC2LaunchTemplatebastionprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "bastion.private-shared-ip.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 32,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilebastionsprivatesharedipexamplecom"
+            }
+          },
+          "ImageId": "ami-11400000",
+          "InstanceType": "t2.micro",
+          "KeyName": "kubernetes.private-shared-ip.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": true,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "private-shared-ip.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "bastion.private-shared-ip.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/bastion",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "bastion"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "private-shared-ip.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "bastion.private-shared-ip.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/bastion",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "bastion"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatemasterustest1amastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "master-us-test-1a.masters.private-shared-ip.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 64,
+                "DeleteOnTermination": true
+              }
+            },
+            {
+              "DeviceName": "/dev/sdc",
+              "VirtualName": "ephemeral0"
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilemastersprivatesharedipexamplecom"
+            }
+          },
+          "ImageId": "ami-11400000",
+          "InstanceType": "m3.medium",
+          "KeyName": "kubernetes.private-shared-ip.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": false,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "private-shared-ip.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.private-shared-ip.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "private-shared-ip.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "master-us-test-1a.masters.private-shared-ip.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "master"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/master",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "master-us-test-1a"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2LaunchTemplatenodesprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "nodes.private-shared-ip.example.com",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeType": "gp2",
+                "VolumeSize": 128,
+                "DeleteOnTermination": true
+              }
+            }
+          ],
+          "IamInstanceProfile": {
+            "Name": {
+              "Ref": "AWSIAMInstanceProfilenodesprivatesharedipexamplecom"
+            }
+          },
+          "ImageId": "ami-11400000",
+          "InstanceType": "t2.medium",
+          "KeyName": "kubernetes.private-shared-ip.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": false,
+              "DeleteOnTermination": true,
+              "DeviceIndex": 0,
+              "Groups": [
+                {
+                  "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+                }
+              ]
+            }
+          ],
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "private-shared-ip.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.private-shared-ip.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+                  "Value": "owned"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "KubernetesCluster",
+                  "Value": "private-shared-ip.example.com"
+                },
+                {
+                  "Key": "Name",
+                  "Value": "nodes.private-shared-ip.example.com"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
+                  "Value": "node"
+                },
+                {
+                  "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node",
+                  "Value": ""
+                },
+                {
+                  "Key": "k8s.io/role/node",
+                  "Value": "1"
+                },
+                {
+                  "Key": "kops.k8s.io/instancegroup",
+                  "Value": "nodes"
+                },
+                {
+                  "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+                  "Value": "owned"
+                }
+              ]
+            }
+          ],
+          "UserData": "extracted"
+        }
+      }
+    },
+    "AWSEC2NatGatewayustest1aprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": "eipalloc-12345678",
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Route00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivatesharedipexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": "igw-1"
+      }
+    },
+    "AWSEC2RouteTableprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": "vpc-12345678",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "public"
+          }
+        ]
+      }
+    },
+    "AWSEC2RouteTableprivateustest1aprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": "vpc-12345678",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "private-us-test-1a.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/kops/role",
+            "Value": "private-us-test-1a"
+          }
+        ]
+      }
+    },
+    "AWSEC2Routeprivateustest1a00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1aprivatesharedipexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "AWSEC2NatGatewayustest1aprivatesharedipexamplecom"
+        }
+      }
+    },
+    "AWSEC2SecurityGroupEgressapielbegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressbastionegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressbastionelbegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressmastersprivatesharedipexamplecomegressall0to000000": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressnodesprivatesharedipexamplecomegressall0to000000": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressbastiontomasterssh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressbastiontonodessh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpsapielb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatesharedipexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpselbtomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatesharedipexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressicmppmtuapielb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupapielbprivatesharedipexamplecom"
+        },
+        "FromPort": 3,
+        "ToPort": 4,
+        "IpProtocol": "icmp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressmastersprivatesharedipexamplecomingressall0to0mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressmastersprivatesharedipexamplecomingressall0to0nodesprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingressall0to0nodesprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingresstcp1to2379mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 2379,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingresstcp2382to4000mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 2382,
+        "ToPort": 4000,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingresstcp4003to65535mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 4003,
+        "ToPort": 65535,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodesprivatesharedipexamplecomingressudp1to65535mastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesprivatesharedipexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshelbtobastion": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionprivatesharedipexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshexternaltobastionelb00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupapielbprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "api-elb.private-shared-ip.example.com",
+        "VpcId": "vpc-12345678",
+        "GroupDescription": "Security group for api ELB",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "api-elb.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "bastion-elb.private-shared-ip.example.com",
+        "VpcId": "vpc-12345678",
+        "GroupDescription": "Security group for bastion ELB",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion-elb.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupbastionprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "bastion.private-shared-ip.example.com",
+        "VpcId": "vpc-12345678",
+        "GroupDescription": "Security group for bastion",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupmastersprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "masters.private-shared-ip.example.com",
+        "VpcId": "vpc-12345678",
+        "GroupDescription": "Security group for masters",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupnodesprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "nodes.private-shared-ip.example.com",
+        "VpcId": "vpc-12345678",
+        "GroupDescription": "Security group for nodes",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationprivateustest1aprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetustest1aprivatesharedipexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivateustest1aprivatesharedipexamplecom"
+        }
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationutilityustest1aprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableprivatesharedipexamplecom"
+        }
+      }
+    },
+    "AWSEC2Subnetustest1aprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": "vpc-12345678",
+        "CidrBlock": "172.20.32.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.private-shared-ip.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Private"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/internal-elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": "vpc-12345678",
+        "CidrBlock": "172.20.4.0/22",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "utility-us-test-1a.private-shared-ip.example.com"
+          },
+          {
+            "Key": "SubnetType",
+            "Value": "Utility"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          },
+          {
+            "Key": "kubernetes.io/role/elb",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdeventsprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-events.private-shared-ip.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/events",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdmainprivatesharedipexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-main.private-shared-ip.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/main",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSElasticLoadBalancingLoadBalancerapiprivatesharedipexamplecom": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": "api-private-shared-ip-exa-ohatqj",
+        "Listeners": [
+          {
+            "InstancePort": "443",
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": "443",
+            "Protocol": "TCP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupapielbprivatesharedipexamplecom"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "SSL:443",
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "2",
+          "Interval": "10",
+          "Timeout": "5"
+        },
+        "ConnectionSettings": {
+          "IdleTimeout": 300
+        },
+        "CrossZone": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "api.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSElasticLoadBalancingLoadBalancerbastionprivatesharedipexamplecom": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": "bastion-private-shared-ip-eepmph",
+        "Listeners": [
+          {
+            "InstancePort": "22",
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": "22",
+            "Protocol": "TCP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupbastionelbprivatesharedipexamplecom"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "AWSEC2Subnetutilityustest1aprivatesharedipexamplecom"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "TCP:22",
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "2",
+          "Interval": "10",
+          "Timeout": "5"
+        },
+        "ConnectionSettings": {
+          "IdleTimeout": 300
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "private-shared-ip.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastion.private-shared-ip.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/private-shared-ip.example.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilebastionsprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": "bastions.private-shared-ip.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolebastionsprivatesharedipexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilemastersprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": "masters.private-shared-ip.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersprivatesharedipexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilenodesprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "InstanceProfileName": "nodes.private-shared-ip.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesprivatesharedipexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMPolicybastionsprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "bastions.private-shared-ip.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolebastionsprivatesharedipexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeRegions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicymastersprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "masters.private-shared-ip.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersprivatesharedipexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeAccountAttributes",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInternetGateways",
+                "ec2:DescribeRegions",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeVolumes"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:DescribeVolumesModifications",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifyVolume"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CreateRoute",
+                "ec2:DeleteRoute",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteVolume",
+                "ec2:DetachVolume",
+                "ec2:RevokeSecurityGroupIngress"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "ec2:ResourceTag/KubernetesCluster": "private-shared-ip.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "ec2:DescribeLaunchTemplateVersions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Condition": {
+                "StringEquals": {
+                  "autoscaling:ResourceTag/KubernetesCluster": "private-shared-ip.example.com"
+                }
+              },
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:AttachLoadBalancerToSubnets",
+                "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "elasticloadbalancing:ConfigureHealthCheck",
+                "elasticloadbalancing:DeleteLoadBalancer",
+                "elasticloadbalancing:DeleteLoadBalancerListeners",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeVpcs",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:CreateTargetGroup",
+                "elasticloadbalancing:DeleteListener",
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:DeregisterTargets",
+                "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:DescribeLoadBalancerPolicies",
+                "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:DescribeTargetHealth",
+                "elasticloadbalancing:ModifyListener",
+                "elasticloadbalancing:ModifyTargetGroup",
+                "elasticloadbalancing:RegisterTargets",
+                "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "iam:ListServerCertificates",
+                "iam:GetServerCertificate"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicynodesprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "nodes.private-shared-ip.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesprivatesharedipexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolebastionsprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "bastions.private-shared-ip.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolemastersprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "masters.private-shared-ip.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolenodesprivatesharedipexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "nodes.private-shared-ip.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSRoute53RecordSetapiprivatesharedipexamplecom": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "Name": "api.private-shared-ip.example.com",
+        "Type": "A",
+        "AliasTarget": {
+          "DNSName": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingLoadBalancerapiprivatesharedipexamplecom",
+              "DNSName"
+            ]
+          },
+          "HostedZoneId": {
+            "Fn::GetAtt": [
+              "AWSElasticLoadBalancingLoadBalancerapiprivatesharedipexamplecom",
+              "CanonicalHostedZoneNameID"
+            ]
+          },
+          "EvaluateTargetHealth": false
+        },
+        "HostedZoneId": "/hostedzone/Z1AFAKE1ZON3YO"
+      }
+    }
+  }
+}

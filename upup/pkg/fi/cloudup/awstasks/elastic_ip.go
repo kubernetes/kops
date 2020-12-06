@@ -38,6 +38,9 @@ type ElasticIP struct {
 	ID       *string
 	PublicIP *string
 
+	// Shared is set if this is a shared IP
+	Shared *bool
+
 	// ElasticIPs don't support tags.  We instead find it via a related resource.
 
 	// TagOnSubnet tags a subnet with the ElasticIP.  Deprecated: doesn't round-trip with terraform.
@@ -175,6 +178,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 
 		// Avoid spurious changes
 		actual.Lifecycle = e.Lifecycle
+		actual.Shared = e.Shared
 
 		return actual, nil
 	}
@@ -271,6 +275,14 @@ type terraformElasticIP struct {
 }
 
 func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
+	if fi.BoolValue(e.Shared) {
+		if e.ID == nil {
+			return fmt.Errorf("ID must be set, if ElasticIP is shared: %v", e)
+		}
+		klog.V(4).Infof("reusing existing ElasticIP with id %q", aws.StringValue(e.ID))
+		return nil
+	}
+
 	tf := &terraformElasticIP{
 		VPC:  aws.Bool(true),
 		Tags: e.Tags,
@@ -280,6 +292,13 @@ func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 }
 
 func (e *ElasticIP) TerraformLink() *terraform.Literal {
+	if fi.BoolValue(e.Shared) {
+		if e.ID == nil {
+			klog.Fatalf("ID must be set, if ElasticIP is shared: %v", e)
+		}
+		return terraform.LiteralFromStringValue(*e.ID)
+	}
+
 	return terraform.LiteralProperty("aws_eip", *e.Name, "id")
 }
 
@@ -289,6 +308,14 @@ type cloudformationElasticIP struct {
 }
 
 func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ElasticIP) error {
+	if fi.BoolValue(e.Shared) {
+		if e.ID == nil {
+			return fmt.Errorf("ID must be set, if ElasticIP is shared: %v", e)
+		}
+		klog.V(4).Infof("reusing existing ElasticIP with id %q", aws.StringValue(e.ID))
+		return nil
+	}
+
 	tf := &cloudformationElasticIP{
 		Domain: aws.String("vpc"),
 		Tags:   buildCloudformationTags(e.Tags),
@@ -303,5 +330,12 @@ func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget,
 //}
 
 func (e *ElasticIP) CloudformationAllocationID() *cloudformation.Literal {
+	if fi.BoolValue(e.Shared) {
+		if e.ID == nil {
+			klog.Fatalf("ID must be set, if ElasticIP is shared: %v", e)
+		}
+		return cloudformation.LiteralString(*e.ID)
+	}
+
 	return cloudformation.GetAtt("AWS::EC2::EIP", *e.Name, "AllocationId")
 }
