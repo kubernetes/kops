@@ -1,6 +1,6 @@
 # Cluster Autoscaler Addon
 
-**This addon is deprecated. See https://kops.sigs.k8s.io/cluster_spec/#cluster-autoscaler**
+**This addon is deprecated. See https://kops.sigs.k8s.io/addons/#cluster-autoscaler**
 
 We strongly recommend using Cluster Autoscaler with the kubernetes version for which it was meant. Refer to the [Cluster Autoscaler documentation compatibility matrix]( https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/README.md#releases)
 
