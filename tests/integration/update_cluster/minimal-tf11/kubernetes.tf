@@ -309,6 +309,11 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
   instance_type = "m3.medium"
   key_name      = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
 
+  metadata_options = {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
+
   network_interfaces = {
     associate_public_ip_address = true
     delete_on_termination       = true
@@ -380,6 +385,11 @@ resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
   image_id      = "ami-12345678"
   instance_type = "t2.medium"
   key_name      = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
+
+  metadata_options = {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
 
   network_interfaces = {
     associate_public_ip_address = true

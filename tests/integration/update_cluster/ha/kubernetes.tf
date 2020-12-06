@@ -439,6 +439,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-ha-example-com" {
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1a.masters.ha.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -502,6 +506,10 @@ resource "aws_launch_template" "master-us-test-1b-masters-ha-example-com" {
   key_name      = aws_key_pair.kubernetes-ha-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "master-us-test-1b.masters.ha.example.com"
   network_interfaces {
@@ -567,6 +575,10 @@ resource "aws_launch_template" "master-us-test-1c-masters-ha-example-com" {
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1c.masters.ha.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -626,6 +638,10 @@ resource "aws_launch_template" "nodes-ha-example-com" {
   key_name      = aws_key_pair.kubernetes-ha-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "nodes.ha.example.com"
   network_interfaces {

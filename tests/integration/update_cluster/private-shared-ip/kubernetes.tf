@@ -406,6 +406,10 @@ resource "aws_launch_template" "bastion-private-shared-ip-example-com" {
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "bastion.private-shared-ip.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -469,6 +473,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-private-shared-ip-exam
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1a.masters.private-shared-ip.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -528,6 +536,10 @@ resource "aws_launch_template" "nodes-private-shared-ip-example-com" {
   key_name      = aws_key_pair.kubernetes-private-shared-ip-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "nodes.private-shared-ip.example.com"
   network_interfaces {
