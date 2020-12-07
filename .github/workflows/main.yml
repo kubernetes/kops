@@ -73,7 +73,7 @@ jobs:
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
-      - name: make travis-ci
+      - name: make quick-ci
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
         run: |
-          make travis-ci
+          make quick-ci
