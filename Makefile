@@ -451,7 +451,7 @@ govet: ${BINDATA_TARGETS}
 
 # verify is ran by the pull-kops-verify prow job
 .PHONY: verify
-verify: ci verify-gofmt
+verify: quick-ci verify-gofmt
 
 .PHONY: verify-boilerplate
 verify-boilerplate:
@@ -521,8 +521,8 @@ ci: govet verify-gofmt verify-generate verify-gomod verify-goimports verify-boil
 # we skip tasks that rely on bazel and are covered by other jobs
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
-.PHONY: ci
-ci: verify-generate verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
+.PHONY: quick-ci
+quick-ci: verify-generate verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
