@@ -237,7 +237,19 @@ spec:
     zone: us-east-1a
 ```
 
-In the case that you don't use NAT gateways or internet gateways, Kops 1.12.0 introduced the "External" flag for egress to force kops to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kops, typically with an existing cluster.
+In the case that you don't want to use an existing NAT gateway, but still want to use a pre-allocated elastic IP, kOps 1.19.0 introduced the possibility to specify an elastic IP as egress and kOps will create a NAT gateway that uses it.
+
+```yaml
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    egress: eipalloc-0123456789abcdef0
+    type: Private
+    zone: us-east-1a
+```
+
+In the case that you don't use NAT gateways or internet gateways, kOps 1.12.0 introduced the "External" flag for egress to force kOps to ignore egress for the subnet. This can be useful when other tools are used to manage egress for the subnet such as virtual private gateways. Please note that your cluster may need to have access to the internet upon creation, so egress must be available upon initializing a cluster. This is intended for use when egress is managed external to kOps, typically with an existing cluster.
 
 ```yaml
 spec:

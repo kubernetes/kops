@@ -547,8 +547,16 @@ const (
 	SubnetTypeUtility SubnetType = "Utility"
 )
 
-// EgressExternal means that egress configuration is done externally (preconfigured)
-const EgressExternal = "External"
+const (
+	// EgressNatGateway means that egress configuration is using an existing NAT Gateway
+	EgressNatGateway = "nat"
+	// EgressElasticIP means that egress configuration is using a NAT Gateway with an existing Elastic IP
+	EgressElasticIP = "eipalloc"
+	// EgressElasticIP means that egress configuration is using an existing NAT Instance
+	EgressNatInstance = "i"
+	// EgressExternal means that egress configuration is done externally (preconfigured)
+	EgressExternal = "External"
+)
 
 // ClusterSubnetSpec defines a subnet
 type ClusterSubnetSpec struct {

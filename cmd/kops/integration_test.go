@@ -267,6 +267,12 @@ func TestPrivateSharedSubnet(t *testing.T) {
 	newIntegrationTest("private-shared-subnet.example.com", "private-shared-subnet").withPrivate().runTestTerraformAWS(t)
 }
 
+// TestPrivateSharedIP runs the test on a configuration with private topology & shared subnets
+func TestPrivateSharedIP(t *testing.T) {
+	newIntegrationTest("private-shared-ip.example.com", "private-shared-ip").withPrivate().runTestTerraformAWS(t)
+	newIntegrationTest("private-shared-ip.example.com", "private-shared-ip").withPrivate().runTestCloudformation(t)
+}
+
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
 	newIntegrationTest("privatedns1.example.com", "privatedns1").withPrivate().runTestTerraformAWS(t)
