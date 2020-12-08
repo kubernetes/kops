@@ -219,8 +219,7 @@ github.com/docker/docker/api/types/versions
 github.com/docker/docker/api/types/volume
 github.com/docker/docker/client
 github.com/docker/docker/errdefs
-# github.com/docker/go-connections v0.4.0
-## explicit
+# github.com/docker/go-connections v0.3.0
 github.com/docker/go-connections/nat
 github.com/docker/go-connections/sockets
 github.com/docker/go-connections/tlsconfig
@@ -643,7 +642,7 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+# golang.org/x/sys v0.0.0-20201112073958-5cba982894dd
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
@@ -1245,7 +1244,7 @@ k8s.io/klog/v2/klogr
 k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/proto/validation
-# k8s.io/kubectl v0.0.0 => k8s.io/kubectl v0.19.0
+# k8s.io/kubectl v0.0.0 => k8s.io/kubectl v0.0.0-20201130094846-973a6807a9f1
 ## explicit
 k8s.io/kubectl/pkg/cmd/util
 k8s.io/kubectl/pkg/cmd/util/editor
@@ -1362,7 +1361,7 @@ sigs.k8s.io/yaml
 # k8s.io/apimachinery => k8s.io/apimachinery v0.19.0
 # k8s.io/client-go => k8s.io/client-go v0.19.0
 # k8s.io/cloud-provider => k8s.io/cloud-provider v0.19.0
-# k8s.io/kubectl => k8s.io/kubectl v0.19.0
+# k8s.io/kubectl => k8s.io/kubectl v0.0.0-20201130094846-973a6807a9f1
 # k8s.io/apiserver => k8s.io/apiserver v0.19.0
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.0
 # k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.19.0

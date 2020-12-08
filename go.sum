@@ -154,6 +154,7 @@ github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa/go.mod h1:z
 github.com/codegangsta/negroni v1.0.0/go.mod h1:v0y3T5G7Y1UlFfyxFn/QLRU4a2EuNau2iZY63YTKWo0=
 github.com/container-storage-interface/spec v1.2.0/go.mod h1:6URME8mwIBbpVyZV93Ce5St17xBiQJQY67NDsuohiy4=
 github.com/containerd/console v0.0.0-20170925154832-84eeaae905fa/go.mod h1:Tj/on1eG8kiEhd0+fhSDzsPAFESxzBBvdyEgyryXffw=
+github.com/containerd/containerd v1.0.2 h1:AcqeeOunmUuo2CvPPtHMhWn7mi54clu+j9yqXKxGFtk=
 github.com/containerd/containerd v1.0.2/go.mod h1:bC6axHOhabU15QhwfG7w5PipXdVtMXFTttgp+kVtyUA=
 github.com/containerd/typeurl v0.0.0-20190228175220-2a93cfde8c20/go.mod h1:Cm3kwCdlkCfMSHURc+r6fwoGH6/F1hH3S4sg0rLFWPc=
 github.com/containernetworking/cni v0.7.1/go.mod h1:LGwApLUm2FpoOfxTDEeq8T9ipbpZ61X79hmU3w8FmsY=
@@ -202,9 +203,8 @@ github.com/docker/distribution v2.7.1+incompatible h1:a5mlkVzth6W5A4fOsS3D2EO5BU
 github.com/docker/distribution v2.7.1+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=
 github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0 h1:w3NnFcKR5241cfmQU5ZZAsf0xcpId6mWOupTvJlUX2U=
 github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
+github.com/docker/go-connections v0.3.0 h1:3lOnM9cSzgGwx8VfK/NGOW5fLQ0GjIlCkaktF+n1M6o=
 github.com/docker/go-connections v0.3.0/go.mod h1:Gbd7IOopHjR8Iph03tsViu4nIes5XhDvyHbTtUxmeec=
-github.com/docker/go-connections v0.4.0 h1:El9xVISelRB7BuFusrZozjnkIM5YnzCViNKohAFqRJQ=
-github.com/docker/go-connections v0.4.0/go.mod h1:Gbd7IOopHjR8Iph03tsViu4nIes5XhDvyHbTtUxmeec=
 github.com/docker/go-units v0.3.3 h1:Xk8S3Xj5sLGlG5g67hJmYMmUgXv5N4PhkjJHHqrwnTk=
 github.com/docker/go-units v0.3.3/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/docker/go-units v0.4.0 h1:3uh0PgVws3nIA0Q+MwDC8yjEPf9zjRfZZWXZYDct3Tw=
@@ -1093,6 +1093,8 @@ golang.org/x/sys v0.0.0-20200622214017-ed371f2e16b4 h1:5/PjkGUjvEU5Gl6BxmvKRPpqo
 golang.org/x/sys v0.0.0-20200622214017-ed371f2e16b4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f h1:+Nyd8tzPX9R7BWHguqsrbFdRx3WQ/1ib8I44HXV5yTA=
 golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20201112073958-5cba982894dd h1:5CtCZbICpIOFdgO940moixOPjc0178IU44m4EjOO5IY=
+golang.org/x/sys v0.0.0-20201112073958-5cba982894dd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.0.0-20160726164857-2910a502d2bf/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.0.0-20170915090833-1cbadb444a80/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
@@ -1287,7 +1289,6 @@ k8s.io/cloud-provider v0.19.0/go.mod h1:TYh7b7kQ6wiqF7Ftb+u3lN4IwvgOPbBrcvC3TDAW
 k8s.io/cloud-provider-openstack v1.18.0 h1:v/ebjNEdx0hBaygsRohSS643f41lj2CwvapCbn+aLOs=
 k8s.io/cloud-provider-openstack v1.18.0/go.mod h1:03202t5Sp+4Vmk6pxJ/hVH0fEkm9gMc/pku/QpkJQMQ=
 k8s.io/cluster-bootstrap v0.19.0/go.mod h1:kBn1DKyqoM245wzz+AAnGkuysJ+9GqVbPYveTo4KiaA=
-k8s.io/code-generator v0.19.0 h1:r0BxYnttP/r8uyKd4+Njg0B57kKi8wLvwEzaaVy3iZ8=
 k8s.io/code-generator v0.19.0/go.mod h1:moqLn7w0t9cMs4+5CQyxnfA/HV8MF6aAVENF+WZZhgk=
 k8s.io/component-base v0.19.0 h1:OueXf1q3RW7NlLlUCj2Dimwt7E1ys6ZqRnq53l2YuoE=
 k8s.io/component-base v0.19.0/go.mod h1:dKsY8BxkA+9dZIAh2aWJLL/UdASFDNtGYTCItL4LM7Y=
@@ -1319,8 +1320,8 @@ k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6 h1:+WnxoVtG8TMiudHBSEtrVL
 k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6/go.mod h1:UuqjUnNftUyPE5H64/qeyjQoUZhGpeFDVdxjTeEVN2o=
 k8s.io/kube-proxy v0.19.0/go.mod h1:7NoJCFgsWb7iiMB1F6bW1St5rEXC+ir2aWiJehASmTU=
 k8s.io/kube-scheduler v0.19.0/go.mod h1:1XGjJUgstM0/0x8to+bSGSyCs3Dp3dbCEr3Io/mvd4s=
-k8s.io/kubectl v0.19.0 h1:t9uxaZzGvqc2jY96mjnPSjFHtaKOxoUegeGZdaGT6aw=
-k8s.io/kubectl v0.19.0/go.mod h1:gPCjjsmE6unJzgaUNXIFGZGafiUp5jh0If3F/x7/rRg=
+k8s.io/kubectl v0.0.0-20201130094846-973a6807a9f1 h1:E30w7YQwbrHYMqeVqkTW+h/EwbuveCXOplc2aYqjxZA=
+k8s.io/kubectl v0.0.0-20201130094846-973a6807a9f1/go.mod h1:dfuMs7LjE7PX7SOSuMpYAccw4hJc1eQzy7BMCxKSWo0=
 k8s.io/kubelet v0.19.0/go.mod h1:cGds22piF/LnFzfAaIT+efvOYBHVYdunqka6NVuNw9g=
 k8s.io/kubernetes v1.18.0/go.mod h1:z8xjOOO1Ljz+TaHpOxVGC7cxtF32TesIamoQ+BZrVS0=
 k8s.io/legacy-cloud-providers v0.19.0 h1:BaSvqiTShEa1TVpFlOJnWPoCwLD/184pwdp+ufw92RI=
