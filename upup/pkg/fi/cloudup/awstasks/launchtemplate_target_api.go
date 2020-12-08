@@ -255,6 +255,11 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			actual.RootVolumeType = b.Ebs.VolumeType
 			actual.RootVolumeIops = b.Ebs.Iops
 			actual.RootVolumeEncryption = b.Ebs.Encrypted
+			if b.Ebs.KmsKeyId != nil {
+				actual.RootVolumeKmsKey = b.Ebs.KmsKeyId
+			} else {
+				actual.RootVolumeKmsKey = fi.String("")
+			}
 		} else {
 			_, d := BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(b)
 			actual.BlockDeviceMappings = append(actual.BlockDeviceMappings, d)

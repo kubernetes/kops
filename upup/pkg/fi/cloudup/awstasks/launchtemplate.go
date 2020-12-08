@@ -60,6 +60,8 @@ type LaunchTemplate struct {
 	RootVolumeType *string
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
 	RootVolumeEncryption *bool
+	// RootVolumeKmsKey is the encryption key identifier for EBS root volume encryption
+	RootVolumeKmsKey *string
 	// SSHKey is the ssh key for the instances
 	SSHKey *SSHKey
 	// SecurityGroups is a list of security group associated
@@ -102,13 +104,19 @@ func (t *LaunchTemplate) buildRootDevice(cloud awsup.AWSCloud) (map[string]*Bloc
 		return nil, fmt.Errorf("unable to resolve image: %q: not found", image)
 	}
 
-	bm := make(map[string]*BlockDeviceMapping)
-	bm[aws.StringValue(img.RootDeviceName)] = &BlockDeviceMapping{
+	b := &BlockDeviceMapping{
 		EbsDeleteOnTermination: aws.Bool(true),
 		EbsVolumeSize:          t.RootVolumeSize,
 		EbsVolumeType:          t.RootVolumeType,
 		EbsVolumeIops:          t.RootVolumeIops,
 		EbsEncrypted:           t.RootVolumeEncryption,
+	}
+	if aws.BoolValue(t.RootVolumeEncryption) && aws.StringValue(t.RootVolumeKmsKey) != "" {
+		b.EbsKmsKey = t.RootVolumeKmsKey
+	}
+
+	bm := map[string]*BlockDeviceMapping{
+		aws.StringValue(img.RootDeviceName): b,
 	}
 
 	return bm, nil
