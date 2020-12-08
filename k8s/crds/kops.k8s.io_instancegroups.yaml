@@ -193,6 +193,17 @@ spec:
               instanceInterruptionBehavior:
                 description: InstanceInterruptionBehavior defines if a spot instance should be terminated, hibernated, or stopped after interruption
                 type: string
+              instanceMetadata:
+                description: InstanceMetadata defines the EC2 instance metadata service options (AWS Only)
+                properties:
+                  httpPutResponseHopLimit:
+                    description: HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests. The larger the number, the further instance metadata requests can travel. The default value is 1.
+                    format: int64
+                    type: integer
+                  httpTokens:
+                    description: HTTPTokens is the state of token usage for the instance metadata requests. If the parameter is not specified in the request, the default state is "optional".
+                    type: string
+                type: object
               instanceProtection:
                 description: InstanceProtection makes new instances in an autoscaling group protected from scale in
                 type: boolean

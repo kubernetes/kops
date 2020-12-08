@@ -157,3 +157,48 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func TestInstanceMetadataOptions(t *testing.T) {
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+
+	tests := []struct {
+		ig       *kops.InstanceGroup
+		expected []string
+	}{
+		{
+			ig: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "some-ig",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: "Node",
+					InstanceMetadata: &kops.InstanceMetadataOptions{
+						HTTPPutResponseHopLimit: fi.Int64(1),
+						HTTPTokens:              fi.String("abc"),
+					},
+				},
+			},
+			expected: []string{"Unsupported value::spec.instanceMetadata.httpTokens"},
+		},
+		{
+			ig: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "some-ig",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role: "Node",
+					InstanceMetadata: &kops.InstanceMetadataOptions{
+						HTTPPutResponseHopLimit: fi.Int64(-1),
+						HTTPTokens:              fi.String("required"),
+					},
+				},
+			},
+			expected: []string{"Invalid value::spec.instanceMetadata.httpPutResponseHopLimit"},
+		},
+	}
+
+	for _, test := range tests {
+		errs := ValidateInstanceGroup(test.ig, cloud)
+		testErrors(t, test.ig.ObjectMeta.Name, errs, test.expected)
+	}
+}

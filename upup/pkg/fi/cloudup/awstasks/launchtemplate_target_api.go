@@ -42,6 +42,10 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		EbsOptimized:          t.RootVolumeOptimization,
 		ImageId:               image.ImageId,
 		InstanceType:          t.InstanceType,
+		MetadataOptions: &ec2.LaunchTemplateInstanceMetadataOptionsRequest{
+			HttpPutResponseHopLimit: t.HTTPPutResponseHopLimit,
+			HttpTokens:              t.HTTPTokens,
+		},
 		NetworkInterfaces: []*ec2.LaunchTemplateInstanceNetworkInterfaceSpecificationRequest{
 			{
 				AssociatePublicIpAddress: t.AssociatePublicIP,
@@ -281,6 +285,12 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 			tags := mapEC2TagsToMap(ts.Tags)
 			actual.Tags = tags
 		}
+	}
+
+	// @step: add instance metadata options
+	if lt.LaunchTemplateData.MetadataOptions != nil {
+		actual.HTTPPutResponseHopLimit = lt.LaunchTemplateData.MetadataOptions.HttpPutResponseHopLimit
+		actual.HTTPTokens = lt.LaunchTemplateData.MetadataOptions.HttpTokens
 	}
 
 	// @step: to avoid spurious changes on ImageId
