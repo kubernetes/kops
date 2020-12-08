@@ -12,7 +12,7 @@ replace k8s.io/client-go => k8s.io/client-go v0.19.0
 
 replace k8s.io/cloud-provider => k8s.io/cloud-provider v0.19.0
 
-replace k8s.io/kubectl => k8s.io/kubectl v0.19.0
+replace k8s.io/kubectl => k8s.io/kubectl v0.0.0-20201130094846-973a6807a9f1
 
 replace k8s.io/apiserver => k8s.io/apiserver v0.19.0
 
@@ -56,7 +56,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
-	github.com/aws/aws-sdk-go v1.35.10
+	github.com/aws/aws-sdk-go v1.36.0
 	github.com/bazelbuild/bazel-gazelle v0.19.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
@@ -65,7 +65,6 @@ require (
 	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 	github.com/digitalocean/godo v1.54.0
 	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
-	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
 	github.com/ghodss/yaml v1.0.0
@@ -99,9 +98,9 @@ require (
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20200622214017-ed371f2e16b4
+	golang.org/x/sys v0.0.0-20201112073958-5cba982894dd
 	golang.org/x/tools v0.0.0-20200626171337-aa94e735be7f
 	google.golang.org/api v0.22.0
 	gopkg.in/gcfg.v1 v1.2.3
