@@ -293,6 +293,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
       volume_type           = "gp2"
       volume_size           = 64
       delete_on_termination = true
+      encrypted             = false
     }
   }
 
@@ -370,6 +371,7 @@ resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
       volume_type           = "gp2"
       volume_size           = 128
       delete_on_termination = true
+      encrypted             = false
     }
   }
 

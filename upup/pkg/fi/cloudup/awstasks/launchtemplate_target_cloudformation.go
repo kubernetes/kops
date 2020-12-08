@@ -90,6 +90,8 @@ type cloudformationLaunchTemplateBlockDeviceEBS struct {
 	DeleteOnTermination *bool `json:"DeleteOnTermination,omitempty"`
 	// Encrypted indicates the device is encrypted
 	Encrypted *bool `json:"Encrypted,omitempty"`
+	// KmsKeyID is the encryption key identifier for the volume
+	KmsKeyID *string `json:"KmsKeyId,omitempty"`
 }
 
 type cloudformationLaunchTemplateBlockDevice struct {
@@ -240,6 +242,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 				VolumeSize:          x.EbsVolumeSize,
 				VolumeType:          x.EbsVolumeType,
 				Encrypted:           x.EbsEncrypted,
+				KmsKeyID:            x.EbsKmsKey,
 			},
 		})
 	}
@@ -252,6 +255,7 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 				VolumeSize:          x.EbsVolumeSize,
 				VolumeType:          x.EbsVolumeType,
 				Encrypted:           x.EbsEncrypted,
+				KmsKeyID:            x.EbsKmsKey,
 			},
 		})
 	}

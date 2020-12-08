@@ -90,6 +90,8 @@ type terraformLaunchTemplateBlockDeviceEBS struct {
 	DeleteOnTermination *bool `json:"delete_on_termination,omitempty" cty:"delete_on_termination"`
 	// Encrypted indicates the device should be encrypted
 	Encrypted *bool `json:"encrypted,omitempty" cty:"encrypted"`
+	// KmsKeyID is the encryption key identifier for the volume
+	KmsKeyID *string `json:"kms_key_id,omitempty" cty:"kms_key_id"`
 }
 
 type terraformLaunchTemplateBlockDevice struct {
@@ -251,6 +253,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 				{
 					DeleteOnTermination: fi.Bool(true),
 					Encrypted:           x.EbsEncrypted,
+					KmsKeyID:            x.EbsKmsKey,
 					IOPS:                x.EbsVolumeIops,
 					VolumeSize:          x.EbsVolumeSize,
 					VolumeType:          x.EbsVolumeType,
@@ -270,6 +273,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 					DeleteOnTermination: fi.Bool(true),
 					Encrypted:           x.EbsEncrypted,
 					IOPS:                x.EbsVolumeIops,
+					KmsKeyID:            x.EbsKmsKey,
 					VolumeSize:          x.EbsVolumeSize,
 					VolumeType:          x.EbsVolumeType,
 				},

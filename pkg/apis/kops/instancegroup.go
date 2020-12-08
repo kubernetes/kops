@@ -108,6 +108,8 @@ type InstanceGroupSpec struct {
 	RootVolumeDeleteOnTermination *bool `json:"rootVolumeDeleteOnTermination,omitempty"`
 	// RootVolumeEncryption enables EBS root volume encryption for an instance
 	RootVolumeEncryption *bool `json:"rootVolumeEncryption,omitempty"`
+	// RootVolumeEncryptionKey provides the key identifier for root volume encryption
+	RootVolumeEncryptionKey *string `json:"rootVolumeEncryptionKey,omitempty"`
 	// Volumes is a collection of additional volumes to create for instances within this InstanceGroup
 	Volumes []VolumeSpec `json:"volumes,omitempty"`
 	// VolumeMounts a collection of volume mounts
@@ -225,6 +227,8 @@ type VolumeSpec struct {
 	Encrypted *bool `json:"encrypted,omitempty"`
 	// Iops is the provision iops for this iops (think io1 in aws)
 	Iops *int64 `json:"iops,omitempty"`
+	// Key is the encryption key identifier for the volume
+	Key *string `json:"key,omitempty"`
 	// Size is the size of the volume in GB
 	Size int64 `json:"size,omitempty"`
 	// Type is the type of volume to create and is cloud specific

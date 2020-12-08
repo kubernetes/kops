@@ -1945,6 +1945,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.RootVolumeEncryptionKey != nil {
+		in, out := &in.RootVolumeEncryptionKey, &out.RootVolumeEncryptionKey
+		*out = new(string)
+		**out = **in
+	}
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]VolumeSpec, len(*in))
@@ -4191,6 +4196,11 @@ func (in *VolumeSpec) DeepCopyInto(out *VolumeSpec) {
 	if in.Iops != nil {
 		in, out := &in.Iops, &out.Iops
 		*out = new(int64)
+		**out = **in
+	}
+	if in.Key != nil {
+		in, out := &in.Key, &out.Key
+		*out = new(string)
 		**out = **in
 	}
 	return
