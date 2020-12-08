@@ -305,7 +305,8 @@
               {
                 "volume_type": "gp2",
                 "volume_size": 64,
-                "delete_on_termination": true
+                "delete_on_termination": true,
+                "encrypted": false
               }
             ]
           },
@@ -380,7 +381,8 @@
               {
                 "volume_type": "gp2",
                 "volume_size": 128,
-                "delete_on_termination": true
+                "delete_on_termination": true,
+                "encrypted": false
               }
             ]
           }

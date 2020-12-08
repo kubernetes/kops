@@ -40,6 +40,8 @@ const (
 	DefaultVolumeIops = 100
 	// DefaultVolumeDeleteOnTermination is the default volume behavior after instance termination
 	DefaultVolumeDeleteOnTermination = true
+	// DefaultVolumeEncryption is the default volume encryption behavior
+	DefaultVolumeEncryption = false
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -147,6 +149,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	if ig.Spec.InstanceInterruptionBehavior != nil {
 		lt.InstanceInterruptionBehavior = ig.Spec.InstanceInterruptionBehavior
 	}
+	if fi.BoolValue(ig.Spec.RootVolumeEncryption) && ig.Spec.RootVolumeEncryptionKey != nil {
+		lt.RootVolumeKmsKey = ig.Spec.RootVolumeEncryptionKey
+	} else {
+		lt.RootVolumeKmsKey = fi.String("")
+	}
 	return lt, nil
 }
 
@@ -169,6 +176,11 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 	rootVolumeDeleteOnTermination := DefaultVolumeDeleteOnTermination
 	if ig.Spec.RootVolumeDeleteOnTermination != nil {
 		rootVolumeDeleteOnTermination = fi.BoolValue(ig.Spec.RootVolumeDeleteOnTermination)
+	}
+
+	rootVolumeEncryption := DefaultVolumeEncryption
+	if ig.Spec.RootVolumeEncryption != nil {
+		rootVolumeEncryption = fi.BoolValue(ig.Spec.RootVolumeEncryption)
 	}
 
 	// @step: if required we add the override for the security group for this instancegroup
@@ -199,7 +211,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		RootVolumeOptimization:        ig.Spec.RootVolumeOptimization,
 		RootVolumeSize:                fi.Int64(int64(volumeSize)),
 		RootVolumeType:                fi.String(volumeType),
-		RootVolumeEncryption:          ig.Spec.RootVolumeEncryption,
+		RootVolumeEncryption:          fi.Bool(rootVolumeEncryption),
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
 	}
 
@@ -261,10 +273,15 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		if x.DeleteOnTermination != nil {
 			deleteOnTermination = fi.BoolValue(x.DeleteOnTermination)
 		}
+		encryption := DefaultVolumeEncryption
+		if x.Encrypted != nil {
+			encryption = fi.BoolValue(x.Encrypted)
+		}
 		t.BlockDeviceMappings = append(t.BlockDeviceMappings, &awstasks.BlockDeviceMapping{
 			DeviceName:             fi.String(x.Device),
 			EbsDeleteOnTermination: fi.Bool(deleteOnTermination),
-			EbsEncrypted:           x.Encrypted,
+			EbsEncrypted:           fi.Bool(encryption),
+			EbsKmsKey:              x.Key,
 			EbsVolumeIops:          x.Iops,
 			EbsVolumeSize:          fi.Int64(x.Size),
 			EbsVolumeType:          fi.String(x.Type),

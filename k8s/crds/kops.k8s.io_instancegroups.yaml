@@ -540,6 +540,9 @@ spec:
               rootVolumeEncryption:
                 description: RootVolumeEncryption enables EBS root volume encryption for an instance
                 type: boolean
+              rootVolumeEncryptionKey:
+                description: RootVolumeEncryptionKey provides the key identifier for root volume encryption
+                type: string
               rootVolumeIops:
                 description: If volume type is io1, then we need to specify the number of Iops.
                 format: int32
@@ -628,6 +631,9 @@ spec:
                       description: Iops is the provision iops for this iops (think io1 in aws)
                       format: int64
                       type: integer
+                    key:
+                      description: Key is the encryption key identifier for the volume
+                      type: string
                     size:
                       description: Size is the size of the volume in GB
                       format: int64

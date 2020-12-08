@@ -234,9 +234,29 @@ spec:
   rootVolumeIops: 200
 ```
 
-## Adding additional storage to the instance groups
+## Encrypting the root volume
+{{ kops_feature_table(kops_added_default='1.19') }}
 
-As of kOps 1.12.0 you can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
+You can encrypt the root volume  _(note, presently confined to AWS)_ via the instancegroup specification.
+
+```YAML
+metadata:
+  name: nodes
+spec:
+  ...
+  role: Node
+  rootVolumeSize: 200
+  rootVolumeEncryption: true
+  rootVolumeEncryptionKey: arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab
+```
+
+In the above example the encryption key is optional. The default key for EBS encryption is used when not specified.
+The encryption key can specified as the key ID, alias or ARN, as described in the [AWS docs](https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id).
+
+## Adding additional storage to the instance groups
+{{ kops_feature_table(kops_added_default='1.12') }}
+
+You can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
 
 ```YAML
 ---
@@ -254,12 +274,13 @@ spec:
   ...
   volumes:
   - device: /dev/xvdd
-    encrypted: true
     size: 20
     type: gp2
+    encrypted: true
+    key: arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab
 ```
 
-In AWS the above example shows how to add an additional 20gb EBS volume, which applies to each node within the instancegroup.
+In AWS the above example shows how to add an additional encrypted 20gb EBS volume, which applies to each node within the instancegroup.
 
 ## Automatically formatting and mounting the additional storage
 
@@ -347,12 +368,10 @@ So the procedure is:
 * Apply: `kops update cluster <clustername> --yes`
 * (no instances need to be relaunched, so no rolling-update is needed)
 
-## Creating a instance group of mixed instances types (AWS Only)
+## Creating an instance group of mixed instances types (AWS Only)
+{{ kops_feature_table(kops_added_default='1.12') }}
 
 AWS permits the creation of mixed instance EC2 Autoscaling Groups using a [mixed instance policy](https://aws.amazon.com/blogs/aws/new-ec2-auto-scaling-groups-with-multiple-instance-types-purchase-options/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS.
-
-Support for mixed instance groups was added in kOps 1.12.0
-
 
 ```YAML
 ---
