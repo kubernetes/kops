@@ -469,6 +469,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-existingsg-example-com
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1a.masters.existingsg.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -533,6 +537,10 @@ resource "aws_launch_template" "master-us-test-1b-masters-existingsg-example-com
   key_name      = aws_key_pair.kubernetes-existingsg-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "master-us-test-1b.masters.existingsg.example.com"
   network_interfaces {
@@ -599,6 +607,10 @@ resource "aws_launch_template" "master-us-test-1c-masters-existingsg-example-com
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1c.masters.existingsg.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -659,6 +671,10 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
   key_name      = aws_key_pair.kubernetes-existingsg-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "nodes.existingsg.example.com"
   network_interfaces {

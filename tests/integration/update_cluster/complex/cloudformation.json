@@ -266,6 +266,10 @@
           },
           "ImageId": "ami-12345678",
           "InstanceType": "m3.medium",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "required"
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": true,
@@ -401,6 +405,10 @@
           },
           "ImageId": "ami-12345678",
           "InstanceType": "t2.medium",
+          "MetadataOptions": {
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional"
+          },
           "Monitoring": {
             "Enabled": true
           },

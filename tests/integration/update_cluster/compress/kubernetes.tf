@@ -267,6 +267,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-compress-example-com" 
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1a.masters.compress.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -326,6 +330,10 @@ resource "aws_launch_template" "nodes-compress-example-com" {
   instance_type = "t2.medium"
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "nodes.compress.example.com"
   network_interfaces {

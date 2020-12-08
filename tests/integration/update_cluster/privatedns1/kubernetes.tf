@@ -474,6 +474,10 @@ resource "aws_launch_template" "bastion-privatedns1-example-com" {
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "bastion.privatedns1.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -544,6 +548,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-privatedns1-example-co
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1a.masters.privatedns1.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -610,6 +618,10 @@ resource "aws_launch_template" "nodes-privatedns1-example-com" {
   key_name      = aws_key_pair.kubernetes-privatedns1-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "nodes.privatedns1.example.com"
   network_interfaces {
