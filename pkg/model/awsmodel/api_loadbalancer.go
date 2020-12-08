@@ -153,10 +153,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Listeners:        nlbListeners,
 			TargetGroups:     make([]*awstasks.TargetGroup, 0),
 
-			Tags:             tags,
-			VPC:              b.LinkToVPC(),
-			Type:             fi.String("network"),
-			CLBNamesToDelete: []string{loadBalancerName},
+			Tags: tags,
+			VPC:  b.LinkToVPC(),
+			Type: fi.String("network"),
 		}
 
 		clb = &awstasks.ClassicLoadBalancer{
@@ -183,9 +182,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				IdleTimeout: fi.Int64(int64(idleTimeout.Seconds())),
 			},
 
-			Tags:             tags,
-			NLBNamesToDelete: []string{loadBalancerName},
-			TGNamesToDelete:  []string{b.NLBTargetGroupName("tcp"), b.NLBTargetGroupName("tls")},
+			Tags: tags,
 		}
 
 		if lbSpec.CrossZoneLoadBalancing == nil {

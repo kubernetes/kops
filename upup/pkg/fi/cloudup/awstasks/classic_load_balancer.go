@@ -73,9 +73,6 @@ type ClassicLoadBalancer struct {
 
 	// Shared is set if this is an external LB (one we don't create or own)
 	Shared *bool
-
-	NLBNamesToDelete []string
-	TGNamesToDelete  []string
 }
 
 var _ fi.CompareWithID = &ClassicLoadBalancer{}
@@ -163,7 +160,11 @@ func (e *ClassicLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error
 
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	for _, nlbName := range e.NLBNamesToDelete {
+	cn := c.Cluster.GetClusterName()
+	NLBNamesToDelete := []string{*e.LoadBalancerName}
+	TGNamesToDelete := []string{awsup.GetResourceName32(cn, "tcp"), awsup.GetResourceName32(cn, "tls")}
+
+	for _, nlbName := range NLBNamesToDelete {
 		if lb, err := findNetworkLoadBalancerByLoadBalancerName(cloud, nlbName); err != nil {
 			return nil, err
 		} else if lb != nil {
@@ -177,7 +178,7 @@ func (e *ClassicLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error
 		}
 	}
 
-	for _, tgName := range e.TGNamesToDelete {
+	for _, tgName := range TGNamesToDelete {
 		if tg, err := FindTargetGroupByName(cloud, tgName); err != nil {
 			return nil, err
 		} else if tg != nil {
@@ -527,8 +528,6 @@ func (e *ClassicLoadBalancer) Find(c *fi.Context) (*ClassicLoadBalancer, error) 
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
-	actual.NLBNamesToDelete = e.NLBNamesToDelete
-	actual.TGNamesToDelete = e.TGNamesToDelete
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
 

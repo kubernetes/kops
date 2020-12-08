@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -30,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/slice"
@@ -67,9 +68,8 @@ type NetworkLoadBalancer struct {
 
 	Type *string
 
-	VPC              *VPC
-	TargetGroups     []*TargetGroup
-	CLBNamesToDelete []string
+	VPC          *VPC
+	TargetGroups []*TargetGroup
 }
 
 var _ fi.CompareWithID = &NetworkLoadBalancer{}
@@ -117,11 +117,13 @@ func (d *deleteClassicLoadBalancer) String() string {
 
 func (e *NetworkLoadBalancer) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 
+	CLBNamesToDelete := []string{*e.LoadBalancerName}
+
 	var removals []fi.Deletion
 
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	for _, clbName := range e.CLBNamesToDelete {
+	for _, clbName := range CLBNamesToDelete {
 		if lb, err := findLoadBalancerByLoadBalancerName(cloud, clbName); err != nil {
 			return nil, err
 		} else if lb != nil {
@@ -518,7 +520,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.Context) (*NetworkLoadBalancer, error) 
 
 	// TODO: Make Normalize a standard method
 	actual.Normalize()
-	actual.CLBNamesToDelete = e.CLBNamesToDelete
 	actual.ForAPIServer = e.ForAPIServer
 	actual.Lifecycle = e.Lifecycle
 
