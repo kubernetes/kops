@@ -56,6 +56,28 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup, cloud awsup.AWSCloud) fiel
 		allErrs = append(allErrs, awsValidateMixedInstancesPolicy(field.NewPath("spec", "mixedInstancesPolicy"), ig.Spec.MixedInstancesPolicy, ig, cloud)...)
 	}
 
+	if ig.Spec.InstanceMetadata != nil {
+		allErrs = append(allErrs, awsValidateInstanceMetadata(field.NewPath("spec", "instanceMetadata"), ig.Spec.InstanceMetadata)...)
+	}
+
+	return allErrs
+}
+
+func awsValidateInstanceMetadata(fieldPath *field.Path, instanceMetadata *kops.InstanceMetadataOptions) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if instanceMetadata.HTTPTokens != nil {
+		allErrs = append(allErrs, IsValidValue(fieldPath.Child("httpTokens"), instanceMetadata.HTTPTokens, []string{"optional", "required"})...)
+	}
+
+	if instanceMetadata.HTTPPutResponseHopLimit != nil {
+		httpPutResponseHopLimit := fi.Int64Value(instanceMetadata.HTTPPutResponseHopLimit)
+		if httpPutResponseHopLimit < 1 || httpPutResponseHopLimit > 64 {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("httpPutResponseHopLimit"), instanceMetadata.HTTPPutResponseHopLimit,
+				"HTTPPutResponseLimit must be a value between 1 and 64"))
+		}
+	}
+
 	return allErrs
 }
 
