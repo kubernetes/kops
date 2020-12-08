@@ -430,6 +430,10 @@ resource "aws_launch_template" "bastion-privateflannel-example-com" {
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "bastion.privateflannel.example.com"
   network_interfaces {
     associate_public_ip_address = true
@@ -494,6 +498,10 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example
   lifecycle {
     create_before_destroy = true
   }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
+  }
   name = "master-us-test-1a.masters.privateflannel.example.com"
   network_interfaces {
     associate_public_ip_address = false
@@ -554,6 +562,10 @@ resource "aws_launch_template" "nodes-privateflannel-example-com" {
   key_name      = aws_key_pair.kubernetes-privateflannel-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   name = "nodes.privateflannel.example.com"
   network_interfaces {

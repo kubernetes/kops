@@ -48,7 +48,9 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 					{Name: fi.String("nodes-1"), ID: fi.String("1111")},
 					{Name: fi.String("nodes-2"), ID: fi.String("2222")},
 				},
-				Tenancy: fi.String("dedicated"),
+				Tenancy:                 fi.String("dedicated"),
+				HTTPTokens:              fi.String("optional"),
+				HTTPPutResponseHopLimit: fi.Int64(1),
 			},
 			Expected: `provider "aws" {
   region = "eu-west-2"
@@ -71,6 +73,10 @@ resource "aws_launch_template" "test" {
   key_name      = aws_key_pair.newkey.id
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 1
+    http_tokens                 = "optional"
   }
   monitoring {
     enabled = true
@@ -126,7 +132,9 @@ terraform {
 					{Name: fi.String("nodes-1"), ID: fi.String("1111")},
 					{Name: fi.String("nodes-2"), ID: fi.String("2222")},
 				},
-				Tenancy: fi.String("dedicated"),
+				Tenancy:                 fi.String("dedicated"),
+				HTTPTokens:              fi.String("required"),
+				HTTPPutResponseHopLimit: fi.Int64(5),
 			},
 			Expected: `provider "aws" {
   region = "eu-west-2"
@@ -150,6 +158,10 @@ resource "aws_launch_template" "test" {
   key_name      = "mykey"
   lifecycle {
     create_before_destroy = true
+  }
+  metadata_options {
+    http_put_response_hop_limit = 5
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = true

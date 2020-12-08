@@ -115,24 +115,26 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.ModelBuilde
 	// LaunchConfiguration as an anonymous field, bit given up the task dependency walker works this caused issues, due
 	// to the creation of a implicit dependency
 	lt := &awstasks.LaunchTemplate{
-		Name:                   fi.String(name),
-		Lifecycle:              b.Lifecycle,
-		AssociatePublicIP:      lc.AssociatePublicIP,
-		BlockDeviceMappings:    lc.BlockDeviceMappings,
-		IAMInstanceProfile:     lc.IAMInstanceProfile,
-		ImageID:                lc.ImageID,
-		InstanceMonitoring:     lc.InstanceMonitoring,
-		InstanceType:           lc.InstanceType,
-		RootVolumeOptimization: lc.RootVolumeOptimization,
-		RootVolumeSize:         lc.RootVolumeSize,
-		RootVolumeIops:         lc.RootVolumeIops,
-		RootVolumeType:         lc.RootVolumeType,
-		RootVolumeEncryption:   lc.RootVolumeEncryption,
-		SSHKey:                 lc.SSHKey,
-		SecurityGroups:         lc.SecurityGroups,
-		Tags:                   tags,
-		Tenancy:                lc.Tenancy,
-		UserData:               lc.UserData,
+		Name:                    fi.String(name),
+		Lifecycle:               b.Lifecycle,
+		AssociatePublicIP:       lc.AssociatePublicIP,
+		BlockDeviceMappings:     lc.BlockDeviceMappings,
+		IAMInstanceProfile:      lc.IAMInstanceProfile,
+		ImageID:                 lc.ImageID,
+		InstanceMonitoring:      lc.InstanceMonitoring,
+		InstanceType:            lc.InstanceType,
+		RootVolumeOptimization:  lc.RootVolumeOptimization,
+		RootVolumeSize:          lc.RootVolumeSize,
+		RootVolumeIops:          lc.RootVolumeIops,
+		RootVolumeType:          lc.RootVolumeType,
+		RootVolumeEncryption:    lc.RootVolumeEncryption,
+		SSHKey:                  lc.SSHKey,
+		SecurityGroups:          lc.SecurityGroups,
+		Tags:                    tags,
+		Tenancy:                 lc.Tenancy,
+		UserData:                lc.UserData,
+		HTTPTokens:              lc.HTTPTokens,
+		HTTPPutResponseHopLimit: lc.HTTPPutResponseHopLimit,
 	}
 	// When using a MixedInstances ASG, AWS requires the SpotPrice be defined on the ASG
 	// rather than the LaunchTemplate or else it returns this error:
@@ -213,6 +215,15 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchConfigurationTask(c *fi.ModelB
 		RootVolumeType:                fi.String(volumeType),
 		RootVolumeEncryption:          fi.Bool(rootVolumeEncryption),
 		SecurityGroups:                []*awstasks.SecurityGroup{sgLink},
+	}
+
+	t.HTTPTokens = fi.String("optional")
+	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
+		t.HTTPTokens = ig.Spec.InstanceMetadata.HTTPTokens
+	}
+	t.HTTPPutResponseHopLimit = fi.Int64(1)
+	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit != nil {
+		t.HTTPPutResponseHopLimit = ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit
 	}
 
 	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {

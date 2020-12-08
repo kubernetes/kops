@@ -129,6 +129,9 @@ spec:
   rootVolumeEncryptionKey: arn:aws:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
   subnets:
   - us-test-1a
+  instanceMetadata:
+    httpTokens: required
+    httpPutResponseHopLimit: 1
   additionalUserData:
   - name: myscript.sh
     type: text/x-shellscript

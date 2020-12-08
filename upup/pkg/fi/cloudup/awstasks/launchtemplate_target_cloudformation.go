@@ -110,6 +110,13 @@ type cloudformationLaunchTemplateTagSpecification struct {
 	Tags []cloudformationTag `json:"Tags,omitempty"`
 }
 
+type cloudformationLaunchTemplateInstanceMetadataOptions struct {
+	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
+	HTTPPutResponseHopLimit *int64 `json:"HttpPutResponseHopLimit,omitempty"`
+	// HTTPTokens is the state of token usage for your instance metadata requests.
+	HTTPTokens *string `json:"HttpTokens,omitempty"`
+}
+
 type cloudformationLaunchTemplateData struct {
 	// BlockDeviceMappings is the device mappings
 	BlockDeviceMappings []*cloudformationLaunchTemplateBlockDevice `json:"BlockDeviceMappings,omitempty"`
@@ -125,6 +132,8 @@ type cloudformationLaunchTemplateData struct {
 	KeyName *string `json:"KeyName,omitempty"`
 	// MarketOptions are the spot pricing options
 	MarketOptions *cloudformationLaunchTemplateMarketOptions `json:"InstanceMarketOptions,omitempty"`
+	// MetadataOptions are the instance metadata options.
+	MetadataOptions *cloudformationLaunchTemplateInstanceMetadataOptions `json:"MetadataOptions,omitempty"`
 	// Monitoring are the instance monitoring options
 	Monitoring *cloudformationLaunchTemplateMonitoring `json:"Monitoring,omitempty"`
 	// NetworkInterfaces are the networking options
@@ -173,6 +182,10 @@ func (t *LaunchTemplate) RenderCloudformation(target *cloudformation.Cloudformat
 		EBSOptimized: e.RootVolumeOptimization,
 		ImageID:      image,
 		InstanceType: e.InstanceType,
+		MetadataOptions: &cloudformationLaunchTemplateInstanceMetadataOptions{
+			HTTPTokens:              e.HTTPTokens,
+			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
+		},
 		NetworkInterfaces: []*cloudformationLaunchTemplateNetworkInterface{
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,

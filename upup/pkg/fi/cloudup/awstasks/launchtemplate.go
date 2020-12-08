@@ -39,6 +39,10 @@ type LaunchTemplate struct {
 	AssociatePublicIP *bool
 	// BlockDeviceMappings is a block device mappings
 	BlockDeviceMappings []*BlockDeviceMapping
+	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
+	HTTPPutResponseHopLimit *int64
+	// HTTPTokens is the state of token usage for your instance metadata requests.
+	HTTPTokens *string
 	// IAMInstanceProfile is the IAM profile to assign to the nodes
 	IAMInstanceProfile *IAMInstanceProfile
 	// ImageID is the AMI to use for the instances
