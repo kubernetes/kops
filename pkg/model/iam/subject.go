@@ -82,6 +82,9 @@ func BuildNodeRoleSubject(igRole kops.InstanceGroupRole) (Subject, error) {
 
 // ServiceAccountIssuer determines the issuer in the ServiceAccount JWTs
 func ServiceAccountIssuer(clusterName string, clusterSpec *kops.ClusterSpec) string {
+	if clusterSpec.KubeAPIServer != nil && clusterSpec.KubeAPIServer.ServiceAccountIssuer != nil {
+		return *clusterSpec.KubeAPIServer.ServiceAccountIssuer
+	}
 	return "https://api." + clusterName
 }
 
