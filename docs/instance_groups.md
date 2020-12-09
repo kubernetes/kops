@@ -45,6 +45,17 @@ spec:
   instanceProtection: true
 ```
 
+## instanceMetadata
+
+By default, both IMDSv1 and IMDSv2 are enabled. The instance metadata service can be configured to allow only IMDSv2.
+
+```YAML
+spec:
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+```
+
 ## externalLoadBalancers
 
 Instance groups can be linked to up to 10 load balancers. When attached, any instance launched will
