@@ -17,11 +17,9 @@
 import os
 from os import path
 
-gopath=os.environ['GOPATH']
-
-def read_packages_file(package_name):
+def read_packages_file(repo_path):
   packages = []
-  with open(path.join(gopath, 'src', package_name, 'hack/.packages')) as packages_file:
+  with open(path.join(repo_path, 'hack/.packages')) as packages_file:
     for package in packages_file:
       packages.append(package.replace('\n', ''))
   return packages

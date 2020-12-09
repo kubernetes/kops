@@ -46,18 +46,14 @@ export IFS=','; checks="${CHECKS[*]}"; unset IFS
 # NOTE: To ignore issues detected a package,
 # add it to the .staticcheck_failures blacklist
 IGNORE=(
+  hack # "main module (k8s.io/kops) does not contain package k8s.io/kops/hack (compile)"
 )
 export IFS='|'; ignore_pattern="^(${IGNORE[*]-})\$"; unset IFS
 
-# Ensure that we find the binaries we build before anything else.
-export GOBIN="${TOOLS_BIN}"
-PATH="${GOBIN}:${PATH}"
+echo 'installing staticcheck'
 
-# Install staticcheck from vendor
-echo 'installing staticcheck from vendor'
-
-go install k8s.io/kops/vendor/honnef.co/go/tools/cmd/staticcheck
-
+cd "${KOPS_ROOT}/hack"
+go build -o "${TOOLS_BIN}/staticcheck" honnef.co/go/tools/cmd/staticcheck
 cd "${KOPS_ROOT}"
 
 # Check that the file is in alphabetical order
@@ -105,8 +101,8 @@ while read -r error; do
   elif [[ "${in_failing}" -eq "0" ]]; then
     really_failing+=( "$pkg" )
   fi
-done < <(staticcheck -checks "${checks}" "${all_packages[@]}" 2>/dev/null || true)
-echo staticcheck -checks "${checks}" "${all_packages[@]}"
+done < <("${TOOLS_BIN}/staticcheck" -checks "${checks}" "${all_packages[@]}" 2>/dev/null || true)
+echo "${TOOLS_BIN}/staticcheck" -checks "${checks}" "${all_packages[@]}"
 export IFS=$'\n'  # Expand ${really_failing[*]} to separate lines
 kube::util::read-array really_failing < <(sort -u <<<"${really_failing[*]}")
 unset IFS

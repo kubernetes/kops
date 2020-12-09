@@ -20,10 +20,11 @@ set -o pipefail
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-cd "${KOPS_ROOT}" || exit 1
+cd "${KOPS_ROOT}/hack"
 
-# Install tools we need, but from vendor/
-GOBIN="${TOOLS_BIN}" go install ./vendor/github.com/client9/misspell/cmd/misspell
+go build -o "${TOOLS_BIN}/misspell" github.com/client9/misspell/cmd/misspell
+
+cd "${KOPS_ROOT}"
 
 mkdir -p .build/docs
 
