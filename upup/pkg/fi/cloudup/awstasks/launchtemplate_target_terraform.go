@@ -111,6 +111,8 @@ type terraformLaunchTemplateTagSpecification struct {
 }
 
 type terraformLaunchTemplateInstanceMetadata struct {
+	// HTTPEndpoint enables or disables the HTTP metadata endpoint on instances.
+	HTTPEndpoint *string `json:"http_endpoint,omitempty" cty:"http_endpoint"`
 	// HTTPPutResponseHopLimit is the desired HTTP PUT response hop limit for instance metadata requests.
 	HTTPPutResponseHopLimit *int64 `json:"http_put_response_hop_limit,omitempty" cty:"http_put_response_hop_limit"`
 	// HTTPTokens is the state of token usage for your instance metadata requests.
@@ -185,6 +187,8 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		InstanceType: e.InstanceType,
 		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)},
 		MetadataOptions: &terraformLaunchTemplateInstanceMetadata{
+			// See issue https://github.com/hashicorp/terraform-provider-aws/issues/12564.
+			HTTPEndpoint:            fi.String("enabled"),
 			HTTPTokens:              e.HTTPTokens,
 			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
 		},
