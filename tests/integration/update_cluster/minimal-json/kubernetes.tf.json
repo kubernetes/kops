@@ -324,6 +324,7 @@
         "instance_type": "m3.medium",
         "key_name": "${aws_key_pair.kubernetes-minimal-json-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}",
         "metadata_options": {
+          "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
           "http_tokens": "optional"
         },
@@ -400,6 +401,7 @@
         "instance_type": "t2.medium",
         "key_name": "${aws_key_pair.kubernetes-minimal-json-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}",
         "metadata_options": {
+          "http_endpoint": "enabled",
           "http_put_response_hop_limit": 1,
           "http_tokens": "optional"
         },
