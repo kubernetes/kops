@@ -311,6 +311,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscomplexexamplecom.Properties.
     networkPluginName: kubenet
     nodeLabels:
       kubernetes.io/role: master
+      node-role.kubernetes.io/control-plane: ""
       node-role.kubernetes.io/master: ""
     nonMasqueradeCIDR: 100.64.0.0/10
     podInfraContainerImage: k8s.gcr.io/pause:3.2

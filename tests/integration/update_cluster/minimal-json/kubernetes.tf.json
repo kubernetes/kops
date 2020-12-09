@@ -118,6 +118,11 @@
             "propagate_at_launch": true
           },
           {
+            "key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+            "value": "",
+            "propagate_at_launch": true
+          },
+          {
             "key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
             "value": "",
             "propagate_at_launch": true
@@ -351,6 +356,7 @@
           "KubernetesCluster": "minimal-json.example.com",
           "Name": "master-us-test-1a.masters.minimal-json.example.com",
           "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role": "master",
+          "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane": "",
           "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master": "",
           "k8s.io/role/master": "1",
           "kops.k8s.io/instancegroup": "master-us-test-1a",
@@ -363,6 +369,7 @@
               "KubernetesCluster": "minimal-json.example.com",
               "Name": "master-us-test-1a.masters.minimal-json.example.com",
               "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role": "master",
+              "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane": "",
               "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master": "",
               "k8s.io/role/master": "1",
               "kops.k8s.io/instancegroup": "master-us-test-1a",
@@ -375,6 +382,7 @@
               "KubernetesCluster": "minimal-json.example.com",
               "Name": "master-us-test-1a.masters.minimal-json.example.com",
               "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role": "master",
+              "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane": "",
               "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master": "",
               "k8s.io/role/master": "1",
               "kops.k8s.io/instancegroup": "master-us-test-1a",
