@@ -31,14 +31,14 @@ func TestBuildNodeLabels(t *testing.T) {
 		expected map[string]string
 	}{
 		{
-			name: "RoleMaster",
+			name: "RoleControlPlane",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubernetesVersion: "v1.9.0",
 					MasterKubelet: &kops.KubeletConfigSpec{
 						NodeLabels: map[string]string{
-							"master1": "master1",
-							"master2": "master2",
+							"controlPlane1": "controlPlane1",
+							"controlPlane2": "controlPlane2",
 						},
 					},
 					Kubelet: &kops.KubeletConfigSpec{
@@ -61,12 +61,13 @@ func TestBuildNodeLabels(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				RoleLabelMaster16: "",
-				RoleLabelName15:   RoleMasterLabelValue15,
-				"master1":         "master1",
-				"master2":         "master2",
-				"node1":           "override1",
-				"node3":           "override3",
+				RoleLabelMaster16:       "",
+				RoleLabelControlPlane20: "",
+				RoleLabelName15:         RoleMasterLabelValue15,
+				"controlPlane1":         "controlPlane1",
+				"controlPlane2":         "controlPlane2",
+				"node1":                 "override1",
+				"node3":                 "override3",
 			},
 		},
 		{
@@ -76,8 +77,8 @@ func TestBuildNodeLabels(t *testing.T) {
 					KubernetesVersion: "v1.9.0",
 					MasterKubelet: &kops.KubeletConfigSpec{
 						NodeLabels: map[string]string{
-							"master1": "master1",
-							"master2": "master2",
+							"controlPlane1": "controlPlane1",
+							"controlPlane2": "controlPlane2",
 						},
 					},
 					Kubelet: &kops.KubeletConfigSpec{

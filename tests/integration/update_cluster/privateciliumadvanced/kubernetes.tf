@@ -186,6 +186,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateciliumadvance
     value               = "master"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
@@ -542,35 +547,38 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateciliumadvanced-
   tag_specifications {
     resource_type = "instance"
     tags = {
-      "KubernetesCluster"                                                            = "privateciliumadvanced.example.com"
-      "Name"                                                                         = "master-us-test-1a.masters.privateciliumadvanced.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
-      "k8s.io/role/master"                                                           = "1"
-      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
-      "kubernetes.io/cluster/privateciliumadvanced.example.com"                      = "owned"
+      "KubernetesCluster"                                                                   = "privateciliumadvanced.example.com"
+      "Name"                                                                                = "master-us-test-1a.masters.privateciliumadvanced.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
+      "k8s.io/role/master"                                                                  = "1"
+      "kops.k8s.io/instancegroup"                                                           = "master-us-test-1a"
+      "kubernetes.io/cluster/privateciliumadvanced.example.com"                             = "owned"
     }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      "KubernetesCluster"                                                            = "privateciliumadvanced.example.com"
-      "Name"                                                                         = "master-us-test-1a.masters.privateciliumadvanced.example.com"
-      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
-      "k8s.io/role/master"                                                           = "1"
-      "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
-      "kubernetes.io/cluster/privateciliumadvanced.example.com"                      = "owned"
+      "KubernetesCluster"                                                                   = "privateciliumadvanced.example.com"
+      "Name"                                                                                = "master-us-test-1a.masters.privateciliumadvanced.example.com"
+      "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
+      "k8s.io/role/master"                                                                  = "1"
+      "kops.k8s.io/instancegroup"                                                           = "master-us-test-1a"
+      "kubernetes.io/cluster/privateciliumadvanced.example.com"                             = "owned"
     }
   }
   tags = {
-    "KubernetesCluster"                                                            = "privateciliumadvanced.example.com"
-    "Name"                                                                         = "master-us-test-1a.masters.privateciliumadvanced.example.com"
-    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"             = "master"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master" = ""
-    "k8s.io/role/master"                                                           = "1"
-    "kops.k8s.io/instancegroup"                                                    = "master-us-test-1a"
-    "kubernetes.io/cluster/privateciliumadvanced.example.com"                      = "owned"
+    "KubernetesCluster"                                                                   = "privateciliumadvanced.example.com"
+    "Name"                                                                                = "master-us-test-1a.masters.privateciliumadvanced.example.com"
+    "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"                    = "master"
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane" = ""
+    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"        = ""
+    "k8s.io/role/master"                                                                  = "1"
+    "kops.k8s.io/instancegroup"                                                           = "master-us-test-1a"
+    "kubernetes.io/cluster/privateciliumadvanced.example.com"                             = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.privateciliumadvanced.example.com_user_data")
 }

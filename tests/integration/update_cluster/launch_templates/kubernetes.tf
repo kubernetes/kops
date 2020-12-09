@@ -113,6 +113,11 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-launchtemplates-exam
     value               = "master"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
@@ -158,6 +163,11 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-launchtemplates-exam
     value               = "master"
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
     propagate_at_launch = true
     value               = ""
@@ -201,6 +211,11 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-launchtemplates-exam
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role"
     propagate_at_launch = true
     value               = "master"
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"
+    propagate_at_launch = true
+    value               = ""
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master"
