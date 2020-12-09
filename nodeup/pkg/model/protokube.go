@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/proxy"
 
 	"github.com/blang/semver/v4"
@@ -214,12 +215,17 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		containerRunArgs = append(containerRunArgs, []string{
 			"--volume /bin:/bin:ro",
 			"--volume /lib:/lib:ro",
-			"--volume /lib64:/lib64:ro",
 			"--volume /sbin:/sbin:ro",
 			"--volume /usr/bin:/usr/bin:ro",
 			"--volume /var/run/dbus:/var/run/dbus",
 			"--volume /run/systemd:/run/systemd",
 		}...)
+
+		if t.Architecture == architectures.ArchitectureAmd64 {
+			containerRunArgs = append(containerRunArgs, []string{
+				"--volume /lib64:/lib64:ro",
+			}...)
+		}
 
 		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
 			containerRunArgs = append(containerRunArgs, []string{
@@ -264,12 +270,17 @@ func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
 		containerRunArgs = append(containerRunArgs, []string{
 			"--mount type=bind,src=/bin,dst=/bin,options=rbind:ro:rprivate",
 			"--mount type=bind,src=/lib,dst=/lib,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/lib64,dst=/lib64,options=rbind:ro:rprivate",
 			"--mount type=bind,src=/sbin,dst=/sbin,options=rbind:ro:rprivate",
 			"--mount type=bind,src=/usr/bin,dst=/usr/bin,options=rbind:ro:rprivate",
 			"--mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate",
 			"--mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate",
 		}...)
+
+		if t.Architecture == architectures.ArchitectureAmd64 {
+			containerRunArgs = append(containerRunArgs, []string{
+				"--mount type=bind,src=/lib64,dst=/lib64,options=rbind:ro:rprivate",
+			}...)
+		}
 
 		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
 			containerRunArgs = append(containerRunArgs, []string{
