@@ -74,21 +74,29 @@ CentOS 7 is based on Kernel version **3.10** which has a considerable number of 
 * [kubernetes/kubernetes#56903](https://github.com/kubernetes/kubernetes/issues/56903)
 * [kubernetes/kubernetes#67577](https://github.com/kubernetes/kubernetes/issues/67577)
 
-Before using CentOS images you must accept the agreement at https://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce.
-
 The minimum supported version is **7.4**. Available images can be listed using:
 
 ```bash
 aws ec2 describe-images --region us-east-1 --output table \
-  --owners 679593333241 \
+  --owners 125523088429 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=product-code,Values=aw0evgkw8e5c1q413zgy5pjce" "Name=name,Values=CentOS*"
+  --filters "Name=name,Values=CentOS 7.*x86_64"
 ```
 
 ### CentOS 8
 
-The CentOS Project doesn't provide any official images in AWS at the moment.
-Please [report](https://github.com/kubernetes/kops/issues/new/choose) any changes.
+CentOS 8 is based on Kernel version **4.18** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
+
+One notable change is the addition of `iptables` NFT, which is the only iptables backend available. This may not be supported by some CNI plugins and should be used with care.
+
+Available images can be listed using:
+
+```bash
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 125523088429 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=CentOS 8.*x86_64"
+```
 
 ### Debian 9 (Stretch)
 
@@ -168,7 +176,7 @@ aws ec2 describe-images --region us-east-1 --output table \
 
 RHEL 8 is based on Kernel version **4.18** which fixes some of the bugs present in RHEL/CentOS 7 and effects are less visible.
 
-One notable change is the addition of `iptables` NFT, which is the only iptables backend available. This is not yet supported by most CNI plugins and should be used with care.
+One notable change is the addition of `iptables` NFT, which is the only iptables backend available. This may not be supported by some CNI plugins and should be used with care.
 
 Available images can be listed using:
 
@@ -236,7 +244,7 @@ kOps supports owner aliases for the official accounts of supported distros:
 
 * `kope.io` => `383156758163`
 * `amazon` => `137112412989`
-* `centos` => `679593333241`
+* `centos` => `125523088429`
 * `debian9` => `379101102735`
 * `debian10` => `136693071363`
 * `flatcar` => `075585003325`
