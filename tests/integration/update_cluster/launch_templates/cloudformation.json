@@ -31,6 +31,11 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
             "Value": "",
             "PropagateAtLaunch": true
@@ -99,6 +104,11 @@
             "PropagateAtLaunch": true
           },
           {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+            "Value": "",
+            "PropagateAtLaunch": true
+          },
+          {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/master",
             "Value": "",
             "PropagateAtLaunch": true
@@ -164,6 +174,11 @@
           {
             "Key": "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/role",
             "Value": "master",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane",
+            "Value": "",
             "PropagateAtLaunch": true
           },
           {

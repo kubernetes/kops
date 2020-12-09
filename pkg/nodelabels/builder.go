@@ -29,16 +29,18 @@ const (
 
 	RoleLabelMaster16 = "node-role.kubernetes.io/master"
 	RoleLabelNode16   = "node-role.kubernetes.io/node"
+
+	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
 
 // BuildNodeLabels returns the node labels for the specified instance group
 // This moved from the kubelet to a central controller in kubernetes 1.16
 func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) map[string]string {
-	isMaster := instanceGroup.Spec.Role == kops.InstanceGroupRoleMaster
+	isControlPlane := instanceGroup.Spec.Role == kops.InstanceGroupRoleMaster
 
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
-	if isMaster {
+	if isControlPlane {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.MasterKubelet)
 	} else {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.Kubelet)
@@ -50,11 +52,12 @@ func BuildNodeLabels(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) m
 
 	nodeLabels := c.NodeLabels
 
-	if isMaster {
+	if isControlPlane {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelMaster16] = ""
+		nodeLabels[RoleLabelControlPlane20] = ""
 		nodeLabels[RoleLabelName15] = RoleMasterLabelValue15
 	} else {
 		if nodeLabels == nil {
