@@ -408,6 +408,7 @@ resource "aws_launch_template" "bastion-unmanaged-example-com" {
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -476,6 +477,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-unmanaged-example-com"
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -541,6 +543,7 @@ resource "aws_launch_template" "nodes-unmanaged-example-com" {
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
