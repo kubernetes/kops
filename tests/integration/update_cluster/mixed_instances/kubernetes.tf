@@ -459,6 +459,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-mixedinstances-example
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -528,6 +529,7 @@ resource "aws_launch_template" "master-us-test-1b-masters-mixedinstances-example
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -597,6 +599,7 @@ resource "aws_launch_template" "master-us-test-1c-masters-mixedinstances-example
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -662,6 +665,7 @@ resource "aws_launch_template" "nodes-mixedinstances-example-com" {
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
