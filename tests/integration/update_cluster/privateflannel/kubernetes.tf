@@ -431,6 +431,7 @@ resource "aws_launch_template" "bastion-privateflannel-example-com" {
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -499,6 +500,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-privateflannel-example
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -564,6 +566,7 @@ resource "aws_launch_template" "nodes-privateflannel-example-com" {
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
