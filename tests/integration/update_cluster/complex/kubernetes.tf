@@ -299,6 +299,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "required"
   }
@@ -379,6 +380,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     create_before_destroy = true
   }
   metadata_options {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }

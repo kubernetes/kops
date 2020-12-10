@@ -311,6 +311,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-tf11-example-c
   key_name      = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
 
   metadata_options = {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
@@ -389,6 +390,7 @@ resource "aws_launch_template" "nodes-minimal-tf11-example-com" {
   key_name      = "${aws_key_pair.kubernetes-minimal-tf11-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
 
   metadata_options = {
+    http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
     http_tokens                 = "optional"
   }
