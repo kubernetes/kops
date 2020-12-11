@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package bootstrapchannelbuilder
 
 import (
 	"fmt"
@@ -48,6 +48,21 @@ type BootstrapChannelBuilder struct {
 }
 
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
+
+// NewBootstrapChannelBuilder creates a new BootstrapChannelBuilder
+func NewBootstrapChannelBuilder(modelContext *model.KopsModelContext,
+	clusterLifecycle *fi.Lifecycle, assetBuilder *assets.AssetBuilder,
+	templates *templates.Templates,
+	addons kubemanifest.ObjectList,
+) *BootstrapChannelBuilder {
+	return &BootstrapChannelBuilder{
+		KopsModelContext: modelContext,
+		Lifecycle:        clusterLifecycle,
+		assetBuilder:     assetBuilder,
+		templates:        templates,
+		ClusterAddons:    addons,
+	}
+}
 
 // Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {

@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/bootstrapchannelbuilder"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -156,11 +157,13 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	}
 	tf.AddTo(templates.TemplateFunctions, secretStore)
 
-	bcb := BootstrapChannelBuilder{
-		KopsModelContext: &kopsModel,
-		templates:        templates,
-		assetBuilder:     assets.NewAssetBuilder(cluster, ""),
-	}
+	bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
+		&kopsModel,
+		nil,
+		assets.NewAssetBuilder(cluster, ""),
+		templates,
+		nil,
+	)
 
 	context := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
