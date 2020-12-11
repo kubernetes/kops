@@ -26,7 +26,7 @@ go build -o "${TOOLS_BIN}/goimports" golang.org/x/tools/cmd/goimports
 
 cd "${KOPS_ROOT}" || exit 1
 
-mapfile -t files < <(find . -type f -name '*.go' -not -path "./vendor/*")
+IFS=$'\n' read -r -d '' -a files < <( find . -type f -name '*.go' -not -path "./vendor/*" && printf '\0' )
 
 output=$("${TOOLS_BIN}/goimports" -l "${files[@]}")
 
