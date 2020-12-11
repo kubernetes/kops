@@ -400,11 +400,11 @@ gofmt:
 
 .PHONY: goimports
 goimports:
-	hack/update-goimports
+	hack/update-goimports.sh
 
 .PHONY: verify-goimports
 verify-goimports:
-	hack/verify-goimports
+	hack/verify-goimports.sh
 
 .PHONY: govet
 govet: ${BINDATA_TARGETS}
@@ -428,10 +428,6 @@ verify-gofmt:
 .PHONY: verify-gomod
 verify-gomod:
 	hack/verify-gomod.sh
-
-.PHONY: verify-packages
-verify-packages: ${BINDATA_TARGETS}
-	hack/verify-packages.sh
 
 # find release notes, remove PR titles and output the rest to .build, then run misspell on all files
 .PHONY: verify-misspelling
@@ -481,14 +477,14 @@ verify-hashes:
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 .PHONY: ci
-ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-packages verify-apimachinery
+ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 # we skip tasks that rely on bazel and are covered by other jobs
 # verify-gofmt: uses bazel, covered by pull-kops-verify
 # govet needs to be after verify-goimports because it generates bindata.go
 .PHONY: quick-ci
-quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-packages verify-apimachinery
+quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-bindata | verify-gendocs verify-apimachinery
 	echo "Done!"
 
 .PHONY: pr
