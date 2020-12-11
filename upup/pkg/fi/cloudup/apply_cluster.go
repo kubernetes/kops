@@ -59,6 +59,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/bootstrapchannelbuilder"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -490,14 +491,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			return err
 		}
 
+		bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
+			modelContext,
+			&clusterLifecycle,
+			assetBuilder,
+			templates,
+			addons,
+		)
+
 		l.Builders = append(l.Builders,
-			&BootstrapChannelBuilder{
-				KopsModelContext: modelContext,
-				Lifecycle:        &clusterLifecycle,
-				assetBuilder:     assetBuilder,
-				templates:        templates,
-				ClusterAddons:    addons,
-			},
+
+			bcb,
 			&model.PKIModelBuilder{
 				KopsModelContext: modelContext,
 				Lifecycle:        &clusterLifecycle,
