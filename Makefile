@@ -480,8 +480,6 @@ verify-hashes:
 
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
-# verify-package has to be after verify-gendocs, because with .gitignore for federation bindata
-# it bombs in travis. verify-gendocs generates the bindata file.
 .PHONY: ci
 ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-bazel verify-misspelling verify-shellcheck verify-staticcheck verify-terraform verify-bindata nodeup examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
