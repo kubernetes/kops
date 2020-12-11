@@ -534,20 +534,22 @@ apimachinery: apimachinery-codegen goimports
 .PHONY: apimachinery-codegen
 apimachinery-codegen:
 	hack/update-apimachinery.sh
-	${GOPATH}/bin/conversion-gen ${API_OPTIONS} --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion \
+	# These code-generator tools still depend on the kops repo being in GOPATH
+	# ref: https://github.com/kubernetes/gengo/issues/64
+	${KOPS_ROOT}/_output/bin/conversion-gen ${API_OPTIONS} --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
-	${GOPATH}/bin/deepcopy-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops --v=0  --output-file-base=zz_generated.deepcopy \
+	${KOPS_ROOT}/_output/bin/deepcopy-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops --v=0  --output-file-base=zz_generated.deepcopy \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
-	${GOPATH}/bin/deepcopy-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.deepcopy \
+	${KOPS_ROOT}/_output/bin/deepcopy-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.deepcopy \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
-	${GOPATH}/bin/defaulter-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.defaults \
+	${KOPS_ROOT}/_output/bin/defaulter-gen ${API_OPTIONS} --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.defaults \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
 	#go install github.com/ugorji/go/codec/codecgen
 	# codecgen works only if invoked from directory where the file is located.
 	#cd pkg/apis/kops/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go
-	${GOPATH}/bin/client-gen  ${API_OPTIONS} --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/ \
+	${KOPS_ROOT}/_output/bin/client-gen ${API_OPTIONS} --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/ \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
-	${GOPATH}/bin/client-gen  ${API_OPTIONS} --clientset-name="clientset" --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/ \
+	${KOPS_ROOT}/_output/bin/client-gen ${API_OPTIONS} --clientset-name="clientset" --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/ \
 		 --go-header-file "hack/boilerplate/boilerplate.go.txt"
 
 .PHONY: verify-apimachinery

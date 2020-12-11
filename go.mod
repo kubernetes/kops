@@ -44,6 +44,7 @@ replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.20.0
 
 replace k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.20.0
 
+// This should match hack/go.mod
 replace k8s.io/code-generator => k8s.io/code-generator v0.20.0
 
 replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
