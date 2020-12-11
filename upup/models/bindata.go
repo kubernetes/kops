@@ -13191,7 +13191,7 @@ spec:
             # kops additions
             # Enable source/destination checks for AWS
             - name: FELIX_AWSSRCDSTCHECK
-              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}Disable{{- else -}} {{- or .Networking.Calico.AwsSrcDstCheck "DoNothing" -}} {{- end -}}"
+              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}Disable{{- else -}} {{- or .Networking.Calico.AWSSrcDstCheck "DoNothing" -}} {{- end -}}"
             # Enable eBPF dataplane mode
             - name: FELIX_BPFENABLED
               value: "{{ .Networking.Calico.BPFEnabled }}"

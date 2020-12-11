@@ -993,23 +993,9 @@ func ValidateEtcdVersionForCalicoV3(e kops.EtcdClusterSpec, majorVersion string,
 func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if v.TyphaReplicas < 0 {
-		allErrs = append(allErrs,
-			field.Invalid(fldPath.Child("typhaReplicas"), v.TyphaReplicas,
-				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
-	}
-
-	if v.MajorVersion != "" {
-		valid := []string{"v3"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("majorVersion"), &v.MajorVersion, valid)...)
-		if v.MajorVersion == "v3" {
-			allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
-		}
-	}
-
-	if v.AwsSrcDstCheck != "" {
+	if v.AWSSrcDstCheck != "" {
 		valid := []string{"Enable", "Disable", "DoNothing"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("awsSrcDstCheck"), &v.AwsSrcDstCheck, valid)...)
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("awsSrcDstCheck"), &v.AWSSrcDstCheck, valid)...)
 	}
 
 	if v.BPFExternalServiceMode != "" {
@@ -1027,17 +1013,31 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("chainInsertMode"), &v.ChainInsertMode, valid)...)
 	}
 
-	if v.IptablesBackend != "" {
-		valid := []string{"Auto", "Legacy", "NFT"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
-	}
-
 	if v.IPv4AutoDetectionMethod != "" {
 		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), v.IPv4AutoDetectionMethod, ipv4.Version)...)
 	}
 
 	if v.IPv6AutoDetectionMethod != "" {
 		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv6AutoDetectionMethod"), v.IPv6AutoDetectionMethod, ipv6.Version)...)
+	}
+
+	if v.IptablesBackend != "" {
+		valid := []string{"Auto", "Legacy", "NFT"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
+	}
+
+	if v.MajorVersion != "" {
+		valid := []string{"v3"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("majorVersion"), &v.MajorVersion, valid)...)
+		if v.MajorVersion == "v3" {
+			allErrs = append(allErrs, ValidateEtcdVersionForCalicoV3(e, v.MajorVersion, fldPath)...)
+		}
+	}
+
+	if v.TyphaReplicas < 0 {
+		allErrs = append(allErrs,
+			field.Invalid(fldPath.Child("typhaReplicas"), v.TyphaReplicas,
+				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
 	}
 
 	return allErrs
