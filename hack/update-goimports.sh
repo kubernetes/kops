@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2019 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-# Check that the .packages file contains all packages
-packages_file="${KOPS_ROOT}/hack/.packages"
-if ! diff -u "${packages_file}" <(go list k8s.io/kops/... | grep -v vendor); then
-	{
-		echo
-		echo "FAIL: ./hack/verify-packages.sh failed as the ./hack/.packages file is not in up to date."
-		echo
-		echo "FAIL: please execute the following command:  'go list k8s.io/kops/... | grep -v vendor > hack/.packages'"
-		echo
-	} >&2
-	false
-fi
+cd "${KOPS_ROOT}/hack" || exit 1
 
+go build -o "${TOOLS_BIN}/goimports" golang.org/x/tools/cmd/goimports
+
+cd "${KOPS_ROOT}" || exit 1
+
+mapfile -t files < <(find . -type f -name '*.go' -not -path "./vendor/*")
+
+"${TOOLS_BIN}/goimports" -w "${files[@]}"
