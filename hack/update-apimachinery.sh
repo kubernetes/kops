@@ -18,27 +18,9 @@
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-WORK_DIR=$(mktemp -d)
+cd "${KOPS_ROOT}/hack" || exit 1
 
-cleanup() {
-  chmod -R +w "${WORK_DIR}"
-  rm -rf "${WORK_DIR}"
-}
-trap cleanup EXIT
-
-mkdir -p "${WORK_DIR}/go/"
-cp -R "${GOPATH}/src/k8s.io/kops/vendor/" "${WORK_DIR}/go/src"
-
-unset GOBIN
-
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod -v k8s.io/code-generator/cmd/conversion-gen/
-cp "${WORK_DIR}/go/bin/conversion-gen" "${GOPATH}/bin/"
-
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod k8s.io/code-generator/cmd/deepcopy-gen/
-cp "${WORK_DIR}/go/bin/deepcopy-gen" "${GOPATH}/bin/"
-
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod k8s.io/code-generator/cmd/defaulter-gen/
-cp "${WORK_DIR}/go/bin/defaulter-gen" "${GOPATH}/bin/"
-
-env GOBIN="${WORK_DIR}/go/bin" GOPATH="${WORK_DIR}/go/" go install -mod=mod k8s.io/code-generator/cmd/client-gen/
-cp "${WORK_DIR}/go/bin/client-gen" "${GOPATH}/bin/"
+go build -o "${TOOLS_BIN}/conversion-gen" -v k8s.io/code-generator/cmd/conversion-gen
+go build -o "${TOOLS_BIN}/deepcopy-gen" -v k8s.io/code-generator/cmd/deepcopy-gen
+go build -o "${TOOLS_BIN}/defaulter-gen" -v k8s.io/code-generator/cmd/defaulter-gen
+go build -o "${TOOLS_BIN}/client-gen" -v k8s.io/code-generator/cmd/client-gen
