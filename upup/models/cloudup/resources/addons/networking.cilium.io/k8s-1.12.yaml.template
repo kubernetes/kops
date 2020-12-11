@@ -311,6 +311,14 @@ rules:
   - ciliumidentities/status
   verbs:
   - '*'
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -522,7 +530,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.5" }}"
+        image: "docker.io/cilium/cilium:{{- or .Version "v1.7.12" }}"
 ## end of `with .Networking.Cilium`
 #{{ end }}
         imagePullPolicy: IfNotPresent
@@ -723,7 +731,7 @@ spec:
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
 {{ with .Networking.Cilium }}
-        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.5{{- else -}}{{ .Version }}{{- end -}}"
+        image: "docker.io/cilium/operator:{{- if eq .Version "" -}}v1.7.12{{- else -}}{{ .Version }}{{- end -}}"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         {{ if .EnablePrometheusMetrics }}
