@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/blang/semver/v4"
-
 	"k8s.io/klog/v2"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
@@ -48,6 +46,29 @@ type BootstrapChannelBuilder struct {
 }
 
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
+
+// networkSelector is the labels set on networking addons
+//
+// The role.kubernetes.io/networking is used to label anything related to a networking addin,
+// so that if we switch networking plugins (e.g. calico -> weave or vice-versa), we'll replace the
+// old networking plugin, and there won't be old pods "floating around".
+//
+// This means whenever we create or update a networking plugin, we should be sure that:
+// 1. the selector is role.kubernetes.io/networking=1
+// 2. every object in the manifest is labeled with role.kubernetes.io/networking=1
+//
+// TODO: Some way to test/enforce this?
+//
+// TODO: Create "empty" configurations for others, so we can delete e.g. the kopeio configuration
+// if we switch to kubenet?
+//
+// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
+//
+// NOTE: we try to suffix with -kops.1, so that we can increment versions even if the upstream version
+// hasn't changed.  The problem with semver is that there is nothing > 1.0.0 other than 1.0.1-pre.1
+func networkingSelector() map[string]string {
+	return map[string]string{"role.kubernetes.io/networking": "1"}
+}
 
 // NewBootstrapChannelBuilder creates a new BootstrapChannelBuilder
 func NewBootstrapChannelBuilder(modelContext *model.KopsModelContext,
@@ -677,25 +698,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	// The role.kubernetes.io/networking is used to label anything related to a networking addin,
-	// so that if we switch networking plugins (e.g. calico -> weave or vice-versa), we'll replace the
-	// old networking plugin, and there won't be old pods "floating around".
-
-	// This means whenever we create or update a networking plugin, we should be sure that:
-	// 1. the selector is role.kubernetes.io/networking=1
-	// 2. every object in the manifest is labeled with role.kubernetes.io/networking=1
-
-	// TODO: Some way to test/enforce this?
-
-	// TODO: Create "empty" configurations for others, so we can delete e.g. the kopeio configuration
-	// if we switch to kubenet?
-
-	// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
-
-	// NOTE: we try to suffix with -kops.1, so that we can increment versions even if the upstream version
-	// hasn't changed.  The problem with semver is that there is nothing > 1.0.0 other than 1.0.1-pre.1
-	networkingSelector := map[string]string{"role.kubernetes.io/networking": "1"}
-
 	if b.Cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
 		version := "1.0.20181028-kops.2"
@@ -707,7 +709,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Version:  fi.String(version),
-				Selector: networkingSelector,
+				Selector: networkingSelector(),
 				Manifest: fi.String(location),
 				Id:       id,
 			})
@@ -727,7 +729,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Version:  fi.String(versions[id]),
-				Selector: networkingSelector,
+				Selector: networkingSelector(),
 				Manifest: fi.String(location),
 				Id:       id,
 			})
@@ -747,7 +749,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Version:  fi.String(versions[id]),
-				Selector: networkingSelector,
+				Selector: networkingSelector(),
 				Manifest: fi.String(location),
 				Id:       id,
 			})
@@ -768,7 +770,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
+				Selector:          networkingSelector(),
 				Manifest:          fi.String(location),
 				KubernetesVersion: "<1.16.0",
 				Id:                id,
@@ -782,7 +784,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
+				Selector:          networkingSelector(),
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.16.0",
 				Id:                id,
@@ -804,7 +806,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
+				Selector:          networkingSelector(),
 				Manifest:          fi.String(location),
 				KubernetesVersion: "<1.15.0",
 				Id:                id,
@@ -817,7 +819,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
+				Selector:          networkingSelector(),
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.15.0 <1.16.0",
 				Id:                id,
@@ -830,7 +832,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
+				Selector:          networkingSelector(),
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.16.0",
 				Id:                id,
@@ -851,7 +853,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Version:  fi.String(versions[id]),
-				Selector: networkingSelector,
+				Selector: networkingSelector(),
 				Manifest: fi.String(location),
 				Id:       id,
 			})
@@ -873,7 +875,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
+				Selector:          networkingSelector(),
 				Manifest:          fi.String(location),
 				KubernetesVersion: "<1.16.0",
 				Id:                id,
@@ -887,7 +889,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(versions[id]),
-				Selector:          networkingSelector,
+				Selector:          networkingSelector(),
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.16.0",
 				Id:                id,
@@ -895,45 +897,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	cilium := b.Cluster.Spec.Networking.Cilium
-	if cilium != nil {
-		ver, _ := semver.ParseTolerant(cilium.Version)
-		ver.Build = nil
-		ver.Pre = nil
-		v8, _ := semver.Parse("1.8.0")
-		key := "networking.cilium.io"
-		if ver.LT(v8) {
-			version := "1.7.3-kops.1"
-
-			{
-				id := "k8s-1.12"
-				location := key + "/" + id + ".yaml"
-
-				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-					Name:     fi.String(key),
-					Version:  fi.String(version),
-					Selector: networkingSelector,
-					Manifest: fi.String(location),
-					Id:       id,
-				})
-			}
-		} else {
-			version := "1.8.0-kops.1"
-			{
-				id := "k8s-1.12"
-				location := key + "/" + id + "-v1.8.yaml"
-
-				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-					Name:               fi.String(key),
-					Version:            fi.String(version),
-					Selector:           networkingSelector,
-					Manifest:           fi.String(location),
-					Id:                 id,
-					NeedsRollingUpdate: "all",
-				})
-			}
-		}
-	}
+	addCiliumAddon(b, addons)
 
 	authenticationSelector := map[string]string{"role.kubernetes.io/authentication": "1"}
 
