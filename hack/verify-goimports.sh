@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env bash
 
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-from os import path
+set -o errexit
+set -o nounset
+set -o pipefail
 
-def read_packages_file(repo_path):
-  packages = []
-  with open(path.join(repo_path, 'hack/.packages')) as packages_file:
-    for package in packages_file:
-      packages.append(package.replace('\n', ''))
-  return packages
+. "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
+cd "${KOPS_ROOT}/hack" || exit 1
+
+go build -o "${TOOLS_BIN}/goimports" golang.org/x/tools/cmd/goimports
+
+cd "${KOPS_ROOT}" || exit 1
+
+mapfile -t files < <(find . -type f -name '*.go' -not -path "./vendor/*")
+
+output=$("${TOOLS_BIN}/goimports" -l "${files[@]}")
+
+if [ "${output}" != "" ]; then
+  echo "goimports failed"
+  echo "Please run the following command: make goimports"
+  exit 1
+fi
+
