@@ -103,7 +103,15 @@ type FlannelNetworkingSpec struct {
 
 // CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
-	// BpfEnabled enables the eBPF dataplane mode.
+	// Version overrides the Calico container image registry.
+	Registry string `json:"registry,omitempty"`
+	// Version overrides the Calico container image tag.
+	Version string `json:"version,omitempty"`
+
+	// AWSSrcDstCheck enables/disables ENI source/destination checks (AWS only)
+	// Options: DoNothing (default), Enable, or Disable
+	AWSSrcDstCheck string `json:"awsSrcDstCheck,omitempty"`
+	// BPFEnabled enables the eBPF dataplane mode.
 	BPFEnabled bool `json:"bpfEnabled,omitempty"`
 	// BPFExternalServiceMode controls how traffic from outside the cluster to NodePorts and ClusterIPs is handled.
 	// In Tunnel mode, packet is tunneled from the ingress host to the host with the backing pod and back again.
@@ -126,9 +134,25 @@ type CalicoNetworkingSpec struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// CrossSubnet enables Calico's cross-subnet mode when set to true
 	CrossSubnet bool `json:"crossSubnet,omitempty"`
-	// AwsSrcDstCheck enables/disables source/destination checks (AWS only)
-	// Options: "DoNothing" (default) , "Enable" or "Disable"
-	AwsSrcDstCheck string `json:"awsSrcDstCheck,omitempty"`
+	// IPIPMode is the encapsulation mode to use for the default Calico IPv4 pool created at start
+	// up, determining when to use IP-in-IP encapsulation, conveyed to the "calico-node" daemon
+	// container via the CALICO_IPV4POOL_IPIP environment variable
+	IPIPMode string `json:"ipipMode,omitempty"`
+	// IPv4AutoDetectionMethod configures how Calico chooses the IP address used to route
+	// between nodes.  This should be set when the host has multiple interfaces
+	// and it is important to select the interface used.
+	// Options: "first-found" (default), "can-reach=DESTINATION",
+	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
+	IPv4AutoDetectionMethod string `json:"ipv4AutoDetectionMethod,omitempty"`
+	// IPv6AutoDetectionMethod configures how Calico chooses the IP address used to route
+	// between nodes.  This should be set when the host has multiple interfaces
+	// and it is important to select the interface used.
+	// Options: "first-found" (default), "can-reach=DESTINATION",
+	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
+	IPv6AutoDetectionMethod string `json:"ipv6AutoDetectionMethod,omitempty"`
+	// IptablesBackend controls which variant of iptables binary Felix uses
+	// Default: Auto (other options: Legacy, NFT)
+	IptablesBackend string `json:"iptablesBackend,omitempty"`
 	// LogSeverityScreen lets us set the desired log level. (Default: info)
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// MTU to be set in the cni-network-config for calico.
@@ -145,23 +169,6 @@ type CalicoNetworkingSpec struct {
 	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
 	// MajorVersion is the version of Calico to use
 	MajorVersion string `json:"majorVersion,omitempty"`
-	// IptablesBackend controls which variant of iptables binary Felix uses
-	// Default: Auto (other options: Legacy, NFT)
-	IptablesBackend string `json:"iptablesBackend,omitempty"`
-	// IPIPMode is mode for CALICO_IPV4POOL_IPIP
-	IPIPMode string `json:"ipipMode,omitempty"`
-	// IPv4AutoDetectionMethod configures how Calico chooses the IP address used to route
-	// between nodes.  This should be set when the host has multiple interfaces
-	// and it is important to select the interface used.
-	// Options: "first-found" (default), "can-reach=DESTINATION",
-	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
-	IPv4AutoDetectionMethod string `json:"ipv4AutoDetectionMethod,omitempty"`
-	// IPv6AutoDetectionMethod configures how Calico chooses the IP address used to route
-	// between nodes.  This should be set when the host has multiple interfaces
-	// and it is important to select the interface used.
-	// Options: "first-found" (default), "can-reach=DESTINATION",
-	// "interface=INTERFACE-REGEX", or "skip-interface=INTERFACE-REGEX"
-	IPv6AutoDetectionMethod string `json:"ipv6AutoDetectionMethod,omitempty"`
 	// TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha
 	// (default: false)
 	TyphaPrometheusMetricsEnabled bool `json:"typhaPrometheusMetricsEnabled,omitempty"`

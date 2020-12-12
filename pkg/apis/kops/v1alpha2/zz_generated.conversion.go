@@ -1335,6 +1335,9 @@ func Convert_kops_CNINetworkingSpec_To_v1alpha2_CNINetworkingSpec(in *kops.CNINe
 }
 
 func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	out.Registry = in.Registry
+	out.Version = in.Version
+	out.AWSSrcDstCheck = in.AWSSrcDstCheck
 	out.BPFEnabled = in.BPFEnabled
 	out.BPFExternalServiceMode = in.BPFExternalServiceMode
 	out.BPFKubeProxyIptablesCleanupEnabled = in.BPFKubeProxyIptablesCleanupEnabled
@@ -1342,7 +1345,10 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.CrossSubnet = in.CrossSubnet
-	out.AwsSrcDstCheck = in.AwsSrcDstCheck
+	out.IPIPMode = in.IPIPMode
+	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
+	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
+	out.IptablesBackend = in.IptablesBackend
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
@@ -1350,10 +1356,6 @@ func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	out.MajorVersion = in.MajorVersion
-	out.IptablesBackend = in.IptablesBackend
-	out.IPIPMode = in.IPIPMode
-	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
-	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas
@@ -1367,6 +1369,9 @@ func Convert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 }
 
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	out.Registry = in.Registry
+	out.Version = in.Version
+	out.AWSSrcDstCheck = in.AWSSrcDstCheck
 	out.BPFEnabled = in.BPFEnabled
 	out.BPFExternalServiceMode = in.BPFExternalServiceMode
 	out.BPFKubeProxyIptablesCleanupEnabled = in.BPFKubeProxyIptablesCleanupEnabled
@@ -1374,7 +1379,10 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.ChainInsertMode = in.ChainInsertMode
 	out.CPURequest = in.CPURequest
 	out.CrossSubnet = in.CrossSubnet
-	out.AwsSrcDstCheck = in.AwsSrcDstCheck
+	out.IPIPMode = in.IPIPMode
+	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
+	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
+	out.IptablesBackend = in.IptablesBackend
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
@@ -1382,10 +1390,6 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
 	out.PrometheusProcessMetricsEnabled = in.PrometheusProcessMetricsEnabled
 	out.MajorVersion = in.MajorVersion
-	out.IPv4AutoDetectionMethod = in.IPv4AutoDetectionMethod
-	out.IPv6AutoDetectionMethod = in.IPv6AutoDetectionMethod
-	out.IptablesBackend = in.IptablesBackend
-	out.IPIPMode = in.IPIPMode
 	out.TyphaPrometheusMetricsEnabled = in.TyphaPrometheusMetricsEnabled
 	out.TyphaPrometheusMetricsPort = in.TyphaPrometheusMetricsPort
 	out.TyphaReplicas = in.TyphaReplicas

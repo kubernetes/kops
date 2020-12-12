@@ -519,7 +519,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
-					AwsSrcDstCheck: "off",
+					AWSSrcDstCheck: "off",
 				},
 				Etcd: kops.EtcdClusterSpec{},
 			},
@@ -528,7 +528,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
-					AwsSrcDstCheck: "Enable",
+					AWSSrcDstCheck: "Enable",
 				},
 				Etcd: kops.EtcdClusterSpec{},
 			},
@@ -536,7 +536,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
-					AwsSrcDstCheck: "Disable",
+					AWSSrcDstCheck: "Disable",
 				},
 				Etcd: kops.EtcdClusterSpec{},
 			},
@@ -544,7 +544,7 @@ func Test_Validate_Calico(t *testing.T) {
 		{
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
-					AwsSrcDstCheck: "DoNothing",
+					AWSSrcDstCheck: "DoNothing",
 				},
 				Etcd: kops.EtcdClusterSpec{},
 			},

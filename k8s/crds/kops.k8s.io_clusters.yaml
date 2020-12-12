@@ -2177,10 +2177,10 @@ spec:
                     description: CalicoNetworkingSpec declares that we want Calico networking
                     properties:
                       awsSrcDstCheck:
-                        description: 'AwsSrcDstCheck enables/disables source/destination checks (AWS only) Options: "DoNothing" (default) , "Enable" or "Disable"'
+                        description: 'AWSSrcDstCheck enables/disables ENI source/destination checks (AWS only) Options: DoNothing (default), Enable, or Disable'
                         type: string
                       bpfEnabled:
-                        description: BpfEnabled enables the eBPF dataplane mode.
+                        description: BPFEnabled enables the eBPF dataplane mode.
                         type: boolean
                       bpfExternalServiceMode:
                         description: 'BPFExternalServiceMode controls how traffic from outside the cluster to NodePorts and ClusterIPs is handled. In Tunnel mode, packet is tunneled from the ingress host to the host with the backing pod and back again. In DSR mode, traffic is tunneled to the host with the backing pod and then returned directly; this requires a network that allows direct return. Default: Tunnel (other options: DSR)'
@@ -2205,7 +2205,7 @@ spec:
                         description: CrossSubnet enables Calico's cross-subnet mode when set to true
                         type: boolean
                       ipipMode:
-                        description: IPIPMode is mode for CALICO_IPV4POOL_IPIP
+                        description: IPIPMode is the encapsulation mode to use for the default Calico IPv4 pool created at start up, determining when to use IP-in-IP encapsulation, conveyed to the "calico-node" daemon container via the CALICO_IPV4POOL_IPIP environment variable
                         type: string
                       iptablesBackend:
                         description: 'IptablesBackend controls which variant of iptables binary Felix uses Default: Auto (other options: Legacy, NFT)'
@@ -2239,6 +2239,9 @@ spec:
                       prometheusProcessMetricsEnabled:
                         description: PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
                         type: boolean
+                      registry:
+                        description: Version overrides the Calico container image registry.
+                        type: string
                       typhaPrometheusMetricsEnabled:
                         description: 'TyphaPrometheusMetricsEnabled enables Prometheus metrics collection from Typha (default: false)'
                         type: boolean
@@ -2250,6 +2253,9 @@ spec:
                         description: TyphaReplicas is the number of replicas of Typha to deploy
                         format: int32
                         type: integer
+                      version:
+                        description: Version overrides the Calico container image tag.
+                        type: string
                       wireguardEnabled:
                         description: 'WireguardEnabled enables WireGuard encryption for all on-the-wire pod-to-pod traffic (default: false)'
                         type: boolean
