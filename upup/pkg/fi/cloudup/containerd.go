@@ -100,7 +100,7 @@ func findContainerdVersionUrl(arch architectures.Architecture, version string) (
 	var u string
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		if sv.GTE(semver.MustParse("1.4.0")) {
+		if sv.GTE(semver.MustParse("1.3.8")) {
 			u = fmt.Sprintf(containerdVersionUrlAmd64, version, version)
 		} else {
 			u = fmt.Sprintf(containerdLegacyUrlAmd64, version)
@@ -153,6 +153,7 @@ func findContainerdVersionHash(arch architectures.Architecture, version string) 
 func findAllContainerdHashesAmd64() map[string]string {
 	hashes := map[string]string{
 		"1.3.4": "4616971c3ad21c24f2f2320fa1c085577a91032a068dd56a41c7c4b71a458087",
+		"1.3.9": "96663699e0f888fbf232ae6629a367aa7421f6b95044e7ee5d4d4e02841fac75",
 		"1.4.0": "b379f29417efd583f77e095173d4d0bd6bb001f0081b2a63d152ee7aef653ce1",
 		"1.4.1": "757efb93a4f3161efc447a943317503d8a7ded5cb4cc0cba3f3318d7ce1542ed",
 		"1.4.2": "9d0fd5f4d2bc58b345728432b7daac75fc99c1da91afa4f41e6103f618e74012",
