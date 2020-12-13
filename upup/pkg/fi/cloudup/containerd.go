@@ -35,7 +35,7 @@ const (
 	// containerd legacy packages URLs for v1.2.x and v1.3.x
 	containerdLegacyUrlAmd64 = "https://storage.googleapis.com/cri-containerd-release/cri-containerd-%s.linux-amd64.tar.gz"
 	// containerd version that is available for both AMD64 and ARM64, used in case the selected version is not available for ARM64
-	containerdFallbackVersion = "1.2.13"
+	containerdFallbackVersion = "1.4.3"
 )
 
 func findContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
@@ -106,7 +106,7 @@ func findContainerdVersionUrl(arch architectures.Architecture, version string) (
 			u = fmt.Sprintf(containerdLegacyUrlAmd64, version)
 		}
 	case architectures.ArchitectureArm64:
-		// For now there are only official AMD64 builds, using Default Docker version instead
+		// For now there are only official AMD64 builds, always using fallback Docker version instead
 		if findAllContainerdHashesAmd64()[version] != "" {
 			u = fmt.Sprintf(dockerVersionUrlArm64, findAllContainerdDockerMappings()[containerdFallbackVersion])
 		}
@@ -135,7 +135,7 @@ func findContainerdVersionHash(arch architectures.Architecture, version string) 
 	case architectures.ArchitectureAmd64:
 		h = findAllContainerdHashesAmd64()[version]
 	case architectures.ArchitectureArm64:
-		// For now there are only official AMD64 builds, using Default Docker version instead
+		// For now there are only official AMD64 builds, always using fallback Docker version instead
 		if findAllContainerdHashesAmd64()[version] != "" {
 			h = findAllDockerHashesArm64()[findAllContainerdDockerMappings()[containerdFallbackVersion]]
 		}
@@ -172,6 +172,7 @@ func findAllContainerdDockerMappings() map[string]string {
 		"1.2.13": "19.03.11",
 		"1.3.7":  "19.03.13",
 		"1.3.9":  "19.03.14",
+		"1.4.3":  "20.10.0",
 	}
 
 	return versions
