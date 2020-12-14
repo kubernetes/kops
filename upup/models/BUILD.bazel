@@ -21,7 +21,7 @@ genrule(
     ),
     outs = ["bindata.go"],
     cmd = """
-$(location //vendor/github.com/go-bindata/go-bindata/go-bindata:go-bindata) \
+$(location //vendor/github.com/go-bindata/go-bindata/v3/go-bindata:go-bindata) \
   -o "$(OUTS)" -pkg models \
   -nometadata \
   -nocompress \
@@ -29,6 +29,6 @@ $(location //vendor/github.com/go-bindata/go-bindata/go-bindata:go-bindata) \
   -prefix upup/models $(SRCS)
 """,
     tools = [
-        "//vendor/github.com/go-bindata/go-bindata/go-bindata",
+        "//vendor/github.com/go-bindata/go-bindata/v3/go-bindata",
     ],
 )
