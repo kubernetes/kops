@@ -1,5 +1,5 @@
 ## bindata
-
+[![Build Status](https://cloud.drone.io/api/badges/go-bindata/go-bindata/status.svg)](https://cloud.drone.io/go-bindata/go-bindata)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-bindata/bindata)](https://goreportcard.com/report/github.com/go-bindata/bindata)
 
 This package converts any file into managable Go source code. Useful for
@@ -58,12 +58,14 @@ To ignore files, pass in regexes using -ignore, for example:
 To access asset data, we use the `Asset(string) ([]byte, error)` function which
 is included in the generated output.
 
-	data, err := Asset("pub/style/foo.css")
-	if err != nil {
-		// Asset was not found.
-	}
+```go
+data, err := Asset("pub/style/foo.css")
+if err != nil {
+	// Asset was not found.
+}
 
-	// use asset data
+// use asset data
+```
 
 
 ### Debug vs Release builds
@@ -92,7 +94,7 @@ It will now embed the latest version of the assets.
 
 Using the `-nomemcopy` flag, will alter the way the output file is generated.
 It will employ a hack that allows us to read the file data directly from
-the compiled program's `.rodata` section. This ensures that when we call
+the compiled program's `.rodata` section. This ensures that when we
 call our generated function, we omit unnecessary memcopies.
 
 The downside of this, is that it requires dependencies on the `reflect` and

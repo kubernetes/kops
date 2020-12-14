@@ -52,7 +52,8 @@ func writeDebugHeader(w io.Writer, c *Config) error {
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"`
+	"strings"
+	"time"`
 	}
 
 	_, err := fmt.Fprintf(w, `%s
@@ -70,6 +71,43 @@ func bindataRead(path, name string) ([]byte, error) {
 type asset struct {
 	bytes []byte
 	info  os.FileInfo
+}
+
+type bindataFileInfo struct {
+	name    string
+	size    int64
+	mode    os.FileMode
+	modTime time.Time
+}
+
+// Name return file name
+func (fi bindataFileInfo) Name() string {
+	return fi.name
+}
+
+// Size return file size
+func (fi bindataFileInfo) Size() int64 {
+	return fi.size
+}
+
+// Mode return file mode
+func (fi bindataFileInfo) Mode() os.FileMode {
+	return fi.mode
+}
+
+// ModTime return file modify time
+func (fi bindataFileInfo) ModTime() time.Time {
+	return fi.modTime
+}
+
+// IsDir return file whether a directory
+func (fi bindataFileInfo) IsDir() bool {
+	return fi.mode&os.ModeDir != 0
+}
+
+// Sys return file is sys mode
+func (fi bindataFileInfo) Sys() interface{} {
+	return nil
 }
 
 `, header)

@@ -163,20 +163,21 @@ func NewConfig() *Config {
 // Part of which means checking if certain file/directory paths exist.
 func (c *Config) validate() error {
 	if len(c.Package) == 0 {
-		return fmt.Errorf("Missing package name")
+		return fmt.Errorf("missing package name")
 	}
 
 	for _, input := range c.Input {
 		_, err := os.Lstat(input.Path)
 		if err != nil {
-			return fmt.Errorf("Failed to stat input path '%s': %v", input.Path, err)
+			return fmt.Errorf("failed to stat input path '%s': %v", input.Path, err)
 		}
 	}
 
 	if len(c.Output) == 0 {
 		cwd, err := os.Getwd()
 		if err != nil {
-			return fmt.Errorf("Unable to determine current working directory.")
+			return fmt.Errorf("unable to determine current working directory")
+
 		}
 
 		c.Output = filepath.Join(cwd, "bindata.go")
@@ -185,7 +186,7 @@ func (c *Config) validate() error {
 	stat, err := os.Lstat(c.Output)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return fmt.Errorf("Output path: %v", err)
+			return fmt.Errorf("output path: %v", err)
 		}
 
 		// File does not exist. This is fine, just make
@@ -195,13 +196,13 @@ func (c *Config) validate() error {
 			err = os.MkdirAll(dir, 0744)
 
 			if err != nil {
-				return fmt.Errorf("Create output directory: %v", err)
+				return fmt.Errorf("create output directory: %v", err)
 			}
 		}
 	}
 
 	if stat != nil && stat.IsDir() {
-		return fmt.Errorf("Output path is a directory.")
+		return fmt.Errorf("output path is a directory")
 	}
 
 	return nil
