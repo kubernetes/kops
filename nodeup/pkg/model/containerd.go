@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
@@ -109,7 +110,25 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	c.AddTask(b.buildSystemdService())
+	var containerRuntimeVersion string
+	if b.Cluster.Spec.ContainerRuntime == "containerd" {
+		if b.Cluster.Spec.Containerd != nil {
+			containerRuntimeVersion = fi.StringValue(b.Cluster.Spec.Containerd.Version)
+		} else {
+			return fmt.Errorf("error finding contained version")
+		}
+	} else {
+		if b.Cluster.Spec.Docker != nil {
+			containerRuntimeVersion = fi.StringValue(b.Cluster.Spec.Docker.Version)
+		} else {
+			return fmt.Errorf("error finding Docker version")
+		}
+	}
+	sv, err := semver.ParseTolerant(containerRuntimeVersion)
+	if err != nil {
+		return fmt.Errorf("error parsing container runtime version %q: %v", containerRuntimeVersion, err)
+	}
+	c.AddTask(b.buildSystemdService(sv))
 
 	if err := b.buildSysconfig(c); err != nil {
 		return err
@@ -126,8 +145,8 @@ func (b *ContainerdBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *ContainerdBuilder) buildSystemdService() *nodetasks.Service {
-	// Based on https://github.com/containerd/cri/blob/master/contrib/systemd-units/containerd.service
+func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Service {
+	// Based on https://github.com/containerd/containerd/blob/master/containerd.service
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "containerd container runtime")
@@ -145,20 +164,26 @@ func (b *ContainerdBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "ExecStartPre", "-/sbin/modprobe overlay")
 	manifest.Set("Service", "ExecStart", "/usr/bin/containerd -c /etc/containerd/config-kops.toml \"$CONTAINERD_OPTS\"")
 
-	manifest.Set("Service", "Restart", "always")
-	manifest.Set("Service", "RestartSec", "5")
+	// notify the daemon's readiness to systemd
+	if (b.Cluster.Spec.ContainerRuntime == "containerd" && sv.GTE(semver.MustParse("1.3.4"))) || sv.GTE(semver.MustParse("19.3.13")) {
+		manifest.Set("Service", "Type", "notify")
+	}
 
 	// set delegate yes so that systemd does not reset the cgroups of containerd containers
 	manifest.Set("Service", "Delegate", "yes")
 	// kill only the containerd process, not all processes in the cgroup
 	manifest.Set("Service", "KillMode", "process")
-	// make killing of processes of this unit under memory pressure very unlikely
-	manifest.Set("Service", "OOMScoreAdjust", "-999")
 
-	manifest.Set("Service", "LimitNOFILE", "1048576")
+	manifest.Set("Service", "Restart", "always")
+	manifest.Set("Service", "RestartSec", "5")
+
 	manifest.Set("Service", "LimitNPROC", "infinity")
 	manifest.Set("Service", "LimitCORE", "infinity")
+	manifest.Set("Service", "LimitNOFILE", "infinity")
 	manifest.Set("Service", "TasksMax", "infinity")
+
+	// make killing of processes of this unit under memory pressure very unlikely
+	manifest.Set("Service", "OOMScoreAdjust", "-999")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
