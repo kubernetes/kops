@@ -1,89 +1,9 @@
-contents: |-
-  {
-      "cniVersion": "0.3.1",
-      "name": "kubenet",
-      "plugins": [
-          {
-              "type": "bridge",
-              "bridge": "cbr0",
-              "mtu": 1460,
-              "addIf": "eth0",
-              "isGateway": true,
-              "ipMasq": true,
-              "promiscMode": true,
-              "ipam": {
-                  "type": "host-local",
-                  "subnet": "{{.PodCIDR}}",
-                  "routes": [{ "dst": "0.0.0.0/0" }]
-              }
-          }
-      ]
-  }
-path: /etc/containerd/cni-config.template
-type: file
----
 contents: ""
 path: /etc/containerd/config-kops.toml
 type: file
 ---
 contents: CONTAINERD_OPTS=
 path: /etc/sysconfig/containerd
-type: file
----
-contents:
-  Asset:
-    AssetPath: usr/local/bin/containerd
-    Key: containerd
-mode: "0755"
-path: /usr/bin/containerd
-type: file
----
-contents:
-  Asset:
-    AssetPath: usr/local/bin/containerd-shim
-    Key: containerd-shim
-mode: "0755"
-path: /usr/bin/containerd-shim
-type: file
----
-contents:
-  Asset:
-    AssetPath: usr/local/bin/containerd-shim-runc-v1
-    Key: containerd-shim-runc-v1
-mode: "0755"
-path: /usr/bin/containerd-shim-runc-v1
-type: file
----
-contents:
-  Asset:
-    AssetPath: usr/local/bin/containerd-shim-runc-v2
-    Key: containerd-shim-runc-v2
-mode: "0755"
-path: /usr/bin/containerd-shim-runc-v2
-type: file
----
-contents:
-  Asset:
-    AssetPath: usr/local/bin/crictl
-    Key: crictl
-mode: "0755"
-path: /usr/bin/crictl
-type: file
----
-contents:
-  Asset:
-    AssetPath: usr/local/bin/ctr
-    Key: ctr
-mode: "0755"
-path: /usr/bin/ctr
-type: file
----
-contents:
-  Asset:
-    AssetPath: usr/local/sbin/runc
-    Key: runc
-mode: "0755"
-path: /usr/bin/runc
 type: file
 ---
 contents: |2
@@ -294,7 +214,6 @@ definition: |
   EnvironmentFile=/etc/environment
   ExecStartPre=-/sbin/modprobe overlay
   ExecStart=/usr/bin/containerd -c /etc/containerd/config-kops.toml "$CONTAINERD_OPTS"
-  Type=notify
   Delegate=yes
   KillMode=process
   Restart=always
