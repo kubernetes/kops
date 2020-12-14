@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importmap = "k8s.io/kops/vendor/github.com/kisielk/errcheck",
+    importpath = "github.com/kisielk/errcheck",
+    visibility = ["//visibility:private"],
+    deps = ["//vendor/github.com/kisielk/errcheck/internal/errcheck:go_default_library"],
+)
+
+go_binary(
+    name = "errcheck",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
