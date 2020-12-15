@@ -8,9 +8,9 @@ spec:
   channel: stable
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
-  containerRuntime: containerd
-  containerd:
-    version: 1.4.3
+  containerRuntime: docker
+  docker:
+    version: 19.03.14
   etcdClusters:
     - etcdMembers:
         - instanceGroup: master-us-test-1a
