@@ -53,7 +53,7 @@ require (
 	cloud.google.com/go v0.54.0
 	github.com/Azure/azure-pipeline-go v0.2.3
 	github.com/Azure/azure-storage-blob-go v0.10.0
-	github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
+	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.0.1
