@@ -99,7 +99,6 @@ go_library(
         "//vendor/github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli:go_default_library",
         "//vendor/github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/github.com/spf13/cobra/doc:go_default_library",
         "//vendor/github.com/spf13/viper:go_default_library",
@@ -121,6 +120,7 @@ go_library(
         "//vendor/k8s.io/kubectl/pkg/cmd/util/editor:go_default_library",
         "//vendor/k8s.io/kubectl/pkg/util/i18n:go_default_library",
         "//vendor/k8s.io/kubectl/pkg/util/templates:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
@@ -177,9 +177,9 @@ go_test(
         "//vendor/github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/golang.org/x/crypto/ssh:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )

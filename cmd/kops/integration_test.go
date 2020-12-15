@@ -43,8 +43,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
-	"github.com/ghodss/yaml"
 	"golang.org/x/crypto/ssh"
+	"sigs.k8s.io/yaml"
 )
 
 // updateClusterTestBase is added automatically to the srcDir on all
