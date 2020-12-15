@@ -273,7 +273,6 @@ definition: |
   [Unit]
   Description=Docker Application Container Engine
   Documentation=https://docs.docker.com
-  BindsTo=containerd.service
   After=network-online.target firewalld.service containerd.service
   Wants=network-online.target
   Requires=docker.socket
@@ -285,7 +284,7 @@ definition: |
   ExecStart=/usr/bin/dockerd -H fd:// "$DOCKER_OPTS"
   ExecReload=/bin/kill -s HUP $MAINPID
   TimeoutSec=0
-  RestartSec=2s
+  RestartSec=2
   Restart=always
   StartLimitBurst=3
   StartLimitInterval=60s
@@ -295,6 +294,7 @@ definition: |
   TasksMax=infinity
   Delegate=yes
   KillMode=process
+  OOMScoreAdjust=-500
 
   [Install]
   WantedBy=multi-user.target
