@@ -1,71 +1,9 @@
-contents: |-
-  DOCKER_OPTS=
-  DOCKER_NOFILE=1000000
-path: /etc/sysconfig/docker
+contents: ""
+path: /etc/containerd/config-kops.toml
 type: file
 ---
-contents:
-  Asset:
-    AssetPath: docker/containerd
-    Key: containerd
-mode: "0755"
-path: /usr/bin/containerd
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/containerd-shim
-    Key: containerd-shim
-mode: "0755"
-path: /usr/bin/containerd-shim
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/ctr
-    Key: ctr
-mode: "0755"
-path: /usr/bin/ctr
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/docker
-    Key: docker
-mode: "0755"
-path: /usr/bin/docker
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/docker-init
-    Key: docker-init
-mode: "0755"
-path: /usr/bin/docker-init
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/docker-proxy
-    Key: docker-proxy
-mode: "0755"
-path: /usr/bin/docker-proxy
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/dockerd
-    Key: dockerd
-mode: "0755"
-path: /usr/bin/dockerd
-type: file
----
-contents:
-  Asset:
-    AssetPath: docker/runc
-    Key: runc
-mode: "0755"
-path: /usr/bin/runc
+contents: CONTAINERD_OPTS=
+path: /etc/sysconfig/containerd
 type: file
 ---
 contents: |2
@@ -248,7 +186,7 @@ contents: |2
 
      END OF TERMS AND CONDITIONS
 
-     Copyright 2013-2018 Docker, Inc.
+     Copyright The containerd Authors
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -261,62 +199,34 @@ contents: |2
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
-path: /usr/share/doc/docker/apache.txt
+path: /usr/share/doc/containerd/apache.txt
 type: file
 ---
-GID: null
-Name: docker
-System: true
----
-Name: docker.service
+Name: containerd.service
 definition: |
   [Unit]
-  Description=Docker Application Container Engine
-  Documentation=https://docs.docker.com
-  After=network-online.target firewalld.service containerd.service
-  Wants=network-online.target
-  Requires=docker.socket
+  Description=containerd container runtime
+  Documentation=https://containerd.io
+  After=network.target local-fs.target
 
   [Service]
-  EnvironmentFile=/etc/sysconfig/docker
+  EnvironmentFile=/etc/sysconfig/containerd
   EnvironmentFile=/etc/environment
+  ExecStartPre=-/sbin/modprobe overlay
+  ExecStart=/usr/bin/containerd -c /etc/containerd/config-kops.toml "$CONTAINERD_OPTS"
   Type=notify
-  ExecStart=/usr/bin/dockerd -H fd:// "$DOCKER_OPTS"
-  ExecReload=/bin/kill -s HUP $MAINPID
-  TimeoutSec=0
-  RestartSec=2
-  Restart=always
-  StartLimitBurst=3
-  StartLimitInterval=60s
-  LimitNOFILE=infinity
-  LimitNPROC=infinity
-  LimitCORE=infinity
-  TasksMax=infinity
   Delegate=yes
   KillMode=process
-  OOMScoreAdjust=-500
+  Restart=always
+  RestartSec=5
+  LimitNPROC=infinity
+  LimitCORE=infinity
+  LimitNOFILE=infinity
+  TasksMax=infinity
+  OOMScoreAdjust=-999
 
   [Install]
   WantedBy=multi-user.target
-enabled: true
-manageState: true
-running: true
-smartRestart: true
----
-Name: docker.socket
-definition: |
-  [Unit]
-  Description=Docker Socket for the API
-  PartOf=docker.service
-
-  [Socket]
-  ListenStream=/var/run/docker.sock
-  SocketMode=0660
-  SocketUser=root
-  SocketGroup=docker
-
-  [Install]
-  WantedBy=sockets.target
 enabled: true
 manageState: true
 running: true
