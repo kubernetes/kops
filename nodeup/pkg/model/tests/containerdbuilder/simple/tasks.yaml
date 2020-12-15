@@ -294,15 +294,16 @@ definition: |
   EnvironmentFile=/etc/environment
   ExecStartPre=-/sbin/modprobe overlay
   ExecStart=/usr/bin/containerd -c /etc/containerd/config-kops.toml "$CONTAINERD_OPTS"
-  Restart=always
-  RestartSec=5
+  Type=notify
   Delegate=yes
   KillMode=process
-  OOMScoreAdjust=-999
-  LimitNOFILE=1048576
+  Restart=always
+  RestartSec=5
   LimitNPROC=infinity
   LimitCORE=infinity
+  LimitNOFILE=infinity
   TasksMax=infinity
+  OOMScoreAdjust=-999
 
   [Install]
   WantedBy=multi-user.target
