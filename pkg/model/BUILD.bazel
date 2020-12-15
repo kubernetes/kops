@@ -53,7 +53,6 @@ go_library(
         "//util/pkg/architectures:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/blang/semver/v4:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/net:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
@@ -61,6 +60,7 @@ go_library(
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
         "//vendor/k8s.io/legacy-cloud-providers/aws:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
     ],
 )
 
