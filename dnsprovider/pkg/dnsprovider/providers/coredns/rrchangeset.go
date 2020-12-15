@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"hash/fnv"
 
-	etcdc "github.com/coreos/etcd/client"
 	dnsmsg "github.com/miekg/coredns/middleware/etcd/msg"
+	etcdc "go.etcd.io/etcd/client"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
