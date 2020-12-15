@@ -226,7 +226,6 @@ github.com/fsnotify/fsnotify
 ## explicit
 github.com/fullsailor/pkcs7
 # github.com/ghodss/yaml v1.0.0
-## explicit
 github.com/ghodss/yaml
 # github.com/go-bindata/go-bindata v3.1.2+incompatible
 ## explicit
