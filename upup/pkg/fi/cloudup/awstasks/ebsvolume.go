@@ -217,11 +217,18 @@ func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 		Tags:             e.Tags,
 	}
 
-	return t.RenderResource("aws_ebs_volume", *e.Name, tf)
+	return t.RenderResource("aws_ebs_volume", e.TerraformName(), tf)
 }
 
 func (e *EBSVolume) TerraformLink() *terraform.Literal {
-	return terraform.LiteralSelfLink("aws_ebs_volume", *e.Name)
+	return terraform.LiteralSelfLink("aws_ebs_volume", e.TerraformName())
+}
+
+func (e *EBSVolume) TerraformName() string {
+	if (*e.Name)[0] >= '0' && (*e.Name)[0] <= '9' {
+		return fmt.Sprintf("ebs-%v", *e.Name)
+	}
+	return *e.Name
 }
 
 type cloudformationVolume struct {
