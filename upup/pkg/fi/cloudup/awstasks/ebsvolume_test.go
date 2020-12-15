@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/kops/pkg/diff"
 )

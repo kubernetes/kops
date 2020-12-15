@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/text"
+	"sigs.k8s.io/yaml"
 )
 
 // Object holds arbitrary untyped kubernetes objects; it is used when we don't have the type definitions for them
