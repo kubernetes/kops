@@ -19,13 +19,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.etcd.io/etcd/pkg/pathutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/coreos/etcd/pkg/pathutil"
 )
 
 const (
@@ -63,7 +62,7 @@ func (e Error) Error() string {
 }
 
 var (
-	ErrInvalidJSON = errors.New("client: response is invalid json. The endpoint is probably not valid etcd cluster endpoint.")
+	ErrInvalidJSON = errors.New("client: response is invalid json. The endpoint is probably not valid etcd cluster endpoint")
 	ErrEmptyBody   = errors.New("client: response body is empty")
 )
 

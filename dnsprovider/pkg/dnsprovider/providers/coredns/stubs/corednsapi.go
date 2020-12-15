@@ -21,7 +21,7 @@ import (
 	"context"
 	"strings"
 
-	etcd "github.com/coreos/etcd/client"
+	etcd "go.etcd.io/etcd/client"
 )
 
 // Compile time check for interface conformance

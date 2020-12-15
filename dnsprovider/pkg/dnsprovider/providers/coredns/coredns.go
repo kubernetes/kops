@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	etcdc "github.com/coreos/etcd/client"
+	etcdc "go.etcd.io/etcd/client"
 	gcfg "gopkg.in/gcfg.v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"

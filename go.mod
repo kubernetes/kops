@@ -60,7 +60,6 @@ require (
 	github.com/aws/aws-sdk-go v1.36.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/chai2010/gettext-go v0.0.0-20170215093142-bf70f2a70fb1 // indirect
-	github.com/coreos/etcd v3.3.17+incompatible
 	github.com/denverdino/aliyungo v0.0.0-20191128015008-acd8035bbb1d
 	github.com/digitalocean/godo v1.54.0
 	github.com/docker/docker v1.4.2-0.20200309214505-aa6a9891b09c
@@ -93,6 +92,7 @@ require (
 	github.com/urfave/cli v1.22.2
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	github.com/zclconf/go-cty v1.3.1
+	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
