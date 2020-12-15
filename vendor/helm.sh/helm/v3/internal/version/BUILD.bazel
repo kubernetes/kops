@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["version.go"],
+    importmap = "k8s.io/kops/vendor/helm.sh/helm/v3/internal/version",
+    importpath = "helm.sh/helm/v3/internal/version",
+    visibility = ["//vendor/helm.sh/helm/v3:__subpackages__"],
+)

@@ -103,6 +103,7 @@ go_library(
         "//vendor/github.com/spf13/cobra/doc:go_default_library",
         "//vendor/github.com/spf13/viper:go_default_library",
         "//vendor/golang.org/x/crypto/ssh:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/cli/values:go_default_library",
         "//vendor/helm.sh/helm/v3/pkg/strvals:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
@@ -156,6 +157,7 @@ go_test(
         "//channels:channeldata",  # keep
         "//tests/integration/create_cluster:exported_testdata",  # keep
         "//tests/integration/update_cluster:exported_testdata",  # keep
+        "test/values.yaml",
     ],
     embed = [":go_default_library"],
     shard_count = 10,

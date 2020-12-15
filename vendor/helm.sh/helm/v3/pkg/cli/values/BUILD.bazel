@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["options.go"],
+    importmap = "k8s.io/kops/vendor/helm.sh/helm/v3/pkg/cli/values",
+    importpath = "helm.sh/helm/v3/pkg/cli/values",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/getter:go_default_library",
+        "//vendor/helm.sh/helm/v3/pkg/strvals:go_default_library",
+        "//vendor/sigs.k8s.io/yaml:go_default_library",
+    ],
+)
