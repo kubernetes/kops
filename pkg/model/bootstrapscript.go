@@ -28,9 +28,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
