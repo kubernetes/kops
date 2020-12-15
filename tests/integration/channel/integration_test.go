@@ -23,20 +23,16 @@ import (
 
 	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/tests/integration/channel/simple"
 )
 
 // TestKopsUpgrades tests the version logic for kops versions
 func TestKopsUpgrades(t *testing.T) {
-	srcDir := "simple"
-	sourcePath := path.Join(srcDir, "channel.yaml")
-	sourceBytes, err := ioutil.ReadFile(sourcePath)
-	if err != nil {
-		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
-	}
+	sourcePath := "simple/channel.yaml"
 
-	channel, err := kops.ParseChannel(sourceBytes)
+	channel, err := simple.NewMockChannel(sourcePath)
 	if err != nil {
-		t.Fatalf("failed to parse channel: %v", err)
+		t.Fatalf("failed to create channel: %v", err)
 	}
 
 	grid := []struct {

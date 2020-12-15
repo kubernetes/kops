@@ -121,6 +121,18 @@ spec:
 
 ### Template Functions
 
+#### Kops specific functions
+
+##### ChannelRecommendedKopsKubernetesVersion
+
+This function returns the kubernetes version recommended for the running kops version.
+
+##### ChannelRecommendedKopsUpgradeVersion <kuberneteVersion>
+
+This function returns the kubernetes upgrade recommendation given that you run `<kubernetesVersion>`. Typically this is the latest minor version supported by the given channel.
+
+#### Sprig functions
+
 The entire set of https://github.com/Masterminds/sprig functions are available within the templates for you. Note if you want to use the 'defaults' functions switch off the verification check on the command line by `--fail-on-missing=false`;
 
 ```YAML
