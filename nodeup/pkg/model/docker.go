@@ -187,7 +187,6 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
 	if dockerVersion.GTE(semver.MustParse("18.9.0")) {
-		manifest.Set("Unit", "BindsTo", "containerd.service")
 		manifest.Set("Unit", "After", "network-online.target firewalld.service containerd.service")
 	} else {
 		manifest.Set("Unit", "After", "network-online.target firewalld.service")
@@ -198,19 +197,18 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
+	manifest.Set("Service", "Type", "notify")
 	// Restore the default SELinux security contexts for the Docker binaries
 	if b.Distribution.IsRHELFamily() && b.Cluster.Spec.Docker != nil && fi.BoolValue(b.Cluster.Spec.Docker.SelinuxEnabled) {
 		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/docker*'")
 	}
-
 	// the default is not to use systemd for cgroups because the delegate issues still
 	// exists and systemd currently does not support the cgroup feature set required
 	// for containers run by docker
-	manifest.Set("Service", "Type", "notify")
 	manifest.Set("Service", "ExecStart", "/usr/bin/dockerd -H fd:// \"$DOCKER_OPTS\"")
 	manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
 	manifest.Set("Service", "TimeoutSec", "0")
-	manifest.Set("Service", "RestartSec", "2s")
+	manifest.Set("Service", "RestartSec", "2")
 	manifest.Set("Service", "Restart", "always")
 
 	// Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
@@ -237,6 +235,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 
 	// kill only the docker process, not all processes in the cgroup
 	manifest.Set("Service", "KillMode", "process")
+	manifest.Set("Service", "OOMScoreAdjust", "-500")
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
