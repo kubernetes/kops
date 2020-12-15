@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"helm.sh/helm/pkg/strvals"
+	"helm.sh/helm/v3/pkg/strvals"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 	"sigs.k8s.io/yaml"

@@ -91,7 +91,7 @@ require (
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	github.com/zclconf/go-cty v1.3.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
-	go.uber.org/zap v1.10.0
+	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
@@ -101,7 +101,7 @@ require (
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/yaml.v2 v2.3.0
-	helm.sh/helm v2.17.0+incompatible
+	helm.sh/helm/v3 v3.4.2
 	k8s.io/api v0.20.0
 	k8s.io/apimachinery v0.20.0
 	k8s.io/cli-runtime v0.20.0
@@ -110,7 +110,7 @@ require (
 	k8s.io/component-base v0.20.0
 	k8s.io/gengo v0.0.0-20201113003025-83324d819ded
 	k8s.io/klog/v2 v2.4.0
-	k8s.io/kubectl v0.0.0
+	k8s.io/kubectl v0.19.4
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/controller-runtime v0.6.1
