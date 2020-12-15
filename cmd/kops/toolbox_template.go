@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/kops/cmd/kops/util"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/try"
 	"k8s.io/kops/pkg/util/templater"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -68,6 +69,7 @@ type toolboxTemplateOption struct {
 	templatePath  []string
 	values        []string
 	stringValues  []string
+	channel       string
 }
 
 // NewCmdToolboxTemplate returns a new templating command
@@ -96,6 +98,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringArrayVar(&options.stringValues, "set-string", options.stringValues, "Set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 	cmd.Flags().StringSliceVar(&options.templatePath, "template", options.templatePath, "Path to template file or directory of templates to render")
 	cmd.Flags().StringSliceVar(&options.snippetsPath, "snippets", options.snippetsPath, "Path to directory containing snippets used for templating")
+	cmd.Flags().StringVar(&options.channel, "channel", options.channel, "Channel to use for the channel* functions")
 	cmd.Flags().StringVar(&options.outputPath, "output", options.outputPath, "Path to output file, otherwise defaults to stdout")
 	cmd.Flags().StringVar(&options.configValue, "config-value", "", "Show the value of a specific configuration value")
 	cmd.Flags().BoolVar(&options.failOnMissing, "fail-on-missing", true, "Fail on referencing unset variables in templates")
@@ -158,8 +161,18 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		}
 	}
 
+	channelLocation := ""
+	if channelLocation == "" {
+		channelLocation = kopsapi.DefaultChannel
+	}
+
+	channel, err := kopsapi.LoadChannel(channelLocation)
+	if err != nil {
+		return fmt.Errorf("error loading channel %q: %v", channelLocation, err)
+	}
+
 	// @step: render each of the templates, splitting on the documents
-	r := templater.NewTemplater()
+	r := templater.NewTemplater(channel)
 	var documents []string
 	for _, x := range templates {
 		content, err := ioutil.ReadFile(x)

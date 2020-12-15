@@ -22,7 +22,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 const (
@@ -30,11 +30,15 @@ const (
 )
 
 // Templater is golang template renders
-type Templater struct{}
+type Templater struct {
+	channel *kops.Channel
+}
 
 // NewTemplater returns a new renderer implementation
-func NewTemplater() *Templater {
-	return &Templater{}
+func NewTemplater(channel *kops.Channel) *Templater {
+	return &Templater{
+		channel: channel,
+	}
 }
 
 // Render is responsible for actually rendering the template
@@ -70,25 +74,6 @@ func (r *Templater) Render(content string, context map[string]interface{}, snipp
 	}
 
 	return writer.String(), nil
-}
-
-// templateFuncsMap returns a map if the template functions for this template
-func (r *Templater) templateFuncsMap(tm *template.Template) template.FuncMap {
-	// grab the template functions from sprig which are pretty awesome
-	funcs := sprig.TxtFuncMap()
-
-	funcs["indent"] = indentContent
-	// @step: as far as i can see there's no native way in sprig in include external snippets of code
-	funcs["include"] = func(name string, context map[string]interface{}) string {
-		content, err := includeSnippet(tm, name, context)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		return content
-	}
-
-	return funcs
 }
 
 // indentContent is responsible for indenting the string content
