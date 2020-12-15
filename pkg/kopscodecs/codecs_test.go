@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/MakeNowJust/heredoc/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
