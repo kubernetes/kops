@@ -66,7 +66,6 @@ require (
 	github.com/docker/docker v1.4.2-0.20200309214505-aa6a9891b09c
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
-	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/go-ini/ini v1.51.0
 	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
