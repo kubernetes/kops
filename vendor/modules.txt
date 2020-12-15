@@ -29,8 +29,10 @@ github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/filter
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/meta
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud/mock
 # github.com/MakeNowJust/heredoc v0.0.0-20170808103936-bb23615498cd
-## explicit
 github.com/MakeNowJust/heredoc
+# github.com/MakeNowJust/heredoc/v2 v2.0.1
+## explicit
+github.com/MakeNowJust/heredoc/v2
 # github.com/Masterminds/goutils v1.1.0
 github.com/Masterminds/goutils
 # github.com/Masterminds/semver/v3 v3.1.0

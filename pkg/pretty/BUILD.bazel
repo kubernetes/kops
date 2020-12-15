@@ -5,7 +5,7 @@ go_library(
     srcs = ["help.go"],
     importpath = "k8s.io/kops/pkg/pretty",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/MakeNowJust/heredoc:go_default_library"],
+    deps = ["//vendor/github.com/MakeNowJust/heredoc/v2:go_default_library"],
 )
 
 go_test(
