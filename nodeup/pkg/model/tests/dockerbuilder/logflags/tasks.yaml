@@ -389,7 +389,7 @@ definition: |
   ExecStart=/usr/bin/dockerd -H fd:// "$DOCKER_OPTS"
   ExecReload=/bin/kill -s HUP $MAINPID
   TimeoutSec=0
-  RestartSec=2s
+  RestartSec=2
   Restart=always
   StartLimitBurst=3
   StartLimitInterval=60s
@@ -399,6 +399,7 @@ definition: |
   TasksMax=infinity
   Delegate=yes
   KillMode=process
+  OOMScoreAdjust=-500
 
   [Install]
   WantedBy=multi-user.target
