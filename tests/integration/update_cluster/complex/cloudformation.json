@@ -1105,7 +1105,7 @@
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdeventscomplexexamplecom": {
+    "AWSEC2Volume1aetcdeventscomplexexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -1119,7 +1119,7 @@
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-events.complex.example.com"
+            "Value": "1a.etcd-events.complex.example.com"
           },
           {
             "Key": "Owner",
@@ -1131,7 +1131,7 @@
           },
           {
             "Key": "k8s.io/etcd/events",
-            "Value": "us-test-1a/us-test-1a"
+            "Value": "1a/1a"
           },
           {
             "Key": "k8s.io/role/master",
@@ -1144,7 +1144,7 @@
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdmaincomplexexamplecom": {
+    "AWSEC2Volume1aetcdmaincomplexexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -1158,7 +1158,7 @@
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-main.complex.example.com"
+            "Value": "1a.etcd-main.complex.example.com"
           },
           {
             "Key": "Owner",
@@ -1170,7 +1170,7 @@
           },
           {
             "Key": "k8s.io/etcd/main",
-            "Value": "us-test-1a/us-test-1a"
+            "Value": "1a/1a"
           },
           {
             "Key": "k8s.io/role/master",
