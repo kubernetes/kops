@@ -208,17 +208,54 @@ func GetResourceName32(cluster string, prefix string) string {
 	s := prefix + "-" + strings.Replace(cluster, ".", "-", -1)
 
 	// We always compute the hash and add it, lest we trick users into assuming that we never do this
+	opt := TruncateStringOptions{
+		MaxLength:     32,
+		AlwaysAddHash: true,
+		HashLength:    6,
+	}
+	return TruncateString(s, opt)
+}
+
+// TruncateStringOptions contains parameters for how we truncate strings
+type TruncateStringOptions struct {
+	// AlwaysAddHash will always cause the hash to be appended.
+	// Useful to stop users assuming that the name will never be truncated.
+	AlwaysAddHash bool
+
+	// MaxLength controls the maximum length of the string.
+	MaxLength int
+
+	// HashLength controls the length of the hash to be appended.
+	HashLength int
+}
+
+// TruncateString will attempt to truncate a string to a max, adding a prefix to avoid collisions.
+// Will never return a string longer than maxLength chars
+func TruncateString(s string, opt TruncateStringOptions) string {
+	if opt.MaxLength == 0 {
+		klog.Fatalf("MaxLength must be set")
+	}
+
+	if !opt.AlwaysAddHash && len(s) <= opt.MaxLength {
+		return s
+	}
+
+	if opt.HashLength == 0 {
+		opt.HashLength = 6
+	}
+
+	// We always compute the hash and add it, lest we trick users into assuming that we never do this
 	h := fnv.New32a()
 	if _, err := h.Write([]byte(s)); err != nil {
 		klog.Fatalf("error hashing values: %v", err)
 	}
 	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
 	hashString = strings.ToLower(hashString)
-	if len(hashString) > 6 {
-		hashString = hashString[:6]
+	if len(hashString) > opt.HashLength {
+		hashString = hashString[:opt.HashLength]
 	}
 
-	maxBaseLength := 32 - len(hashString) - 1
+	maxBaseLength := opt.MaxLength - len(hashString) - 1
 	if len(s) > maxBaseLength {
 		s = s[:maxBaseLength]
 	}

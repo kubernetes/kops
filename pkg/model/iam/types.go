@@ -21,7 +21,11 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
+
+// MaxLengthIAMRoleName defines the max length of an IAMRole name
+const MaxLengthIAMRoleName = 64
 
 // ParseStatements parses JSON into a list of Statements
 func ParseStatements(policy string) ([]*Statement, error) {
@@ -48,7 +52,10 @@ func (b *IAMModelContext) IAMNameForServiceAccountRole(role Subject) (string, er
 		return "", fmt.Errorf("role %v does not have ServiceAccount", role)
 	}
 
-	return serviceAccount.Name + "." + serviceAccount.Namespace + ".sa." + b.ClusterName(), nil
+	name := serviceAccount.Name + "." + serviceAccount.Namespace + ".sa." + b.ClusterName()
+	name = awsup.TruncateString(name, awsup.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
+
+	return name, nil
 }
 
 // ClusterName returns the cluster name
