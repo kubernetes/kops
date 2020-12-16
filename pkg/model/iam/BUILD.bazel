@@ -16,6 +16,7 @@ go_library(
         "//pkg/wellknownusers:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
+        "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
