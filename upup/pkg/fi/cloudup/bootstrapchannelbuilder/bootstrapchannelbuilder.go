@@ -277,26 +277,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	if b.Cluster.Spec.NodeAuthorization != nil {
-		{
-			key := "node-authorizer.addons.k8s.io"
-			version := "v0.0.4-kops.2"
-
-			{
-				location := key + "/k8s-1.12.yaml"
-				id := "k8s-1.12.yaml"
-
-				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-					Name:     fi.String(key),
-					Version:  fi.String(version),
-					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.String(location),
-					Id:       id,
-				})
-			}
-		}
-	}
-
 	kubeDNS := b.Cluster.Spec.KubeDNS
 
 	// This checks if the Kubernetes version is greater than or equal to 1.20
@@ -350,11 +330,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
-	// @check if node authorization or bootstrap tokens are enabled an if so we can forgo applying
+	// @check if bootstrap tokens are enabled an if so we can forgo applying
 	// this manifest. For clusters whom are upgrading from RBAC to Node,RBAC the clusterrolebinding
 	// will remain and have to be deleted manually once all the nodes have been upgraded.
 	enableRBACAddon := true
-	if b.UseKopsControllerForNodeBootstrap() || b.Cluster.Spec.NodeAuthorization != nil {
+	if b.UseKopsControllerForNodeBootstrap() {
 		enableRBACAddon = false
 	}
 	if b.Cluster.Spec.KubeAPIServer != nil {
