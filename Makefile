@@ -154,7 +154,7 @@ kops-gobindata: ${BINDATA_TARGETS}
 
 .PHONY: update-bindata
 update-bindata:
-	GO111MODULE=on go run github.com/go-bindata/go-bindata/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models upup/models/cloudup/...
+	GO111MODULE=on go run github.com/go-bindata/go-bindata/v3/go-bindata -o ${BINDATA_TARGETS} -pkg models -nometadata -nocompress -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models upup/models/cloudup/...
 	cd "${KOPS_ROOT}/hack" && GO111MODULE=on go build -o "${KOPS_ROOT}/_output/bin/goimports" golang.org/x/tools/cmd/goimports
 	"${KOPS_ROOT}/_output/bin/goimports" -w -v ${BINDATA_TARGETS}
 	gofmt -w -s ${BINDATA_TARGETS}
