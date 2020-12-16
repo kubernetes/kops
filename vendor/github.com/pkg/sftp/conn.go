@@ -13,17 +13,32 @@ import (
 type conn struct {
 	io.Reader
 	io.WriteCloser
+	// this is the same allocator used in packet manager
+	alloc      *allocator
 	sync.Mutex // used to serialise writes to sendPacket
+	// sendPacketTest is needed to replicate packet issues in testing
+	sendPacketTest func(w io.Writer, m encoding.BinaryMarshaler) error
 }
 
-func (c *conn) recvPacket() (uint8, []byte, error) {
-	return recvPacket(c)
+// the orderID is used in server mode if the allocator is enabled.
+// For the client mode just pass 0
+func (c *conn) recvPacket(orderID uint32) (uint8, []byte, error) {
+	return recvPacket(c, c.alloc, orderID)
 }
 
 func (c *conn) sendPacket(m encoding.BinaryMarshaler) error {
 	c.Lock()
 	defer c.Unlock()
+	if c.sendPacketTest != nil {
+		return c.sendPacketTest(c, m)
+	}
 	return sendPacket(c, m)
+}
+
+func (c *conn) Close() error {
+	c.Lock()
+	defer c.Unlock()
+	return c.WriteCloser.Close()
 }
 
 type clientConn struct {
@@ -31,6 +46,17 @@ type clientConn struct {
 	wg         sync.WaitGroup
 	sync.Mutex                          // protects inflight
 	inflight   map[uint32]chan<- result // outstanding requests
+
+	closed chan struct{}
+	err    error
+}
+
+// Wait blocks until the conn has shut down, and return the error
+// causing the shutdown. It can be called concurrently from multiple
+// goroutines.
+func (c *clientConn) Wait() error {
+	<-c.closed
+	return c.err
 }
 
 // Close closes the SFTP session.
@@ -50,9 +76,11 @@ func (c *clientConn) loop() {
 // recv continuously reads from the server and forwards responses to the
 // appropriate channel.
 func (c *clientConn) recv() error {
-	defer c.conn.Close()
+	defer func() {
+		c.conn.Close()
+	}()
 	for {
-		typ, data, err := c.recvPacket()
+		typ, data, err := c.recvPacket(0)
 		if err != nil {
 			return err
 		}
@@ -84,7 +112,7 @@ type idmarshaler interface {
 }
 
 func (c *clientConn) sendPacket(p idmarshaler) (byte, []byte, error) {
-	ch := make(chan result, 1)
+	ch := make(chan result, 2)
 	c.dispatchRequest(ch, p)
 	s := <-ch
 	return s.typ, s.data, s.err
@@ -93,11 +121,13 @@ func (c *clientConn) sendPacket(p idmarshaler) (byte, []byte, error) {
 func (c *clientConn) dispatchRequest(ch chan<- result, p idmarshaler) {
 	c.Lock()
 	c.inflight[p.id()] = ch
+	c.Unlock()
 	if err := c.conn.sendPacket(p); err != nil {
+		c.Lock()
 		delete(c.inflight, p.id())
+		c.Unlock()
 		ch <- result{err: err}
 	}
-	c.Unlock()
 }
 
 // broadcastErr sends an error to all goroutines waiting for a response.
@@ -111,12 +141,14 @@ func (c *clientConn) broadcastErr(err error) {
 	for _, ch := range listeners {
 		ch <- result{err: err}
 	}
+	c.err = err
+	close(c.closed)
 }
 
 type serverConn struct {
 	conn
 }
 
-func (s *serverConn) sendError(p id, err error) error {
+func (s *serverConn) sendError(p ider, err error) error {
 	return s.sendPacket(statusFromError(p, err))
 }
