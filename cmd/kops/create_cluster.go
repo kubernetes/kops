@@ -392,7 +392,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	if c.OpenstackNetworkID != "" {
 		c.NetworkID = c.OpenstackNetworkID
 	}
-
+	c.Networking = "cilium"
 	clusterResult, err := cloudup.NewCluster(&c.NewClusterOptions, clientset)
 	if err != nil {
 		return err
@@ -436,12 +436,59 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			group.Spec.Image = c.MasterImage
 		}
 	}
-	if c.NodeImage != "" {
+	// TODO: remove this before the PR is merged. Only using this to test w/ the E2E presubmits
+	{
+		cluster.Spec.Authentication = &api.AuthenticationSpec{
+			Aws: &api.AwsAuthenticationSpec{},
+		}
+		featureflag.ParseFlags("+Bottlerocket")
+		var owner string
+		switch os.Getenv("KOPS_REGIONS") {
+		case "us-east-1":
+			owner = "092701018921"
+		case "us-east-2":
+			owner = "419346874475"
+		case "us-west-1":
+			owner = "724952271658"
+		case "us-west-2":
+			owner = "651937483462"
+		case "ap-east-1":
+			owner = "040063162771"
+		case "ap-south-1":
+			owner = "449901457613"
+		case "ap-northeast-1":
+			owner = "593245189075"
+		case "ap-northeast-2":
+			owner = "630172235254"
+		case "ap-southeast-1":
+			owner = "406264879685"
+		case "ap-southeast-2":
+			owner = "823100568288"
+		case "ca-central-1":
+			owner = "229026816814"
+		case "eu-central-1":
+			owner = "149721548608"
+		case "eu-west-1":
+			owner = "503807174151"
+		case "eu-west-2":
+			owner = "941016683700"
+		case "eu-west-3":
+			owner = "296779064547"
+		case "eu-north-1":
+			owner = "432623269467"
+		case "sa-east-1":
+			owner = "044060155884"
+
+		default:
+			klog.Fatal("unsupported region, try again")
+		}
 		for _, group := range nodes {
-			group.Spec.Image = c.NodeImage
+			group.Spec.Image = fmt.Sprintf("%v/bottlerocket-aws-k8s-1.18-x86_64-v1.0.4-cef8dbd2", owner)
+			group.Spec.ImageFamily = &api.ImageFamily{
+				Bottlerocket: &api.Bottlerocket{},
+			}
 		}
 	}
-
 	if c.AssociatePublicIP != nil {
 		for _, group := range instanceGroups {
 			group.Spec.AssociatePublicIP = c.AssociatePublicIP
