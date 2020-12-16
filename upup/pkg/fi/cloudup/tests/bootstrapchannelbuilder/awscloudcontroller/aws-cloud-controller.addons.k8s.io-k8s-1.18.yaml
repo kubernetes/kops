@@ -19,7 +19,7 @@ spec:
         - --v=2
         - --cloud-provider=aws
         - --use-service-account-credentials=true
-        image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:v1.19.0-alpha.1
+        image: gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest
         name: aws-cloud-controller-manager
         resources:
           requests:
@@ -166,4 +166,3 @@ subjects:
   kind: ServiceAccount
   name: cloud-controller-manager
   namespace: kube-system
-
