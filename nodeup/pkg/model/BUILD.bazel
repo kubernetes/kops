@@ -27,7 +27,6 @@ go_library(
         "logrotate.go",
         "manifests.go",
         "miscutils.go",
-        "node_authorizer.go",
         "ntp.go",
         "packages.go",
         "protokube.go",
