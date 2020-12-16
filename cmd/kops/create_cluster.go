@@ -439,7 +439,9 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	// TODO: remove this before the PR is merged. Only using this to test w/ the E2E presubmits
 	{
 		cluster.Spec.Authentication = &api.AuthenticationSpec{
-			Aws: &api.AwsAuthenticationSpec{},
+			Aws: &api.AwsAuthenticationSpec{
+				BackendMode: "CRD",
+			},
 		}
 		featureflag.ParseFlags("+Bottlerocket")
 		var owner string
