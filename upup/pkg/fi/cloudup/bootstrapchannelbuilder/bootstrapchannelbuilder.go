@@ -376,7 +376,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 			}
 		}
 		if enableCSRApprover {
-			key := "csr-approver.rbac.addons.k8s.io"
+			key := "csr-approver.addons.k8s.io"
 			version := "v0.0.1"
 
 			{
