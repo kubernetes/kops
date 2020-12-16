@@ -77,10 +77,9 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
 	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
-	github.com/kr/fs v0.1.0 // indirect
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
 	github.com/mitchellh/mapstructure v1.1.2
-	github.com/pkg/sftp v0.0.0-20160930220758-4d0e916071f6
+	github.com/pkg/sftp v1.12.0
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sergi/go-diff v1.0.0
 	github.com/spf13/cobra v1.1.1
@@ -93,10 +92,10 @@ require (
 	github.com/zclconf/go-cty v1.3.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 	go.uber.org/zap v1.10.0
-	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20201112073958-5cba982894dd
+	golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e
 	golang.org/x/tools v0.0.0-20200626171337-aa94e735be7f // indirect
 	google.golang.org/api v0.22.0
 	gopkg.in/gcfg.v1 v1.2.3
