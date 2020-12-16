@@ -66,7 +66,6 @@ require (
 	github.com/digitalocean/godo v1.54.0
 	github.com/docker/docker v1.4.2-0.20200309214505-aa6a9891b09c
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
-	github.com/fullsailor/pkcs7 v0.0.0-20180422025557-ae226422660e
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
@@ -74,11 +73,9 @@ require (
 	github.com/google/go-cmp v0.5.2
 	github.com/google/uuid v1.1.2
 	github.com/gophercloud/gophercloud v0.15.0
-	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl/v2 v2.7.0
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
-	github.com/jpillora/backoff v0.0.0-20170918002102-8eab2debe79d
 	github.com/miekg/coredns v0.0.0-20161111164017-20e25559d5ea
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pelletier/go-toml v1.8.1
@@ -90,11 +87,9 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/spotinst/spotinst-sdk-go v1.75.0
 	github.com/stretchr/testify v1.6.1
-	github.com/urfave/cli v1.22.2
 	github.com/weaveworks/mesh v0.0.0-20170419100114-1f158d31de55
 	github.com/zclconf/go-cty v1.3.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
-	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d

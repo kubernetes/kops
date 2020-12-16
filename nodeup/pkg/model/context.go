@@ -374,20 +374,6 @@ func (c *NodeupModelContext) UseKopsControllerForNodeBootstrap() bool {
 	return model.UseKopsControllerForNodeBootstrap(c.Cluster)
 }
 
-// UseNodeAuthorization checks if have a node authorization policy
-func (c *NodeupModelContext) UseNodeAuthorization() bool {
-	return c.Cluster.Spec.NodeAuthorization != nil
-}
-
-// UseNodeAuthorizer checks if node authorization is enabled
-func (c *NodeupModelContext) UseNodeAuthorizer() bool {
-	if !c.UseNodeAuthorization() || !c.UseBootstrapTokens() {
-		return false
-	}
-
-	return c.Cluster.Spec.NodeAuthorization.NodeAuthorizer != nil
-}
-
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
 func (c *NodeupModelContext) UsesSecondaryIP() bool {
 	return (c.Cluster.Spec.Networking.CNI != nil && c.Cluster.Spec.Networking.CNI.UsesSecondaryIP) || c.Cluster.Spec.Networking.AmazonVPC != nil || c.Cluster.Spec.Networking.LyftVPC != nil ||
