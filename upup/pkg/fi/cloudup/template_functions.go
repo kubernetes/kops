@@ -538,15 +538,20 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 func (tf *TemplateFunctions) AWSCCMTag() (string, error) {
 	var tag string
 	parsed, err := util.ParseKubernetesVersion(tf.Cluster.Spec.KubernetesVersion)
-
-	// Update when we have stable releases
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Kubernetes version from cluster spec: %q", err)
-	} else if parsed.Minor == 18 {
-		tag = "v1.18.0-alpha.1"
-	} else if parsed.Minor == 19 {
-		tag = "v1.19.0-alpha.1"
 	}
+
+	// Update when we have stable releases
+	switch parsed.Minor {
+	case 18:
+		tag = "v1.18.0-alpha.1"
+	case 19:
+		tag = "v1.19.0-alpha.1"
+	default:
+		tag = "latest"
+	}
+
 	return tag, nil
 }
 
