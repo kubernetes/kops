@@ -52,6 +52,7 @@ go_library(
         "cloudup/resources/addons/node-problem-detector.addons.k8s.io/k8s-1.17.yaml.template",
         "cloudup/resources/addons/nvidia.addons.k8s.io/k8s-1.16.yaml",
         "cloudup/resources/addons/networking.projectcalico.org.canal/k8s-1.22.yaml.template",
+        "cloudup/resources/addons/csr-approver.addons.k8s.io/k8s-1.23.yaml",
     ],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],
