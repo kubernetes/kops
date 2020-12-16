@@ -366,6 +366,34 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 		}
 	}
 
+	// RBAC resources for kube-controller-manager to automatically approve node CSRs
+	{
+		enableCSRApprover := false
+		for _, ig := range b.NodeInstanceGroups() {
+			if ig.Spec.ImageFamily != nil && ig.Spec.ImageFamily.Bottlerocket != nil {
+				enableCSRApprover = true
+				break
+			}
+		}
+		if enableCSRApprover {
+			key := "csr-approver.rbac.addons.k8s.io"
+			version := "v0.0.1"
+
+			{
+				location := key + "/k8s-1.20.yaml"
+				id := "k8s-1.20"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:     fi.String(key),
+					Version:  fi.String(version),
+					Selector: map[string]string{"k8s-addon": key},
+					Manifest: fi.String(location),
+					Id:       id,
+				})
+			}
+		}
+	}
+
 	{
 		// Adding the kubelet-api-admin binding: this is required when switching to webhook authorization on the kubelet
 		// docs: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#other-component-roles
