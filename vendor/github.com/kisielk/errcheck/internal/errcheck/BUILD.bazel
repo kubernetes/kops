@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "embedded_walker.go",
+        "errcheck.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/kisielk/errcheck/internal/errcheck",
+    importpath = "github.com/kisielk/errcheck/internal/errcheck",
+    visibility = ["//vendor/github.com/kisielk/errcheck:__subpackages__"],
+    deps = ["//vendor/golang.org/x/tools/go/packages:go_default_library"],
+)

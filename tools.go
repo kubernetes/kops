@@ -19,5 +19,5 @@ limitations under the License.
 package kops
 
 import (
-	_ "github.com/go-bindata/go-bindata/go-bindata"
+	_ "github.com/go-bindata/go-bindata/v3/go-bindata"
 )
