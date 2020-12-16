@@ -610,7 +610,7 @@ Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuratio
 
 This block contains configurations for [CoreDNS](https://coredns.io/).
 
-For Kubernetes version >= 1.18, `CoreDNS` will be installed as the default DNS server.
+For Kubernetes version >= 1.20, `CoreDNS` will be installed as the default DNS server.
 
  ```yaml
  spec:
