@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["buildir.go"],
+    importmap = "k8s.io/kops/vendor/honnef.co/go/tools/internal/passes/buildir",
+    importpath = "honnef.co/go/tools/internal/passes/buildir",
+    visibility = ["//vendor/honnef.co/go/tools:__subpackages__"],
+    deps = [
+        "//vendor/golang.org/x/tools/go/analysis:go_default_library",
+        "//vendor/honnef.co/go/tools/ir:go_default_library",
+    ],
+)
