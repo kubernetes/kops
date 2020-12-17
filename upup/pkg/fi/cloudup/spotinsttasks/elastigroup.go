@@ -286,7 +286,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 							actual.RootVolumeOpts.IOPS = fi.Int32(int32(fi.IntValue(b.EBS.IOPS)))
 						}
 
-						actual.RootVolumeOpts.Type = b.EBS.VolumeType
+						actual.RootVolumeOpts.Type = fi.String(strings.ToLower(fi.StringValue(b.EBS.VolumeType)))
 						actual.RootVolumeOpts.Size = fi.Int32(int32(fi.IntValue(b.EBS.VolumeSize)))
 					}
 				}
