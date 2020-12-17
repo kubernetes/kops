@@ -160,6 +160,8 @@ metadata:
 | `spotinst.io/ocean-instance-types` | Specify a list of instance types that should be used by the Ocean Launch Spec. | none |
 | `spotinst.io/autoscaler-disabled` | Specify whether the auto scaler should be disabled. | `false` |
 | `spotinst.io/autoscaler-default-node-labels` | Specify whether default node labels should be set for the auto scaler. | `false` |
+| `spotinst.io/autoscaler-auto-config` | Specify whether headroom resources should be automatically configured and optimized. | `true` |
+| `spotinst.io/autoscaler-auto-headroom-percentage` | Specify the auto headroom percentage (a number in the range [0, 200]) which controls the percentage of headroom. | none |
 | `spotinst.io/autoscaler-headroom-cpu-per-unit` | Specify the number of CPUs to allocate for headroom. CPUs are denoted in millicores, where 1000 millicores = 1 vCPU. | none |
 | `spotinst.io/autoscaler-headroom-gpu-per-unit` | Specify the number of GPUs to allocate for headroom. | none |
 | `spotinst.io/autoscaler-headroom-mem-per-unit` | Specify the amount of memory (MB) to allocate for headroom. | none |
