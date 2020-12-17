@@ -81,14 +81,16 @@ type RootVolumeOpts struct {
 }
 
 type AutoScalerOpts struct {
-	Enabled        *bool
-	ClusterID      *string
-	Cooldown       *int
-	Labels         map[string]string
-	Taints         []*corev1.Taint
-	Headroom       *AutoScalerHeadroomOpts
-	Down           *AutoScalerDownOpts
-	ResourceLimits *AutoScalerResourceLimitsOpts
+	Enabled                *bool
+	AutoConfig             *bool
+	AutoHeadroomPercentage *int
+	ClusterID              *string
+	Cooldown               *int
+	Labels                 map[string]string
+	Taints                 []*corev1.Taint
+	Headroom               *AutoScalerHeadroomOpts
+	Down                   *AutoScalerDownOpts
+	ResourceLimits         *AutoScalerResourceLimitsOpts
 }
 
 type AutoScalerHeadroomOpts struct {
@@ -1399,13 +1401,14 @@ type terraformElastigroupIntegration struct {
 }
 
 type terraformAutoScaler struct {
-	Enabled        *bool                              `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
-	AutoConfig     *bool                              `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
-	Cooldown       *int                               `json:"autoscale_cooldown,omitempty" cty:"autoscale_cooldown"`
-	Headroom       *terraformAutoScalerHeadroom       `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
-	Down           *terraformAutoScalerDown           `json:"autoscale_down,omitempty" cty:"autoscale_down"`
-	ResourceLimits *terraformAutoScalerResourceLimits `json:"resource_limits,omitempty" cty:"resource_limits"`
-	Labels         []*terraformKV                     `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
+	Enabled                *bool                              `json:"autoscale_is_enabled,omitempty" cty:"autoscale_is_enabled"`
+	AutoConfig             *bool                              `json:"autoscale_is_auto_config,omitempty" cty:"autoscale_is_auto_config"`
+	AutoHeadroomPercentage *int                               `json:"auto_headroom_percentage,omitempty" cty:"auto_headroom_percentage"`
+	Cooldown               *int                               `json:"autoscale_cooldown,omitempty" cty:"autoscale_cooldown"`
+	Headroom               *terraformAutoScalerHeadroom       `json:"autoscale_headroom,omitempty" cty:"autoscale_headroom"`
+	Down                   *terraformAutoScalerDown           `json:"autoscale_down,omitempty" cty:"autoscale_down"`
+	ResourceLimits         *terraformAutoScalerResourceLimits `json:"resource_limits,omitempty" cty:"resource_limits"`
+	Labels                 []*terraformKV                     `json:"autoscale_labels,omitempty" cty:"autoscale_labels"`
 }
 
 type terraformAutoScalerHeadroom struct {
