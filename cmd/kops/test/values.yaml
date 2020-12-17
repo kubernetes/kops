@@ -1,0 +1,4 @@
+Foo: "bar"
+Bar:
+  Foo:
+    Bar: "foo"
