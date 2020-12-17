@@ -41560,6 +41560,13 @@ spec:
       priorityClassName: system-cluster-critical
       affinity:
         nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: NotIn
+                values:
+                - windows
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
             preference:
