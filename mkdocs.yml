@@ -34,7 +34,6 @@ nav:
   - Welcome:
     - Welcome: "index.md"
     - Releases & Versioning: "welcome/releases.md"
-    - Contributing: "welcome/contributing.md"
     - Office Hours: "welcome/office_hours.md"
   - Getting Started:
     - Installing: "getting_started/install.md"
@@ -131,11 +130,16 @@ nav:
     - Rotate Secrets: "rotate-secrets.md"
     - Terraform: "terraform.md"
     - Authentication: "authentication.md"
+  - Contributing:
+    - Getting Involved and Contributing: "contributing/contributing.md"
+    - New Kubernetes Version: "contributing/new_kubernetes_version.md"
+    - Our Release Process: "contributing/release.md"
+    - Releasing With Homebrew: "contributing/homebrew.md"
+    - Updating The Default Base AMI: "contributing/update_ami_versions.md"
   - Development:
     - Building: "development/building.md"
     - Adding a feature: "development/adding_a_feature.md"
     - Testing: "development/testing.md"
-    - New Kubernetes Version: "development/new_kubernetes_version.md"
     - Developing using Docker: "development/Docker.md"
     - Documentation Guidelines: "development/documentation.md"
     - Hack Directory: "development/hack.md"
@@ -143,8 +147,6 @@ nav:
     - Low level description on how kOps works: "development/how_it_works.md"
     - Notes on Gossip design: "development/gossip.md"
     - Notes on master instance sizing: "development/instancesizes.md"
-    - Our release process: "development/release.md"
-    - Releasing with Homebrew: "development/homebrew.md"
     - Bazel: "development/bazel.md"
     - Vendoring: "development/vendoring.md"
     - Ports: "development/ports.md"
