@@ -180,7 +180,7 @@ hooks: # Install Git hooks
 
 .PHONY: test
 test: ${BINDATA_TARGETS}  # Run tests locally
-	go test -v ./...
+	go test -race -v ./...
 
 .PHONY: test-windows
 test-windows: ${BINDATA_TARGETS}  # Run tests locally
@@ -563,7 +563,7 @@ verify-crds:
 
 .PHONY: bazel-test
 bazel-test:
-	bazel ${BAZEL_OPTIONS} test ${BAZEL_CONFIG} --test_output=errors -- //... -//vendor/...
+	bazel ${BAZEL_OPTIONS} test ${BAZEL_CONFIG} --features race --test_output=errors -- //... -//vendor/...
 
 .PHONY: bazel-build
 bazel-build:
