@@ -178,6 +178,7 @@ func (b *InstanceGroupModelBuilder) buildElastigroup(c *fi.ModelBuilderContext, 
 	group := &spotinsttasks.Elastigroup{
 		Lifecycle:            b.Lifecycle,
 		Name:                 fi.String(b.AutoscalingGroupName(ig)),
+		Region:               fi.String(b.Region),
 		ImageID:              fi.String(ig.Spec.Image),
 		OnDemandInstanceType: fi.String(strings.Split(ig.Spec.MachineType, ",")[0]),
 		SpotInstanceTypes:    strings.Split(ig.Spec.MachineType, ","),
