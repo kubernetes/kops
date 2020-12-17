@@ -7635,6 +7635,9 @@ spec:
             # Set Felix endpoint to host default action to ACCEPT.
             - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
               value: "ACCEPT"
+            # Allow Felix to run on systems with loose reverse path forwarding (RPF)
+            - name: FELIX_IGNORELOOSERPF
+              value: "true"
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
               value: "false"
