@@ -37,11 +37,13 @@ import (
 )
 
 const (
-	DefaultEtcdVolumeSize    = 20
-	DefaultAWSEtcdVolumeType = "gp2"
-	DefaultAWSEtcdVolumeIops = 100
-	DefaultGCEEtcdVolumeType = "pd-ssd"
-	DefaultALIEtcdVolumeType = "cloud_ssd"
+	DefaultEtcdVolumeSize             = 20
+	DefaultAWSEtcdVolumeType          = "gp2"
+	DefaultAWSEtcdVolumeIops          = 100
+	DefaultAWSEtcdVolumeGp3Iops       = 3000
+	DefaultAWSEtcdVolumeGp3Throughput = 125
+	DefaultGCEEtcdVolumeType          = "pd-ssd"
+	DefaultALIEtcdVolumeType          = "cloud_ssd"
 )
 
 // MasterVolumeBuilder builds master EBS volumes
@@ -118,10 +120,22 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.StringValue(m.VolumeType)
 	volumeIops := fi.Int32Value(m.VolumeIops)
+	volumeThroughput := fi.Int32Value(m.VolumeThroughput)
 	switch volumeType {
 	case "io1":
-		if volumeIops <= 0 {
+		if volumeIops <= 100 {
 			volumeIops = DefaultAWSEtcdVolumeIops
+		}
+	case "io2":
+		if volumeIops < 100 {
+			volumeIops = DefaultAWSEtcdVolumeIops
+		}
+	case "gp3":
+		if volumeIops < 3000 {
+			volumeIops = DefaultAWSEtcdVolumeGp3Iops
+		}
+		if volumeThroughput < 125 {
+			volumeThroughput = DefaultAWSEtcdVolumeGp3Throughput
 		}
 	default:
 		volumeType = DefaultAWSEtcdVolumeType
@@ -157,12 +171,23 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
 	}
-	if volumeType == "io1" {
-		t.VolumeIops = i64(int64(volumeIops))
-
+	if strings.Contains(volumeType, "io") || volumeType == "gp3" {
 		// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
-		if float64(*t.VolumeIops)/float64(*t.SizeGB) > 50.0 {
-			return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
+		t.VolumeIops = i64(int64(volumeIops))
+		if volumeType == "io1" {
+			if float64(*t.VolumeIops)/float64(*t.SizeGB) > 50.0 {
+				return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 50. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
+			}
+		} else {
+			if float64(*t.VolumeIops)/float64(*t.SizeGB) > 500.0 {
+				return fmt.Errorf("volumeIops to volumeSize ratio must be lower than 500. For %s ratio is %f", *t.Name, float64(*t.VolumeIops)/float64(*t.SizeGB))
+			}
+		}
+		if volumeType == "gp3" {
+			t.VolumeThroughput = i64(int64(volumeThroughput))
+			if float64(*t.VolumeThroughput)/float64(*t.VolumeIops) > 0.25 {
+				return fmt.Errorf("volumeThroughput to volumeIops ratio must be lower than 0.25. For %s ratio is %f", *t.Name, float64(*t.VolumeThroughput)/float64(*t.VolumeIops))
+			}
 		}
 	}
 
