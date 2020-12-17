@@ -162,7 +162,7 @@ func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	klog.Infof("DescribeVpcs: %v", request)
+	klog.Infof("DescribeVpcAttribute: %v", request)
 
 	vpc := m.Vpcs[*request.VpcId]
 	if vpc == nil {
@@ -233,6 +233,11 @@ func (m *MockEC2) DeleteVpcRequest(*ec2.DeleteVpcInput) (*request.Request, *ec2.
 }
 
 func (m *MockEC2) AssociateVpcCidrBlock(request *ec2.AssociateVpcCidrBlockInput) (*ec2.AssociateVpcCidrBlockOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("AssociateVpcCidrBlock: %v", request)
+
 	id := aws.StringValue(request.VpcId)
 	vpc, ok := m.Vpcs[id]
 	if !ok {
@@ -254,6 +259,11 @@ func (m *MockEC2) AssociateVpcCidrBlock(request *ec2.AssociateVpcCidrBlockInput)
 }
 
 func (m *MockEC2) DisassociateVpcCidrBlock(request *ec2.DisassociateVpcCidrBlockInput) (*ec2.DisassociateVpcCidrBlockOutput, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	klog.Infof("DisassociateVpcCidrBlock: %v", request)
+
 	id := aws.StringValue(request.AssociationId)
 	var association *ec2.VpcCidrBlockAssociation
 	var vpcID *string
