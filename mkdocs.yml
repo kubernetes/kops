@@ -17,7 +17,7 @@ theme:
   name: material
   custom_dir: docs/overrides
   features:
-    - tabs
+    - navigation.tabs
   icon:
     logo: 'material/cloud-outline'
   favicon: 'img/logo-notext.svg'
