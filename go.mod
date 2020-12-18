@@ -49,8 +49,11 @@ replace k8s.io/code-generator => k8s.io/code-generator v0.20.0
 
 replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud v0.11.0
 
+// Until etcd figures out how to use later GRPC versions https://github.com/etcd-io/etcd/issues/12124
+replace google.golang.org/grpc => google.golang.org/grpc v1.27.1
+
 require (
-	cloud.google.com/go v0.54.0
+	cloud.google.com/go v0.72.0
 	github.com/Azure/azure-pipeline-go v0.2.3
 	github.com/Azure/azure-storage-blob-go v0.10.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
@@ -69,7 +72,7 @@ require (
 	github.com/go-ini/ini v1.51.0
 	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.4
 	github.com/google/uuid v1.1.2
 	github.com/gophercloud/gophercloud v0.11.1-0.20200518183226-7aec46f32c19
 	github.com/gorilla/mux v1.7.3
@@ -94,10 +97,9 @@ require (
 	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e
-	golang.org/x/tools v0.0.0-20200626171337-aa94e735be7f // indirect
-	google.golang.org/api v0.22.0
+	google.golang.org/api v0.36.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/inf.v0 v0.9.1
 	gopkg.in/yaml.v2 v2.3.0

@@ -75,6 +75,7 @@ const apiId = "tpu:v1"
 const apiName = "tpu"
 const apiVersion = "v1"
 const basePath = "https://tpu.googleapis.com/"
+const mtlsBasePath = "https://tpu.mtls.googleapis.com/"
 
 // OAuth2 scopes used by this API.
 const (
@@ -90,6 +91,7 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	// NOTE: prepend, so we don't override user-specified scopes.
 	opts = append([]option.ClientOption{scopesOption}, opts...)
 	opts = append(opts, internaloption.WithDefaultEndpoint(basePath))
+	opts = append(opts, internaloption.WithDefaultMTLSEndpoint(mtlsBasePath))
 	client, endpoint, err := htransport.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
@@ -239,17 +241,11 @@ func (s *AcceleratorType) MarshalJSON() ([]byte, error) {
 }
 
 // Empty: A generic empty message that you can re-use to avoid defining
-// duplicated
-// empty messages in your APIs. A typical example is to use it as the
-// request
-// or the response type of an API method. For instance:
-//
-//     service Foo {
-//       rpc Bar(google.protobuf.Empty) returns
-// (google.protobuf.Empty);
-//     }
-//
-// The JSON representation for `Empty` is empty JSON object `{}`.
+// duplicated empty messages in your APIs. A typical example is to use
+// it as the request or the response type of an API method. For
+// instance: service Foo { rpc Bar(google.protobuf.Empty) returns
+// (google.protobuf.Empty); } The JSON representation for `Empty` is
+// empty JSON object `{}`.
 type Empty struct {
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -448,13 +444,11 @@ func (s *ListTensorFlowVersionsResponse) MarshalJSON() ([]byte, error) {
 // Location: A resource that represents Google Cloud Platform location.
 type Location struct {
 	// DisplayName: The friendly name for this location, typically a nearby
-	// city name.
-	// For example, "Tokyo".
+	// city name. For example, "Tokyo".
 	DisplayName string `json:"displayName,omitempty"`
 
 	// Labels: Cross-service attributes for the location. For example
-	//
-	//     {"cloud.googleapis.com/region": "us-east1"}
+	// {"cloud.googleapis.com/region": "us-east1"}
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// LocationId: The canonical id for this location. For example:
@@ -462,13 +456,12 @@ type Location struct {
 	LocationId string `json:"locationId,omitempty"`
 
 	// Metadata: Service-specific metadata. For example the available
-	// capacity at the given
-	// location.
+	// capacity at the given location.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 
 	// Name: Resource name for the location, which may vary between
-	// implementations.
-	// For example: "projects/example-project/locations/us-east1"
+	// implementations. For example:
+	// "projects/example-project/locations/us-east1"
 	Name string `json:"name,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -532,26 +525,18 @@ func (s *NetworkEndpoint) MarshalJSON() ([]byte, error) {
 
 // Node: A TPU instance.
 type Node struct {
-	// AcceleratorType: The type of hardware accelerators associated with
-	// this node.
-	// Required.
+	// AcceleratorType: Required. The type of hardware accelerators
+	// associated with this node.
 	AcceleratorType string `json:"acceleratorType,omitempty"`
 
 	// CidrBlock: The CIDR block that the TPU node will use when selecting
-	// an IP address.
-	// This CIDR block must be a /29 block; the Compute Engine networks
-	// API
-	// forbids a smaller block, and using a larger block would be wasteful
-	// (a
-	// node can only consume one IP address). Errors will occur if the CIDR
-	// block
-	// has already been used for a currently existing TPU node, the CIDR
-	// block
-	// conflicts with any subnetworks in the user's provided network, or
-	// the
-	// provided network is peered with another network that is using that
-	// CIDR
-	// block.
+	// an IP address. This CIDR block must be a /29 block; the Compute
+	// Engine networks API forbids a smaller block, and using a larger block
+	// would be wasteful (a node can only consume one IP address). Errors
+	// will occur if the CIDR block has already been used for a currently
+	// existing TPU node, the CIDR block conflicts with any subnetworks in
+	// the user's provided network, or the provided network is peered with
+	// another network that is using that CIDR block.
 	CidrBlock string `json:"cidrBlock,omitempty"`
 
 	// CreateTime: Output only. The time when the node was created.
@@ -571,56 +556,47 @@ type Node struct {
 	//   "TIMEOUT" - The resource is unresponsive.
 	//   "UNHEALTHY_TENSORFLOW" - The in-guest ML stack is unhealthy.
 	//   "UNHEALTHY_MAINTENANCE" - The node is under maintenance/priority
-	// boost caused rescheduling and
-	// will resume running once rescheduled.
+	// boost caused rescheduling and will resume running once rescheduled.
 	Health string `json:"health,omitempty"`
 
 	// HealthDescription: Output only. If this field is populated, it
-	// contains a description of why the TPU Node
-	// is unhealthy.
+	// contains a description of why the TPU Node is unhealthy.
 	HealthDescription string `json:"healthDescription,omitempty"`
 
-	// IpAddress: Output only. DEPRECATED! Use network_endpoints
-	// instead.
-	// The network address for the TPU Node as visible to Compute
-	// Engine
+	// IpAddress: Output only. DEPRECATED! Use network_endpoints instead.
+	// The network address for the TPU Node as visible to Compute Engine
 	// instances.
 	IpAddress string `json:"ipAddress,omitempty"`
 
 	// Labels: Resource labels to represent user-provided metadata.
 	Labels map[string]string `json:"labels,omitempty"`
 
-	// Name: Output only. The immutable name of the TPU
+	// Name: Output only. Immutable. The name of the TPU
 	Name string `json:"name,omitempty"`
 
 	// Network: The name of a network they wish to peer the TPU node to. It
-	// must be a
-	// preexisting Compute Engine network inside of the project on which
-	// this API
-	// has been activated. If none is provided, "default" will be used.
+	// must be a preexisting Compute Engine network inside of the project on
+	// which this API has been activated. If none is provided, "default"
+	// will be used.
 	Network string `json:"network,omitempty"`
 
 	// NetworkEndpoints: Output only. The network endpoints where TPU
-	// workers can be accessed and
-	// sent work. It is recommended that Tensorflow clients of the node
-	// reach out
-	// to the 0th entry in this map first.
+	// workers can be accessed and sent work. It is recommended that
+	// Tensorflow clients of the node reach out to the 0th entry in this map
+	// first.
 	NetworkEndpoints []*NetworkEndpoint `json:"networkEndpoints,omitempty"`
 
-	// Port: Output only. DEPRECATED! Use network_endpoints instead.
-	// The network port for the TPU Node as visible to Compute Engine
-	// instances.
+	// Port: Output only. DEPRECATED! Use network_endpoints instead. The
+	// network port for the TPU Node as visible to Compute Engine instances.
 	Port string `json:"port,omitempty"`
 
+	// SchedulingConfig: The scheduling options for this node.
 	SchedulingConfig *SchedulingConfig `json:"schedulingConfig,omitempty"`
 
 	// ServiceAccount: Output only. The service account used to run the
-	// tensor flow services within the node.
-	// To share resources, including Google Cloud Storage data, with
-	// the
-	// Tensorflow job running in the Node, this account must have
-	// permissions to
-	// that data.
+	// tensor flow services within the node. To share resources, including
+	// Google Cloud Storage data, with the Tensorflow job running in the
+	// Node, this account must have permissions to that data.
 	ServiceAccount string `json:"serviceAccount,omitempty"`
 
 	// State: Output only. The current state for the TPU Node.
@@ -633,25 +609,34 @@ type Node struct {
 	//   "REIMAGING" - TPU node is undergoing reimaging.
 	//   "DELETING" - TPU node is being deleted.
 	//   "REPAIRING" - TPU node is being repaired and may be unusable.
-	// Details can be
-	// found in the `help_description` field.
+	// Details can be found in the `help_description` field.
 	//   "STOPPED" - TPU node is stopped.
 	//   "STOPPING" - TPU node is currently stopping.
 	//   "STARTING" - TPU node is currently starting.
 	//   "PREEMPTED" - TPU node has been preempted. Only applies to
 	// Preemptible TPU Nodes.
 	//   "TERMINATED" - TPU node has been terminated due to maintenance or
-	// has reached the end of
-	// its life cycle (for preemptible nodes).
+	// has reached the end of its life cycle (for preemptible nodes).
 	//   "HIDING" - TPU node is currently hiding.
 	//   "HIDDEN" - TPU node has been hidden.
 	//   "UNHIDING" - TPU node is currently unhiding.
 	State string `json:"state,omitempty"`
 
-	// TensorflowVersion: The version of Tensorflow running in the
+	// Symptoms: Output only. The Symptoms that have occurred to the TPU
 	// Node.
-	// Required.
+	Symptoms []*Symptom `json:"symptoms,omitempty"`
+
+	// TensorflowVersion: Required. The version of Tensorflow running in the
+	// Node.
 	TensorflowVersion string `json:"tensorflowVersion,omitempty"`
+
+	// UseServiceNetworking: Whether the VPC peering for the node is set up
+	// through Service Networking API. The VPC Peering should be set up
+	// before provisioning the node. If this field is set, cidr_block field
+	// should not be specified. If the network, that you want to peer the
+	// TPU Node to, is Shared VPC networks, the node must be created with
+	// this this field enabled.
+	UseServiceNetworking bool `json:"useServiceNetworking,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -682,52 +667,38 @@ func (s *Node) MarshalJSON() ([]byte, error) {
 }
 
 // Operation: This resource represents a long-running operation that is
-// the result of a
-// network API call.
+// the result of a network API call.
 type Operation struct {
 	// Done: If the value is `false`, it means the operation is still in
-	// progress.
-	// If `true`, the operation is completed, and either `error` or
-	// `response` is
-	// available.
+	// progress. If `true`, the operation is completed, and either `error`
+	// or `response` is available.
 	Done bool `json:"done,omitempty"`
 
 	// Error: The error result of the operation in case of failure or
 	// cancellation.
 	Error *Status `json:"error,omitempty"`
 
-	// Metadata: Service-specific metadata associated with the operation.
-	// It typically
-	// contains progress information and common metadata such as create
-	// time.
-	// Some services might not provide such metadata.  Any method that
-	// returns a
-	// long-running operation should document the metadata type, if any.
+	// Metadata: Service-specific metadata associated with the operation. It
+	// typically contains progress information and common metadata such as
+	// create time. Some services might not provide such metadata. Any
+	// method that returns a long-running operation should document the
+	// metadata type, if any.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 
 	// Name: The server-assigned name, which is only unique within the same
-	// service that
-	// originally returns it. If you use the default HTTP mapping,
-	// the
-	// `name` should be a resource name ending with
+	// service that originally returns it. If you use the default HTTP
+	// mapping, the `name` should be a resource name ending with
 	// `operations/{unique_id}`.
 	Name string `json:"name,omitempty"`
 
-	// Response: The normal response of the operation in case of success.
-	// If the original
-	// method returns no data on success, such as `Delete`, the response
-	// is
-	// `google.protobuf.Empty`.  If the original method is
-	// standard
-	// `Get`/`Create`/`Update`, the response should be the resource.  For
-	// other
-	// methods, the response should have the type `XxxResponse`, where
-	// `Xxx`
-	// is the original method name.  For example, if the original method
-	// name
-	// is `TakeSnapshot()`, the inferred response type
-	// is
-	// `TakeSnapshotResponse`.
+	// Response: The normal response of the operation in case of success. If
+	// the original method returns no data on success, such as `Delete`, the
+	// response is `google.protobuf.Empty`. If the original method is
+	// standard `Get`/`Create`/`Update`, the response should be the
+	// resource. For other methods, the response should have the type
+	// `XxxResponse`, where `Xxx` is the original method name. For example,
+	// if the original method name is `TakeSnapshot()`, the inferred
+	// response type is `TakeSnapshotResponse`.
 	Response googleapi.RawMessage `json:"response,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -764,12 +735,9 @@ type OperationMetadata struct {
 	ApiVersion string `json:"apiVersion,omitempty"`
 
 	// CancelRequested: [Output only] Identifies whether the user has
-	// requested cancellation
-	// of the operation. Operations that have successfully been
-	// cancelled
-	// have Operation.error value with a google.rpc.Status.code of
-	// 1,
-	// corresponding to `Code.CANCELLED`.
+	// requested cancellation of the operation. Operations that have
+	// successfully been cancelled have Operation.error value with a
+	// google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.
 	CancelRequested bool `json:"cancelRequested,omitempty"`
 
 	// CreateTime: [Output only] The time the operation was created.
@@ -841,7 +809,9 @@ func (s *ReimageNodeRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// SchedulingConfig: Sets the scheduling options for this node.
 type SchedulingConfig struct {
+	// Preemptible: Defines whether the node is preemptible.
 	Preemptible bool `json:"preemptible,omitempty"`
 
 	// Reserved: Whether the node is created under a reservation.
@@ -875,32 +845,24 @@ type StartNodeRequest struct {
 }
 
 // Status: The `Status` type defines a logical error model that is
-// suitable for
-// different programming environments, including REST APIs and RPC APIs.
-// It is
-// used by [gRPC](https://github.com/grpc). Each `Status` message
-// contains
-// three pieces of data: error code, error message, and error
-// details.
-//
-// You can find out more about this error model and how to work with it
-// in the
-// [API Design Guide](https://cloud.google.com/apis/design/errors).
+// suitable for different programming environments, including REST APIs
+// and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each
+// `Status` message contains three pieces of data: error code, error
+// message, and error details. You can find out more about this error
+// model and how to work with it in the [API Design
+// Guide](https://cloud.google.com/apis/design/errors).
 type Status struct {
 	// Code: The status code, which should be an enum value of
 	// google.rpc.Code.
 	Code int64 `json:"code,omitempty"`
 
-	// Details: A list of messages that carry the error details.  There is a
-	// common set of
-	// message types for APIs to use.
+	// Details: A list of messages that carry the error details. There is a
+	// common set of message types for APIs to use.
 	Details []googleapi.RawMessage `json:"details,omitempty"`
 
 	// Message: A developer-facing error message, which should be in
-	// English. Any
-	// user-facing error message should be localized and sent in
-	// the
-	// google.rpc.Status.details field, or localized by the client.
+	// English. Any user-facing error message should be localized and sent
+	// in the google.rpc.Status.details field, or localized by the client.
 	Message string `json:"message,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Code") to
@@ -928,6 +890,53 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 
 // StopNodeRequest: Request for StopNode.
 type StopNodeRequest struct {
+}
+
+// Symptom: A Symptom instance.
+type Symptom struct {
+	// CreateTime: Timestamp when the Symptom is created.
+	CreateTime string `json:"createTime,omitempty"`
+
+	// Details: Detailed information of the current Symptom.
+	Details string `json:"details,omitempty"`
+
+	// SymptomType: Type of the Symptom.
+	//
+	// Possible values:
+	//   "SYMPTOM_TYPE_UNSPECIFIED" - Unspecified symptom.
+	//   "LOW_MEMORY" - TPU VM memory is low.
+	//   "OUT_OF_MEMORY" - TPU runtime is out of memory.
+	//   "EXECUTE_TIMED_OUT" - TPU runtime execution has timed out.
+	//   "MESH_BUILD_FAIL" - TPU runtime fails to construct a mesh that
+	// recognizes each TPU device's neighbors.
+	//   "HBM_OUT_OF_MEMORY" - TPU HBM is out of memory.
+	SymptomType string `json:"symptomType,omitempty"`
+
+	// WorkerId: A string used to uniquely distinguish a worker within a TPU
+	// node.
+	WorkerId string `json:"workerId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CreateTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CreateTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Symptom) MarshalJSON() ([]byte, error) {
+	type NoMethod Symptom
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TensorFlowVersion: A tensorflow version that a Node can be configured
@@ -1021,7 +1030,7 @@ func (c *ProjectsLocationsGetCall) Header() http.Header {
 
 func (c *ProjectsLocationsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1187,7 +1196,7 @@ func (c *ProjectsLocationsListCall) Header() http.Header {
 
 func (c *ProjectsLocationsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1368,7 +1377,7 @@ func (c *ProjectsLocationsAcceleratorTypesGetCall) Header() http.Header {
 
 func (c *ProjectsLocationsAcceleratorTypesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1439,7 +1448,7 @@ func (c *ProjectsLocationsAcceleratorTypesGetCall) Do(opts ...googleapi.CallOpti
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name.",
+	//       "description": "Required. The resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/acceleratorTypes/[^/]+$",
 	//       "required": true,
@@ -1538,7 +1547,7 @@ func (c *ProjectsLocationsAcceleratorTypesListCall) Header() http.Header {
 
 func (c *ProjectsLocationsAcceleratorTypesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1630,7 +1639,7 @@ func (c *ProjectsLocationsAcceleratorTypesListCall) Do(opts ...googleapi.CallOpt
 	//       "type": "string"
 	//     },
 	//     "parent": {
-	//       "description": "The parent resource name.",
+	//       "description": "Required. The parent resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
 	//       "required": true,
@@ -1722,7 +1731,7 @@ func (c *ProjectsLocationsNodesCreateCall) Header() http.Header {
 
 func (c *ProjectsLocationsNodesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1800,7 +1809,7 @@ func (c *ProjectsLocationsNodesCreateCall) Do(opts ...googleapi.CallOption) (*Op
 	//       "type": "string"
 	//     },
 	//     "parent": {
-	//       "description": "The parent resource name.",
+	//       "description": "Required. The parent resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
 	//       "required": true,
@@ -1865,7 +1874,7 @@ func (c *ProjectsLocationsNodesDeleteCall) Header() http.Header {
 
 func (c *ProjectsLocationsNodesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -1933,7 +1942,7 @@ func (c *ProjectsLocationsNodesDeleteCall) Do(opts ...googleapi.CallOption) (*Op
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name.",
+	//       "description": "Required. The resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/nodes/[^/]+$",
 	//       "required": true,
@@ -2006,7 +2015,7 @@ func (c *ProjectsLocationsNodesGetCall) Header() http.Header {
 
 func (c *ProjectsLocationsNodesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2077,7 +2086,7 @@ func (c *ProjectsLocationsNodesGetCall) Do(opts ...googleapi.CallOption) (*Node,
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name.",
+	//       "description": "Required. The resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/nodes/[^/]+$",
 	//       "required": true,
@@ -2164,7 +2173,7 @@ func (c *ProjectsLocationsNodesListCall) Header() http.Header {
 
 func (c *ProjectsLocationsNodesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2246,7 +2255,7 @@ func (c *ProjectsLocationsNodesListCall) Do(opts ...googleapi.CallOption) (*List
 	//       "type": "string"
 	//     },
 	//     "parent": {
-	//       "description": "The parent resource name.",
+	//       "description": "Required. The parent resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
 	//       "required": true,
@@ -2331,7 +2340,7 @@ func (c *ProjectsLocationsNodesReimageCall) Header() http.Header {
 
 func (c *ProjectsLocationsNodesReimageCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2471,7 +2480,7 @@ func (c *ProjectsLocationsNodesStartCall) Header() http.Header {
 
 func (c *ProjectsLocationsNodesStartCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2611,7 +2620,7 @@ func (c *ProjectsLocationsNodesStopCall) Header() http.Header {
 
 func (c *ProjectsLocationsNodesStopCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2716,23 +2725,15 @@ type ProjectsLocationsOperationsCancelCall struct {
 }
 
 // Cancel: Starts asynchronous cancellation on a long-running operation.
-//  The server
-// makes a best effort to cancel the operation, but success is
-// not
-// guaranteed.  If the server doesn't support this method, it
-// returns
-// `google.rpc.Code.UNIMPLEMENTED`.  Clients can
-// use
-// Operations.GetOperation or
-// other methods to check whether the cancellation succeeded or whether
-// the
-// operation completed despite cancellation. On successful
-// cancellation,
-// the operation is not deleted; instead, it becomes an operation
-// with
-// an Operation.error value with a google.rpc.Status.code of
-// 1,
-// corresponding to `Code.CANCELLED`.
+// The server makes a best effort to cancel the operation, but success
+// is not guaranteed. If the server doesn't support this method, it
+// returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use
+// Operations.GetOperation or other methods to check whether the
+// cancellation succeeded or whether the operation completed despite
+// cancellation. On successful cancellation, the operation is not
+// deleted; instead, it becomes an operation with an Operation.error
+// value with a google.rpc.Status.code of 1, corresponding to
+// `Code.CANCELLED`.
 func (r *ProjectsLocationsOperationsService) Cancel(name string) *ProjectsLocationsOperationsCancelCall {
 	c := &ProjectsLocationsOperationsCancelCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -2766,7 +2767,7 @@ func (c *ProjectsLocationsOperationsCancelCall) Header() http.Header {
 
 func (c *ProjectsLocationsOperationsCancelCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2825,7 +2826,7 @@ func (c *ProjectsLocationsOperationsCancelCall) Do(opts ...googleapi.CallOption)
 	}
 	return ret, nil
 	// {
-	//   "description": "Starts asynchronous cancellation on a long-running operation.  The server\nmakes a best effort to cancel the operation, but success is not\nguaranteed.  If the server doesn't support this method, it returns\n`google.rpc.Code.UNIMPLEMENTED`.  Clients can use\nOperations.GetOperation or\nother methods to check whether the cancellation succeeded or whether the\noperation completed despite cancellation. On successful cancellation,\nthe operation is not deleted; instead, it becomes an operation with\nan Operation.error value with a google.rpc.Status.code of 1,\ncorresponding to `Code.CANCELLED`.",
+	//   "description": "Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a google.rpc.Status.code of 1, corresponding to `Code.CANCELLED`.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}:cancel",
 	//   "httpMethod": "POST",
 	//   "id": "tpu.projects.locations.operations.cancel",
@@ -2863,12 +2864,9 @@ type ProjectsLocationsOperationsDeleteCall struct {
 }
 
 // Delete: Deletes a long-running operation. This method indicates that
-// the client is
-// no longer interested in the operation result. It does not cancel
-// the
-// operation. If the server doesn't support this method, it
-// returns
-// `google.rpc.Code.UNIMPLEMENTED`.
+// the client is no longer interested in the operation result. It does
+// not cancel the operation. If the server doesn't support this method,
+// it returns `google.rpc.Code.UNIMPLEMENTED`.
 func (r *ProjectsLocationsOperationsService) Delete(name string) *ProjectsLocationsOperationsDeleteCall {
 	c := &ProjectsLocationsOperationsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -2902,7 +2900,7 @@ func (c *ProjectsLocationsOperationsDeleteCall) Header() http.Header {
 
 func (c *ProjectsLocationsOperationsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -2961,7 +2959,7 @@ func (c *ProjectsLocationsOperationsDeleteCall) Do(opts ...googleapi.CallOption)
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes a long-running operation. This method indicates that the client is\nno longer interested in the operation result. It does not cancel the\noperation. If the server doesn't support this method, it returns\n`google.rpc.Code.UNIMPLEMENTED`.",
+	//   "description": "Deletes a long-running operation. This method indicates that the client is no longer interested in the operation result. It does not cancel the operation. If the server doesn't support this method, it returns `google.rpc.Code.UNIMPLEMENTED`.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}",
 	//   "httpMethod": "DELETE",
 	//   "id": "tpu.projects.locations.operations.delete",
@@ -2999,11 +2997,9 @@ type ProjectsLocationsOperationsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the latest state of a long-running operation.  Clients can
-// use this
-// method to poll the operation result at intervals as recommended by
-// the API
-// service.
+// Get: Gets the latest state of a long-running operation. Clients can
+// use this method to poll the operation result at intervals as
+// recommended by the API service.
 func (r *ProjectsLocationsOperationsService) Get(name string) *ProjectsLocationsOperationsGetCall {
 	c := &ProjectsLocationsOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -3047,7 +3043,7 @@ func (c *ProjectsLocationsOperationsGetCall) Header() http.Header {
 
 func (c *ProjectsLocationsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3109,7 +3105,7 @@ func (c *ProjectsLocationsOperationsGetCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets the latest state of a long-running operation.  Clients can use this\nmethod to poll the operation result at intervals as recommended by the API\nservice.",
+	//   "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}",
 	//   "httpMethod": "GET",
 	//   "id": "tpu.projects.locations.operations.get",
@@ -3148,22 +3144,15 @@ type ProjectsLocationsOperationsListCall struct {
 }
 
 // List: Lists operations that match the specified filter in the
-// request. If the
-// server doesn't support this method, it returns
-// `UNIMPLEMENTED`.
-//
-// NOTE: the `name` binding allows API services to override the
-// binding
-// to use different resource name schemes, such as `users/*/operations`.
-// To
-// override the binding, API services can add a binding such
-// as
-// "/v1/{name=users/*}/operations" to their service configuration.
-// For backwards compatibility, the default name includes the
-// operations
-// collection id, however overriding users must ensure the name
-// binding
-// is the parent resource, without the operations collection id.
+// request. If the server doesn't support this method, it returns
+// `UNIMPLEMENTED`. NOTE: the `name` binding allows API services to
+// override the binding to use different resource name schemes, such as
+// `users/*/operations`. To override the binding, API services can add a
+// binding such as "/v1/{name=users/*}/operations" to their service
+// configuration. For backwards compatibility, the default name includes
+// the operations collection id, however overriding users must ensure
+// the name binding is the parent resource, without the operations
+// collection id.
 func (r *ProjectsLocationsOperationsService) List(name string) *ProjectsLocationsOperationsListCall {
 	c := &ProjectsLocationsOperationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -3228,7 +3217,7 @@ func (c *ProjectsLocationsOperationsListCall) Header() http.Header {
 
 func (c *ProjectsLocationsOperationsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3290,7 +3279,7 @@ func (c *ProjectsLocationsOperationsListCall) Do(opts ...googleapi.CallOption) (
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists operations that match the specified filter in the request. If the\nserver doesn't support this method, it returns `UNIMPLEMENTED`.\n\nNOTE: the `name` binding allows API services to override the binding\nto use different resource name schemes, such as `users/*/operations`. To\noverride the binding, API services can add a binding such as\n`\"/v1/{name=users/*}/operations\"` to their service configuration.\nFor backwards compatibility, the default name includes the operations\ncollection id, however overriding users must ensure the name binding\nis the parent resource, without the operations collection id.",
+	//   "description": "Lists operations that match the specified filter in the request. If the server doesn't support this method, it returns `UNIMPLEMENTED`. NOTE: the `name` binding allows API services to override the binding to use different resource name schemes, such as `users/*/operations`. To override the binding, API services can add a binding such as `\"/v1/{name=users/*}/operations\"` to their service configuration. For backwards compatibility, the default name includes the operations collection id, however overriding users must ensure the name binding is the parent resource, without the operations collection id.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/operations",
 	//   "httpMethod": "GET",
 	//   "id": "tpu.projects.locations.operations.list",
@@ -3409,7 +3398,7 @@ func (c *ProjectsLocationsTensorflowVersionsGetCall) Header() http.Header {
 
 func (c *ProjectsLocationsTensorflowVersionsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3480,7 +3469,7 @@ func (c *ProjectsLocationsTensorflowVersionsGetCall) Do(opts ...googleapi.CallOp
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name.",
+	//       "description": "Required. The resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/tensorflowVersions/[^/]+$",
 	//       "required": true,
@@ -3579,7 +3568,7 @@ func (c *ProjectsLocationsTensorflowVersionsListCall) Header() http.Header {
 
 func (c *ProjectsLocationsTensorflowVersionsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
-	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20200410")
+	reqHeaders.Set("x-goog-api-client", "gl-go/"+gensupport.GoVersion()+" gdcl/20201124")
 	for k, v := range c.header_ {
 		reqHeaders[k] = v
 	}
@@ -3671,7 +3660,7 @@ func (c *ProjectsLocationsTensorflowVersionsListCall) Do(opts ...googleapi.CallO
 	//       "type": "string"
 	//     },
 	//     "parent": {
-	//       "description": "The parent resource name.",
+	//       "description": "Required. The parent resource name.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+$",
 	//       "required": true,
