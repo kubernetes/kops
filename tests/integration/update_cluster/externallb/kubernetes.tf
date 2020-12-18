@@ -83,7 +83,7 @@ provider "aws" {
 resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-com" {
   enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_configuration = aws_launch_configuration.master-us-test-1a-masters-externallb-example-com.id
-  load_balancers       = ["my-other-elb"]
+  load_balancers       = ["my-external-elb-2", "my-external-elb-3"]
   max_size             = 1
   metrics_granularity  = "1Minute"
   min_size             = 1
@@ -113,14 +113,14 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-externallb-example-c
     propagate_at_launch = true
     value               = "owned"
   }
-  target_group_arns   = ["aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef"]
+  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1", "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2", "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 
 resource "aws_autoscaling_group" "nodes-externallb-example-com" {
   enabled_metrics      = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
   launch_configuration = aws_launch_configuration.nodes-externallb-example-com.id
-  load_balancers       = ["my-elb"]
+  load_balancers       = ["my-external-elb-1"]
   max_size             = 2
   metrics_granularity  = "1Minute"
   min_size             = 2
@@ -150,6 +150,7 @@ resource "aws_autoscaling_group" "nodes-externallb-example-com" {
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = ["arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1"]
   vpc_zone_identifier = [aws_subnet.us-test-1a-externallb-example-com.id]
 }
 
