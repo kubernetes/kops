@@ -851,6 +851,14 @@ type AWSEBSCSIDriver struct {
 	VolumeAttachLimit *int `json:"volumeAttachLimit,omitempty"`
 }
 
+// SnapshotControllerConfig is the config for the CSI Snapshot Controller
+type SnapshotControllerConfig struct {
+	//Enabled enables the CSI Snapshot Controller
+	Enabled *bool `json:"enabled,omitempty"`
+	//InstallDefaultClass will install the default VolumeSnapshotClass
+	InstallDefaultClass bool `json:"installDefaultClass,omitempty"`
+}
+
 // NodeTerminationHandlerConfig determines the node termination handler configuration.
 type NodeTerminationHandlerConfig struct {
 	// Enabled enables the node termination handler.
