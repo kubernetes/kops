@@ -26,17 +26,21 @@ func addDefaultingFuncs(scheme *runtime.Scheme) error {
 }
 
 func SetDefaults_ClusterSpec(obj *ClusterSpec) {
+	rebindIfEmpty := func(s *string, replacement string) bool {
+		if *s != "" {
+			return false
+		}
+		*s = replacement
+		return true
+	}
+
 	if obj.Topology == nil {
 		obj.Topology = &TopologySpec{}
 	}
 
-	if obj.Topology.Masters == "" {
-		obj.Topology.Masters = TopologyPublic
-	}
+	rebindIfEmpty(&obj.Topology.Masters, TopologyPublic)
 
-	if obj.Topology.Nodes == "" {
-		obj.Topology.Nodes = TopologyPublic
-	}
+	rebindIfEmpty(&obj.Topology.Nodes, TopologyPublic)
 
 	if obj.Topology.DNS == nil {
 		obj.Topology.DNS = &DNSSpec{}
@@ -90,10 +94,9 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 
 	if obj.Networking != nil {
 		if obj.Networking.Flannel != nil {
-			if obj.Networking.Flannel.Backend == "" {
-				// Populate with legacy default value; new clusters will be created with vxlan by create cluster
-				obj.Networking.Flannel.Backend = "udp"
-			}
+			// Populate with legacy default value; new clusters will be created with "vxlan" by
+			// "create cluster."
+			rebindIfEmpty(&obj.Networking.Flannel.Backend, "udp")
 		}
 	}
 }
