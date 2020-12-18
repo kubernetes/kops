@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Server struct {
@@ -44,6 +45,9 @@ type Server struct {
 	server    *http.Server
 	verifier  fi.Verifier
 	keystore  pki.Keystore
+
+	// configBase is the base of the configuration storage.
+	configBase vfs.Path
 }
 
 func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
@@ -61,6 +65,13 @@ func NewServer(opt *config.Options, verifier fi.Verifier) (*Server, error) {
 		server:    server,
 		verifier:  verifier,
 	}
+
+	configBase, err := vfs.Context.BuildVfsPath(opt.ConfigBase)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse ConfigBase %q: %v", opt.ConfigBase, err)
+	}
+	s.configBase = configBase
+
 	r := http.NewServeMux()
 	r.Handle("/bootstrap", http.HandlerFunc(s.bootstrap))
 	server.Handler = recovery(r)
@@ -119,6 +130,18 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	resp := &nodeup.BootstrapResponse{
 		Certs: map[string]string{},
+	}
+
+	// Support for nodes that have no access to the state store
+	if req.IncludeNodeConfig {
+		nodeConfig, err := s.getNodeConfig(r.Context(), req, id)
+		if err != nil {
+			klog.Infof("bootstrap failed to build node config: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte("failed to build node config"))
+			return
+		}
+		resp.NodeConfig = nodeConfig
 	}
 
 	// Skew the certificate lifetime by up to 30 days based on information about the requesting node.

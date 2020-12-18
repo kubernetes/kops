@@ -25,6 +25,9 @@ type Authenticator interface {
 type VerifyResult struct {
 	// Nodename is the name that this node is authorized to use.
 	NodeName string
+
+	// InstanceGroupName is the name of the kops InstanceGroup this node is a member of.
+	InstanceGroupName string
 }
 
 // Verifier verifies authentication credentials for requests.

@@ -19,6 +19,7 @@ package nodetasks
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -26,27 +27,23 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
-	"strconv"
+	"path"
 
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/pki"
-	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-type BootstrapClient struct {
-	// Authenticator generates authentication credentials for requests.
-	Authenticator fi.Authenticator
-	// CA is the CA certificate for kops-controller.
-	CA []byte
+type BootstrapClientTask struct {
 	// Certs are the requested certificates.
 	Certs map[string]*BootstrapCert
 
-	client *http.Client
-	keys   map[string]*pki.PrivateKey
+	// Client holds the client wrapper for the kops-bootstrap protocol
+	Client *KopsBootstrapClient
+
+	keys map[string]*pki.PrivateKey
 }
 
 type BootstrapCert struct {
@@ -54,11 +51,11 @@ type BootstrapCert struct {
 	Key  *fi.TaskDependentResource
 }
 
-var _ fi.Task = &BootstrapClient{}
-var _ fi.HasName = &BootstrapClient{}
-var _ fi.HasDependencies = &BootstrapClient{}
+var _ fi.Task = &BootstrapClientTask{}
+var _ fi.HasName = &BootstrapClientTask{}
+var _ fi.HasDependencies = &BootstrapClientTask{}
 
-func (b *BootstrapClient) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (b *BootstrapClientTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// BootstrapClient depends on the protokube service to ensure gossip DNS
 	var deps []fi.Task
 	for _, v := range tasks {
@@ -69,16 +66,18 @@ func (b *BootstrapClient) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
-func (b *BootstrapClient) GetName() *string {
+func (b *BootstrapClientTask) GetName() *string {
 	name := "BootstrapClient"
 	return &name
 }
 
-func (b *BootstrapClient) String() string {
-	return "BootstrapClient"
+func (b *BootstrapClientTask) String() string {
+	return "BootstrapClientTask"
 }
 
-func (b *BootstrapClient) Run(c *fi.Context) error {
+func (b *BootstrapClientTask) Run(c *fi.Context) error {
+	ctx := context.TODO()
+
 	req := nodeup.BootstrapRequest{
 		APIVersion: nodeup.BootstrapAPIVersion,
 		Certs:      map[string]string{},
@@ -109,7 +108,7 @@ func (b *BootstrapClient) Run(c *fi.Context) error {
 		req.Certs[name] = string(pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: pkData}))
 	}
 
-	resp, err := b.queryBootstrap(c, &req)
+	resp, err := b.Client.QueryBootstrap(ctx, &req)
 	if err != nil {
 		return err
 	}
@@ -129,12 +128,24 @@ func (b *BootstrapClient) Run(c *fi.Context) error {
 	return nil
 }
 
-func (b *BootstrapClient) queryBootstrap(c *fi.Context, req *nodeup.BootstrapRequest) (*nodeup.BootstrapResponse, error) {
-	if b.client == nil {
+type KopsBootstrapClient struct {
+	// Authenticator generates authentication credentials for requests.
+	Authenticator fi.Authenticator
+	// CA is the CA certificate for kops-controller.
+	CA []byte
+
+	// BaseURL is the base URL for the server
+	BaseURL url.URL
+
+	httpClient *http.Client
+}
+
+func (b *KopsBootstrapClient) QueryBootstrap(ctx context.Context, req *nodeup.BootstrapRequest) (*nodeup.BootstrapResponse, error) {
+	if b.httpClient == nil {
 		certPool := x509.NewCertPool()
 		certPool.AppendCertsFromPEM(b.CA)
 
-		b.client = &http.Client{
+		b.httpClient = &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					RootCAs:    certPool,
@@ -149,12 +160,9 @@ func (b *BootstrapClient) queryBootstrap(c *fi.Context, req *nodeup.BootstrapReq
 		return nil, err
 	}
 
-	bootstrapUrl := url.URL{
-		Scheme: "https",
-		Host:   net.JoinHostPort("kops-controller.internal."+c.Cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
-		Path:   "/bootstrap",
-	}
-	httpReq, err := http.NewRequest("POST", bootstrapUrl.String(), bytes.NewReader(reqBytes))
+	bootstrapURL := b.BaseURL
+	bootstrapURL.Path = path.Join(bootstrapURL.Path, "/bootstrap")
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", bootstrapURL.String(), bytes.NewReader(reqBytes))
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +174,7 @@ func (b *BootstrapClient) queryBootstrap(c *fi.Context, req *nodeup.BootstrapReq
 	}
 	httpReq.Header.Set("Authorization", token)
 
-	resp, err := b.client.Do(httpReq)
+	resp, err := b.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}

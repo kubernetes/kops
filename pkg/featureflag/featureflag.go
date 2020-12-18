@@ -99,6 +99,9 @@ var (
 	UseServiceAccountIAM = New("UseServiceAccountIAM", Bool(false))
 	// PublicJWKS enables public jwks access.  This is generally not as secure as republishing.
 	PublicJWKS = New("PublicJWKS", Bool(false))
+
+	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.
+	KopsControllerStateStore = New("KopsControllerStateStore", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
