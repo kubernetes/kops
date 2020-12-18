@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
@@ -116,7 +117,7 @@ type ResponseMetadata struct {
 	RequestId string `xml:"RequestId"`
 }
 
-func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, error) {
+func (a awsVerifier) VerifyToken(ctx context.Context, token string, body []byte) (*fi.VerifyResult, error) {
 	if !strings.HasPrefix(token, AWSAuthenticationTokenPrefix) {
 		return nil, fmt.Errorf("incorrect authorization type")
 	}

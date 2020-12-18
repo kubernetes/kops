@@ -2,13 +2,19 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["identify.go"],
+    srcs = [
+        "authenticator.go",
+        "identify.go",
+        "verifier.go",
+    ],
     importpath = "k8s.io/kops/pkg/nodeidentity/gce",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/nodeidentity:go_default_library",
+        "//upup/pkg/fi:go_default_library",
         "//vendor/cloud.google.com/go/compute/metadata:go_default_library",
         "//vendor/google.golang.org/api/compute/v1:go_default_library",
+        "//vendor/google.golang.org/api/idtoken:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/klog/v2:go_default_library",
     ],

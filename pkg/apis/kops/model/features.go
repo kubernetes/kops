@@ -22,7 +22,16 @@ import (
 
 // UseKopsControllerForNodeBootstrap is true if nodeup should use kops-controller for bootstrapping.
 func UseKopsControllerForNodeBootstrap(cluster *kops.Cluster) bool {
-	return kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderAWS && cluster.IsKubernetesGTE("1.19")
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
+		return cluster.IsKubernetesGTE("1.19")
+
+	case kops.CloudProviderGCE:
+		return cluster.IsKubernetesGTE("1.20")
+
+	default:
+		return false
+	}
 }
 
 // UseCiliumEtcd is true if we are using the Cilium etcd cluster.

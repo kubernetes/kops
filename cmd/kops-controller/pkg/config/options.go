@@ -16,7 +16,10 @@ limitations under the License.
 
 package config
 
-import "k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+import (
+	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+)
 
 type Options struct {
 	Cloud                 string         `json:"cloud,omitempty"`
@@ -49,5 +52,6 @@ type ServerOptions struct {
 }
 
 type ServerProviderOptions struct {
-	AWS *awsup.AWSVerifierOptions `json:"aws,omitempty"`
+	AWS *awsup.AWSVerifierOptions        `json:"aws,omitempty"`
+	GCE *nodeidentitygce.VerifierOptions `json:"gce,omitempty"`
 }

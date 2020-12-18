@@ -43,8 +43,8 @@ type nodeIdentifier struct {
 	project string
 }
 
-// New creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCE
-func New() (nodeidentity.LegacyIdentifier, error) {
+// NewLegacyIdentifier creates and returns a nodeidentity.LegacyIdentifier for Nodes running on GCE
+func NewLegacyIdentifier() (nodeidentity.LegacyIdentifier, error) {
 	ctx := context.Background()
 
 	computeService, err := compute.NewService(ctx)
@@ -93,8 +93,12 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	zone := tokens[1]
 	instanceName := tokens[2]
 
+	return i.verifyInstance(ctx, project, zone, instanceName)
+}
+
+func (i *nodeIdentifier) verifyInstance(ctx context.Context, project string, zone string, instanceName string) (*nodeidentity.LegacyInfo, error) {
 	if project != i.project {
-		return nil, fmt.Errorf("providerID %q did not match our project %q", providerID, i.project)
+		return nil, fmt.Errorf("project %q did not match our project %q", project, i.project)
 	}
 
 	instance, err := i.getInstance(zone, instanceName)

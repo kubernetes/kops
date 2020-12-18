@@ -16,8 +16,13 @@ limitations under the License.
 
 package fi
 
+import (
+	"context"
+)
+
 // Authenticator generates authentication credentials for requests.
 type Authenticator interface {
+	// CreateToken creates an authentication token (often passed as the Authorization header).
 	CreateToken(body []byte) (string, error)
 }
 
@@ -32,5 +37,5 @@ type VerifyResult struct {
 
 // Verifier verifies authentication credentials for requests.
 type Verifier interface {
-	VerifyToken(token string, body []byte) (*VerifyResult, error)
+	VerifyToken(ctx context.Context, token string, body []byte) (*VerifyResult, error)
 }

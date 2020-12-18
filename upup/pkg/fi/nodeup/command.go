@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/configserver"
+	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
@@ -94,7 +95,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	var nodeConfig *nodeup.NodeConfig
 
 	if c.config.ConfigServer != nil {
-		response, err := getNodeConfigFromServer(ctx, c.config.ConfigServer)
+		response, err := getNodeConfigFromServer(ctx, c.config.ClusterName, c.config.ConfigServer)
 		if err != nil {
 			return err
 		}
@@ -599,23 +600,30 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 	return nil
 }
 
-// getNodeConfigFromServer queries kops-controller for our node's configuration.
-func getNodeConfigFromServer(ctx context.Context, config *nodeup.ConfigServerOptions) (*nodeup.BootstrapResponse, error) {
-	var authenticator fi.Authenticator
-
+func buildAuthenticator(ctx context.Context, clusterName string, config *nodeup.ConfigServerOptions) (fi.Authenticator, error) {
 	switch api.CloudProviderID(config.CloudProvider) {
 	case api.CloudProviderAWS:
 		region, err := awsup.RegionFromMetadata(ctx)
 		if err != nil {
 			return nil, err
 		}
-		a, err := awsup.NewAWSAuthenticator(region)
-		if err != nil {
-			return nil, err
-		}
-		authenticator = a
+		return awsup.NewAWSAuthenticator(region)
+
+	case api.CloudProviderGCE:
+		// Doesn't have to match DNS name
+		audience := "kops-controller." + clusterName
+		return nodeidentitygce.NewAuthenticator(audience)
+
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider %s", config.CloudProvider)
+	}
+}
+
+// getNodeConfigFromServer queries kops-controller for our node's configuration.
+func getNodeConfigFromServer(ctx context.Context, clusterName string, config *nodeup.ConfigServerOptions) (*nodeup.BootstrapResponse, error) {
+	authenticator, err := buildAuthenticator(ctx, clusterName, config)
+	if err != nil {
+		return nil, err
 	}
 
 	client := &nodetasks.KopsBootstrapClient{

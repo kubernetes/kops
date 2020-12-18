@@ -48,6 +48,7 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
+	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -428,6 +429,12 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{
 				NodesRoles: nodesRoles.List(),
 				Region:     tf.Region,
+			}
+		case kops.CloudProviderGCE:
+			config.Server.Provider.GCE = &nodeidentitygce.VerifierOptions{
+				Audience:  "kops-controller." + cluster.Name,
+				ProjectID: cluster.Spec.Project,
+				//ServiceAccounts: serviceAccounts,
 			}
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.Spec.CloudProvider)
