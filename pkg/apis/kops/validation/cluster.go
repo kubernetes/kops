@@ -105,14 +105,6 @@ func validateEtcdMemberUpdate(fp *field.Path, obj kops.EtcdMemberSpec, status *k
 		allErrs = append(allErrs, field.Forbidden(fp.Child("instanceGroup"), "instanceGroup cannot be changed"))
 	}
 
-	if fi.StringValue(obj.VolumeType) != fi.StringValue(old.VolumeType) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("volumeType"), "volumeType cannot be changed"))
-	}
-
-	if fi.Int32Value(obj.VolumeIops) != fi.Int32Value(old.VolumeIops) {
-		allErrs = append(allErrs, field.Forbidden(fp.Child("volumeIops"), "volumeIops cannot be changed"))
-	}
-
 	if fi.Int32Value(obj.VolumeSize) != fi.Int32Value(old.VolumeSize) {
 		allErrs = append(allErrs, field.Forbidden(fp.Child("volumeSize"), "volumeSize cannot be changed"))
 	}
