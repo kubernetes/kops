@@ -50,7 +50,6 @@ go_library(
         "cloudup/resources/addons/networking.cilium.io/k8s-1.16-v1.10.yaml.template",
         "cloudup/resources/addons/networking.cilium.io/k8s-1.12-v1.9.yaml.template",
         "cloudup/resources/addons/snapshot-controller.addons.k8s.io/k8s-1.20.yaml.template",
-        "cloudup/resources/addons/snapshot-controller.addons.k8s.io/snapshot-controller.yaml",
     ],
     importpath = "k8s.io/kops/upup/models",
     visibility = ["//visibility:public"],
