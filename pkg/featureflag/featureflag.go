@@ -101,6 +101,8 @@ var (
 	PublicJWKS = New("PublicJWKS", Bool(false))
 	// Azure toggles the Azure support.
 	Azure = New("Azure", Bool(false))
+	// KopsControllerStateStore enables fetching the kops state from kops-controller, instead of requiring access to S3/GCS/etc.
+	KopsControllerStateStore = New("KopsControllerStateStore", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

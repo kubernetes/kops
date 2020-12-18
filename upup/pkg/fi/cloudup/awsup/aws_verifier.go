@@ -35,6 +35,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/sts"
+	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -166,17 +167,17 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, e
 		return nil, fmt.Errorf("received status code %d from STS: %s", response.StatusCode, string(responseBody))
 	}
 
-	result := GetCallerIdentityResponse{}
-	err = xml.NewDecoder(bytes.NewReader(responseBody)).Decode(&result)
+	callerIdentity := GetCallerIdentityResponse{}
+	err = xml.NewDecoder(bytes.NewReader(responseBody)).Decode(&callerIdentity)
 	if err != nil {
 		return nil, fmt.Errorf("decoding STS response: %v", err)
 	}
 
-	if result.GetCallerIdentityResult[0].Account != a.accountId {
-		return nil, fmt.Errorf("incorrect account %s", result.GetCallerIdentityResult[0].Account)
+	if callerIdentity.GetCallerIdentityResult[0].Account != a.accountId {
+		return nil, fmt.Errorf("incorrect account %s", callerIdentity.GetCallerIdentityResult[0].Account)
 	}
 
-	arn := result.GetCallerIdentityResult[0].Arn
+	arn := callerIdentity.GetCallerIdentityResult[0].Arn
 	parts := strings.Split(arn, ":")
 	if len(parts) != 6 {
 		return nil, fmt.Errorf("arn %q contains unexpected number of colons", arn)
@@ -225,7 +226,18 @@ func (a awsVerifier) VerifyToken(token string, body []byte) (*fi.VerifyResult, e
 		return nil, fmt.Errorf("found multiple instances with instance id: %s", instanceID)
 	}
 
-	return &fi.VerifyResult{
-		NodeName: aws.StringValue(instances.Reservations[0].Instances[0].PrivateDnsName),
-	}, nil
+	instance := instances.Reservations[0].Instances[0]
+
+	result := &fi.VerifyResult{
+		NodeName: aws.StringValue(instance.PrivateDnsName),
+	}
+
+	for _, tag := range instance.Tags {
+		tagKey := aws.StringValue(tag.Key)
+		if tagKey == nodeidentityaws.CloudTagInstanceGroupName {
+			result.InstanceGroupName = aws.StringValue(tag.Value)
+		}
+	}
+
+	return result, nil
 }
