@@ -10,6 +10,9 @@ spec:
   - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
   configBase: memfs://clusters.example.com/minimal.example.com
   etcdClusters:
   - etcdMembers:
