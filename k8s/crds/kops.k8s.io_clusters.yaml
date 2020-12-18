@@ -4088,6 +4088,17 @@ spec:
                 description: ServiceClusterIPRange is the CIDR, from the internal
                   network, where we allocate IPs for services
                 type: string
+              snapshotController:
+                description: SnapshotController defines the CSI Snapshot Controller
+                  configuration.
+                properties:
+                  enabled:
+                    description: Enabled enables the CSI Snapshot Controller
+                    type: boolean
+                  installDefaultClass:
+                    description: InstallDefaultClass will install the default VolumeSnapshotClass
+                    type: boolean
+                type: object
               sshAccess:
                 description: SSHAccess determines the permitted access to SSH Currently
                   only a single CIDR is supported (though a richer grammar could be
