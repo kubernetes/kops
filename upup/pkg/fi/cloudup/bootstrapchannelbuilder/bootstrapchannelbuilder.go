@@ -975,9 +975,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 	}
 
 	if kops.CloudProviderID(b.Cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
-		key := "aws-cloud-controller.addons.k8s.io"
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
+			key := "aws-cloud-controller.addons.k8s.io"
 			// Version refers to the addon configuration.  The CCM tag is given by
 			// the template function AWSCCMTag()
 			version := "1.18.0-kops.1"
@@ -994,6 +994,24 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.ModelBuilderContext) (*chann
 				})
 			}
 		}
+		if b.Cluster.Spec.CloudConfig != nil && b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(b.Cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+			key := "aws-ebs-csi-driver.addons.k8s.io"
+
+			version := "0.8.0-kops.1"
+			{
+				id := "k8s-1.17"
+				location := key + "/" + id + ".yaml"
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Manifest:          fi.String(location),
+					Selector:          map[string]string{"k8s-addon": key},
+					KubernetesVersion: ">=1.17.0",
+					Id:                id,
+				})
+			}
+		}
+
 	}
 
 	if b.Cluster.Spec.KubeScheduler.UsePolicyConfigMap != nil {

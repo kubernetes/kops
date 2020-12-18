@@ -810,6 +810,14 @@ type CloudConfiguration struct {
 	Openstack *OpenstackConfiguration `json:"openstack,omitempty"`
 	// Azure cloud-config options
 	Azure *AzureConfiguration `json:"azure,omitempty"`
+	// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
+	AWSEBSCSIDriver *AWSEBSCSIDriver `json:"awsEBSCSIDriver,omitempty"`
+}
+
+// AWSEBSCSIDriver is the config for the AWS EBS CSI driver
+type AWSEBSCSIDriver struct {
+	//Enabled enables the AWS EBS CSI driver
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // NodeTerminationHandlerConfig determines the node termination handler configuration.

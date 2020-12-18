@@ -214,6 +214,14 @@ spec:
               cloudConfig:
                 description: CloudConfiguration defines the cloud provider configuration
                 properties:
+                  awsEBSCSIDriver:
+                    description: AWSEBSCSIDriver is the config for the AWS EBS CSI
+                      driver
+                    properties:
+                      enabled:
+                        description: Enabled enables the AWS EBS CSI driver
+                        type: boolean
+                    type: object
                   azure:
                     description: Azure cloud-config options
                     properties:
