@@ -34,10 +34,17 @@ func bootstrapMasterNodeLabels(ctx context.Context, kubeContext *KubernetesConte
 	}
 
 	klog.V(2).Infof("Querying k8s for node %q", nodeName)
-	node, err := client.CoreV1().Nodes().Get(ctx, nodeName, metav1.GetOptions{})
+	labelSelector := fmt.Sprintf("kubernetes.io/hostname=%s", nodeName)
+	listOptions := metav1.ListOptions{
+		LabelSelector: labelSelector,
+	}
+	nodes, err := client.CoreV1().Nodes().List(ctx, listOptions)
 	if err != nil {
 		return fmt.Errorf("error querying node %q: %v", nodeName, err)
+	} else if len(nodes.Items) != 1 {
+		return fmt.Errorf("error querying node %q: expected 1 node with label %v, found %d", nodeName, labelSelector, len(nodes.Items))
 	}
+	node := nodes.Items[0]
 
 	labels := map[string]string{
 		"node-role.kubernetes.io/master":  "",
