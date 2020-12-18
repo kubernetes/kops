@@ -89,6 +89,7 @@ func TestValidateCIDR(t *testing.T) {
 }
 
 func testErrors(t *testing.T, context interface{}, actual field.ErrorList, expectedErrors []string) {
+	t.Helper()
 	if len(expectedErrors) == 0 {
 		if len(actual) != 0 {
 			t.Errorf("unexpected errors from %q: %v", context, actual)
@@ -101,7 +102,7 @@ func testErrors(t *testing.T, context interface{}, actual field.ErrorList, expec
 
 		for _, expected := range expectedErrors {
 			if !errStrings.Has(expected) {
-				t.Errorf("expected error %v from %v, was not found in %q", expected, context, errStrings.List())
+				t.Errorf("expected error %q from %v, was not found in %q", expected, context, errStrings.List())
 			}
 		}
 	}
@@ -367,16 +368,19 @@ type caliInput struct {
 
 func Test_Validate_Calico(t *testing.T) {
 	grid := []struct {
+		Description    string
 		Input          caliInput
 		ExpectedErrors []string
 	}{
 		{
+			Description: "empty specs",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{},
 				Etcd:   kops.EtcdClusterSpec{},
 			},
 		},
 		{
+			Description: "positive Typha replica count",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					TyphaReplicas: 3,
@@ -385,6 +389,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "negative Typha replica count",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					TyphaReplicas: -1,
@@ -394,6 +399,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::calico.typhaReplicas"},
 		},
 		{
+			Description: "with etcd version",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					MajorVersion: "v3",
@@ -404,6 +410,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "IPv4 autodetection method",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					MajorVersion: "v3",
@@ -423,6 +430,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "IPv6 autodetection method",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "first-found",
@@ -431,6 +439,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "IPv4 autodetection method with parameter",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "can-reach=8.8.8.8",
@@ -439,6 +448,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "IPv6 autodetection method with parameter",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "can-reach=2001:4860:4860::8888",
@@ -447,6 +457,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "invalid IPv4 autodetection method",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "bogus",
@@ -456,6 +467,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
 		{
+			Description: "invalid IPv6 autodetection method",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "bogus",
@@ -465,6 +477,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::calico.ipv6AutoDetectionMethod"},
 		},
 		{
+			Description: "invalid IPv6 autodetection method missing parameter",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "interface=",
@@ -474,6 +487,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::calico.ipv6AutoDetectionMethod"},
 		},
 		{
+			Description: "IPv4 autodetection method with parameter list",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "interface=en.*,eth0",
@@ -482,6 +496,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "IPv6 autodetection method with parameter list",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv6AutoDetectionMethod: "skip-interface=en.*,eth0",
@@ -490,6 +505,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "invalid IPv4 autodetection method parameter (parenthesis)",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "interface=(,en1",
@@ -499,6 +515,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
 		{
+			Description: "invalid IPv4 autodetection method parameter (equals)",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "interface=foo=bar",
@@ -508,6 +525,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
 		{
+			Description: "invalid IPv4 autodetection method parameter with no name",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					IPv4AutoDetectionMethod: "=en0,eth.*",
@@ -517,6 +535,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::calico.ipv4AutoDetectionMethod"},
 		},
 		{
+			Description: "AWS source/destination checks off",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "off",
@@ -526,6 +545,7 @@ func Test_Validate_Calico(t *testing.T) {
 			ExpectedErrors: []string{"Unsupported value::calico.awsSrcDstCheck"},
 		},
 		{
+			Description: "AWS source/destination checks enabled",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "Enable",
@@ -534,6 +554,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "AWS source/destination checks disabled",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "Disable",
@@ -542,6 +563,7 @@ func Test_Validate_Calico(t *testing.T) {
 			},
 		},
 		{
+			Description: "AWS source/destination checks left as is",
 			Input: caliInput{
 				Calico: &kops.CalicoNetworkingSpec{
 					AWSSrcDstCheck: "DoNothing",
@@ -549,10 +571,135 @@ func Test_Validate_Calico(t *testing.T) {
 				Etcd: kops.EtcdClusterSpec{},
 			},
 		},
+		{
+			Description: "unknown Calico encapsulation mode",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "None",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Unsupported value::calico.encapsulationMode"},
+		},
+		{
+			Description: "unknown Calico IPIP mode",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPIPMode: "unknown",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{"Unsupported value::calico.ipipMode"},
+		},
+		// You can't use per-IPPool IP-in-IP encapsulation unless you're using the "ipip"
+		// encapsulation mode.
+		{
+			Description: "Calico IPIP encapsulation mode (implicit) with IPIP IPPool mode (always)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPIPMode: "Always",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Description: "Calico IPIP encapsulation mode (implicit) with IPIP IPPool mode (cross-subnet)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPIPMode: "CrossSubnet",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Description: "Calico IPIP encapsulation mode (implicit) with IPIP IPPool mode (never)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					IPIPMode: "Never",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Description: "Calico IPIP encapsulation mode (explicit) with IPIP IPPool mode (always)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "ipip",
+					IPIPMode:          "Always",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Description: "Calico IPIP encapsulation mode (explicit) with IPIP IPPool mode (cross-subnet)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "ipip",
+					IPIPMode:          "CrossSubnet",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Description: "Calico IPIP encapsulation mode (explicit) with IPIP IPPool mode (never)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "ipip",
+					IPIPMode:          "Never",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
+		{
+			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "vxlan",
+					IPIPMode:          "Always",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{`Forbidden::calico.ipipMode`},
+		},
+		{
+			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode (always)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "vxlan",
+					IPIPMode:          "Always",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{`Forbidden::calico.ipipMode`},
+		},
+		{
+			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode (cross-subnet)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "vxlan",
+					IPIPMode:          "CrossSubnet",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+			ExpectedErrors: []string{`Forbidden::calico.ipipMode`},
+		},
+		{
+			Description: "Calico VXLAN encapsulation mode with IPIP IPPool mode (never)",
+			Input: caliInput{
+				Calico: &kops.CalicoNetworkingSpec{
+					EncapsulationMode: "vxlan",
+					IPIPMode:          "Never",
+				},
+				Etcd: kops.EtcdClusterSpec{},
+			},
+		},
 	}
+	rootFieldPath := field.NewPath("calico")
 	for _, g := range grid {
-		errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, field.NewPath("calico"))
-		testErrors(t, g.Input, errs, g.ExpectedErrors)
+		t.Run(g.Description, func(t *testing.T) {
+			errs := validateNetworkingCalico(g.Input.Calico, g.Input.Etcd, rootFieldPath)
+			testErrors(t, g.Input, errs, g.ExpectedErrors)
+		})
 	}
 }
 

@@ -142,6 +142,45 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 	}
 
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Calico != nil {
+		c := cluster.Spec.Networking.Calico
+		dest["CalicoIPv4PoolIPIPMode"] = func() string {
+			if c.EncapsulationMode != "ipip" {
+				return "Never"
+			}
+			if c.IPIPMode != "" {
+				return c.IPIPMode
+			}
+			if c.CrossSubnet {
+				return "CrossSubnet"
+			}
+			return "Always"
+		}
+		dest["CalicoIPv4PoolVXLANMode"] = func() string {
+			if c.EncapsulationMode != "vxlan" {
+				return "Never"
+			}
+			if c.CrossSubnet {
+				return "CrossSubnet"
+			}
+			return "Always"
+		}
+	}
+
+	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Cilium != nil {
+		ciliumsecretString := ""
+		ciliumsecret, _ := secretStore.Secret("ciliumpassword")
+		if ciliumsecret != nil {
+			ciliumsecretString, err = ciliumsecret.AsString()
+			if err != nil {
+				return err
+			}
+			klog.V(4).Info("Cilium secret function successfully registered")
+		}
+
+		dest["CiliumSecret"] = func() string { return ciliumsecretString }
+	}
+
 	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Flannel != nil {
 		flannelBackendType := cluster.Spec.Networking.Flannel.Backend
 		if flannelBackendType == "" {
@@ -163,20 +202,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 
 		dest["WeaveSecret"] = func() string { return weavesecretString }
-	}
-
-	if cluster.Spec.Networking != nil && cluster.Spec.Networking.Cilium != nil {
-		ciliumsecretString := ""
-		ciliumsecret, _ := secretStore.Secret("ciliumpassword")
-		if ciliumsecret != nil {
-			ciliumsecretString, err = ciliumsecret.AsString()
-			if err != nil {
-				return err
-			}
-			klog.V(4).Info("Cilium secret function successfully registered")
-		}
-
-		dest["CiliumSecret"] = func() string { return ciliumsecretString }
 	}
 
 	return nil

@@ -1013,6 +1013,24 @@ func validateNetworkingCalico(v *kops.CalicoNetworkingSpec, e kops.EtcdClusterSp
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("chainInsertMode"), &v.ChainInsertMode, valid)...)
 	}
 
+	if v.EncapsulationMode != "" {
+		// Don't tolerate "None" for now, which would disable encapsulation in the default IPPool
+		// object. Note that with no encapsulation, we'd need to select the "bird" networking
+		// backend in order to allow use of BGP to distribute routes for pod traffic.
+		valid := []string{"ipip", "vxlan"}
+		allErrs = append(allErrs, IsValidValue(fldPath.Child("encapsulationMode"), &v.EncapsulationMode, valid)...)
+	}
+
+	if v.IPIPMode != "" {
+		child := fldPath.Child("ipipMode")
+		allErrs = append(allErrs, validateCalicoIPPoolEncapsulationMode(v.IPIPMode, child)...)
+		if v.IPIPMode != "Never" {
+			if v.EncapsulationMode != "" && v.EncapsulationMode != "ipip" {
+				allErrs = append(allErrs, field.Forbidden(child, `IP-in-IP encapsulation requires use of Calico's "ipip" encapsulation mode`))
+			}
+		}
+	}
+
 	if v.IPv4AutoDetectionMethod != "" {
 		allErrs = append(allErrs, validateCalicoAutoDetectionMethod(fldPath.Child("ipv4AutoDetectionMethod"), v.IPv4AutoDetectionMethod, ipv4.Version)...)
 	}
@@ -1102,6 +1120,15 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime string, vers
 	}
 }
 
+func validateCalicoIPPoolEncapsulationMode(mode string, fldPath *field.Path) field.ErrorList {
+	valid := []string{"Always", "CrossSubnet", "Never"}
+
+	allErrs := field.ErrorList{}
+	allErrs = append(allErrs, IsValidValue(fldPath, &mode, valid)...)
+
+	return allErrs
+}
+
 func validateContainerRuntime(runtime *string, fldPath *field.Path) field.ErrorList {
 	valid := []string{"containerd", "docker"}
 
@@ -1185,7 +1212,6 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 			allErrs = append(allErrs, field.Forbidden(fldpath.Child("maxSurge"), "Cannot be zero if maxUnavailable is zero"))
 		}
 	}
-
 	return allErrs
 }
 
