@@ -20,9 +20,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/blang/semver/v4"
@@ -54,6 +56,7 @@ import (
 	"k8s.io/kops/pkg/model/spotinstmodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
@@ -1310,11 +1313,12 @@ func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		images:         images,
 		protokubeImage: protokubeImage,
 	}
+
 	return &configBuilder, nil
 }
 
 // BuildNodeUpConfig returns the NodeUp config, in YAML format
-func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string) (*nodeup.Config, error) {
+func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAdditionalIPs []string, caResource fi.Resource) (*nodeup.Config, error) {
 	cluster := n.cluster
 
 	if ig == nil {
@@ -1335,8 +1339,32 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 		}
 	}
 	config.ClusterName = cluster.ObjectMeta.Name
-	config.ConfigBase = fi.String(n.configBase.Path())
 	config.InstanceGroupName = ig.ObjectMeta.Name
+
+	useConfigServer := featureflag.KopsControllerStateStore.Enabled() && (role != kops.InstanceGroupRoleMaster)
+	if useConfigServer {
+		baseURL := url.URL{
+			Scheme: "https",
+			Host:   net.JoinHostPort("kops-controller.internal."+cluster.ObjectMeta.Name, strconv.Itoa(wellknownports.KopsControllerPort)),
+			Path:   "/",
+		}
+
+		ca, err := fi.ResourceAsString(caResource)
+		if err != nil {
+			// CA task may not have run yet; we'll retry
+			return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+		}
+
+		configServer := &nodeup.ConfigServerOptions{
+			Server:        baseURL.String(),
+			CloudProvider: cluster.Spec.CloudProvider,
+			CA:            ca,
+		}
+
+		config.ConfigServer = configServer
+	} else {
+		config.ConfigBase = fi.String(n.configBase.Path())
+	}
 
 	if role == kops.InstanceGroupRoleMaster {
 		config.ApiserverAdditionalIPs = apiserverAdditionalIPs

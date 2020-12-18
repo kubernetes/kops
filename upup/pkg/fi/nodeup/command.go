@@ -17,11 +17,13 @@ limitations under the License.
 package nodeup
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
+	"net/url"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -33,7 +35,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -64,6 +68,8 @@ type NodeUpCommand struct {
 
 // Run is responsible for perform the nodeup process
 func (c *NodeUpCommand) Run(out io.Writer) error {
+	ctx := context.Background()
+
 	if c.ConfigLocation != "" {
 		config, err := vfs.Context.ReadFile(c.ConfigLocation)
 		if err != nil {
@@ -83,7 +89,17 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	var configBase vfs.Path
-	if fi.StringValue(c.config.ConfigBase) != "" {
+
+	// If we're using a config server instead of vfs, nodeConfig will hold our configuration
+	var nodeConfig *nodeup.NodeConfig
+
+	if c.config.ConfigServer != nil {
+		response, err := getNodeConfigFromServer(ctx, c.config.ConfigServer)
+		if err != nil {
+			return err
+		}
+		nodeConfig = response.NodeConfig
+	} else if fi.StringValue(c.config.ConfigBase) != "" {
 		var err error
 		configBase, err = vfs.Context.BuildVfsPath(*c.config.ConfigBase)
 		if err != nil {
@@ -102,11 +118,15 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("cannot parse inferred ConfigBase %q: %v", basePath, err)
 		}
 	} else {
-		return fmt.Errorf("ConfigBase is required")
+		return fmt.Errorf("ConfigBase or ConfigServer is required")
 	}
 
 	c.cluster = &api.Cluster{}
-	{
+	if nodeConfig != nil {
+		if err := utils.YamlUnmarshal([]byte(nodeConfig.ClusterFullConfig), c.cluster); err != nil {
+			return fmt.Errorf("error parsing Cluster config response: %w", err)
+		}
+	} else {
 		clusterLocation := fi.StringValue(c.config.ClusterLocation)
 
 		var p vfs.Path
@@ -131,7 +151,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
-	if c.config.InstanceGroupName != "" {
+	if nodeConfig != nil {
+		c.instanceGroup = &api.InstanceGroup{}
+		if err := utils.YamlUnmarshal([]byte(nodeConfig.InstanceGroupConfig), c.instanceGroup); err != nil {
+			return fmt.Errorf("error parsing InstanceGroup config response: %v", err)
+		}
+	} else if c.config.InstanceGroupName != "" {
 		instanceGroupLocation := configBase.Join("instancegroup", c.config.InstanceGroupName)
 
 		c.instanceGroup = &api.InstanceGroup{}
@@ -183,7 +208,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var secretStore fi.SecretStore
 	var keyStore fi.Keystore
-	if c.cluster.Spec.SecretStore != "" {
+	if nodeConfig != nil {
+		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig)
+	} else if c.cluster.Spec.SecretStore != "" {
 		klog.Infof("Building SecretStore at %q", c.cluster.Spec.SecretStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.SecretStore)
 		if err != nil {
@@ -196,7 +223,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("SecretStore not set")
 	}
 
-	if c.cluster.Spec.KeyStore != "" {
+	if nodeConfig != nil {
+		modelContext.KeyStore = configserver.NewKeyStore(nodeConfig)
+	} else if c.cluster.Spec.KeyStore != "" {
 		klog.Infof("Building KeyStore at %q", c.cluster.Spec.KeyStore)
 		p, err := vfs.Context.BuildVfsPath(c.cluster.Spec.KeyStore)
 		if err != nil {
@@ -568,4 +597,44 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 	}
 	// TODO: Add to /etc/modules-load.d/ ?
 	return nil
+}
+
+// getNodeConfigFromServer queries kops-controller for our node's configuration.
+func getNodeConfigFromServer(ctx context.Context, config *nodeup.ConfigServerOptions) (*nodeup.BootstrapResponse, error) {
+	var authenticator fi.Authenticator
+
+	switch api.CloudProviderID(config.CloudProvider) {
+	case api.CloudProviderAWS:
+		region, err := awsup.RegionFromMetadata(ctx)
+		if err != nil {
+			return nil, err
+		}
+		a, err := awsup.NewAWSAuthenticator(region)
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+	default:
+		return nil, fmt.Errorf("unsupported cloud provider %s", config.CloudProvider)
+	}
+
+	client := &nodetasks.KopsBootstrapClient{
+		Authenticator: authenticator,
+	}
+
+	if config.CA != "" {
+		client.CA = []byte(config.CA)
+	}
+
+	u, err := url.Parse(config.Server)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse configuration server url %q: %w", config.Server, err)
+	}
+	client.BaseURL = *u
+
+	request := nodeup.BootstrapRequest{
+		APIVersion:        nodeup.BootstrapAPIVersion,
+		IncludeNodeConfig: true,
+	}
+	return client.QueryBootstrap(ctx, &request)
 }

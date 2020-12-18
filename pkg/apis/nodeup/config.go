@@ -66,6 +66,19 @@ type Config struct {
 	SysctlParameters []string `json:",omitempty"`
 	// VolumeMounts are a collection of volume mounts.
 	VolumeMounts []kops.VolumeMountSpec `json:",omitempty"`
+
+	// ConfigServer holds the configuration for the configuration server
+	ConfigServer *ConfigServerOptions `json:"configServer,omitempty"`
+}
+
+type ConfigServerOptions struct {
+	// Server is the address of the configuration server to use (kops-controller)
+	Server string `json:"server,omitempty"`
+	// CA is the ca-certificate to require for the configuration server
+	CA string `json:"ca,omitempty"`
+
+	// CloudProvider is the cloud provider in use (needed for authentication)
+	CloudProvider string `json:"cloudProvider,omitempty"`
 }
 
 // Image is a docker image we should pre-load
