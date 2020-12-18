@@ -207,6 +207,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	if clusterSpec.Kubelet.FeatureGates == nil {
 		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
 	}
+
+	if clusterSpec.CloudConfig != nil && clusterSpec.CloudConfig.AWSEBSCSIDriver != nil && fi.BoolValue(clusterSpec.CloudConfig.AWSEBSCSIDriver.Enabled) {
+		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"]; !found {
+			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWSComplete"] = "true"
+		}
+	}
 	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
 		if b.IsKubernetesLT("1.16") {
 			clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
