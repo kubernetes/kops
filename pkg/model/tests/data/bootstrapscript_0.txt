@@ -137,7 +137,7 @@ function download-release() {
   done
 
   echo "Running nodeup"
-  # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
+  # We can't run in the foreground because of https://github.com/moby/moby/issues/23793
   ( cd ${INSTALL_DIR}/bin; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/conf/kube_env.yaml --v=8  )
 }
 
