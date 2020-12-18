@@ -19,9 +19,11 @@ package awsup
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -177,4 +179,17 @@ func AWSErrorMessage(err error) string {
 		return awsError.Message()
 	}
 	return ""
+}
+
+// GetTargetGroupNameFromARN will attempt to parse a target group ARN and return its name
+func GetTargetGroupNameFromARN(targetGroupARN string) (string, error) {
+	parsed, err := arn.Parse(targetGroupARN)
+	if err != nil {
+		return "", fmt.Errorf("error parsing target group ARN: %v", err)
+	}
+	resource := strings.Split(parsed.Resource, "/")
+	if len(resource) != 3 || resource[0] != "targetgroup" {
+		return "", fmt.Errorf("error parsing target group ARN resource: %q", parsed.Resource)
+	}
+	return resource[1], nil
 }

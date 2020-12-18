@@ -52,9 +52,9 @@ func (e *TargetGroup) Find(c *fi.Context) (*TargetGroup, error) {
 
 	actual := &TargetGroup{}
 	actual.ARN = e.ARN
+	actual.Name = e.Name
 
 	// Prevent spurious changes
-	actual.Name = e.Name
 	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
@@ -87,6 +87,15 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 	}
 
 	return fmt.Errorf("non shared Target Groups is not yet supported")
+}
+
+// OrderTargetGroupsByName implements sort.Interface for []OrderTargetGroupsByName, based on port number
+type OrderTargetGroupsByName []*TargetGroup
+
+func (a OrderTargetGroupsByName) Len() int      { return len(a) }
+func (a OrderTargetGroupsByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderTargetGroupsByName) Less(i, j int) bool {
+	return fi.StringValue(a[i].Name) < fi.StringValue(a[j].Name)
 }
 
 func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetGroup) error {

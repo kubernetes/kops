@@ -23,17 +23,16 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
-	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kops/util/pkg/maps"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"k8s.io/klog"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/util/pkg/maps"
 )
 
 // CloudTagInstanceGroupRolePrefix is a cloud tag that defines the instance role
@@ -116,6 +115,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		MinSize: g.MinSize,
 	}
 
+	actual.LoadBalancers = []*LoadBalancer{}
 	for _, lb := range g.LoadBalancerNames {
 
 		actual.LoadBalancers = append(actual.LoadBalancers, &LoadBalancer{
@@ -163,9 +163,17 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
-	for _, tg := range g.TargetGroupARNs {
-		actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg)})
+	actual.TargetGroups = []*TargetGroup{}
+	if len(g.TargetGroupARNs) > 0 {
+		for _, tg := range g.TargetGroupARNs {
+			targetGroupName, err := awsup.GetTargetGroupNameFromARN(fi.StringValue(tg))
+			if err != nil {
+				return nil, err
+			}
+			actual.TargetGroups = append(actual.TargetGroups, &TargetGroup{ARN: aws.String(*tg), Name: aws.String(fi.StringValue(g.AutoScalingGroupName) + "-" + targetGroupName)})
+		}
 	}
+	sort.Stable(OrderTargetGroupsByName(actual.TargetGroups))
 
 	if g.VPCZoneIdentifier != nil {
 		subnets := strings.Split(*g.VPCZoneIdentifier, ",")
@@ -515,9 +523,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		var attachLBRequest *autoscaling.AttachLoadBalancersInput
 		var detachLBRequest *autoscaling.DetachLoadBalancersInput
 		if changes.LoadBalancers != nil {
-			attachLBRequest = &autoscaling.AttachLoadBalancersInput{
-				AutoScalingGroupName: e.Name,
-				LoadBalancerNames:    e.AutoscalingLoadBalancers(),
+			if e != nil && len(e.LoadBalancers) > 0 {
+				attachLBRequest = &autoscaling.AttachLoadBalancersInput{
+					AutoScalingGroupName: e.Name,
+					LoadBalancerNames:    e.AutoscalingLoadBalancers(),
+				}
 			}
 
 			if a != nil && len(a.LoadBalancers) > 0 {
@@ -531,9 +541,11 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		var attachTGRequest *autoscaling.AttachLoadBalancerTargetGroupsInput
 		var detachTGRequest *autoscaling.DetachLoadBalancerTargetGroupsInput
 		if changes.TargetGroups != nil {
-			attachTGRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{
-				AutoScalingGroupName: e.Name,
-				TargetGroupARNs:      e.AutoscalingTargetGroups(),
+			if e != nil && len(e.TargetGroups) > 0 {
+				attachTGRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{
+					AutoScalingGroupName: e.Name,
+					TargetGroupARNs:      e.AutoscalingTargetGroups(),
+				}
 			}
 
 			if a != nil && len(a.TargetGroups) > 0 {
@@ -627,7 +639,7 @@ func (v *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 		if detachTGRequest != nil {
 			if _, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachTGRequest); err != nil {
-				return fmt.Errorf("error attaching TargetGroups: %v", err)
+				return fmt.Errorf("error detaching TargetGroups: %v", err)
 			}
 		}
 		if attachTGRequest != nil {

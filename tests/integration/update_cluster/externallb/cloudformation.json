@@ -57,10 +57,13 @@
           }
         ],
         "LoadBalancerNames": [
-          "my-other-elb"
+          "my-external-elb-2",
+          "my-external-elb-3"
         ],
         "TargetGroupARNs": [
-          "aws:arn:elasticloadbalancing:us-test-1a:123456789012:targetgroup/my-tg/0123456789abcdef"
+          "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1",
+          "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-2/2",
+          "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-3/3"
         ]
       }
     },
@@ -121,7 +124,10 @@
           }
         ],
         "LoadBalancerNames": [
-          "my-elb"
+          "my-external-elb-1"
+        ],
+        "TargetGroupARNs": [
+          "arn:aws:elasticloadbalancing:us-test-1:000000000000:targetgroup/my-external-tg-1/1"
         ]
       }
     },
