@@ -117,10 +117,8 @@ ServerGroup:
   Policies:
   - anti-affinity
 UserData:
-  Name: ""
-  Resource:
-    task:
-      Name: master
+  task:
+    Name: master
 ---
 AvailabilityZone: zone-2
 Flavor: blc.1-2
@@ -195,10 +193,8 @@ ServerGroup:
   Policies:
   - anti-affinity
 UserData:
-  Name: ""
-  Resource:
-    task:
-      Name: master
+  task:
+    Name: master
 ---
 AvailabilityZone: zone-3
 Flavor: blc.1-2
@@ -273,10 +269,8 @@ ServerGroup:
   Policies:
   - anti-affinity
 UserData:
-  Name: ""
-  Resource:
-    task:
-      Name: master
+  task:
+    Name: master
 ---
 AvailabilityZone: zone-1
 Flavor: blc.1-2
@@ -345,10 +339,8 @@ ServerGroup:
   Policies:
   - anti-affinity
 UserData:
-  Name: ""
-  Resource:
-    task:
-      Name: node
+  task:
+    Name: node
 ---
 AvailabilityZone: zone-2
 Flavor: blc.1-2
@@ -417,10 +409,8 @@ ServerGroup:
   Policies:
   - anti-affinity
 UserData:
-  Name: ""
-  Resource:
-    task:
-      Name: node
+  task:
+    Name: node
 ---
 AvailabilityZone: zone-3
 Flavor: blc.1-2
@@ -489,10 +479,8 @@ ServerGroup:
   Policies:
   - anti-affinity
 UserData:
-  Name: ""
-  Resource:
-    task:
-      Name: node
+  task:
+    Name: node
 ---
 AdditionalSecurityGroups: null
 ID: null
