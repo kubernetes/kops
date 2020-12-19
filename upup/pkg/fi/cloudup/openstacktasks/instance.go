@@ -43,7 +43,7 @@ type Instance struct {
 	SSHKey           *string
 	ServerGroup      *ServerGroup
 	Role             *string
-	UserData         *fi.ResourceHolder
+	UserData         fi.Resource
 	Metadata         map[string]string
 	AvailabilityZone *string
 	SecurityGroups   []string
@@ -73,7 +73,7 @@ func (e *Instance) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 
 	if e.UserData != nil {
-		deps = append(deps, e.UserData.GetDependencies(tasks)...)
+		deps = append(deps, fi.FindDependencies(tasks, e.UserData)...)
 	}
 
 	return deps
@@ -266,7 +266,7 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 			SecurityGroups: e.SecurityGroups,
 		}
 		if e.UserData != nil {
-			bytes, err := e.UserData.AsBytes()
+			bytes, err := fi.ResourceAsBytes(e.UserData)
 			if err != nil {
 				return err
 			}

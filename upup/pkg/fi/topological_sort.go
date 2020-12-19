@@ -81,6 +81,16 @@ func reflectForDependencies(tasks map[string]Task, task Task) []Task {
 	return getDependencies(tasks, v)
 }
 
+// FindDependencies will try to infer dependencies for an arbitrary object
+func FindDependencies(tasks map[string]Task, o interface{}) []Task {
+	if hd, ok := o.(HasDependencies); ok {
+		return hd.GetDependencies(tasks)
+	}
+
+	v := reflect.ValueOf(o).Elem()
+	return getDependencies(tasks, v)
+}
+
 func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 	var dependencies []Task
 

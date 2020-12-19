@@ -79,7 +79,7 @@ type LaunchTemplate struct {
 	// Tenancy. Can be either default or dedicated.
 	Tenancy *string
 	// UserData is the user data configuration
-	UserData *fi.ResourceHolder
+	UserData fi.Resource
 }
 
 var (

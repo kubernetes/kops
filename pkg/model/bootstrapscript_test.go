@@ -150,7 +150,7 @@ func TestBootstrapUserData(t *testing.T) {
 		err = c.Tasks["BootstrapScript/testIG"].Run(&fi.Context{Cluster: cluster})
 		require.NoError(t, err, "running task")
 
-		actual, err := res.AsString()
+		actual, err := fi.ResourceAsString(res)
 		if err != nil {
 			t.Errorf("case %d failed to render nodeup resource. error: %s", i, err)
 			continue
