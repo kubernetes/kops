@@ -53,7 +53,7 @@ func TestLaunchConfigurationGarbageCollection(t *testing.T) {
 			ImageID:        s("ami-12345678"),
 			InstanceType:   s("m3.medium"),
 			SecurityGroups: []*SecurityGroup{},
-			UserData:       fi.WrapResource(fi.NewStringResource("")),
+			UserData:       fi.NewStringResource(""),
 		}
 
 		return map[string]fi.Task{

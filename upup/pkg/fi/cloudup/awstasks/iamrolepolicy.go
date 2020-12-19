@@ -126,7 +126,7 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error converting cloudformation policy document to JSON: %v", err)
 		}
-		actual.PolicyDocument = fi.WrapResource(fi.NewStringResource(string(jsonBytes)))
+		actual.PolicyDocument = fi.NewStringResource(string(jsonBytes))
 	}
 
 	actual.Name = p.PolicyName

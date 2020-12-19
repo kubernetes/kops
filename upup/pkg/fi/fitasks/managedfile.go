@@ -60,7 +60,7 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		Name:     e.Name,
 		Base:     e.Base,
 		Location: e.Location,
-		Contents: fi.WrapResource(fi.NewBytesResource(existingData)),
+		Contents: fi.NewBytesResource(existingData),
 	}
 
 	// Avoid spurious changes

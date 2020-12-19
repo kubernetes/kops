@@ -135,7 +135,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 		Name:      s(iamName),
 		Lifecycle: b.Lifecycle,
 
-		RolePolicyDocument: fi.WrapResource(rolePolicy),
+		RolePolicyDocument: rolePolicy,
 	}
 
 	if isServiceAccount {
@@ -300,9 +300,9 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 					return fmt.Errorf("error building IAM policy: %v", err)
 				}
 
-				t.PolicyDocument = fi.WrapResource(fi.NewStringResource(policy))
+				t.PolicyDocument = fi.NewStringResource(policy)
 			} else {
-				t.PolicyDocument = fi.WrapResource(fi.NewStringResource(""))
+				t.PolicyDocument = fi.NewStringResource("")
 			}
 
 			c.AddTask(t)
