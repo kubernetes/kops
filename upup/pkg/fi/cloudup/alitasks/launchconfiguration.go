@@ -65,7 +65,7 @@ type LaunchConfiguration struct {
 	RAMRole       *RAMRole
 	ScalingGroup  *ScalingGroup
 	SSHKey        *SSHKey
-	UserData      *fi.ResourceHolder
+	UserData      fi.Resource
 	SecurityGroup *SecurityGroup
 
 	Tags map[string]string
@@ -246,7 +246,7 @@ func (_ *LaunchConfiguration) RenderALI(t *aliup.ALIAPITarget, a, e, changes *La
 	}
 
 	if e.UserData != nil {
-		userData, err := e.UserData.AsString()
+		userData, err := fi.ResourceAsString(e.UserData)
 		if err != nil {
 			return fmt.Errorf("error rendering ScalingLaunchConfiguration UserData: %v", err)
 		}
@@ -314,7 +314,7 @@ type terraformLaunchConfiguration struct {
 }
 
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
-	data, err := e.UserData.AsBytes()
+	data, err := fi.ResourceAsBytes(e.UserData)
 	if err != nil {
 		return fmt.Errorf("error rendering ScalingLaunchConfiguration UserData: %v", err)
 	}
