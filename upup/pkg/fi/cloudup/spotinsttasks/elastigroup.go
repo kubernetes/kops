@@ -47,6 +47,7 @@ type Elastigroup struct {
 	Lifecycle *fi.Lifecycle
 
 	ID                       *string
+	Region                   *string
 	MinSize                  *int64
 	MaxSize                  *int64
 	SpotPercentage           *float64
@@ -188,6 +189,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 	actual := &Elastigroup{}
 	actual.ID = group.ID
 	actual.Name = group.Name
+	actual.Region = group.Region
 
 	// Capacity.
 	{
@@ -220,11 +222,9 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 
 		// Subnets.
 		{
-			for _, zone := range compute.AvailabilityZones {
-				if zone.SubnetID != nil {
-					actual.Subnets = append(actual.Subnets,
-						&awstasks.Subnet{ID: zone.SubnetID})
-				}
+			for _, subnetID := range compute.SubnetIDs {
+				actual.Subnets = append(actual.Subnets,
+					&awstasks.Subnet{ID: fi.String(subnetID)})
 			}
 			if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
 				actual.Subnets = e.Subnets
@@ -496,6 +496,7 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 	{
 		group.SetName(e.Name)
 		group.SetDescription(e.Name)
+		group.SetRegion(e.Region)
 	}
 
 	// Capacity.
@@ -527,16 +528,13 @@ func (_ *Elastigroup) create(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			group.Compute.InstanceTypes.SetSpot(e.SpotInstanceTypes)
 		}
 
-		// Availability zones.
+		// Subnets.
 		{
-			zones := make([]*aws.AvailabilityZone, len(e.Subnets))
+			subnets := make([]string, len(e.Subnets))
 			for i, subnet := range e.Subnets {
-				zone := new(aws.AvailabilityZone)
-				zone.SetName(subnet.AvailabilityZone)
-				zone.SetSubnetId(subnet.ID)
-				zones[i] = zone
+				subnets[i] = fi.StringValue(subnet.ID)
 			}
-			group.Compute.SetAvailabilityZones(zones)
+			group.Compute.SetSubnetIDs(subnets)
 		}
 
 		// Launch Specification.
@@ -798,6 +796,13 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 	group := new(aws.Group)
 	group.SetId(actual.ID)
 
+	// Region.
+	if changes.Region != nil {
+		group.SetRegion(e.Region)
+		changes.Region = nil
+		changed = true
+	}
+
 	// Strategy.
 	{
 		// Spot percentage.
@@ -904,22 +909,19 @@ func (_ *Elastigroup) update(cloud awsup.AWSCloud, a, e, changes *Elastigroup) e
 			}
 		}
 
-		// Availability zones.
+		// Subnets.
 		{
 			if changes.Subnets != nil {
 				if group.Compute == nil {
 					group.Compute = new(aws.Compute)
 				}
 
-				zones := make([]*aws.AvailabilityZone, len(e.Subnets))
+				subnets := make([]string, len(e.Subnets))
 				for i, subnet := range e.Subnets {
-					zone := new(aws.AvailabilityZone)
-					zone.SetName(subnet.AvailabilityZone)
-					zone.SetSubnetId(subnet.ID)
-					zones[i] = zone
+					subnets[i] = fi.StringValue(subnet.ID)
 				}
 
-				group.Compute.SetAvailabilityZones(zones)
+				group.Compute.SetSubnetIDs(subnets)
 				changes.Subnets = nil
 				changed = true
 			}
@@ -1445,7 +1447,7 @@ func (_ *Elastigroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 		Name:        e.Name,
 		Description: e.Name,
 		Product:     e.Product,
-		Region:      fi.String(cloud.Region()),
+		Region:      e.Region,
 
 		DesiredCapacity: e.MinSize,
 		MinSize:         e.MinSize,
