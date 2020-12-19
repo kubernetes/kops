@@ -39,12 +39,28 @@ const (
 )
 
 func findContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
-	if c.Spec.Containerd == nil || fi.StringValue(c.Spec.Containerd.Version) == "" {
-		return nil, nil, fmt.Errorf("unable to find containerd version")
+	if c.Spec.Containerd == nil {
+		return nil, nil, fmt.Errorf("unable to find containerd config")
+	}
+	containerd := c.Spec.Containerd
+
+	if containerd.Packages != nil {
+		if arch == architectures.ArchitectureAmd64 && containerd.Packages.UrlAmd64 != nil && containerd.Packages.HashAmd64 != nil {
+			assetUrl := fi.StringValue(containerd.Packages.UrlAmd64)
+			assetHash := fi.StringValue(containerd.Packages.HashAmd64)
+			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
+		}
+		if arch == architectures.ArchitectureArm64 && containerd.Packages.UrlArm64 != nil && containerd.Packages.HashArm64 != nil {
+			assetUrl := fi.StringValue(containerd.Packages.UrlArm64)
+			assetHash := fi.StringValue(containerd.Packages.HashArm64)
+			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
+		}
 	}
 
-	version := fi.StringValue(c.Spec.Containerd.Version)
-
+	version := fi.StringValue(containerd.Version)
+	if version == "" {
+		return nil, nil, fmt.Errorf("unable to find containerd version")
+	}
 	assetUrl, assetHash, err := findContainerdVersionUrlHash(arch, version)
 	if err != nil {
 		return nil, nil, err

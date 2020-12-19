@@ -657,3 +657,14 @@ type RollingUpdate struct {
 	// +optional
 	MaxSurge *intstr.IntOrString `json:"maxSurge,omitempty"`
 }
+
+type PackagesConfig struct {
+	// HashAmd64 overrides the hash for the AMD64 package.
+	HashAmd64 *string `json:"hashAmd64,omitempty"`
+	// HashArm64 overrides the hash for the ARM64 package.
+	HashArm64 *string `json:"hashArm64,omitempty"`
+	// UrlAmd64 overrides the URL for the AMD64 package.
+	UrlAmd64 *string `json:"urlAmd64,omitempty"`
+	// UrlArm64 overrides the URL for the ARM64 package.
+	UrlArm64 *string `json:"urlArm64,omitempty"`
+}
