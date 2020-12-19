@@ -293,6 +293,8 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 			actual.AutoScalerOpts = new(AutoScalerOpts)
 			actual.AutoScalerOpts.ClusterID = ocean.ControllerClusterID
 			actual.AutoScalerOpts.Enabled = ocean.AutoScaler.IsEnabled
+			actual.AutoScalerOpts.AutoConfig = ocean.AutoScaler.IsAutoConfig
+			actual.AutoScalerOpts.AutoHeadroomPercentage = ocean.AutoScaler.AutoHeadroomPercentage
 			actual.AutoScalerOpts.Cooldown = ocean.AutoScaler.Cooldown
 
 			// Headroom.
@@ -521,7 +523,8 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			if opts.Enabled != nil {
 				autoScaler := new(aws.AutoScaler)
 				autoScaler.IsEnabled = opts.Enabled
-				autoScaler.IsAutoConfig = fi.Bool(true)
+				autoScaler.IsAutoConfig = opts.AutoConfig
+				autoScaler.AutoHeadroomPercentage = opts.AutoHeadroomPercentage
 				autoScaler.Cooldown = opts.Cooldown
 
 				// Headroom.
@@ -951,6 +954,8 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			if opts.Enabled != nil {
 				autoScaler := new(aws.AutoScaler)
 				autoScaler.IsEnabled = e.AutoScalerOpts.Enabled
+				autoScaler.IsAutoConfig = e.AutoScalerOpts.AutoConfig
+				autoScaler.AutoHeadroomPercentage = e.AutoScalerOpts.AutoHeadroomPercentage
 				autoScaler.Cooldown = e.AutoScalerOpts.Cooldown
 
 				// Headroom.
@@ -1182,9 +1187,10 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 
 			if opts.Enabled != nil {
 				tf.AutoScaler = &terraformAutoScaler{
-					Enabled:    opts.Enabled,
-					AutoConfig: fi.Bool(true),
-					Cooldown:   opts.Cooldown,
+					Enabled:                opts.Enabled,
+					AutoConfig:             opts.AutoConfig,
+					AutoHeadroomPercentage: opts.AutoHeadroomPercentage,
+					Cooldown:               opts.Cooldown,
 				}
 
 				// Headroom.
