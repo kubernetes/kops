@@ -354,7 +354,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	checkExisting := true
 
-	region := ""
 	project := ""
 
 	var sshPublicKeys [][]byte
@@ -378,7 +377,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	case kops.CloudProviderGCE:
 		{
 			gceCloud := cloud.(gce.GCECloud)
-			region = gceCloud.Region()
 			project = gceCloud.Project()
 
 			if !AlphaAllowGCE.Enabled() {
@@ -399,7 +397,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	case kops.CloudProviderAWS:
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
-			region = awsCloud.Region()
 
 			accountID, partition, err := awsCloud.AccountInfo()
 			if err != nil {
@@ -424,9 +421,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			if !AlphaAllowALI.Enabled() {
 				return fmt.Errorf("aliyun support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowALI")
 			}
-
-			aliCloud := cloud.(aliup.ALICloud)
-			region = aliCloud.Region()
 
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with ALICloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
@@ -459,10 +453,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	case kops.CloudProviderOpenstack:
 		{
-
-			osCloud := cloud.(openstack.OpenstackCloud)
-			region = osCloud.Region()
-
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
@@ -477,7 +467,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
 
-	modelContext.Region = region
+	modelContext.Region = cloud.Region()
 
 	if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		klog.Infof("Gossip DNS: skipping DNS validation")
@@ -758,10 +748,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	case TargetTerraform:
 		checkExisting = false
 		outDir := c.OutDir
-		tf := terraform.NewTerraformTarget(cloud, region, project, outDir, cluster.Spec.Target)
+		tf := terraform.NewTerraformTarget(cloud, project, outDir, cluster.Spec.Target)
 
 		// We include a few "util" variables in the TF output
-		if err := tf.AddOutputVariable("region", terraform.LiteralFromStringValue(region)); err != nil {
+		if err := tf.AddOutputVariable("region", terraform.LiteralFromStringValue(cloud.Region())); err != nil {
 			return err
 		}
 
@@ -783,7 +773,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	case TargetCloudformation:
 		checkExisting = false
 		outDir := c.OutDir
-		target = cloudformation.NewCloudformationTarget(cloud, region, project, outDir)
+		target = cloudformation.NewCloudformationTarget(cloud, project, outDir)
 
 		// Can cause conflicts with cloudformation management
 		shouldPrecreateDNS = false

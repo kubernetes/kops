@@ -41,7 +41,7 @@ func (t *TerraformTarget) finishHCL2(taskMap map[string]fi.Task) error {
 	}
 	providerBlock := rootBody.AppendNewBlock("provider", []string{providerName})
 	providerBody := providerBlock.Body()
-	providerBody.SetAttributeValue("region", cty.StringVal(t.Region))
+	providerBody.SetAttributeValue("region", cty.StringVal(t.Cloud.Region()))
 	for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
 		providerBody.SetAttributeValue(k, cty.StringVal(v))
 	}

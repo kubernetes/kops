@@ -538,7 +538,7 @@ func addServiceAccounts(serviceAccounts []*compute.ServiceAccount) *terraformSer
 func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InstanceTemplate) error {
 	project := t.Project
 
-	i, err := e.mapToGCE(project, t.Region)
+	i, err := e.mapToGCE(project, t.Cloud.Region())
 	if err != nil {
 		return err
 	}
