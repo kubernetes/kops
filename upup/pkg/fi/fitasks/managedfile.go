@@ -34,7 +34,7 @@ type ManagedFile struct {
 
 	Base     *string
 	Location *string
-	Contents *fi.ResourceHolder
+	Contents fi.Resource
 }
 
 func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
@@ -91,7 +91,7 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		return fi.RequiredField("Location")
 	}
 
-	data, err := e.Contents.AsBytes()
+	data, err := fi.ResourceAsBytes(e.Contents)
 	if err != nil {
 		return fmt.Errorf("error reading contents of ManagedFile: %v", err)
 	}
