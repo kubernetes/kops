@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops"
 	"k8s.io/kops/util/pkg/hashing"
+	"k8s.io/kops/util/pkg/mirrors"
 )
 
 func Test_BuildMirroredAsset(t *testing.T) {
@@ -67,13 +68,13 @@ func Test_BuildMirroredAsset(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.url, func(t *testing.T) {
-			h, _ := hashing.FromString("0000000000000000000000000000000000000000000000000000000000000000")
+			h := hashing.MustFromString("0000000000000000000000000000000000000000000000000000000000000000")
 			u, err := url.Parse(fmt.Sprintf(tc.url, kops.Version))
 			if err != nil {
 				t.Errorf("cannot parse URL: %s", fmt.Sprintf(tc.url, kops.Version))
 				return
 			}
-			actual := BuildMirroredAsset(u, h)
+			actual := mirrors.BuildMirroredAsset(u, h)
 
 			if !reflect.DeepEqual(actual.Locations, tc.expected) {
 				t.Errorf("Locations differ:\nActual: %+v\nExpect: %+v", actual.Locations, tc.expected)
