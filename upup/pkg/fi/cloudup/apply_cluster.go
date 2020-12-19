@@ -596,7 +596,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 	}
 
-	configBuilder, err := c.newNodeUpConfigBuilder(assetBuilder)
+	configBuilder, err := newNodeUpConfigBuilder(cluster, assetBuilder, c.Assets)
 	if err != nil {
 		return err
 	}
@@ -1143,7 +1143,12 @@ func needsMounterAsset(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bo
 }
 
 type nodeUpConfigBuilder struct {
-	*ApplyClusterCmd
+	// Assets is a list of sources for files (primarily when not using everything containerized)
+	// Formats:
+	//  raw url: http://... or https://...
+	//  url with hash: <hex>@http://... or <hex>@https://...
+	assets map[architectures.Architecture][]*mirrors.MirroredAsset
+
 	assetBuilder   *assets.AssetBuilder
 	channels       []string
 	configBase     vfs.Path
@@ -1153,9 +1158,7 @@ type nodeUpConfigBuilder struct {
 	protokubeImage map[kops.InstanceGroupRole]map[architectures.Architecture]*nodeup.Image
 }
 
-func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuilder) (model.NodeUpConfigBuilder, error) {
-	cluster := c.Cluster
-
+func newNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, assets map[architectures.Architecture][]*mirrors.MirroredAsset) (model.NodeUpConfigBuilder, error) {
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
@@ -1264,14 +1267,14 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 	}
 
 	configBuilder := nodeUpConfigBuilder{
-		ApplyClusterCmd: c,
-		assetBuilder:    assetBuilder,
-		channels:        channels,
-		configBase:      configBase,
-		cluster:         cluster,
-		etcdManifests:   etcdManifests,
-		images:          images,
-		protokubeImage:  protokubeImage,
+		assetBuilder:   assetBuilder,
+		assets:         assets,
+		channels:       channels,
+		configBase:     configBase,
+		cluster:        cluster,
+		etcdManifests:  etcdManifests,
+		images:         images,
+		protokubeImage: protokubeImage,
 	}
 	return &configBuilder, nil
 }
@@ -1293,7 +1296,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, apiserverAddit
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupported() {
 		config.Assets[arch] = []string{}
-		for _, a := range n.Assets[arch] {
+		for _, a := range n.assets[arch] {
 			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
 		}
 	}
