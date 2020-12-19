@@ -41,6 +41,7 @@ go_test(
         "//pkg/model/defaults:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/azuretasks:go_default_library",
+        "//upup/pkg/fi/fitasks:go_default_library",
         "//vendor/github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-06-01/compute:go_default_library",
         "//vendor/github.com/Azure/go-autorest/autorest/to:go_default_library",
     ],

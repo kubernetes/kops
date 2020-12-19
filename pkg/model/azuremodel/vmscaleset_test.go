@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 func TestVMScaleSetModelBuilder_Build(t *testing.T) {
@@ -35,6 +36,14 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 	c := &fi.ModelBuilderContext{
 		Tasks: make(map[string]fi.Task),
 	}
+
+	caTask := &fitasks.Keypair{
+		Name:    fi.String(fi.CertificateIDCA),
+		Subject: "cn=kubernetes",
+		Type:    "ca",
+	}
+	c.AddTask(caTask)
+
 	err := b.Build(c)
 	if err != nil {
 		t.Errorf("unexpected error %s", err)

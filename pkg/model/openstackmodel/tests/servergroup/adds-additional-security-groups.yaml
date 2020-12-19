@@ -66,6 +66,14 @@ UserData:
   task:
     Name: node
 ---
+Lifecycle: null
+Name: ca
+Signer: null
+alternateNames: null
+oldFormat: false
+subject: cn=kubernetes
+type: ca
+---
 AdditionalSecurityGroups:
 - additional-sg
 ID: null
