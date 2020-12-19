@@ -61,7 +61,7 @@ type InstanceTemplate struct {
 	Scopes          []string
 	ServiceAccounts []string
 
-	Metadata    map[string]*fi.ResourceHolder
+	Metadata    map[string]fi.Resource
 	MachineType *string
 
 	// ID is the actual name
@@ -166,7 +166,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		//}
 
 		if p.Metadata != nil {
-			actual.Metadata = make(map[string]*fi.ResourceHolder)
+			actual.Metadata = make(map[string]fi.Resource)
 			for _, meta := range p.Metadata.Items {
 				actual.Metadata[meta.Key] = fi.WrapResource(fi.NewStringResource(fi.StringValue(meta.Value)))
 			}
@@ -301,7 +301,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 	var metadataItems []*compute.MetadataItems
 	for key, r := range e.Metadata {
-		v, err := r.AsString()
+		v, err := fi.ResourceAsString(r)
 		if err != nil {
 			return nil, fmt.Errorf("error rendering InstanceTemplate metadata %q: %v", key, err)
 		}

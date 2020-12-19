@@ -95,7 +95,7 @@ type LaunchConfiguration struct {
 	// Tenancy. Can be either default or dedicated.
 	Tenancy *string
 	// UserData is the user data configuration
-	UserData *fi.ResourceHolder
+	UserData fi.Resource
 }
 
 var _ fi.CompareWithID = &LaunchConfiguration{}
@@ -349,7 +349,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	}
 
 	if e.UserData != nil {
-		d, err := e.UserData.AsBytes()
+		d, err := fi.ResourceAsBytes(e.UserData)
 		if err != nil {
 			return fmt.Errorf("error rendering AutoScalingLaunchConfiguration UserData: %v", err)
 		}
@@ -694,7 +694,7 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 	}
 
 	if e.UserData != nil {
-		d, err := e.UserData.AsBytes()
+		d, err := fi.ResourceAsBytes(e.UserData)
 		if err != nil {
 			return fmt.Errorf("error rendering AutoScalingLaunchConfiguration UserData: %v", err)
 		}

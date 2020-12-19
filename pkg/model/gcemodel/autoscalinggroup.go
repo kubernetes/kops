@@ -89,11 +89,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					"monitoring",
 					"logging-write",
 				},
-				Metadata: map[string]*fi.ResourceHolder{
+				Metadata: map[string]fi.Resource{
 					"startup-script": startupScript,
 					//"config": resources/config.yaml $nodeset.Name
-					"cluster-name": fi.WrapResource(fi.NewStringResource(b.ClusterName())),
-					nodeidentitygce.MetadataKeyInstanceGroupName: fi.WrapResource(fi.NewStringResource(ig.Name)),
+					"cluster-name": fi.NewStringResource(b.ClusterName()),
+					nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
 				},
 			}
 

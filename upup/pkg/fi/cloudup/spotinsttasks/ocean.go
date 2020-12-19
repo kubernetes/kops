@@ -52,7 +52,7 @@ type Ocean struct {
 	InstanceTypesWhitelist   []string
 	InstanceTypesBlacklist   []string
 	Tags                     map[string]string
-	UserData                 *fi.ResourceHolder
+	UserData                 fi.Resource
 	ImageID                  *string
 	IAMInstanceProfile       *awstasks.IAMInstanceProfile
 	SSHKey                   *awstasks.SSHKey
@@ -96,7 +96,7 @@ func (o *Ocean) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 
 	if o.UserData != nil {
-		deps = append(deps, o.UserData.GetDependencies(tasks)...)
+		deps = append(deps, fi.FindDependencies(tasks, o.UserData)...)
 	}
 
 	return deps
@@ -451,7 +451,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			// User data.
 			{
 				if e.UserData != nil {
-					userData, err := e.UserData.AsString()
+					userData, err := fi.ResourceAsString(e.UserData)
 					if err != nil {
 						return err
 					}
@@ -756,7 +756,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			// User data.
 			{
 				if changes.UserData != nil {
-					userData, err := e.UserData.AsString()
+					userData, err := fi.ResourceAsString(e.UserData)
 					if err != nil {
 						return err
 					}
