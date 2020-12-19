@@ -907,21 +907,49 @@ spec:
 
 ## containerd
 
+### Configuration
+
 It is possible to override the [containerd](https://github.com/containerd/containerd/blob/master/README.md) daemon options for all the nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#ContainerdConfig) for the full list of options.
 
 ```yaml
 spec:
   containerd:
-    version: 1.3.3
+    version: 1.4.3
     logLevel: info
     configOverride: ""
 ```
 
-## docker
+### Custom Packages
+
+kOps uses the `.tar.gz` packages for installing containerd on any supported OS. This makes it easy to use a custom build or pre-release packages, by specifying its URL and sha256:
+
+```yaml
+spec:
+  containerd:
+    packages:
+      urlAmd64: https://github.com/containerd/containerd/releases/download/v1.4.3/cri-containerd-cni-1.4.3-linux-amd64.tar.gz
+      hashAmd64: 2697a342e3477c211ab48313e259fd7e32ad1f5ded19320e6a559f50a82bff3d
+```
+
+The format of the custom package must be identical to the official packages:
+
+```bash
+tar tf cri-containerd-cni-1.4.3-linux-amd64.tar.gz
+    usr/local/bin/containerd
+    usr/local/bin/containerd-shim
+    usr/local/bin/containerd-shim-runc-v1
+    usr/local/bin/containerd-shim-runc-v2
+    usr/local/bin/crictl
+    usr/local/bin/critest
+    usr/local/bin/ctr
+    usr/local/sbin/runc
+```
+
+## Docker
 
 It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://pkg.go.dev/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
 
-### registryMirrors
+### Registry Mirrors
 
 If you have a bunch of Docker instances (physical or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
 This setting benefits not only cluster provisioning but also image pulling.
@@ -948,7 +976,7 @@ spec:
 
 **NOTE:** When this field is set to `true`, it is entirely up to the user to install and configure Docker.
 
-### storage
+### Storage
 
 The Docker [Storage Driver](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-storage-driver) can be specified in order to override the default. Be sure the driver you choose is supported by your operating system and docker version.
 
@@ -961,7 +989,7 @@ docker:
     - "dm.use_deferred_removal=true"
 ```
 
-### networking
+### Networking
 
 In order for containers started with `docker run` instead of Kubernetes to have network and internet access you need to enable the necessary [iptables](https://docs.docker.com/network/iptables/) rules:
 
@@ -969,6 +997,33 @@ In order for containers started with `docker run` instead of Kubernetes to have 
 docker:
   ipMasq: true
   ipTables: true
+```
+
+### Custom Packages
+
+kOps uses the `.tgz` (static) packages for installing Docker on any supported OS. This makes it easy to use a custom build or pre-release packages, by specifying its URL and sha256:
+
+```yaml
+spec:
+  containerd:
+    packages:
+      urlAmd64: https://download.docker.com/linux/static/stable/x86_64/docker-20.10.1.tgz
+      hashAmd64: 8790f3b94ee07ca69a9fdbd1310cbffc729af0a07e5bf9f34a79df1e13d2e50e
+```
+
+The format of the custom package must be identical to the official packages:
+
+```bash
+tar tf docker-20.10.1.tgz
+    docker/containerd
+    docker/containerd-shim
+    docker/containerd-shim-runc-v2
+    docker/ctr
+    docker/docker
+    docker/docker-init
+    docker/docker-proxy
+    docker/dockerd
+    docker/runc
 ```
 
 ## sshKeyName

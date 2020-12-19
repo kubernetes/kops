@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -1116,7 +1117,50 @@ func validateContainerdConfig(config *kops.ContainerdConfig, fldPath *field.Path
 				fmt.Sprintf("unable to parse version string: %s", err.Error())))
 		}
 		if sv.LT(semver.MustParse("1.3.4")) {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version, "unsupported legacy version"))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
+				"unsupported legacy version"))
+		}
+	}
+
+	if config.Packages != nil {
+		if config.Packages.UrlAmd64 != nil && config.Packages.HashAmd64 != nil {
+			u := fi.StringValue(config.Packages.UrlAmd64)
+			_, err := url.Parse(u)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.UrlAmd64,
+					fmt.Sprintf("cannot parse package URL: %v", err)))
+			}
+			h := fi.StringValue(config.Packages.HashAmd64)
+			if len(h) > 64 {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
+					"Package hash must be 64 characters long"))
+			}
+		} else if config.Packages.UrlAmd64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.HashAmd64,
+				"Package hash must also be set"))
+		} else if config.Packages.HashAmd64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
+				"Package URL must also be set"))
+		}
+
+		if config.Packages.UrlArm64 != nil && config.Packages.HashArm64 != nil {
+			u := fi.StringValue(config.Packages.UrlArm64)
+			_, err := url.Parse(u)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.UrlArm64,
+					fmt.Sprintf("cannot parse package URL: %v", err)))
+			}
+			h := fi.StringValue(config.Packages.HashArm64)
+			if len(h) > 64 {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
+					"Package hash must be 64 characters long"))
+			}
+		} else if config.Packages.UrlArm64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.HashArm64,
+				"Package hash must also be set"))
+		} else if config.Packages.HashArm64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
+				"Package URL must also be set"))
 		}
 	}
 
@@ -1136,7 +1180,50 @@ func validateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
 				"version is no longer available: https://www.docker.com/blog/changes-dockerproject-org-apt-yum-repositories"))
 		} else if sv.LT(semver.MustParse("17.3.0")) {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version, "unsupported legacy version"))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
+				"unsupported legacy version"))
+		}
+	}
+
+	if config.Packages != nil {
+		if config.Packages.UrlAmd64 != nil && config.Packages.HashAmd64 != nil {
+			u := fi.StringValue(config.Packages.UrlAmd64)
+			_, err := url.Parse(u)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.UrlAmd64,
+					fmt.Sprintf("unable parse package URL string: %v", err)))
+			}
+			h := fi.StringValue(config.Packages.HashAmd64)
+			if len(h) > 64 {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
+					"Package hash must be 64 characters long"))
+			}
+		} else if config.Packages.UrlAmd64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrl"), config.Packages.HashAmd64,
+				"Package hash must also be set"))
+		} else if config.Packages.HashAmd64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHash"), config.Packages.HashAmd64,
+				"Package URL must also be set"))
+		}
+
+		if config.Packages.UrlArm64 != nil && config.Packages.HashArm64 != nil {
+			u := fi.StringValue(config.Packages.UrlArm64)
+			_, err := url.Parse(u)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.UrlArm64,
+					fmt.Sprintf("unable parse package URL string: %v", err)))
+			}
+			h := fi.StringValue(config.Packages.HashArm64)
+			if len(h) > 64 {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
+					"Package hash must be 64 characters long"))
+			}
+		} else if config.Packages.UrlArm64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageUrlArm64"), config.Packages.HashArm64,
+				"Package hash must also be set"))
+		} else if config.Packages.HashArm64 != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("packageHashArm64"), config.Packages.HashArm64,
+				"Package URL must also be set"))
 		}
 	}
 

@@ -60,6 +60,8 @@ type DockerConfig struct {
 	MetricsAddress *string `json:"metricsAddress,omitempty" flag:"metrics-addr"`
 	// MTU is the containers network MTU
 	MTU *int32 `json:"mtu,omitempty" flag:"mtu"`
+	// Packages overrides the URL and hash for the packages.
+	Packages *PackagesConfig `json:"packages,omitempty"`
 	// RegistryMirrors is a referred list of docker registry mirror
 	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
 	// Runtimes registers an additional OCI compatible runtime (default [])
