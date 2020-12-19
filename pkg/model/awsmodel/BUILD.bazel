@@ -39,5 +39,6 @@ go_test(
         "//pkg/testutils:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
+        "//upup/pkg/fi/fitasks:go_default_library",
     ],
 )

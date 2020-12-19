@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -1008,7 +1009,17 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 		LifecycleOverrides: map[string]fi.Lifecycle{},
 	}
 
-	builder.Build(context)
+	// We need the CA for the bootstrap script
+	caTask := &fitasks.Keypair{
+		Name:    fi.String(fi.CertificateIDCA),
+		Subject: "cn=kubernetes",
+		Type:    "ca",
+	}
+	context.AddTask(caTask)
+
+	if err := builder.Build(context); err != nil {
+		t.Fatalf("error from Build: %v", err)
+	}
 
 	file := filepath.Join(basedir, strings.ReplaceAll(testCase.desc, " ", "-")+".yaml")
 
