@@ -40,7 +40,7 @@ type LaunchSpec struct {
 	Lifecycle *fi.Lifecycle
 
 	ID                 *string
-	UserData           *fi.ResourceHolder
+	UserData           fi.Resource
 	SecurityGroups     []*awstasks.SecurityGroup
 	Subnets            []*awstasks.Subnet
 	IAMInstanceProfile *awstasks.IAMInstanceProfile
@@ -85,7 +85,7 @@ func (o *LaunchSpec) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 
 	if o.UserData != nil {
-		deps = append(deps, o.UserData.GetDependencies(tasks)...)
+		deps = append(deps, fi.FindDependencies(tasks, o.UserData)...)
 	}
 
 	return deps
@@ -330,7 +330,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// User data.
 	{
 		if e.UserData != nil {
-			userData, err := e.UserData.AsString()
+			userData, err := fi.ResourceAsString(e.UserData)
 			if err != nil {
 				return err
 			}
@@ -491,7 +491,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// User data.
 	{
 		if changes.UserData != nil {
-			userData, err := e.UserData.AsString()
+			userData, err := fi.ResourceAsString(e.UserData)
 			if err != nil {
 				return err
 			}

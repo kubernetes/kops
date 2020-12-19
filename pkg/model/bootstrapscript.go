@@ -187,14 +187,14 @@ func (b *BootstrapScript) buildEnvironmentVariables(cluster *kops.Cluster) (map[
 
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
-func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
+func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
 	// Bastions can have AdditionalUserData, but if there isn't any skip this part
 	if ig.IsBastion() && len(ig.Spec.AdditionalUserData) == 0 {
 		templateResource, err := NewTemplateResource("nodeup", "", nil, nil)
 		if err != nil {
 			return nil, err
 		}
-		return fi.WrapResource(templateResource), nil
+		return templateResource, nil
 	}
 
 	task := &BootstrapScript{
@@ -204,7 +204,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.ModelBuilderContext, ig *k
 	}
 	task.resource.Task = task
 	c.AddTask(task)
-	return fi.WrapResource(&task.resource), nil
+	return &task.resource, nil
 }
 
 func (b *BootstrapScript) GetName() *string {
