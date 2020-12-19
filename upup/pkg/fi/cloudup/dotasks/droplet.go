@@ -42,7 +42,7 @@ type Droplet struct {
 	SSHKey   *string
 	Tags     []string
 	Count    int
-	UserData *fi.ResourceHolder
+	UserData fi.Resource
 }
 
 var _ fi.Task = &Droplet{}
@@ -120,7 +120,7 @@ func (d *Droplet) Run(c *fi.Context) error {
 }
 
 func (_ *Droplet) RenderDO(t *do.DOAPITarget, a, e, changes *Droplet) error {
-	userData, err := e.UserData.AsString()
+	userData, err := fi.ResourceAsString(e.UserData)
 	if err != nil {
 		return err
 	}
