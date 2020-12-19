@@ -33,7 +33,6 @@ import (
 
 type TerraformTarget struct {
 	Cloud   fi.Cloud
-	Region  string
 	Project string
 
 	ClusterName string
@@ -52,10 +51,9 @@ type TerraformTarget struct {
 	clusterSpecTarget *kops.TargetSpec
 }
 
-func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
+func NewTerraformTarget(cloud fi.Cloud, project string, outDir string, clusterSpecTarget *kops.TargetSpec) *TerraformTarget {
 	return &TerraformTarget{
 		Cloud:   cloud,
-		Region:  region,
 		Project: project,
 
 		outDir:            outDir,
