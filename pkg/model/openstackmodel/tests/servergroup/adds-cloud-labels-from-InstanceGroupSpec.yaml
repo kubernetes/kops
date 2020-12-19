@@ -62,10 +62,8 @@ ServerGroup:
   Policies:
   - anti-affinity
 UserData:
-  Name: ""
-  Resource:
-    task:
-      Name: node
+  task:
+    Name: node
 ---
 AdditionalSecurityGroups: null
 ID: null
