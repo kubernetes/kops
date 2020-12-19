@@ -633,6 +633,11 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.NewPodScaleUpDelay != nil {
+		in, out := &in.NewPodScaleUpDelay, &out.NewPodScaleUpDelay
+		*out = new(string)
+		**out = **in
+	}
 	if in.Image != nil {
 		in, out := &in.Image, &out.Image
 		*out = new(string)
