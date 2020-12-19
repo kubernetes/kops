@@ -168,7 +168,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		if p.Metadata != nil {
 			actual.Metadata = make(map[string]fi.Resource)
 			for _, meta := range p.Metadata.Items {
-				actual.Metadata[meta.Key] = fi.WrapResource(fi.NewStringResource(fi.StringValue(meta.Value)))
+				actual.Metadata[meta.Key] = fi.NewStringResource(fi.StringValue(meta.Value))
 			}
 		}
 

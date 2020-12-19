@@ -42,7 +42,7 @@ func TestLaunchTemplateTerraformRender(t *testing.T) {
 				RootVolumeSize:               fi.Int64(64),
 				SSHKey: &SSHKey{
 					Name:      fi.String("newkey"),
-					PublicKey: fi.WrapResource(fi.NewStringResource("newkey")),
+					PublicKey: fi.NewStringResource("newkey"),
 				},
 				SecurityGroups: []*SecurityGroup{
 					{Name: fi.String("nodes-1"), ID: fi.String("1111")},
