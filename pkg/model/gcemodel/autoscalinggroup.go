@@ -46,23 +46,26 @@ type AutoscalingGroupModelBuilder struct {
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
-func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	for _, ig := range b.InstanceGroups {
+// Build the GCE instance template object for an InstanceGroup
+// We are then able to extract out the fields when running with the clusterapi.
+func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.ModelBuilderContext, ig *kops.InstanceGroup) (*gcetasks.InstanceTemplate, error) {
+	// Indented to keep diff manageable
+	// TODO: Remove spurious indent
+	{
+		var err error
 		name := b.SafeObjectName(ig.ObjectMeta.Name)
 
 		startupScript, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		// InstanceTemplate
-		var instanceTemplate *gcetasks.InstanceTemplate
 		{
 			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
 			if volumeSize == 0 {
 				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
@@ -99,12 +102,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if len(storagePaths) == 0 {
 				t.Scopes = append(t.Scopes, "storage-ro")
@@ -161,15 +164,19 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			//}
 			//t.Labels = labels
 
-			c.AddTask(t)
-
-			instanceTemplate = t
+			return t, nil
 		}
+	}
+}
 
+func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map[string]int, error) {
+	// Indented to keep diff manageable
+	// TODO: Remove spurious indent
+	{
 		// AutoscalingGroup
 		zones, err := b.FindZonesForInstanceGroup(ig)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// TODO: Duplicated from aws - move to defaults?
@@ -206,9 +213,29 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 		}
 
-		for i, targetSize := range targetSizes {
-			zone := zones[i]
+		instanceCountByZone := make(map[string]int)
+		for i, zone := range zones {
+			instanceCountByZone[zone] = targetSizes[i]
+		}
+		return instanceCountByZone, nil
+	}
+}
 
+func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	for _, ig := range b.InstanceGroups {
+		instanceTemplate, err := b.buildInstanceTemplate(c, ig)
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(instanceTemplate)
+
+		instanceCountByZone, err := b.splitToZones(ig)
+		if err != nil {
+			return err
+		}
+
+		for zone, targetSize := range instanceCountByZone {
 			name := gce.NameForInstanceGroupManager(b.Cluster, ig, zone)
 
 			t := &gcetasks.InstanceGroupManager{
@@ -230,14 +257,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			c.AddTask(t)
 		}
-
-		//{{ if HasTag "_master_lb" }}
-		//# Attach ASG to ELB
-		//loadBalancerAttachment/masters.{{ $m.Name }}.{{ SafeClusterName }}:
-		//loadBalancer: loadBalancer/api.{{ ClusterName }}
-		//autoscalingGroup: autoscalingGroup/{{ $m.Name }}.{{ ClusterName }}
-		//{{ end }}
-
 	}
 
 	return nil
