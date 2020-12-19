@@ -26,19 +26,11 @@ import (
 func init() {
 	// Register our custom printer functions
 	reflectutils.RegisterPrinter(PrintResource)
-	reflectutils.RegisterPrinter(PrintResourceHolder)
 	reflectutils.RegisterPrinter(PrintCompareWithID)
 }
 
 func PrintResource(o interface{}) (string, bool) {
 	if _, ok := o.(Resource); !ok {
-		return "", false
-	}
-	return "<resource>", true
-}
-
-func PrintResourceHolder(o interface{}) (string, bool) {
-	if _, ok := o.(*ResourceHolder); !ok {
 		return "", false
 	}
 	return "<resource>", true

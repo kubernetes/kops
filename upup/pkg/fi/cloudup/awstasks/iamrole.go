@@ -108,7 +108,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 			}
 		}
 
-		actual.RolePolicyDocument = fi.WrapResource(fi.NewStringResource(actualPolicy))
+		actual.RolePolicyDocument = fi.NewStringResource(actualPolicy)
 	}
 
 	klog.V(2).Infof("found matching IAMRole %q", aws.StringValue(actual.ID))

@@ -125,7 +125,7 @@ func (l *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		if err != nil {
 			return nil, fmt.Errorf("error decoding UserData: %v", err)
 		}
-		actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
+		actual.UserData = fi.NewStringResource(string(userData))
 	}
 
 	actual.ScalingGroup = &ScalingGroup{

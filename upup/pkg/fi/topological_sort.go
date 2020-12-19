@@ -122,8 +122,6 @@ func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 				dependencies = append(dependencies, dep)
 			} else if _, ok := intf.(Resource); ok {
 				// Ignore: not a dependency, unless we explicitly implement HasDependencies (e.g. TaskDependentResource)
-			} else if _, ok := intf.(*ResourceHolder); ok {
-				// Ignore: not a dependency (?)
 			} else {
 				return fmt.Errorf("Unhandled type for %q: %T", path, v.Interface())
 			}

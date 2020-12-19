@@ -167,7 +167,7 @@ func (o *LaunchSpec) Find(c *fi.Context) (*LaunchSpec, error) {
 			}
 		}
 
-		actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
+		actual.UserData = fi.NewStringResource(string(userData))
 	}
 
 	// IAM instance profile.

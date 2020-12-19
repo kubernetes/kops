@@ -34,7 +34,7 @@ func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	t := &alitasks.SSHKey{
 		Name:      s(name),
 		Lifecycle: b.Lifecycle,
-		PublicKey: fi.WrapResource(fi.NewStringResource(string(b.SSHPublicKeys[0]))),
+		PublicKey: fi.NewStringResource(string(b.SSHPublicKeys[0])),
 	}
 	c.AddTask(t)
 

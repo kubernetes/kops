@@ -246,7 +246,7 @@ func (o *Ocean) Find(c *fi.Context) (*Ocean, error) {
 				}
 			}
 
-			actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
+			actual.UserData = fi.NewStringResource(string(userData))
 		}
 
 		// EBS optimization.
