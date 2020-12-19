@@ -42,12 +42,28 @@ const (
 )
 
 func findDockerAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*url.URL, *hashing.Hash, error) {
-	if c.Spec.Docker == nil || fi.StringValue(c.Spec.Docker.Version) == "" {
-		return nil, nil, fmt.Errorf("unable to find Docker version")
+	if c.Spec.Docker == nil {
+		return nil, nil, fmt.Errorf("unable to find Docker config")
+	}
+	docker := c.Spec.Docker
+
+	if docker.Packages != nil {
+		if arch == architectures.ArchitectureAmd64 && docker.Packages.UrlAmd64 != nil && docker.Packages.HashAmd64 != nil {
+			assetUrl := fi.StringValue(docker.Packages.UrlAmd64)
+			assetHash := fi.StringValue(docker.Packages.HashAmd64)
+			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
+		}
+		if arch == architectures.ArchitectureArm64 && docker.Packages.UrlArm64 != nil && docker.Packages.HashArm64 != nil {
+			assetUrl := fi.StringValue(docker.Packages.UrlArm64)
+			assetHash := fi.StringValue(docker.Packages.HashArm64)
+			return findAssetsUrlHash(assetBuilder, assetUrl, assetHash)
+		}
 	}
 
-	version := fi.StringValue(c.Spec.Docker.Version)
-
+	version := fi.StringValue(docker.Version)
+	if version == "" {
+		return nil, nil, fmt.Errorf("unable to find Docker version")
+	}
 	assetUrl, assetHash, err := findDockerVersionUrlHash(arch, version)
 	if err != nil {
 		return nil, nil, err
