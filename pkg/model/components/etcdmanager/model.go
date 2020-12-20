@@ -81,7 +81,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(&fitasks.ManagedFile{
-			Contents:  fi.WrapResource(fi.NewBytesResource(manifestYAML)),
+			Contents:  fi.NewBytesResource(manifestYAML),
 			Lifecycle: b.Lifecycle,
 			Location:  fi.String("manifests/etcd/" + name + ".yaml"),
 			Name:      fi.String("manifests-etcdmanager-" + name),
@@ -105,7 +105,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(&fitasks.ManagedFile{
-			Contents:  fi.WrapResource(fi.NewBytesResource(d)),
+			Contents:  fi.NewBytesResource(d),
 			Lifecycle: b.Lifecycle,
 			Base:      fi.String(backupStore),
 			// TODO: We need this to match the backup base (currently)

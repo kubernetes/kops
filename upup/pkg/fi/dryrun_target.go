@@ -330,7 +330,7 @@ func buildChangeList(a, e, changes Task) ([]change, error) {
 				switch fieldValE.Interface().(type) {
 				//case SimpleUnit:
 				//	ignored = true
-				case Resource, ResourceHolder:
+				case Resource:
 					resA, okA := tryResourceAsString(fieldValA)
 					resE, okE := tryResourceAsString(fieldValE)
 					if okA && okE {
@@ -373,14 +373,6 @@ func tryResourceAsString(v reflect.Value) (string, bool) {
 	intf := v.Interface()
 	if res, ok := intf.(Resource); ok {
 		s, err := ResourceAsString(res)
-		if err != nil {
-			klog.Warningf("error converting to resource: %v", err)
-			return "", false
-		}
-		return s, true
-	}
-	if res, ok := intf.(*ResourceHolder); ok {
-		s, err := res.AsString()
 		if err != nil {
 			klog.Warningf("error converting to resource: %v", err)
 			return "", false

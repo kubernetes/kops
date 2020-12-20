@@ -45,7 +45,7 @@ func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Shared:    fi.StringValue(b.Cluster.Spec.SSHKeyName) != "",
 	}
 	if len(b.SSHPublicKeys) >= 1 {
-		t.PublicKey = fi.WrapResource(fi.NewStringResource(string(b.SSHPublicKeys[0])))
+		t.PublicKey = fi.NewStringResource(string(b.SSHPublicKeys[0]))
 	}
 	c.AddTask(t)
 

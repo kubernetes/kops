@@ -71,7 +71,7 @@ func (b *KubeApiserverBuilder) Build(c *fi.ModelBuilderContext) error {
 	location := "manifests/static/" + key + ".yaml"
 
 	c.AddTask(&fitasks.ManagedFile{
-		Contents:  fi.WrapResource(fi.NewBytesResource(manifestYAML)),
+		Contents:  fi.NewBytesResource(manifestYAML),
 		Lifecycle: b.Lifecycle,
 		Location:  fi.String(location),
 		Name:      fi.String("manifests-static-" + key),
