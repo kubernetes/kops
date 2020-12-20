@@ -741,8 +741,8 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	cluster.Spec.Networking = &api.NetworkingSpec{}
 	switch opt.Networking {
-	case "kubenet", "":
-		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+	//case "kubenet", "":
+	//	cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
 	case "external":
 		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
 	case "cni":
@@ -767,7 +767,7 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
 			Backend: "udp",
 		}
-	case "calico":
+	case "kubenet", "", "calico":
 		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
 	case "canal":
 		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}

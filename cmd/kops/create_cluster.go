@@ -477,9 +477,10 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		cluster.Spec.DNSZone = c.DNSZone
 	}
 
-	if c.ContainerRuntime != "" {
-		cluster.Spec.ContainerRuntime = c.ContainerRuntime
-	}
+	//if c.ContainerRuntime != "" {
+	//	cluster.Spec.ContainerRuntime = c.ContainerRuntime
+	//}
+	cluster.Spec.ContainerRuntime = "containerd"
 
 	if c.NetworkCIDR != "" {
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
