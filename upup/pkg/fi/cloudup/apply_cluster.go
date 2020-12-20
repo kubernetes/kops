@@ -64,6 +64,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
+	"k8s.io/kops/util/pkg/mirrors"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -88,11 +89,8 @@ type ApplyClusterCmd struct {
 
 	InstanceGroups []*kops.InstanceGroup
 
-	// NodeUpSource is the location from which we download nodeup
-	NodeUpSource map[architectures.Architecture]string
-
-	// NodeUpHash is the sha hash
-	NodeUpHash map[architectures.Architecture]string
+	// NodeUpAssets are the assets for downloading nodeup
+	NodeUpAssets map[architectures.Architecture]*mirrors.MirroredAsset
 
 	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	TargetName string
@@ -107,7 +105,7 @@ type ApplyClusterCmd struct {
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets map[architectures.Architecture][]*MirroredAsset
+	Assets map[architectures.Architecture][]*mirrors.MirroredAsset
 
 	Clientset simple.Clientset
 
@@ -604,8 +602,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		NodeUpConfigBuilder: configBuilder,
-		NodeUpSource:        c.NodeUpSource,
-		NodeUpSourceHash:    c.NodeUpHash,
+		NodeUpAssets:        c.NodeUpAssets,
 	}
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
@@ -1041,13 +1038,10 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + c.Cluster.Spec.KubernetesVersion
 	}
 
-	c.Assets = make(map[architectures.Architecture][]*MirroredAsset)
-	c.NodeUpSource = make(map[architectures.Architecture]string)
-	c.NodeUpHash = make(map[architectures.Architecture]string)
+	c.Assets = make(map[architectures.Architecture][]*mirrors.MirroredAsset)
+	c.NodeUpAssets = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	for _, arch := range architectures.GetSupported() {
-		c.Assets[arch] = []*MirroredAsset{}
-		c.NodeUpSource[arch] = ""
-		c.NodeUpHash[arch] = ""
+		c.Assets[arch] = []*mirrors.MirroredAsset{}
 
 		k8sAssetsNames := []string{
 			fmt.Sprintf("/bin/linux/%s/kubelet", arch),
@@ -1069,21 +1063,21 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 			if err != nil {
 				return err
 			}
-			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(u, hash))
+			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(u, hash))
 		}
 
 		cniAsset, cniAssetHash, err := findCNIAssets(c.Cluster, assetBuilder, arch)
 		if err != nil {
 			return err
 		}
-		c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(cniAsset, cniAssetHash))
+		c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(cniAsset, cniAssetHash))
 
 		if c.Cluster.Spec.Networking.LyftVPC != nil {
 			lyftAsset, lyftAssetHash, err := findLyftVPCAssets(c.Cluster, assetBuilder, arch)
 			if err != nil {
 				return err
 			}
-			c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(lyftAsset, lyftAssetHash))
+			c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(lyftAsset, lyftAssetHash))
 		}
 
 		var containerRuntimeAssetUrl *url.URL
@@ -1099,14 +1093,13 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 		if err != nil {
 			return err
 		}
-		c.Assets[arch] = append(c.Assets[arch], BuildMirroredAsset(containerRuntimeAssetUrl, containerRuntimeAssetHash))
+		c.Assets[arch] = append(c.Assets[arch], mirrors.BuildMirroredAsset(containerRuntimeAssetUrl, containerRuntimeAssetHash))
 
 		asset, err := NodeUpAsset(assetBuilder, arch)
 		if err != nil {
 			return err
 		}
-		c.NodeUpSource[arch] = strings.Join(asset.Locations, ",")
-		c.NodeUpHash[arch] = asset.Hash.Hex()
+		c.NodeUpAssets[arch] = asset
 
 		// Explicitly add the protokube image,
 		// otherwise when the Target is DryRun this asset is not added
@@ -1250,7 +1243,7 @@ func (c *ApplyClusterCmd) newNodeUpConfigBuilder(assetBuilder *assets.AssetBuild
 					return nil, err
 				}
 
-				asset := BuildMirroredAsset(u, hash)
+				asset := mirrors.BuildMirroredAsset(u, hash)
 
 				protokubeImage[role][arch] = &nodeup.Image{
 					Name:    kopsbase.DefaultProtokubeImageName(),

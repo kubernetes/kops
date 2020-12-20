@@ -38,6 +38,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/mirrors"
 )
 
 type NodeUpConfigBuilder interface {
@@ -46,8 +47,7 @@ type NodeUpConfigBuilder interface {
 
 // BootstrapScriptBuilder creates the bootstrap script
 type BootstrapScriptBuilder struct {
-	NodeUpSource        map[architectures.Architecture]string
-	NodeUpSourceHash    map[architectures.Architecture]string
+	NodeUpAssets        map[architectures.Architecture]*mirrors.MirroredAsset
 	NodeUpConfigBuilder NodeUpConfigBuilder
 }
 
@@ -227,16 +227,16 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 func (b *BootstrapScript) Run(c *fi.Context) error {
 	functions := template.FuncMap{
 		"NodeUpSourceAmd64": func() string {
-			return b.builder.NodeUpSource[architectures.ArchitectureAmd64]
+			return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Locations, ",")
 		},
 		"NodeUpSourceHashAmd64": func() string {
-			return b.builder.NodeUpSourceHash[architectures.ArchitectureAmd64]
+			return b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Hash.Hex()
 		},
 		"NodeUpSourceArm64": func() string {
-			return b.builder.NodeUpSource[architectures.ArchitectureArm64]
+			return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureArm64].Locations, ",")
 		},
 		"NodeUpSourceHashArm64": func() string {
-			return b.builder.NodeUpSourceHash[architectures.ArchitectureArm64]
+			return b.builder.NodeUpAssets[architectures.ArchitectureArm64].Hash.Hex()
 		},
 		"KubeEnv": func() (string, error) {
 			return b.kubeEnv(b.ig, c)
