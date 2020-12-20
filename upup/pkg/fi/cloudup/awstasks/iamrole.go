@@ -41,7 +41,7 @@ type IAMRole struct {
 	Lifecycle *fi.Lifecycle
 
 	Name                *string
-	RolePolicyDocument  *fi.ResourceHolder // "inline" IAM policy
+	RolePolicyDocument  fi.Resource // "inline" IAM policy
 	PermissionsBoundary *string
 
 	// ExportWithId will expose the name & ARN for reuse as part of a larger system.  Only supported by terraform currently.
@@ -87,7 +87,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		// The RolePolicyDocument is reformatted by AWS
 		// We parse both as JSON; if the json forms are equal we pretend the actual value is the expected value
 		if e.RolePolicyDocument != nil {
-			expectedPolicy, err := e.RolePolicyDocument.AsString()
+			expectedPolicy, err := fi.ResourceAsString(e.RolePolicyDocument)
 			if err != nil {
 				return nil, fmt.Errorf("error reading expected RolePolicyDocument for IAMRole %q: %v", aws.StringValue(e.Name), err)
 			}
@@ -108,7 +108,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 			}
 		}
 
-		actual.RolePolicyDocument = fi.WrapResource(fi.NewStringResource(actualPolicy))
+		actual.RolePolicyDocument = fi.NewStringResource(actualPolicy)
 	}
 
 	klog.V(2).Infof("found matching IAMRole %q", aws.StringValue(actual.ID))
@@ -139,7 +139,7 @@ func (s *IAMRole) CheckChanges(a, e, changes *IAMRole) error {
 }
 
 func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error {
-	policy, err := e.RolePolicyDocument.AsString()
+	policy, err := fi.ResourceAsString(e.RolePolicyDocument)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
 	}
@@ -170,7 +170,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 
 			actualPolicy := ""
 			if a.RolePolicyDocument != nil {
-				actualPolicy, err = a.RolePolicyDocument.AsString()
+				actualPolicy, err = fi.ResourceAsString(a.RolePolicyDocument)
 				if err != nil {
 					return fmt.Errorf("error reading actual policy document: %v", err)
 				}
@@ -263,7 +263,7 @@ type cloudformationIAMRole struct {
 }
 
 func (_ *IAMRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMRole) error {
-	jsonString, err := e.RolePolicyDocument.AsBytes()
+	jsonString, err := fi.ResourceAsBytes(e.RolePolicyDocument)
 	if err != nil {
 		return err
 	}

@@ -317,7 +317,7 @@ func (e *Elastigroup) Find(c *fi.Context) (*Elastigroup, error) {
 				}
 			}
 
-			actual.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
+			actual.UserData = fi.NewStringResource(string(userData))
 		}
 
 		// Network interfaces.

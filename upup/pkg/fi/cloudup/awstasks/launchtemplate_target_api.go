@@ -275,7 +275,7 @@ func (t *LaunchTemplate) Find(c *fi.Context) (*LaunchTemplate, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error decoding userdata: %s", err)
 		}
-		actual.UserData = fi.WrapResource(fi.NewStringResource(string(ud)))
+		actual.UserData = fi.NewStringResource(string(ud))
 	}
 
 	// @step: add tags

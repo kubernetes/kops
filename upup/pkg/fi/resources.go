@@ -204,47 +204,6 @@ func (r *VFSResource) Open() (io.Reader, error) {
 	return b, err
 }
 
-// ResourceHolder is machinery leftover from when there were YAML models.
-type ResourceHolder struct {
-	Name     string
-	Resource Resource
-}
-
-var _ Resource = &ResourceHolder{}
-var _ HasDependencies = &ResourceHolder{}
-
-// Open implements the Open method of the Resource interface
-func (o *ResourceHolder) Open() (io.Reader, error) {
-	if o.Resource == nil {
-		return nil, fmt.Errorf("ResourceHolder %q is not bound", o.Name)
-	}
-	return o.Resource.Open()
-}
-
-func (r *ResourceHolder) GetDependencies(tasks map[string]Task) []Task {
-	if hasDependencies, ok := r.Resource.(HasDependencies); ok {
-		return hasDependencies.GetDependencies(tasks)
-	}
-	return nil
-}
-
-// AsString returns the value of the resource as a string
-func (o *ResourceHolder) AsString() (string, error) {
-	return ResourceAsString(o.Resource)
-}
-
-// AsString returns the value of the resource as a byte-slice
-func (o *ResourceHolder) AsBytes() ([]byte, error) {
-	return ResourceAsBytes(o.Resource)
-}
-
-// WrapResource creates a ResourceHolder for the specified resource
-func WrapResource(r Resource) *ResourceHolder {
-	return &ResourceHolder{
-		Resource: r,
-	}
-}
-
 type TaskDependentResource struct {
 	Resource Resource `json:"resource,omitempty"`
 	Task     Task     `json:"task,omitempty"`
