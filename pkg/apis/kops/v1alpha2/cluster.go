@@ -617,18 +617,31 @@ type EnvVar struct {
 }
 
 type GossipConfig struct {
-	Protocol  *string       `json:"protocol,omitempty"`
-	Listen    *string       `json:"listen,omitempty"`
-	Secret    *string       `json:"secret,omitempty"`
-	Secondary *GossipConfig `json:"secondary,omitempty"`
+	Protocol  *string                `json:"protocol,omitempty"`
+	Listen    *string                `json:"listen,omitempty"`
+	Secret    *string                `json:"secret,omitempty"`
+	Secondary *GossipConfigSecondary `json:"secondary,omitempty"`
+}
+
+type GossipConfigSecondary struct {
+	Protocol *string `json:"protocol,omitempty"`
+	Listen   *string `json:"listen,omitempty"`
+	Secret   *string `json:"secret,omitempty"`
 }
 
 type DNSControllerGossipConfig struct {
-	Protocol  *string                    `json:"protocol,omitempty"`
-	Listen    *string                    `json:"listen,omitempty"`
-	Secret    *string                    `json:"secret,omitempty"`
-	Secondary *DNSControllerGossipConfig `json:"secondary,omitempty"`
-	Seed      *string                    `json:"seed,omitempty"`
+	Protocol  *string                             `json:"protocol,omitempty"`
+	Listen    *string                             `json:"listen,omitempty"`
+	Secret    *string                             `json:"secret,omitempty"`
+	Secondary *DNSControllerGossipConfigSecondary `json:"secondary,omitempty"`
+	Seed      *string                             `json:"seed,omitempty"`
+}
+
+type DNSControllerGossipConfigSecondary struct {
+	Protocol *string `json:"protocol,omitempty"`
+	Listen   *string `json:"listen,omitempty"`
+	Secret   *string `json:"secret,omitempty"`
+	Seed     *string `json:"seed,omitempty"`
 }
 
 type RollingUpdate struct {

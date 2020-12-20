@@ -515,7 +515,17 @@ spec:
                     type: string
                   protocol:
                     type: string
-                  secondary: {}
+                  secondary:
+                    properties:
+                      listen:
+                        type: string
+                      protocol:
+                        type: string
+                      secret:
+                        type: string
+                      seed:
+                        type: string
+                    type: object
                   secret:
                     type: string
                   seed:
@@ -885,7 +895,15 @@ spec:
                     type: string
                   protocol:
                     type: string
-                  secondary: {}
+                  secondary:
+                    properties:
+                      listen:
+                        type: string
+                      protocol:
+                        type: string
+                      secret:
+                        type: string
+                    type: object
                   secret:
                     type: string
                 type: object
