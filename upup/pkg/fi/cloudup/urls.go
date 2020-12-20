@@ -33,15 +33,12 @@ import (
 
 const (
 	defaultKopsBaseURL = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
-
-	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
-	defaultKopsMirrorBase = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
 )
 
 var kopsBaseURL *url.URL
 
 // nodeUpAsset caches the nodeup download urls/hash
-var nodeUpAsset map[architectures.Architecture]*MirroredAsset
+var nodeUpAsset map[architectures.Architecture]*mirrors.MirroredAsset
 
 // protokubeLocation caches the protokubeLocation url
 var protokubeLocation map[architectures.Architecture]*url.URL
@@ -102,9 +99,9 @@ func SetKopsAssetsLocations(assetsBuilder *assets.AssetBuilder) error {
 }
 
 // NodeUpAsset returns the asset for where nodeup should be downloaded
-func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*MirroredAsset, error) {
+func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*mirrors.MirroredAsset, error) {
 	if nodeUpAsset == nil {
-		nodeUpAsset = make(map[architectures.Architecture]*MirroredAsset)
+		nodeUpAsset = make(map[architectures.Architecture]*mirrors.MirroredAsset)
 	}
 	if nodeUpAsset[arch] != nil {
 		// Avoid repeated logging
@@ -138,7 +135,7 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 		klog.Warningf("Using nodeup location from NODEUP_URL(_%s) env var: %q", strings.ToUpper(string(arch)), u.String())
 	}
 
-	asset := BuildMirroredAsset(u, hash)
+	asset := mirrors.BuildMirroredAsset(u, hash)
 
 	nodeUpAsset[arch] = asset
 
@@ -207,41 +204,4 @@ func KopsFileURL(file string, assetBuilder *assets.AssetBuilder) (*url.URL, *has
 	}
 
 	return fileURL, hash, nil
-}
-
-type MirroredAsset struct {
-	Locations []string
-	Hash      *hashing.Hash
-}
-
-// BuildMirroredAsset checks to see if this is a file under the standard base location, and if so constructs some mirror locations
-func BuildMirroredAsset(u *url.URL, hash *hashing.Hash) *MirroredAsset {
-	baseURLString := fmt.Sprintf(defaultKopsMirrorBase, kops.Version)
-	if !strings.HasSuffix(baseURLString, "/") {
-		baseURLString += "/"
-	}
-
-	a := &MirroredAsset{
-		Hash: hash,
-	}
-
-	a.Locations = []string{u.String()}
-	if strings.HasPrefix(u.String(), baseURLString) {
-		if hash == nil {
-			klog.Warningf("not using mirrors for asset %s as it does not have a known hash", u.String())
-		} else {
-			a.Locations = mirrors.FindUrlMirrors(u.String())
-		}
-	}
-
-	return a
-}
-
-func (a *MirroredAsset) CompactString() string {
-	var s string
-	if a.Hash != nil {
-		s = a.Hash.Hex()
-	}
-	s += "@" + strings.Join(a.Locations, ",")
-	return s
 }
