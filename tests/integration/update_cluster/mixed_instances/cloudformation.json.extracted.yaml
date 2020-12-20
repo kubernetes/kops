@@ -264,12 +264,12 @@ Resources.AWSEC2LaunchTemplatemasterustest1amastersmixedinstancesexamplecom.Prop
     amd64:
     - 5028b6548e8838e1e0851f10e8bd8d9a6ef1693e3f1dac09f7d50c4c2873f20b@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubelet
     - 6a68756a2d3d04b4d0f52b00de6493ba2c1fcb28b32f3e4a0e99b3d9f6c4e8ed@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubectl
-    - 994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz
+    - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
     - 9f1ec28e357a8f18e9561129239caf9c0807d74756e21cc63637c7fdeaafe847@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.14.tgz
     arm64:
     - 21b0fb4682deea19be3ac160403db9858dc9d02b101d60eb6fc22a86523ec434@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubelet
     - 9f466ff8d40097914a1ded0288ef8b9eb6f4ad39a9990cb2c0f8d1a710013a4f@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubectl
-    - 43fbf750c5eccb10accffeeb092693c32b236fb25d919cf058c91a677822c999@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz
+    - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
     - 8350eaa0c0965bb8eb9d45a014f4b6728c985715f56466077dfe6feb271d9518@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.14.tgz
   ClusterName: mixedinstances.example.com
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
@@ -589,12 +589,12 @@ Resources.AWSEC2LaunchTemplatemasterustest1bmastersmixedinstancesexamplecom.Prop
     amd64:
     - 5028b6548e8838e1e0851f10e8bd8d9a6ef1693e3f1dac09f7d50c4c2873f20b@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubelet
     - 6a68756a2d3d04b4d0f52b00de6493ba2c1fcb28b32f3e4a0e99b3d9f6c4e8ed@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubectl
-    - 994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz
+    - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
     - 9f1ec28e357a8f18e9561129239caf9c0807d74756e21cc63637c7fdeaafe847@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.14.tgz
     arm64:
     - 21b0fb4682deea19be3ac160403db9858dc9d02b101d60eb6fc22a86523ec434@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubelet
     - 9f466ff8d40097914a1ded0288ef8b9eb6f4ad39a9990cb2c0f8d1a710013a4f@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubectl
-    - 43fbf750c5eccb10accffeeb092693c32b236fb25d919cf058c91a677822c999@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz
+    - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
     - 8350eaa0c0965bb8eb9d45a014f4b6728c985715f56466077dfe6feb271d9518@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.14.tgz
   ClusterName: mixedinstances.example.com
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
@@ -914,12 +914,12 @@ Resources.AWSEC2LaunchTemplatemasterustest1cmastersmixedinstancesexamplecom.Prop
     amd64:
     - 5028b6548e8838e1e0851f10e8bd8d9a6ef1693e3f1dac09f7d50c4c2873f20b@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubelet
     - 6a68756a2d3d04b4d0f52b00de6493ba2c1fcb28b32f3e4a0e99b3d9f6c4e8ed@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubectl
-    - 994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz
+    - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
     - 9f1ec28e357a8f18e9561129239caf9c0807d74756e21cc63637c7fdeaafe847@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.14.tgz
     arm64:
     - 21b0fb4682deea19be3ac160403db9858dc9d02b101d60eb6fc22a86523ec434@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubelet
     - 9f466ff8d40097914a1ded0288ef8b9eb6f4ad39a9990cb2c0f8d1a710013a4f@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubectl
-    - 43fbf750c5eccb10accffeeb092693c32b236fb25d919cf058c91a677822c999@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz
+    - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
     - 8350eaa0c0965bb8eb9d45a014f4b6728c985715f56466077dfe6feb271d9518@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.14.tgz
   ClusterName: mixedinstances.example.com
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
@@ -1160,12 +1160,12 @@ Resources.AWSEC2LaunchTemplatenodesmixedinstancesexamplecom.Properties.LaunchTem
     amd64:
     - 5028b6548e8838e1e0851f10e8bd8d9a6ef1693e3f1dac09f7d50c4c2873f20b@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubelet
     - 6a68756a2d3d04b4d0f52b00de6493ba2c1fcb28b32f3e4a0e99b3d9f6c4e8ed@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/amd64/kubectl
-    - 994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz
+    - 977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
     - 9f1ec28e357a8f18e9561129239caf9c0807d74756e21cc63637c7fdeaafe847@https://download.docker.com/linux/static/stable/x86_64/docker-19.03.14.tgz
     arm64:
     - 21b0fb4682deea19be3ac160403db9858dc9d02b101d60eb6fc22a86523ec434@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubelet
     - 9f466ff8d40097914a1ded0288ef8b9eb6f4ad39a9990cb2c0f8d1a710013a4f@https://storage.googleapis.com/kubernetes-release/release/v1.18.9/bin/linux/arm64/kubectl
-    - 43fbf750c5eccb10accffeeb092693c32b236fb25d919cf058c91a677822c999@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-arm64-v0.8.6.tgz
+    - ae13d7b5c05bd180ea9b5b68f44bdaa7bfb41034a2ef1d68fd8e1259797d642f@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-arm64-v0.8.7.tgz
     - 8350eaa0c0965bb8eb9d45a014f4b6728c985715f56466077dfe6feb271d9518@https://download.docker.com/linux/static/stable/aarch64/docker-19.03.14.tgz
   ClusterName: mixedinstances.example.com
   ConfigBase: memfs://clusters.example.com/mixedinstances.example.com
