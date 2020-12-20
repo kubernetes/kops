@@ -29,6 +29,8 @@ import (
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/hashing"
+	"k8s.io/kops/util/pkg/mirrors"
 )
 
 type serverGroupModelBuilderTestInput struct {
@@ -991,13 +993,15 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 	clusterLifecycle := fi.LifecycleSync
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		NodeUpConfigBuilder: &nodeupConfigBuilder{},
-		NodeUpSource: map[architectures.Architecture]string{
-			architectures.ArchitectureAmd64: "source-amd64",
-			architectures.ArchitectureArm64: "source-arm64",
-		},
-		NodeUpSourceHash: map[architectures.Architecture]string{
-			architectures.ArchitectureAmd64: "source-hash-amd64",
-			architectures.ArchitectureArm64: "source-hash-arm64",
+		NodeUpAssets: map[architectures.Architecture]*mirrors.MirroredAsset{
+			architectures.ArchitectureAmd64: {
+				Locations: []string{"nodeup-amd64-1", "nodeup-amd64-2"},
+				Hash:      hashing.MustFromString("833723369ad345a88dd85d61b1e77336d56e61b864557ded71b92b6e34158e6a"),
+			},
+			architectures.ArchitectureArm64: {
+				Locations: []string{"nodeup-arm64-1", "nodeup-arm64-2"},
+				Hash:      hashing.MustFromString("e525c28a65ff0ce4f95f9e730195b4e67fdcb15ceb1f36b5ad6921a8a4490c71"),
+			},
 		},
 	}
 

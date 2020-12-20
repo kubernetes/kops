@@ -94,6 +94,14 @@ func (ha HashAlgorithm) FromString(s string) (*Hash, error) {
 	return &Hash{Algorithm: ha, HashValue: hashValue}, nil
 }
 
+func MustFromString(s string) *Hash {
+	h, err := FromString(s)
+	if err != nil {
+		klog.Fatalf("FromString(%q) failed with %v", s, err)
+	}
+	return h
+}
+
 func FromString(s string) (*Hash, error) {
 	for _, ha := range []HashAlgorithm{HashAlgorithmMD5, HashAlgorithmSHA1, HashAlgorithmSHA256} {
 		prefix := fmt.Sprintf("%s:", ha)

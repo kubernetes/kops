@@ -24,6 +24,7 @@ import (
 )
 
 const (
+	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
 	defaultKopsMirrorBase    = "https://kubeupv2.s3.amazonaws.com/kops/%s/"
 	githubKopsMirrorBase     = "https://github.com/kubernetes/kops/releases/download/v%s/"
 	kubernetesKopsMirrorBase = "https://artifacts.k8s.io/binaries/kops/%s/"
