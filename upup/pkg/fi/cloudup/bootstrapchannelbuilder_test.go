@@ -177,7 +177,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		}
 
 		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
-		actualManifest, err := manifestFileTask.Contents.AsString()
+		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
 		if err != nil {
 			t.Fatalf("error getting manifest as string: %v", err)
 		}
@@ -197,7 +197,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		}
 
 		manifestFileTask := manifestTask.(*fitasks.ManagedFile)
-		actualManifest, err := manifestFileTask.Contents.AsString()
+		actualManifest, err := fi.ResourceAsString(manifestFileTask.Contents)
 		if err != nil {
 			t.Fatalf("error getting manifest as string: %v", err)
 		}

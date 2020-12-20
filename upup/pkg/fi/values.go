@@ -140,16 +140,6 @@ func DebugPrint(o interface{}) string {
 	if o == nil {
 		return "<nil>"
 	}
-	if rh, ok := o.(*ResourceHolder); ok {
-		if rh == nil {
-			// Avoid go nil vs interface problems
-			return "<nil>"
-		}
-
-		if rh.Resource == nil {
-			return fmt.Sprintf("unknown resource %q", rh.Name)
-		}
-	}
 	if resource, ok := o.(Resource); ok {
 		if resource == nil {
 			// Avoid go nil vs interface problems

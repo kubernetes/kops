@@ -71,7 +71,7 @@ func (r *RAMPolicy) Find(c *fi.Context) (*RAMPolicy, error) {
 	actual := &RAMPolicy{
 		Name:           fi.String(policy.PolicyName),
 		PolicyType:     fi.String(string(policy.PolicyType)),
-		PolicyDocument: fi.WrapResource(fi.NewStringResource(defaultPolicy)),
+		PolicyDocument: fi.NewStringResource(defaultPolicy),
 	}
 
 	// Avoid spurious changes

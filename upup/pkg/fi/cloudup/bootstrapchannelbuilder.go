@@ -101,7 +101,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		a.ManifestHash = manifestHash
 
 		c.AddTask(&fitasks.ManagedFile{
-			Contents:  fi.WrapResource(fi.NewBytesResource(manifestBytes)),
+			Contents:  fi.NewBytesResource(manifestBytes),
 			Lifecycle: b.Lifecycle,
 			Location:  fi.String(manifestPath),
 			Name:      fi.String(name),
@@ -140,7 +140,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		a.ManifestHash = manifestHash
 
 		c.AddTask(&fitasks.ManagedFile{
-			Contents:  fi.WrapResource(fi.NewBytesResource(manifestBytes)),
+			Contents:  fi.NewBytesResource(manifestBytes),
 			Lifecycle: b.Lifecycle,
 			Location:  fi.String(manifestPath),
 			Name:      fi.String(name),
@@ -157,7 +157,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	name := b.Cluster.ObjectMeta.Name + "-addons-bootstrap"
 
 	c.AddTask(&fitasks.ManagedFile{
-		Contents:  fi.WrapResource(fi.NewBytesResource(addonsYAML)),
+		Contents:  fi.NewBytesResource(addonsYAML),
 		Lifecycle: b.Lifecycle,
 		Location:  fi.String("addons/bootstrap-channel.yaml"),
 		Name:      fi.String(name),

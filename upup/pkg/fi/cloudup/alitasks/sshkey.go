@@ -34,7 +34,7 @@ import (
 type SSHKey struct {
 	Name               *string
 	Lifecycle          *fi.Lifecycle
-	PublicKey          *fi.ResourceHolder
+	PublicKey          fi.Resource
 	KeyPairFingerPrint *string
 }
 
@@ -92,7 +92,7 @@ func compactKeyFingerprint(k string) string {
 
 func (s *SSHKey) Run(c *fi.Context) error {
 	if s.KeyPairFingerPrint == nil && s.PublicKey != nil {
-		publicKey, err := s.PublicKey.AsString()
+		publicKey, err := fi.ResourceAsString(s.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error reading SSH public key: %v", err)
 		}
@@ -126,7 +126,7 @@ func (_ *SSHKey) RenderALI(t *aliup.ALIAPITarget, a, e, changes *SSHKey) error {
 		}
 
 		if e.PublicKey != nil {
-			d, err := e.PublicKey.AsString()
+			d, err := fi.ResourceAsString(e.PublicKey)
 			if err != nil {
 				return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
 			}
@@ -150,7 +150,7 @@ type terraformSSHKey struct {
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
 
-	keyString, err := e.PublicKey.AsString()
+	keyString, err := fi.ResourceAsString(e.PublicKey)
 	if err != nil {
 		return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
 	}

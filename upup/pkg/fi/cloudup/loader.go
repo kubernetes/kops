@@ -166,8 +166,6 @@ func (l *Loader) processDeferrals() error {
 							v.Set(reflect.ValueOf(primary))
 						}
 						return reflectutils.SkipReflection
-					} else if _, ok := intf.(*fi.ResourceHolder); ok {
-						return reflectutils.SkipReflection
 					}
 				}
 			}

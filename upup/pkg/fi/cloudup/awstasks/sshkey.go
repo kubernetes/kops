@@ -38,7 +38,7 @@ type SSHKey struct {
 	Lifecycle *fi.Lifecycle
 	Shared    bool
 
-	PublicKey *fi.ResourceHolder
+	PublicKey fi.Resource
 
 	KeyFingerprint *string
 
@@ -106,7 +106,7 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 
 func (e *SSHKey) Run(c *fi.Context) error {
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
-		publicKey, err := e.PublicKey.AsString()
+		publicKey, err := fi.ResourceAsString(e.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error reading SSH public key: %v", err)
 		}
@@ -152,7 +152,7 @@ func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
 	}
 
 	if e.PublicKey != nil {
-		d, err := e.PublicKey.AsBytes()
+		d, err := fi.ResourceAsBytes(e.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
 		}
