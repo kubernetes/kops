@@ -564,6 +564,28 @@ spec:
     housekeepingInterval: 30s
 ```
 
+### Event QPS
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+The limit event creations per second in kubelet. Default value is `0` which means unlimited event creations.
+
+```yaml
+spec:
+  kubelet:
+    eventQPS: 0
+```
+
+### Event Burst
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+Maximum size of a bursty event records, temporarily allows event records to burst to this number, while still not exceeding EventQPS. Only used if EventQPS > 0.
+
+```yaml
+spec:
+  kubelet:
+    eventBurst: 10
+```
+
 ## kubeScheduler
 
 This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
