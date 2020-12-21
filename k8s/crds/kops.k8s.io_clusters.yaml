@@ -214,6 +214,36 @@ spec:
               cloudConfig:
                 description: CloudConfiguration defines the cloud provider configuration
                 properties:
+                  azure:
+                    description: Azure cloud-config options
+                    properties:
+                      adminUser:
+                        description: AdminUser specifies the admin user of VMs.
+                        type: string
+                      resourceGroupName:
+                        description: ResourceGroupName specifies the name of the resource
+                          group where the cluster is built. If this is empty, kops
+                          will create a new resource group whose name is same as the
+                          cluster name. If this is not empty, kops will not create
+                          a new resource group, and it will just reuse the existing
+                          resource group of the name. This follows the model that
+                          kops takes for AWS VPC.
+                        type: string
+                      routeTableName:
+                        description: RouteTableName is the name of the route table
+                          attached to the subnet that the cluster is deployed in.
+                        type: string
+                      subscriptionId:
+                        description: SubscriptionID specifies the subscription used
+                          for the cluster installation.
+                        type: string
+                      tenantId:
+                        description: TenantID is the ID of the tenant that the cluster
+                          is deployed in.
+                        type: string
+                    required:
+                    - tenantId
+                    type: object
                   disableSecurityGroupIngress:
                     description: AWS cloud-config options
                     type: boolean

@@ -43,6 +43,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/alimodel"
 	"k8s.io/kops/pkg/model/awsmodel"
+	"k8s.io/kops/pkg/model/azuremodel"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/components/etcdmanager"
 	"k8s.io/kops/pkg/model/components/kubeapiserver"
@@ -57,6 +58,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -436,7 +438,25 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with ALICloud; please delete a key using `kops delete secret`")
 			}
 		}
+	case kops.CloudProviderAzure:
+		{
+			if !featureflag.Azure.Enabled() {
+				return fmt.Errorf("azure support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Azure")
+			}
 
+			azureCloud := cloud.(azure.AzureCloud)
+			region = azureCloud.Region()
+
+			if len(sshPublicKeys) == 0 {
+				return fmt.Errorf("SSH public key must be specified when running with AzureCloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+
+			modelContext.SSHPublicKeys = sshPublicKeys
+
+			if len(sshPublicKeys) != 1 {
+				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AzureCloud; please delete a key using `kops delete secret`")
+			}
+		}
 	case kops.CloudProviderOpenstack:
 		{
 
@@ -578,6 +598,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				&alimodel.ExternalAccessModelBuilder{ALIModelContext: aliModelContext, Lifecycle: &clusterLifecycle},
 			)
 
+		case kops.CloudProviderAzure:
+			azureModelContext := &azuremodel.AzureModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+				&azuremodel.APILoadBalancerModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
+				&azuremodel.NetworkModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
+				&azuremodel.ResourceGroupModelBuilder{AzureModelContext: azureModelContext, Lifecycle: &clusterLifecycle},
+			)
+
 		case kops.CloudProviderOpenstack:
 			openstackModelContext := &openstackmodel.OpenstackModelContext{
 				KopsModelContext: modelContext,
@@ -668,6 +699,16 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				Lifecycle:              &clusterLifecycle,
 			})
 		}
+	case kops.CloudProviderAzure:
+		azureModelContext := &azuremodel.AzureModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &azuremodel.VMScaleSetModelBuilder{
+			AzureModelContext:      azureModelContext,
+			BootstrapScriptBuilder: bootstrapScriptBuilder,
+			Lifecycle:              &clusterLifecycle,
+		})
 
 	case kops.CloudProviderOpenstack:
 		openstackModelContext := &openstackmodel.OpenstackModelContext{
@@ -708,6 +749,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
 		case kops.CloudProviderALI:
 			target = aliup.NewALIAPITarget(cloud.(aliup.ALICloud))
+		case kops.CloudProviderAzure:
+			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}

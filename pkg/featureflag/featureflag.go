@@ -99,6 +99,8 @@ var (
 	UseServiceAccountIAM = New("UseServiceAccountIAM", Bool(false))
 	// PublicJWKS enables public jwks access.  This is generally not as secure as republishing.
 	PublicJWKS = New("PublicJWKS", Bool(false))
+	// Azure toggles the Azure support.
+	Azure = New("Azure", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

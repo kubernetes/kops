@@ -32,19 +32,23 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeGCE = "n1-standard-2"
-	defaultNodeMachineTypeDO  = "s-2vcpu-4gb"
-	defaultNodeMachineTypeALI = "ecs.n2.medium"
+	defaultNodeMachineTypeGCE   = "n1-standard-2"
+	defaultNodeMachineTypeDO    = "s-2vcpu-4gb"
+	defaultNodeMachineTypeALI   = "ecs.n2.medium"
+	defaultNodeMachineTypeAzure = "Standard_B2ms"
 
-	defaultBastionMachineTypeGCE = "f1-micro"
-	defaultBastionMachineTypeALI = "ecs.n2.small"
+	defaultBastionMachineTypeGCE   = "f1-micro"
+	defaultBastionMachineTypeALI   = "ecs.n2.small"
+	defaultBastionMachineTypeAzure = "Standard_B2ms"
 
-	defaultMasterMachineTypeGCE = "n1-standard-1"
-	defaultMasterMachineTypeDO  = "s-2vcpu-4gb"
-	defaultMasterMachineTypeALI = "ecs.n2.medium"
+	defaultMasterMachineTypeGCE   = "n1-standard-1"
+	defaultMasterMachineTypeDO    = "s-2vcpu-4gb"
+	defaultMasterMachineTypeALI   = "ecs.n2.medium"
+	defaultMasterMachineTypeAzure = "Standard_B2ms"
 
-	defaultDONodeImage  = "ubuntu-20-04-x64"
-	defaultALINodeImage = "centos_7_04_64_20G_alibase_201701015.vhd"
+	defaultDONodeImage    = "ubuntu-20-04-x64"
+	defaultALINodeImage   = "centos_7_04_64_20G_alibase_201701015.vhd"
+	defaultAzureNodeImage = "Canonical:UbuntuServer:20.04-LTS:latest"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
@@ -202,6 +206,18 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		case kops.InstanceGroupRoleBastion:
 			return defaultBastionMachineTypeALI, nil
 		}
+
+	case kops.CloudProviderAzure:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeAzure, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeAzure, nil
+
+		case kops.InstanceGroupRoleBastion:
+			return defaultBastionMachineTypeAzure, nil
+		}
 	}
 
 	klog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.CloudProvider, ig.Spec.Role)
@@ -232,6 +248,8 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 		return defaultDONodeImage
 	case kops.CloudProviderALI:
 		return defaultALINodeImage
+	case kops.CloudProviderAzure:
+		return defaultAzureNodeImage
 	}
 	klog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""

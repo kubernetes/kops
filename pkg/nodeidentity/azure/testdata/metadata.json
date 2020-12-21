@@ -1,0 +1,111 @@
+{
+        "compute": {
+                "azEnvironment": "AZUREPUBLICCLOUD",
+                "isHostCompatibilityLayerVm": "true",
+                "location": "westus",
+                "name": "examplevmname",
+                "offer": "Windows",
+                "osType": "linux",
+                "placementGroupId": "f67c14ab-e92c-408c-ae2d-da15866ec79a",
+                "plan": {
+                        "name": "planName",
+                        "product": "planProduct",
+                        "publisher": "planPublisher"
+                },
+                "platformFaultDomain": "36",
+                "platformUpdateDomain": "42",
+                "publicKeys": [{
+                                "keyData": "ssh-rsa 0",
+                                "path": "/home/user/.ssh/authorized_keys0"
+                        },
+                        {
+                                "keyData": "ssh-rsa 1",
+                                "path": "/home/user/.ssh/authorized_keys1"
+                        }
+                ],
+                "publisher": "RDFE-Test-Microsoft-Windows-Server-Group",
+                "resourceGroupName": "macikgo-test-may-23",
+                "resourceId": "/subscriptions/8d10da13-8125-4ba9-a717-bf7490507b3d/resourceGroups/macikgo-test-may-23/providers/Microsoft.Compute/virtualMachines/examplevmname",
+                "securityProfile": {
+                        "secureBootEnabled": "true",
+                        "virtualTpmEnabled": "false"
+                },
+                "sku": "Windows-Server-2012-R2-Datacenter",
+                "storageProfile": {
+                        "dataDisks": [{
+                                "caching": "None",
+                                "createOption": "Empty",
+                                "diskSizeGB": "1024",
+                                "image": {
+                                        "uri": ""
+                                },
+                                "lun": "0",
+                                "managedDisk": {
+                                        "id": "/subscriptions/8d10da13-8125-4ba9-a717-bf7490507b3d/resourceGroups/macikgo-test-may-23/providers/Microsoft.Compute/disks/exampledatadiskname",
+                                        "storageAccountType": "Standard_LRS"
+                                },
+                                "name": "exampledatadiskname",
+                                "vhd": {
+                                        "uri": ""
+                                },
+                                "writeAcceleratorEnabled": "false"
+                        }],
+                        "imageReference": {
+                                "id": "",
+                                "offer": "UbuntuServer",
+                                "publisher": "Canonical",
+                                "sku": "16.04.0-LTS",
+                                "version": "latest"
+                        },
+                        "osDisk": {
+                                "caching": "ReadWrite",
+                                "createOption": "FromImage",
+                                "diskSizeGB": "30",
+                                "diffDiskSettings": {
+                                        "option": "Local"
+                                },
+                                "encryptionSettings": {
+                                        "enabled": "false"
+                                },
+                                "image": {
+                                        "uri": ""
+                                },
+                                "managedDisk": {
+                                        "id": "/subscriptions/8d10da13-8125-4ba9-a717-bf7490507b3d/resourceGroups/macikgo-test-may-23/providers/Microsoft.Compute/disks/exampleosdiskname",
+                                        "storageAccountType": "Standard_LRS"
+                                },
+                                "name": "exampleosdiskname",
+                                "osType": "Linux",
+                                "vhd": {
+                                        "uri": ""
+                                },
+                                "writeAcceleratorEnabled": "false"
+                        }
+                },
+                "subscriptionId": "8d10da13-8125-4ba9-a717-bf7490507b3d",
+                "tags": "baz:bash;foo:bar",
+                "version": "15.05.22",
+                "vmId": "02aab8a4-74ef-476e-8182-f6d2ba4166a6",
+                "vmScaleSetName": "crpteste9vflji9",
+                "vmSize": "Standard_A3",
+                "zone": ""
+        },
+        "network": {
+                "interface": [{
+                        "ipv4": {
+                                "ipAddress": [{
+                                        "privateIpAddress": "172.16.32.8",
+                                        "publicIpAddress": "52.136.124.5"
+                                }],
+                                "subnet": [{
+                                        "address": "172.16.32.0",
+                                        "prefix": "19"
+                                }]
+                              },
+                        "ipv6": {
+                                "ipAddress": []
+                        },
+                        "macAddress": "0022481F0720"
+          }]
+        }
+}

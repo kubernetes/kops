@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/aliup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
@@ -99,6 +100,12 @@ type NewClusterOptions struct {
 	OpenstackLBSubnet        string
 	// OpenstackLBOctavia is whether to use use octavia instead of haproxy.
 	OpenstackLBOctavia bool
+
+	AzureSubscriptionID    string
+	AzureTenantID          string
+	AzureResourceGroupName string
+	AzureRouteTableName    string
+	AzureAdminUser         string
 
 	// MasterCount is the number of masters to create. Defaults to the length of MasterZones
 	// if MasterZones is explicitly nonempty, otherwise defaults to 1.
@@ -377,6 +384,21 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster) error {
 		if opt.OpenstackExternalSubnet != "" {
 			cluster.Spec.CloudConfig.Openstack.Router.ExternalSubnet = fi.String(opt.OpenstackExternalSubnet)
 		}
+	case api.CloudProviderAzure:
+		// TODO(kenji): Find a right place for this.
+
+		// Creating an empty CloudConfig so that --cloud-config is passed to kubelet, api-server, etc.
+		if cluster.Spec.CloudConfig == nil {
+			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+		}
+
+		cluster.Spec.CloudConfig.Azure = &api.AzureConfiguration{
+			SubscriptionID:    opt.AzureSubscriptionID,
+			TenantID:          opt.AzureTenantID,
+			ResourceGroupName: opt.AzureResourceGroupName,
+			RouteTableName:    opt.AzureRouteTableName,
+			AdminUser:         opt.AzureAdminUser,
+		}
 	}
 
 	if featureflag.Spotinst.Enabled() {
@@ -458,6 +480,28 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 			if err != nil {
 				return nil, err
 			}
+		}
+
+	case api.CloudProviderAzure:
+		// On Azure, subnets are regional - we create one per region, not per zone
+		for _, zoneName := range allZones.List() {
+			location, err := azure.ZoneToLocation(zoneName)
+			if err != nil {
+				return nil, err
+			}
+
+			// We create default subnets named the same as the regions
+			subnetName := location
+
+			subnet := model.FindSubnet(cluster, subnetName)
+			if subnet == nil {
+				subnet = &api.ClusterSubnetSpec{
+					Name:   subnetName,
+					Region: location,
+				}
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
+			}
+			zoneToSubnetMap[zoneName] = subnet
 		}
 
 	case api.CloudProviderAWS:
@@ -626,7 +670,7 @@ func setupMasters(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap 
 			}
 
 			g.Spec.Subnets = []string{subnet.Name}
-			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+			if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
 				g.Spec.Zones = []string{zone}
 			}
 
@@ -728,7 +772,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetMap ma
 		}
 
 		g.Spec.Subnets = []string{subnet.Name}
-		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		if cp := api.CloudProviderID(cluster.Spec.CloudProvider); cp == api.CloudProviderGCE || cp == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
 		}
 
@@ -903,9 +947,16 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	// Populate the API access, so that it can be discoverable
+	klog.Infof(" Cloud Provider ID = %s", api.CloudProviderID(cluster.Spec.CloudProvider))
 	cluster.Spec.API = &api.AccessSpec{}
 	if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderOpenstack {
 		initializeOpenstackAPI(opt, cluster)
+	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAzure {
+		// Do nothing to disable the use of loadbalancer for the k8s API server.
+		// TODO(kenji): Remove this condition once we support the loadbalancer
+		// in pkg/model/azuremodel/api_loadbalancer.go.
+		cluster.Spec.API = nil
+		return nil
 	} else if opt.APILoadBalancerType != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {

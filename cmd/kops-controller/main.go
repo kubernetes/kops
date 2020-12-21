@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
+	nodeidentityazure "k8s.io/kops/pkg/nodeidentity/azure"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
@@ -170,6 +171,12 @@ func addNodeController(mgr manager.Manager, opt *config.Options) error {
 
 	case "digitalocean":
 		legacyIdentifier, err = nodeidentitydo.New()
+		if err != nil {
+			return fmt.Errorf("error building identifier: %v", err)
+		}
+
+	case "azure":
+		identifier, err = nodeidentityazure.New(opt.CacheNodeidentityInfo)
 		if err != nil {
 			return fmt.Errorf("error building identifier: %v", err)
 		}
