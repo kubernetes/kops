@@ -632,6 +632,14 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(" ")
 	}
 
+	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("--env 'AZURE_STORAGE_ACCOUNT=")
+		buffer.WriteString(os.Getenv("AZURE_STORAGE_ACCOUNT"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
 	t.writeProxyEnvVars(&buffer)
 
 	return buffer.String()

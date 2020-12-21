@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "profile.go",
+        "token.go",
+    ],
+    importmap = "k8s.io/kops/vendor/github.com/Azure/go-autorest/autorest/azure/cli",
+    importpath = "github.com/Azure/go-autorest/autorest/azure/cli",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/Azure/go-autorest/autorest/adal:go_default_library",
+        "//vendor/github.com/Azure/go-autorest/autorest/date:go_default_library",
+        "//vendor/github.com/dimchansky/utfbom:go_default_library",
+        "//vendor/github.com/mitchellh/go-homedir:go_default_library",
+    ],
+)

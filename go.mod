@@ -52,7 +52,11 @@ replace github.com/gophercloud/gophercloud => github.com/gophercloud/gophercloud
 require (
 	cloud.google.com/go v0.54.0
 	github.com/Azure/azure-pipeline-go v0.2.3
+	github.com/Azure/azure-sdk-for-go v48.2.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.10.0
+	github.com/Azure/go-autorest/autorest v0.11.9
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
+	github.com/Azure/go-autorest/autorest/to v0.2.0
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.264

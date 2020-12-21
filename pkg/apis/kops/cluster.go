@@ -714,6 +714,20 @@ func (c *Cluster) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
 }
 
+// IsSharedAzureResourceGroup returns true if the resource group is shared.
+func (c *Cluster) IsSharedAzureResourceGroup() bool {
+	return c.Spec.CloudConfig.Azure.ResourceGroupName != ""
+}
+
+// AzureResourceGroupName returns the name of the resource group where the cluster is built.
+func (c *Cluster) AzureResourceGroupName() string {
+	r := c.Spec.CloudConfig.Azure.ResourceGroupName
+	if r != "" {
+		return r
+	}
+	return c.Name
+}
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.

@@ -99,9 +99,9 @@ func PerformAssignments(c *kops.Cluster, cloud fi.Cloud) error {
 		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
 	}
 
-	// We only assign subnet CIDRs on AWS
+	// We only assign subnet CIDRs on AWS, OpenStack, Ali, and Azure.
 	pd := cloud.ProviderID()
-	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderALI {
+	if pd == kops.CloudProviderAWS || pd == kops.CloudProviderOpenstack || pd == kops.CloudProviderALI || pd == kops.CloudProviderAzure {
 		// TODO: Use vpcInfo
 		err := assignCIDRsToSubnets(c, cloud)
 		if err != nil {
