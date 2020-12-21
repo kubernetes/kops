@@ -43,8 +43,8 @@ const (
 	defaultCNIAssetSHA1StringK8s1_11 = "52e9d2de8a5f927307d9397308735658ee44ab8d"
 
 	// defaultCNIAssetK8s1_15 is the CNI tarball for k8s >= 1.15
-	defaultCNIAssetK8s1_15             = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.6/cni-plugins-linux-amd64-v0.8.6.tgz"
-	defaultCNIAssetSHA256StringK8s1_15 = "994fbfcdbb2eedcfa87e48d8edb9bb365f4e2747a7e47658482556c12fd9b2f5"
+	defaultCNIAssetK8s1_15             = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz"
+	defaultCNIAssetSHA256StringK8s1_15 = "977824932d5667c7a37aa6a3cbba40100a6873e7bd97e83e8be837e3e7afd0a8"
 
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_VERSION_URL       = "CNI_VERSION_URL"
