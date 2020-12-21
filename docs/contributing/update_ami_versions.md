@@ -1,7 +1,7 @@
 # Updating The Default Base AMI
 
 With the release of `kOps 1.18`, the base AMI was switched over from a pre-baked `kOps` AMI to the official Ubuntu 20.04 LTS image.
-This makes the image update process easier, because kOps contributors no longer have to fully build an test a full AMI, but rather base off of the latest stable Ubuntu image.
+This makes the image update process easier, because kOps contributors no longer have to fully build and test a full AMI, but rather base off of the latest stable Ubuntu image.
 In order to make sure we're up to date with the latest releases, we regularly follow the official [Ubuntu EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/) website and update to the latest version of `focal` which is available across **all AWS regions**, including `gov` and `cn`, for full support.
 
 The process of updating the AMI version is as following:
