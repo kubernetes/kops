@@ -3172,6 +3172,16 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.EventQPS != nil {
+		in, out := &in.EventQPS, &out.EventQPS
+		*out = new(int32)
+		**out = **in
+	}
+	if in.EventBurst != nil {
+		in, out := &in.EventBurst, &out.EventBurst
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
