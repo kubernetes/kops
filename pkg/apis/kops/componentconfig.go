@@ -207,6 +207,10 @@ type KubeletConfigSpec struct {
 	CgroupDriver string `json:"cgroupDriver,omitempty" flag:"cgroup-driver"`
 	// HousekeepingInterval allows to specify interval between container housekeepings.
 	HousekeepingInterval *metav1.Duration `json:"housekeepingInterval,omitempty" flag:"housekeeping-interval"`
+	// EventQPS if > 0, limit event creations per second to this value.  If 0, unlimited.
+	EventQPS *int32 `json:"eventQPS,omitempty" flag:"event-qps" flag-empty:"0"`
+	// EventBurst temporarily allows event records to burst to this number, while still not exceeding EventQPS. Only used if EventQPS > 0.
+	EventBurst *int32 `json:"eventBurst,omitempty" flag:"event-burst"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
