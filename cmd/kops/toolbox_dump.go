@@ -130,7 +130,7 @@ func RunToolboxDump(ctx context.Context, f *util.Factory, out io.Writer, options
 	}
 
 	region := "" // Use default
-	resourceMap, err := resourceops.ListResources(cloud, options.ClusterName, region)
+	resourceMap, err := resourceops.ListResources(cloud, cluster, region)
 	if err != nil {
 		return err
 	}

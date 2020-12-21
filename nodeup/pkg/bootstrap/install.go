@@ -176,6 +176,12 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\" ")
 	}
 
+	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
+		buffer.WriteString("\"AZURE_STORAGE_ACCOUNT=")
+		buffer.WriteString(os.Getenv("AZURE_STORAGE_ACCOUNT"))
+		buffer.WriteString("\" ")
+	}
+
 	if buffer.String() != "" {
 		manifest.Set("Service", "Environment", buffer.String())
 	}
