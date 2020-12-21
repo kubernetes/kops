@@ -10,8 +10,6 @@ spec:
   cloudProvider: aws
   configBase: memfs://clusters.example.com/containerd.example.com
   containerRuntime: containerd
-  containerd:
-    version: 1.2.10
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -24,7 +22,7 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.14.0
+  kubernetesVersion: v1.19.0
   masterInternalName: api.internal.containerd.example.com
   masterPublicName: api.containerd.example.com
   networkCIDR: 172.20.0.0/16
