@@ -47,14 +47,14 @@ func (t *TerraformTarget) finishJSON(taskMap map[string]fi.Task) error {
 	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerGoogle := make(map[string]interface{})
 		providerGoogle["project"] = t.Project
-		providerGoogle["region"] = t.Region
+		providerGoogle["region"] = t.Cloud.Region()
 		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
 			providerGoogle[k] = v
 		}
 		providersByName["google"] = providerGoogle
 	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		providerAWS := make(map[string]interface{})
-		providerAWS["region"] = t.Region
+		providerAWS["region"] = t.Cloud.Region()
 		for k, v := range tfGetProviderExtraConfig(t.clusterSpecTarget) {
 			providerAWS[k] = v
 		}

@@ -31,7 +31,6 @@ import (
 
 type CloudformationTarget struct {
 	Cloud   fi.Cloud
-	Region  string
 	Project string
 
 	outDir string
@@ -41,10 +40,9 @@ type CloudformationTarget struct {
 	resources map[string]*cloudformationResource
 }
 
-func NewCloudformationTarget(cloud fi.Cloud, region, project string, outDir string) *CloudformationTarget {
+func NewCloudformationTarget(cloud fi.Cloud, project string, outDir string) *CloudformationTarget {
 	return &CloudformationTarget{
 		Cloud:     cloud,
-		Region:    region,
 		Project:   project,
 		outDir:    outDir,
 		resources: make(map[string]*cloudformationResource),
