@@ -160,10 +160,14 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 	}
 
 	if spec.MetricsServer != nil {
-		allErrs = append(allErrs, validateMetricsServer(c, spec.MetricsServer, fieldPath.Child("nodeTerminationHandler"))...)
+		allErrs = append(allErrs, validateMetricsServer(c, spec.MetricsServer, fieldPath.Child("metricsServer"))...)
 
 	}
 
+	if spec.AWSLoadBalancerController != nil {
+		allErrs = append(allErrs, validateAWSLoadBalancerController(c, spec.AWSLoadBalancerController, fieldPath.Child("awsLoadBalanceController"))...)
+
+	}
 	// IAM additional policies
 	if spec.AdditionalPolicies != nil {
 		for k, v := range *spec.AdditionalPolicies {
@@ -1284,6 +1288,15 @@ func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig
 	if spec != nil && fi.BoolValue(spec.Enabled) {
 		if !fi.BoolValue(spec.Insecure) && !components.IsCertManagerEnabled(cluster) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("insecure"), "Secure metrics server requires that cert manager is enabled"))
+		}
+	}
+	return allErrs
+}
+
+func validateAWSLoadBalancerController(cluster *kops.Cluster, spec *kops.AWSLoadBalancerControllerConfig, fldPath *field.Path) (allErrs field.ErrorList) {
+	if spec != nil && fi.BoolValue(spec.Enabled) {
+		if !components.IsCertManagerEnabled(cluster) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("insecure"), "AWS Load Balancer Controller requires that cert manager is enabled"))
 		}
 	}
 	return allErrs

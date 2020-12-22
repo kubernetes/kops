@@ -201,12 +201,28 @@ spec:
                   rbac:
                     type: object
                 type: object
+              awsLoadBalancerController:
+                description: AWSLoadbalancerControllerConfig determines the AWS LB
+                  controller configuration.
+                properties:
+                  enabled:
+                    description: 'Enabled enables the loadbalancer controller. Default:
+                      false'
+                    type: boolean
+                  image:
+                    description: 'Image is the docker container used. Default: v2.0.0'
+                    type: string
+                type: object
               certManager:
                 description: CertManager determines the metrics server configuration.
                 properties:
                   enabled:
                     description: 'Enabled enables the cert manager. Default: false'
                     type: boolean
+                  image:
+                    description: 'Image is the docker container used. Default: the
+                      latest supported image for the specified kubernetes version.'
+                    type: string
                 type: object
               channel:
                 description: The Channel we are following
