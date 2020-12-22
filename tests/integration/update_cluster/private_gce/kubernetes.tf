@@ -17,8 +17,11 @@ output "region" {
 }
 
 provider "google" {
-  region  = "us-test1"
-  version = ">= 3.0.0"
+  region = "us-test1"
+}
+
+resource "google_compute_address" "api-private-gce-example-com" {
+  name = "api-private-gce-example-com"
 }
 
 resource "google_compute_disk" "d1-etcd-events-private-gce-example-com" {
@@ -85,12 +88,12 @@ resource "google_compute_firewall" "cidr-to-node-private-gce-example-com" {
   target_tags   = ["private-gce-example-com-k8s-io-role-node"]
 }
 
-resource "google_compute_firewall" "kubernetes-master-https-private-gce-example-com" {
+resource "google_compute_firewall" "https-api-private-gce-example-com" {
   allow {
     ports    = ["443"]
     protocol = "tcp"
   }
-  name          = "kubernetes-master-https-private-gce-example-com"
+  name          = "https-api-private-gce-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["private-gce-example-com-k8s-io-role-master"]
@@ -223,9 +226,18 @@ resource "google_compute_firewall" "ssh-external-to-node-private-gce-example-com
   target_tags   = ["private-gce-example-com-k8s-io-role-node"]
 }
 
+resource "google_compute_forwarding_rule" "api-private-gce-example-com" {
+  ip_address  = google_compute_address.api-private-gce-example-com.address
+  ip_protocol = "TCP"
+  name        = "api-private-gce-example-com"
+  port_range  = "443-443"
+  target      = google_compute_target_pool.api-private-gce-example-com.self_link
+}
+
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-private-gce-example-com" {
   base_instance_name = "master-us-test1-a"
   name               = "a-master-us-test1-a-private-gce-example-com"
+  target_pools       = [google_compute_target_pool.api-private-gce-example-com.self_link]
   target_size        = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-private-gce-example-com.self_link
@@ -324,6 +336,16 @@ resource "google_compute_network" "default" {
   name                    = "default"
 }
 
+resource "google_compute_target_pool" "api-private-gce-example-com" {
+  name = "api-private-gce-example-com"
+}
+
 terraform {
-  required_version = ">= 0.12.0"
+  required_version = ">= 0.12.26"
+  required_providers {
+    google = {
+      "source"  = "hashicorp/google"
+      "version" = ">= 2.19.0"
+    }
+  }
 }

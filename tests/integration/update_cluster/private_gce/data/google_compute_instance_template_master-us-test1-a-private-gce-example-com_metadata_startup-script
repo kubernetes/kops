@@ -1,18 +1,4 @@
 #!/bin/bash
-# Copyright 2016 The Kubernetes Authors All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -280,17 +266,21 @@ cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
 __EOF_IG_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+ApiserverAdditionalIPs:
+- 192.0.2.1
 Assets:
   amd64:
   - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet
   - 7e3a3ea663153f900cbd52900a39c91fa9f334be@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl
   - ae0d7b36c7f9559354ee35c14bf084a771132e32@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/mounter
   - 3ca15c0a18ee830520cf3a95408be826cbd255a1535a38e0be9608b25ad8bf64@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.7.5.tgz
+  - 346f9394393ee8db5f8bd1e229ee9d90e5b36931bdd754308b2ae68884dd6822@https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz
   arm64:
   - df38e04576026393055ccc77c0dce73612996561@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubelet
   - 01c2b6b43d36b6bfafc80a3737391c19ebfb8ad5@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/kubectl
   - df7fc4fe107253603d284a549cac36ae072a0dcb@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/arm64/mounter
   - 7fec91af78e9548df306f0ec43bea527c8c10cc3a9682c33e971c8522a7fcded@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-arm64-v0.7.5.tgz
+  - defb2ccc95c0825833216c8b9e0e15baaa51bcedb3efc1f393f5352d184dead4@https://download.docker.com/linux/static/stable/aarch64/docker-18.06.3-ce.tgz
 ClusterName: private-gce.example.com
 ConfigBase: memfs://tests/private-gce.example.com
 InstanceGroupName: master-us-test1-a

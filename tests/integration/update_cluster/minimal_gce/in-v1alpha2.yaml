@@ -6,6 +6,8 @@ metadata:
 spec:
   api:
     dns: {}
+    loadBalancer:
+      type: Public
   authorization:
     alwaysAllow: {}
   channel: stable

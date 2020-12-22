@@ -266,6 +266,8 @@ cat > conf/ig_spec.yaml << '__EOF_IG_SPEC'
 __EOF_IG_SPEC
 
 cat > conf/kube_env.yaml << '__EOF_KUBE_ENV'
+ApiserverAdditionalIPs:
+- 192.0.2.1
 Assets:
   amd64:
   - c3b736fd0f003765c12d99f2c995a8369e6241f4@https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubelet

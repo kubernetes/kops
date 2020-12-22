@@ -20,6 +20,10 @@ provider "google" {
   region = "us-test1"
 }
 
+resource "google_compute_address" "api-minimal-gce-example-com" {
+  name = "api-minimal-gce-example-com"
+}
+
 resource "google_compute_disk" "d1-etcd-events-minimal-gce-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-example-com"
@@ -84,12 +88,12 @@ resource "google_compute_firewall" "cidr-to-node-minimal-gce-example-com" {
   target_tags   = ["minimal-gce-example-com-k8s-io-role-node"]
 }
 
-resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-example-com" {
+resource "google_compute_firewall" "https-api-minimal-gce-example-com" {
   allow {
     ports    = ["443"]
     protocol = "tcp"
   }
-  name          = "kubernetes-master-https-minimal-gce-example-com"
+  name          = "https-api-minimal-gce-example-com"
   network       = google_compute_network.default.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-example-com-k8s-io-role-master"]
@@ -222,9 +226,18 @@ resource "google_compute_firewall" "ssh-external-to-node-minimal-gce-example-com
   target_tags   = ["minimal-gce-example-com-k8s-io-role-node"]
 }
 
+resource "google_compute_forwarding_rule" "api-minimal-gce-example-com" {
+  ip_address  = google_compute_address.api-minimal-gce-example-com.address
+  ip_protocol = "TCP"
+  name        = "api-minimal-gce-example-com"
+  port_range  = "443-443"
+  target      = google_compute_target_pool.api-minimal-gce-example-com.self_link
+}
+
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-example-com" {
   base_instance_name = "master-us-test1-a"
   name               = "a-master-us-test1-a-minimal-gce-example-com"
+  target_pools       = [google_compute_target_pool.api-minimal-gce-example-com.self_link]
   target_size        = 1
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-minimal-gce-example-com.self_link
@@ -325,6 +338,10 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
 resource "google_compute_network" "default" {
   auto_create_subnetworks = true
   name                    = "default"
+}
+
+resource "google_compute_target_pool" "api-minimal-gce-example-com" {
+  name = "api-minimal-gce-example-com"
 }
 
 terraform {
