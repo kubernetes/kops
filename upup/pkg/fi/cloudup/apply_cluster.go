@@ -438,9 +438,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				return fmt.Errorf("azure support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Azure")
 			}
 
-			azureCloud := cloud.(azure.AzureCloud)
-			region = azureCloud.Region()
-
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with AzureCloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
