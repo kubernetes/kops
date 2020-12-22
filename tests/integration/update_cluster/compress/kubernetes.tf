@@ -229,11 +229,21 @@ resource "aws_iam_role_policy" "nodes-compress-example-com" {
 resource "aws_iam_role" "masters-compress-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.compress.example.com_policy")
   name               = "masters.compress.example.com"
+  tags = {
+    "KubernetesCluster"                          = "compress.example.com"
+    "Name"                                       = "masters.compress.example.com"
+    "kubernetes.io/cluster/compress.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-compress-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.compress.example.com_policy")
   name               = "nodes.compress.example.com"
+  tags = {
+    "KubernetesCluster"                          = "compress.example.com"
+    "Name"                                       = "nodes.compress.example.com"
+    "kubernetes.io/cluster/compress.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "compress-example-com" {

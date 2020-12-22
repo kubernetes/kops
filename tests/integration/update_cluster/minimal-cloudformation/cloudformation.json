@@ -1059,7 +1059,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodesminimalexamplecom": {
@@ -1077,7 +1091,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.minimal.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/minimal.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     }
   }

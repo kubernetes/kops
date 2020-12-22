@@ -380,16 +380,31 @@ resource "aws_iam_role_policy" "nodes-bastionuserdata-example-com" {
 resource "aws_iam_role" "bastions-bastionuserdata-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.bastionuserdata.example.com_policy")
   name               = "bastions.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "bastions.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-bastionuserdata-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.bastionuserdata.example.com_policy")
   name               = "masters.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "masters.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-bastionuserdata-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.bastionuserdata.example.com_policy")
   name               = "nodes.bastionuserdata.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "nodes.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "bastionuserdata-example-com" {

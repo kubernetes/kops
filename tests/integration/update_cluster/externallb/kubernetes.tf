@@ -233,11 +233,21 @@ resource "aws_iam_role_policy" "nodes-externallb-example-com" {
 resource "aws_iam_role" "masters-externallb-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.externallb.example.com_policy")
   name               = "masters.externallb.example.com"
+  tags = {
+    "KubernetesCluster"                            = "externallb.example.com"
+    "Name"                                         = "masters.externallb.example.com"
+    "kubernetes.io/cluster/externallb.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-externallb-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.externallb.example.com_policy")
   name               = "nodes.externallb.example.com"
+  tags = {
+    "KubernetesCluster"                            = "externallb.example.com"
+    "Name"                                         = "nodes.externallb.example.com"
+    "kubernetes.io/cluster/externallb.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "externallb-example-com" {

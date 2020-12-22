@@ -375,16 +375,31 @@ resource "aws_iam_role_policy" "nodes-privatedns2-example-com" {
 resource "aws_iam_role" "bastions-privatedns2-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatedns2.example.com_policy")
   name               = "bastions.privatedns2.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns2.example.com"
+    "Name"                                          = "bastions.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privatedns2-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privatedns2.example.com_policy")
   name               = "masters.privatedns2.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns2.example.com"
+    "Name"                                          = "masters.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privatedns2-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privatedns2.example.com_policy")
   name               = "nodes.privatedns2.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns2.example.com"
+    "Name"                                          = "nodes.privatedns2.example.com"
+    "kubernetes.io/cluster/privatedns2.example.com" = "owned"
+  }
 }
 
 resource "aws_key_pair" "kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

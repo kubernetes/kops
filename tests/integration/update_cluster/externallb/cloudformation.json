@@ -1074,7 +1074,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "externallb.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.externallb.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodesexternallbexamplecom": {
@@ -1092,7 +1106,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "externallb.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.externallb.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/externallb.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     }
   }

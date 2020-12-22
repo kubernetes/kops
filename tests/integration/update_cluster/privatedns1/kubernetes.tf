@@ -420,16 +420,37 @@ resource "aws_iam_role_policy" "nodes-privatedns1-example-com" {
 resource "aws_iam_role" "bastions-privatedns1-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatedns1.example.com_policy")
   name               = "bastions.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "bastions.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privatedns1-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privatedns1.example.com_policy")
   name               = "masters.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "masters.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privatedns1-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privatedns1.example.com_policy")
   name               = "nodes.privatedns1.example.com"
+  tags = {
+    "KubernetesCluster"                             = "privatedns1.example.com"
+    "Name"                                          = "nodes.privatedns1.example.com"
+    "Owner"                                         = "John Doe"
+    "foo/bar"                                       = "fib+baz"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "privatedns1-example-com" {
