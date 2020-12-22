@@ -282,6 +282,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
+	if b.Cluster.Spec.AWSLoadBalancerController != nil && fi.BoolValue(b.Cluster.Spec.AWSLoadBalancerController.Enabled) {
+		addAWSLoadbalancerControllerPermissions(p, b.Cluster.GetName())
+	}
+
 	return p, nil
 }
 
@@ -669,6 +673,36 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 		),
 		Resource: stringorslice.Slice([]string{"*"}),
 	})
+}
+
+func addAWSLoadbalancerControllerPermissions(p *Policy, clusterName string) {
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorslice.Of(
+			"ec2:AuthorizeSecurityGroupIngress", // aws.go
+			"ec2:DeleteSecurityGroup",           // aws.go
+			"ec2:RevokeSecurityGroupIngress",    // aws.go
+		),
+		Resource: stringorslice.Slice([]string{"*"}),
+		Condition: Condition{
+			"StringEquals": map[string]string{
+				"ec2:ResourceTag/elbv2.k8s.aws/cluster": clusterName,
+			},
+		},
+	},
+
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"elasticloadbalancing:DescribeTags",
+				"elasticloadbalancing:DescribeTargetGroupAttributes",
+				"elasticloadbalancing:DescribeRules",
+				"elasticloadbalancing:DescribeTargetHealth",
+				"elasticloadbalancing:DescribeListenerCertificates",
+				"elasticloadbalancing:CreateRule",
+			),
+			Resource: stringorslice.Slice([]string{"*"}),
+		})
 }
 
 // addLegacyDNSControllerPermissions adds legacy IAM permissions used by the node roles.
