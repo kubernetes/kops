@@ -901,6 +901,20 @@ type CertManagerConfig struct {
 	// Enabled enables the cert manager.
 	// Default: false
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// Image is the docker container used.
+	// Default: the latest supported image for the specified kubernetes version.
+	Image *string `json:"image,omitempty"`
+}
+
+// AWSLoadBalancerControllerConfig determines the AWS LB controller configuration.
+type AWSLoadBalancerControllerConfig struct {
+	// Enabled enables the loadbalancer controller.
+	// Default: false
+	Enabled *bool `json:"enabled,omitempty"`
+	// Image is the docker container used.
+	// Default: v2.0.0
+	Image *string `json:"image,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled
