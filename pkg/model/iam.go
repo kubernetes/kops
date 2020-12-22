@@ -136,6 +136,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.M
 		Lifecycle: b.Lifecycle,
 
 		RolePolicyDocument: rolePolicy,
+		Tags:               b.CloudTags(iamName, false),
 	}
 
 	if isServiceAccount {

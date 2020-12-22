@@ -44,6 +44,8 @@ type IAMRole struct {
 	RolePolicyDocument  fi.Resource // "inline" IAM policy
 	PermissionsBoundary *string
 
+	Tags map[string]string
+
 	// ExportWithId will expose the name & ARN for reuse as part of a larger system.  Only supported by terraform currently.
 	ExportWithID *string
 }
@@ -110,6 +112,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 
 		actual.RolePolicyDocument = fi.NewStringResource(actualPolicy)
 	}
+	actual.Tags = mapIAMTagsToMap(r.Tags)
 
 	klog.V(2).Infof("found matching IAMRole %q", aws.StringValue(actual.ID))
 	e.ID = actual.ID
@@ -150,6 +153,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 		request := &iam.CreateRoleInput{}
 		request.AssumeRolePolicyDocument = aws.String(policy)
 		request.RoleName = e.Name
+		request.Tags = mapToIAMTags(e.Tags)
 
 		if e.PermissionsBoundary != nil {
 			request.PermissionsBoundary = e.PermissionsBoundary
@@ -215,7 +219,32 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 					return fmt.Errorf("error updating IAMRole: %v", err)
 				}
 			}
-
+		}
+		if changes.Tags != nil {
+			if len(a.Tags) > 0 {
+				existingTagKeys := make([]*string, 0)
+				for k := range a.Tags {
+					existingTagKeys = append(existingTagKeys, &k)
+				}
+				untagRequest := &iam.UntagRoleInput{
+					RoleName: e.Name,
+					TagKeys:  existingTagKeys,
+				}
+				_, err = t.Cloud.IAM().UntagRole(untagRequest)
+				if err != nil {
+					return fmt.Errorf("error untagging IAMRole: %v", err)
+				}
+			}
+			if len(e.Tags) > 0 {
+				tagRequest := &iam.TagRoleInput{
+					RoleName: e.Name,
+					Tags:     mapToIAMTags(e.Tags),
+				}
+				_, err = t.Cloud.IAM().TagRole(tagRequest)
+				if err != nil {
+					return fmt.Errorf("error tagging IAMRole: %v", err)
+				}
+			}
 		}
 	}
 
@@ -227,6 +256,7 @@ type terraformIAMRole struct {
 	Name                *string            `json:"name" cty:"name"`
 	AssumeRolePolicy    *terraform.Literal `json:"assume_role_policy" cty:"assume_role_policy"`
 	PermissionsBoundary *string            `json:"permissions_boundary,omitempty" cty:"permissions_boundary"`
+	Tags                map[string]string  `json:"tags,omitempty" cty:"tags"`
 }
 
 func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
@@ -238,6 +268,7 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 	tf := &terraformIAMRole{
 		Name:             e.Name,
 		AssumeRolePolicy: policy,
+		Tags:             e.Tags,
 	}
 
 	if e.PermissionsBoundary != nil {
@@ -259,7 +290,8 @@ func (e *IAMRole) TerraformLink() *terraform.Literal {
 type cloudformationIAMRole struct {
 	RoleName                 *string `json:"RoleName"`
 	AssumeRolePolicyDocument map[string]interface{}
-	PermissionsBoundary      *string `json:"PermissionsBoundary,omitempty"`
+	PermissionsBoundary      *string             `json:"PermissionsBoundary,omitempty"`
+	Tags                     []cloudformationTag `json:"Tags,omitempty"`
 }
 
 func (_ *IAMRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMRole) error {
@@ -277,6 +309,7 @@ func (_ *IAMRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a
 	cf := &cloudformationIAMRole{
 		RoleName:                 e.Name,
 		AssumeRolePolicyDocument: data,
+		Tags:                     buildCloudformationTags(e.Tags),
 	}
 
 	if e.PermissionsBoundary != nil {
