@@ -77,7 +77,7 @@ func findAddressByIP(cloud gce.GCECloud, ip string) (*Address, error) {
 }
 
 func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
-	r, err := cloud.Compute().Addresses.Get(cloud.Project(), cloud.Region(), *e.Name).Do()
+	r, err := cloud.GetAddress(*e.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil

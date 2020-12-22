@@ -47,6 +47,7 @@ type GCECloud interface {
 	Project() string
 	WaitForOp(op *compute.Operation) error
 	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
+	GetAddress(name string) (*compute.Address, error)
 	Labels() map[string]string
 
 	// FindClusterStatus gets the status of the cluster as it exists in GCE, inferred from volumes
@@ -376,4 +377,8 @@ func (c *gceCloudImplementation) getTokenInfo(ctx context.Context) (*oauth2.Toke
 	}
 
 	return tokenInfo, nil
+}
+
+func (c *gceCloudImplementation) GetAddress(name string) (*compute.Address, error) {
+	return c.Compute().Addresses.Get(c.Project(), c.Region(), name).Do()
 }
