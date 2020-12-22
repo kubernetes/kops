@@ -252,11 +252,21 @@
     "aws_iam_role": {
       "masters-minimal-json-example-com": {
         "name": "masters.minimal-json.example.com",
-        "assume_role_policy": "${file(\"${path.module}/data/aws_iam_role_masters.minimal-json.example.com_policy\")}"
+        "assume_role_policy": "${file(\"${path.module}/data/aws_iam_role_masters.minimal-json.example.com_policy\")}",
+        "tags": {
+          "KubernetesCluster": "minimal-json.example.com",
+          "Name": "masters.minimal-json.example.com",
+          "kubernetes.io/cluster/minimal-json.example.com": "owned"
+        }
       },
       "nodes-minimal-json-example-com": {
         "name": "nodes.minimal-json.example.com",
-        "assume_role_policy": "${file(\"${path.module}/data/aws_iam_role_nodes.minimal-json.example.com_policy\")}"
+        "assume_role_policy": "${file(\"${path.module}/data/aws_iam_role_nodes.minimal-json.example.com_policy\")}",
+        "tags": {
+          "KubernetesCluster": "minimal-json.example.com",
+          "Name": "nodes.minimal-json.example.com",
+          "kubernetes.io/cluster/minimal-json.example.com": "owned"
+        }
       }
     },
     "aws_iam_role_policy": {

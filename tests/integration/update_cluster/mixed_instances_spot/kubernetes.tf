@@ -409,11 +409,21 @@ resource "aws_iam_role_policy" "nodes-mixedinstances-example-com" {
 resource "aws_iam_role" "masters-mixedinstances-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.mixedinstances.example.com_policy")
   name               = "masters.mixedinstances.example.com"
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "masters.mixedinstances.example.com"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-mixedinstances-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.mixedinstances.example.com_policy")
   name               = "nodes.mixedinstances.example.com"
+  tags = {
+    "KubernetesCluster"                                = "mixedinstances.example.com"
+    "Name"                                             = "nodes.mixedinstances.example.com"
+    "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "mixedinstances-example-com" {

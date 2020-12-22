@@ -1734,7 +1734,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "bastions.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolemastersprivateciliumadvancedexamplecom": {
@@ -1752,7 +1766,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSIAMRolenodesprivateciliumadvancedexamplecom": {
@@ -1770,7 +1798,21 @@
             }
           ],
           "Version": "2012-10-17"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.privateciliumadvanced.example.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/privateciliumadvanced.example.com",
+            "Value": "owned"
+          }
+        ]
       }
     },
     "AWSRoute53RecordSetapiprivateciliumadvancedexamplecom": {

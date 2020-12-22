@@ -366,16 +366,31 @@ resource "aws_iam_role_policy" "nodes-unmanaged-example-com" {
 resource "aws_iam_role" "bastions-unmanaged-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.unmanaged.example.com_policy")
   name               = "bastions.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "bastions.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-unmanaged-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.unmanaged.example.com_policy")
   name               = "masters.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "masters.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-unmanaged-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.unmanaged.example.com_policy")
   name               = "nodes.unmanaged.example.com"
+  tags = {
+    "KubernetesCluster"                           = "unmanaged.example.com"
+    "Name"                                        = "nodes.unmanaged.example.com"
+    "kubernetes.io/cluster/unmanaged.example.com" = "owned"
+  }
 }
 
 resource "aws_key_pair" "kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
