@@ -64,6 +64,7 @@ func (m *MockIAM) CreateRole(request *iam.CreateRoleInput) (*iam.CreateRoleOutpu
 		},
 		RoleName: request.RoleName,
 		RoleId:   &roleID,
+		Tags:     request.Tags,
 	}
 
 	if m.Roles == nil {
