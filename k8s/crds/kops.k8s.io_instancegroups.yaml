@@ -281,6 +281,14 @@ spec:
                   enforceNodeAllocatable:
                     description: Enforce Allocatable across pods whenever the overall usage across all pods exceeds Allocatable.
                     type: string
+                  eventBurst:
+                    description: EventBurst temporarily allows event records to burst to this number, while still not exceeding EventQPS. Only used if EventQPS > 0.
+                    format: int32
+                    type: integer
+                  eventQPS:
+                    description: EventQPS if > 0, limit event creations per second to this value.  If 0, unlimited.
+                    format: int32
+                    type: integer
                   evictionHard:
                     description: Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.
                     type: string
