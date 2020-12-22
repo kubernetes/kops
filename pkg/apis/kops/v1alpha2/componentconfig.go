@@ -823,6 +823,9 @@ type ClusterAutoscalerConfig struct {
 	// SkipNodesWithLocalStorage makes cluster autoscaler skip scale-down of nodes with local storage.
 	// Default: true
 	SkipNodesWithLocalStorage *bool `json:"skipNodesWithLocalStorage,omitempty"`
+	// NewPodScaleUpDelay causes cluster autoscaler to ignore unschedulable pods until they are a certain "age", regardless of the scan-interval
+	// Default: 0s
+	NewPodScaleUpDelay *string `json:"newPodScaleUpDelay,omitempty"`
 	// Image is the docker container used.
 	// Default: the latest supported image for the specified kubernetes version.
 	Image *string `json:"image,omitempty"`

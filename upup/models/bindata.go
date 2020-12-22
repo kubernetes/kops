@@ -1040,6 +1040,7 @@ spec:
             - --scale-down-utilization-threshold={{ .ScaleDownUtilizationThreshold }}
             - --skip-nodes-with-local-storage={{ .SkipNodesWithLocalStorage }}
             - --skip-nodes-with-system-pods={{ .SkipNodesWithSystemPods }}
+            - --new-pod-scale-up-delay={{ .NewPodScaleUpDelay }}
             - --stderrthreshold=info
             - --v=2
           ports:
