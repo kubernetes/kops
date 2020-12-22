@@ -380,11 +380,21 @@ resource "aws_iam_role_policy" "nodes-launchtemplates-example-com" {
 resource "aws_iam_role" "masters-launchtemplates-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.launchtemplates.example.com_policy")
   name               = "masters.launchtemplates.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "launchtemplates.example.com"
+    "Name"                                              = "masters.launchtemplates.example.com"
+    "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-launchtemplates-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.launchtemplates.example.com_policy")
   name               = "nodes.launchtemplates.example.com"
+  tags = {
+    "KubernetesCluster"                                 = "launchtemplates.example.com"
+    "Name"                                              = "nodes.launchtemplates.example.com"
+    "kubernetes.io/cluster/launchtemplates.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "launchtemplates-example-com" {

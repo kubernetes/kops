@@ -380,16 +380,31 @@ resource "aws_iam_role_policy" "nodes-privatecanal-example-com" {
 resource "aws_iam_role" "bastions-privatecanal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_bastions.privatecanal.example.com_policy")
   name               = "bastions.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "bastions.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "masters-privatecanal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_masters.privatecanal.example.com_policy")
   name               = "masters.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "masters.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_iam_role" "nodes-privatecanal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_nodes.privatecanal.example.com_policy")
   name               = "nodes.privatecanal.example.com"
+  tags = {
+    "KubernetesCluster"                              = "privatecanal.example.com"
+    "Name"                                           = "nodes.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
+  }
 }
 
 resource "aws_internet_gateway" "privatecanal-example-com" {
