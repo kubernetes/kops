@@ -164,6 +164,8 @@ type ClusterSpec struct {
 	MetricsServer *MetricsServerConfig `json:"metricsServer,omitempty"`
 	// CertManager determines the metrics server configuration.
 	CertManager *CertManagerConfig `json:"certManager,omitempty"`
+	// AWSLoadbalancerControllerConfig determines the AWS LB controller configuration.
+	AWSLoadBalancerController *AWSLoadBalancerControllerConfig `json:"awsLoadBalancerController,omitempty"`
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`

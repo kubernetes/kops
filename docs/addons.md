@@ -11,6 +11,19 @@ The following addons are managed by kOps and will be upgraded following the kOps
 
 ### Available addons
 
+#### AWS Load Balancer Controller
+{{ kops_feature_table(kops_added_default='1.19') }}
+
+AWS Load Balancer Controller offers additional functionality for provisioning ELBs.
+
+```yaml
+spec:
+  awsLoadBalancerController:
+    enabled: true
+```
+
+Read more in the [official documentation](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/).
+
 #### Cluster autoscaler
 {{ kops_feature_table(kops_added_default='1.19', k8s_min='1.15') }}
 
