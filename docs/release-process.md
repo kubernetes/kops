@@ -164,7 +164,7 @@ Create container promotion PR:
 ```
 cd ${GOPATH}/src/k8s.io/k8s.io
 
-git co -b kops_images_${VERSION}
+git checkout -b kops_images_${VERSION}
 
 cd k8s.gcr.io/images/k8s-staging-kops
 echo "" >> images.yaml
@@ -194,8 +194,8 @@ Create binary promotion PR:
 ```
 cd ${GOPATH}/src/k8s.io/k8s.io
 
-git co master
-git co -b kops_artifacts_${VERSION}
+git checkout master
+git checkout -b kops_artifacts_${VERSION}
 
 mkdir -p ./k8s-staging-kops/kops/releases/${VERSION}/
 gsutil rsync -r  gs://k8s-staging-kops/kops/releases/${VERSION}/ ./k8s-staging-kops/kops/releases/${VERSION}/
