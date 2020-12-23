@@ -81,6 +81,7 @@ func (d *deployer) verifyKopsFlags() error {
 	switch d.CloudProvider {
 	case "aws":
 	case "gce":
+	case "digitalocean":
 	default:
 		return errors.New("unsupported --cloud-provider value")
 	}
