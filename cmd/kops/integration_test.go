@@ -334,9 +334,19 @@ func TestMixedInstancesSpotASG(t *testing.T) {
 	newIntegrationTest("mixedinstances.example.com", "mixed_instances_spot").withZones(3).runTestCloudformation(t)
 }
 
-// TestContainerdCloudformation runs the test on a containerd configuration
-func TestContainerdCloudformation(t *testing.T) {
-	newIntegrationTest("containerd.example.com", "containerd-cloudformation").runTestCloudformation(t)
+// TestContainerd runs the test on a containerd configuration
+func TestContainerd(t *testing.T) {
+	newIntegrationTest("containerd.example.com", "containerd").runTestCloudformation(t)
+}
+
+// TestContainerdCustom runs the test on a custom containerd URL configuration
+func TestContainerdCustom(t *testing.T) {
+	newIntegrationTest("containerd.example.com", "containerd-custom").runTestCloudformation(t)
+}
+
+// TestDockerCustom runs the test on a custom Docker URL configuration
+func TestDockerCustom(t *testing.T) {
+	newIntegrationTest("docker.example.com", "docker-custom").runTestCloudformation(t)
 }
 
 // TestLaunchConfigurationASG tests ASGs using launch configurations instead of launch templates
