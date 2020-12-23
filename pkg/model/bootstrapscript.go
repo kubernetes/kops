@@ -231,16 +231,28 @@ func (b *BootstrapScript) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 func (b *BootstrapScript) Run(c *fi.Context) error {
 	functions := template.FuncMap{
 		"NodeUpSourceAmd64": func() string {
-			return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Locations, ",")
+			if b.builder.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
+				return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Locations, ",")
+			}
+			return ""
 		},
 		"NodeUpSourceHashAmd64": func() string {
-			return b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Hash.Hex()
+			if b.builder.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
+				return b.builder.NodeUpAssets[architectures.ArchitectureAmd64].Hash.Hex()
+			}
+			return ""
 		},
 		"NodeUpSourceArm64": func() string {
-			return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureArm64].Locations, ",")
+			if b.builder.NodeUpAssets[architectures.ArchitectureArm64] != nil {
+				return strings.Join(b.builder.NodeUpAssets[architectures.ArchitectureArm64].Locations, ",")
+			}
+			return ""
 		},
 		"NodeUpSourceHashArm64": func() string {
-			return b.builder.NodeUpAssets[architectures.ArchitectureArm64].Hash.Hex()
+			if b.builder.NodeUpAssets[architectures.ArchitectureArm64] != nil {
+				return b.builder.NodeUpAssets[architectures.ArchitectureArm64].Hash.Hex()
+			}
+			return ""
 		},
 		"KubeEnv": func() (string, error) {
 			return b.kubeEnv(b.ig, c)
