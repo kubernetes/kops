@@ -21,7 +21,8 @@ provider "google" {
 }
 
 resource "google_compute_address" "api-private-gce-example-com" {
-  name = "api-private-gce-example-com"
+  address_type = "INTERNAL"
+  name         = "api-private-gce-example-com"
 }
 
 resource "google_compute_disk" "d1-etcd-events-private-gce-example-com" {

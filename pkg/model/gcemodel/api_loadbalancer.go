@@ -45,10 +45,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	switch lbSpec.Type {
 	case kops.LoadBalancerTypePublic:
-	// OK
-
 	case kops.LoadBalancerTypeInternal:
-		return fmt.Errorf("internal LoadBalancers are not yet supported by kops on GCE")
+	// OK
 
 	default:
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
@@ -62,6 +60,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	ipAddress := &gcetasks.Address{
 		Name: s(b.NameForIPAddress("api")),
 	}
+	addressType := "EXTERNAL"
+	if lbSpec.Type == kops.LoadBalancerTypeInternal {
+		addressType = "INTERNAL"
+		// ipAddress.Subnet = ???
+	}
+	ipAddress.AddressType = &addressType
 	c.AddTask(ipAddress)
 
 	forwardingRule := &gcetasks.ForwardingRule{

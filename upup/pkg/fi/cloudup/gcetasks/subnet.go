@@ -238,3 +238,7 @@ func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subne
 func (i *Subnet) TerraformName() *terraform.Literal {
 	return terraform.LiteralProperty("google_compute_subnetwork", *i.Name, "name")
 }
+
+func (i *Subnet) TerraformID() *terraform.Literal {
+	return terraform.LiteralProperty("google_compute_subnetwork", *i.Name, "id")
+}

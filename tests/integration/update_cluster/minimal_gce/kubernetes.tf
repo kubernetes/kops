@@ -21,7 +21,8 @@ provider "google" {
 }
 
 resource "google_compute_address" "api-minimal-gce-example-com" {
-  name = "api-minimal-gce-example-com"
+  address_type = "EXTERNAL"
+  name         = "api-minimal-gce-example-com"
 }
 
 resource "google_compute_disk" "d1-etcd-events-minimal-gce-example-com" {

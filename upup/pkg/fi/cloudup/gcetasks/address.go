@@ -32,6 +32,8 @@ type Address struct {
 	Lifecycle *fi.Lifecycle
 
 	IPAddress    *string
+	Subnet       *Subnet
+	AddressType  *string
 	ForAPIServer bool
 }
 
@@ -129,9 +131,13 @@ func (_ *Address) CheckChanges(a, e, changes *Address) error {
 func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	cloud := t.Cloud
 	addr := &compute.Address{
-		Name:    *e.Name,
-		Address: fi.StringValue(e.IPAddress),
-		Region:  cloud.Region(),
+		Name:        *e.Name,
+		Address:     fi.StringValue(e.IPAddress),
+		Region:      cloud.Region(),
+		AddressType: fi.StringValue(e.AddressType),
+	}
+	if e.Subnet != nil {
+		addr.Subnetwork = e.Subnet.URL(cloud.Project(), cloud.Region())
 	}
 
 	if a == nil {
@@ -153,12 +159,18 @@ func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 }
 
 type terraformAddress struct {
-	Name *string `json:"name,omitempty" cty:"name"`
+	Name        *string            `json:"name,omitempty" cty:"name"`
+	AddressType *string            `json:"address_type,omitempty" cty:"address_type"`
+	Subnetwork  *terraform.Literal `json:"subnetwork,omitempty" cty:"subnetwork"`
 }
 
 func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Address) error {
 	tf := &terraformAddress{
-		Name: e.Name,
+		Name:        e.Name,
+		AddressType: e.AddressType,
+	}
+	if e.Subnet != nil {
+		tf.Subnetwork = e.Subnet.TerraformID()
 	}
 	return t.RenderResource("google_compute_address", *e.Name, tf)
 }
