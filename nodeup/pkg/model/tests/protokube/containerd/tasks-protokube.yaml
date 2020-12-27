@@ -1,3 +1,120 @@
+contents: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      scheduler.alpha.kubernetes.io/critical-pod: ""
+    creationTimestamp: null
+    labels:
+      app: protokube
+    name: protokube
+    namespace: kube-system
+  spec:
+    containers:
+    - args:
+      - --bootstrap-master-node-labels=true
+      - --cloud=aws
+      - --containerized=true
+      - --dns-internal-suffix=.internal.minimal.example.com
+      - --dns=aws-route53
+      - --etcd-backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/main
+      - --etcd-image=k8s.gcr.io/etcd:3.4.3
+      - --initialize-rbac=true
+      - --manage-etcd=true
+      - --master=true
+      - --node-name=master.hostname.invalid
+      - --peer-ca=/srv/kubernetes/ca.crt
+      - --peer-cert=/srv/kubernetes/etcd-peer.pem
+      - --peer-key=/srv/kubernetes/etcd-peer-key.pem
+      - --tls-auth=true
+      - --tls-ca=/srv/kubernetes/ca.crt
+      - --tls-cert=/srv/kubernetes/etcd.pem
+      - --tls-key=/srv/kubernetes/etcd-key.pem
+      - --v=4
+      - --zone=*/Z1AFAKE1ZON3YO
+      command:
+      - /protokube
+      env:
+      - name: KUBECONFIG
+        value: /rootfs/var/lib/kops/kubeconfig
+      - name: PATH
+        value: /opt/kops/bin:/usr/bin:/sbin:/bin
+      image: docker.io/library/protokube image name
+      name: protokube
+      resources:
+        requests:
+          cpu: 100m
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - mountPath: /rootfs
+        name: rootfs
+        readOnly: true
+      - mountPath: /opt/kops/bin
+        name: kubectlpath
+        readOnly: true
+      - mountPath: /bin
+        name: bin
+        readOnly: true
+      - mountPath: /lib
+        name: lib
+        readOnly: true
+      - mountPath: /sbin
+        name: sbin
+        readOnly: true
+      - mountPath: /usr/bin
+        name: usrbin
+        readOnly: true
+      - mountPath: /var/run/dbus
+        name: dbus
+      - mountPath: /run/systemd
+        name: systemd
+      - mountPath: /lib64
+        name: lib64
+        readOnly: true
+      - mountPath: /etc/ssl/certs
+        name: sslcerts
+    hostNetwork: true
+    hostPID: true
+    priorityClassName: system-cluster-critical
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    volumes:
+    - hostPath:
+        path: /
+      name: rootfs
+    - hostPath:
+        path: /usr/local/bin
+      name: kubectlpath
+    - hostPath:
+        path: /bin
+      name: bin
+    - hostPath:
+        path: /lib
+      name: lib
+    - hostPath:
+        path: /sbin
+      name: sbin
+    - hostPath:
+        path: /usr/bin
+      name: usrbin
+    - hostPath:
+        path: /var/run/dbus
+      name: dbus
+    - hostPath:
+        path: /run/systemd
+      name: systemd
+    - hostPath:
+        path: /lib64
+      name: lib64
+    - hostPath:
+        path: /etc/ssl/certs
+      name: sslcerts
+  status: {}
+path: /etc/kubernetes/manifests/protokube.manifest
+type: file
+---
 contents:
   task:
     CA:
@@ -75,24 +192,3 @@ Hash: ""
 Name: protokube
 Runtime: containerd
 Sources: null
----
-Name: protokube.service
-definition: |
-  [Unit]
-  Description=Kubernetes Protokube Service
-  Documentation=https://github.com/kubernetes/kops
-
-  [Service]
-  ExecStartPre=/bin/true
-  ExecStartPre=-/usr/bin/ctr --namespace k8s.io container rm protokube
-  ExecStart=/usr/bin/ctr --namespace k8s.io run --net-host --with-ns pid:/proc/1/ns/pid --privileged --mount type=bind,src=/,dst=/rootfs,options=rbind:rslave --env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig --mount type=bind,src=/bin,dst=/bin,options=rbind:ro:rprivate --mount type=bind,src=/lib,dst=/lib,options=rbind:ro:rprivate --mount type=bind,src=/sbin,dst=/sbin,options=rbind:ro:rprivate --mount type=bind,src=/usr/bin,dst=/usr/bin,options=rbind:ro:rprivate --mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate --mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate --mount type=bind,src=/lib64,dst=/lib64,options=rbind:ro:rprivate --mount type=bind,src=/usr/local/bin,dst=/opt/kops/bin,options=rbind:ro:rprivate --env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin docker.io/library/protokube image name protokube /protokube --bootstrap-master-node-labels=true --cloud=aws --containerized=true --dns-internal-suffix=.internal.minimal.example.com --dns=aws-route53 --etcd-backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd/main --etcd-image=k8s.gcr.io/etcd:3.4.3 --initialize-rbac=true --manage-etcd=true --master=true --node-name=master.hostname.invalid --peer-ca=/srv/kubernetes/ca.crt --peer-cert=/srv/kubernetes/etcd-peer.pem --peer-key=/srv/kubernetes/etcd-peer-key.pem --tls-auth=true --tls-ca=/srv/kubernetes/ca.crt --tls-cert=/srv/kubernetes/etcd.pem --tls-key=/srv/kubernetes/etcd-key.pem --v=4 --zone=*/Z1AFAKE1ZON3YO
-  Restart=always
-  RestartSec=3s
-  StartLimitInterval=0
-
-  [Install]
-  WantedBy=multi-user.target
-enabled: true
-manageState: true
-running: true
-smartRestart: true

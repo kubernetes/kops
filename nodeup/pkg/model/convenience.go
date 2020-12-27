@@ -85,6 +85,26 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string)
 	return &container.VolumeMounts[len(container.VolumeMounts)-1]
 }
 
+// addHostPathMappingWithMount is shorthand for mapping a host path into a container at a given mount point
+func addHostPathMappingWithMount(pod *v1.Pod, container *v1.Container, name, path, mount string) *v1.VolumeMount {
+	pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
+		Name: name,
+		VolumeSource: v1.VolumeSource{
+			HostPath: &v1.HostPathVolumeSource{
+				Path: path,
+			},
+		},
+	})
+
+	container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+		Name:      name,
+		MountPath: mount,
+		ReadOnly:  true,
+	})
+
+	return &container.VolumeMounts[len(container.VolumeMounts)-1]
+}
+
 // addHostPathVolume is shorthand for mapping a host path into a container
 func addHostPathVolume(pod *v1.Pod, container *v1.Container, hostPath v1.HostPathVolumeSource, volumeMount v1.VolumeMount) {
 	vol := v1.Volume{

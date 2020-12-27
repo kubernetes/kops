@@ -23,6 +23,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/k8scodecs"
+	"k8s.io/kops/pkg/kubemanifest"
+
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -30,10 +36,8 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/rbac"
-	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/proxy"
 
 	"github.com/blang/semver/v4"
@@ -93,19 +97,84 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			}
 		}
-	}
 
-	service, err := t.buildSystemdService()
-	if err != nil {
-		return err
+		// rather than a systemd service, lets build a pod
+		pod, err := t.buildPod()
+		if err != nil {
+			return fmt.Errorf("Error in building the protokube pod")
+		}
+
+		manifest, err := k8scodecs.ToVersionedYaml(pod)
+		if err != nil {
+			return fmt.Errorf("Error in get versioned yaml for protokube pod")
+		}
+
+		c.AddTask(&nodetasks.File{
+			Path:     "/etc/kubernetes/manifests/protokube.manifest",
+			Contents: fi.NewBytesResource(manifest),
+			Type:     nodetasks.FileType_File,
+		})
 	}
-	c.AddTask(service)
 
 	return nil
 }
 
-// buildSystemdService generates the manifest for the protokube service
-func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
+func (t *ProtokubeBuilder) buildPod() (*v1.Pod, error) {
+	pod := &v1.Pod{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Pod",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "protokube",
+			Namespace: "kube-system",
+			Labels: map[string]string{
+				"app": "protokube",
+			},
+		},
+		Spec: v1.PodSpec{
+			HostNetwork: true,
+			HostPID:     true,
+		},
+	}
+
+	var image string
+	image = t.ProtokubeImageName()
+	if t.Cluster.Spec.ContainerRuntime == "containerd" {
+		image = "docker.io/library/" + t.ProtokubeImageName()
+	}
+
+	container := &v1.Container{
+		Name:  "protokube",
+		Image: image,
+		Env: []v1.EnvVar{
+			{
+				Name:  "KUBECONFIG",
+				Value: "/rootfs/var/lib/kops/kubeconfig",
+			},
+			{
+				Name:  "PATH",
+				Value: "/opt/kops/bin:/usr/bin:/sbin:/bin",
+			},
+		},
+		Resources: v1.ResourceRequirements{
+			Requests: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("100m"),
+			},
+		},
+	}
+
+	addHostPathMappingWithMount(pod, container, "rootfs", "/", "/rootfs")
+	addHostPathMappingWithMount(pod, container, "kubectlpath", t.KubectlPath(), "/opt/kops/bin")
+	addHostPathMapping(pod, container, "bin", "/bin")
+	addHostPathMapping(pod, container, "lib", "/lib")
+	addHostPathMapping(pod, container, "sbin", "/sbin")
+	addHostPathMapping(pod, container, "usrbin", "/usr/bin")
+	addHostPathMapping(pod, container, "dbus", "/var/run/dbus").ReadOnly = false
+	addHostPathMapping(pod, container, "systemd", "/run/systemd").ReadOnly = false
+	addHostPathMapping(pod, container, "lib64", "/lib64")
+	addHostPathMapping(pod, container, "sslcerts", "/etc/ssl/certs").ReadOnly = false
+
 	k8sVersion, err := util.ParseKubernetesVersion(t.Cluster.Spec.KubernetesVersion)
 	if err != nil || k8sVersion == nil {
 		return nil, fmt.Errorf("unable to parse KubernetesVersion %q", t.Cluster.Spec.KubernetesVersion)
@@ -115,48 +184,21 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	protokubeRunArgs, err := flagbuilder.BuildFlags(protokubeFlags)
+	protokubeRunArgs, err := flagbuilder.BuildFlagsList(protokubeFlags)
 	if err != nil {
 		return nil, err
 	}
 
-	protokubeContainerStopCommand, err := t.ProtokubeContainerStopCommand()
-	if err != nil {
-		return nil, err
-	}
-	protokubeContainerRemoveCommand, err := t.ProtokubeContainerRemoveCommand()
-	if err != nil {
-		return nil, err
-	}
-	protokubeContainerRunCommand, err := t.ProtokubeContainerRunCommand()
-	if err != nil {
-		return nil, err
-	}
+	container.Command = []string{"/protokube"}
+	container.Args = protokubeRunArgs
+	container.SecurityContext = &v1.SecurityContext{Privileged: b(true)}
 
-	manifest := &systemd.Manifest{}
-	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
-	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
-	// @step: let need a dependency for any volumes to be mounted first
-	manifest.Set("Service", "ExecStartPre", protokubeContainerStopCommand)
-	manifest.Set("Service", "ExecStartPre", protokubeContainerRemoveCommand)
-	manifest.Set("Service", "ExecStart", protokubeContainerRunCommand+" "+protokubeRunArgs)
-	manifest.Set("Service", "Restart", "always")
-	manifest.Set("Service", "RestartSec", "3s")
-	manifest.Set("Service", "StartLimitInterval", "0")
-	manifest.Set("Install", "WantedBy", "multi-user.target")
+	kubemanifest.MarkPodAsClusterCritical(pod)
+	kubemanifest.MarkPodAsCritical(pod)
 
-	manifestString := manifest.Render()
-	klog.V(8).Infof("Built service manifest %q\n%s", "protokube", manifestString)
-
-	service := &nodetasks.Service{
-		Name:       "protokube.service",
-		Definition: s(manifestString),
-	}
-
-	service.InitDefaults()
-
-	return service, nil
+	return pod, nil
 }
 
 // ProtokubeImageName returns the docker image for protokube
@@ -170,148 +212,6 @@ func (t *ProtokubeBuilder) ProtokubeImageName() string {
 		name = kopsbase.DefaultProtokubeImageName()
 	}
 	return name
-}
-
-// ProtokubeContainerStopCommand returns the command that stops the Protokube container, before being removed
-func (t *ProtokubeBuilder) ProtokubeContainerStopCommand() (string, error) {
-	var containerStopCommand string
-	if t.Cluster.Spec.ContainerRuntime == "docker" {
-		containerStopCommand = "-/usr/bin/docker stop protokube"
-	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerStopCommand = "/bin/true"
-	} else {
-		return "", fmt.Errorf("unable to create protokube stop command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
-	}
-	return containerStopCommand, nil
-}
-
-// ProtokubeContainerRemoveCommand returns the command that removes the Protokube container
-func (t *ProtokubeBuilder) ProtokubeContainerRemoveCommand() (string, error) {
-	var containerRemoveCommand string
-	if t.Cluster.Spec.ContainerRuntime == "docker" {
-		containerRemoveCommand = "-/usr/bin/docker rm protokube"
-	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerRemoveCommand = "-/usr/bin/ctr --namespace k8s.io container rm protokube"
-	} else {
-		return "", fmt.Errorf("unable to create protokube remove command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
-	}
-	return containerRemoveCommand, nil
-}
-
-// ProtokubeContainerRunCommand returns the command that runs the Protokube container
-func (t *ProtokubeBuilder) ProtokubeContainerRunCommand() (string, error) {
-	var containerRunArgs []string
-	if t.Cluster.Spec.ContainerRuntime == "docker" {
-		containerRunArgs = append(containerRunArgs, []string{
-			"/usr/bin/docker run",
-			"--net=host",
-			"--pid=host",   // Needed for mounting in a container (when using systemd mounting?)
-			"--privileged", // We execute in the host namespace
-			"--volume /:/rootfs",
-			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
-		}...)
-
-		// Mount bin dirs from host, required for "k8s.io/utils/mount" and "k8s.io/utils/nsenter"
-		containerRunArgs = append(containerRunArgs, []string{
-			"--volume /bin:/bin:ro",
-			"--volume /lib:/lib:ro",
-			"--volume /sbin:/sbin:ro",
-			"--volume /usr/bin:/usr/bin:ro",
-			"--volume /var/run/dbus:/var/run/dbus",
-			"--volume /run/systemd:/run/systemd",
-		}...)
-
-		if t.Architecture == architectures.ArchitectureAmd64 {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--volume /lib64:/lib64:ro",
-			}...)
-		}
-
-		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--volume /etc/ssl/certs:/etc/ssl/certs",
-			}...)
-		}
-
-		// add kubectl only if a master
-		// path changes depending on distro, and always mount it on /opt/kops/bin
-		// kubectl is downloaded and installed by other tasks
-		if t.IsMaster {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--volume " + t.KubectlPath() + ":/opt/kops/bin:ro",
-				"--env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin",
-			}...)
-		}
-
-		protokubeEnvVars := t.ProtokubeEnvironmentVariables()
-		if protokubeEnvVars != "" {
-			containerRunArgs = append(containerRunArgs, []string{
-				protokubeEnvVars,
-			}...)
-		}
-
-		containerRunArgs = append(containerRunArgs, []string{
-			"--name", "protokube",
-			t.ProtokubeImageName(),
-			"/protokube",
-		}...)
-
-	} else if t.Cluster.Spec.ContainerRuntime == "containerd" {
-		containerRunArgs = append(containerRunArgs, []string{
-			"/usr/bin/ctr --namespace k8s.io run",
-			"--net-host",
-			"--with-ns pid:/proc/1/ns/pid",
-			"--privileged",
-			"--mount type=bind,src=/,dst=/rootfs,options=rbind:rslave",
-			"--env KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
-		}...)
-
-		// Mount bin dirs from host, required for "k8s.io/utils/mount" and "k8s.io/utils/nsenter"
-		containerRunArgs = append(containerRunArgs, []string{
-			"--mount type=bind,src=/bin,dst=/bin,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/lib,dst=/lib,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/sbin,dst=/sbin,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/usr/bin,dst=/usr/bin,options=rbind:ro:rprivate",
-			"--mount type=bind,src=/var/run/dbus,dst=/var/run/dbus,options=rbind:rprivate",
-			"--mount type=bind,src=/run/systemd,dst=/run/systemd,options=rbind:rprivate",
-		}...)
-
-		if t.Architecture == architectures.ArchitectureAmd64 {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--mount type=bind,src=/lib64,dst=/lib64,options=rbind:ro:rprivate",
-			}...)
-		}
-
-		if fi.BoolValue(t.Cluster.Spec.UseHostCertificates) {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--mount type=bind,src=/etc/ssl/certs,dst=/etc/ssl/certs,options=rbind:ro:rprivate",
-			}...)
-		}
-
-		if t.IsMaster {
-			containerRunArgs = append(containerRunArgs, []string{
-				"--mount type=bind,src=" + t.KubectlPath() + ",dst=/opt/kops/bin,options=rbind:ro:rprivate",
-				"--env PATH=/opt/kops/bin:/usr/bin:/sbin:/bin",
-			}...)
-		}
-
-		protokubeEnvVars := t.ProtokubeEnvironmentVariables()
-		if protokubeEnvVars != "" {
-			containerRunArgs = append(containerRunArgs, []string{
-				protokubeEnvVars,
-			}...)
-		}
-
-		containerRunArgs = append(containerRunArgs, []string{
-			"docker.io/library/" + t.ProtokubeImageName(),
-			"protokube",
-			"/protokube",
-		}...)
-	} else {
-		return "", fmt.Errorf("unable to create protokube run command for unsupported runtime %q", t.Cluster.Spec.ContainerRuntime)
-	}
-
-	return strings.Join(containerRunArgs, " "), nil
 }
 
 // ProtokubeFlags are the flags for protokube
