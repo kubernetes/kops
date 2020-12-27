@@ -64,11 +64,6 @@ func (d *deployer) Provider() string {
 	return Name
 }
 
-func (d *deployer) DumpClusterLogs() error {
-	klog.Warning("DumpClusterLogs is not implemented")
-	return nil
-}
-
 // New implements deployer.New for kops
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	// create a deployer object and set fields that are not flag controlled

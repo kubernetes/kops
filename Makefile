@@ -185,6 +185,23 @@ test: ${BINDATA_TARGETS}  # Run tests locally
 test-windows: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v $(go list ./... | grep -v /nodeup/)
 
+.PHONY: test-e2e
+test-e2e:
+	cd /home/prow/go/src/k8s.io/kops/tests/e2e && \
+		export GO111MODULE=on && \
+		go get sigs.k8s.io/kubetest2@latest && \
+		go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest && \
+		go install ./kubetest2-kops
+	kubetest2 kops \
+		-v 2 \
+		--build --up --down \
+		--cloud-provider=aws \
+		--kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+		--test=ginkgo \
+		-- \
+		--test-package-version=v1.19.0 \
+		--skip-regex=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
+
 .PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
