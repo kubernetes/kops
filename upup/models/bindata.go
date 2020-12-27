@@ -4572,7 +4572,7 @@ var _cloudupResourcesAddonsNetworkingAmazonVpcRoutedEniK8s116YamlTemplate = []by
           "path": "/etc/cni/net.d"
         "name": "cni-net-dir"
       - "hostPath":
-          "path": "/var/run/dockershim.sock"
+          "path": "{{ if eq .ContainerRuntime "containerd" }}/run/containerd/containerd.sock{{ else }}/var/run/dockershim.sock{{ end }}"
         "name": "dockershim"
       - "hostPath":
           "path": "/run/xtables.lock"
