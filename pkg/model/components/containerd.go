@@ -18,10 +18,8 @@ package components
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/blang/semver/v4"
-
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -61,23 +59,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
 
 		// Apply defaults for containerd running in container runtime mode
 		containerd.LogLevel = fi.String("info")
-		usesKubenet := UsesKubenet(clusterSpec.Networking)
-		if clusterSpec.Networking != nil && usesKubenet {
-			// Using containerd with Kubenet requires special configuration. This is a temporary backwards-compatible solution
-			// and will be deprecated when Kubenet is deprecated:
-			// https://github.com/containerd/cri/blob/master/docs/config.md#cni-config-template
-			lines := []string{
-				"version = 2",
-				"[plugins]",
-				"  [plugins.\"io.containerd.grpc.v1.cri\"]",
-				"    [plugins.\"io.containerd.grpc.v1.cri\".cni]",
-				"      conf_template = \"/etc/containerd/cni-config.template\"",
-			}
-			contents := strings.Join(lines, "\n")
-			containerd.ConfigOverride = fi.String(contents)
-		} else {
-			containerd.ConfigOverride = fi.String("")
-		}
+		containerd.ConfigOverride = fi.String("version = 2")
 
 	} else if clusterSpec.ContainerRuntime == "docker" {
 		// Docker version should always be available

@@ -538,6 +538,20 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
+    "AWSEC2SecurityGroupIngressnodetomasterprotocolipip": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmasterscontainerdexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodescontainerdexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 65535,
+        "IpProtocol": "4"
+      }
+    },
     "AWSEC2SecurityGroupIngressnodetomastertcp12379": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
