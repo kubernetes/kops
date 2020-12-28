@@ -137,12 +137,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configOverride: |-
-      version = 2
-      [plugins]
-        [plugins."io.containerd.grpc.v1.cri"]
-          [plugins."io.containerd.grpc.v1.cri".cni]
-            conf_template = "/etc/containerd/cni-config.template"
+    configOverride: version = 2
     logLevel: info
     packages:
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
@@ -201,7 +196,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     cloudProvider: aws
     clusterCIDR: 100.96.0.0/11
     clusterName: containerd.example.com
-    configureCloudRoutes: true
+    configureCloudRoutes: false
     image: k8s.gcr.io/kube-controller-manager:v1.19.0
     leaderElection:
       leaderElect: true
@@ -229,6 +224,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
+    networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
   masterKubelet:
@@ -242,6 +238,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
+    networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
     registerSchedulable: false
@@ -280,6 +277,7 @@ Resources.AWSEC2LaunchTemplatemasterustest1amasterscontainerdexamplecom.Properti
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
+    networkPluginName: cni
     nodeLabels:
       kubernetes.io/role: master
       node-role.kubernetes.io/master: ""
@@ -453,12 +451,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
   cloudConfig: null
   containerRuntime: containerd
   containerd:
-    configOverride: |-
-      version = 2
-      [plugins]
-        [plugins."io.containerd.grpc.v1.cri"]
-          [plugins."io.containerd.grpc.v1.cri".cni]
-            conf_template = "/etc/containerd/cni-config.template"
+    configOverride: version = 2
     logLevel: info
     packages:
       hashAmd64: "0000000000000000000000000000000000000000000000000000000000000000"
@@ -483,6 +476,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
+    networkPluginName: cni
     nonMasqueradeCIDR: 100.64.0.0/10
     podManifestPath: /etc/kubernetes/manifests
 
@@ -520,6 +514,7 @@ Resources.AWSEC2LaunchTemplatenodescontainerdexamplecom.Properties.LaunchTemplat
     hostnameOverride: '@aws'
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
+    networkPluginName: cni
     nodeLabels:
       kubernetes.io/role: node
       node-role.kubernetes.io/node: ""
